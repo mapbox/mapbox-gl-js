@@ -1,8 +1,8 @@
 
-const ValidationError = require('../error/validation_error');
-const validateString = require('./validate_string');
+import ValidationError from '../error/validation_error';
+import validateString from './validate_string';
 
-module.exports = function(options) {
+export default function(options) {
     const value = options.value;
     const key = options.key;
 
@@ -18,4 +18,4 @@ module.exports = function(options) {
     }
 
     return errors;
-};
+}

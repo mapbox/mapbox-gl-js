@@ -21,7 +21,7 @@
     background-color:#4ea0da;
 }
 </style>
-<script src='//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js' charset='utf-8'></script>
+<script src='https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js' charset='utf-8'></script>
 
 <div id='map'></div>
 <div class='overlay'>
@@ -63,6 +63,7 @@ var point = {
     "type": "FeatureCollection",
     "features": [{
         "type": "Feature",
+        "properties": {},
         "geometry": {
             "type": "Point",
             "coordinates": origin
@@ -75,9 +76,14 @@ var lineDistance = turf.lineDistance(route.features[0], 'kilometers');
 
 var arc = [];
 
+// Number of steps to use in the arc and animation, more steps means
+// a smoother arc and animation, but too many steps will result in a
+// low frame rate
+var steps = 500;
+
 // Draw an arc between the `origin` & `destination` of the two points
-for (var i = 0; i < lineDistance; i++) {
-    var segment = turf.along(route.features[0], i / 1000 * lineDistance, 'kilometers');
+for (var i = 0; i < lineDistance; i += lineDistance / steps) {
+    var segment = turf.along(route.features[0], i, 'kilometers');
     arc.push(segment.geometry.coordinates);
 }
 
@@ -115,7 +121,10 @@ map.on('load', function () {
         "type": "symbol",
         "layout": {
             "icon-image": "airport-15",
-            "icon-rotate": 90
+            "icon-rotate": ["get", "bearing"],
+            "icon-rotation-alignment": "map",
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": true
         }
     });
 
@@ -124,12 +133,19 @@ map.on('load', function () {
         // the index to access the arc.
         point.features[0].geometry.coordinates = route.features[0].geometry.coordinates[counter];
 
+        // Calculate the bearing to ensure the icon is rotated to match the route arc
+        // The bearing is calculate between the current point and the next point, except
+        // at the end of the arc use the previous point and the current point
+        point.features[0].properties.bearing = turf.bearing(
+            turf.point(route.features[0].geometry.coordinates[counter >= steps ? counter - 1 : counter]),
+            turf.point(route.features[0].geometry.coordinates[counter >= steps ? counter : counter + 1])
+        );
+
         // Update the source with this new data.
         map.getSource('point').setData(point);
 
-        // Request the next frame of animation so long as destination has not
-        // been reached.
-        if (point.features[0].geometry.coordinates[0] !== destination[0]) {
+        // Request the next frame of animation so long the end has not been reached.
+        if (counter < steps) {
             requestAnimationFrame(animate);
         }
 

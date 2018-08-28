@@ -3,7 +3,9 @@
   "expected": {
     "compiled": {
       "result": "error",
-      "errors": [{"key": "", "error": "Cannot compare string and number."}]
+      "errors": [
+        {"key": "", "error": "Cannot compare types 'string' and 'number'."}
+      ]
     }
   }
 }

@@ -1,13 +1,14 @@
 // @flow
 
-const browser = require('../util/browser');
-const shaders = require('../shaders');
-const assert = require('assert');
-const {ProgramConfiguration} = require('../data/program_configuration');
-const VertexArrayObject = require('./vertex_array_object');
-const Context = require('../gl/context');
+import browser from '../util/browser';
 
-import type {SegmentVector} from '../data/segment';
+import shaders from '../shaders';
+import assert from 'assert';
+import ProgramConfiguration from '../data/program_configuration';
+import VertexArrayObject from './vertex_array_object';
+import Context from '../gl/context';
+
+import type SegmentVector from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 
@@ -123,4 +124,4 @@ class Program {
     }
 }
 
-module.exports = Program;
+export default Program;

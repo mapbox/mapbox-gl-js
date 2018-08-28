@@ -5,8 +5,8 @@
       "result": "error",
       "errors": [
         {
-          "key": "",
-          "error": "Expected arguments of type (number, number) | (string, string), but found (boolean, boolean) instead."
+          "key": "[1]",
+          "error": "\"<\" comparisons are not supported for type 'boolean'."
         }
       ]
     }

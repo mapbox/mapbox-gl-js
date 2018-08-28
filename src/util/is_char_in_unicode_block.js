@@ -53,7 +53,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Hanunoo': (char) => char >= 0x1720 && char <= 0x173F,
     // 'Buhid': (char) => char >= 0x1740 && char <= 0x175F,
     // 'Tagbanwa': (char) => char >= 0x1760 && char <= 0x177F,
-    // 'Khmer': (char) => char >= 0x1780 && char <= 0x17FF,
+    'Khmer': (char) => char >= 0x1780 && char <= 0x17FF,
     // 'Mongolian': (char) => char >= 0x1800 && char <= 0x18AF,
     'Unified Canadian Aboriginal Syllabics Extended': (char) => char >= 0x18B0 && char <= 0x18FF,
     // 'Limbu': (char) => char >= 0x1900 && char <= 0x194F,
@@ -288,4 +288,4 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Supplementary Private Use Area-B': (char) => char >= 0x100000 && char <= 0x10FFFF,
 };
 
-module.exports = unicodeBlockLookup;
+export default unicodeBlockLookup;

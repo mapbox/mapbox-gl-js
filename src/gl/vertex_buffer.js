@@ -1,6 +1,7 @@
 // @flow
 
-const assert = require('assert');
+import assert from 'assert';
+
 import type {
     StructArray,
     StructArrayMember
@@ -114,4 +115,4 @@ class VertexBuffer {
     }
 }
 
-module.exports = VertexBuffer;
+export default VertexBuffer;

@@ -1,17 +1,18 @@
 // @flow
 
-const util = require('../util/util');
-const ImageSource = require('../source/image_source');
-const browser = require('../util/browser');
-const StencilMode = require('../gl/stencil_mode');
-const DepthMode = require('../gl/depth_mode');
+import { clamp } from '../util/util';
+
+import ImageSource from '../source/image_source';
+import browser from '../util/browser';
+import StencilMode from '../gl/stencil_mode';
+import DepthMode from '../gl/depth_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
 
-module.exports = drawRaster;
+export default drawRaster;
 
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
@@ -30,7 +31,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     gl.uniform1f(program.uniforms.u_brightness_high, layer.paint.get('raster-brightness-max'));
     gl.uniform1f(program.uniforms.u_saturation_factor, saturationFactor(layer.paint.get('raster-saturation')));
     gl.uniform1f(program.uniforms.u_contrast_factor, contrastFactor(layer.paint.get('raster-contrast')));
-    gl.uniform3fv(program.uniforms.u_spin_weights, spinWeights(layer.paint.get('raster-hue-rotate')));
+    gl.uniform3fv(program.uniforms.u_spin_weights, (spinWeights(layer.paint.get('raster-hue-rotate')): Array<number>));
     gl.uniform1f(program.uniforms.u_buffer_scale, 1);
     gl.uniform1i(program.uniforms.u_image0, 0);
     gl.uniform1i(program.uniforms.u_image1, 1);
@@ -50,27 +51,29 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
 
-        const parentTile = sourceCache.findLoadedParent(coord, 0, {}),
+        const parentTile = sourceCache.findLoadedParent(coord, 0),
             fade = getFadeValues(tile, parentTile, sourceCache, layer, painter.transform);
 
         let parentScaleBy, parentTL;
 
+        const textureFilter = layer.paint.get('raster-resampling') === 'nearest' ?  gl.NEAREST : gl.LINEAR;
+
         context.activeTexture.set(gl.TEXTURE0);
-        tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+        tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
         context.activeTexture.set(gl.TEXTURE1);
 
         if (parentTile) {
-            parentTile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+            parentTile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
             parentScaleBy = Math.pow(2, parentTile.tileID.overscaledZ - tile.tileID.overscaledZ);
             parentTL = [tile.tileID.canonical.x * parentScaleBy % 1, tile.tileID.canonical.y * parentScaleBy % 1];
 
         } else {
-            tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+            tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
         }
 
         // cross-fade parameters
-        gl.uniform2fv(program.uniforms.u_tl_parent, parentTL || [0, 0]);
+        gl.uniform2fv(program.uniforms.u_tl_parent, ((parentTL || [0, 0]): Array<number>));
         gl.uniform1f(program.uniforms.u_scale_parent, parentScaleBy || 1);
         gl.uniform1f(program.uniforms.u_fade_t, fade.mix);
         gl.uniform1f(program.uniforms.u_opacity, fade.opacity * layer.paint.get('raster-opacity'));
@@ -139,7 +142,7 @@ function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
         // if no parent or parent is older, fade in; if parent is younger, fade out
         const fadeIn = !parentTile || Math.abs(parentTile.tileID.overscaledZ - idealZ) > Math.abs(tile.tileID.overscaledZ - idealZ);
 
-        const childOpacity = (fadeIn && tile.refreshedUponExpiration) ? 1 : util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
+        const childOpacity = (fadeIn && tile.refreshedUponExpiration) ? 1 : clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
 
         // we don't crossfade tiles that were just refreshed upon expiring:
         // once they're old enough to pass the crossfading threshold

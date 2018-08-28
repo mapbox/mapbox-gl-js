@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 2.5,
+    center: [0, 0],
+    style: 'mapbox://styles/mapbox/light-v9',
+    hash: true
+});
+map.showTileBoundaries = true;
+map.on('load', function() {
+    map.addSource('places', {
+        type: "geojson",
+        data: "/test/integration/data/places.geojson"
+    });
+    map.addLayer({
+        id:"places",
+        source: "places",
+        type:"circle",
+        paint: {
+            "circle-radius": ["case",
+                ["boolean", ["feature-state", "hover"], false],
+                ["number", ["*", ["get", "scalerank"], 2]],
+                ["number", ["*", ["get", "scalerank"], 1.5]]
+            ],
+            "circle-color": ["case",
+                ["boolean", ["feature-state", "hover"], false],
+                ["rgb", 21, 210, 210],
+                ["rgb", 233, 103, 233]
+            ]
+        }
+    });
+    let hoveredFeature;
+    map.on('mousemove', 'places', function(e) {
+        if (e.features.length) {
+            const f = e.features[0];
+            if (!f.state.hover) {
+                map.setFeatureState(f, {'hover': true});
+                if (hoveredFeature) {
+                    map.setFeatureState(hoveredFeature, {'hover': false});
+                }
+                hoveredFeature = f;
+            }
+        }
+    });
+});
+
+</script>
+</body>
+</html>

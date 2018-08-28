@@ -1,6 +1,7 @@
 // @flow
 
-const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData} = require('../util/window');
+import window from '../util/window';
+const { HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData } = window;
 
 import type Context from '../gl/context';
 import type {RGBAImage, AlphaImage} from '../util/image';
@@ -39,35 +40,49 @@ class Texture {
     format: TextureFormat;
     filter: ?TextureFilter;
     wrap: ?TextureWrap;
+    useMipmap: boolean;
 
-    constructor(context: Context, image: TextureImage, format: TextureFormat, premultiply: ?boolean) {
+    constructor(context: Context, image: TextureImage, format: TextureFormat, options: ?{ premultiply?: boolean, useMipmap?: boolean }) {
         this.context = context;
-
-        const {width, height} = image;
-        this.size = [width, height];
         this.format = format;
-
         this.texture = context.gl.createTexture();
-        this.update(image, premultiply);
+        this.update(image, options);
     }
 
-    update(image: TextureImage, premultiply: ?boolean) {
+    update(image: TextureImage, options: ?{premultiply?: boolean, useMipmap?: boolean}) {
         const {width, height} = image;
-        this.size = [width, height];
-
+        const resize = !this.size || this.size[0] !== width || this.size[1] !== height;
         const {context} = this;
         const {gl} = context;
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        context.pixelStoreUnpack.set(1);
 
-        if (this.format === gl.RGBA && premultiply !== false) {
-            context.pixelStoreUnpackPremultiplyAlpha.set(true);
+        this.useMipmap = Boolean(options && options.useMipmap);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+        if (resize) {
+            this.size = [width, height];
+
+            context.pixelStoreUnpack.set(1);
+
+            if (this.format === gl.RGBA && (!options || options.premultiply !== false)) {
+                context.pixelStoreUnpackPremultiplyAlpha.set(true);
+            }
+
+            if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
+                gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
+            } else {
+                gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
+            }
+
+        } else {
+            if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            } else {
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, image.data);
+            }
         }
 
-        if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
-        } else {
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
+        if (this.useMipmap && this.isSizePowerOfTwo()) {
+            gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
 
@@ -75,6 +90,10 @@ class Texture {
         const {context} = this;
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+        if (minFilter === gl.LINEAR_MIPMAP_NEAREST && !this.isSizePowerOfTwo()) {
+            minFilter = gl.LINEAR;
+        }
 
         if (filter !== this.filter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
@@ -89,6 +108,10 @@ class Texture {
         }
     }
 
+    isSizePowerOfTwo() {
+        return this.size[0] === this.size[1] && (Math.log(this.size[0]) / Math.LN2) % 1 === 0;
+    }
+
     destroy() {
         const {gl} = this.context;
         gl.deleteTexture(this.texture);
@@ -96,4 +119,4 @@ class Texture {
     }
 }
 
-module.exports = Texture;
+export default Texture;

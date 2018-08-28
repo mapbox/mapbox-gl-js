@@ -1,13 +1,7 @@
-'use strict';
+import { test } from 'mapbox-gl-js-test';
+import filter from '../../../src/style-spec/feature_filter';
 
-const test = require('mapbox-gl-js-test').test;
-const proxyquire = require('proxyquire');
-
-const filterTests = (isEvalSupported) => (t) => {
-    const filter = proxyquire('../../../src/style-spec/feature_filter', {
-        '../util/eval_support': isEvalSupported
-    });
-
+test('filter', (t) => {
     t.test('expression, zoom', (t) => {
         const f = filter(['>=', ['number', ['get', 'x']], ['zoom']]);
         t.equal(f({zoom: 1}, {properties: {x: 0}}), false);
@@ -27,6 +21,19 @@ const filterTests = (isEvalSupported) => (t) => {
         t.equal(f({zoom: 0}, {properties: {x: 'same', y: 'same'}}), true);
         t.equal(f({zoom: 0}, {properties: {x: null}}), false);
         t.equal(f({zoom: 0}, {properties: {x: undefined}}), false);
+        t.end();
+    });
+
+    t.test('expression, collator comparison', (t) => {
+        const caseSensitive = filter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': true }]]);
+        t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'b'}}), false);
+        t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'A'}}), false);
+        t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'a'}}), true);
+
+        const caseInsensitive = filter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': false }]]);
+        t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'b'}}), false);
+        t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'A'}}), true);
+        t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'a'}}), true);
         t.end();
     });
 
@@ -57,7 +64,6 @@ const filterTests = (isEvalSupported) => (t) => {
 
         t.end();
     });
-
 
     t.test('degenerate', (t) => {
         t.equal(filter()(), true);
@@ -501,7 +507,4 @@ const filterTests = (isEvalSupported) => (t) => {
     });
 
     t.end();
-};
-
-test('filter - eval supported', filterTests(true));
-test('filter - eval not supported', filterTests(false));
+});

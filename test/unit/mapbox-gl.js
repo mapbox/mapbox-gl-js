@@ -1,7 +1,5 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const mapboxgl = require('../../src');
+import { test } from 'mapbox-gl-js-test';
+import mapboxgl from '../../src';
 
 test('mapboxgl', (t) => {
     t.test('version', (t) => {

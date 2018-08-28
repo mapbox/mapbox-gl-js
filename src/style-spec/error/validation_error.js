@@ -1,10 +1,11 @@
 
-function ValidationError(key, value, message) {
-    this.message = (key ? `${key}: ` : '') + message;
+export default class ValidationError {
+    constructor(key, value, message, identifier) {
+        this.message = (key ? `${key}: ` : '') + message;
+        if (identifier) this.identifier = identifier;
 
-    if (value !== null && value !== undefined && value.__line__) {
-        this.line = value.__line__;
+        if (value !== null && value !== undefined && value.__line__) {
+            this.line = value.__line__;
+        }
     }
 }
-
-module.exports = ValidationError;

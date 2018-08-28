@@ -2,12 +2,13 @@
   "expression": ["any", false],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [false],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "boolean"
-    }
+    },
+    "outputs": [false],
+    "serialized": false
   }
 }

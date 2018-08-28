@@ -1,14 +1,14 @@
 // @flow
 
-const {createExpression} = require('../expression');
+import { createExpression } from '../expression';
 
 import type {GlobalProperties} from '../expression';
 export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
 
-module.exports = createFilter;
-module.exports.isExpressionFilter = isExpressionFilter;
+export default createFilter;
+export { isExpressionFilter };
 
-function isExpressionFilter(filter) {
+function isExpressionFilter(filter: any) {
     if (!Array.isArray(filter) || filter.length === 0) {
         return false;
     }
@@ -28,7 +28,7 @@ function isExpressionFilter(filter) {
     case '>=':
     case '<':
     case '<=':
-        return filter.length === 3 && (Array.isArray(filter[1]) || Array.isArray(filter[2]));
+        return filter.length !== 3 || (Array.isArray(filter[1]) || Array.isArray(filter[2]));
 
     case 'any':
     case 'all':
@@ -47,9 +47,12 @@ function isExpressionFilter(filter) {
 const filterSpec = {
     'type': 'boolean',
     'default': false,
-    'function': true,
-    'property-function': true,
-    'zoom-function': true
+    'transition': false,
+    'property-type': 'data-driven',
+    'expression': {
+        'interpolated': false,
+        'parameters': ['zoom', 'feature']
+    }
 };
 
 /**
@@ -150,4 +153,3 @@ function convertHasOp(property: string) {
 function convertNegation(filter: mixed) {
     return ['!', filter];
 }
-

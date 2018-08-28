@@ -26,4 +26,4 @@ DepthMode.ReadWrite = true;
 
 DepthMode.disabled = new DepthMode(ALWAYS, DepthMode.ReadOnly, [0, 1]);
 
-module.exports = DepthMode;
+export default DepthMode;

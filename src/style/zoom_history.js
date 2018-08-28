@@ -41,4 +41,4 @@ class ZoomHistory {
     }
 }
 
-module.exports = ZoomHistory;
+export default ZoomHistory;

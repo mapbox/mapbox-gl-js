@@ -1,8 +1,6 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const colorSpaces = require('../../../../src/style-spec/util/color_spaces');
-const Color = require('../../../../src/style-spec/util/color');
+import { test } from 'mapbox-gl-js-test';
+import * as colorSpaces from '../../../../src/style-spec/util/color_spaces';
+import Color from '../../../../src/style-spec/util/color';
 
 test('#hclToRgb zero', (t) => {
     const hclColor = {h: 0, c: 0, l: 0, alpha: null};

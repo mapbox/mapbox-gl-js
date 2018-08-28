@@ -87,27 +87,48 @@ class GridIndex {
         this.circleCells[cellIndex].push(uid);
     }
 
-    _query(x1: number, y1: number, x2: number, y2: number, hitTest: boolean) {
+    _query(x1: number, y1: number, x2: number, y2: number, hitTest: boolean, predicate?: any) {
         if (x2 < 0 || x1 > this.width || y2 < 0 || y1 > this.height) {
             return hitTest ? false : [];
         }
-        let result = [];
+        const result = [];
         if (x1 <= 0 && y1 <= 0 && this.width <= x2 && this.height <= y2) {
-            // We use `Array#slice` because `this.keys` may be a `Int32Array` and
-            // some browsers (Safari and IE) do not support `TypedArray#slice`
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/slice#Browser_compatibility
-            result = Array.prototype.slice.call(this.boxKeys).concat(this.circleKeys);
+            if (hitTest) {
+                return true;
+            }
+            for (let boxUid = 0; boxUid < this.boxKeys.length; boxUid++) {
+                result.push({
+                    key: this.boxKeys[boxUid],
+                    x1: this.bboxes[boxUid * 4],
+                    y1: this.bboxes[boxUid * 4 + 1],
+                    x2: this.bboxes[boxUid * 4 + 2],
+                    y2: this.bboxes[boxUid * 4 + 3]
+                });
+            }
+            for (let circleUid = 0; circleUid < this.circleKeys.length; circleUid++) {
+                const x = this.circles[circleUid * 3];
+                const y = this.circles[circleUid * 3 + 1];
+                const radius = this.circles[circleUid * 3 + 2];
+                result.push({
+                    key: this.circleKeys[circleUid],
+                    x1: x - radius,
+                    y1: y - radius,
+                    x2: x + radius,
+                    y2: y + radius
+                });
+            }
+            return predicate ? result.filter(predicate) : result;
         } else {
             const queryArgs = {
                 hitTest,
                 seenUids: { box: {}, circle: {} }
             };
-            this._forEachCell(x1, y1, x2, y2, this._queryCell, result, queryArgs);
+            this._forEachCell(x1, y1, x2, y2, this._queryCell, result, queryArgs, predicate);
+            return hitTest ? result.length > 0 : result;
         }
-        return hitTest ? result.length > 0 : result;
     }
 
-    _queryCircle(x: number, y: number, radius: number, hitTest: boolean) {
+    _queryCircle(x: number, y: number, radius: number, hitTest: boolean, predicate?: any) {
         // Insert circle into grid for all cells in the circumscribing square
         // It's more than necessary (by a factor of 4/PI), but fast to insert
         const x1 = x - radius;
@@ -127,23 +148,23 @@ class GridIndex {
             circle: { x: x, y: y, radius: radius },
             seenUids: { box: {}, circle: {} }
         };
-        this._forEachCell(x1, y1, x2, y2, this._queryCellCircle, result, queryArgs);
+        this._forEachCell(x1, y1, x2, y2, this._queryCellCircle, result, queryArgs, predicate);
         return hitTest ? result.length > 0 : result;
     }
 
-    query(x1: number, y1: number, x2: number, y2: number): Array<any> {
-        return (this._query(x1, y1, x2, y2, false): any);
+    query(x1: number, y1: number, x2: number, y2: number, predicate?: any): Array<any> {
+        return (this._query(x1, y1, x2, y2, false, predicate): any);
     }
 
-    hitTest(x1: number, y1: number, x2: number, y2: number): boolean  {
-        return (this._query(x1, y1, x2, y2, true): any);
+    hitTest(x1: number, y1: number, x2: number, y2: number, predicate?: any): boolean  {
+        return (this._query(x1, y1, x2, y2, true, predicate): any);
     }
 
-    hitTestCircle(x: number, y: number, radius: number): boolean {
-        return (this._queryCircle(x, y, radius, true): any);
+    hitTestCircle(x: number, y: number, radius: number, predicate?: any): boolean {
+        return (this._queryCircle(x, y, radius, true, predicate): any);
     }
 
-    _queryCell(x1: number, y1: number, x2: number, y2: number, cellIndex: number, result: any, queryArgs: any) {
+    _queryCell(x1: number, y1: number, x2: number, y2: number, cellIndex: number, result: any, queryArgs: any, predicate?: any) {
         const seenUids = queryArgs.seenUids;
         const boxCell = this.boxCells[cellIndex];
         if (boxCell !== null) {
@@ -155,12 +176,19 @@ class GridIndex {
                     if ((x1 <= bboxes[offset + 2]) &&
                         (y1 <= bboxes[offset + 3]) &&
                         (x2 >= bboxes[offset + 0]) &&
-                        (y2 >= bboxes[offset + 1])) {
+                        (y2 >= bboxes[offset + 1]) &&
+                        (!predicate || predicate(this.boxKeys[boxUid]))) {
                         if (queryArgs.hitTest) {
                             result.push(true);
                             return true;
                         } else {
-                            result.push(this.boxKeys[boxUid]);
+                            result.push({
+                                key: this.boxKeys[boxUid],
+                                x1: bboxes[offset],
+                                y1: bboxes[offset + 1],
+                                x2: bboxes[offset + 2],
+                                y2: bboxes[offset + 3]
+                            });
                         }
                     }
                 }
@@ -180,12 +208,22 @@ class GridIndex {
                         x1,
                         y1,
                         x2,
-                        y2)) {
+                        y2) &&
+                        (!predicate || predicate(this.circleKeys[circleUid]))) {
                         if (queryArgs.hitTest) {
                             result.push(true);
                             return true;
                         } else {
-                            result.push(this.circleKeys[circleUid]);
+                            const x = circles[offset];
+                            const y = circles[offset + 1];
+                            const radius = circles[offset + 2];
+                            result.push({
+                                key: this.circleKeys[circleUid],
+                                x1: x - radius,
+                                y1: y - radius,
+                                x2: x + radius,
+                                y2: y + radius
+                            });
                         }
                     }
                 }
@@ -193,7 +231,7 @@ class GridIndex {
         }
     }
 
-    _queryCellCircle(x1: number, y1: number, x2: number, y2: number, cellIndex: number, result: any, queryArgs: any) {
+    _queryCellCircle(x1: number, y1: number, x2: number, y2: number, cellIndex: number, result: any, queryArgs: any, predicate?: any) {
         const circle = queryArgs.circle;
         const seenUids = queryArgs.seenUids;
         const boxCell = this.boxCells[cellIndex];
@@ -210,7 +248,8 @@ class GridIndex {
                         bboxes[offset + 0],
                         bboxes[offset + 1],
                         bboxes[offset + 2],
-                        bboxes[offset + 3])) {
+                        bboxes[offset + 3]) &&
+                        (!predicate || predicate(this.boxKeys[boxUid]))) {
                         result.push(true);
                         return true;
                     }
@@ -231,7 +270,8 @@ class GridIndex {
                         circles[offset + 2],
                         circle.x,
                         circle.y,
-                        circle.radius)) {
+                        circle.radius) &&
+                        (!predicate || predicate(this.circleKeys[circleUid]))) {
                         result.push(true);
                         return true;
                     }
@@ -240,7 +280,7 @@ class GridIndex {
         }
     }
 
-    _forEachCell(x1: number, y1: number, x2: number, y2: number, fn: any, arg1: any, arg2?: any) {
+    _forEachCell(x1: number, y1: number, x2: number, y2: number, fn: any, arg1: any, arg2?: any, predicate?: any) {
         const cx1 = this._convertToXCellCoord(x1);
         const cy1 = this._convertToYCellCoord(y1);
         const cx2 = this._convertToXCellCoord(x2);
@@ -249,7 +289,7 @@ class GridIndex {
         for (let x = cx1; x <= cx2; x++) {
             for (let y = cy1; y <= cy2; y++) {
                 const cellIndex = this.xCellCount * y + x;
-                if (fn.call(this, x1, y1, x2, y2, cellIndex, arg1, arg2)) return;
+                if (fn.call(this, x1, y1, x2, y2, cellIndex, arg1, arg2, predicate)) return;
             }
         }
     }
@@ -292,4 +332,4 @@ class GridIndex {
     }
 }
 
-module.exports = GridIndex;
+export default GridIndex;

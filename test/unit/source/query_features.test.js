@@ -1,13 +1,16 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const QueryFeatures = require('../../../src/source/query_features.js');
-const SourceCache = require('../../../src/source/source_cache.js');
+import { test } from 'mapbox-gl-js-test';
+import {
+    queryRenderedFeatures,
+    querySourceFeatures
+} from '../../../src/source/query_features.js';
+import SourceCache from '../../../src/source/source_cache.js';
+import Transform from '../../../src/geo/transform.js';
 
 test('QueryFeatures#rendered', (t) => {
     t.test('returns empty object if source returns no tiles', (t) => {
         const mockSourceCache = { tilesIn: function () { return []; } };
-        const result = QueryFeatures.rendered(mockSourceCache);
+        const transform = new Transform();
+        const result = queryRenderedFeatures(mockSourceCache, undefined, {}, undefined, transform);
         t.deepEqual(result, []);
         t.end();
     });
@@ -23,7 +26,7 @@ test('QueryFeatures#source', (t) => {
         }, {
             send: function (type, params, callback) { return callback(); }
         });
-        const result = QueryFeatures.source(sourceCache, {});
+        const result = querySourceFeatures(sourceCache, {});
         t.deepEqual(result, []);
         t.end();
     });

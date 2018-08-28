@@ -10,6 +10,8 @@
     "type": "Feature",
     "properties": {
       "identifier": "secondSource"
-    }
+    },
+    "source": "secondSource",
+    "state": {}
   }
 ]

@@ -10,6 +10,12 @@
     [{}, {"properties": {"x": {"y": 1}}}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
     "outputs": [
       1,
       1,
@@ -19,11 +25,6 @@
       {"error": "Could not convert [1,2] to number."},
       {"error": "Could not convert {\"y\":1} to number."}
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "number"
-    }
+    "serialized": ["to-number", ["get", "x"]]
   }
 }

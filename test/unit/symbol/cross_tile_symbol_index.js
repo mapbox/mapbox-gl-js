@@ -1,9 +1,7 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const Anchor = require('../../../src/symbol/anchor');
-const CrossTileSymbolIndex = require('../../../src/symbol/cross_tile_symbol_index');
-const {OverscaledTileID} = require('../../../src/source/tile_id');
+import { test } from 'mapbox-gl-js-test';
+import Anchor from '../../../src/symbol/anchor';
+import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
+import { OverscaledTileID } from '../../../src/source/tile_id';
 
 const styleLayer = {
     id: 'test'
@@ -18,11 +16,13 @@ function makeSymbolInstance(x, y, key) {
 
 function makeTile(tileID, symbolInstances) {
     const bucket = {
-        symbolInstances: symbolInstances
+        symbolInstances: symbolInstances,
+        layerIds: ['test']
     };
     return {
         tileID: tileID,
-        getBucket: () => bucket
+        getBucket: () => bucket,
+        latestFeatureIndex: {}
     };
 }
 
@@ -38,7 +38,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         ];
         const mainTile = makeTile(mainID, mainInstances);
 
-        index.addLayer(styleLayer, [mainTile]);
+        index.addLayer(styleLayer, [mainTile], 0);
         // Assigned new IDs
         t.equal(mainInstances[0].crossTileID, 1);
         t.equal(mainInstances[1].crossTileID, 2);
@@ -52,7 +52,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         ];
         const childTile = makeTile(childID, childInstances);
 
-        index.addLayer(styleLayer, [mainTile, childTile]);
+        index.addLayer(styleLayer, [mainTile, childTile], 0);
         // matched parent tile
         t.equal(childInstances[0].crossTileID, 1);
         // does not match because of different key
@@ -68,7 +68,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         ];
         const parentTile = makeTile(parentID, parentInstances);
 
-        index.addLayer(styleLayer, [mainTile, childTile, parentTile]);
+        index.addLayer(styleLayer, [mainTile, childTile, parentTile], 0);
         // matched child tile
         t.equal(parentInstances[0].crossTileID, 1);
 
@@ -79,8 +79,8 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         ];
         const grandchildTile = makeTile(grandchildID, grandchildInstances);
 
-        index.addLayer(styleLayer, [mainTile]);
-        index.addLayer(styleLayer, [mainTile, grandchildTile]);
+        index.addLayer(styleLayer, [mainTile], 0);
+        index.addLayer(styleLayer, [mainTile, grandchildTile], 0);
         // Matches the symbol in `mainBucket`
         t.equal(grandchildInstances[0].crossTileID, 1);
         // Does not match the previous value for Windsor because that tile was removed
@@ -101,18 +101,18 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         const childTile = makeTile(childID, childInstances);
 
         // assigns a new id
-        index.addLayer(styleLayer, [mainTile]);
+        index.addLayer(styleLayer, [mainTile], 0);
         t.equal(mainInstances[0].crossTileID, 1);
 
         // removes the tile
-        index.addLayer(styleLayer, []);
+        index.addLayer(styleLayer, [], 0);
 
         // assigns a new id
-        index.addLayer(styleLayer, [childTile]);
+        index.addLayer(styleLayer, [childTile], 0);
         t.equal(childInstances[0].crossTileID, 2);
 
         // overwrites the old id to match the already-added tile
-        index.addLayer(styleLayer, [mainTile, childTile]);
+        index.addLayer(styleLayer, [mainTile, childTile], 0);
         t.equal(mainInstances[0].crossTileID, 2);
         t.equal(childInstances[0].crossTileID, 2);
 
@@ -138,7 +138,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         const childTile = makeTile(childID, childInstances);
 
         // assigns new ids
-        index.addLayer(styleLayer, [mainTile]);
+        index.addLayer(styleLayer, [mainTile], 0);
         t.equal(mainInstances[0].crossTileID, 1);
         t.equal(mainInstances[1].crossTileID, 2);
 
@@ -146,7 +146,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), [1, 2]);
 
         // copies parent ids without duplicate ids in this tile
-        index.addLayer(styleLayer, [childTile]);
+        index.addLayer(styleLayer, [childTile], 0);
         t.equal(childInstances[0].crossTileID, 1); // A' copies from A
         t.equal(childInstances[1].crossTileID, 2); // B' copies from B
         t.equal(childInstances[2].crossTileID, 3); // C' gets new ID
@@ -176,7 +176,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         const secondTile = makeTile(tileID, secondInstances);
 
         // assigns new ids
-        index.addLayer(styleLayer, [firstTile]);
+        index.addLayer(styleLayer, [firstTile], 0);
         t.equal(firstInstances[0].crossTileID, 1);
         t.equal(firstInstances[1].crossTileID, 2);
 
@@ -184,7 +184,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), [1, 2]);
 
         // uses same ids when tile gets updated
-        index.addLayer(styleLayer, [secondTile]);
+        index.addLayer(styleLayer, [secondTile], 0);
         t.equal(secondInstances[0].crossTileID, 1); // A' copies from A
         t.equal(secondInstances[1].crossTileID, 2); // B' copies from B
         t.equal(secondInstances[2].crossTileID, 3); // C' gets new ID
@@ -192,6 +192,27 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), [1, 2, 3]);
 
         t.end();
+    });
+
+    t.test('reuses indexes when longitude is wrapped', (t) => {
+        const index = new CrossTileSymbolIndex();
+        const longitude = 370;
+
+        const tileID = new OverscaledTileID(6, 1, 6, 8, 8);
+        const firstInstances = [
+            makeSymbolInstance(1000, 1000, ""), // A
+        ];
+        const tile = makeTile(tileID, firstInstances);
+
+        index.addLayer(styleLayer, [tile], longitude);
+        t.equal(firstInstances[0].crossTileID, 1); // A
+
+        tile.tileID = tileID.wrapped();
+
+        index.addLayer(styleLayer, [tile], longitude % 360);
+        t.equal(firstInstances[0].crossTileID, 1);
+        t.end();
+
     });
 
     t.end();
@@ -208,7 +229,7 @@ test('CrossTileSymbolIndex.pruneUnusedLayers', (t) => {
     const tile = makeTile(tileID, instances);
 
     // assigns new ids
-    index.addLayer(styleLayer, [tile]);
+    index.addLayer(styleLayer, [tile], 0);
     t.equal(instances[0].crossTileID, 1);
     t.equal(instances[1].crossTileID, 2);
     t.ok(index.layerIndexes[styleLayer.id]);

@@ -1,15 +1,18 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const browser = require('../../util/browser');
-const window = require('../../util/window');
-const interpolate = require('../../style-spec/util/interpolate').number;
-const LngLat = require('../../geo/lng_lat');
+import assert from 'assert';
+import DOM from '../../util/dom';
+
+import { ease as _ease, bindAll, bezier } from '../../util/util';
+import browser from '../../util/browser';
+import window from '../../util/window';
+import { number as interpolate } from '../../style-spec/util/interpolate';
+import LngLat from '../../geo/lng_lat';
+import { Event } from '../../util/evented';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
-import type Transform from '../../geo/transform';
+import type {TaskID} from '../../util/task_queue';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
@@ -22,14 +25,8 @@ const wheelZoomRate = 1 / 450;
 // is used to limit zoom rate in the case of very fast scrolling
 const maxScalePerFrame = 2;
 
-const ua = window.navigator.userAgent.toLowerCase(),
-    firefox = ua.indexOf('firefox') !== -1,
-    safari = ua.indexOf('safari') !== -1 && ua.indexOf('chrom') === -1;
-
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class ScrollZoomHandler {
     _map: Map;
@@ -41,25 +38,30 @@ class ScrollZoomHandler {
     _aroundPoint: Point;
     _type: 'wheel' | 'trackpad' | null;
     _lastValue: number;
-    _timeout: ?number; // used for delayed-handling of a single wheel movement
-    _finishTimeout: ?number; // used to delay final '{move,zoom}end' events
+    _timeout: ?TimeoutID; // used for delayed-handling of a single wheel movement
+    _finishTimeout: ?TimeoutID; // used to delay final '{move,zoom}end' events
 
     _lastWheelEvent: any;
     _lastWheelEventTime: number;
 
-    _startZoom: number;
-    _targetZoom: number;
+    _startZoom: ?number;
+    _targetZoom: ?number;
     _delta: number;
-    _easing: (number) => number;
-    _prevEase: {start: number, duration: number, easing: (number) => number};
+    _easing: ?((number) => number);
+    _prevEase: ?{start: number, duration: number, easing: (number) => number};
 
+    _frameId: ?TaskID;
+
+    /**
+     * @private
+     */
     constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();
 
         this._delta = 0;
 
-        util.bindAll([
+        bindAll([
             '_onWheel',
             '_onTimeout',
             '_onScrollFrame',
@@ -93,8 +95,6 @@ class ScrollZoomHandler {
      */
     enable(options: any) {
         if (this.isEnabled()) return;
-        this._el.addEventListener('wheel', this._onWheel, false);
-        this._el.addEventListener('mousewheel', this._onWheel, false);
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
     }
@@ -107,26 +107,14 @@ class ScrollZoomHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
-        this._el.removeEventListener('wheel', this._onWheel);
-        this._el.removeEventListener('mousewheel', this._onWheel);
         this._enabled = false;
     }
 
-    _onWheel(e: any) {
-        let value = 0;
+    onWheel(e: WheelEvent) {
+        if (!this.isEnabled()) return;
 
-        if (e.type === 'wheel') {
-            value = e.deltaY;
-            // Firefox doubles the values on retina screens...
-            // Remove `any` casts when https://github.com/facebook/flow/issues/4879 is fixed.
-            if (firefox && e.deltaMode === (window.WheelEvent: any).DOM_DELTA_PIXEL) value /= browser.devicePixelRatio;
-            if (e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE) value *= 40;
-
-        } else if (e.type === 'mousewheel') {
-            value = -e.wheelDeltaY;
-            if (safari) value = value / 3;
-        }
-
+        // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
+        let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
         const now = browser.now(),
             timeDelta = now - (this._lastWheelEventTime || 0);
 
@@ -188,22 +176,32 @@ class ScrollZoomHandler {
     _start(e: any) {
         if (!this._delta) return;
 
+        if (this._frameId) {
+            this._map._cancelRenderFrame(this._frameId);
+            this._frameId = null;
+        }
+
         this._active = true;
-        this._map.moving = true;
-        this._map.zooming = true;
-        this._map.fire('movestart', {originalEvent: e});
-        this._map.fire('zoomstart', {originalEvent: e});
-        clearTimeout(this._finishTimeout);
+        this._map.fire(new Event('movestart', {originalEvent: e}));
+        this._map.fire(new Event('zoomstart', {originalEvent: e}));
+        if (this._finishTimeout) {
+            clearTimeout(this._finishTimeout);
+        }
 
         const pos = DOM.mousePos(this._el, e);
 
         this._around = LngLat.convert(this._aroundCenter ? this._map.getCenter() : this._map.unproject(pos));
         this._aroundPoint = this._map.transform.locationPoint(this._around);
-        this._map._startAnimation(this._onScrollFrame, this._onScrollFinished);
+        if (!this._frameId) {
+            this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+        }
     }
 
-    _onScrollFrame(tr: Transform) {
+    _onScrollFrame() {
+        this._frameId = null;
+
         if (!this.isActive()) return;
+        const tr = this._map.transform;
 
         // if we've had scroll events since the last render frame, consume the
         // accumulated delta, and update the target zoom level accordingly
@@ -231,36 +229,47 @@ class ScrollZoomHandler {
             this._delta = 0;
         }
 
-        if (this._type === 'wheel') {
+        const targetZoom = typeof this._targetZoom === 'number' ?
+            this._targetZoom : tr.zoom;
+        const startZoom = this._startZoom;
+        const easing = this._easing;
+
+        let finished = false;
+        if (this._type === 'wheel' && startZoom && easing) {
+            assert(easing && typeof startZoom === 'number');
+
             const t = Math.min((browser.now() - this._lastWheelEventTime) / 200, 1);
-            const k = this._easing(t);
-            tr.zoom = interpolate(this._startZoom, this._targetZoom, k);
-            if (t === 1) this._map.stop();
+            const k = easing(t);
+            tr.zoom = interpolate(startZoom, targetZoom, k);
+            if (t < 1) {
+                if (!this._frameId) {
+                    this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+                }
+            } else {
+                finished = true;
+            }
         } else {
-            tr.zoom = this._targetZoom;
-            this._map.stop();
+            tr.zoom = targetZoom;
+            finished = true;
         }
 
         tr.setLocationAtPoint(this._around, this._aroundPoint);
 
-        this._map.fire('move', {originalEvent: this._lastWheelEvent});
-        this._map.fire('zoom', {originalEvent: this._lastWheelEvent});
-    }
+        this._map.fire(new Event('move', {originalEvent: this._lastWheelEvent}));
+        this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
 
-    _onScrollFinished() {
-        if (!this.isActive()) return;
-        this._active = false;
-        this._finishTimeout = setTimeout(() => {
-            this._map.moving = false;
-            this._map.zooming = false;
-            this._map.fire('zoomend');
-            this._map.fire('moveend');
-            delete this._targetZoom;
-        }, 200);
+        if (finished) {
+            this._active = false;
+            this._finishTimeout = setTimeout(() => {
+                this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
+                this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
+                delete this._targetZoom;
+            }, 200);
+        }
     }
 
     _smoothOutEasing(duration: number) {
-        let easing = util.ease;
+        let easing = _ease;
 
         if (this._prevEase) {
             const ease = this._prevEase,
@@ -271,7 +280,7 @@ class ScrollZoomHandler {
                 x = 0.27 / Math.sqrt(speed * speed + 0.0001) * 0.01,
                 y = Math.sqrt(0.27 * 0.27 - x * x);
 
-            easing = util.bezier(x, y, 0.25, 1);
+            easing = bezier(x, y, 0.25, 1);
         }
 
         this._prevEase = {
@@ -284,4 +293,4 @@ class ScrollZoomHandler {
     }
 }
 
-module.exports = ScrollZoomHandler;
+export default ScrollZoomHandler;

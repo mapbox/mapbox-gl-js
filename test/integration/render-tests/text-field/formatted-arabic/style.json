@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "بغداد",
+              "name_en": "Baghdad"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 0 ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": ["format",
+            ["get", "name"], { "font-scale": 1.5 },
+            " ", {},
+            ["get", "name_en"], { "font-scale": 0.5, "text-font": ["literal", [ "NotoCJK" ]] },
+            " ", {},
+            ["get", "name"], { "font-scale": 1.5 },
+            " ", {},
+            ["get", "name_en"], { "font-scale": 0.5, "text-font": ["literal", [ "NotoCJK" ]] },
+            " ", {},
+            ["get", "name"], { "font-scale": 1.5 },
+            " ", {},
+            ["get", "name_en"], { "font-scale": 0.5, "text-font": ["literal", [ "NotoCJK" ]] }
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24,
+        "text-max-width": 10
+      }
+    }
+  ]
+}

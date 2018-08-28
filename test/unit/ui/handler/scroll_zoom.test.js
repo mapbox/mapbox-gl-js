@@ -1,45 +1,39 @@
-'use strict';
+import { test } from 'mapbox-gl-js-test';
+import browser from '../../../../src/util/browser';
+import window from '../../../../src/util/window';
+import Map from '../../../../src/ui/map';
+import DOM from '../../../../src/util/dom';
+import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
-const test = require('mapbox-gl-js-test').test;
-const browser = require('../../../../src/util/browser');
-const util = require('../../../../src/util/util');
-const window = require('../../../../src/util/window');
-const Map = require('../../../../src/ui/map');
-const DOM = require('../../../../src/util/dom');
-const simulate = require('mapbox-gl-js-test/simulate_interaction');
-
-function createMap(options) {
-    return new Map(util.extend({
+function createMap(t) {
+    t.stub(Map.prototype, '_detectMissingCSS');
+    return new Map({
         container: DOM.create('div', '', window.document.body),
         style: {
             "version": 8,
             "sources": {},
             "layers": []
         }
-    }, options));
+    });
 }
 
-// magic deltaY value that indicates the event is from a mouse wheel
-// (rather than a trackpad)
-const magicWheelZoomDelta = 4.000244140625;
-
-test('ScrollZoomHandler zooms in response to wheel events', (t) => {
+test('ScrollZoomHandler', (t) => {
     const browserNow = t.stub(browser, 'now');
     let now = 1555555555555;
     browserNow.callsFake(() => now);
 
     t.test('Zooms for single mouse wheel tick', (t) => {
-        const map = createMap();
-        map._updateCamera();
+        const map = createMap(t);
+        map._renderTaskQueue.run();
 
         // simulate a single 'wheel' event
         const startZoom = map.getZoom();
 
-        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -magicWheelZoomDelta});
-        map._updateCamera();
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+        map._renderTaskQueue.run();
 
         now += 400;
-        map._updateCamera();
+        map._renderTaskQueue.run();
 
         t.equalWithPrecision(map.getZoom() - startZoom,  0.0285, 0.001);
 
@@ -48,8 +42,8 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
     });
 
     t.test('Zooms for single mouse wheel tick with non-magical deltaY', (t) => {
-        const map = createMap();
-        map._updateCamera();
+        const map = createMap(t);
+        map._renderTaskQueue.run();
 
         // Simulate a single 'wheel' event without the magical deltaY value.
         // This requires the handler to briefly wait to see if a subsequent
@@ -62,13 +56,13 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
     });
 
     t.test('Zooms for multiple mouse wheel ticks', (t) => {
-        const map = createMap();
+        const map = createMap(t);
 
-        map._updateCamera();
+        map._renderTaskQueue.run();
         const startZoom = map.getZoom();
 
         const events = [
-            [2, {type: 'wheel', deltaY: -magicWheelZoomDelta}],
+            [2, {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta}],
             [7, {type: 'wheel', deltaY: -41}],
             [30, {type: 'wheel', deltaY: -169}],
             [1, {type: 'wheel', deltaY: -801}],
@@ -89,7 +83,7 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
                 lastWheelEvent = now;
             }
             if (now % 20 === 0) {
-                map._updateCamera();
+                map._renderTaskQueue.run();
             }
         }
 
@@ -100,8 +94,8 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
     });
 
     t.test('Gracefully ignores wheel events with deltaY: 0', (t) => {
-        const map = createMap();
-        map._updateCamera();
+        const map = createMap(t);
+        map._renderTaskQueue.run();
 
         const startZoom = map.getZoom();
         // simulate  shift+'wheel' events
@@ -109,16 +103,50 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
-        map._updateCamera();
+        map._renderTaskQueue.run();
 
         now += 400;
-        map._updateCamera();
+        map._renderTaskQueue.run();
 
         t.equal(map.getZoom() - startZoom, 0.0);
 
         t.end();
     });
 
+    t.test('Gracefully handle wheel events that cancel each other out before the first scroll frame', (t) => {
+        // See also https://github.com/mapbox/mapbox-gl-js/issues/6782
+        const map = createMap(t);
+        map._renderTaskQueue.run();
+
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -1});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -1});
+        now += 1;
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 2});
+
+        map._renderTaskQueue.run();
+
+        now += 400;
+        map._renderTaskQueue.run();
+
+        t.end();
+    });
+
+    t.test('does not zoom if preventDefault is called on the wheel event', (t) => {
+        const map = createMap(t);
+
+        map.on('wheel', e => e.preventDefault());
+
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+        map._renderTaskQueue.run();
+
+        now += 400;
+        map._renderTaskQueue.run();
+
+        t.equal(map.getZoom(), 0);
+
+        map.remove();
+        t.end();
+    });
+
     t.end();
 });
-

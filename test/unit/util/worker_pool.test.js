@@ -1,13 +1,9 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const proxyquire = require('proxyquire');
+import { test } from 'mapbox-gl-js-test';
+import WorkerPool from '../../../src/util/worker_pool';
 
 test('WorkerPool', (t) => {
     t.test('#acquire', (t) => {
-        const WorkerPool = proxyquire('../../../src/util/worker_pool', {
-            '../': { workerCount: 4 }
-        });
+        t.stub(WorkerPool, 'workerCount').value(4);
 
         const pool = new WorkerPool();
 
@@ -24,9 +20,7 @@ test('WorkerPool', (t) => {
 
     t.test('#release', (t) => {
         let workersTerminated = 0;
-        const WorkerPool = proxyquire('../../../src/util/worker_pool', {
-            '../': { workerCount: 4 }
-        });
+        t.stub(WorkerPool, 'workerCount').value(4);
 
         const pool = new WorkerPool();
         pool.acquire('map-1');

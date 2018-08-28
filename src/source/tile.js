@@ -1,32 +1,28 @@
 // @flow
 
-const util = require('../util/util');
-const deserializeBucket = require('../data/bucket').deserialize;
-const FeatureIndex = require('../data/feature_index');
-const vt = require('@mapbox/vector-tile');
-const Protobuf = require('pbf');
-const GeoJSONFeature = require('../util/vectortile_to_geojson');
-const featureFilter = require('../style-spec/feature_filter');
-const CollisionIndex = require('../symbol/collision_index');
-const SymbolBucket = require('../data/bucket/symbol_bucket');
-const {
-    RasterBoundsArray,
-    CollisionBoxArray
-} = require('../data/array_types');
-const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
-const EXTENT = require('../data/extent');
-const Point = require('@mapbox/point-geometry');
-const Texture = require('../render/texture');
-const {SegmentVector} = require('../data/segment');
-const {TriangleIndexArray} = require('../data/index_array_type');
-const browser = require('../util/browser');
+import { uniqueId, deepEqual, parseCacheControl } from '../util/util';
+import { deserialize as deserializeBucket } from '../data/bucket';
+import FeatureIndex from '../data/feature_index';
+import GeoJSONFeature from '../util/vectortile_to_geojson';
+import featureFilter from '../style-spec/feature_filter';
+import SymbolBucket from '../data/bucket/symbol_bucket';
+import { RasterBoundsArray, CollisionBoxArray } from '../data/array_types';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import EXTENT from '../data/extent';
+import Point from '@mapbox/point-geometry';
+import Texture from '../render/texture';
+import SegmentVector from '../data/segment';
+import { TriangleIndexArray } from '../data/index_array_type';
+import browser from '../util/browser';
+import EvaluationParameters from '../style/evaluation_parameters';
+import SourceFeatureState from '../source/source_state';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
 import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
 import type {WorkerTileResult} from './worker_source';
-import type {DEMData} from '../data/dem_data';
+import type DEMData from '../data/dem_data';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type Mask from '../render/tile_mask';
 import type Context from '../gl/context';
@@ -35,6 +31,10 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type {OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
+import type Transform from '../geo/transform';
+import type {LayerFeatureStates} from './source_state';
+import type {Cancelable} from '../types/cancelable';
+import type {FilterSpecification} from '../style-spec/types';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -57,6 +57,8 @@ class Tile {
     uses: number;
     tileSize: number;
     buckets: {[string]: Bucket};
+    latestFeatureIndex: ?FeatureIndex;
+    latestRawTileData: ?ArrayBuffer;
     iconAtlasImage: ?RGBAImage;
     iconAtlasTexture: Texture;
     glyphAtlasImage: ?AlphaImage;
@@ -66,10 +68,7 @@ class Tile {
     state: TileState;
     timeAdded: any;
     fadeEndTime: any;
-    rawTileData: ArrayBuffer;
     collisionBoxArray: ?CollisionBoxArray;
-    collisionIndex: ?CollisionIndex;
-    featureIndex: ?FeatureIndex;
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
     placementSource: any;
@@ -83,14 +82,18 @@ class Tile {
     maskedBoundsBuffer: ?VertexBuffer;
     maskedIndexBuffer: ?IndexBuffer;
     segments: ?SegmentVector;
-    needsHillshadePrepare: ?boolean
-    request: any;
+    needsHillshadePrepare: ?boolean;
+    request: ?Cancelable;
     texture: any;
     fbo: ?Framebuffer;
     demTexture: ?Texture;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;
+    queryPadding: number;
+
+    symbolFadeHoldUntil: ?number;
+    hasSymbolBuckets: boolean;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -98,11 +101,13 @@ class Tile {
      */
     constructor(tileID: OverscaledTileID, size: number) {
         this.tileID = tileID;
-        this.uid = util.uniqueId();
+        this.uid = uniqueId();
         this.uses = 0;
         this.tileSize = size;
         this.buckets = {};
         this.expirationTime = null;
+        this.queryPadding = 0;
+        this.hasSymbolBuckets = false;
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -148,22 +153,39 @@ class Tile {
             return;
         }
 
-        if (data.rawTileData) {
-            // Only vector tiles have rawTileData
-            this.rawTileData = data.rawTileData;
+        if (data.featureIndex) {
+            this.latestFeatureIndex = data.featureIndex;
+            if (data.rawTileData) {
+                // Only vector tiles have rawTileData, and they won't update it for
+                // 'reloadTile'
+                this.latestRawTileData = data.rawTileData;
+                this.latestFeatureIndex.rawTileData = data.rawTileData;
+            } else if (this.latestRawTileData) {
+                // If rawTileData hasn't updated, hold onto a pointer to the last
+                // one we received
+                this.latestFeatureIndex.rawTileData = this.latestRawTileData;
+            }
         }
         this.collisionBoxArray = data.collisionBoxArray;
-        this.featureIndex = data.featureIndex;
-        this.featureIndex.rawTileData = this.rawTileData;
         this.buckets = deserializeBucket(data.buckets, painter.style);
 
-        if (justReloaded) {
-            for (const id in this.buckets) {
-                const bucket = this.buckets[id];
-                if (bucket instanceof SymbolBucket) {
+        this.hasSymbolBuckets = false;
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (bucket instanceof SymbolBucket) {
+                this.hasSymbolBuckets = true;
+                if (justReloaded) {
                     bucket.justReloaded = true;
+                } else {
+                    break;
                 }
             }
+        }
+
+        this.queryPadding = 0;
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(id).queryRadius(bucket));
         }
 
         if (data.iconAtlasImage) {
@@ -192,8 +214,7 @@ class Tile {
             this.glyphAtlasTexture.destroy();
         }
 
-        this.collisionBoxArray = null;
-        this.featureIndex = null;
+        this.latestFeatureIndex = null;
         this.state = 'unloaded';
     }
 
@@ -210,9 +231,8 @@ class Tile {
     upload(context: Context) {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            if (!bucket.uploaded) {
+            if (bucket.uploadPending()) {
                 bucket.upload(context);
-                bucket.uploaded = true;
             }
         }
 
@@ -229,65 +249,48 @@ class Tile {
         }
     }
 
+    // Queries non-symbol features rendered for this tile.
+    // Symbol features are queried globally
     queryRenderedFeatures(layers: {[string]: StyleLayer},
+                          sourceFeatureState: SourceFeatureState,
                           queryGeometry: Array<Array<Point>>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
-                          bearing: number,
-                          sourceID: string,
-                          collisionIndex: CollisionIndex): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
-        if (!this.featureIndex || !this.collisionBoxArray)
+                          transform: Transform,
+                          maxPitchScaleFactor: number,
+                          posMatrix: Float32Array): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+        if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData)
             return {};
 
-        // Determine the additional radius needed factoring in property functions
-        let additionalRadius = 0;
-        const bucketInstanceIds = {};
-        for (const id in layers) {
-            const bucket = this.getBucket(layers[id]);
-            if (bucket) {
-                additionalRadius = Math.max(additionalRadius, layers[id].queryRadius(bucket));
-
-                // Add the bucket instance's id to the set of current ids.
-                // The query will only include results from current buckets.
-                if (bucket instanceof SymbolBucket && bucket.bucketInstanceId !== undefined) {
-                    bucketInstanceIds[bucket.bucketInstanceId] = true;
-                }
-            }
-        }
-
-        return this.featureIndex.query({
+        return this.latestFeatureIndex.query({
             queryGeometry: queryGeometry,
             scale: scale,
             tileSize: this.tileSize,
-            bearing: bearing,
+            posMatrix: posMatrix,
+            transform: transform,
             params: params,
-            additionalRadius: additionalRadius,
-            collisionBoxArray: this.collisionBoxArray,
-            sourceID: sourceID,
-            collisionIndex: collisionIndex,
-            bucketInstanceIds: bucketInstanceIds
-        }, layers);
+            queryPadding: this.queryPadding * maxPitchScaleFactor
+        }, layers, sourceFeatureState);
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
-        if (!this.rawTileData) return;
+        if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData) return;
 
-        if (!this.vtLayers) {
-            this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
-        }
+        const vtLayers = this.latestFeatureIndex.loadVTLayers();
 
         const sourceLayer = params ? params.sourceLayer : '';
-        const layer = this.vtLayers._geojsonTileLayer || this.vtLayers[sourceLayer];
+        const layer = vtLayers._geojsonTileLayer || vtLayers[sourceLayer];
 
         if (!layer) return;
 
         const filter = featureFilter(params && params.filter);
-        const coord = { z: this.tileID.overscaledZ, x: this.tileID.canonical.x, y: this.tileID.canonical.y };
+        const {z, x, y} = this.tileID.canonical;
+        const coord = {z, x, y};
 
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i);
-            if (filter({zoom: this.tileID.overscaledZ}, feature)) {
-                const geojsonFeature = new GeoJSONFeature(feature, coord.z, coord.x, coord.y);
+            if (filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
+                const geojsonFeature = new GeoJSONFeature(feature, z, x, y);
                 (geojsonFeature: any).tile = coord;
                 result.push(geojsonFeature);
             }
@@ -312,14 +315,14 @@ class Tile {
     setMask(mask: Mask, context: Context) {
 
         // don't redo buffer work if the mask is the same;
-        if (util.deepEqual(this.mask, mask)) return;
+        if (deepEqual(this.mask, mask)) return;
 
         this.mask = mask;
         this.clearMask();
 
         // We want to render the full tile, and keeping the segments/vertices/indices empty means
         // using the global shared buffers for covering the entire tile.
-        if (util.deepEqual(mask, {'0': true})) return;
+        if (deepEqual(mask, {'0': true})) return;
 
         const maskedBoundsArray = new RasterBoundsArray();
         const indexArray = new TriangleIndexArray();
@@ -366,7 +369,7 @@ class Tile {
         const prior = this.expirationTime;
 
         if (data.cacheControl) {
-            const parsedCC = util.parseCacheControl(data.cacheControl);
+            const parsedCC = parseCacheControl(data.cacheControl);
             if (parsedCC['max-age']) this.expirationTime = Date.now() + parsedCC['max-age'] * 1000;
         } else if (data.expires) {
             this.expirationTime = new Date(data.expires).getTime();
@@ -421,6 +424,46 @@ class Tile {
             }
         }
     }
+
+    setFeatureState(states: LayerFeatureStates, painter: any) {
+        if (!this.latestFeatureIndex ||
+            !this.latestFeatureIndex.rawTileData ||
+            Object.keys(states).length === 0) {
+            return;
+        }
+
+        const vtLayers = this.latestFeatureIndex.loadVTLayers();
+
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            // Buckets are grouped by common source-layer
+            const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
+            const sourceLayer = vtLayers[sourceLayerId];
+            const sourceLayerStates = states[sourceLayerId];
+            if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
+
+            bucket.update(sourceLayerStates, sourceLayer);
+            if (painter && painter.style) {
+                this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(id).queryRadius(bucket));
+            }
+        }
+    }
+
+    holdingForFade(): boolean {
+        return this.symbolFadeHoldUntil !== undefined;
+    }
+
+    symbolFadeFinished(): boolean {
+        return !this.symbolFadeHoldUntil || this.symbolFadeHoldUntil < browser.now();
+    }
+
+    clearFadeHold() {
+        this.symbolFadeHoldUntil = undefined;
+    }
+
+    setHoldDuration(duration: number) {
+        this.symbolFadeHoldUntil = browser.now() + duration;
+    }
 }
 
-module.exports = Tile;
+export default Tile;

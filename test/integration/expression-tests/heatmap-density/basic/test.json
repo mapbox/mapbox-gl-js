@@ -11,8 +11,8 @@
         [1, "red"]
       ]
     },
-    "function": true,
-    "property-function": true
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
   },
   "expression": [
     "interpolate",
@@ -25,12 +25,21 @@
   ],
   "inputs": [[{"heatmapDensity": 0.5}, {}]],
   "expected": {
-    "outputs": [[0.5, 0, 0, 1]],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "color"
-    }
+    },
+    "outputs": [[0.5, 0, 0, 1]],
+    "serialized": [
+      "interpolate",
+      ["linear"],
+      ["heatmap-density"],
+      0,
+      ["rgba", 0, 0, 0, 1],
+      1,
+      ["rgba", 255, 0, 0, 1]
+    ]
   }
 }

@@ -12,6 +12,12 @@
     [{}, {"properties": {"y": "bad fallback"}}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
     "outputs": [
       1,
       1,
@@ -23,11 +29,6 @@
       -1,
       {"error": "Could not convert \"bad fallback\" to number."}
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "number"
-    }
+    "serialized": ["to-number", ["get", "x"], ["get", "y"]]
   }
 }

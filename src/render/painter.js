@@ -1,38 +1,48 @@
 // @flow
 
-const browser = require('../util/browser');
-const mat4 = require('@mapbox/gl-matrix').mat4;
-const SourceCache = require('../source/source_cache');
-const EXTENT = require('../data/extent');
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
-const util = require('../util/util');
-const VertexArrayObject = require('./vertex_array_object');
-const {RasterBoundsArray, PosArray} = require('../data/array_types');
-const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
-const posAttributes = require('../data/pos_attributes');
-const {ProgramConfiguration} = require('../data/program_configuration');
-const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
-const shaders = require('../shaders');
-const Program = require('./program');
-const Context = require('../gl/context');
-const DepthMode = require('../gl/depth_mode');
-const StencilMode = require('../gl/stencil_mode');
-const ColorMode = require('../gl/color_mode');
-const Texture = require('./texture');
-const updateTileMasks = require('./tile_mask');
-const Color = require('../style-spec/util/color');
+import browser from '../util/browser';
+
+import { mat4 } from 'gl-matrix';
+import SourceCache from '../source/source_cache';
+import EXTENT from '../data/extent';
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
+import VertexArrayObject from './vertex_array_object';
+import { RasterBoundsArray, PosArray } from '../data/array_types';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import posAttributes from '../data/pos_attributes';
+import ProgramConfiguration from '../data/program_configuration';
+import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
+import shaders from '../shaders';
+import Program from './program';
+import Context from '../gl/context';
+import DepthMode from '../gl/depth_mode';
+import StencilMode from '../gl/stencil_mode';
+import ColorMode from '../gl/color_mode';
+import Texture from './texture';
+import updateTileMasks from './tile_mask';
+import Color from '../style-spec/util/color';
+import symbol from './draw_symbol';
+import circle from './draw_circle';
+import heatmap from './draw_heatmap';
+import line from './draw_line';
+import fill from './draw_fill';
+import fillExtrusion from './draw_fill_extrusion';
+import hillshade from './draw_hillshade';
+import raster from './draw_raster';
+import background from './draw_background';
+import debug from './draw_debug';
 
 const draw = {
-    symbol: require('./draw_symbol'),
-    circle: require('./draw_circle'),
-    heatmap: require('./draw_heatmap'),
-    line: require('./draw_line'),
-    fill: require('./draw_fill'),
-    'fill-extrusion': require('./draw_fill_extrusion'),
-    hillshade: require('./draw_hillshade'),
-    raster: require('./draw_raster'),
-    background: require('./draw_background'),
-    debug: require('./draw_debug')
+    symbol,
+    circle,
+    heatmap,
+    line,
+    fill,
+    'fill-extrusion': fillExtrusion,
+    hillshade,
+    raster,
+    background,
+    debug
 };
 
 import type Transform from '../geo/transform';
@@ -265,129 +275,111 @@ class Painter {
 
         this.symbolFadeChange = style.placement.symbolFadeChange(browser.now());
 
-        for (const id in style.sourceCaches) {
-            const sourceCache = this.style.sourceCaches[id];
+        const layerIds = this.style._order;
+        const sourceCaches = this.style.sourceCaches;
+
+        for (const id in sourceCaches) {
+            const sourceCache = sourceCaches[id];
             if (sourceCache.used) {
                 sourceCache.prepare(this.context);
             }
         }
 
-        const layerIds = this.style._order;
+        const coordsAscending: {[string]: Array<OverscaledTileID>} = {};
+        const coordsDescending: {[string]: Array<OverscaledTileID>} = {};
+        const coordsDescendingSymbol: {[string]: Array<OverscaledTileID>} = {};
 
-        const rasterSources = util.filterObject(this.style.sourceCaches, (sc) => { return sc.getSource().type === 'raster' || sc.getSource().type === 'raster-dem'; });
-        for (const key in rasterSources) {
-            const sourceCache = rasterSources[key];
-            const coords = sourceCache.getVisibleCoordinates();
-            const visibleTiles = coords.map((c)=>{ return sourceCache.getTile(c); });
+        for (const id in sourceCaches) {
+            const sourceCache = sourceCaches[id];
+            coordsAscending[id] = sourceCache.getVisibleCoordinates();
+            coordsDescending[id] = coordsAscending[id].slice().reverse();
+            coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
+        }
+
+        for (const id in sourceCaches) {
+            const sourceCache = sourceCaches[id];
+            const source = sourceCache.getSource();
+            if (source.type !== 'raster' && source.type !== 'raster-dem') continue;
+            const visibleTiles = [];
+            for (const coord of coordsAscending[id]) visibleTiles.push(sourceCache.getTile(coord));
             updateTileMasks(visibleTiles, this.context);
         }
 
-        // Offscreen pass
+        // Offscreen pass ===============================================
         // We first do all rendering that requires rendering to a separate
         // framebuffer, and then save those for rendering back to the map
         // later: in doing this we avoid doing expensive framebuffer restores.
         this.renderPass = 'offscreen';
-        {
-            let sourceCache;
-            let coords = [];
-            this.depthRboNeedsClear = true;
+        this.depthRboNeedsClear = true;
 
-            for (let i = 0; i < layerIds.length; i++) {
-                const layer = this.style._layers[layerIds[i]];
+        for (const layerId of layerIds) {
+            const layer = this.style._layers[layerId];
+            if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
-                if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
+            const coords = coordsDescending[layer.source];
+            if (!coords.length) continue;
 
-                if (layer.source !== (sourceCache && sourceCache.id)) {
-                    sourceCache = this.style.sourceCaches[layer.source];
-                    coords = [];
-
-                    if (sourceCache) {
-                        coords = sourceCache.getVisibleCoordinates();
-                        coords.reverse();
-                    }
-                }
-
-                if (!coords.length) continue;
-
-                this.renderLayer(this, (sourceCache: any), layer, coords);
-            }
-
-            // Rebind the main framebuffer now that all offscreen layers
-            // have been rendered:
-            this.context.bindFramebuffer.set(null);
+            this.renderLayer(this, sourceCaches[layer.source], layer, coords);
         }
+
+        // Rebind the main framebuffer now that all offscreen layers have been rendered:
+        this.context.bindFramebuffer.set(null);
 
         // Clear buffers in preparation for drawing to the main framebuffer
         this.context.clear({ color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1 });
 
         this._showOverdrawInspector = options.showOverdrawInspector;
-
         this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
-        // Opaque pass
+        // Opaque pass ===============================================
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
-        {
-            let sourceCache;
-            let coords = [];
+        let prevSourceId;
 
-            this.currentLayer = layerIds.length - 1;
+        for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
+            const layer = this.style._layers[layerIds[this.currentLayer]];
+            const sourceCache = sourceCaches[layer.source];
+            const coords = coordsAscending[layer.source];
 
-            for (this.currentLayer; this.currentLayer >= 0; this.currentLayer--) {
-                const layer = this.style._layers[layerIds[this.currentLayer]];
-
-                if (layer.source !== (sourceCache && sourceCache.id)) {
-                    sourceCache = this.style.sourceCaches[layer.source];
-                    coords = [];
-
-                    if (sourceCache) {
-                        this.clearStencil();
-                        coords = sourceCache.getVisibleCoordinates();
-                        if (sourceCache.getSource().isTileClipped) {
-                            this._renderTileClippingMasks(coords);
-                        }
-                    }
+            if (layer.source !== prevSourceId && sourceCache) {
+                this.clearStencil();
+                if (sourceCache.getSource().isTileClipped) {
+                    this._renderTileClippingMasks(coords);
                 }
-
-                this.renderLayer(this, (sourceCache: any), layer, coords);
             }
+
+            this.renderLayer(this, sourceCache, layer, coords);
+            prevSourceId = layer.source;
         }
 
-        // Translucent pass
+        // Translucent pass ===============================================
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
-        {
-            let sourceCache;
-            let coords = [];
 
-            this.currentLayer = 0;
+        for (this.currentLayer = 0, prevSourceId = null; this.currentLayer < layerIds.length; this.currentLayer++) {
+            const layer = this.style._layers[layerIds[this.currentLayer]];
+            const sourceCache = sourceCaches[layer.source];
 
-            for (this.currentLayer; this.currentLayer < layerIds.length; this.currentLayer++) {
-                const layer = this.style._layers[layerIds[this.currentLayer]];
+            // For symbol layers in the translucent pass, we add extra tiles to the renderable set
+            // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
+            // separate clipping masks
+            const coords = (layer.type === 'symbol' ? coordsDescendingSymbol : coordsDescending)[layer.source];
 
-                if (layer.source !== (sourceCache && sourceCache.id)) {
-                    sourceCache = this.style.sourceCaches[layer.source];
-                    coords = [];
-
-                    if (sourceCache) {
-                        this.clearStencil();
-                        coords = sourceCache.getVisibleCoordinates();
-                        if (sourceCache.getSource().isTileClipped) {
-                            this._renderTileClippingMasks(coords);
-                        }
-                    }
-
-                    coords.reverse();
+            if (layer.source !== prevSourceId && sourceCache) {
+                this.clearStencil();
+                if (sourceCache.getSource().isTileClipped) {
+                    this._renderTileClippingMasks(coordsAscending[layer.source]);
                 }
-
-                this.renderLayer(this, (sourceCache: any), layer, coords);
             }
+
+            this.renderLayer(this, sourceCache, layer, coords);
+            prevSourceId = layer.source;
         }
 
         if (this.options.showTileBoundaries) {
-            const sourceCache = this.style.sourceCaches[Object.keys(this.style.sourceCaches)[0]];
-            if (sourceCache) {
-                draw.debug(this, sourceCache, sourceCache.getVisibleCoordinates());
+            for (const id in sourceCaches) {
+                draw.debug(this, sourceCaches[id], coordsAscending[id]);
+                break;
             }
         }
     }
@@ -472,4 +464,4 @@ class Painter {
     }
 }
 
-module.exports = Painter;
+export default Painter;

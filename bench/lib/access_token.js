@@ -8,7 +8,7 @@ const accessToken = (
 
 localStorage.setItem('accessToken', accessToken);
 
-module.exports = accessToken;
+export default accessToken;
 
 function getURLParameter(name) {
     const regexp = new RegExp(`[?&]${name}=([^&#]*)`, 'i');

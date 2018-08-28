@@ -2,12 +2,13 @@
   "expression": ["-", ["get", "x"], 7],
   "inputs": [[{}, {"properties": {"x": 0}}]],
   "expected": {
-    "outputs": [-7],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [-7],
+    "serialized": ["-", ["number", ["get", "x"]], 7]
   }
 }

@@ -8,16 +8,6 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-
-        .mapboxgl-marker {
-            width: 10px;
-            height: 10px;
-            background: red;
-            margin-top: -5px;
-            margin-left: -5px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
     </style>
 </head>
 
@@ -47,7 +37,14 @@ function addRandomMarker() {
     var lat = s + (n - s) * Math.random();
     var popup = new mapboxgl.Popup().setText('hello hi');
 
-    var marker = new mapboxgl.Marker()
+    var r = Math.round(Math.random() * 255);
+    var g = Math.round(Math.random() * 255);
+    var b = Math.round(Math.random() * 255);
+
+    var marker = new mapboxgl.Marker({
+        color: `rgb(${r}, ${g}, ${b})`,
+        draggable: true
+    })
         .setLngLat([lng, lat])
         .setPopup(popup)
         .addTo(map);

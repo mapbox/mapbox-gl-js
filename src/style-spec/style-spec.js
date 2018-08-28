@@ -1,71 +1,111 @@
 // @flow
 
+type ExpressionType = 'data-driven' | 'cross-faded' | 'cross-faded-data-driven' | 'color-ramp' | 'data-constant' | 'constant';
+type ExpressionParameters = Array<'zoom' | 'feature' | 'feature-state' | 'heatmap-density' | 'line-progress'>;
+
+type ExpressionSpecification = {
+    interpolated: boolean,
+    parameters: ExpressionParameters
+}
+
 export type StylePropertySpecification = {
     type: 'number',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
+    transition: boolean,
     default?: number
 } | {
     type: 'string',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
+    transition: boolean,
     default?: string,
     tokens?: boolean
 } | {
     type: 'boolean',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
+    transition: boolean,
     default?: boolean
 } | {
     type: 'enum',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     values: {[string]: {}},
+    transition: boolean,
     default?: string
 } | {
     type: 'color',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
+    transition: boolean,
     default?: string
 } | {
     type: 'array',
     value: 'number',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     length?: number,
+    transition: boolean,
     default?: Array<number>
 } | {
     type: 'array',
     value: 'string',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     length?: number,
+    transition: boolean,
     default?: Array<string>
 };
 
-exports.v8 = require('./reference/v8.json');
-exports.latest = require('./reference/latest');
+import v8 from './reference/v8.json';
+import latest from './reference/latest';
+import format from './format';
+import migrate from './migrate';
+import composite from './composite';
+import diff from './diff';
+import ValidationError from './error/validation_error';
+import ParsingError from './error/parsing_error';
+import { StyleExpression, isExpression, createExpression, createPropertyExpression, normalizePropertyExpression, ZoomConstantExpression, ZoomDependentExpression, StylePropertyFunction } from './expression';
+import featureFilter from './feature_filter';
+import Color from './util/color';
+import { createFunction, isFunction } from './function';
+import convertFunction from './function/convert';
 
-exports.format = require('./format');
-exports.migrate = require('./migrate');
-exports.composite = require('./composite');
-exports.diff = require('./diff');
-exports.ValidationError = require('./error/validation_error');
-exports.ParsingError = require('./error/parsing_error');
-exports.expression = require('./expression');
-exports.featureFilter = require('./feature_filter');
-exports.Color = require('./util/color');
+import validate from './validate_style';
 
-exports.function = require('./function');
-exports.function.convertFunction = require('./function/convert');
+const expression = {
+    StyleExpression,
+    isExpression,
+    createExpression,
+    createPropertyExpression,
+    normalizePropertyExpression,
+    ZoomConstantExpression,
+    ZoomDependentExpression,
+    StylePropertyFunction
+};
 
-exports.validate = require('./validate_style');
-exports.validate.parsed = require('./validate_style');
-exports.validate.latest = require('./validate_style');
+const styleFunction = {
+    convertFunction,
+    createFunction,
+    isFunction
+};
+
+export {
+    v8,
+    latest,
+    format,
+    migrate,
+    composite,
+    diff,
+    ValidationError,
+    ParsingError,
+    expression,
+    featureFilter,
+    Color,
+    styleFunction as function,
+    validate
+};
+
+validate.parsed = validate;
+validate.latest = validate;

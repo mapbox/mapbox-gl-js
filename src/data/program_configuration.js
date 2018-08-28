@@ -1,24 +1,35 @@
 // @flow
 
-import type {GlobalProperties} from "../style-spec/expression/index";
-
-const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
-const Color = require('../style-spec/util/color');
-const {register} = require('../util/web_worker_transfer');
-const {PossiblyEvaluatedPropertyValue} = require('../style/properties');
-const {
-    StructArrayLayout1f4,
-    StructArrayLayout2f8,
-    StructArrayLayout4f16
-} = require('./array_types');
+import { packUint8ToFloat } from '../shaders/encode_attribute';
+import Color from '../style-spec/util/color';
+import { supportsPropertyExpression } from '../style-spec/util/properties';
+import { register } from '../util/web_worker_transfer';
+import { PossiblyEvaluatedPropertyValue } from '../style/properties';
+import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
+import EvaluationParameters from '../style/evaluation_parameters';
 
 import type Context from '../gl/context';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {StructArray, StructArrayMember} from '../util/struct_array';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type Program from '../render/program';
-import type {Feature, SourceExpression, CompositeExpression} from '../style-spec/expression';
+import type {
+    Feature,
+    FeatureState,
+    GlobalProperties,
+    SourceExpression,
+    CompositeExpression
+} from '../style-spec/expression';
 import type {PossiblyEvaluated} from '../style/properties';
+import type {FeatureStates} from '../source/source_state';
+
+type FeaturePaintBufferMap = {
+    [feature_id: string]: Array<{
+        index: number,
+        start: number,
+        end: number
+    }>
+};
 
 function packColor(color: Color): [number, number] {
     return [
@@ -55,6 +66,7 @@ interface Binder<T> {
     statistics: { max: number };
 
     populatePaintArray(length: number, feature: Feature): void;
+    updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState): void;
     upload(Context): void;
     destroy(): void;
 
@@ -84,6 +96,7 @@ class ConstantBinder<T> implements Binder<T> {
     }
 
     populatePaintArray() {}
+    updatePaintArray() {}
     upload() {}
     destroy() {}
 
@@ -130,21 +143,21 @@ class SourceExpressionBinder<T> implements Binder<T> {
         return [];
     }
 
-    populatePaintArray(length: number, feature: Feature) {
+    populatePaintArray(newLength: number, feature: Feature) {
         const paintArray = this.paintVertexArray;
 
         const start = paintArray.length;
-        paintArray.reserve(length);
+        paintArray.reserve(newLength);
 
-        const value = this.expression.evaluate({zoom: 0}, feature);
+        const value = this.expression.evaluate(new EvaluationParameters(0), feature, {});
 
         if (this.type === 'color') {
             const color = packColor(value);
-            for (let i = start; i < length; i++) {
+            for (let i = start; i < newLength; i++) {
                 paintArray.emplaceBack(color[0], color[1]);
             }
         } else {
-            for (let i = start; i < length; i++) {
+            for (let i = start; i < newLength; i++) {
                 paintArray.emplaceBack(value);
             }
 
@@ -152,9 +165,31 @@ class SourceExpressionBinder<T> implements Binder<T> {
         }
     }
 
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
+        const paintArray = this.paintVertexArray;
+        const value = this.expression.evaluate({zoom: 0}, feature, featureState);
+
+        if (this.type === 'color') {
+            const color = packColor(value);
+            for (let i = start; i < end; i++) {
+                paintArray.emplace(i, color[0], color[1]);
+            }
+        } else {
+            for (let i = start; i < end; i++) {
+                paintArray.emplace(i, value);
+            }
+
+            this.statistics.max = Math.max(this.statistics.max, value);
+        }
+    }
+
     upload(context: Context) {
-        if (this.paintVertexArray) {
-            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes);
+        if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
+            if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
+                this.paintVertexBuffer.updateData(this.paintVertexArray);
+            } else {
+                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+            }
         }
     }
 
@@ -202,23 +237,23 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         return [];
     }
 
-    populatePaintArray(length: number, feature: Feature) {
+    populatePaintArray(newLength: number, feature: Feature) {
         const paintArray = this.paintVertexArray;
 
         const start = paintArray.length;
-        paintArray.reserve(length);
+        paintArray.reserve(newLength);
 
-        const min = this.expression.evaluate({zoom: this.zoom    }, feature);
-        const max = this.expression.evaluate({zoom: this.zoom + 1}, feature);
+        const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {});
+        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {});
 
         if (this.type === 'color') {
             const minColor = packColor(min);
             const maxColor = packColor(max);
-            for (let i = start; i < length; i++) {
+            for (let i = start; i < newLength; i++) {
                 paintArray.emplaceBack(minColor[0], minColor[1], maxColor[0], maxColor[1]);
             }
         } else {
-            for (let i = start; i < length; i++) {
+            for (let i = start; i < newLength; i++) {
                 paintArray.emplaceBack(min, max);
             }
 
@@ -226,9 +261,34 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         }
     }
 
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
+        const paintArray = this.paintVertexArray;
+
+        const min = this.expression.evaluate({zoom: this.zoom    }, feature, featureState);
+        const max = this.expression.evaluate({zoom: this.zoom + 1}, feature, featureState);
+
+        if (this.type === 'color') {
+            const minColor = packColor(min);
+            const maxColor = packColor(max);
+            for (let i = start; i < end; i++) {
+                paintArray.emplace(i, minColor[0], minColor[1], maxColor[0], maxColor[1]);
+            }
+        } else {
+            for (let i = start; i < end; i++) {
+                paintArray.emplace(i, min, max);
+            }
+
+            this.statistics.max = Math.max(this.statistics.max, min, max);
+        }
+    }
+
     upload(context: Context) {
-        if (this.paintVertexArray) {
-            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes);
+        if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
+            if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
+                this.paintVertexBuffer.updateData(this.paintVertexArray);
+            } else {
+                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+            }
         }
     }
 
@@ -271,18 +331,23 @@ class CompositeExpressionBinder<T> implements Binder<T> {
  *
  * @private
  */
-class ProgramConfiguration {
+export default class ProgramConfiguration {
     binders: { [string]: Binder<any> };
     cacheKey: string;
     layoutAttributes: Array<StructArrayMember>;
 
     _buffers: Array<VertexBuffer>;
 
+    _idMap: FeaturePaintBufferMap;
+    _bufferOffset: number;
+
     constructor() {
         this.binders = {};
         this.cacheKey = '';
 
         this._buffers = [];
+        this._idMap = {};
+        this._bufferOffset = 0;
     }
 
     static createDynamic<Layer: TypedStyleLayer>(layer: Layer, zoom: number, filterProperties: (string) => boolean) {
@@ -292,7 +357,7 @@ class ProgramConfiguration {
         for (const property in layer.paint._values) {
             if (!filterProperties(property)) continue;
             const value = layer.paint.get(property);
-            if (!(value instanceof PossiblyEvaluatedPropertyValue) || !value.property.specification['property-function']) {
+            if (!(value instanceof PossiblyEvaluatedPropertyValue) || !supportsPropertyExpression(value.property.specification)) {
                 continue;
             }
             const name = paintAttributeName(property, layer.type);
@@ -316,10 +381,47 @@ class ProgramConfiguration {
         return self;
     }
 
-    populatePaintArrays(length: number, feature: Feature) {
+    populatePaintArrays(newLength: number, feature: Feature, index: number) {
         for (const property in this.binders) {
-            this.binders[property].populatePaintArray(length, feature);
+            this.binders[property].populatePaintArray(newLength, feature);
         }
+        if (feature.id) {
+            const featureId = String(feature.id);
+            this._idMap[featureId] = this._idMap[featureId] || [];
+            this._idMap[featureId].push({
+                index: index,
+                start: this._bufferOffset,
+                end: newLength
+            });
+        }
+
+        this._bufferOffset = newLength;
+    }
+
+    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layer: TypedStyleLayer): boolean {
+        let dirty: boolean = false;
+        for (const id in featureStates) {
+            const posArray = this._idMap[id];
+            if (!posArray) continue;
+
+            const featureState = featureStates[id];
+            for (const pos of posArray) {
+                const feature = vtLayer.feature(pos.index);
+
+                for (const property in this.binders) {
+                    const binder = this.binders[property];
+                    if (binder instanceof ConstantBinder) continue;
+                    if ((binder: any).expression.isStateDependent === true) {
+                        //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
+                        const value = layer.paint.get(property);
+                        (binder: any).expression = value.value;
+                        binder.updatePaintArray(pos.start, pos.end, feature, featureState);
+                        dirty = true;
+                    }
+                }
+            }
+        }
+        return dirty;
     }
 
     defines(): Array<string> {
@@ -366,8 +468,9 @@ class ProgramConfiguration {
     }
 }
 
-class ProgramConfigurationSet<Layer: TypedStyleLayer> {
+export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     programConfigurations: {[string]: ProgramConfiguration};
+    needsUpload: boolean;
 
     constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true) {
         this.programConfigurations = {};
@@ -375,11 +478,19 @@ class ProgramConfigurationSet<Layer: TypedStyleLayer> {
             this.programConfigurations[layer.id] = ProgramConfiguration.createDynamic(layer, zoom, filterProperties);
             this.programConfigurations[layer.id].layoutAttributes = layoutAttributes;
         }
+        this.needsUpload = false;
     }
 
-    populatePaintArrays(length: number, feature: Feature) {
+    populatePaintArrays(length: number, feature: Feature, index: number) {
         for (const key in this.programConfigurations) {
-            this.programConfigurations[key].populatePaintArrays(length, feature);
+            this.programConfigurations[key].populatePaintArrays(length, feature, index);
+        }
+        this.needsUpload = true;
+    }
+
+    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: $ReadOnlyArray<TypedStyleLayer>) {
+        for (const layer of layers) {
+            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, vtLayer, layer) || this.needsUpload;
         }
     }
 
@@ -388,9 +499,11 @@ class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     }
 
     upload(context: Context) {
+        if (!this.needsUpload) return;
         for (const layerId in this.programConfigurations) {
             this.programConfigurations[layerId].upload(context);
         }
+        this.needsUpload = false;
     }
 
     destroy() {
@@ -424,8 +537,3 @@ register('SourceExpressionBinder', SourceExpressionBinder);
 register('CompositeExpressionBinder', CompositeExpressionBinder);
 register('ProgramConfiguration', ProgramConfiguration, {omit: ['_buffers']});
 register('ProgramConfigurationSet', ProgramConfigurationSet);
-
-module.exports = {
-    ProgramConfiguration,
-    ProgramConfigurationSet
-};

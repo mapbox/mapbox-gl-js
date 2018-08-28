@@ -1,0 +1,34 @@
+{
+  "expression": [
+    "==",
+    [
+      "resolved-locale",
+      [
+        "collator",
+        {"case-sensitive": true, "diacritic-sensitive": true, "locale": "en"}
+      ]
+    ],
+    "en"
+  ],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true],
+    "serialized": [
+      "==",
+      [
+        "resolved-locale",
+        [
+          "collator",
+          {"case-sensitive": true, "diacritic-sensitive": true, "locale": "en"}
+        ]
+      ],
+      "en"
+    ]
+  }
+}

@@ -1,9 +1,52 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const convertFunction = require('../../../src/style-spec/function/convert');
+import { test } from 'mapbox-gl-js-test';
+import convertFunction from '../../../src/style-spec/function/convert';
 
 test('convertFunction', (t) => {
+    t.test('boolean categorical', (t) => {
+        const fn = {
+            type: 'categorical',
+            property: 'p',
+            stops: [
+                [true, 'true'],
+                [false, 'false']
+            ],
+            default: 'default'
+        };
+
+        t.deepEqual(convertFunction(fn, {}), [
+            'case',
+            ['==', ['get', 'p'], true],
+            'true',
+            ['==', ['get', 'p'], false],
+            'false',
+            'default'
+        ]);
+
+        t.end();
+    });
+
+    t.test('numeric categorical', (t) => {
+        const fn = {
+            type: 'categorical',
+            property: 'p',
+            stops: [
+                [0, '0'],
+                [1, '1']
+            ],
+            default: 'default'
+        };
+
+        t.deepEqual(convertFunction(fn, {}), [
+            'match',
+            ['get', 'p'],
+            0, '0',
+            1, '1',
+            'default'
+        ]);
+
+        t.end();
+    });
+
     t.test('feature-constant text-field with token replacement', (t) => {
         const functionValue = {
             stops: [
@@ -18,7 +61,11 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'string',
-            function: 'piecewise-constant',
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': false,
+                'parameters': ['zoom']
+            },
             tokens: true
         });
         t.deepEqual(expression, [
@@ -64,7 +111,11 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'string',
-            function: 'piecewise-constant'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': false,
+                'parameters': ['zoom']
+            }
         });
         t.deepEqual(expression, [
             'step',
@@ -91,7 +142,11 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'number',
-            function: 'interpolated'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': true,
+                'parameters': ['zoom']
+            }
         });
         t.deepEqual(expression, [
             'interpolate',

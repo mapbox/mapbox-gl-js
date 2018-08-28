@@ -1,46 +1,55 @@
 // @flow
 
-const {
-    NumberType,
-    StringType,
-    BooleanType,
-    ColorType,
-    ObjectType,
-    ValueType,
-    ErrorType,
-    array,
-    toString
-} = require('../types');
+import { NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, ErrorType, CollatorType, array, toString } from '../types';
 
-const { typeOf, Color, validateRGBA } = require('../values');
-const { CompoundExpression, varargs } = require('../compound_expression');
-const RuntimeError = require('../runtime_error');
-const Let = require('./let');
-const Var = require('./var');
-const Literal = require('./literal');
-const Assertion = require('./assertion');
-const ArrayAssertion = require('./array');
-const Coercion = require('./coercion');
-const At = require('./at');
-const Match = require('./match');
-const Case = require('./case');
-const Step = require('./step');
-const Interpolate = require('./interpolate');
-const Coalesce = require('./coalesce');
-const {Equals, NotEquals} = require('./equals');
+import { typeOf, Color, validateRGBA } from '../values';
+import CompoundExpression from '../compound_expression';
+import RuntimeError from '../runtime_error';
+import Let from './let';
+import Var from './var';
+import Literal from './literal';
+import Assertion from './assertion';
+import ArrayAssertion from './array';
+import Coercion from './coercion';
+import At from './at';
+import Match from './match';
+import Case from './case';
+import Step from './step';
+import Interpolate from './interpolate';
+import Coalesce from './coalesce';
+import {
+    Equals,
+    NotEquals,
+    LessThan,
+    GreaterThan,
+    LessThanOrEqual,
+    GreaterThanOrEqual
+} from './comparison';
+import { CollatorExpression } from './collator';
+import { Formatted, FormatExpression } from './formatted';
+import Length from './length';
 
+import type { Type } from '../types';
+import type { Varargs } from '../compound_expression';
 import type { ExpressionRegistry } from '../expression';
 
 const expressions: ExpressionRegistry = {
     // special forms
     '==': Equals,
     '!=': NotEquals,
+    '>': GreaterThan,
+    '<': LessThan,
+    '>=': GreaterThanOrEqual,
+    '<=': LessThanOrEqual,
     'array': ArrayAssertion,
     'at': At,
     'boolean': Assertion,
     'case': Case,
     'coalesce': Coalesce,
+    'collator': CollatorExpression,
+    'format': FormatExpression,
     'interpolate': Interpolate,
+    'length': Length,
     'let': Let,
     'literal': Literal,
     'match': Match,
@@ -72,15 +81,6 @@ function get(key, obj) {
     return typeof v === 'undefined' ? null : v;
 }
 
-function length(ctx, [v]) {
-    return v.evaluate(ctx).length;
-}
-
-function lt(ctx, [a, b]) { return a.evaluate(ctx) < b.evaluate(ctx); }
-function gt(ctx, [a, b]) { return a.evaluate(ctx) > b.evaluate(ctx); }
-function lteq(ctx, [a, b]) { return a.evaluate(ctx) <= b.evaluate(ctx); }
-function gteq(ctx, [a, b]) { return a.evaluate(ctx) >= b.evaluate(ctx); }
-
 function binarySearch(v, a, i, j) {
     while (i <= j) {
         const m = (i + j) >> 1;
@@ -94,6 +94,9 @@ function binarySearch(v, a, i, j) {
     return false;
 }
 
+function varargs(type: Type): Varargs {
+    return { type };
+}
 
 CompoundExpression.register(expressions, {
     'error': [
@@ -112,9 +115,11 @@ CompoundExpression.register(expressions, {
         (ctx, [v]) => {
             v = v.evaluate(ctx);
             const type = typeof v;
-            if (v === null || type === 'string' || type === 'number' || type === 'boolean') {
+            if (v === null) {
+                return '';
+            } else if (type === 'string' || type === 'number' || type === 'boolean') {
                 return String(v);
-            } else if (v instanceof Color) {
+            } else if (v instanceof Color || v instanceof Formatted) {
                 return v.toString();
             } else {
                 return JSON.stringify(v);
@@ -130,8 +135,7 @@ CompoundExpression.register(expressions, {
         array(NumberType, 4),
         [ColorType],
         (ctx, [v]) => {
-            const {r, g, b, a} = v.evaluate(ctx);
-            return [255 * r / a, 255 * g / a, 255 * b / a, a];
+            return v.evaluate(ctx).toArray();
         }
     ],
     'rgb': [
@@ -144,18 +148,6 @@ CompoundExpression.register(expressions, {
         [NumberType, NumberType, NumberType, NumberType],
         rgba
     ],
-    'length': {
-        type: NumberType,
-        overloads: [
-            [
-                [StringType],
-                length
-            ], [
-                [array(ValueType)],
-                length
-            ]
-        ]
-    },
     'has': {
         type: BooleanType,
         overloads: [
@@ -180,6 +172,11 @@ CompoundExpression.register(expressions, {
             ]
         ]
     },
+    'feature-state': [
+        ValueType,
+        [StringType],
+        (ctx, [key]) => get(key.evaluate(ctx), ctx.featureState || {})
+    ],
     'properties': [
         ObjectType,
         [],
@@ -204,6 +201,11 @@ CompoundExpression.register(expressions, {
         NumberType,
         [],
         (ctx) => ctx.globals.heatmapDensity || 0
+    ],
+    'line-progress': [
+        NumberType,
+        [],
+        (ctx) => ctx.globals.lineProgress || 0
     ],
     '+': [
         NumberType,
@@ -329,6 +331,32 @@ CompoundExpression.register(expressions, {
         varargs(NumberType),
         (ctx, args) => Math.max(...args.map(arg => arg.evaluate(ctx)))
     ],
+    'abs': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => Math.abs(n.evaluate(ctx))
+    ],
+    'round': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => {
+            const v = n.evaluate(ctx);
+            // Javascript's Math.round() rounds towards +Infinity for halfway
+            // values, even when they're negative. It's more common to round
+            // away from 0 (e.g., this is what python and C++ do)
+            return v < 0 ? -Math.round(-v) : Math.round(v);
+        }
+    ],
+    'floor': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => Math.floor(n.evaluate(ctx))
+    ],
+    'ceil': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => Math.ceil(n.evaluate(ctx))
+    ],
     'filter-==': [
         BooleanType,
         [StringType, ValueType],
@@ -448,34 +476,6 @@ CompoundExpression.register(expressions, {
         // assumes v is a array literal with values sorted in ascending order and of a single type
         (ctx, [k, v]) => binarySearch(ctx.properties()[(k: any).value], (v: any).value, 0, (v: any).value.length - 1)
     ],
-    '>': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], gt],
-            [[StringType, StringType], gt]
-        ]
-    },
-    '<': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], lt],
-            [[StringType, StringType], lt]
-        ]
-    },
-    '>=': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], gteq],
-            [[StringType, StringType], gteq]
-        ]
-    },
-    '<=': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], lteq],
-            [[StringType, StringType], lteq]
-        ]
-    },
     'all': {
         type: BooleanType,
         overloads: [
@@ -519,6 +519,18 @@ CompoundExpression.register(expressions, {
         [BooleanType],
         (ctx, [b]) => !b.evaluate(ctx)
     ],
+    'is-supported-script': [
+        BooleanType,
+        [StringType],
+        // At parse time this will always return true, so we need to exclude this expression with isGlobalPropertyConstant
+        (ctx, [s]) => {
+            const isSupportedScript = ctx.globals && ctx.globals.isSupportedScript;
+            if (isSupportedScript) {
+                return isSupportedScript(s.evaluate(ctx));
+            }
+            return true;
+        }
+    ],
     'upcase': [
         StringType,
         [StringType],
@@ -533,7 +545,12 @@ CompoundExpression.register(expressions, {
         StringType,
         varargs(StringType),
         (ctx, args) => args.map(arg => arg.evaluate(ctx)).join('')
+    ],
+    'resolved-locale': [
+        StringType,
+        [CollatorType],
+        (ctx, [collator]) => collator.evaluate(ctx).resolvedLocale()
     ]
 });
 
-module.exports = expressions;
+export default expressions;

@@ -1,11 +1,12 @@
 // @flow
 
-const WhooTS = require('@mapbox/whoots-js');
-const assert = require('assert');
-const {register} = require('../util/web_worker_transfer');
-const Coordinate = require('../geo/coordinate');
+import {getTileBBox} from '@mapbox/whoots-js';
 
-class CanonicalTileID {
+import assert from 'assert';
+import { register } from '../util/web_worker_transfer';
+import Coordinate from '../geo/coordinate';
+
+export class CanonicalTileID {
     z: number;
     x: number;
     y: number;
@@ -27,7 +28,7 @@ class CanonicalTileID {
 
     // given a list of urls, choose a url template and return a tile URL
     url(urls: Array<string>, scheme: ?string) {
-        const bbox = WhooTS.getTileBBox(this.x, this.y, this.z);
+        const bbox = getTileBBox(this.x, this.y, this.z);
         const quadkey = getQuadkey(this.z, this.x, this.y);
 
         return urls[(this.x + this.y) % urls.length]
@@ -40,7 +41,7 @@ class CanonicalTileID {
     }
 }
 
-class UnwrappedTileID {
+export class UnwrappedTileID {
     wrap: number;
     canonical: CanonicalTileID;
     key: number;
@@ -52,7 +53,7 @@ class UnwrappedTileID {
     }
 }
 
-class OverscaledTileID {
+export class OverscaledTileID {
     overscaledZ: number;
     wrap: number;
     canonical: CanonicalTileID;
@@ -65,6 +66,10 @@ class OverscaledTileID {
         this.wrap = wrap;
         this.canonical = new CanonicalTileID(z, +x, +y);
         this.key = calculateKey(wrap, overscaledZ, x, y);
+    }
+
+    equals(id: OverscaledTileID) {
+        return this.overscaledZ === id.overscaledZ && this.wrap === id.wrap && this.canonical.equals(id.canonical);
     }
 
     scaledTo(targetZ: number) {
@@ -121,6 +126,10 @@ class OverscaledTileID {
         return new OverscaledTileID(this.overscaledZ, 0, this.canonical.z, this.canonical.x, this.canonical.y);
     }
 
+    unwrapTo(wrap: number) {
+        return new OverscaledTileID(this.overscaledZ, wrap, this.canonical.z, this.canonical.x, this.canonical.y);
+    }
+
     overscaleFactor() {
         return Math.pow(2, this.overscaledZ - this.canonical.z);
     }
@@ -157,9 +166,3 @@ function getQuadkey(z, x, y) {
 
 register('CanonicalTileID', CanonicalTileID);
 register('OverscaledTileID', OverscaledTileID, {omit: ['posMatrix']});
-
-module.exports = {
-    CanonicalTileID: CanonicalTileID,
-    OverscaledTileID: OverscaledTileID,
-    UnwrappedTileID: UnwrappedTileID
-};

@@ -1,6 +1,6 @@
 // @flow
 
-const Worker = require('../source/worker');
+import Worker from '../source/worker';
 
 import type {WorkerSource} from '../source/worker_source';
 
@@ -67,7 +67,7 @@ class MessageBus implements WorkerInterface, WorkerGlobalScopeInterface {
     importScripts() {}
 }
 
-module.exports = function (): WorkerInterface {
+export default function WebWorker(): WorkerInterface {
     const parentListeners = [],
         workerListeners = [],
         parentBus = new MessageBus(workerListeners, parentListeners),
@@ -76,7 +76,10 @@ module.exports = function (): WorkerInterface {
     parentBus.target = workerBus;
     workerBus.target = parentBus;
 
-    new Worker(workerBus);
+    new WebWorker.Worker(workerBus);
 
     return parentBus;
-};
+}
+
+// expose to allow stubbing in unit tests
+WebWorker.Worker = Worker;

@@ -1,7 +1,7 @@
 // @flow
 
-const util = require('./util');
-const {serialize, deserialize} = require('./web_worker_transfer');
+import { bindAll } from './util';
+import { serialize, deserialize } from './web_worker_transfer';
 
 import type {Transferable} from '../types/transferable';
 
@@ -30,7 +30,7 @@ class Actor {
         this.mapId = mapId;
         this.callbacks = {};
         this.callbackID = 0;
-        util.bindAll(['receive'], this);
+        bindAll(['receive'], this);
         this.target.addEventListener('message', this.receive, false);
     }
 
@@ -38,7 +38,7 @@ class Actor {
      * Sends a message from a main-thread map to a Worker or from a Worker back to
      * a main-thread map instance.
      *
-     * @param type The name of the target method to invoke or '[source-type].name' for a method on a WorkerSource.
+     * @param type The name of the target method to invoke or '[source-type].[source-name].name' for a method on a WorkerSource.
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
@@ -69,7 +69,7 @@ class Actor {
                 sourceMapId: this.mapId,
                 type: '<response>',
                 id: String(id),
-                error: err ? String(err) : null,
+                error: err ? serialize(err) : null,
                 data: serialize(data, buffers)
             }, buffers);
         };
@@ -78,7 +78,7 @@ class Actor {
             callback = this.callbacks[data.id];
             delete this.callbacks[data.id];
             if (callback && data.error) {
-                callback(new Error(data.error));
+                callback(deserialize(data.error));
             } else if (callback) {
                 callback(null, deserialize(data.data));
             }
@@ -88,8 +88,9 @@ class Actor {
         } else if (typeof data.id !== 'undefined' && this.parent.getWorkerSource) {
             // data.type == sourcetype.method
             const keys = data.type.split('.');
-            const workerSource = (this.parent: any).getWorkerSource(data.sourceMapId, keys[0]);
-            workerSource[keys[1]](deserialize(data.data), done);
+            const params = (deserialize(data.data): any);
+            const workerSource = (this.parent: any).getWorkerSource(data.sourceMapId, keys[0], params.source);
+            workerSource[keys[1]](params, done);
         } else {
             this.parent[data.type](deserialize(data.data));
         }
@@ -100,4 +101,4 @@ class Actor {
     }
 }
 
-module.exports = Actor;
+export default Actor;

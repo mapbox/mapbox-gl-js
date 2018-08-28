@@ -1,17 +1,9 @@
 // @flow
 
-const {
-    toString,
-    array,
-    ValueType,
-    StringType,
-    NumberType,
-    BooleanType,
-    checkSubtype
-} = require('../types');
+import { toString, array, ValueType, StringType, NumberType, BooleanType, checkSubtype } from '../types';
 
-const {typeOf} = require('../values');
-const RuntimeError = require('../runtime_error');
+import { typeOf } from '../values';
+import RuntimeError from '../runtime_error';
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -83,6 +75,22 @@ class ArrayAssertion implements Expression {
     possibleOutputs() {
         return this.input.possibleOutputs();
     }
+
+    serialize() {
+        const serialized = ["array"];
+        const itemType = this.type.itemType;
+        if (itemType.kind === 'string' ||
+            itemType.kind === 'number' ||
+            itemType.kind === 'boolean') {
+            serialized.push(itemType.kind);
+            const N = this.type.N;
+            if (typeof N === 'number') {
+                serialized.push(N);
+            }
+        }
+        serialized.push(this.input.serialize());
+        return serialized;
+    }
 }
 
-module.exports = ArrayAssertion;
+export default ArrayAssertion;

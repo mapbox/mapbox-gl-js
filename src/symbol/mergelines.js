@@ -1,8 +1,9 @@
 // @flow
 
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
+import {Formatted} from '../style-spec/expression/definitions/formatted';
 
-module.exports = function (features: Array<SymbolFeature>) {
+export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
     const leftIndex: {[string]: number} = {};
     const rightIndex: {[string]: number} = {};
     const mergedFeatures = [];
@@ -41,7 +42,7 @@ module.exports = function (features: Array<SymbolFeature>) {
     for (let k = 0; k < features.length; k++) {
         const feature = features[k];
         const geom = feature.geometry;
-        const text = feature.text;
+        const text = feature.text instanceof Formatted ? feature.text.toString() : feature.text;
 
         if (!text) {
             add(k);
@@ -79,4 +80,4 @@ module.exports = function (features: Array<SymbolFeature>) {
     }
 
     return mergedFeatures.filter((f) => f.geometry);
-};
+}

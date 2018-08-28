@@ -1,0 +1,55 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "circles": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "position": "right"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                8,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "position": "left"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -8,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circles",
+      "type": "circle",
+      "source": "circles",
+      "paint": {
+        "circle-radius": 7
+      }
+    }
+  ]
+}

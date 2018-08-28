@@ -1,10 +1,8 @@
-'use strict';
-
-const path = require('path');
-const harness = require('./harness');
-const diff = require('diff');
-const fs = require('fs');
-const compactStringify = require('json-stringify-pretty-compact');
+import path from 'path';
+import diff from 'diff';
+import fs from 'fs';
+import harness from './harness';
+import compactStringify from 'json-stringify-pretty-compact';
 
 // we have to handle this edge case here because we have test fixtures for this
 // edge case, and we don't want UPDATE=1 to mess with them
@@ -20,16 +18,42 @@ function stringify(v) {
     return s;
 }
 
-const floatPrecision = 6; // in decimal sigfigs
+const decimalSigFigs = 6;
+
+function stripPrecision(x) {
+    // Intended for test output serialization:
+    // strips down to 6 decimal sigfigs but stops at decimal point
+    if (typeof x === 'number') {
+        if (x === 0) { return x; }
+
+        const multiplier = Math.pow(10,
+            Math.max(0,
+                     decimalSigFigs - Math.ceil(Math.log10(Math.abs(x)))));
+
+        // We strip precision twice in a row here to avoid cases where
+        // stripping an already stripped number will modify its value
+        // due to bad floating point precision luck
+        // eg `Math.floor(8.16598 * 100000) / 100000` -> 8.16597
+        const firstStrip = Math.floor(x * multiplier) / multiplier;
+        return Math.floor(firstStrip * multiplier) / multiplier;
+    } else if (typeof x !== 'object') {
+        return x;
+    } else if (Array.isArray(x)) {
+        return x.map(stripPrecision);
+    } else {
+        const stripped = {};
+        for (const key of Object.keys(x)) {
+            stripped[key] = stripPrecision(x[key]);
+        }
+        return stripped;
+    }
+}
 
 function deepEqual(a, b) {
     if (typeof a !== typeof b)
         return false;
     if (typeof a === 'number') {
-        if (a === 0) { return b === 0; }
-        const digits = 1 + Math.floor(Math.log10(Math.abs(a)));
-        const multiplier = Math.pow(10, floatPrecision - digits);
-        return Math.floor(a * multiplier) === Math.floor(b * multiplier);
+        return stripPrecision(a) === stripPrecision(b);
     }
     if (a === null || b === null || typeof a !== 'object')
         return a === b;
@@ -49,6 +73,7 @@ function deepEqual(a, b) {
 
     return true;
 }
+
 /**
  * Run the expression suite.
  *
@@ -60,60 +85,110 @@ function deepEqual(a, b) {
  * @param {} runExpressionTest - a function that runs a single expression test fixture
  * @returns {undefined} terminates the process when testing is complete
  */
-exports.run = function (implementation, options, runExpressionTest) {
+export function run(implementation, options, runExpressionTest) {
     const directory = path.join(__dirname, '../expression-tests');
     options.fixtureFilename = 'test.json';
     harness(directory, implementation, options, (fixture, params, done) => {
         try {
             const result = runExpressionTest(fixture, params);
-            const dir = path.join(directory, params.group, params.test);
+            const dir = path.join(directory, params.id);
 
             if (process.env.UPDATE) {
-                fixture.expected = result;
+                fixture.expected = {
+                    compiled: result.compiled,
+                    outputs: stripPrecision(result.outputs),
+                    serialized: result.serialized
+                };
+
+                delete fixture.metadata;
+
                 fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture, null, 2)}\n`, done);
                 return;
             }
 
             const expected = fixture.expected;
             const compileOk = deepEqual(result.compiled, expected.compiled);
-
             const evalOk = compileOk && deepEqual(result.outputs, expected.outputs);
-            params.ok = compileOk && evalOk;
 
-            let msg = '';
-            if (!compileOk) {
-                msg += diff.diffJson(expected.compiled, result.compiled)
-                    .map((hunk) => {
-                        if (hunk.added) {
-                            return `+ ${hunk.value}`;
-                        } else if (hunk.removed) {
-                            return `- ${hunk.value}`;
-                        } else {
-                            return `  ${hunk.value}`;
-                        }
-                    })
-                    .join('');
+            let recompileOk = true;
+            let roundTripOk = true;
+            let serializationOk = true;
+            if (expected.compiled.result !== 'error') {
+                serializationOk = compileOk && deepEqual(expected.serialized, result.serialized);
+                recompileOk = compileOk && deepEqual(result.recompiled, expected.compiled);
+                roundTripOk = recompileOk && deepEqual(result.roundTripOutputs, expected.outputs);
             }
-            if (compileOk && !evalOk) {
-                msg += expected.outputs
-                    .map((expectedOutput, i) => {
-                        if (!deepEqual(expectedOutput, result.outputs[i])) {
-                            return `f(${JSON.stringify(fixture.inputs[i])})\nExpected: ${JSON.stringify(expectedOutput)}\nActual: ${JSON.stringify(result.outputs[i])}`;
+
+            params.ok = compileOk && evalOk && recompileOk && roundTripOk && serializationOk;
+
+            const diffOutput = {
+                text: '',
+                html: ''
+            };
+
+            const diffJson = (label, expectedJson, actualJson) => {
+                let text = '';
+                let html = '';
+                diff.diffJson(expectedJson, actualJson)
+                    .forEach((hunk) => {
+                        if (hunk.added) {
+                            text += `+ ${hunk.value}`;
+                            html += `<ins>  ${hunk.value}</ins>`;
+                        } else if (hunk.removed) {
+                            text += `- ${hunk.value}`;
+                            html += `<del>  ${hunk.value}</del>`;
+                        } else {
+                            text += `  ${hunk.value}`;
+                            html += `<span>  ${hunk.value}</span>`;
                         }
-                        return false;
-                    })
+                    });
+                if (text) {
+                    diffOutput.text += `${label}\n${text}`;
+                    diffOutput.html += `<h3>${label}</h3>\n${html}`;
+                }
+            };
+
+            if (!compileOk) {
+                diffJson('Compiled', expected.compiled, result.compiled);
+            }
+            if (compileOk && !serializationOk) {
+                diffJson('Serialized', expected.serialized, result.serialized);
+            }
+            if (compileOk && !recompileOk) {
+                diffJson('Serialized and re-compiled', expected.compiled, result.recompiled);
+            }
+
+            const diffOutputs = (testOutputs) => {
+                return expected.outputs.map((expectedOutput, i) => {
+                    if (!deepEqual(expectedOutput, testOutputs[i])) {
+                        return `f(${JSON.stringify(fixture.inputs[i])})\nExpected: ${JSON.stringify(expectedOutput)}\nActual: ${JSON.stringify(testOutputs[i])}`;
+                    }
+                    return false;
+                })
                     .filter(Boolean)
                     .join('\n');
+            };
+
+            if (compileOk && !evalOk) {
+                const differences = `Original\n${diffOutputs(result.outputs)}\n`;
+                diffOutput.text += differences;
+                diffOutput.html += differences;
+            }
+            if (recompileOk && !roundTripOk) {
+                const differences = `\nRoundtripped through serialize()\n${diffOutputs(result.roundTripOutputs)}\n`;
+                diffOutput.text += differences;
+                diffOutput.html += differences;
             }
 
-            params.difference = msg;
-            if (msg) { console.log(msg); }
+            params.difference = diffOutput.html;
+            if (diffOutput.text) { console.log(diffOutput.text); }
 
-            params.expression = JSON.stringify(fixture.expression, null, 2);
+            params.expression = compactStringify(fixture.expression);
+            params.serialized = compactStringify(result.serialized);
 
             done();
         } catch (e) {
             done(e);
         }
     });
-};
+}

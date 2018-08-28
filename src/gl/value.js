@@ -1,7 +1,6 @@
 // @flow
 
-const Color = require('../style-spec/util/color');
-const util = require('../util/util');
+import Color from '../style-spec/util/color';
 
 import type Context from './context';
 import type {
@@ -23,7 +22,7 @@ export interface Value<T> {
     set(value: T): void;
 }
 
-class ClearColor implements Value<Color> {
+export class ClearColor implements Value<Color> {
     context: Context;
     current: Color;
 
@@ -43,7 +42,7 @@ class ClearColor implements Value<Color> {
     }
 }
 
-class ClearDepth implements Value<number> {
+export class ClearDepth implements Value<number> {
     context: Context;
     current: number;
 
@@ -62,7 +61,7 @@ class ClearDepth implements Value<number> {
     }
 }
 
-class ClearStencil implements Value<number> {
+export class ClearStencil implements Value<number> {
     context: Context;
     current: number;
 
@@ -81,7 +80,7 @@ class ClearStencil implements Value<number> {
     }
 }
 
-class ColorMask implements Value<ColorMaskType> {
+export class ColorMask implements Value<ColorMaskType> {
     context: Context;
     current: ColorMaskType;
 
@@ -101,7 +100,7 @@ class ColorMask implements Value<ColorMaskType> {
     }
 }
 
-class DepthMask implements Value<DepthMaskType> {
+export class DepthMask implements Value<DepthMaskType> {
     context: Context;
     current: DepthMaskType;
 
@@ -120,7 +119,7 @@ class DepthMask implements Value<DepthMaskType> {
     }
 }
 
-class StencilMask implements Value<number> {
+export class StencilMask implements Value<number> {
     context: Context;
     current: number;
 
@@ -139,7 +138,7 @@ class StencilMask implements Value<number> {
     }
 }
 
-class StencilFunc implements Value<StencilFuncType> {
+export class StencilFunc implements Value<StencilFuncType> {
     context: Context;
     current: StencilFuncType;
 
@@ -163,7 +162,7 @@ class StencilFunc implements Value<StencilFuncType> {
     }
 }
 
-class StencilOp implements Value<StencilOpType> {
+export class StencilOp implements Value<StencilOpType> {
     context: Context;
     current: StencilOpType;
 
@@ -184,7 +183,7 @@ class StencilOp implements Value<StencilOpType> {
     }
 }
 
-class StencilTest implements Value<boolean> {
+export class StencilTest implements Value<boolean> {
     context: Context;
     current: boolean;
 
@@ -208,7 +207,7 @@ class StencilTest implements Value<boolean> {
     }
 }
 
-class DepthRange implements Value<DepthRangeType> {
+export class DepthRange implements Value<DepthRangeType> {
     context: Context;
     current: DepthRangeType;
 
@@ -228,7 +227,7 @@ class DepthRange implements Value<DepthRangeType> {
     }
 }
 
-class DepthTest implements Value<boolean> {
+export class DepthTest implements Value<boolean> {
     context: Context;
     current: boolean;
 
@@ -252,7 +251,7 @@ class DepthTest implements Value<boolean> {
     }
 }
 
-class DepthFunc implements Value<DepthFuncType> {
+export class DepthFunc implements Value<DepthFuncType> {
     context: Context;
     current: DepthFuncType;
 
@@ -271,7 +270,7 @@ class DepthFunc implements Value<DepthFuncType> {
     }
 }
 
-class Blend implements Value<boolean> {
+export class Blend implements Value<boolean> {
     context: Context;
     current: boolean;
 
@@ -295,7 +294,7 @@ class Blend implements Value<boolean> {
     }
 }
 
-class BlendFunc implements Value<BlendFuncType> {
+export class BlendFunc implements Value<BlendFuncType> {
     context: Context;
     current: BlendFuncType;
 
@@ -316,7 +315,7 @@ class BlendFunc implements Value<BlendFuncType> {
     }
 }
 
-class BlendColor implements Value<Color> {
+export class BlendColor implements Value<Color> {
     context: Context;
     current: Color;
 
@@ -336,7 +335,7 @@ class BlendColor implements Value<Color> {
     }
 }
 
-class Program implements Value<?WebGLProgram> {
+export class Program implements Value<?WebGLProgram> {
     context: Context;
     current: ?WebGLProgram;
 
@@ -355,28 +354,7 @@ class Program implements Value<?WebGLProgram> {
     }
 }
 
-class LineWidth implements Value<number> {
-    context: Context;
-    current: number;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.current = 1;
-    }
-
-    get(): number { return this.current; }
-
-    set(v: number): void {
-        const range = this.context.lineWidthRange;
-        const clamped = util.clamp(v, range[0], range[1]);
-        if (this.current !== clamped) {
-            this.context.gl.lineWidth(clamped);
-            this.current = v;
-        }
-    }
-}
-
-class ActiveTextureUnit implements Value<TextureUnitType> {
+export class ActiveTextureUnit implements Value<TextureUnitType> {
     context: Context;
     current: TextureUnitType;
 
@@ -395,7 +373,7 @@ class ActiveTextureUnit implements Value<TextureUnitType> {
     }
 }
 
-class Viewport implements Value<ViewportType> {
+export class Viewport implements Value<ViewportType> {
     context: Context;
     current: ViewportType;
 
@@ -416,7 +394,7 @@ class Viewport implements Value<ViewportType> {
     }
 }
 
-class BindFramebuffer implements Value<?WebGLFramebuffer> {
+export class BindFramebuffer implements Value<?WebGLFramebuffer> {
     context: Context;
     current: ?WebGLFramebuffer;
 
@@ -436,7 +414,7 @@ class BindFramebuffer implements Value<?WebGLFramebuffer> {
     }
 }
 
-class BindRenderbuffer implements Value<?WebGLRenderbuffer> {
+export class BindRenderbuffer implements Value<?WebGLRenderbuffer> {
     context: Context;
     current: ?WebGLRenderbuffer;
 
@@ -456,7 +434,7 @@ class BindRenderbuffer implements Value<?WebGLRenderbuffer> {
     }
 }
 
-class BindTexture implements Value<?WebGLTexture> {
+export class BindTexture implements Value<?WebGLTexture> {
     context: Context;
     current: ?WebGLTexture;
 
@@ -476,7 +454,7 @@ class BindTexture implements Value<?WebGLTexture> {
     }
 }
 
-class BindVertexBuffer implements Value<?WebGLBuffer> {
+export class BindVertexBuffer implements Value<?WebGLBuffer> {
     context: Context;
     current: ?WebGLBuffer;
 
@@ -496,7 +474,7 @@ class BindVertexBuffer implements Value<?WebGLBuffer> {
     }
 }
 
-class BindElementBuffer implements Value<?WebGLBuffer> {
+export class BindElementBuffer implements Value<?WebGLBuffer> {
     context: Context;
     current: ?WebGLBuffer;
 
@@ -515,7 +493,7 @@ class BindElementBuffer implements Value<?WebGLBuffer> {
     }
 }
 
-class BindVertexArrayOES implements Value<any> {
+export class BindVertexArrayOES implements Value<any> {
     context: Context;
     current: any;
 
@@ -534,7 +512,7 @@ class BindVertexArrayOES implements Value<any> {
     }
 }
 
-class PixelStoreUnpack implements Value<number> {
+export class PixelStoreUnpack implements Value<number> {
     context: Context;
     current: number;
 
@@ -554,7 +532,7 @@ class PixelStoreUnpack implements Value<number> {
     }
 }
 
-class PixelStoreUnpackPremultiplyAlpha implements Value<boolean> {
+export class PixelStoreUnpackPremultiplyAlpha implements Value<boolean> {
     context: Context;
     current: boolean;
 
@@ -576,8 +554,9 @@ class PixelStoreUnpackPremultiplyAlpha implements Value<boolean> {
 
 /**
  * Framebuffer values
+ * @private
  */
-class FramebufferValue<T> {
+export class FramebufferValue<T> {
     context: Context;
     parent: WebGLFramebuffer;
     current: ?T;
@@ -591,7 +570,7 @@ class FramebufferValue<T> {
     get(): ?T { return this.current; }
 }
 
-class ColorAttachment extends FramebufferValue<?WebGLTexture> implements Value<?WebGLTexture> {
+export class ColorAttachment extends FramebufferValue<?WebGLTexture> implements Value<?WebGLTexture> {
     dirty: boolean;
 
     constructor(context: Context, parent: WebGLFramebuffer) {
@@ -616,7 +595,7 @@ class ColorAttachment extends FramebufferValue<?WebGLTexture> implements Value<?
     }
 }
 
-class DepthAttachment extends FramebufferValue<?WebGLRenderbuffer> implements Value<?WebGLRenderbuffer> {
+export class DepthAttachment extends FramebufferValue<?WebGLRenderbuffer> implements Value<?WebGLRenderbuffer> {
     set(v: ?WebGLRenderbuffer): void {
         if (this.current !== v) {
             const gl = this.context.gl;
@@ -628,36 +607,3 @@ class DepthAttachment extends FramebufferValue<?WebGLRenderbuffer> implements Va
         }
     }
 }
-
-module.exports = {
-    ClearColor,
-    ClearDepth,
-    ClearStencil,
-    ColorMask,
-    DepthMask,
-    StencilMask,
-    StencilFunc,
-    StencilOp,
-    StencilTest,
-    DepthRange,
-    DepthTest,
-    DepthFunc,
-    Blend,
-    BlendFunc,
-    BlendColor,
-    Program,
-    LineWidth,
-    ActiveTextureUnit,
-    Viewport,
-    BindFramebuffer,
-    BindRenderbuffer,
-    BindTexture,
-    BindVertexBuffer,
-    BindElementBuffer,
-    BindVertexArrayOES,
-    PixelStoreUnpack,
-    PixelStoreUnpackPremultiplyAlpha,
-
-    ColorAttachment,
-    DepthAttachment,
-};

@@ -2,19 +2,27 @@
   "expression": [
     "let",
     "a",
-    1,
+    ["number", ["get", "a"]],
     "b",
-    2,
+    ["number", ["get", "b"]],
     ["+", ["+", ["var", "a"], ["var", "b"]], ["var", "a"]]
   ],
-  "inputs": [[{}, {}]],
+  "inputs": [[{}, {"properties": {"a": 1, "b": 2}}]],
   "expected": {
-    "outputs": [4],
     "compiled": {
       "result": "success",
+      "isFeatureConstant": false,
       "isZoomConstant": true,
-      "isFeatureConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [4],
+    "serialized": [
+      "let",
+      "a",
+      ["number", ["get", "a"]],
+      "b",
+      ["number", ["get", "b"]],
+      ["+", ["+", ["var", "a"], ["var", "b"]], ["var", "a"]]
+    ]
   }
 }

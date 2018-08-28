@@ -1,10 +1,9 @@
 // @flow
 
-const EXTENT = require('../data/extent');
+import EXTENT from '../data/extent';
 
 import type {OverscaledTileID} from '../source/tile_id';
-import type {SymbolInstance} from '../data/bucket/symbol_bucket';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
+import type SymbolBucket, {SymbolInstance} from '../data/bucket/symbol_bucket';
 import type StyleLayer from '../style/style_layer';
 import type Tile from '../source/tile';
 
@@ -119,10 +118,35 @@ class CrossTileIDs {
 class CrossTileSymbolLayerIndex {
     indexes: {[zoom: string | number]: {[tileId: string | number]: TileLayerIndex}};
     usedCrossTileIDs: {[zoom: string | number]: {[crossTileID: number]: boolean}};
+    lng: number;
 
     constructor() {
         this.indexes = {};
         this.usedCrossTileIDs = {};
+        this.lng = 0;
+    }
+
+    /*
+     * Sometimes when a user pans across the antimeridian the longitude value gets wrapped.
+     * To prevent labels from flashing out and in we adjust the tileID values in the indexes
+     * so that they match the new wrapped version of the map.
+     */
+    handleWrapJump(lng: number) {
+        const wrapDelta = Math.round((lng - this.lng) / 360);
+        if (wrapDelta !== 0) {
+            for (const zoom in this.indexes) {
+                const zoomIndexes = this.indexes[zoom];
+                const newZoomIndex = {};
+                for (const key in zoomIndexes) {
+                    // change the tileID's wrap and add it to a new index
+                    const index = zoomIndexes[key];
+                    index.tileID = index.tileID.unwrapTo(index.tileID.wrap + wrapDelta);
+                    newZoomIndex[index.tileID.key] = index;
+                }
+                this.indexes[zoom] = newZoomIndex;
+            }
+        }
+        this.lng = lng;
     }
 
     addBucket(tileID: OverscaledTileID, bucket: SymbolBucket, crossTileIDs: CrossTileIDs) {
@@ -213,14 +237,16 @@ class CrossTileSymbolIndex {
     layerIndexes: {[layerId: string]: CrossTileSymbolLayerIndex};
     crossTileIDs: CrossTileIDs;
     maxBucketInstanceId: number;
+    bucketsInCurrentPlacement: {[number]: boolean};
 
     constructor() {
         this.layerIndexes = {};
         this.crossTileIDs = new CrossTileIDs();
         this.maxBucketInstanceId = 0;
+        this.bucketsInCurrentPlacement = {};
     }
 
-    addLayer(styleLayer: StyleLayer, tiles: Array<Tile>) {
+    addLayer(styleLayer: StyleLayer, tiles: Array<Tile>, lng: number) {
         let layerIndex = this.layerIndexes[styleLayer.id];
         if (layerIndex === undefined) {
             layerIndex = this.layerIndexes[styleLayer.id] = new CrossTileSymbolLayerIndex();
@@ -229,9 +255,12 @@ class CrossTileSymbolIndex {
         let symbolBucketsChanged = false;
         const currentBucketIDs = {};
 
+        layerIndex.handleWrapJump(lng);
+
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-            if (!symbolBucket) continue;
+            if (!symbolBucket || styleLayer.id !== symbolBucket.layerIds[0])
+                continue;
 
             if (!symbolBucket.bucketInstanceId) {
                 symbolBucket.bucketInstanceId = ++this.maxBucketInstanceId;
@@ -263,4 +292,4 @@ class CrossTileSymbolIndex {
     }
 }
 
-module.exports = CrossTileSymbolIndex;
+export default CrossTileSymbolIndex;

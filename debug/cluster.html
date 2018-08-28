@@ -18,67 +18,105 @@
 <script src='/debug/access_token_generated.js'></script>
 <script>
 
-var style = {
-    "version": 8,
-    "metadata": {
-        "test": {
-            "native": false,
-            "width": 512,
-            "height": 512
-        }
-    },
-    "center": [0, 0],
-    "zoom": 0,
-    "sources": {
-        "geojson": {
-            "type": "geojson",
-            "data": "/test/integration/data/places.geojson",
-            "cluster": true,
-            "clusterRadius": 25
-        }
-    },
-    "glyphs": "/test/integration/glyphs/{fontstack}/{range}.pbf",
-    "layers": [
-        {
-            "id": "cluster",
-            "type": "circle",
-            "source": "geojson",
-            "filter": ["==", "cluster", true],
-            "paint": {
-                "circle-color": "rgba(0, 200, 0, 1)",
-                "circle-radius": 20
-            }
-        },
-        {
-            "id": "cluster_label",
-            "type": "symbol",
-            "source": "geojson",
-            "filter": ["==", "cluster", true],
-            "layout": {
-                "text-field": "{point_count}",
-                "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-                "text-size": 12,
-                "text-allow-overlap": true,
-                "text-ignore-placement": true
-            }
-        },
-        {
-            "id": "unclustered_point",
-            "type": "circle",
-            "source": "geojson",
-            "filter": ["!=", "cluster", true],
-            "paint": {
-                "circle-color": "rgba(0, 0, 200, 1)",
-                "circle-radius": 10
-            }
-        }
-    ]
-};
-
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    style: style,
+    zoom: 0,
+    center: [0, 0],
+    style: 'mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41',
     hash: true
+});
+
+map.on('load', () => {
+    map.addSource('geojson', {
+        "type": "geojson",
+        "data": "/test/integration/data/places.geojson",
+        "cluster": true,
+        "clusterRadius": 50
+    });
+    map.addLayer({
+        "id": "cluster",
+        "type": "circle",
+        "source": "geojson",
+        "filter": ["==", "cluster", true],
+        "paint": {
+            "circle-color": "rgba(0, 200, 0, 1)",
+            "circle-radius": 20
+        }
+    });
+    map.addLayer({
+        "id": "cluster_label",
+        "type": "symbol",
+        "source": "geojson",
+        "filter": ["==", "cluster", true],
+        "layout": {
+            "text-field": "{point_count}",
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-size": 12,
+            "text-allow-overlap": true,
+            "text-ignore-placement": true
+        }
+    });
+    map.addLayer({
+        "id": "unclustered_point",
+        "type": "circle",
+        "source": "geojson",
+        "filter": ["!=", "cluster", true],
+        "paint": {
+            "circle-color": "rgb(0, 0, 200)",
+            "circle-radius": 10
+        }
+    });
+
+    var hoverData = {
+        "type": "FeatureCollection",
+        "features": []
+    };
+
+    map.addSource('cluster_children', {
+        "type": "geojson",
+        "data": hoverData
+    });
+
+    map.addLayer({
+        "id": "cluster_children",
+        "type": "circle",
+        "source": "cluster_children",
+        "paint": {
+            "circle-color": "rgb(0, 150, 0)",
+            "circle-radius": 7
+        }
+    });
+
+    function updateHover(features) {
+        hoverData.features = features;
+        map.getSource('cluster_children').setData(hoverData);
+    }
+
+    map.on('click', 'cluster', (e) => {
+        var feature = e.features[0];
+        map.getSource('geojson').getClusterExpansionZoom(feature.properties.cluster_id, (err, zoom) => {
+            if (err) throw err;
+            updateHover([]);
+            map.easeTo({
+                center: feature.geometry.coordinates,
+                zoom: zoom
+            });
+        });
+    });
+
+    map.on('mouseenter', 'cluster', (e) => {
+        map.getCanvas().style.cursor = 'pointer';
+
+        map.getSource('geojson').getClusterLeaves(e.features[0].properties.cluster_id, Infinity, 0, (err, features) => {
+            if (err) throw err;
+            updateHover(features);
+        });
+    });
+
+    map.on('mouseleave', 'cluster', (e) => {
+        map.getCanvas().style.cursor = '';
+        updateHover([]);
+    });
 });
 
 map.addControl(new mapboxgl.NavigationControl());

@@ -1,15 +1,16 @@
 // @flow
 
-const assert = require('assert');
-const WebWorker = require('./web_worker');
-
+import WebWorker from './web_worker';
 import type {WorkerInterface} from './web_worker';
+import browser from './browser';
 
 /**
  * Constructs a worker pool.
  * @private
  */
-class WorkerPool {
+export default class WorkerPool {
+    static workerCount: number;
+
     active: {[number]: boolean};
     workers: Array<WorkerInterface>;
 
@@ -17,16 +18,12 @@ class WorkerPool {
         this.active = {};
     }
 
-    acquire(mapId: number) {
+    acquire(mapId: number): Array<WorkerInterface> {
         if (!this.workers) {
-            // Lazily look up the value of mapboxgl.workerCount.  This allows
-            // client code a chance to set it while circumventing cyclic
-            // dependency problems
-            const workerCount = require('../').workerCount;
-            assert(typeof workerCount === 'number' && workerCount < Infinity);
-
+            // Lazily look up the value of mapboxgl.workerCount so that
+            // client code has had a chance to set it.
             this.workers = [];
-            while (this.workers.length < workerCount) {
+            while (this.workers.length < WorkerPool.workerCount) {
                 this.workers.push(new WebWorker());
             }
         }
@@ -46,4 +43,4 @@ class WorkerPool {
     }
 }
 
-module.exports = WorkerPool;
+WorkerPool.workerCount = Math.max(Math.floor(browser.hardwareConcurrency / 2), 1);

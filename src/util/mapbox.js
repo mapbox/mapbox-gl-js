@@ -1,9 +1,18 @@
 // @flow
 
-const config = require('./config');
-const browser = require('./browser');
+import config from './config';
+
+import browser from './browser';
+import window from './window';
+import { version } from '../../package.json';
+import { uuid, validateUuid, storageAvailable, warnOnce } from './util';
+import { postData } from './ajax';
+
+import type { RequestParameters } from './ajax';
+import type { Cancelable } from '../types/cancelable';
 
 const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
+const turnstileEventStorageKey = 'mapbox.turnstileEventData';
 
 type UrlObject = {|
     protocol: string,
@@ -37,23 +46,23 @@ function isMapboxURL(url: string) {
     return url.indexOf('mapbox:') === 0;
 }
 
-exports.isMapboxURL = isMapboxURL;
+export { isMapboxURL };
 
-exports.normalizeStyleURL = function(url: string, accessToken?: string): string {
+export const normalizeStyleURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/styles/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeGlyphsURL = function(url: string, accessToken?: string): string {
+export const normalizeGlyphsURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/fonts/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSourceURL = function(url: string, accessToken?: string): string {
+export const normalizeSourceURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/v4/${urlObject.authority}.json`;
@@ -63,7 +72,7 @@ exports.normalizeSourceURL = function(url: string, accessToken?: string): string
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken?: string): string {
+export const normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken?: string): string {
     const urlObject = parseUrl(url);
     if (!isMapboxURL(url)) {
         urlObject.path += `${format}${extension}`;
@@ -75,7 +84,7 @@ exports.normalizeSpriteURL = function(url: string, format: string, extension: st
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
 
-exports.normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
+export const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
 
     const urlObject = parseUrl(tileURL);
@@ -118,3 +127,114 @@ function formatUrl(obj: UrlObject): string {
     const params = obj.params.length ? `?${obj.params.join('&')}` : '';
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
+
+export class TurnstileEvent {
+    eventData: { anonId: ?string, lastSuccess: ?number, accessToken: ?string};
+    queue: Array<number>;
+    pending: boolean
+    pendingRequest: ?Cancelable;
+
+    constructor() {
+        this.eventData = { anonId: null, lastSuccess: null, accessToken: config.ACCESS_TOKEN};
+        this.queue = [];
+        this.pending = false;
+        this.pendingRequest = null;
+    }
+
+    postTurnstileEvent(tileUrls: Array<string>) {
+        //Enabled only when Mapbox Access Token is set and a source uses
+        // mapbox tiles.
+        if (config.ACCESS_TOKEN &&
+            Array.isArray(tileUrls) &&
+            tileUrls.some((url) => { return /(mapbox\.c)(n|om)/i.test(url); })) {
+            this.queueRequest(browser.now());
+        }
+    }
+
+    queueRequest(date: number) {
+        this.queue.push(date);
+        this.processRequests();
+    }
+
+    processRequests() {
+        if (this.pendingRequest || this.queue.length === 0) {
+            return;
+        }
+        const storageKey = `${turnstileEventStorageKey}:${config.ACCESS_TOKEN || ''}`;
+        const isLocalStorageAvailable = storageAvailable('localStorage');
+        let dueForEvent = this.eventData.accessToken ? (this.eventData.accessToken !== config.ACCESS_TOKEN) : false;
+
+        //Reset event data cache if the access token changed.
+        if (dueForEvent) {
+            this.eventData.anonId = this.eventData.lastSuccess = null;
+        }
+        if ((!this.eventData.anonId || !this.eventData.lastSuccess) &&
+            isLocalStorageAvailable) {
+            //Retrieve cached data
+            try {
+                const data = window.localStorage.getItem(storageKey);
+                if (data) {
+                    this.eventData = JSON.parse(data);
+                }
+            } catch (e) {
+                warnOnce('Unable to read from LocalStorage');
+            }
+        }
+
+        if (!validateUuid(this.eventData.anonId)) {
+            this.eventData.anonId = uuid();
+            dueForEvent = true;
+        }
+        const nextUpdate = this.queue.shift();
+
+        // Record turnstile event once per calendar day.
+        if (this.eventData.lastSuccess) {
+            const lastUpdate = new Date(this.eventData.lastSuccess);
+            const nextDate = new Date(nextUpdate);
+            const daysElapsed = (nextUpdate - this.eventData.lastSuccess) / (24 * 60 * 60 * 1000);
+            dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < -1 || lastUpdate.getDate() !== nextDate.getDate();
+        }
+
+        if (!dueForEvent) {
+            return this.processRequests();
+        }
+
+        const evenstUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
+        evenstUrlObject.params.push(`access_token=${config.ACCESS_TOKEN || ''}`);
+        const request: RequestParameters = {
+            url: formatUrl(evenstUrlObject),
+            headers: {
+                'Content-Type': 'text/plain' //Skip the pre-flight OPTIONS request
+            }
+        };
+
+        const payload = JSON.stringify([{
+            event: 'appUserTurnstile',
+            created: (new Date(nextUpdate)).toISOString(),
+            sdkIdentifier: 'mapbox-gl-js',
+            sdkVersion: version,
+            'enabled.telemetry': false,
+            userId: this.eventData.anonId
+        }]);
+
+        this.pendingRequest = postData(request, payload, (error) => {
+            this.pendingRequest = null;
+            if (!error) {
+                this.eventData.lastSuccess = nextUpdate;
+                this.eventData.accessToken = config.ACCESS_TOKEN;
+                if (isLocalStorageAvailable) {
+                    try {
+                        window.localStorage.setItem(storageKey, JSON.stringify(this.eventData));
+                    } catch (e) {
+                        warnOnce('Unable to write to LocalStorage');
+                    }
+                }
+                this.processRequests();
+            }
+        });
+    }
+}
+
+const turnstileEvent_ = new TurnstileEvent();
+
+export const postTurnstileEvent = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);

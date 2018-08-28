@@ -1,0 +1,35 @@
+{
+  "expression": [
+    ">=",
+    ["string", ["get", "lhs"]],
+    ["get", "rhs"],
+    [
+      "collator",
+      {"case-sensitive": true, "diacritic-sensitive": true, "locale": "en"}
+    ]
+  ],
+  "inputs": [
+    [{}, {"properties": {"lhs": "a", "rhs": "ä"}}],
+    [{}, {"properties": {"lhs": "a", "rhs": "A"}}],
+    [{}, {"properties": {"lhs": "a", "rhs": "a"}}],
+    [{}, {"properties": {"lhs": "b", "rhs": "ä"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [false, false, true, true],
+    "serialized": [
+      ">=",
+      ["string", ["get", "lhs"]],
+      ["string", ["get", "rhs"]],
+      [
+        "collator",
+        {"case-sensitive": true, "diacritic-sensitive": true, "locale": "en"}
+      ]
+    ]
+  }
+}

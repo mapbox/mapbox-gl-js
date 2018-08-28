@@ -9,12 +9,13 @@
     [{}, {"properties": {"x": "abc", "y": "abc"}}]
   ],
   "expected": {
-    "outputs": [true, true, false, true, false, true],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "boolean"
-    }
+    },
+    "outputs": [true, true, false, true, false, true],
+    "serialized": ["<=", ["string", ["get", "x"]], ["string", ["get", "y"]]]
   }
 }

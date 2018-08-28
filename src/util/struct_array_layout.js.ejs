@@ -84,6 +84,32 @@ for (const member of members) {
         return i;
     }
 
+    emplace(i: number, <%=argNames.join(', ')%>) {
+<%
+{
+for (const size of usedTypeSizes) {
+-%>
+        const o<%=size.toFixed(0)%> = i * <%=(bytesPerElement / size).toFixed(0)%>;
+<%
+}
+        
+let argIndex = 0;
+for (const member of members) {
+    for (let c = 0; c < member.components; c++) {
+        // The index for `member` component `c` into the appropriate type array is:
+        // this.{TYPE}[o{SIZE} + MEMBER_OFFSET + {c}] = v{X}
+        // where MEMBER_OFFSET = ROUND(member.offset / size) is the per-element
+        // offset of this member into the array
+        const index = `o${member.size.toFixed(0)} + ${(member.offset / member.size + c).toFixed(0)}`;
+-%>
+        this.<%=member.view%>[<%=index%>] = v<%=argIndex++%>;
+<%
+    }
+}
+}
+-%>
+        return i;
+    }
 -%>
 }
 

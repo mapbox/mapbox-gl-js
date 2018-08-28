@@ -1,12 +1,14 @@
 // @flow
 
-const Evented = require('../util/evented');
-const util = require('../util/util');
-const loadTileJSON = require('./load_tilejson');
-const normalizeURL = require('../util/mapbox').normalizeTileURL;
-const TileBounds = require('./tile_bounds');
-const ResourceType = require('../util/ajax').ResourceType;
-const browser = require('../util/browser');
+import { Event, ErrorEvent, Evented } from '../util/evented';
+
+import { extend, pick } from '../util/util';
+import loadTileJSON from './load_tilejson';
+import { normalizeTileURL as normalizeURL, postTurnstileEvent } from '../util/mapbox';
+import TileBounds from './tile_bounds';
+import { ResourceType } from '../util/ajax';
+import browser from '../util/browser';
+import Coordinate from '../geo/coordinate';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -14,7 +16,8 @@ import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
-import type {CanonicalTileID} from './CanonicalTileID';
+import type {Cancelable} from '../types/cancelable';
+import type {VectorSourceSpecification} from '../style-spec/types';
 
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
@@ -34,6 +37,7 @@ class VectorTileSource extends Evented implements Source {
     tileBounds: TileBounds;
     reparseOverscaled: boolean;
     isTileClipped: boolean;
+    _tileJSONRequest: ?Cancelable;
 
     constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -48,8 +52,8 @@ class VectorTileSource extends Evented implements Source {
         this.reparseOverscaled = true;
         this.isTileClipped = true;
 
-        util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
-        this._options = util.extend({ type: 'vector' }, options);
+        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        this._options = extend({ type: 'vector' }, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
 
@@ -61,20 +65,22 @@ class VectorTileSource extends Evented implements Source {
     }
 
     load() {
-        this.fire('dataloading', {dataType: 'source'});
-
-        loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
+        this.fire(new Event('dataloading', {dataType: 'source'}));
+        this._tileJSONRequest = loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
+            this._tileJSONRequest = null;
             if (err) {
-                this.fire('error', err);
+                this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
-                util.extend(this, tileJSON);
+                extend(this, tileJSON);
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
+
+                postTurnstileEvent(tileJSON.tiles);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
                 // ref: https://github.com/mapbox/mapbox-gl-js/pull/4347#discussion_r104418088
-                this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
-                this.fire('data', {dataType: 'source', sourceDataType: 'content'});
+                this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+                this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
         });
     }
@@ -88,24 +94,29 @@ class VectorTileSource extends Evented implements Source {
         this.load();
     }
 
+    onRemove() {
+        if (this._tileJSONRequest) {
+            this._tileJSONRequest.cancel();
+            this._tileJSONRequest = null;
+        }
+    }
+
     serialize() {
-        return util.extend({}, this._options);
+        return extend({}, this._options);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const overscaling = tile.tileID.overscaleFactor();
         const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url);
         const params = {
             request: this.map._transformRequest(url, ResourceType.Tile),
             uid: tile.uid,
             tileID: tile.tileID,
             zoom: tile.tileID.overscaledZ,
-            tileSize: this.tileSize * overscaling,
+            tileSize: this.tileSize * tile.tileID.overscaleFactor(),
             type: this.type,
             options: this._options,
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
-            overscaling: overscaling,
             showCollisionBoxes: this.map.showCollisionBoxes,
         };
         params.request.collectResourceTiming = this._collectResourceTiming;
@@ -123,14 +134,14 @@ class VectorTileSource extends Evented implements Source {
             if (tile.aborted)
                 return callback(null);
 
-            if (err) {
+            if (err && err.status !== 404) {
                 return callback(err);
             }
 
             if (data && data.resourceTiming)
                 tile.resourceTiming = data.resourceTiming;
 
-            if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
+            if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);
 
             callback(null);
@@ -142,26 +153,25 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    getLeaves(canonicalTileID: canonicalTileID, clusterId: number, limit: number, offset: number, callback: Callback<void>) {
-        const options = util.extend({
-            canonicalTileID: canonicalTileID,
-            clusterId: clusterId,
-            limit: limit || 10,
-            offset: offset || 0,
+    getClusterLeaves(coordinate: Coordinate, clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
+        this.dispatcher.broadcast(`${this.type}.getClusterLeaves`, {
+            clusterId,
+            limit,
+            offset,
+            coordinate,
             source: this.id
-        }, this.workerOptions);
-
-        this.dispatcher.broadcast(`${this.type}.getLeaves`, options, (err, tilesLeaves) => {
+        }, (err, tilesLeaves) => {
             let leaves = [];
             if (err) {
-                callback({success: false, error: err});
+                callback(err, null);
                 return this.fire('error', { error: err });
             }
             tilesLeaves.forEach((tileLeaves) => {
                 leaves = leaves.concat(tileLeaves)
             });
-            callback({success: true, leaves: leaves});
+            callback(null, leaves);
         });
+        return this;
     }
 
     abortTile(tile: Tile) {
@@ -178,4 +188,4 @@ class VectorTileSource extends Evented implements Source {
     }
 }
 
-module.exports = VectorTileSource;
+export default VectorTileSource;

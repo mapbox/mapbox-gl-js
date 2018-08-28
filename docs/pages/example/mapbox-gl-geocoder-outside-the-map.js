@@ -5,7 +5,7 @@ description: >-
   control to search for places using Mapbox Geocoding API attached to an
   element outside the map.
 tags:
-  - controls-and-overlays
+  - geocoder
 pathname: /mapbox-gl-js/example/mapbox-gl-geocoder-outside-the-map/
 ---*/
 import Example from '../../components/example';

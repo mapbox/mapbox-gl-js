@@ -1,11 +1,13 @@
 // @flow
 
-const ValidationError = require('../error/validation_error');
-const {createExpression, createPropertyExpression} = require('../expression');
-const unbundle = require('../util/unbundle_jsonlint');
+import ValidationError from '../error/validation_error';
 
-module.exports = function validateExpression(options: any) {
-    const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(unbundle.deep(options.value), options.valueSpec);
+import { createExpression, createPropertyExpression } from '../expression';
+import { deepUnbundle } from '../util/unbundle_jsonlint';
+import { isStateConstant } from '../expression/is_constant';
+
+export default function validateExpression(options: any) {
+    const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec);
     if (expression.result === 'error') {
         return expression.value.map((error) => {
             return new ValidationError(`${options.key}${error.key}`, options.value, error.message);
@@ -17,5 +19,9 @@ module.exports = function validateExpression(options: any) {
         return [new ValidationError(options.key, options.value, 'Invalid data expression for "text-font". Output values must be contained as literals within the expression.')];
     }
 
+    if (options.expressionContext === 'property' && options.propertyType === 'layout' &&
+        (!isStateConstant((expression.value: any)._styleExpression.expression))) {
+        return [new ValidationError(options.key, options.value, '"feature-state" data expressions are not supported with layout properties.')];
+    }
     return [];
-};
+}

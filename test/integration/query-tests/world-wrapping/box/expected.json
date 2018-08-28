@@ -1,11 +1,5 @@
 [
   {
-    "properties": {
-      "class": "shadow",
-      "level": 56
-    },
-    "id": 958,
-    "type": "Feature",
     "geometry": {
       "type": "Polygon",
       "coordinates": [
@@ -20,7 +14,7 @@
           ],
           [
             -69.43359375,
-            -33.13755119234615
+            -33.137551192346145
           ],
           [
             -69.2578125,
@@ -28,15 +22,18 @@
           ]
         ]
       ]
-    }
-  },
-  {
+    },
+    "type": "Feature",
     "properties": {
       "class": "shadow",
       "level": 56
     },
-    "id": 957,
-    "type": "Feature",
+    "id": 958,
+    "source": "mapbox",
+    "sourceLayer": "hillshade",
+    "state": {}
+  },
+  {
     "geometry": {
       "type": "Polygon",
       "coordinates": [
@@ -47,7 +44,7 @@
           ],
           [
             -65.91796875,
-            -27.527758206861897
+            -27.527758206861883
           ],
           [
             -65.56640625,
@@ -59,15 +56,18 @@
           ]
         ]
       ]
-    }
-  },
-  {
+    },
+    "type": "Feature",
     "properties": {
       "class": "shadow",
       "level": 56
     },
-    "id": 956,
-    "type": "Feature",
+    "id": 957,
+    "source": "mapbox",
+    "sourceLayer": "hillshade",
+    "state": {}
+  },
+  {
     "geometry": {
       "type": "Polygon",
       "coordinates": [
@@ -90,6 +90,15 @@
           ]
         ]
       ]
-    }
+    },
+    "type": "Feature",
+    "properties": {
+      "class": "shadow",
+      "level": 56
+    },
+    "id": 956,
+    "source": "mapbox",
+    "sourceLayer": "hillshade",
+    "state": {}
   }
 ]

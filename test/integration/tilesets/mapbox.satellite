@@ -1,0 +1,5 @@
+{
+    "tiles": [
+      "http://localhost:2900/tiles/mapbox.satellite/{z}-{x}-{y}.png"
+    ]
+}

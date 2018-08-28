@@ -1,11 +1,13 @@
 // @flow
 
-const assert = require('assert');
-const {checkSubtype, ValueType} = require('../types');
+import assert from 'assert';
+
+import { checkSubtype, ValueType } from '../types';
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+import type { Value } from '../values';
 import type { Type } from '../types';
 
 class Coalesce implements Expression {
@@ -62,9 +64,15 @@ class Coalesce implements Expression {
         this.args.forEach(fn);
     }
 
-    possibleOutputs() {
+    possibleOutputs(): Array<Value | void> {
         return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
+    }
+
+    serialize() {
+        const serialized = ["coalesce"];
+        this.eachChild(child => { serialized.push(child.serialize()); });
+        return serialized;
     }
 }
 
-module.exports = Coalesce;
+export default Coalesce;

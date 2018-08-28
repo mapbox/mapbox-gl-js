@@ -57,7 +57,10 @@ void main() {
     highp float distance_ratio = u_pitch_with_map ?
         camera_to_anchor_distance / u_camera_to_center_distance :
         u_camera_to_center_distance / camera_to_anchor_distance;
-    highp float perspective_ratio = 0.5 + 0.5 * distance_ratio;
+    highp float perspective_ratio = clamp(
+            0.5 + 0.5 * distance_ratio,
+            0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
+            4.0);
 
     size *= perspective_ratio;
 
@@ -79,7 +82,7 @@ void main() {
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
-    gl_Position = u_gl_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 64.0 * fontScale), 0.0, 1.0);
+    gl_Position = u_gl_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 32.0 * fontScale), 0.0, 1.0);
 
     v_tex = a_tex / u_texsize;
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);

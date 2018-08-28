@@ -8,7 +8,7 @@
     <td></td><td></td>
 <% } %>
     <td>
-        <h2 style="background: <%- r.color %>"><a href="<%- r.group %>/<%- r.test %>/style.json"><%- r.group %>/<%- r.test %> <% if (!r.ok) { %>(<%=r.status%>)<% } %></a></h2>
+        <h2 style="background: <%- r.color %>"><a href="<%- r.id %>/style.json"><%- r.id %> <% if (!r.ok) { %>(<%=r.status%>)<% } %></a></h2>
         <ul>
             <% if (r.error) { %><li>error: <%- r.error.message %></li><% } %>
             <li>diff: <strong><%- r.difference %></strong></li>

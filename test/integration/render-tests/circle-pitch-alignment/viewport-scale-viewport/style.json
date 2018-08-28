@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 512,
+      "width": 128,
       "height": 512
     }
   },
@@ -11,7 +11,7 @@
     0
   ],
   "zoom": 0,
-  "pitch": 90,
+  "pitch": 60,
   "sources": {
     "geojson": {
       "type": "geojson",

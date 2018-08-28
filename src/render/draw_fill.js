@@ -1,8 +1,13 @@
 // @flow
 
-const pattern = require('./pattern');
-const Color = require('../style-spec/util/color');
-const DepthMode = require('../gl/depth_mode');
+import {
+    isPatternMissing,
+    setPatternUniforms,
+    prepare as preparePattern
+} from './pattern';
+
+import Color from '../style-spec/util/color';
+import DepthMode from '../gl/depth_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -11,7 +16,7 @@ import type FillBucket from '../data/bucket/fill_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {CrossFaded} from '../style/cross_faded';
 
-module.exports = drawFill;
+export default drawFill;
 
 function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<OverscaledTileID>) {
     const color = layer.paint.get('fill-color');
@@ -38,7 +43,6 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 
     // Draw stroke
     if (painter.renderPass === 'translucent' && layer.paint.get('fill-antialias')) {
-        context.lineWidth.set(2);
 
         // If we defined a different color for the fill outline, we are
         // going to ignore the bits in 0x07 and just care about the global
@@ -55,7 +59,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 }
 
 function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
-    if (pattern.isPatternMissing(layer.paint.get('fill-pattern'), painter)) return;
+    if (isPatternMissing(layer.paint.get('fill-pattern'), painter)) return;
 
     let firstTile = true;
     for (const coord of coords) {
@@ -115,9 +119,9 @@ function setFillProgram(programId, pat: ?CrossFaded<string>, painter, programCon
         program = painter.useProgram(`${programId}Pattern`, programConfiguration);
         if (firstTile || program.program !== prevProgram) {
             programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
-            pattern.prepare(pat, painter, program);
+            preparePattern(pat, painter, program);
         }
-        pattern.setTile(tile, painter, program);
+        setPatternUniforms(tile, painter, program);
     }
     painter.context.gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix, tile,

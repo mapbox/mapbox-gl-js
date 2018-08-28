@@ -1,0 +1,223 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "description": "We use a render test for the collator expression because it has an Android-specific implementation and we don't have an Android expression test suite. For other platforms, see the collator expression tests."
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "a": "a",
+              "b": "Â",
+              "operator": "==",
+              "case-sensitive": false,
+              "diacritic-sensitive": false
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "a": "a",
+                "b": "Â",
+                "operator": "!=",
+                "case-sensitive": false,
+                "diacritic-sensitive": false
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                40
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "a": "a",
+                "b": "Â",
+                "operator": "<=",
+                "case-sensitive": true,
+                "diacritic-sensitive": false
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                -40
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "a": "a",
+                "b": "ä",
+                "operator": "<",
+                "case-sensitive": true,
+                "diacritic-sensitive": false
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -60,
+                40
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "a": "a",
+                "b": "ä",
+                "operator": ">",
+                "case-sensitive": true,
+                "diacritic-sensitive": true
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -60,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "a": "a",
+                "b": "ä",
+                "operator": ">=",
+                "case-sensitive": true,
+                "diacritic-sensitive": true
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -60,
+                -40
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "a": "a",
+                "b": "ä",
+                "operator": "<",
+                "case-sensitive": true,
+                "diacritic-sensitive": true
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                60,
+                40
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "a": "a",
+                "b": "ä",
+                "operator": "<",
+                "case-sensitive": false,
+                "diacritic-sensitive": true
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                60,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+                "a": "a",
+                "b": "A",
+                "operator": "<=",
+                "case-sensitive": true,
+                "diacritic-sensitive": true
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                60,
+                -40
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "literal",
+      "type": "symbol",
+      "source": "mapbox",
+      "layout": {
+        "text-field": ["let",
+            "a", ["to-string", ["get", "a"]],
+            "b", ["to-string", ["get", "b"]],
+            "op", ["get", "operator"],
+            "collation", ["collator", {
+                "case-sensitive": ["get", "case-sensitive"],
+                "diacritic-sensitive": ["get", "diacritic-sensitive"],
+                "locale": "en" }
+            ],
+            ["concat",
+                ["var", "a"], " ",
+                ["var", "op"], " ",
+                ["var", "b"], "\n",
+                "Case: ", ["to-string", ["get", "case-sensitive"]], "\n",
+                "Diacritics: ", ["to-string", ["get", "diacritic-sensitive"]], "\n",
+                ["to-string", ["match",
+                    ["var", "op"],
+                    "==", ["==", ["var", "a"], ["var", "b"], ["var", "collation"]],
+                    "!=", ["!=", ["var", "a"], ["var", "b"], ["var", "collation"]],
+                    "<",  ["<",  ["var", "a"], ["var", "b"], ["var", "collation"]],
+                    "<=", ["<=", ["var", "a"], ["var", "b"], ["var", "collation"]],
+                    ">",  [">",  ["var", "a"], ["var", "b"], ["var", "collation"]],
+                    ">=", [">=", ["var", "a"], ["var", "b"], ["var", "collation"]],
+                    false
+                ]]
+            ]
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+      ],
+        "text-size": 10,
+        "text-max-width": 7
+      }
+    }
+  ]
+}

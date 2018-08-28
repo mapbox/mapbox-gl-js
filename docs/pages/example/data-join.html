@@ -75,7 +75,7 @@ map.on('load', function() {
         url: "mapbox://mapbox.us_census_states_2015"
     });
 
-    var expression = ["match", ["get", "STATEFP"]];
+    var expression = ["match", ["get", "STATE_ID"]];
 
     // Calculate color for each state based on the unemployment rate
     data.forEach(function(row) {

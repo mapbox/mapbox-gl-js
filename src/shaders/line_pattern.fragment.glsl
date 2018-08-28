@@ -32,8 +32,14 @@ void main() {
 
     float x_a = mod(v_linesofar / u_pattern_size_a.x, 1.0);
     float x_b = mod(v_linesofar / u_pattern_size_b.x, 1.0);
-    float y_a = 0.5 + (v_normal.y * v_width2.s / u_pattern_size_a.y);
-    float y_b = 0.5 + (v_normal.y * v_width2.s / u_pattern_size_b.y);
+
+    // v_normal.y is 0 at the midpoint of the line, -1 at the lower edge, 1 at the upper edge
+    // we clamp the line width outset to be between 0 and half the pattern height plus padding (2.0)
+    // to ensure we don't sample outside the designated symbol on the sprite sheet.
+    // 0.5 is added to shift the component to be bounded between 0 and 1 for interpolation of
+    // the texture coordinate
+    float y_a = 0.5 + (v_normal.y * clamp(v_width2.s, 0.0, (u_pattern_size_a.y + 2.0) / 2.0) / u_pattern_size_a.y);
+    float y_b = 0.5 + (v_normal.y * clamp(v_width2.s, 0.0, (u_pattern_size_b.y + 2.0) / 2.0) / u_pattern_size_b.y);
     vec2 pos_a = mix(u_pattern_tl_a / u_texsize, u_pattern_br_a / u_texsize, vec2(x_a, y_a));
     vec2 pos_b = mix(u_pattern_tl_b / u_texsize, u_pattern_br_b / u_texsize, vec2(x_b, y_b));
 

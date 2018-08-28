@@ -1,19 +1,17 @@
 // @flow
 
-const assert = require('assert');
-const {
-    ColorType,
-    ValueType,
-    NumberType,
-} = require('../types');
+import assert from 'assert';
 
-const { Color, validateRGBA } = require('../values');
-const RuntimeError = require('../runtime_error');
+import { ColorType, ValueType, NumberType } from '../types';
+import { Color, validateRGBA } from '../values';
+import RuntimeError from '../runtime_error';
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+import type { Value } from '../values';
 import type { Type } from '../types';
+import { Formatted, FormattedSection } from './formatted';
 
 const types = {
     'to-number': NumberType,
@@ -77,6 +75,15 @@ class Coercion implements Expression {
                 }
             }
             throw new RuntimeError(error || `Could not parse color from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
+        } else if (this.type.kind === 'formatted') {
+            let input;
+            for (const arg of this.args) {
+                input = arg.evaluate(ctx);
+                if (typeof input === 'string') {
+                    return new Formatted([new FormattedSection(input, null, null)]);
+                }
+            }
+            throw new RuntimeError(`Could not parse formatted text from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
         } else {
             let value = null;
             for (const arg of this.args) {
@@ -94,9 +101,15 @@ class Coercion implements Expression {
         this.args.forEach(fn);
     }
 
-    possibleOutputs() {
+    possibleOutputs(): Array<Value | void> {
         return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
+    }
+
+    serialize() {
+        const serialized = [`to-${this.type.kind}`];
+        this.eachChild(child => { serialized.push(child.serialize()); });
+        return serialized;
     }
 }
 
-module.exports = Coercion;
+export default Coercion;

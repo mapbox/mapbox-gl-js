@@ -17,10 +17,7 @@ class Let implements Expression {
     }
 
     evaluate(ctx: EvaluationContext) {
-        ctx.pushScope(this.bindings);
-        const result = this.result.evaluate(ctx);
-        ctx.popScope();
-        return result;
+        return this.result.evaluate(ctx);
     }
 
     eachChild(fn: (Expression) => void) {
@@ -61,6 +58,15 @@ class Let implements Expression {
     possibleOutputs() {
         return this.result.possibleOutputs();
     }
+
+    serialize() {
+        const serialized = ["let"];
+        for (const [name, expr] of this.bindings) {
+            serialized.push(name, expr.serialize());
+        }
+        serialized.push(this.result.serialize());
+        return serialized;
+    }
 }
 
-module.exports = Let;
+export default Let;

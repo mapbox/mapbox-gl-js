@@ -1,8 +1,6 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const {createFunction} = require('../../../src/style-spec/function');
-const Color = require('../../../src/style-spec/util/color');
+import { test } from 'mapbox-gl-js-test';
+import { createFunction } from '../../../src/style-spec/function';
+import Color from '../../../src/style-spec/util/color';
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {
@@ -11,7 +9,11 @@ test('binary search', (t) => {
             base: 2
         }, {
             type: 'number',
-            function: 'interpolated'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': true,
+                'parameters': ['zoom']
+            }
         }).evaluate;
 
         t.equal(f({zoom: 17}), 11);
@@ -28,7 +30,11 @@ test('exponential function', (t) => {
             base: 2
         }, {
             type: 'number',
-            function: 'interpolated'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': true,
+                'parameters': ['zoom']
+            }
         }).evaluate;
 
         t.equalWithPrecision(f({zoom: 2}), 30 / 9, 1e-6);
@@ -460,12 +466,16 @@ test('exponential function', (t) => {
 });
 
 test('interval function', (t) => {
-    t.test('is the default for piecewise-constant properties', (t) => {
+    t.test('is the default for non-interpolated properties', (t) => {
         const f = createFunction({
             stops: [[-1, 11], [0, 111]]
         }, {
             type: 'number',
-            function: 'piecewise-constant'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': false,
+                'parameters': ['zoom']
+            }
         }).evaluate;
 
         t.equal(f({zoom: -1.5}), 11);

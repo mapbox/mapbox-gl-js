@@ -6,7 +6,7 @@ description: >-
   results from a local data source or function, in this case to match
   geographic coordinates provided as input.
 tags:
-  - controls-and-overlays
+  - geocoder
 pathname: /mapbox-gl-js/example/mapbox-gl-geocoder-local-geocoder/
 ---*/
 import Example from '../../components/example';

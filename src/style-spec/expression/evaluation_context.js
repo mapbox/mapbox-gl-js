@@ -1,23 +1,19 @@
 // @flow
 
-const assert = require('assert');
-const Scope = require('./scope');
-const {Color} = require('./values');
+import { Color } from './values';
 
-import type { Feature, GlobalProperties } from './index';
-import type { Expression } from './expression';
+import type { GlobalProperties, Feature, FeatureState } from './index';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
 class EvaluationContext {
     globals: GlobalProperties;
     feature: ?Feature;
+    featureState: ?FeatureState;
 
-    scope: Scope;
     _parseColorCache: {[string]: ?Color};
 
     constructor() {
-        this.scope = new Scope();
         this._parseColorCache = {};
     }
 
@@ -33,15 +29,6 @@ class EvaluationContext {
         return this.feature && this.feature.properties || {};
     }
 
-    pushScope(bindings: Array<[string, Expression]>) {
-        this.scope = this.scope.concat(bindings);
-    }
-
-    popScope() {
-        assert(this.scope.parent);
-        this.scope = (this.scope.parent: any);
-    }
-
     parseColor(input: string): ?Color {
         let cached = this._parseColorCache[input];
         if (!cached) {
@@ -51,4 +38,4 @@ class EvaluationContext {
     }
 }
 
-module.exports = EvaluationContext;
+export default EvaluationContext;

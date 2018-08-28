@@ -10,6 +10,11 @@ There are two test suites associated with Mapbox GL JS
  - `yarn test` runs quick unit tests
  - `yarn run test-suite` runs slower integration tests
 
+ To run individual tests:
+
+ - Unit tests: `yarn test-unit path/to/file.test.js` where the path begins within the `/test/unit/` directory
+ - Render tests: `yarn test-render render-test-name` (e.g. `yarn test-render background-color/default`)
+
 ## Writing Unit Tests
 
  - **You must not share variables between test cases.** All test fixtures must be wrapped in `create` functions. This ensures each test is run in an isolated environment.

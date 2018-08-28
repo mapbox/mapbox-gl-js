@@ -56,7 +56,8 @@ map.addControl(new mapboxgl.ScaleControl());
 map.on('load', function() {
     map.addSource('geojson', {
         "type": "geojson",
-        "data": "/test/integration/data/linestring.geojson"
+        "data": "/test/integration/data/linestring.geojson",
+        "attribution": "GeoJSON Attribution"
     });
     map.addLayer({
         "id": "route",
@@ -82,6 +83,39 @@ map.on('load', function() {
             "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
         }
     });
+
+    map.addLayer({
+        id: "marker",
+        type: "symbol",
+        source: "points",
+        layout: {
+            "icon-image": "bus-11",
+            "icon-size": 2,
+            "icon-ignore-placement": true,
+            "icon-allow-overlap": true
+        }
+    });
+
+    map.addLayer({
+        id: "marker-hover",
+        type: "symbol",
+        filter: ["==", "name", ""],
+        source: "points",
+        layout: {
+            "icon-image": "bus-15",
+            "icon-size": 2,
+            "icon-ignore-placement": true,
+            "icon-allow-overlap": true
+        }
+    });
+
+    map.on('mouseenter', 'marker', function(e) {
+        map.setFilter('marker-hover', ['==', 'name', e.features[0].properties.name]);
+    });
+    map.on('mouseleave', 'marker', function(e) {
+        map.setFilter('marker-hover', ['==', 'name', '']);
+    });
+
 });
 
 map.on('click', function(e) {

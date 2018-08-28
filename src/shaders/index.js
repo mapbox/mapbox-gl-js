@@ -1,9 +1,11 @@
 // @flow
 
-const fs = require('fs');
+// We use brfs, a browserify transform, to inline shader sources during bundling. As a result:
+// - readFileSync calls must be written out long-form
+// - this module must use CommonJS rather than ES2015 syntax
+/* eslint-disable prefer-template, no-path-concat, import/unambiguous, import/no-commonjs */
 
-// readFileSync calls must be written out long-form for brfs.
-/* eslint-disable prefer-template, no-path-concat */
+const fs = require('fs');
 
 const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
     prelude: {
@@ -85,6 +87,10 @@ const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
     line: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/line.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/line.vertex.glsl', 'utf8')
+    },
+    lineGradient: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/line_gradient.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/line_gradient.vertex.glsl', 'utf8')
     },
     linePattern: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/line_pattern.fragment.glsl', 'utf8'),

@@ -100,7 +100,7 @@ map.on('load', function() {
     //
     // Here we're using d3 to help us make the ajax request but you can use
     // Any request method (library or otherwise) you wish.
-    d3.json('/mapbox-gl-js/assets/significant-earthquakes-2015.geojson', function(err, data) {
+    d3.json('https://www.mapbox.com/mapbox-gl-js/assets/significant-earthquakes-2015.geojson', function(err, data) {
         if (err) throw err;
 
         // Create a month property value based on time

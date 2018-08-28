@@ -1,6 +1,6 @@
 // @flow
 
-const {register} = require('../util/web_worker_transfer');
+import { register } from '../util/web_worker_transfer';
 
 class OpacityState {
     opacity: number;
@@ -24,4 +24,4 @@ class OpacityState {
 
 register('OpacityState', OpacityState);
 
-module.exports = OpacityState;
+export default OpacityState;

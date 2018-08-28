@@ -12,12 +12,16 @@
     [{}, {"properties": {"x": 1.5}}]
   ],
   "expected": {
-    "outputs": [11, 11, 111, 111, 1111, 1111],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [11, 11, 111, 111, 1111, 1111],
+    "serialized": [
+      "number",
+      ["step", ["number", ["get", "x"]], 11, 0, 111, 1, 1111]
+    ]
   }
 }

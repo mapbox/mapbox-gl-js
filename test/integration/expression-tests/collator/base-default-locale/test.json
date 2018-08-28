@@ -1,0 +1,28 @@
+{
+  "expression": [
+    "==",
+    ["string", ["get", "lhs"]],
+    ["get", "rhs"],
+    ["collator", {"case-sensitive": false, "diacritic-sensitive": false}]
+  ],
+  "inputs": [
+    [{}, {"properties": {"lhs": "a", "rhs": "a"}}],
+    [{}, {"properties": {"lhs": "A", "rhs": "A"}}],
+    [{}, {"properties": {"lhs": "b", "rhs": "a"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true, true, false],
+    "serialized": [
+      "==",
+      ["string", ["get", "lhs"]],
+      ["get", "rhs"],
+      ["collator", {"case-sensitive": false, "diacritic-sensitive": false}]
+    ]
+  }
+}

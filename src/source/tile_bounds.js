@@ -1,7 +1,8 @@
 // @flow
 
-const LngLatBounds = require('../geo/lng_lat_bounds');
-const clamp = require('../util/util').clamp;
+import LngLatBounds from '../geo/lng_lat_bounds';
+
+import { clamp } from '../util/util';
 
 import type {CanonicalTileID} from './tile_id';
 
@@ -44,4 +45,4 @@ class TileBounds {
     }
 }
 
-module.exports = TileBounds;
+export default TileBounds;

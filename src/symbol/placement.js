@@ -1,19 +1,22 @@
 // @flow
 
-const CollisionIndex = require('./collision_index');
-const EXTENT = require('../data/extent');
-const symbolSize = require('./symbol_size');
-const projection = require('./projection');
-const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
-const assert = require('assert');
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+import CollisionIndex from './collision_index';
+
+import EXTENT from '../data/extent';
+import * as symbolSize from './symbol_size';
+import * as projection from './projection';
+import symbolLayerProperties from '../style/style_layer/symbol_style_layer_properties';
+import assert from 'assert';
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
 
 import type Transform from '../geo/transform';
 import type StyleLayer from '../style/style_layer';
 import type Tile from '../source/tile';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type mat4 from '@mapbox/gl-matrix';
+import type {mat4} from 'gl-matrix';
 import type {CollisionBoxArray, CollisionVertexArray} from '../data/array_types';
+import type FeatureIndex from '../data/feature_index';
+import type {OverscaledTileID} from '../source/tile_id';
 
 class OpacityState {
     opacity: number;
@@ -58,29 +61,89 @@ class JointPlacement {
     }
 }
 
-class Placement {
+export class RetainedQueryData {
+    bucketInstanceId: number;
+    featureIndex: FeatureIndex;
+    sourceLayerIndex: number;
+    bucketIndex: number;
+    tileID: OverscaledTileID;
+    featureSortOrder: ?Array<number>
+    constructor(bucketInstanceId: number,
+                featureIndex: FeatureIndex,
+                sourceLayerIndex: number,
+                bucketIndex: number,
+                tileID: OverscaledTileID) {
+        this.bucketInstanceId = bucketInstanceId;
+        this.featureIndex = featureIndex;
+        this.sourceLayerIndex = sourceLayerIndex;
+        this.bucketIndex = bucketIndex;
+        this.tileID = tileID;
+    }
+}
+
+class CollisionGroups {
+    collisionGroups: { [groupName: string]: { ID: number, predicate?: any }};
+    maxGroupID: number;
+    crossSourceCollisions: boolean;
+
+    constructor(crossSourceCollisions: boolean) {
+        this.crossSourceCollisions = crossSourceCollisions;
+        this.maxGroupID = 0;
+        this.collisionGroups = {};
+    }
+
+    get(sourceID: string) {
+        // The predicate/groupID mechanism allows for arbitrary grouping,
+        // but the current interface defines one source == one group when
+        // crossSourceCollisions == true.
+        if (!this.crossSourceCollisions) {
+            if (!this.collisionGroups[sourceID]) {
+                const nextGroupID = ++this.maxGroupID;
+                this.collisionGroups[sourceID] = {
+                    ID: nextGroupID,
+                    predicate: (key) => {
+                        return key.collisionGroupID === nextGroupID;
+                    }
+                };
+            }
+            return this.collisionGroups[sourceID];
+        } else {
+            return { ID: 0, predicate: null };
+        }
+    }
+}
+
+
+export class Placement {
     transform: Transform;
     collisionIndex: CollisionIndex;
-    recentUntil: number;
     placements: { [string | number]: JointPlacement };
     opacities: { [string | number]: JointOpacityState };
     commitTime: number;
+    lastPlacementChangeTime: number;
     stale: boolean;
     fadeDuration: number;
+    retainedQueryData: {[number]: RetainedQueryData};
+    collisionGroups: CollisionGroups;
 
-    constructor(transform: Transform, fadeDuration: number) {
+    constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean) {
         this.transform = transform.clone();
         this.collisionIndex = new CollisionIndex(this.transform);
-        this.recentUntil = -Infinity;
         this.placements = {};
         this.opacities = {};
         this.stale = false;
         this.fadeDuration = fadeDuration;
+        this.retainedQueryData = {};
+        this.collisionGroups = new CollisionGroups(crossSourceCollisions);
     }
 
     placeLayerTile(styleLayer: StyleLayer, tile: Tile, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean }) {
         const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-        if (!symbolBucket) return;
+        const bucketFeatureIndex = tile.latestFeatureIndex;
+        if (!symbolBucket || !bucketFeatureIndex || styleLayer.id !== symbolBucket.layerIds[0])
+            return;
+
+        const collisionBoxArray = tile.collisionBoxArray;
 
         const layout = symbolBucket.layers[0].layout;
 
@@ -101,23 +164,40 @@ class Placement {
                 this.transform,
                 pixelsToTileUnits(tile, 1, this.transform.zoom));
 
+        // As long as this placement lives, we have to hold onto this bucket's
+        // matching FeatureIndex/data for querying purposes
+        this.retainedQueryData[symbolBucket.bucketInstanceId] = new RetainedQueryData(
+            symbolBucket.bucketInstanceId,
+            bucketFeatureIndex,
+            symbolBucket.sourceLayerIndex,
+            symbolBucket.index,
+            tile.tileID
+        );
+
         this.placeLayerBucket(symbolBucket, posMatrix, textLabelPlaneMatrix, iconLabelPlaneMatrix, scale, textPixelRatio,
-                showCollisionBoxes, seenCrossTileIDs, tile.collisionBoxArray, tile.tileID.key, styleLayer.source);
+                showCollisionBoxes, tile.holdingForFade(), seenCrossTileIDs, collisionBoxArray);
     }
 
     placeLayerBucket(bucket: SymbolBucket, posMatrix: mat4, textLabelPlaneMatrix: mat4, iconLabelPlaneMatrix: mat4,
-            scale: number, textPixelRatio: number, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean },
-            collisionBoxArray: ?CollisionBoxArray, tileKey: number, sourceID: string) {
-
+            scale: number, textPixelRatio: number, showCollisionBoxes: boolean, holdingForFade: boolean, seenCrossTileIDs: { [string | number]: boolean },
+            collisionBoxArray: ?CollisionBoxArray) {
         const layout = bucket.layers[0].layout;
 
-        const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayoutProperties.properties['text-size']);
+        const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayerProperties.layout.properties['text-size']);
 
-        const iconWithoutText = !bucket.hasTextData() || layout.get('text-optional');
-        const textWithoutIcon = !bucket.hasIconData() || layout.get('icon-optional');
+        const textOptional = layout.get('text-optional');
+        const iconOptional = layout.get('icon-optional');
+
+        const collisionGroup = this.collisionGroups.get(bucket.sourceID);
 
         for (const symbolInstance of bucket.symbolInstances) {
             if (!seenCrossTileIDs[symbolInstance.crossTileID]) {
+                if (holdingForFade) {
+                    // Mark all symbols from this tile as "not placed", but don't add to seenCrossTileIDs, because we don't
+                    // know yet if we have a duplicate in a parent tile that _should_ be placed.
+                    this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false);
+                    continue;
+                }
 
                 let placeText = false;
                 let placeIcon = false;
@@ -127,15 +207,21 @@ class Placement {
                 let placedGlyphCircles = null;
                 let placedIconBoxes = null;
 
+                let textFeatureIndex = 0;
+                let iconFeatureIndex = 0;
+
                 if (!symbolInstance.collisionArrays) {
                     symbolInstance.collisionArrays = bucket.deserializeCollisionBoxes(
                             ((collisionBoxArray: any): CollisionBoxArray),
                             symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex);
                 }
 
+                if (symbolInstance.collisionArrays.textFeatureIndex) {
+                    textFeatureIndex = symbolInstance.collisionArrays.textFeatureIndex;
+                }
                 if (symbolInstance.collisionArrays.textBox) {
                     placedGlyphBoxes = this.collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.textBox,
-                            layout.get('text-allow-overlap'), textPixelRatio, posMatrix);
+                            layout.get('text-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
                     placeText = placedGlyphBoxes.box.length > 0;
                     offscreen = offscreen && placedGlyphBoxes.offscreen;
                 }
@@ -155,7 +241,8 @@ class Placement {
                             posMatrix,
                             textLabelPlaneMatrix,
                             showCollisionBoxes,
-                            layout.get('text-pitch-alignment') === 'map');
+                            layout.get('text-pitch-alignment') === 'map',
+                            collisionGroup.predicate);
                     // If text-allow-overlap is set, force "placedCircles" to true
                     // In theory there should always be at least one circle placed
                     // in this case, but for now quirks in text-anchor
@@ -164,12 +251,18 @@ class Placement {
                     offscreen = offscreen && placedGlyphCircles.offscreen;
                 }
 
+                if (symbolInstance.collisionArrays.iconFeatureIndex) {
+                    iconFeatureIndex = symbolInstance.collisionArrays.iconFeatureIndex;
+                }
                 if (symbolInstance.collisionArrays.iconBox) {
                     placedIconBoxes = this.collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.iconBox,
-                            layout.get('icon-allow-overlap'), textPixelRatio, posMatrix);
+                            layout.get('icon-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
                     placeIcon = placedIconBoxes.box.length > 0;
                     offscreen = offscreen && placedIconBoxes.offscreen;
                 }
+
+                const iconWithoutText = textOptional || (symbolInstance.numGlyphVertices === 0 && symbolInstance.numVerticalGlyphVertices === 0);
+                const textWithoutIcon = iconOptional || symbolInstance.numIconVertices === 0;
 
                 // Combine the scales for icons and text.
                 if (!iconWithoutText && !textWithoutIcon) {
@@ -182,15 +275,15 @@ class Placement {
 
                 if (placeText && placedGlyphBoxes) {
                     this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
-                            tileKey, sourceID, bucket.bucketInstanceId, symbolInstance.textBoxStartIndex);
+                            bucket.bucketInstanceId, textFeatureIndex, collisionGroup.ID);
                 }
                 if (placeIcon && placedIconBoxes) {
                     this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'),
-                            tileKey, sourceID, bucket.bucketInstanceId, symbolInstance.iconBoxStartIndex);
+                            bucket.bucketInstanceId, iconFeatureIndex, collisionGroup.ID);
                 }
                 if (placeText && placedGlyphCircles) {
                     this.collisionIndex.insertCollisionCircles(placedGlyphCircles.circles, layout.get('text-ignore-placement'),
-                            tileKey, sourceID, bucket.bucketInstanceId, symbolInstance.textBoxStartIndex);
+                            bucket.bucketInstanceId, textFeatureIndex, collisionGroup.ID);
                 }
 
                 assert(symbolInstance.crossTileID !== 0);
@@ -204,7 +297,7 @@ class Placement {
         bucket.justReloaded = false;
     }
 
-    commit(prevPlacement: ?Placement, now: number) {
+    commit(prevPlacement: ?Placement, now: number): void {
         this.commitTime = now;
 
         let placementChanged = false;
@@ -242,7 +335,15 @@ class Placement {
             }
         }
 
-        return placementChanged;
+        // this.lastPlacementChangeTime is the time of the last commit() that
+        // resulted in a placement change -- in other words, the start time of
+        // the last symbol fade animation
+        assert(!prevPlacement || prevPlacement.lastPlacementChangeTime !== undefined);
+        if (placementChanged) {
+            this.lastPlacementChangeTime = now;
+        } else if (typeof this.lastPlacementChangeTime !== 'number') {
+            this.lastPlacementChangeTime = prevPlacement ? prevPlacement.lastPlacementChangeTime : now;
+        }
     }
 
     updateLayerOpacities(styleLayer: StyleLayer, tiles: Array<Tile>) {
@@ -250,7 +351,7 @@ class Placement {
 
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-            if (symbolBucket) {
+            if (symbolBucket && tile.latestFeatureIndex && styleLayer.id === symbolBucket.layerIds[0]) {
                 this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile.collisionBoxArray);
             }
         }
@@ -263,6 +364,7 @@ class Placement {
         if (bucket.hasCollisionCircleData()) bucket.collisionCircle.collisionVertexArray.clear();
 
         const layout = bucket.layers[0].layout;
+        const duplicateOpacityState = new JointOpacityState(null, 0, false, false, true);
         const defaultOpacityState = new JointOpacityState(null, 0,
                 layout.get('text-allow-overlap'),
                 layout.get('icon-allow-overlap'), true);
@@ -272,12 +374,12 @@ class Placement {
             const isDuplicate = seenCrossTileIDs[symbolInstance.crossTileID];
 
             let opacityState = this.opacities[symbolInstance.crossTileID];
-            if (!opacityState) {
+            if (isDuplicate) {
+                opacityState = duplicateOpacityState;
+            } else if (!opacityState) {
                 opacityState = defaultOpacityState;
                 // store the state so that future placements use it as a starting point
                 this.opacities[symbolInstance.crossTileID] = opacityState;
-            } else if (isDuplicate) {
-                opacityState = defaultOpacityState;
             }
 
             seenCrossTileIDs[symbolInstance.crossTileID] = true;
@@ -337,6 +439,9 @@ class Placement {
         }
 
         bucket.sortFeatures(this.transform.angle);
+        if (this.retainedQueryData[bucket.bucketInstanceId]) {
+            this.retainedQueryData[bucket.bucketInstanceId].featureSortOrder = bucket.featureSortOrder;
+        }
 
         if (bucket.hasTextData() && bucket.text.opacityVertexBuffer) {
             bucket.text.opacityVertexBuffer.updateData(bucket.text.opacityVertexArray);
@@ -362,16 +467,13 @@ class Placement {
     }
 
     hasTransitions(now: number) {
-        return this.symbolFadeChange(now) < 1 || this.stale;
+        return this.stale ||
+            now - this.lastPlacementChangeTime < this.fadeDuration;
     }
 
     stillRecent(now: number) {
-        return this.recentUntil > now;
-    }
-
-    setRecent(now: number, stale: boolean) {
-        this.stale = stale;
-        this.recentUntil = now + this.fadeDuration;
+        return this.commitTime !== 'undefined' &&
+            this.commitTime + this.fadeDuration > now;
     }
 
     setStale() {
@@ -410,5 +512,3 @@ function packOpacity(opacityState: OpacityState): number {
         opacityBits * shift9 + targetBit * shift8 +
         opacityBits * shift1 + targetBit;
 }
-
-module.exports = Placement;

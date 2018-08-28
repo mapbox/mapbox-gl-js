@@ -1,8 +1,9 @@
 // @flow
 
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
-const StencilMode = require('../gl/stencil_mode');
-const DepthMode = require('../gl/depth_mode');
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
+
+import StencilMode from '../gl/stencil_mode';
+import DepthMode from '../gl/depth_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -10,7 +11,7 @@ import type CircleStyleLayer from '../style/style_layer/circle_style_layer';
 import type CircleBucket from '../data/bucket/circle_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
 
-module.exports = drawCircles;
+export default drawCircles;
 
 function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;

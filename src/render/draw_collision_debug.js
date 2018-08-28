@@ -5,11 +5,11 @@ import type SourceCache from '../source/source_cache';
 import type StyleLayer from '../style/style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
-const DepthMode = require('../gl/depth_mode');
-const StencilMode = require('../gl/stencil_mode');
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
+import DepthMode from '../gl/depth_mode';
+import StencilMode from '../gl/stencil_mode';
 
-module.exports = drawCollisionDebug;
+export default drawCollisionDebug;
 
 function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>, drawCircles: boolean) {
     const context = painter.context;
@@ -31,10 +31,6 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
-        if (!drawCircles) {
-            context.lineWidth.set(1);
-        }
-
         gl.uniform1f(program.uniforms.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
         const pixelRatio = pixelsToTileUnits(tile, 1, painter.transform.zoom);
         const scale = Math.pow(2, painter.transform.zoom - tile.tileID.overscaledZ);
@@ -42,6 +38,7 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
         gl.uniform2f(program.uniforms.u_extrude_scale,
             painter.transform.pixelsToGLUnits[0] / (pixelRatio * scale),
             painter.transform.pixelsToGLUnits[1] / (pixelRatio * scale));
+        gl.uniform1f(program.uniforms.u_overscale_factor, tile.tileID.overscaleFactor());
 
         program.draw(
             context,

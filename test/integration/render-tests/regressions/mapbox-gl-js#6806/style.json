@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform."
+    }
+  },
+  "center": [
+    13.418056,
+    52.4963
+  ],
+  "zoom": 14,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "building"
+    },
+    {
+      "id": "poi_heat",
+      "type": "heatmap",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "paint": {}
+    }
+  ]
+}
