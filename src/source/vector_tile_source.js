@@ -8,6 +8,7 @@ import { normalizeTileURL as normalizeURL, postTurnstileEvent } from '../util/ma
 import TileBounds from './tile_bounds';
 import { ResourceType } from '../util/ajax';
 import browser from '../util/browser';
+import Coordinate from '../geo/coordinate';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -152,24 +153,24 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    getClusterLeaves(tileID: OverscaledTileID, clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
+    getClusterLeaves(coordinate: Coordinate, clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
         this.dispatcher.broadcast(`${this.type}.getClusterLeaves`, {
-            source: this.id,
             clusterId,
             limit,
             offset,
-            tileID
+            coordinate,
+            source: this.id
         }, (err, tilesLeaves) => {
             let leaves = [];
             if (err) {
-                callback({success: false, error: err});
+                callback(err, null);
                 return this.fire('error', { error: err });
             }
             tilesLeaves.forEach((tileLeaves) => {
                 leaves = leaves.concat(tileLeaves)
             });
-            callback({success: true, leaves: leaves});
-        }, this.workerID);
+            callback(null, leaves);
+        });
         return this;
     }
 

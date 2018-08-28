@@ -1,5 +1,7 @@
 // @flow
 
+import { register } from '../util/web_worker_transfer';
+
 /**
  * A coordinate is a column, row, zoom combination, often used
  * as the data component of a tile.
@@ -77,3 +79,5 @@ class Coordinate {
 }
 
 export default Coordinate;
+
+register('Coordinate', Coordinate);

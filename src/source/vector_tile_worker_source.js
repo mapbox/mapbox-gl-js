@@ -19,7 +19,7 @@ import type {
     TileParameters
 } from '../source/worker_source';
 
-import type {OverscaledTileID} from './tile_id';
+import type {CanonicalTileID} from './tile_id';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
@@ -230,13 +230,19 @@ class VectorTileWorkerSource implements WorkerSource {
         }
     }
 
-    getClusterLeaves(params: {clusterId: number, limit: number, offset: number, tileID: OverscaledTileID}, callback: Callback<Array<GeoJSONFeature>>) {
-        const workerTiles = values(this.loaded[params.source]);
+    getClusterLeaves(params: {clusterId: number, limit: number, offset: number, coordinate: Coordinate}, callback: Callback<Array<GeoJSONFeature>>) {
+        const workerTiles = values(this.loaded);
+
         const workerTile = workerTiles.filter((wt) => {
-            return wt.tileID && wt.tileID.toCoordinate() &&
-                wt.tileID.toCoordinate().column === params.tileID.column &&
-                wt.tileID.toCoordinate().row === params.tileID.row &&
-                wt.tileID.toCoordinate().zoom === params.tileID.zoom;
+            // The coordinate get from map.transform.locationCoordinate doesn't match with the
+            // corresponding tiles tileID.toCoordinate(), but matches with the canonical x|y|z.
+            // Mostly because Unwrapped Canonical TileId is used while fetching data for tiles.
+            // So using workerTile's canonical x|y|z to find the workerTile involved in rendering
+            // the coordinate.
+            return wt.tileID && wt.tileID.canonical &&
+                wt.tileID.canonical.x === params.coordinate.column &&
+                wt.tileID.canonical.y === params.coordinate.row &&
+                wt.tileID.canonical.z === params.coordinate.zoom;
         })[0];
 
         if (!workerTile) {
@@ -244,13 +250,11 @@ class VectorTileWorkerSource implements WorkerSource {
         }
 
         const superclusterInstance = workerTile.geojsonIndex;
-
         if (!superclusterInstance) {
             return callback(new Error('Index not found for the feature\'s tile.'));
         }
 
         const leaves = superclusterInstance.getLeaves(params.clusterId, params.limit, params.offset);
-
         callback(null, leaves);
     }
 
