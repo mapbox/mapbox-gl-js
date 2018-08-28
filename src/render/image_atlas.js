@@ -2,7 +2,7 @@
 
 import { RGBAImage } from '../util/image';
 import { register } from '../util/web_worker_transfer';
-import binpack from '../util/binpack';
+import potpack from 'potpack';
 
 import type {StyleImage} from '../style/style_image';
 
@@ -85,7 +85,7 @@ export default class ImageAtlas {
             patternPositions[id] = new ImagePosition(bin, src);
         }
 
-        const {w, h} = binpack(bins);
+        const {w, h} = potpack(bins);
         const image = new RGBAImage({width: w || 1, height: h || 1});
 
         for (const id in icons) {

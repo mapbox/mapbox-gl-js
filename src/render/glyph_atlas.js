@@ -2,7 +2,7 @@
 
 import { AlphaImage } from '../util/image';
 import { register } from '../util/web_worker_transfer';
-import binpack from '../util/binpack';
+import potpack from 'potpack';
 
 import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph';
 
@@ -47,7 +47,7 @@ export default class GlyphAtlas {
             }
         }
 
-        const {w, h} = binpack(bins);
+        const {w, h} = potpack(bins);
         const image = new AlphaImage({width: w, height: h});
 
         for (const stack in stacks) {

@@ -75,6 +75,7 @@
     "pngjs": "^3.0.0",
     "postcss-cli": "^5.0.0",
     "postcss-inline-svg": "^3.1.1",
+    "potpack": "^1.0.1",
     "pretty-bytes": "^5.1.0",
     "prismjs": "^1.8.1",
     "prop-types": "^15.6.0",
