@@ -1,9 +1,8 @@
 // @flow
 
-import ShelfPack from '@mapbox/shelf-pack';
-
 import { RGBAImage } from '../util/image';
 import { register } from '../util/web_worker_transfer';
+import potpack from 'potpack';
 
 import type {StyleImage} from '../style/style_image';
 
@@ -61,7 +60,6 @@ export default class ImageAtlas {
     constructor(icons: {[string]: StyleImage}, patterns: {[string]: StyleImage}) {
         const iconPositions = {}, patternPositions = {};
 
-        const pack = new ShelfPack(0, 0, {autoResize: true});
         const bins = [];
         for (const id in icons) {
             const src = icons[id];
@@ -87,9 +85,9 @@ export default class ImageAtlas {
             patternPositions[id] = new ImagePosition(bin, src);
         }
 
-        pack.pack(bins, {inPlace: true});
+        const {w, h} = potpack(bins);
+        const image = new RGBAImage({width: w || 1, height: h || 1});
 
-        const image = new RGBAImage({width: pack.w, height: pack.h});
         for (const id in icons) {
             const src = icons[id];
             const bin = iconPositions[id].paddedRect;
