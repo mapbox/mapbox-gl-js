@@ -239,10 +239,6 @@
     debounce "^1.0.2"
     xtend "^4.0.1"
 
-"@mapbox/shelf-pack@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/shelf-pack/-/shelf-pack-3.2.0.tgz#df3630ecce8c042817c9a365b88078412963de64"
-
 "@mapbox/sphericalmercator@^1.0.5":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@mapbox/sphericalmercator/-/sphericalmercator-1.0.5.tgz#70237b9774095ed1cfdbcea7a8fd1fc82b2691f2"
