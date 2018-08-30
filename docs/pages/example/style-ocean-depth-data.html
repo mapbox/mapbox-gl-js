@@ -27,14 +27,14 @@ map.on('load', function() {
             "fill-outline-color": "hsla(337, 82%, 62%, 0)",
             // cubic bezier is a four point curve for smooth and precise styling
             // adjust the points to change the rate and intensity of interpolation
-            "fill-color": "fill-color": [ "interpolate",
+            "fill-color": [ "interpolate",
                 [ "cubic-bezier",
                     0, 0.5,
                     1, 0.5 ],
                 ["get", "DEPTH"],
                 200,  "#78bced",
                 9000, "#15659f"
-              ]
+            ]
         }
     }, 'barrier_line-land-polygon');
 });
