@@ -313,6 +313,20 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('POSTs cn event when API_URL change to cn endpoint', (t) => {
+            const previousUrl = config.API_URL;
+            config.API_URL = 'https://api.mapbox.cn';
+
+            event.postTurnstileEvent(['a.tiles.mapbox.cn']);
+
+            const req = window.server.requests[0];
+            req.respond(200);
+
+            t.true(req.url.indexOf('https://events.mapbox.cn') > -1);
+            config.API_URL = previousUrl;
+            t.end();
+        });
+
         t.test('with LocalStorage available', (t) => {
             let prevLocalStorage;
             t.beforeEach((callback) => {
