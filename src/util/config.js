@@ -9,7 +9,13 @@ type Config = {|
 
 const config: Config = {
     API_URL: 'https://api.mapbox.com',
-    EVENTS_URL: 'https://events.mapbox.com/events/v2',
+    get EVENTS_URL() {
+        if (this.API_URL.indexOf('https://api.mapbox.cn') === 0) {
+            return 'https://events.mapbox.cn/events/v2';
+        } else {
+            return 'https://events.mapbox.com/events/v2';
+        }
+    },
     REQUIRE_ACCESS_TOKEN: true,
     ACCESS_TOKEN: null
 };
