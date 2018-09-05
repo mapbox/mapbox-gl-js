@@ -1,0 +1,41 @@
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v10',
+    center: [142.591669, 11.373335],
+    zoom: 3,
+    minZoom: 3,
+    maxZoom: 5,
+});
+
+map.on('load', function() {
+
+    map.addSource('10m-bathymetry-81bsvj', {
+        type: 'vector',
+        url: 'mapbox://mapbox.9tm8dx88'
+    });
+
+    map.addLayer({
+        "id": "10m-bathymetry-81bsvj",
+        "type": "fill",
+        "source": "10m-bathymetry-81bsvj",
+        "source-layer": "10m-bathymetry-81bsvj",
+        "layout": {},
+        "paint": {
+            "fill-outline-color": "hsla(337, 82%, 62%, 0)",
+            // cubic bezier is a four point curve for smooth and precise styling
+            // adjust the points to change the rate and intensity of interpolation
+            "fill-color": [ "interpolate",
+                [ "cubic-bezier",
+                    0, 0.5,
+                    1, 0.5 ],
+                ["get", "DEPTH"],
+                200,  "#78bced",
+                9000, "#15659f"
+            ]
+        }
+    }, 'barrier_line-land-polygon');
+});
+</script>

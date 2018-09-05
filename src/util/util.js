@@ -199,6 +199,7 @@ export function uniqueId(): number {
 
 /**
  * Return a random UUID (v4). Taken from: https://gist.github.com/jed/982883
+ * @private
  */
 export function uuid(): string {
     function b(a) {
@@ -213,6 +214,7 @@ export function uuid(): string {
  * Validate a string to match UUID(v4) of the
  * form: xxxxxxxx-xxxx-4xxx-[89ab]xxx-xxxxxxxxxxxx
  * @param str string to validate.
+ * @private
  */
 export function validateUuid(str: ?string): boolean {
     return str ? /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str) : false;

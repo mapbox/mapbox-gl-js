@@ -777,7 +777,7 @@ export default class extends React.Component {
                             <p>
                                 A style's <code>sprite</code> property supplies a URL template for loading small images to use in
                                 rendering <code>background-pattern</code>, <code>fill-pattern</code>, <code>line-pattern</code>,
-                                and <code>icon-image</code> style properties.
+                                <code>fill-extrusion-pattern</code> and <code>icon-image</code> style properties.
                             </p>
                             <div className='space-bottom1 pad2x clearfix'>
                                 {highlightJSON(`"sprite": ${JSON.stringify(ref.$root.sprite.example, null, 2)}`)}

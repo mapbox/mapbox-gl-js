@@ -1,0 +1,52 @@
+<style>
+    #zoom  {
+        display: block;
+        position: relative;
+        margin: 20px auto;
+        width: 50%;
+        height: 40px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: #fff;
+        background: #ee8a65;
+    }
+</style>
+<div id='map'></div>
+<button id='zoom'>Zoom to buildings</button>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v10',
+    center: [-90.73414, 14.55524],
+    zoom: 13
+});
+
+map.on('load', function() {
+    map.setPaintProperty('building', 'fill-color', [
+        "interpolate",
+        ["exponential", 0.5],
+        ["zoom"],
+        15,
+        "#e2714b",
+        22,
+        "#eee695"
+    ]);
+
+    map.setPaintProperty('building', 'fill-opacity', [
+        "interpolate",
+        ["exponential", 0.5],
+        ["zoom"],
+        15,
+        0,
+        22,
+        1
+    ]);
+});
+
+document.getElementById('zoom').addEventListener('click', function () {
+    map.zoomTo(19, {duration: 9000});
+});
+</script>
