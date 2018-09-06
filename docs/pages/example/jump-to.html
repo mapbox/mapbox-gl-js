@@ -83,10 +83,10 @@ var map = new mapboxgl.Map({
 
 map.on('load', function() {
 
-    cities.features.forEach(function(city, index){
-        setTimeout(function(){
+    cities.features.forEach(function(city, index) {
+        setTimeout(function() {
             map.jumpTo({center: city.geometry.coordinates});
-        }, 2000 * index)
+        }, 2000 * index);
     });
 
 });
