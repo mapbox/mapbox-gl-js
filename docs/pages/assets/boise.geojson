@@ -1,0 +1,25 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"FacilityName":"Military Reserve Dog Off-Leash Park","Comments":"Hours:  Sunrise to Sunset, Not Fenced"},"geometry":{"type":"Point","coordinates":[-116.18414234589588,43.61582009133616]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Morris Hill Park Dog Off-Leash Park","Comments":"Hours:  Sunrise to Sunset, Fenced"},"geometry":{"type":"Point","coordinates":[-116.23150023369409,43.60484585840266]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Pine Grove Park Dog Off-Leash Park","Comments":"Hours:  Sunrise to Sunset, Fenced"},"geometry":{"type":"Point","coordinates":[-116.29242370608995,43.59790446943602]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Sterling Site Dog Off-Leash Park","Comments":"Hours:  Sunrise to Sunset, Fenced"},"geometry":{"type":"Point","coordinates":[-116.30578970938058,43.61547413945589]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Castle Hills Park Dog Off-Leash Area","Comments":"Off-Leash Hours:  Sunrise to 10:00 AM & 4:00 PM to Sunset, Not Fenced"},"geometry":{"type":"Point","coordinates":[-116.26187990474283,43.66823162153362]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Cypress Park Dog Off-Leash Area","Comments":"Off-Leash Hours:  Sunrise to 10:00 AM & 4:00 PM to Sunset, Not Fenced"},"geometry":{"type":"Point","coordinates":[-116.16299026922336,43.563420231297684]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Manitou Park Dog Off-Leash Area","Comments":"Off-Leash Hours:  Sunrise to 10:00 AM & 4:00 PM to Sunset, Not Fenced"},"geometry":{"type":"Point","coordinates":[-116.2001340080778,43.588150095592205]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Winstead Park Dog Off-Leash Area","Comments":"Off-Leash Hours:  September 1 - May 31; Sunrise to 10:00 AM:  June 1 - August 31; Sunrise to 8:00 AM:  November 1 - February 1;  3:00 PM to Sunset, Not Fenced"},"geometry":{"type":"Point","coordinates":[-116.25749978458306,43.62819620135228]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Redwood Park Dog Off-Leash Area","Comments":"Off-Leash Hours:  Sunrise to 10:00 AM & 4:00 PM to Sunset, Not fenced"},"geometry":{"type":"Point","coordinates":[-116.32548595777729,43.6296509498643]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Sunset Park Dog Off-Leash Area","Comments":"Off-Leash Hours:  Sunrise to 10:00 AM, Not Fenced"},"geometry":{"type":"Point","coordinates":[-116.23100273214528,43.6445127314724]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Williams Park Dog Off-Leash Area","Comments":"Off-Leash Hours: August 1 - May 31: Sunrise to 10:00AM; June 1 - July 31: 7:00 AM to 10:00 AM; Year-round: 4:00 PM to Sunset, Not Fenced"},"geometry":{"type":"Point","coordinates":[-116.18415649458173,43.58914656111822]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Ann Morrison Park Dog Off-Leash Area","Comments":"Off-Leash Hours: November 1 - February 28: Sunrise to Sunset, Not Fenced"},"geometry":{"type":"Point","coordinates":[-116.21771545266571,43.609291340181386]}}
+,
+{"type":"Feature","properties":{"FacilityName":"Optimist Youth Sports Complex Dog Off-Leash Area","Comments":"Off-Leash Hours: November 1 - February 28: Sunrise to Sunset, Not Fenced\r\nOff Leash Hours: November 1 - February 28: Sunrise to Sunset, Not Fenced"},"geometry":{"type":"Point","coordinates":[-116.30876148997676,43.6902508211104]}}]}
