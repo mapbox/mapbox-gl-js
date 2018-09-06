@@ -58,14 +58,12 @@ class Texture {
         this.useMipmap = Boolean(options && options.useMipmap);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
+        context.pixelStoreUnpackFlipY.set(false);
+        context.pixelStoreUnpack.set(1);
+        context.pixelStoreUnpackPremultiplyAlpha.set(this.format === gl.RGBA && (!options || options.premultiply !== false));
+
         if (resize) {
             this.size = [width, height];
-
-            context.pixelStoreUnpack.set(1);
-
-            if (this.format === gl.RGBA && (!options || options.premultiply !== false)) {
-                context.pixelStoreUnpackPremultiplyAlpha.set(true);
-            }
 
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
                 gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);

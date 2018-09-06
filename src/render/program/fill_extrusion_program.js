@@ -17,7 +17,6 @@ import type Context from '../../gl/context';
 import type Painter from '../painter';
 import type {OverscaledTileID} from '../../source/tile_id';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters';
 import type Tile from '../../source/tile';
 
@@ -118,7 +117,7 @@ const fillExtrusionPatternUniformValues = (
 
 const extrusionTextureUniformValues = (
     painter: Painter,
-    layer: FillExtrusionStyleLayer,
+    opacity: number,
     textureUnit: number
 ): UniformValues<ExtrusionTextureUniformsType> => {
     const matrix = mat4.create();
@@ -130,7 +129,7 @@ const extrusionTextureUniformValues = (
         'u_matrix': matrix,
         'u_world': [gl.drawingBufferWidth, gl.drawingBufferHeight],
         'u_image': textureUnit,
-        'u_opacity': layer.paint.get('fill-extrusion-opacity')
+        'u_opacity': opacity
     };
 };
 

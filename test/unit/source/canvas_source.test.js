@@ -31,7 +31,7 @@ class StubMap extends Evented {
         this.style = {};
     }
 
-    _rerender() {
+    triggerRepaint() {
         this.fire(new Event('rerender'));
     }
 }
