@@ -2,6 +2,7 @@
 
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
+import FaceCullingMode from '../gl/face_culling_mode';
 import {
     fillExtrusionUniformValues,
     fillExtrusionPatternUniformValues,
@@ -26,16 +27,17 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
         const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, [0, 1]),
             stencilMode = StencilMode.disabled,
-            colorMode = painter.colorModeForRenderPass();
+            colorMode = painter.colorModeForRenderPass(),
+            faceCullingMode = new FaceCullingMode(true, painter.context.gl.BACK, painter.context.gl.CCW);
 
-        drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode);
+        drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode, faceCullingMode);
 
     } else if (painter.renderPass === 'translucent') {
         drawOffscreenTexture(painter, layer, layer.paint.get('fill-extrusion-opacity'));
     }
 }
 
-function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
+function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode, faceCullingMode) {
     const context = painter.context;
     const gl = context.gl;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
@@ -74,7 +76,8 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             fillExtrusionUniformValues(matrix, painter);
 
 
-        program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode,
+        program.draw(context, context.gl.TRIANGLES,
+            depthMode, stencilMode, colorMode, faceCullingMode,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
             programConfiguration);

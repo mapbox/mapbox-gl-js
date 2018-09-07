@@ -14,6 +14,8 @@ import type {
     DepthFuncType,
     TextureUnitType,
     ViewportType,
+    CullFaceModeType,
+    FrontFaceType,
 } from './types';
 
 export interface Value<T> {
@@ -497,6 +499,60 @@ export class BlendEquation implements Value<BlendEquationType> {
             this.context.gl.blendEquation(v);
             this.current = v;
             this.dirty = false;
+        }
+    }
+}
+
+export class CullFaceMode implements Value<CullFaceModeType> {
+    context: Context;
+    current: CullFaceModeType;
+    default: CullFaceModeType;
+    dirty: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        const gl = this.context.gl;
+        this.default = gl.BACK;
+        this.current = this.default;
+    }
+
+    get(): CullFaceModeType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
+
+    set(v: CullFaceModeType): void {
+        if (this.current !== v || this.dirty === true) {
+            const gl = this.context.gl;
+            gl.cullFace(v);
+            this.current = v;
+            this.dirty = true;
+        }
+    }
+}
+
+export class FrontFace implements Value<FrontFaceType> {
+    context: Context;
+    current: FrontFaceType;
+    default: FrontFaceType;
+    dirty: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        const gl = this.context.gl;
+        this.default = gl.CCW;
+        this.current = this.default;
+    }
+
+    get(): FrontFaceType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
+
+    set(v: FrontFaceType): void {
+        if (this.current !== v || this.dirty === true) {
+            const gl = this.context.gl;
+            gl.frontFace(v);
+            this.current = v;
+            this.dirty = true;
         }
     }
 }
