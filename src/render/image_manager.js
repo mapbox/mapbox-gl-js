@@ -178,7 +178,7 @@ class ImageManager {
         const {w, h} = potpack(bins);
 
         const dst = this.atlasImage;
-        dst.resize({width: w, height: h});
+        dst.resize({width: w || 1, height: h || 1});
 
         for (const id in this.patterns) {
             const {bin} = this.patterns[id];
