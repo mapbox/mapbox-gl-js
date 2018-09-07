@@ -48,7 +48,7 @@ export default class GlyphAtlas {
         }
 
         const {w, h} = potpack(bins);
-        const image = new AlphaImage({width: w, height: h});
+        const image = new AlphaImage({width: w || 1, height: h || 1});
 
         for (const stack in stacks) {
             const glyphs = stacks[stack];
