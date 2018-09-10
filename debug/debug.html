@@ -1,155 +1,311 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Mapbox GL JS debug page</title>
+    <title>US Electric Grid Generation 2017</title>
     <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <script src='/dist/mapbox-gl-dev.js'></script>
+    <script src='/debug/access_token_generated.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v0.47.0/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <style>
-        body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
+        html, body { height: 100%; margin: 0 }
+        #map { position: absolute; top:0; bottom: 0; width: 100%; }
 
-        #checkboxes {
-            position: absolute;
-            background: #fff;
-            top:0;
-            left:0;
-            padding:10px;
+        .panel {
+            background-color: rgba(255,255,255,0.9);
         }
+
+        /* from https://stackoverflow.com/questions/18325779/bootstrap-3-collapse-show-state-with-chevron-icon*/
+        .panel-heading .accordion-toggle:after {
+            /* symbol for "opening" panels */
+            font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+            content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+            float: right;        /* adjust as needed */
+            color: grey;         /* adjust as needed */
+            font-size: 25px;
+        }
+        .panel-heading .accordion-toggle.collapsed:after {
+            /* symbol for "collapsed" panels */
+            content: "\e080";    /* adjust as needed, taken from bootstrap.css */
+            font-size: 25px;
+        }
+
+        /* from http://danielstern.ca/range.css/?ref=css-tricks#/ */
+        input[type=range] {
+          -webkit-appearance: none;
+          width: 100%;
+          margin: 13.8px 0;
+        }
+        input[type=range]:focus {
+          outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 8.4px;
+          cursor: pointer;
+          box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+          background: #3071a9;
+          border-radius: 1.3px;
+          border: 0.2px solid #010101;
+        }
+        input[type=range]::-webkit-slider-thumb {
+          box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+          border: 1px solid #000000;
+          height: 36px;
+          width: 16px;
+          border-radius: 3px;
+          background: #faffff;
+          cursor: pointer;
+          -webkit-appearance: none;
+          margin-top: -14px;
+        }
+        input[type=range]:focus::-webkit-slider-runnable-track {
+          background: #367ebd;
+        }
+        input[type=range]::-moz-range-track {
+          width: 100%;
+          height: 8.4px;
+          cursor: pointer;
+          box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+          background: #3071a9;
+          border-radius: 1.3px;
+          border: 0.2px solid #010101;
+        }
+        input[type=range]::-moz-range-thumb {
+          box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+          border: 1px solid #000000;
+          height: 36px;
+          width: 16px;
+          border-radius: 3px;
+          background: #faffff;
+          cursor: pointer;
+        }
+        input[type=range]::-ms-track {
+          width: 100%;
+          height: 8.4px;
+          cursor: pointer;
+          background: transparent;
+          border-color: transparent;
+          color: transparent;
+        }
+        input[type=range]::-ms-fill-lower {
+          background: #2a6495;
+          border: 0.2px solid #010101;
+          border-radius: 2.6px;
+          box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+        }
+        input[type=range]::-ms-fill-upper {
+          background: #3071a9;
+          border: 0.2px solid #010101;
+          border-radius: 2.6px;
+          box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+        }
+        input[type=range]::-ms-thumb {
+          box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+          border: 1px solid #000000;
+          height: 36px;
+          width: 16px;
+          border-radius: 3px;
+          background: #faffff;
+          cursor: pointer;
+          height: 8.4px;
+        }
+        input[type=range]:focus::-ms-fill-lower {
+          background: #3071a9;
+        }
+        input[type=range]:focus::-ms-fill-upper {
+          background: #367ebd;
+        }
+
+
+
     </style>
 </head>
 
 <body>
 <div id='map'></div>
-<div id='checkboxes'>
-    <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
-    <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
-    <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
-    <label><input id='pitch-checkbox' type='checkbox' checked> pitch with rotate</label><br />
+
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="position: relative; margin: 0px 10px">
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingOne">
+        <a class="accordion-toggle" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"></a>
+        <div style="margin-left: 0px; margin-right: 40px">
+            <input id="month" type="range" min="0" max="11" value="0" step="0.1"/>
+        </div>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+        <div class="panel-body" style="padding: 5px">
+            <div class='container'>
+                <div class='row'>
+                    <div class='col-sm-8'>
+                        <h4>US Electric Grid Generation by Source</h4>
+                        <p><strong>Showing:</strong> <span id="month-text">January 2017</span></p>
+                    </div>
+                    <div class='col-sm-4'>
+                        <div class='row' style='padding: 10px'>
+                            <select id="fuel" class="pull-right">
+                            <option value="all fuels" selected>All Fuel Types (3897.391547 TWh)</option>
+                            <option value="NG">Natural Gas (1215.5104)</option>
+                            <option value="NUC">Nuclear (804.949635)</option>
+                            <option value="SUB">Subbituminous Coal (464.401105)</option>
+                            <option value="WAT">Hydro (288.726325)</option>
+                            <option value="WND">Wind (243.025123)</option>
+                            <option value="RC">Refined Coal (235.290081)</option>
+                            <option value="LIG">Lignite Coal (62.122071)</option>
+                            <option value="SUN">Solar (49.98618)</option>
+                            <option value="WDS">Wood/Waste Solids (16.807094)</option>
+                            <option value="BLQ">Black Liquor! (16.525367)</option>
+                            <option value="GEO">Geothermal (14.85282)</option>
+                            <option value="LFG">Landfill Gas (10.512801)</option>
+                            <option value="OG">Other Gas (8.05755)</option>
+                            <option value="PC">Petroleum Coke (7.940894)</option>
+                            <option value="MSB">MSB? (6.887095)</option>
+                            <option value="MSN">MSN? (6.616978)</option>
+                            <option value="WC">Waste Coal (5.977526)</option>
+                            <option value="SGC">Synthetic Gas (coal) (3.748518)</option>
+                            <option value="WH">Waste Heat (3.672451)</option>
+                            <option value="DFO">Fuel Oil (3.359972)</option>
+                            <option value="BFG">Blast Furnace Gas (2.926293)</option>
+                            <option value="PUR">Purchased Steam? (1.149103)</option>
+                            <option value="OBG">Other Biomass Gas (1.131905)</option>
+                            <option value="RFO">Residual Fuel Oil (1.082079)</option>
+                        </select>
+                        </div>
+                        <div class='row' style='padding: 10px'>
+                            <button class="btn btn-default pull-right" onclick="toggleSatellite()">Toggle Satellite View</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
 </div>
 
-<script src='/dist/mapbox-gl-dev.js'></script>
-<script src='/debug/access_token_generated.js'></script>
 <script>
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiY2hyaXNsb2VyIiwiYSI6ImNpdGo5aW11OTA3OWkyc252OTU2b29zM3IifQ.u2B_kCe8kOg0Eky8yC0U4Q';
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v10',
+    zoom: 5,
+    center: [-117.1231, 32.7375],
+    style: 'mapbox://styles/mapbox/light-v9',
     hash: true
 });
 
-map.addControl(new mapboxgl.NavigationControl());
-map.addControl(new mapboxgl.GeolocateControl({
-    positionOptions: {
-        enableHighAccuracy: true
-    },
-    trackUserLocation: true,
-    showUserLocation: true,
-    fitBoundsOptions: {
-        maxZoom: 20
-    }
-}));
-map.addControl(new mapboxgl.ScaleControl());
+map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
+map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
-map.on('load', function() {
-    map.addSource('geojson', {
-        "type": "geojson",
-        "data": "/test/integration/data/linestring.geojson",
-        "attribution": "GeoJSON Attribution"
-    });
+var monthInput = document.getElementById('month');
+var monthText = document.getElementById('month-text');
+var fuelSelect = document.getElementById('fuel');
+
+
+var showingSatellite = false;
+var toggleSatellite = function() {
+    if (!showingSatellite) {
+        showingSatellite = true;
+        map.setStyle("mapbox://styles/mapbox/satellite-v9");
+    } else {
+        showingSatellite = false;
+        map.setStyle("mapbox://styles/mapbox/dark-v9")
+    }
+}
+
+const baseIntensity = .3;
+const baseRadius = 16;
+
+map.on('style.load', function() {
+    if (map.getLayer('satellite')) {
+        map.setPaintProperty('satellite', 'raster-brightness-max', 0.5);
+    }
     map.addLayer({
-        "id": "route",
-        "type": "line",
-        "source": "geojson",
+        "id": "plant-generation",
+        "type": "heatmap",
+        "source": {
+            "type": "geojson",
+            "data": "plant_generation.geojson"
+        },
         "paint": {
-            "line-color": "#EC8D8D",
-            "line-width": {"base": 1.5, "stops": [[5, 0.75], [18, 32]]}
-        }
-    }, 'country-label-lg');
-
-    map.addSource("points", {
-        "type": "geojson",
-        "data": '/debug/cross_source_points.geojson'
-    });
-
-    map.addLayer({
-        "id": "points",
-        "type": "symbol",
-        "source": "points",
-        "layout": {
-            "text-field": "{name}",
-            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
-        }
-    });
-
-    map.addLayer({
-        id: "marker",
-        type: "symbol",
-        source: "points",
-        layout: {
-            "icon-image": "bus-11",
-            "icon-size": 2,
-            "icon-ignore-placement": true,
-            "icon-allow-overlap": true
+            'heatmap-radius': 100,
+            'heatmap-intensity': [
+              "interpolate",
+              [ "exponential", 2 ],
+              [ "zoom" ],
+              0,
+              baseIntensity,
+              16,
+              16 * baseIntensity
+            ],
+            'heatmap-opacity': [
+              "interpolate",
+              ["linear"],
+              [ "zoom" ],
+              0,
+              1,
+              10,
+              1,
+              16,
+              0.25
+            ],
+            'heatmap-weight': ["/", ["to-number", ["get", "netgen_0"]], 2000000]
         }
     });
-
-    map.addLayer({
-        id: "marker-hover",
-        type: "symbol",
-        filter: ["==", "name", ""],
-        source: "points",
-        layout: {
-            "icon-image": "bus-15",
-            "icon-size": 2,
-            "icon-ignore-placement": true,
-            "icon-allow-overlap": true
-        }
-    });
-
-    map.on('mouseenter', 'marker', function(e) {
-        map.setFilter('marker-hover', ['==', 'name', e.features[0].properties.name]);
-    });
-    map.on('mouseleave', 'marker', function(e) {
-        map.setFilter('marker-hover', ['==', 'name', '']);
-    });
-
+    updateFuelType();
 });
 
-map.on('click', function(e) {
-    if (e.originalEvent.shiftKey) return;
-    (new mapboxgl.Popup())
-        .setLngLat(map.unproject(e.point))
-        .setHTML("<h1>Hello World!</h1>")
-        .addTo(map);
-});
 
-document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
-    map.showTileBoundaries = !!this.checked;
-};
+var updateMonth = function() {
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const baseMonth = Math.floor(monthInput.value);
+  const nextMonth = baseMonth < 11 ? baseMonth + 1 : 0;
+  const nextMix = baseMonth < 11 ? monthInput.value % 1  : 0;
+  const baseMix = 1 - nextMix;
+  monthText.innerHTML = monthNames[baseMonth] + " 2017";
 
-document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
-    map.showCollisionBoxes = !!this.checked;
-};
+  map.setPaintProperty('plant-generation', 'heatmap-weight', ["/", ["+",
+    ["*", ["to-number", ["get", "netgen_" + baseMonth]], baseMix],
+    ["*", ["to-number", ["get", "netgen_" + nextMonth]], nextMix]], 4000000]);
+}
 
-document.getElementById('show-overdraw-checkbox').onclick = function() {
-    map.showOverdrawInspector = !!this.checked;
-};
+const fuelTypeWeighting = {"WAT":288726325,"NG":1215510400,"BIT":427029417,"DFO":5107782,"SUB":464401105,"NUC":804949635,"LIG":62122071,"PG":12883,"RC":235290081,"AB":739476,"WDS":16807094,"WND":243025123,"RFO":6115448,"LFG":10512801,"PC":7940894,"SUN":49986180,"OBG":1131905,"GEO":14852820,"MWH":-13969,"OG":8057550,"WO":740873,"JF":35008,"KER":101123,"ANT":0,"OTH":650506,"WC":6044585,"SGC":3748518,"OBS":600035,"TDF":865502,"BFG":2926293,"MSB":6887095,"MSN":6616978,"SC":0,"BLQ":16525367,"WH":3672451,"OBL":62190,"SLW":62680,"PUR":1149103,"SGP":0};
 
-document.getElementById('pitch-checkbox').onclick = function() {
-    map.dragRotate._pitchWithRotate = !!this.checked;
-};
+const totalGeneration = 3912993328;
 
-// keyboard shortcut for comparing rendering with Mapbox GL native
-document.onkeypress = function(e) {
-    if (e.charCode === 111 && !e.shiftKey && !e.metaKey && !e.altKey) {
-        var center = map.getCenter();
-        location.href = "mapboxgl://?center=" + center.lat + "," + center.lng + "&zoom=" + map.getZoom() + "&bearing=" + map.getBearing();
-        return false;
+var updateFuelType = function() {
+    var filter = null;
+    let intensityRatio = 1;
+    if (fuelSelect.value != "all fuels") {
+        filter = ["==", 'fuel_type', fuelSelect.value];
+        intensityRatio = totalGeneration / fuelTypeWeighting[fuelSelect.value];
     }
-};
+    map.setFilter('plant-generation', filter);
+    map.setPaintProperty('plant-generation', 'heatmap-intensity',
+      [
+        "interpolate",
+        [ "exponential", 2 ],
+        [ "zoom" ],
+        0,
+        baseIntensity * intensityRatio,
+        16,
+        16 * baseIntensity * intensityRatio
+      ]);
+
+}
+
+monthInput.oninput = function() {
+    updateMonth();
+}
+
+fuelSelect.oninput = function() {
+    updateFuelType();
+}
 
 </script>
 </body>

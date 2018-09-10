@@ -44,7 +44,7 @@ void main() {
     vec4 accent_color = (1.0 - accent) * u_accent * clamp(intensity * 2.0, 0.0, 1.0);
     float shade = abs(mod((aspect + azimuth) / PI + 0.5, 2.0) - 1.0);
     vec4 shade_color = mix(u_shadow, u_highlight, shade) * sin(scaledSlope) * clamp(intensity * 2.0, 0.0, 1.0);
-    gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
+    gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color; // vec4(0.2,0.8,0.2,0.2);//
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

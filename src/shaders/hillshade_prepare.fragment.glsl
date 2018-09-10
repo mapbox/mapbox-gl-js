@@ -5,13 +5,14 @@ precision highp float;
 uniform sampler2D u_image;
 varying vec2 v_pos;
 uniform vec2 u_dimension;
-uniform float u_zoom;
-uniform float u_maxzoom;
+//uniform float u_zoom;
+//uniform float u_maxzoom;
 
 float getElevation(vec2 coord, float bias) {
     // Convert encoded elevation value to meters
     vec4 data = texture2D(u_image, coord) * 255.0;
-    return (data.r + data.g * 256.0 + data.b * 256.0 * 256.0) / 4.0;
+    // This is a float texture, the heatmap shader should be able to encode arbitrary values into the "r" member?
+    return data.r / 32.0;
 }
 
 void main() {
@@ -50,15 +51,16 @@ void main() {
     // we want to vertically exaggerate the hillshading though, because otherwise
     // it is barely noticeable at low zooms. to do this, we multiply this by some
     // scale factor pow(2, (u_zoom - u_maxzoom) * a) where a is an arbitrary value
-    // Here we use a=0.3 which works out to the expression below. see 
+    // Here we use a=0.3 which works out to the expression below. see
     // nickidlugash's awesome breakdown for more info
     // https://github.com/mapbox/mapbox-gl-js/pull/5286#discussion_r148419556
-    float exaggeration = u_zoom < 2.0 ? 0.4 : u_zoom < 4.5 ? 0.35 : 0.3;
+    //float exaggeration = u_zoom < 2.0 ? 0.4 : u_zoom < 4.5 ? 0.35 : 0.3;
 
     vec2 deriv = vec2(
         (c + f + f + i) - (a + d + d + g),
         (g + h + h + i) - (a + b + b + c)
-    ) /  pow(2.0, (u_zoom - u_maxzoom) * exaggeration + 19.2562 - u_zoom);
+    );
+    // /  pow(2.0, (u_zoom - u_maxzoom) * exaggeration + 19.2562 - u_zoom);
 
     gl_FragColor = clamp(vec4(
         deriv.x / 2.0 + 0.5,
