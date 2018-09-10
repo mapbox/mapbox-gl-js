@@ -14,6 +14,8 @@ import type {
     DepthFuncType,
     TextureUnitType,
     ViewportType,
+    CullFaceModeType,
+    FrontFaceType,
 } from './types';
 
 export interface Value<T> {
@@ -358,37 +360,6 @@ export class DepthFunc implements Value<DepthFuncType> {
     }
 }
 
-export class CullFace implements Value<boolean> {
-    context: Context;
-    current: boolean;
-    default: boolean;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = false;
-        this.current = this.default;
-        this.dirty = false;
-    }
-
-    get(): boolean { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: boolean): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            if (v) {
-                gl.enable(gl.CULL_FACE);
-            } else {
-                gl.disable(gl.CULL_FACE);
-            }
-            this.current = v;
-            this.dirty = false;
-        }
-    }
-}
-
 export class Blend implements Value<boolean> {
     context: Context;
     current: boolean;
@@ -495,6 +466,93 @@ export class BlendEquation implements Value<BlendEquationType> {
     set(v: BlendEquationType): void {
         if (v !== this.current || this.dirty === true) {
             this.context.gl.blendEquation(v);
+            this.current = v;
+            this.dirty = false;
+        }
+    }
+}
+
+export class CullFace implements Value<boolean> {
+    context: Context;
+    current: boolean;
+    default: boolean;
+    dirty: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.default = false;
+        this.current = this.default;
+        this.dirty = false;
+    }
+
+    get(): boolean { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
+
+    set(v: boolean): void {
+        if (this.current !== v || this.dirty === true) {
+            const gl = this.context.gl;
+            if (v) {
+                gl.enable(gl.CULL_FACE);
+            } else {
+                gl.disable(gl.CULL_FACE);
+            }
+            this.current = v;
+            this.dirty = false;
+        }
+    }
+}
+
+export class CullFaceSide implements Value<CullFaceModeType> {
+    context: Context;
+    current: CullFaceModeType;
+    default: CullFaceModeType;
+    dirty: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        const gl = this.context.gl;
+        this.default = gl.BACK;
+        this.current = this.default;
+        this.dirty = false;
+    }
+
+    get(): CullFaceModeType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
+
+    set(v: CullFaceModeType): void {
+        if (this.current !== v || this.dirty === true) {
+            const gl = this.context.gl;
+            gl.cullFace(v);
+            this.current = v;
+            this.dirty = false;
+        }
+    }
+}
+
+export class FrontFace implements Value<FrontFaceType> {
+    context: Context;
+    current: FrontFaceType;
+    default: FrontFaceType;
+    dirty: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        const gl = this.context.gl;
+        this.default = gl.CCW;
+        this.current = this.default;
+        this.dirty = false;
+    }
+
+    get(): FrontFaceType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
+
+    set(v: FrontFaceType): void {
+        if (this.current !== v || this.dirty === true) {
+            const gl = this.context.gl;
+            gl.frontFace(v);
             this.current = v;
             this.dirty = false;
         }

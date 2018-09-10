@@ -3,6 +3,7 @@
 import Texture from './texture';
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
+import CullFaceMode from '../gl/cull_face_mode';
 import {
     hillshadeUniformValues,
     hillshadeUniformPrepareValues
@@ -52,11 +53,11 @@ function renderHillshade(painter, tile, layer, depthMode, stencilMode, colorMode
     const uniformValues = hillshadeUniformValues(painter, tile, layer);
 
     if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, tile.maskedBoundsBuffer,
             tile.maskedIndexBuffer, tile.segments);
     } else {
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, painter.rasterBoundsBuffer,
             painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
     }
@@ -113,7 +114,7 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
         context.viewport.set([0, 0, tileSize, tileSize]);
 
         painter.useProgram('hillshadePrepare').draw(context, gl.TRIANGLES,
-            depthMode, stencilMode, colorMode,
+            depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             hillshadeUniformPrepareValues(tile, sourceMaxZoom),
             layer.id, painter.rasterBoundsBuffer,
             painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);

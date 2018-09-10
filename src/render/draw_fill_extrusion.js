@@ -2,6 +2,7 @@
 
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
+import CullFaceMode from '../gl/cull_face_mode';
 import {
     fillExtrusionUniformValues,
     fillExtrusionPatternUniformValues,
@@ -74,7 +75,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             fillExtrusionUniformValues(matrix, painter);
 
 
-        program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode,
+        program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
             programConfiguration);
