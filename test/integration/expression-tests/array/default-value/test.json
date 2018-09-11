@@ -1,0 +1,22 @@
+{
+  "expression": ["array", "number", null, ["get", "x"], ["literal", [0]]],
+  "inputs": [
+    [{}, {}],
+    [{}, {"properties": {"x": []}}],
+    [{}, {"properties": {"x": ["1"]}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "array<number>"
+    },
+    "outputs": [
+      [0],
+      [],
+      [0]
+    ],
+    "serialized": ["array", "number", null, ["get", "x"], ["literal", [0]]]
+  }
+}
