@@ -60,7 +60,9 @@ class Coercion implements Expression {
             for (const arg of this.args) {
                 input = arg.evaluate(ctx);
                 error = null;
-                if (typeof input === 'string') {
+                if (input instanceof Color) {
+                    return input;
+                } else if (typeof input === 'string') {
                     const c = ctx.parseColor(input);
                     if (c) return c;
                 } else if (Array.isArray(input)) {
