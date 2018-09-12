@@ -200,12 +200,15 @@ class Transform {
      * @private
      */
     getVisibleUnwrappedCoordinates(tileID: CanonicalTileID) {
-        const ul = this.pointCoordinate(new Point(0, 0), 0);
-        const ur = this.pointCoordinate(new Point(this.width, 0), 0);
-        const w0 = Math.floor(ul.column);
-        const w1 = Math.floor(ur.column);
         const result = [new UnwrappedTileID(0, tileID)];
         if (this._renderWorldCopies) {
+            const utl = this.pointCoordinate(new Point(0, 0), 0);
+            const utr = this.pointCoordinate(new Point(this.width, 0), 0);
+            const ubl = this.pointCoordinate(new Point(this.width, this.height), 0);
+            const ubr = this.pointCoordinate(new Point(0, this.height), 0);
+            const w0 = Math.floor(Math.min(utl.column, utr.column, ubl.column, ubr.column));
+            const w1 = Math.floor(Math.max(utl.column, utr.column, ubl.column, ubr.column));
+
             // Add an extra copy of the world on each side to properly render ImageSources and CanvasSources.
             // Both sources draw outside the tile boundaries of the tile that "contains them" so we need
             // to add extra copies on both sides in case offscreen tiles need to draw into on-screen ones.
