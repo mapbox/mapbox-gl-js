@@ -23,11 +23,11 @@
       1,
       6.02e-23,
       -1,
+      0,
       -1,
       -1,
-      -1,
-      -1,
-      {"error": "Could not convert \"bad fallback\" to number."}
+      0,
+      0
     ],
     "serialized": ["to-number", ["get", "x"], ["get", "y"]]
   }
