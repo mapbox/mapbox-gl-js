@@ -247,7 +247,7 @@ test('transform', (t) => {
         transform.center = { lng: -170.01, lat: 0.01 };
 
         let unwrappedCoords = transform.getVisibleUnwrappedCoordinates(new CanonicalTileID(0, 0, 0));
-        t.equal(unwrappedCoords.length, 2);
+        t.equal(unwrappedCoords.length, 4);
 
         //getVisibleUnwrappedCoordinates should honor _renderWorldCopies
         transform._renderWorldCopies = false;
