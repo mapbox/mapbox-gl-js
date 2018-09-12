@@ -258,9 +258,6 @@ class SourceCache extends Evented {
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
 
         this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
-
-        // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
-        if (this.map) this.map.painter.tileExtentVAO.vao = null;
     }
 
     /**
@@ -820,7 +817,7 @@ class SourceCache extends Evented {
      * Set the value of a particular state for a feature
      * @private
      */
-    setFeatureState(sourceLayer?: string, feature: string, state: Object) {
+    setFeatureState(sourceLayer?: string, feature: number, state: Object) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         this._state.updateState(sourceLayer, feature, state);
     }
@@ -829,7 +826,7 @@ class SourceCache extends Evented {
      * Get the entire state object for a feature
      * @private
      */
-    getFeatureState(sourceLayer?: string, feature: string) {
+    getFeatureState(sourceLayer?: string, feature: number) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         return this._state.getState(sourceLayer, feature);
     }

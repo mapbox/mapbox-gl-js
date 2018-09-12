@@ -1,5 +1,6 @@
 
 import migrateToV8 from './migrate/v8';
+import migrateToExpressions from './migrate/expressions';
 
 /**
  * Migrate a Mapbox GL Style to the latest version.
@@ -17,8 +18,13 @@ import migrateToV8 from './migrate/v8';
 export default function(style) {
     let migrated = false;
 
-    if (style.version === 7 || style.version === 8) {
+    if (style.version === 7) {
         style = migrateToV8(style);
+        migrated = true;
+    }
+
+    if (style.version === 8) {
+        migrated = migrateToExpressions(style);
         migrated = true;
     }
 

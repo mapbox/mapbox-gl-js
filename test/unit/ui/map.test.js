@@ -465,12 +465,12 @@ test('Map', (t) => {
     });
 
     t.test('#resize', (t) => {
-        t.test('sets width and height from container offsets', (t) => {
+        t.test('sets width and height from container clients', (t) => {
             const map = createMap(t),
                 container = map.getContainer();
 
-            Object.defineProperty(container, 'offsetWidth', {value: 250});
-            Object.defineProperty(container, 'offsetHeight', {value: 250});
+            Object.defineProperty(container, 'clientWidth', {value: 250});
+            Object.defineProperty(container, 'clientHeight', {value: 250});
             map.resize();
 
             t.equal(map.transform.width, 250);
@@ -1262,8 +1262,25 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
+                t.equal(fState.hover, true);
+                t.end();
+            });
+        });
+        t.test('parses feature id as an int', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
                 map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
-                const fState = map.getFeatureState({ source: 'geojson', id: '12345'});
+                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
                 t.equal(fState.hover, true);
                 t.end();
             });
@@ -1279,7 +1296,7 @@ test('Map', (t) => {
                 }
             });
             t.throws(() => {
-                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
             }, Error, /load/i);
 
             t.end();
@@ -1299,7 +1316,7 @@ test('Map', (t) => {
                     t.match(error.message, /source/);
                     t.end();
                 });
-                map.setFeatureState({ source: 'vector', id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'vector', id: 12345}, {'hover': true});
             });
         });
         t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
@@ -1320,7 +1337,7 @@ test('Map', (t) => {
                     t.match(error.message, /sourceLayer/);
                     t.end();
                 });
-                map.setFeatureState({ source: 'vector', sourceLayer: 0, id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'vector', sourceLayer: 0, id: 12345}, {'hover': true});
             });
         });
         t.test('fires an error if id not provided', (t) => {
@@ -1342,6 +1359,48 @@ test('Map', (t) => {
                     t.end();
                 });
                 map.setFeatureState({ source: 'vector', sourceLayer: "1"}, {'hover': true});
+            });
+        });
+        t.test('fires an error if id is less than zero', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /id/);
+                    t.end();
+                });
+                map.setFeatureState({ source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
+            });
+        });
+        t.test('fires an error if id cannot be parsed as an int', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /id/);
+                    t.end();
+                });
+                map.setFeatureState({ source: 'vector', sourceLayer: "1", id: 'abc'}, {'hover': true});
             });
         });
         t.end();
@@ -1503,8 +1562,8 @@ test('Map', (t) => {
 
         map.flyTo({ center: [200, 0], duration: 100 });
 
-        Object.defineProperty(container, 'offsetWidth', {value: 250});
-        Object.defineProperty(container, 'offsetHeight', {value: 250});
+        Object.defineProperty(container, 'clientWidth', {value: 250});
+        Object.defineProperty(container, 'clientHeight', {value: 250});
         map.resize();
 
         t.ok(map.isMoving(), 'map is still moving after resize due to camera animation');

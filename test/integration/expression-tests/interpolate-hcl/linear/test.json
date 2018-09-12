@@ -1,0 +1,40 @@
+{
+  "expression": [
+    "interpolate-hcl",
+    ["linear"],
+    ["get", "x"],
+    1,
+    "red",
+    11,
+    ["get", "color"]
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": 0, "color": "blue"}}],
+    [{}, {"properties": {"x": 5, "color": "blue"}}],
+    [{}, {"properties": {"x": 11, "color": "blue"}}],
+    [{}, {"properties": {"x": 11, "color": "oops blue"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [
+      [1, 0, 0, 1],
+      [0.870599, -0.0798922, 0.394264, 1],
+      [0, 0, 1, 1],
+      {"error": "Could not parse color from value 'oops blue'"}
+    ],
+    "serialized": [
+      "interpolate-hcl",
+      ["linear"],
+      ["number", ["get", "x"]],
+      1,
+      ["rgba", 255, 0, 0, 1],
+      11,
+      ["to-color", ["get", "color"]]
+    ]
+  }
+}

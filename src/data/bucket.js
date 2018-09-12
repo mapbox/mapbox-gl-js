@@ -6,6 +6,7 @@ import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
 import type Context from '../gl/context';
 import type {FeatureStates} from '../source/source_state';
+import type {ImagePosition} from '../render/image_atlas';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
@@ -21,6 +22,7 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
 export type PopulateParameters = {
     featureIndex: FeatureIndex,
     iconDependencies: {},
+    patternDependencies: {},
     glyphDependencies: {}
 }
 
@@ -29,6 +31,16 @@ export type IndexedFeature = {
     index: number,
     sourceLayerIndex: number,
 }
+
+export type BucketFeature = {|
+    index: number,
+    sourceLayerIndex: number,
+    geometry: Array<Array<Point>>,
+    properties: Object,
+    type: 1 | 2 | 3,
+    id?: any,
+    +patterns: {[string]: {"min": string, "mid": string, "max": string}}
+|};
 
 /**
  * The `Bucket` interface is the single point of knowledge about turning vector
@@ -55,11 +67,12 @@ export type IndexedFeature = {
  */
 export interface Bucket {
     layerIds: Array<string>;
+    hasPattern: boolean;
     +layers: Array<any>;
     +stateDependentLayers: Array<any>;
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
-    update(states: FeatureStates, vtLayer: VectorTileLayer): void;
+    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[string]: ImagePosition}): void;
     isEmpty(): boolean;
 
     upload(context: Context): void;

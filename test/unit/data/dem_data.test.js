@@ -138,14 +138,12 @@ test('DEMData#backfillBorder', (t) => {
         const serialized = serialize(dem0);
 
         t.deepEqual(serialized, {
-            name: 'DEMData',
-            properties: {
-                uid: 0,
-                dim: 4,
-                border: 2,
-                stride: 8,
-                data: dem0.data,
-            }
+            $name: 'DEMData',
+            uid: 0,
+            dim: 4,
+            border: 2,
+            stride: 8,
+            data: dem0.data,
         }, 'serializes DEM');
 
         const transferrables = [];

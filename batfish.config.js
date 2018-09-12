@@ -37,7 +37,8 @@ module.exports = () => {
                     .filter(({path, frontMatter}) => /\/example\//.test(path) && frontMatter.tags)
                     .map(({frontMatter}) => frontMatter);
             }
-        }
+        },
+        devBrowserslist: false
     };
 
     // Local builds treat the `dist` directory as static assets, allowing you to test examples against the

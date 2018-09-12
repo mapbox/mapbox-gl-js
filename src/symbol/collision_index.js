@@ -109,7 +109,6 @@ class CollisionIndex {
                           allowOverlap: boolean,
                           scale: number,
                           textPixelRatio: number,
-                          key: string,
                           symbol: any,
                           lineVertexArray: SymbolLineVertexArray,
                           glyphOffsetArray: GlyphOffsetArray,

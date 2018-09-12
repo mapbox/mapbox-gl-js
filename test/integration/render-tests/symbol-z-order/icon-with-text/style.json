@@ -1,0 +1,89 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "height": 128,
+            "width": 128
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 0,
+    "pitch": 60,
+    "sources": {
+        "icon-source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                7,
+                                7
+                            ]
+                        },
+                        "properties": {
+                            "icon": "building",
+                            "title": "building"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                14,
+                                14
+                            ]
+                        },
+                        "properties": {
+                            "icon": "restaurant",
+                            "title": "restaurant"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                0
+                            ]
+                        },
+                        "properties": {
+                            "icon": "school",
+                            "title": "school"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "sprite": "local://sprites/sprite",
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "icons",
+            "type": "symbol",
+            "source": "icon-source",
+            "layout": {
+                "symbol-z-order": "source",
+                "icon-image": "{icon}-12",
+                "icon-allow-overlap": true,
+                "text-allow-overlap": true,
+                "text-field": "{title}",
+                "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+                "text-offset": [0, 0.6],
+                "text-anchor": "top"
+            },
+            "paint": {
+                "text-color": "#ffffff"
+            }
+        }
+    ]
+}

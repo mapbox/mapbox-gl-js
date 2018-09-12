@@ -28,7 +28,8 @@ import type {PropertyValueSpecification} from '../types';
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
     +id?: any,
-    +properties: {[string]: any}
+    +properties: {[string]: any},
+    +patterns?: {[string]: {"min": string, "mid": string, "max": string}}
 };
 
 export type FeatureState = {[string]: any};

@@ -1,0 +1,31 @@
+{
+  "expression": {"type": "identity", "property": "p", "default": "a"},
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": "a"}}],
+    [{}, {"properties": {"p": "b"}}],
+    [{}, {"properties": {"p": "c"}}]
+  ],
+  "propertySpec": {
+    "type": "enum",
+    "values": {"a": {}, "b": {}},
+    "property-type": "data-driven",
+    "expression": {"interpolated": false, "parameters": ["zoom", "feature"]}
+  },
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["a", "a", "b", "a"],
+    "serialized": [
+      "match",
+      ["get", "p"],
+      ["a", "b"],
+      ["string", ["get", "p"]],
+      "a"
+    ]
+  }
+}

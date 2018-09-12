@@ -73,6 +73,23 @@ export const placement = createLayout([
     { type: 'Uint8', name: 'hidden' }
 ]);
 
+export const symbolInstance = createLayout([
+    { type: 'Int16', name: 'anchorX' },
+    { type: 'Int16', name: 'anchorY' },
+    { type: 'Int16', name: 'horizontalPlacedTextSymbolIndex' },
+    { type: 'Int16', name: 'verticalPlacedTextSymbolIndex' },
+    { type: 'Uint16', name: 'key' },
+    { type: 'Uint16', name: 'textBoxStartIndex' },
+    { type: 'Uint16', name: 'textBoxEndIndex' },
+    { type: 'Uint16', name: 'iconBoxStartIndex' },
+    { type: 'Uint16', name: 'iconBoxEndIndex' },
+    { type: 'Uint16', name: 'featureIndex' },
+    { type: 'Uint16', name: 'numGlyphVertices' },
+    { type: 'Uint16', name: 'numVerticalGlyphVertices' },
+    { type: 'Uint16', name: 'numIconVertices' },
+    { type: 'Uint32', name: 'crossTileID' }
+]);
+
 export const glyphOffset = createLayout([
     { type: 'Float32', name: 'offsetX' }
 ]);

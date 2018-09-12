@@ -2,8 +2,11 @@
 
 import EXTENT from '../data/extent';
 
+import { SymbolInstanceArray } from '../data/array_types';
+
+import type { SymbolInstance } from '../data/array_types';
 import type {OverscaledTileID} from '../source/tile_id';
-import type SymbolBucket, {SymbolInstance} from '../data/bucket/symbol_bucket';
+import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type StyleLayer from '../style/style_layer';
 import type Tile from '../source/tile';
 
@@ -26,7 +29,7 @@ const roundingFactor = 512 / EXTENT / 2;
 
 class TileLayerIndex {
     tileID: OverscaledTileID;
-    indexedSymbolInstances: {[string]: Array<{
+    indexedSymbolInstances: {[number]: Array<{
         crossTileID: number,
         coord: {
             x: number,
@@ -35,12 +38,13 @@ class TileLayerIndex {
     }>};
     bucketInstanceId: number;
 
-    constructor(tileID: OverscaledTileID, symbolInstances: Array<SymbolInstance>, bucketInstanceId: number) {
+    constructor(tileID: OverscaledTileID, symbolInstances: SymbolInstanceArray, bucketInstanceId: number) {
         this.tileID = tileID;
         this.indexedSymbolInstances = {};
         this.bucketInstanceId = bucketInstanceId;
 
-        for (const symbolInstance of symbolInstances) {
+        for (let i = 0; i < symbolInstances.length; i++) {
+            const symbolInstance = symbolInstances.get(i);
             const key = symbolInstance.key;
             if (!this.indexedSymbolInstances[key]) {
                 this.indexedSymbolInstances[key] = [];
@@ -63,17 +67,17 @@ class TileLayerIndex {
     getScaledCoordinates(symbolInstance: SymbolInstance, childTileID: OverscaledTileID) {
         const zDifference = childTileID.canonical.z - this.tileID.canonical.z;
         const scale = roundingFactor / Math.pow(2, zDifference);
-        const anchor = symbolInstance.anchor;
         return {
-            x: Math.floor((childTileID.canonical.x * EXTENT + anchor.x) * scale),
-            y: Math.floor((childTileID.canonical.y * EXTENT + anchor.y) * scale)
+            x: Math.floor((childTileID.canonical.x * EXTENT + symbolInstance.anchorX) * scale),
+            y: Math.floor((childTileID.canonical.y * EXTENT + symbolInstance.anchorY) * scale)
         };
     }
 
-    findMatches(symbolInstances: Array<SymbolInstance>, newTileID: OverscaledTileID, zoomCrossTileIDs: {[crossTileID: number]: boolean}) {
+    findMatches(symbolInstances: SymbolInstanceArray, newTileID: OverscaledTileID, zoomCrossTileIDs: {[crossTileID: number]: boolean}) {
         const tolerance = this.tileID.canonical.z < newTileID.canonical.z ? 1 : Math.pow(2, this.tileID.canonical.z - newTileID.canonical.z);
 
-        for (const symbolInstance of symbolInstances) {
+        for (let i = 0; i < symbolInstances.length; i++) {
+            const symbolInstance = symbolInstances.get(i);
             if (symbolInstance.crossTileID) {
                 // already has a match, skip
                 continue;
@@ -166,7 +170,8 @@ class CrossTileSymbolLayerIndex {
             }
         }
 
-        for (const symbolInstance of bucket.symbolInstances) {
+        for (let i = 0; i < bucket.symbolInstances.length; i++) {
+            const symbolInstance = bucket.symbolInstances.get(i);
             symbolInstance.crossTileID = 0;
         }
 
@@ -193,7 +198,8 @@ class CrossTileSymbolLayerIndex {
             }
         }
 
-        for (const symbolInstance of bucket.symbolInstances) {
+        for (let i = 0; i < bucket.symbolInstances.length; i++) {
+            const symbolInstance = bucket.symbolInstances.get(i);
             if (!symbolInstance.crossTileID) {
                 // symbol did not match any known symbol, assign a new id
                 symbolInstance.crossTileID = crossTileIDs.generate();
@@ -211,7 +217,7 @@ class CrossTileSymbolLayerIndex {
 
     removeBucketCrossTileIDs(zoom: string | number, removedBucket: TileLayerIndex) {
         for (const key in removedBucket.indexedSymbolInstances) {
-            for (const symbolInstance of removedBucket.indexedSymbolInstances[key]) {
+            for (const symbolInstance of removedBucket.indexedSymbolInstances[(key: any)]) {
                 delete this.usedCrossTileIDs[zoom][symbolInstance.crossTileID];
             }
         }

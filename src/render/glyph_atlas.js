@@ -1,9 +1,8 @@
 // @flow
 
-import ShelfPack from '@mapbox/shelf-pack';
-
 import { AlphaImage } from '../util/image';
 import { register } from '../util/web_worker_transfer';
+import potpack from 'potpack';
 
 import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph';
 
@@ -27,7 +26,6 @@ export default class GlyphAtlas {
 
     constructor(stacks: { [string]: { [number]: ?StyleGlyph } }) {
         const positions = {};
-        const pack = new ShelfPack(0, 0, {autoResize: true});
         const bins = [];
 
         for (const stack in stacks) {
@@ -49,9 +47,8 @@ export default class GlyphAtlas {
             }
         }
 
-        pack.pack(bins, {inPlace: true});
-
-        const image = new AlphaImage({width: pack.w, height: pack.h});
+        const {w, h} = potpack(bins);
+        const image = new AlphaImage({width: w || 1, height: h || 1});
 
         for (const stack in stacks) {
             const glyphs = stacks[stack];
