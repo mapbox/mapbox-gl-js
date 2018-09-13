@@ -1,7 +1,7 @@
 // @flow
 
 import { NumberType, ValueType, FormattedType, array, StringType } from '../types';
-
+import { toString } from '../values';
 
 import type { Expression } from '../expression';
 import type EvaluationContext from '../evaluation_context';
@@ -101,7 +101,7 @@ export class FormatExpression implements Expression {
         return new Formatted(
             this.sections.map(section =>
                 new FormattedSection(
-                    section.text.evaluate(ctx) || "",
+                    toString(section.text.evaluate(ctx)),
                     section.scale ? section.scale.evaluate(ctx) : null,
                     section.font ? section.font.evaluate(ctx).join(',') : null
                 )
