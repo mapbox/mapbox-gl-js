@@ -2,8 +2,8 @@
 
 import assert from 'assert';
 
-import { ColorType, ValueType, NumberType } from '../types';
-import { Color, validateRGBA } from '../values';
+import {BooleanType, ColorType, NumberType, StringType, ValueType} from '../types';
+import {Color, toString as valueToString, validateRGBA} from '../values';
 import RuntimeError from '../runtime_error';
 
 import type { Expression } from '../expression';
@@ -14,8 +14,10 @@ import type { Type } from '../types';
 import { Formatted, FormattedSection } from './formatted';
 
 const types = {
+    'to-boolean': BooleanType,
+    'to-color': ColorType,
     'to-number': NumberType,
-    'to-color': ColorType
+    'to-string': StringType
 };
 
 /**
@@ -41,6 +43,9 @@ class Coercion implements Expression {
         const name: string = (args[0]: any);
         assert(types[name], name);
 
+        if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
+            return context.error(`Expected one argument.`);
+
         const type = types[name];
 
         const parsed = [];
@@ -54,7 +59,9 @@ class Coercion implements Expression {
     }
 
     evaluate(ctx: EvaluationContext) {
-        if (this.type.kind === 'color') {
+        if (this.type.kind === 'boolean') {
+            return Boolean(this.args[0].evaluate(ctx));
+        } else if (this.type.kind === 'color') {
             let input;
             let error;
             for (const arg of this.args) {
@@ -86,7 +93,7 @@ class Coercion implements Expression {
                 }
             }
             throw new RuntimeError(`Could not parse formatted text from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
-        } else {
+        } else if (this.type.kind === 'number') {
             let value = null;
             for (const arg of this.args) {
                 value = arg.evaluate(ctx);
@@ -96,6 +103,8 @@ class Coercion implements Expression {
                 return num;
             }
             throw new RuntimeError(`Could not convert ${JSON.stringify(value)} to number.`);
+        } else {
+            return valueToString(this.args[0].evaluate(ctx));
         }
     }
 
