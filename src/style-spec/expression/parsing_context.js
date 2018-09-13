@@ -1,7 +1,7 @@
 // @flow
 
+import assert from 'assert';
 import Scope from './scope';
-
 import { checkSubtype } from './types';
 import ParsingError from './parsing_error';
 import Literal from './definitions/literal';
@@ -16,6 +16,7 @@ import Var from './definitions/var';
 
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
+import {FormatExpression} from './definitions/formatted';
 
 /**
  * State associated parsing at a given point in an expression tree.
@@ -114,8 +115,11 @@ class ParsingContext {
                     //
                     if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object' || expected.kind === 'array') && actual.kind === 'value') {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'assert');
-                    } else if ((expected.kind === 'color' || expected.kind === 'formatted') && (actual.kind === 'value' || actual.kind === 'string')) {
+                    } else if (expected.kind === 'color' && (actual.kind === 'value' || actual.kind === 'string')) {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
+                    } else if (expected.kind === 'formatted' && actual.kind !== 'formatted') {
+                        assert(!options.typeAnnotation);
+                        parsed = new FormatExpression([{text: parsed, scale: null, font: null}]);
                     } else if (this.checkSubtype(expected, actual)) {
                         return null;
                     }

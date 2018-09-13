@@ -11,7 +11,6 @@ import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type { Value } from '../values';
 import type { Type } from '../types';
-import { Formatted, FormattedSection } from './formatted';
 
 const types = {
     'to-boolean': BooleanType,
@@ -84,15 +83,6 @@ class Coercion implements Expression {
                 }
             }
             throw new RuntimeError(error || `Could not parse color from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
-        } else if (this.type.kind === 'formatted') {
-            let input;
-            for (const arg of this.args) {
-                input = arg.evaluate(ctx);
-                if (typeof input === 'string') {
-                    return new Formatted([new FormattedSection(input, null, null)]);
-                }
-            }
-            throw new RuntimeError(`Could not parse formatted text from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
         } else if (this.type.kind === 'number') {
             let value = null;
             for (const arg of this.args) {

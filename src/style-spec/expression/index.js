@@ -351,22 +351,23 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
     return result;
 }
 
-import { ColorType, StringType, NumberType, BooleanType, ValueType, array } from './types';
+import { ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, array } from './types';
 
-function getExpectedType(spec: StylePropertySpecification): Type | null {
+function getExpectedType(spec: StylePropertySpecification): Type {
     const types = {
         color: ColorType,
         string: StringType,
         number: NumberType,
         enum: StringType,
-        boolean: BooleanType
+        boolean: BooleanType,
+        formatted: FormattedType
     };
 
     if (spec.type === 'array') {
         return array(types[spec.value] || ValueType, spec.length);
     }
 
-    return types[spec.type] || null;
+    return types[spec.type];
 }
 
 function getDefaultValue(spec: StylePropertySpecification): Value {
