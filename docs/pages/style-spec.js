@@ -689,6 +689,12 @@ export default class extends React.Component {
                                             android: '4.2.0',
                                             ios: '3.4.0',
                                             macos: '0.3.0'
+                                        },
+                                        'line distance metrics': {
+                                            js: '0.45.0',
+                                            android: '6.5.0',
+                                            ios: '4.4.0',
+                                            macos: '0.11.0'
                                         }
                                     }}/>
                                 </div>
