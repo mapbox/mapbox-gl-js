@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 import { isValue, typeOf, Color } from '../values';
-import { Formatted } from './formatted';
+import Formatted from '../types/formatted';
 
 import type { Type } from '../types';
 import type { Value }  from '../values';

@@ -17,7 +17,7 @@ import classifyRings from '../util/classify_rings';
 import EXTENT from '../data/extent';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import EvaluationParameters from '../style/evaluation_parameters';
-import {Formatted} from '../style-spec/expression/definitions/formatted';
+import Formatted from '../style-spec/expression/types/formatted';
 import {SIZE_PACK_FACTOR} from './symbol_size';
 
 import type {Shaping, PositionedIcon} from './shaping';

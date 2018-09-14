@@ -9,7 +9,7 @@ import { plugin as rtlTextPlugin } from '../source/rtl_text_plugin';
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {ImagePosition} from '../render/image_atlas';
-import {Formatted} from '../style-spec/expression/definitions/formatted';
+import Formatted from '../style-spec/expression/types/formatted';
 
 const WritingMode = {
     horizontal: 1,

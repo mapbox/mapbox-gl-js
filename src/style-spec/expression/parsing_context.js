@@ -9,14 +9,14 @@ import Assertion from './definitions/assertion';
 import Coercion from './definitions/coercion';
 import EvaluationContext from './evaluation_context';
 import CompoundExpression from './compound_expression';
-import { CollatorExpression } from './definitions/collator';
+import CollatorExpression from './definitions/collator';
+import FormatExpression from './definitions/format';
 import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
 import Var from './definitions/var';
 
 
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
-import {FormatExpression} from './definitions/formatted';
 
 /**
  * State associated parsing at a given point in an expression tree.

@@ -36,8 +36,8 @@ import {
     LessThanOrEqual,
     GreaterThanOrEqual
 } from './comparison';
-import { CollatorExpression } from './collator';
-import { FormatExpression } from './formatted';
+import CollatorExpression from './collator';
+import FormatExpression from './format';
 import Length from './length';
 
 import type { Varargs } from '../compound_expression';

@@ -1,7 +1,7 @@
 // @flow
 
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
-import {Formatted} from '../style-spec/expression/definitions/formatted';
+import Formatted from '../style-spec/expression/types/formatted';
 
 export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
     const leftIndex: {[string]: number} = {};

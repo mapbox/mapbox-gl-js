@@ -18,7 +18,7 @@ import Anchor from '../../symbol/anchor';
 import { getSizeData } from '../../symbol/symbol_size';
 import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
-import {Formatted} from '../../style-spec/expression/definitions/formatted';
+import Formatted from '../../style-spec/expression/types/formatted';
 
 
 import type {
