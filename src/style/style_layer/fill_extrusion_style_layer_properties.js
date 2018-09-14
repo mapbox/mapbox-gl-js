@@ -15,7 +15,7 @@ import {
 
 import type Color from '../../style-spec/util/color';
 
-import type {Formatted} from '../../style-spec/expression/definitions/formatted';
+import type Formatted from '../../style-spec/expression/types/formatted';
 
 
 export type PaintProps = {|
