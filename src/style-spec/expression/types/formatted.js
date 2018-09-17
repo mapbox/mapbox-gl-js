@@ -19,6 +19,10 @@ export default class Formatted {
         this.sections = sections;
     }
 
+    static fromString(unformatted: string): Formatted {
+        return new Formatted([new FormattedSection(unformatted, null, null)]);
+    }
+
     toString(): string {
         return this.sections.map(section => section.text).join('');
     }

@@ -22,13 +22,9 @@ function transformText(text: string, layer: SymbolStyleLayer, feature: Feature) 
 }
 
 
-export default function(text: string | Formatted, layer: SymbolStyleLayer, feature: Feature) {
-    if (text instanceof Formatted) {
-        text.sections.forEach(section => {
-            section.text = transformText(section.text, layer, feature);
-        });
-        return text;
-    } else {
-        return transformText(text, layer, feature);
-    }
+export default function(text: Formatted, layer: SymbolStyleLayer, feature: Feature): Formatted {
+    text.sections.forEach(section => {
+        section.text = transformText(section.text, layer, feature);
+    });
+    return text;
 }

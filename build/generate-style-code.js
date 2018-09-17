@@ -25,7 +25,7 @@ global.flowType = function (property) {
         case 'color':
             return `Color`;
         case 'formatted':
-            return `string | Formatted`;
+            return `Formatted`;
         case 'array':
             if (property.length) {
                 return `[${new Array(property.length).fill(flowType({type: property.value})).join(', ')}]`;

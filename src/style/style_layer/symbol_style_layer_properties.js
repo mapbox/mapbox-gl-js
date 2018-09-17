@@ -38,7 +38,7 @@ export type LayoutProps = {|
     "icon-pitch-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-pitch-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-rotation-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
-    "text-field": DataDrivenProperty<string | Formatted>,
+    "text-field": DataDrivenProperty<Formatted>,
     "text-font": DataDrivenProperty<Array<string>>,
     "text-size": DataDrivenProperty<number>,
     "text-max-width": DataDrivenProperty<number>,
