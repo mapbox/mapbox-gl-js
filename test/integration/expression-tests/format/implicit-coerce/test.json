@@ -1,0 +1,53 @@
+{
+  "expression": ["to-string", ["get", "p"]],
+  "propertySpec": {
+    "type": "formatted"
+  },
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": 0}}],
+    [{}, {"properties": {"p": "a"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "formatted"
+    },
+    "outputs": [
+      {
+        "sections": [
+          {
+            "text": "",
+            "scale": null,
+            "fontStack": null
+          }
+        ]
+      },
+      {
+        "sections": [
+          {
+            "text": "0",
+            "scale": null,
+            "fontStack": null
+          }
+        ]
+      },
+      {
+        "sections": [
+          {
+            "text": "a",
+            "scale": null,
+            "fontStack": null
+          }
+        ]
+      }
+    ],
+    "serialized": [
+      "format",
+      ["to-string", ["get", "p"]],
+      {}
+    ]
+  }
+}
