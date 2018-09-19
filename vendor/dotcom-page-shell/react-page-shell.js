@@ -722,6 +722,10 @@ var navigationMenuData = {
           name: 'Studio',
           description: 'Design custom maps',
           to: '/mapbox-studio/'
+        }, {
+          name: 'Atlas',
+          description: 'Maps and location on-premise',
+          to: '/atlas/'
         }],
         more: {
           title: 'View all products',
@@ -917,6 +921,9 @@ var navigationMenuData = {
     }, {
       name: 'Studio',
       to: '/mapbox-studio/'
+    }, {
+      name: 'Atlas',
+      to: '/atlas/'
     }],
     highlightedLinks: [{
       name: 'Pricing',
