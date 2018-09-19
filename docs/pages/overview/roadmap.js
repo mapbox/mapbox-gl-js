@@ -1,7 +1,6 @@
 import React from 'react';
-import PageShell from '../components/page_shell';
-import LeftNav from "../components/left_nav";
-import TopNav from "../components/top_nav";
+import PageShell from '../../components/page_shell';
+import LeftNav from "../../components/left_nav";
 
 const meta = {
     title: 'Mapbox GL JS Roadmap',
@@ -70,8 +69,6 @@ export default class extends React.Component {
                 </LeftNav>
 
                 <div className='limiter clearfix'>
-                    <TopNav current='roadmap'/>
-
                     <div className='contain margin3 col9'>
                         <style>{`
                         .roadmap-block {

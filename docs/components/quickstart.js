@@ -6,6 +6,21 @@ import {highlightJavascript, highlightMarkup, highlightShell} from './prism_high
 import Copyable from './copyable';
 
 class QuickstartCDN extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            userAccessToken: undefined
+        };
+    }
+
+    componentDidMount() {
+        MapboxPageShell.afterUserCheck(() => {
+          this.setState({
+            userAccessToken: MapboxPageShell.getUserPublicAccessToken()
+          });
+        });
+    }
+
     render() {
         return (
             <div id='quickstart-cdn'>
@@ -22,7 +37,7 @@ class QuickstartCDN extends React.Component {
                     {highlightMarkup(`
                         <div id='map' style='width: 400px; height: 300px;'></div>
                         <script>
-                        mapboxgl.accessToken = '${this.props.token}';
+                        mapboxgl.accessToken = '${this.state.userAccessToken}';
                         var map = new mapboxgl.Map({
                             container: 'map',
                             style: 'mapbox://styles/mapbox/streets-v9'
@@ -53,7 +68,7 @@ class QuickstartBundler extends React.Component {
                         import mapboxgl from 'mapbox-gl';
                         // or "const mapboxgl = require('mapbox-gl');"
 
-                        mapboxgl.accessToken = '${this.props.token}';
+                        mapboxgl.accessToken = '${this.state.userAccessToken}';
                         const map = new mapboxgl.Map({
                             container: '<your HTML element id>',
                             style: 'mapbox://styles/mapbox/streets-v9'
@@ -126,8 +141,8 @@ export default class extends React.Component {
                             className={this.state.tab !== 'cdn' ? 'active' : ''}>module bundler</a>
                     </div>
 
-                    {this.state.tab === 'cdn' && <QuickstartCDN token={this.props.token}/>}
-                    {this.state.tab !== 'cdn' && <QuickstartBundler token={this.props.token}/>}
+                    {this.state.tab === 'cdn' && <QuickstartCDN token={this.state.userAccessToken}/>}
+                    {this.state.tab !== 'cdn' && <QuickstartBundler token={this.state.userAccessToken}/>}
 
                     <div>
                         <h2 className='strong' id='csp-directives'>CSP Directives</h2>

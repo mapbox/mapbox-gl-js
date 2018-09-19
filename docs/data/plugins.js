@@ -1,20 +1,6 @@
-import React from 'react';
-import slug from 'slugg';
-import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
 import md from '@mapbox/batfish/modules/md'; // eslint-disable-line import/no-unresolved
-import PageShell from '../components/page_shell';
-import LeftNav from "../components/left_nav";
-import TopNav from "../components/top_nav";
-import entries from 'object.entries';
-// import { plugins } from '../data/plugins';
 
-const meta = {
-    title: 'Mapbox GL JS Plugins',
-    description: '',
-    pathname: '/plugins'
-};
-
-const plugins = {
+export const plugins = {
     "User Interface Plugins": {
         "mapbox-gl-accessibility": {
             "website": "https://github.com/mapbox/mapbox-gl-accessibility/",
@@ -28,10 +14,6 @@ const plugins = {
             "website": "https://github.com/mapbox/mapbox-gl-compare",
             "description": "enables users to compare two maps by swiping left and right",
             "example": "mapbox-gl-compare"
-        },
-        "mapbox-gl-controls": {
-            "website": "https://github.com/bravecow/mapbox-gl-controls",
-            "description": "alternative basic map controls"
         },
         "mapbox-gl-directions": {
             "website": "https://github.com/mapbox/mapbox-gl-directions",
@@ -47,14 +29,6 @@ const plugins = {
             "website": "https://github.com/mapbox/mapbox-gl-geocoder",
             "description": "adds a Geocoder control to Mapbox GL JS",
             "example": "mapbox-gl-geocoder"
-        },
-        "mapbox-gl-infobox": {
-            "website": "https://github.com/el/infobox-control",
-            "description": "adds a control to display an infobox or a gradient"
-        },
-        "mapbox-gl-style-switcher": {
-            "website": "https://github.com/el/style-switcher",
-            "description": "adds a control to switch between styles"
         },
         "mapboxgl-minimap": {
             "website": "https://github.com/aesqe/mapboxgl-minimap",
@@ -104,10 +78,6 @@ const plugins = {
         "elm-mapbox": {
             "website": "https://package.elm-lang.org/packages/gampleman/elm-mapbox/latest/",
             "description": md`provides an [Elm](https://elm-lang.org) integration for Mapbox GL JS`
-        },
-        "ember-mapbox-gl": {
-            "website": "https://github.com/kturney/ember-mapbox-gl",
-            "description": md`provides an [Ember](http://emberjs.com) integration for Mapbox GL JS`
         }
     },
     "Utility Libraries": {
@@ -156,32 +126,3 @@ const plugins = {
         }
     }
 };
-
-export default class extends React.Component {
-    render() {
-        return (
-            <PageShell meta={meta}>
-                <div className='contain'>
-                    <div id='plugins' className='doc' data-swiftype-index='true'>
-                        {entries(plugins).map(([title, plugins], i) =>
-                            <div key={i} className='space-bottom4'>
-                                <a id={slug(title)}/>
-                                <h2 className='space-bottom1'>{title}</h2>
-                                {entries(plugins).map(([name, plugin], i) =>
-                                    <div key={i} className='space-bottom1 keyline-all pad2 fill-white'>
-                                        <a id={slug(name)}/>
-                                        <h3><a href={plugin.website}>{name}</a></h3>
-                                        { plugin.example && <a
-                                            className="small quiet rcon"
-                                            href={prefixUrl(`/example/${plugin.example}`)}>view example</a> }
-                                        <p>{ plugin.description }</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </PageShell>
-        );
-    }
-}
