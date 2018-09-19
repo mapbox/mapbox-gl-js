@@ -26,7 +26,6 @@ export class MapMouseEvent extends Event {
         | 'mouseover'
         | 'mouseenter'
         | 'mouseleave'
-        | 'mouseover'
         | 'mouseout'
         | 'contextmenu';
 
@@ -358,16 +357,6 @@ export type MapEvent =
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
      */
     | 'mouseleave'
-
-    /**
-     * Synonym for `mouseenter`.
-     *
-     * @event mouseover
-     * @memberof Map
-     * @instance
-     * @property {MapMouseEvent} data
-     */
-    | 'mouseover'
 
     /**
      * Fired when a point device (usually a mouse) leaves the map's canvas.
