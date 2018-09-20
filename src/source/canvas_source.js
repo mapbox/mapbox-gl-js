@@ -198,13 +198,9 @@ class CanvasSource extends ImageSource {
         }
 
         if (!this.texture) {
-            this.texture = new Texture(context, this.canvas, gl.RGBA);
-            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        } else if (resize) {
-            this.texture.update(this.canvas);
-        } else if (this._playing) {
-            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+            this.texture = new Texture(context, this.canvas, gl.RGBA, { premultiply: true });
+        } else if (resize || this._playing) {
+            this.texture.update(this.canvas, { premultiply: true });
         }
 
         for (const w in this.tiles) {
