@@ -31,10 +31,14 @@ export default class Formatted {
         const serialized = ["format"];
         for (const section of this.sections) {
             serialized.push(section.text);
-            const fontStack = section.fontStack ?
-                ["literal", section.fontStack.split(',')] :
-                null;
-            serialized.push({ "text-font": fontStack, "font-scale": section.scale });
+            const options = {};
+            if (section.fontStack) {
+                options["text-font"] = ["literal", section.fontStack.split(',')];
+            }
+            if (section.scale) {
+                options["font-scale"] = section.scale;
+            }
+            serialized.push(options);
         }
         return serialized;
     }
