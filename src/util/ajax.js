@@ -163,9 +163,9 @@ export const getImage = function(requestParameters: RequestParameters, callback:
                 callback(null, img);
                 URL.revokeObjectURL(img.src);
             };
-            img.onerror = (e) => {
-              const err = new Error('Image sources cannot use SVGs');
-              callback(err);
+            img.onerror = () => {
+                const err = new Error('Image sources cannot use SVG files');
+                callback(err);
             };
             const blob: Blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
             (img: any).cacheControl = imgData.cacheControl;
