@@ -30,6 +30,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
 
     window.devicePixelRatio = options.pixelRatio;
 
+    if (options.addFakeCanvas) {
+        const fakeCanvas = createFakeCanvas(window.document, options.addFakeCanvas.id, options.addFakeCanvas.image);
+        window.document.body.appendChild(fakeCanvas);
+    }
+
     const container = window.document.createElement('div');
     Object.defineProperty(container, 'clientWidth', {value: options.width});
     Object.defineProperty(container, 'clientHeight', {value: options.height});
@@ -101,6 +106,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             gl.getExtension('STACKGL_destroy_context').destroy();
             delete map.painter.context.gl;
 
+            if (options.addFakeCanvas) {
+                const fakeCanvas = window.document.getElementById(options.addFakeCanvas.id);
+                fakeCanvas.parentNode.removeChild(fakeCanvas);
+            }
+
             callback(null, data, results.map((feature) => {
                 feature = feature.toJSON();
                 delete feature.layer;
@@ -153,3 +163,13 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         }
     }
 };
+
+function createFakeCanvas(document, id, imagePath) {
+    const fakeCanvas = document.createElement('canvas');
+    const image = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', imagePath)));
+    fakeCanvas.id = id;
+    fakeCanvas.data = image.data;
+    fakeCanvas.width = image.width;
+    fakeCanvas.height = image.height;
+    return fakeCanvas;
+}
