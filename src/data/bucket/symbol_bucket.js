@@ -18,7 +18,7 @@ import Anchor from '../../symbol/anchor';
 import { getSizeData } from '../../symbol/symbol_size';
 import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
-import {Formatted} from '../../style-spec/expression/definitions/formatted';
+import Formatted from '../../style-spec/expression/types/formatted';
 
 
 import type {
@@ -56,7 +56,7 @@ export type CollisionArrays = {
 };
 
 export type SymbolFeature = {|
-    text: string | Formatted | void,
+    text: Formatted | void,
     icon: string | void,
     index: number,
     sourceLayerIndex: number,
@@ -349,10 +349,16 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
-            let text;
+            let text: Formatted | void;
             if (hasText) {
-                text = layer.getValueAndResolveTokens('text-field', feature);
-                text = transformText(text, layer, feature);
+                // Expression evaluation will automatically coerce to Formatted
+                // but plain string token evaluation skips that pathway so do the
+                // conversion here.
+                const resolvedTokens = layer.getValueAndResolveTokens('text-field', feature);
+                text = transformText(resolvedTokens instanceof Formatted ?
+                    resolvedTokens :
+                    Formatted.fromString(resolvedTokens),
+                    layer, feature);
             }
 
             let icon;
@@ -384,20 +390,13 @@ class SymbolBucket implements Bucket {
 
             if (text) {
                 const fontStack = textFont.evaluate(feature, {}).join(',');
-                const stack = stacks[fontStack] = stacks[fontStack] || {};
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
-                if (text instanceof Formatted) {
-                    for (const section of text.sections) {
-                        const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
-                        const sectionFont = section.fontStack || fontStack;
-                        const sectionStack = stacks[sectionFont] = stacks[sectionFont] || {};
-                        this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, doesAllowVerticalWritingMode);
-                    }
-                } else {
-                    const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text);
-                    this.calculateGlyphDependencies(text, stack, textAlongLine, doesAllowVerticalWritingMode);
+                for (const section of text.sections) {
+                    const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
+                    const sectionFont = section.fontStack || fontStack;
+                    const sectionStack = stacks[sectionFont] = stacks[sectionFont] || {};
+                    this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, doesAllowVerticalWritingMode);
                 }
-
             }
         }
 

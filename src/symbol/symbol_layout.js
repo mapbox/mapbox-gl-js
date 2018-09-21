@@ -17,7 +17,6 @@ import classifyRings from '../util/classify_rings';
 import EXTENT from '../data/extent';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import EvaluationParameters from '../style/evaluation_parameters';
-import {Formatted} from '../style-spec/expression/definitions/formatted';
 import {SIZE_PACK_FACTOR} from './symbol_size';
 
 import type {Shaping, PositionedIcon} from './shaping';
@@ -106,7 +105,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         const shapedTextOrientations = {};
         const text = feature.text;
         if (text) {
-            const unformattedText = text instanceof Formatted ? text.toString() : text;
+            const unformattedText = text.toString();
             const textOffset: [number, number] = (layout.get('text-offset').evaluate(feature, {}).map((t)=> t * oneEm): any);
             const spacing = layout.get('text-letter-spacing').evaluate(feature, {}) * oneEm;
             const spacingIfAllowed = allowsLetterSpacing(unformattedText) ? spacing : 0;

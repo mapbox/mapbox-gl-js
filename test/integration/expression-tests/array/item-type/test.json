@@ -3,7 +3,8 @@
   "inputs": [
     [{}, {"properties": {"x": ["a", "b"]}}],
     [{}, {"properties": {"x": [1, 2]}}],
-    [{}, {"properties": {"x": [1, "b"]}}]
+    [{}, {"properties": {"x": [1, "b"]}}],
+    [{}, {"properties": {"x": []}}]
   ],
   "expected": {
     "compiled": {
@@ -19,7 +20,8 @@
       },
       {
         "error": "Expected value to be of type array<string>, but found array<value, 2> instead."
-      }
+      },
+      []
     ],
     "serialized": ["array", "string", ["get", "x"]]
   }

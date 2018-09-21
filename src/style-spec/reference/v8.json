@@ -3192,7 +3192,7 @@
         }
       },
       "concat": {
-        "doc": "Returns a `string` consisting of the concatenation of the inputs. If any inputs are `formatted`, returns a `formatted` with default formatting options for all unformatted inputs.",
+        "doc": "Returns a `string` consisting of the concatenation of the inputs. Each input is converted to a string as if by `to-string`.",
         "group": "String",
         "sdk-support": {
           "basic functionality": {

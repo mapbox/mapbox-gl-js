@@ -36,11 +36,11 @@ t('converts token strings to expressions', (t) => {
         layers: [{
             id: '1',
             type: 'symbol',
-            layout: {'text-field': 'a{x}', 'icon-image': 'b{y}'}
+            layout: {'text-field': 'a{x}', 'icon-image': '{y}'}
         }]
     }, spec.latest.$version);
-    t.deepEqual(migrated.layers[0].layout['text-field'], ['concat', 'a', ['to-string', ['get', 'x']]]);
-    t.deepEqual(migrated.layers[0].layout['icon-image'], ['concat', 'b', ['to-string', ['get', 'y']]]);
+    t.deepEqual(migrated.layers[0].layout['text-field'], ['concat', 'a', ['get', 'x']]);
+    t.deepEqual(migrated.layers[0].layout['icon-image'], ['to-string', ['get', 'y']]);
     t.end();
 });
 

@@ -65,13 +65,21 @@ const types = {
         type: 'object',
         parameters: ['value', { repeat: [ 'fallback: value' ] }]
     }],
-    'to-number': [{
-        type: 'number',
-        parameters: ['value', { repeat: [ 'fallback: value' ] }]
+    'to-boolean': [{
+        type: 'boolean',
+        parameters: ['value']
     }],
     'to-color': [{
         type: 'color',
         parameters: ['value', { repeat: [ 'fallback: value' ] }]
+    }],
+    'to-number': [{
+        type: 'number',
+        parameters: ['value', { repeat: [ 'fallback: value' ] }]
+    }],
+    'to-string': [{
+        type: 'string',
+        parameters: ['value']
     }],
     at: [{
         type: 'ItemType',

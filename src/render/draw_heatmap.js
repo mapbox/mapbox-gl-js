@@ -5,6 +5,7 @@ import Color from '../style-spec/util/color';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
+import CullFaceMode from '../gl/cull_face_mode';
 import {
     heatmapUniformValues,
     heatmapTextureUniformValues
@@ -54,7 +55,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const program = painter.useProgram('heatmap', programConfiguration);
             const {zoom} = painter.transform;
 
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 heatmapUniformValues(coord.posMatrix,
                     tile, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
@@ -133,7 +134,7 @@ function renderTextureToMap(painter, layer) {
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
     painter.useProgram('heatmapTexture').draw(context, gl.TRIANGLES,
-        DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(),
+        DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
         heatmapTextureUniformValues(painter, layer, 0, 1),
         layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
         painter.viewportSegments, layer.paint, painter.transform.zoom);

@@ -24,9 +24,9 @@ function register(Benchmark, locations, options) {
     if (options) Object.assign(benchmark, options);
 
     urls.forEach(style => {
-        benchmark.bench = new Benchmark(style, locations);
         benchmark.versions.push({
-            name: style,
+            name: style.replace("mapbox://styles/", ""),
+            bench: new Benchmark(style, locations),
             status: 'waiting',
             logs: [],
             samples: [],
@@ -61,14 +61,13 @@ promise = promise.then(() => {
     // URL has been set up, which happens after this module is executed.
     getWorkerPool().acquire(-1);
 });
-
 benchmarks.forEach(bench => {
     bench.versions.forEach(version => {
         promise = promise.then(() => {
             version.status = 'running';
             updateUI(benchmarks);
 
-            return bench.bench.run()
+            return version.bench.run()
                 .then(measurements => {
                     // scale measurements down by iteration count, so that
                     // they represent (average) time for a single iteration

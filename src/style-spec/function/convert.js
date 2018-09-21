@@ -36,7 +36,9 @@ function convertIdentityFunction(parameters, propertySpec): Array<mixed> {
     const get = ['get', parameters.property];
 
     if (parameters.default === undefined) {
-        return get;
+        // By default, expressions for string-valued properties get coerced. To preserve
+        // legacy function semantics, insert an explicit assertion instead.
+        return propertySpec.type === 'string' ? ['string', get] : get;
     } else if (propertySpec.type === 'enum') {
         return [
             'match',
@@ -224,7 +226,7 @@ export function convertTokenString(s: string) {
         const literal = s.slice(pos, re.lastIndex - match[0].length);
         pos = re.lastIndex;
         if (literal.length > 0) result.push(literal);
-        result.push(['to-string', ['get', match[1]]]);
+        result.push(['get', match[1]]);
     }
 
     if (result.length === 1) {
@@ -234,7 +236,7 @@ export function convertTokenString(s: string) {
     if (pos < s.length) {
         result.push(s.slice(pos));
     } else if (result.length === 2) {
-        return result[1];
+        return ['to-string', result[1]];
     }
 
     return result;

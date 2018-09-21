@@ -30,6 +30,7 @@ class Transform {
     zoomFraction: number;
     pixelsToGLUnits: [number, number];
     cameraToCenterDistance: number;
+    mercatorMatrix: Array<number>;
     projMatrix: Float64Array;
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
@@ -472,6 +473,10 @@ class Transform {
         return cache[posMatrixKey];
     }
 
+    customLayerMatrix(): Array<number> {
+        return this.mercatorMatrix.slice();
+    }
+
     _constrain() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
@@ -567,6 +572,10 @@ class Transform {
         mat4.rotateX(m, m, this._pitch);
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-x, -y, 0]);
+
+        // The mercatorMatrix can be used to transform points from mercator coordinates
+        // ([0, 0] nw, [1, 1] se) to GL coordinates.
+        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize]);
 
         // scale vertically to meters per pixel (inverse of ground resolution):
         // worldSize / (circumferenceOfEarth * cos(lat * π / 180))

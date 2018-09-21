@@ -64,11 +64,14 @@
 
 .mapboxgl-ctrl-group {
     border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.mapboxgl-ctrl-group:not(:empty) {
     -moz-box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
     -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
     box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    background: #fff;
 }
 
 .mapboxgl-ctrl-group > button {

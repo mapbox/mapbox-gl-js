@@ -24,6 +24,8 @@ import type {
     LayerSpecification,
     FilterSpecification
 } from '../style-spec/types';
+import type {CustomLayerInterface} from './style_layer/custom_style_layer';
+import type Map from '../ui/map';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -58,15 +60,24 @@ class StyleLayer extends Evented {
                               pixelsToTileUnits: number,
                               posMatrix: Float32Array) => boolean;
 
-    constructor(layer: LayerSpecification, properties: $ReadOnly<{layout?: Properties<*>, paint: Properties<*>}>) {
+    +onAdd: ?(map: Map) => void;
+    +onRemove: ?(map: Map) => void;
+
+    constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>) {
         super();
 
         this.id = layer.id;
-        this.metadata = layer.metadata;
         this.type = layer.type;
+        this.visibility = 'visible';
+        this._featureFilter = () => true;
+
+        if (layer.type === 'custom') return;
+
+        layer = ((layer: any): LayerSpecification);
+
+        this.metadata = layer.metadata;
         this.minzoom = layer.minzoom;
         this.maxzoom = layer.maxzoom;
-        this.visibility = 'visible';
 
         if (layer.type !== 'background') {
             this.source = layer.source;
@@ -74,22 +85,22 @@ class StyleLayer extends Evented {
             this.filter = layer.filter;
         }
 
-        this._featureFilter = () => true;
-
         if (properties.layout) {
             this._unevaluatedLayout = new Layout(properties.layout);
         }
 
-        this._transitionablePaint = new Transitionable(properties.paint);
+        if (properties.paint) {
+            this._transitionablePaint = new Transitionable(properties.paint);
 
-        for (const property in layer.paint) {
-            this.setPaintProperty(property, layer.paint[property], {validate: false});
-        }
-        for (const property in layer.layout) {
-            this.setLayoutProperty(property, layer.layout[property], {validate: false});
-        }
+            for (const property in layer.paint) {
+                this.setPaintProperty(property, layer.paint[property], {validate: false});
+            }
+            for (const property in layer.layout) {
+                this.setLayoutProperty(property, layer.layout[property], {validate: false});
+            }
 
-        this._transitioningPaint = this._transitionablePaint.untransitioned();
+            this._transitioningPaint = this._transitionablePaint.untransitioned();
+        }
     }
 
     getCrossfadeParameters() {

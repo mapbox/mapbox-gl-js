@@ -2,20 +2,23 @@
 
 import assert from 'assert';
 
-import { ColorType, ValueType, NumberType } from '../types';
-import { Color, validateRGBA } from '../values';
+import {BooleanType, ColorType, NumberType, StringType, ValueType} from '../types';
+import {Color, toString as valueToString, validateRGBA} from '../values';
 import RuntimeError from '../runtime_error';
+import Formatted from '../types/formatted';
+import FormatExpression from '../definitions/format';
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type { Value } from '../values';
 import type { Type } from '../types';
-import { Formatted, FormattedSection } from './formatted';
 
 const types = {
+    'to-boolean': BooleanType,
+    'to-color': ColorType,
     'to-number': NumberType,
-    'to-color': ColorType
+    'to-string': StringType
 };
 
 /**
@@ -41,6 +44,9 @@ class Coercion implements Expression {
         const name: string = (args[0]: any);
         assert(types[name], name);
 
+        if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
+            return context.error(`Expected one argument.`);
+
         const type = types[name];
 
         const parsed = [];
@@ -54,13 +60,17 @@ class Coercion implements Expression {
     }
 
     evaluate(ctx: EvaluationContext) {
-        if (this.type.kind === 'color') {
+        if (this.type.kind === 'boolean') {
+            return Boolean(this.args[0].evaluate(ctx));
+        } else if (this.type.kind === 'color') {
             let input;
             let error;
             for (const arg of this.args) {
                 input = arg.evaluate(ctx);
                 error = null;
-                if (typeof input === 'string') {
+                if (input instanceof Color) {
+                    return input;
+                } else if (typeof input === 'string') {
                     const c = ctx.parseColor(input);
                     if (c) return c;
                 } else if (Array.isArray(input)) {
@@ -75,25 +85,22 @@ class Coercion implements Expression {
                 }
             }
             throw new RuntimeError(error || `Could not parse color from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
-        } else if (this.type.kind === 'formatted') {
-            let input;
-            for (const arg of this.args) {
-                input = arg.evaluate(ctx);
-                if (typeof input === 'string') {
-                    return new Formatted([new FormattedSection(input, null, null)]);
-                }
-            }
-            throw new RuntimeError(`Could not parse formatted text from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
-        } else {
+        } else if (this.type.kind === 'number') {
             let value = null;
             for (const arg of this.args) {
                 value = arg.evaluate(ctx);
-                if (value === null) continue;
+                if (value === null) return 0;
                 const num = Number(value);
                 if (isNaN(num)) continue;
                 return num;
             }
             throw new RuntimeError(`Could not convert ${JSON.stringify(value)} to number.`);
+        } else if (this.type.kind === 'formatted') {
+            // There is no explicit 'to-formatted' but this coercion can be implicitly
+            // created by properties that expect the 'formatted' type.
+            return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
+        } else {
+            return valueToString(this.args[0].evaluate(ctx));
         }
     }
 
@@ -106,6 +113,9 @@ class Coercion implements Expression {
     }
 
     serialize() {
+        if (this.type.kind === 'formatted') {
+            return new FormatExpression([{text: this.args[0], scale: null, font: null}]).serialize();
+        }
         const serialized = [`to-${this.type.kind}`];
         this.eachChild(child => { serialized.push(child.serialize()); });
         return serialized;

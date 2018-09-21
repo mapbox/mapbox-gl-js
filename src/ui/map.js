@@ -31,6 +31,7 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {RequestParameters} from '../util/ajax';
 import type {StyleOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
+import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -1162,7 +1163,7 @@ class Map extends Camera {
      *
      * A layer defines styling for data from a specified source.
      *
-     * @param {Object} layer The style layer to add, conforming to the Mapbox Style Specification's
+     * @param {Object | CustomLayerInterface} layer The style layer to add, conforming to the Mapbox Style Specification's
      *   [layer definition](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
      * @param {string} [before] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
@@ -1171,7 +1172,7 @@ class Map extends Camera {
      * @see [Add a vector tile source](https://www.mapbox.com/mapbox-gl-js/example/vector-source/)
      * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
      */
-    addLayer(layer: LayerSpecification, before?: string) {
+    addLayer(layer: LayerSpecification | CustomLayerInterface, before?: string) {
         this.style.addLayer(layer, before);
         return this._update(true);
     }
@@ -1532,7 +1533,7 @@ class Map extends Camera {
 
         this._styleDirty = this._styleDirty || updateStyle;
         this._sourcesDirty = true;
-        this._rerender();
+        this.triggerRepaint();
 
         return this;
     }
@@ -1563,6 +1564,10 @@ class Map extends Camera {
      * @private
      */
     _render() {
+        // A custom layer may have used the context asynchronously. Mark the state as dirty.
+        this.painter.context.setDirty();
+        this.painter.setBaseState();
+
         this._renderTaskQueue.run();
 
         let crossFading = false;
@@ -1636,7 +1641,7 @@ class Map extends Camera {
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
         if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
-            this._rerender();
+            this.triggerRepaint();
         }
 
         return this;
@@ -1676,7 +1681,12 @@ class Map extends Camera {
         this.fire(new Event('remove'));
     }
 
-    _rerender() {
+    /**
+     * Trigger the rendering of a single frame. Use this method with custom layers to
+     * repaint the map when the layer changes. Calling this multiple times before the
+     * next frame is rendered will still result in only a single frame being rendered.
+     */
+    triggerRepaint() {
         if (this.style && !this._frame) {
             this._frame = browser.frame(() => {
                 this._frame = null;
