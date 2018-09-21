@@ -3,7 +3,7 @@ title: Add a geocoder
 description: >-
   Use the [mapbox-gl-geocoder](https://github.com/mapbox/mapbox-gl-geocoder)
   control to search for places using Mapbox Geocoding API.
-  Checkout our [Search Playground](https://www.mapbox.com/search-playground/) to test out geocoding quality.
+  Check out our [Search Playground](https://www.mapbox.com/search-playground/) to explore geocoding query parameters and how they affect the results.
 tags:
   - controls-and-overlays
   - geocoder
