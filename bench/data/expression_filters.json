@@ -1,0 +1,705 @@
+[
+{
+  "layer": "landcover",
+  "filter": ["match", ["get", "class"], "crop", true, false]
+},{
+  "layer": "landcover",
+  "filter": ["step", ["zoom"], true, 7, ["match", ["get", "class"], "snow", true, false]]
+},
+{
+  "layer": "landuse_overlay",
+  "filter": ["match", ["get", "class"], "national_park", true, false]
+},
+{
+  "layer": "landuse",
+  "filter": ["match", ["get", "class"],
+    ["airport", "cemetery", "glacier", "hospital", "park", "pitch", "sand", "school"], true, false
+  ]
+},
+{
+  "layer": "landuse",
+  "filter": ["match", ["get", "class"], "pitch", true, false]
+},
+{
+  "layer": "structure",
+  "filter": ["all", ["==", ["geometry-type"], "Polygon"],
+    ["match", ["get", "class"], "land", true, false]
+  ]
+},
+{
+  "layer": "structure",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"], "land", true, false]
+  ]
+},
+{
+  "layer": "aeroway",
+  "filter": ["all", ["==", ["geometry-type"], "Polygon"],
+    ["match", ["get", "type"],
+      ["runway", "taxiway", "helipad"], true, false
+    ]
+  ]
+},
+{
+  "layer": "aeroway",
+  "filter": ["==", ["geometry-type"], "LineString"]
+},
+{
+  "layer": "building",
+  "filter": ["all", ["!", ["match", ["get", "type"], "building:part", true, false]],
+    ["==", ["get", "underground"], "false"]
+  ]
+},
+{
+  "layer": "building",
+  "filter": ["all", ["!", ["match", ["get", "type"], "building:part", true, false]],
+    ["==", ["get", "underground"], "false"]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "tunnel", true, false],
+    ["step", ["zoom"],
+      ["match", ["get", "class"],
+        ["street", "street_limited", "track", "primary_link"], true, false
+      ], 14, ["match", ["get", "class"],
+        ["street", "street_limited", "track", "primary_link", "secondary_link", "tertiary_link", "service"], true, false
+      ]
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"],
+      ["primary", "secondary", "tertiary"], true, false
+    ],
+    ["match", ["get", "structure"], "tunnel", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"],
+      ["motorway_link", "trunk_link"], true, false
+    ],
+    ["match", ["get", "structure"], "tunnel", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"],
+      ["motorway", "trunk"], true, false
+    ],
+    ["match", ["get", "structure"], "tunnel", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"], "construction", true, false],
+    ["match", ["get", "structure"], "tunnel", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"], "path", true, false],
+    ["match", ["get", "structure"], "tunnel", true, false],
+    ["!", ["match", ["get", "type"], "steps", true, false]]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "tunnel", true, false],
+    ["match", ["get", "class"], "steps", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"], "pedestrian", true, false],
+    ["match", ["get", "structure"], "tunnel", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "tunnel", true, false],
+    ["==", ["get", "oneway"], "true"],
+    ["step", ["zoom"],
+      ["match", ["get", "class"],
+        ["primary", "secondary", "street", "street_limited", "tertiary"], true, false
+      ], 16, ["match", ["get", "class"],
+        ["primary", "secondary", "tertiary", "street", "street_limited", "primary_link", "secondary_link", "tertiary_link", "path", "pedestrian", "service", "track"], true, false
+      ]
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "tunnel", true, false],
+    ["match", ["get", "class"],
+      ["motorway", "motorway_link", "trunk", "trunk_link"], true, false
+    ],
+    ["==", ["get", "oneway"], "true"]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "type"], "ferry", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "type"], "ferry_auto", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"], "path", true, false],
+    ["step", ["zoom"],
+      ["!", ["match", ["get", "type"],
+        ["steps", "sidewalk", "crossing"], true, false
+      ]], 16, ["!", ["match", ["get", "type"], "steps", true, false]]
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "type"], "steps", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "Point"],
+    ["match", ["get", "class"],
+      ["turning_circle", "turning_loop"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"], "pedestrian", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["step", ["zoom"],
+      ["match", ["get", "class"],
+        ["street", "street_limited", "track", "primary_link"], true, false
+      ], 14, ["match", ["get", "class"],
+        ["street", "street_limited", "track", "primary_link", "secondary_link", "tertiary_link", "service"], true, false
+      ]
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"],
+      ["primary", "secondary", "tertiary"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"],
+      ["motorway_link", "trunk_link"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"],
+      ["motorway", "trunk"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"], "construction", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "Polygon"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"],
+      ["path", "pedestrian"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "Polygon"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"],
+      ["primary", "secondary", "tertiary", "primary_link", "secondary_link", "tertiary_link", "street", "street_limited", "track", "service"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["==", ["get", "oneway"], "true"],
+    ["step", ["zoom"],
+      ["match", ["get", "class"],
+        ["primary", "secondary", "tertiary", "street", "street_limited"], true, false
+      ], 16, ["match", ["get", "class"],
+        ["primary", "secondary", "tertiary", "street", "street_limited", "primary_link", "secondary_link", "tertiary_link", "path", "pedestrian", "service", "track"], true, false
+      ]
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"],
+      ["major_rail", "minor_rail"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"], "level_crossing", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"],
+      ["none", "ford"], true, false
+    ],
+    ["match", ["get", "class"],
+      ["motorway", "trunk", "motorway_link", "trunk_link"], true, false
+    ],
+    ["==", ["get", "oneway"], "true"]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "Point"],
+    ["match", ["get", "class"],
+      ["turning_circle", "turning_loop"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["match", ["get", "class"],
+    ["golf"], true, false
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"], "path", true, false],
+    ["!", ["match", ["get", "type"], "steps", true, false]]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "type"], "steps", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"], "pedestrian", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["step", ["zoom"],
+      ["match", ["get", "class"],
+        ["street", "street_limited", "track", "primary_link"], true, false
+      ], 14, ["match", ["get", "class"],
+        ["street", "street_limited", "track", "primary_link", "secondary_link", "tertiary_link", "service"], true, false
+      ]
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["step", ["zoom"],
+      ["match", ["get", "class"],
+        ["street", "street_limited", "track", "primary_link"], true, false
+      ], 14, ["match", ["get", "class"],
+        ["street", "street_limited", "track", "primary_link", "secondary_link", "tertiary_link", "service"], true, false
+      ]
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["primary", "secondary", "tertiary"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["motorway_link", "trunk_link"], true, false
+    ],
+    ["<=", ["number", ["get", "layer"]], 1]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["motorway", "trunk"], true, false
+    ],
+    ["<=", ["number", ["get", "layer"]], 1]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"], "construction", true, false]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"], "path", true, false],
+    ["!", ["match", ["get", "type"], "steps", true, false]]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["motorway_link", "trunk_link"], true, false
+    ],
+    ["<=", ["number", ["get", "layer"]], 1]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["primary", "secondary", "tertiary"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "oneway"], "true", true, false],
+    ["step", ["zoom"],
+      ["match", ["get", "class"],
+        ["primary", "secondary", "tertiary", "street", "street_limited"], true, false
+      ], 16, ["match", ["get", "class"],
+        ["primary", "secondary", "tertiary", "street", "street_limited", "primary_link", "secondary_link", "tertiary_link", "path", "pedestrian", "track", "service"], true, false
+      ]
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["motorway", "trunk"], true, false
+    ],
+    ["<=", ["number", ["get", "layer"]], 1]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["major_rail", "minor_rail"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["motorway_link", "trunk_link"], true, false
+    ],
+    [">=", ["number", ["get", "layer"]], 2]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["motorway", "trunk"], true, false
+    ],
+    [">=", ["number", ["get", "layer"]], 2]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["motorway_link", "trunk_link"], true, false
+    ],
+    [">=", ["number", ["get", "layer"]], 2]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["motorway", "trunk"], true, false
+    ],
+    [">=", ["number", ["get", "layer"]], 2]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "structure"], "bridge", true, false],
+    ["match", ["get", "class"],
+      ["motorway", "trunk", "motorway_link", "trunk_link"], true, false
+    ],
+    ["==", ["get", "oneway"], "true"]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"], "aerialway", true, false]
+  ]
+},
+{
+  "layer": "admin",
+  "filter": ["all", ["==", ["get", "admin_level"], 1],
+    ["==", ["get", "disputed"], "false"],
+    ["==", ["get", "maritime"], "false"],
+    ["match", ["get", "worldview"],
+      ["all", "US"], true, false
+    ]
+  ]
+},
+{
+  "layer": "admin",
+  "filter": ["all", ["==", ["get", "admin_level"], 0],
+    ["==", ["get", "disputed"], "false"],
+    ["==", ["get", "maritime"], "false"],
+    ["match", ["get", "worldview"],
+      ["all", "US"], true, false
+    ]
+  ]
+},
+{
+  "layer": "admin",
+  "filter": ["all", ["==", ["get", "admin_level"], 1],
+    ["==", ["get", "disputed"], "false"],
+    ["==", ["get", "maritime"], "false"],
+    ["match", ["get", "worldview"],
+      ["all", "US"], true, false
+    ]
+  ]
+},
+{
+  "layer": "admin",
+  "filter": ["all", ["==", ["get", "admin_level"], 0],
+    ["==", ["get", "disputed"], "false"],
+    ["==", ["get", "maritime"], "false"],
+    ["match", ["get", "worldview"],
+      ["all", "US"], true, false
+    ]
+  ]
+},
+{
+  "layer": "admin",
+  "filter": ["all", ["==", ["get", "admin_level"], 0],
+    ["==", ["get", "disputed"], "true"],
+    ["==", ["get", "maritime"], "false"],
+    ["match", ["get", "worldview"],
+      ["all", "US"], true, false
+    ]
+  ]
+},
+{
+  "layer": "natural_label",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"],
+      ["canal", "river", "stream"], true, false
+    ]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["step", ["zoom"],
+    ["match", ["get", "class"],
+      ["motorway", "trunk", "primary", "secondary", "tertiary"], true, false
+    ], 11, ["match", ["get", "class"],
+      ["motorway", "trunk", "primary", "secondary", "tertiary", "motorway_link", "trunk_link", "primary_link", "secondary_link", "tertiary_link", "pedestrian", "street", "street_limited"], true, false
+    ], 15, ["!", ["match", ["get", "class"], "golf", true, false]]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["all", ["<=", ["number", ["get", "reflen"]], 6],
+    ["step", ["zoom"],
+      ["==", ["geometry-type"], "Point"], 11, ["==", ["geometry-type"], "LineString"]
+    ]
+  ]
+},
+{
+  "layer": "motorway_junction",
+  "filter": ["all", [">", "reflen", 0],
+    ["<=", "reflen", 9]
+  ]
+},
+{
+  "layer": "road",
+  "filter": ["match", ["get", "class"],
+    ["golf"], true, false
+  ]
+},
+{
+  "layer": "natural_label",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"],
+      ["glacier", "landform"], true, false
+    ]
+  ]
+},
+{
+  "layer": "natural_label",
+  "filter": ["all", ["==", ["geometry-type"], "Point"],
+    ["<=", ["number", ["get", "filterrank"]], 3],
+    ["match", ["get", "class"],
+      ["dock", "glacier", "landform", "water_feature", "wetland"], true, false
+    ]
+  ]
+},
+{
+  "layer": "natural_label",
+  "filter": ["all", ["==", ["geometry-type"], "LineString"],
+    ["match", ["get", "class"],
+      ["bay", "ocean", "reservoir", "sea", "water"], true, false
+    ]
+  ]
+},
+{
+  "layer": "natural_label",
+  "filter": ["all", ["==", ["geometry-type"], "Point"],
+    ["match", ["get", "class"],
+      ["bay", "ocean", "reservoir", "sea", "water"], true, false
+    ]
+  ]
+},
+{
+  "layer": "poi_label",
+  "filter": ["step", ["zoom"],
+    ["<=", ["number", ["get", "filterrank"]], 3], 17, true
+  ]
+},
+{
+  "layer": "transit_stop_label",
+  "filter": ["step", ["zoom"],
+    ["all", ["match", ["get", "mode"],
+        ["rail", "metro_rail"], true, false
+      ],
+      ["match", ["get", "stop_type"], "entrance", false, true]
+    ], 15, ["all", ["match", ["get", "mode"],
+        ["rail", "metro_rail", "ferry", "light_rail"], true, false
+      ],
+      ["match", ["get", "stop_type"], "entrance", false, true]
+    ], 16, ["all", ["match", ["get", "mode"], "bus", false, true],
+      ["match", ["get", "stop_type"], "entrance", false, true]
+    ], 17, ["match", ["get", "stop_type"], "entrance", false, true], 19, true
+  ]
+},
+{
+  "layer": "place_label",
+  "filter": ["all", ["match", ["get", "class"], "settlement_subdivision", true, false],
+    ["<=", ["number", ["get", "filterrank"]], 3]
+  ]
+},
+{
+  "layer": "place_label",
+  "filter": ["all", ["match", ["get", "class"], "settlement", true, false],
+    ["<=", ["number", ["get", "filterrank"]], 3],
+    ["step", ["zoom"], true, 13, [">=", ["number", ["get", "symbolrank"]], 11], 14, [">=", ["number", ["get", "symbolrank"]], 13]]
+  ]
+},
+{
+  "layer": "place_label",
+  "filter": ["match", ["get", "class"], "state", true, false]
+},
+{
+  "layer": "place_label",
+  "filter": ["any", ["match", ["get", "class"], "country", true, false]]
+}]

@@ -28,7 +28,9 @@ import QueryPoint from '../benchmarks/query_point';
 import QueryBox from '../benchmarks/query_box';
 import ExpressionBenchmarks from '../benchmarks/expressions';
 import FilterCreate from '../benchmarks/filter_create';
+import FilterCreateExpressions from '../benchmarks/filter_create_expressions';
 import FilterEvaluate from '../benchmarks/filter_evaluate';
+import FilterEvaluateExpressions from '../benchmarks/filter_evaluate_expressions';
 
 const style = 'mapbox://styles/mapbox/streets-v10';
 const center = [-77.032194, 38.912753];
@@ -48,7 +50,9 @@ LayerBenchmarks.forEach((Bench) => register(new Bench()));
 register(new Load());
 register(new LayoutDDS());
 register(new FilterCreate());
+register(new FilterCreateExpressions());
 register(new FilterEvaluate());
+register(new FilterEvaluateExpressions());
 
 import getWorkerPool from '../../src/util/global_worker_pool';
 
