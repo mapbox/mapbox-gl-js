@@ -17,6 +17,11 @@ const height = 768;
 const zoom = 4;
 
 export default class PaintStates extends Benchmark {
+    constructor(center) {
+        super();
+        this.center = center;
+    }
+
     setup() {
         return fetch('/bench/data/naturalearth-land.json')
             .then(response => response.json())
@@ -40,12 +45,12 @@ export default class PaintStates extends Benchmark {
                 });
             })
             .then((style) => {
-                return  createMap({
+                return createMap({
                     zoom,
                     width,
                     height,
-                    center: [-77.032194, 38.912753],
-                    style: style
+                    center: this.center,
+                    style
                 }).then(map => {
                     this.map = map;
                 });

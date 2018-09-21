@@ -30,6 +30,20 @@ t('migrates to latest version from version 7', (t) => {
     t.end();
 });
 
+t('converts token strings to expressions', (t) => {
+    const migrated = migrate({
+        version: 8,
+        layers: [{
+            id: '1',
+            type: 'symbol',
+            layout: {'text-field': 'a{x}', 'icon-image': 'b{y}'}
+        }]
+    }, spec.latest.$version);
+    t.deepEqual(migrated.layers[0].layout['text-field'], ['concat', 'a', ['to-string', ['get', 'x']]]);
+    t.deepEqual(migrated.layers[0].layout['icon-image'], ['concat', 'b', ['to-string', ['get', 'y']]]);
+    t.end();
+});
+
 glob.sync(`${__dirname}/fixture/v7-migrate/*.input.json`).forEach((file) => {
     t(path.basename(file), (t) => {
         const outputfile = file.replace('.input', '.output');

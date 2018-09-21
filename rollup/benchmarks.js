@@ -1,4 +1,3 @@
-import './build/benchmarks/chunk1';
-import './build/benchmarks/worker';
-import './build/benchmarks/benchmarks';
-
+import './build/benchmarks/versions/chunk1';
+import './build/benchmarks/versions/worker';
+import './build/benchmarks/versions/benchmarks';

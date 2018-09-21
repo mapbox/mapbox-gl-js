@@ -1,24 +1,21 @@
 // @flow
 
-import Layout from './layout';
-
+import Benchmark from '../lib/benchmark';
+import TileParser from '../lib/tile_parser';
 import { OverscaledTileID } from '../../src/source/tile_id';
 
 const LAYER_COUNT = 2;
 
-export default class LayoutDDS extends Layout {
-    tileIDs(): Array<OverscaledTileID> {
-        return [
+export default class LayoutDDS extends Benchmark {
+    tiles: Array<{tileID: OverscaledTileID, buffer: ArrayBuffer}>;
+    parser: TileParser;
+
+    setup(): Promise<void> {
+        const tileIDs = [
             new OverscaledTileID(15, 0, 15, 9373, 12535)
         ];
-    }
 
-    sourceID(): string {
-        return 'mapbox';
-    }
-
-    fetchStyle(): Promise<StyleSpecification> {
-        const style = {
+        const styleJSON = {
             "version": 8,
             "sources": {
                 "mapbox": { "type": "vector", "url": "mapbox://mapbox.mapbox-streets-v7" }
@@ -83,14 +80,34 @@ export default class LayoutDDS extends Layout {
             }
         ];
 
-        while (style.layers.length < LAYER_COUNT) {
+        while (styleJSON.layers.length < LAYER_COUNT) {
             for (const layer of layers) {
-                style.layers.push(Object.assign(({}: any), layer, {
-                    id: layer.id + style.layers.length
+                styleJSON.layers.push(Object.assign(({}: any), layer, {
+                    id: layer.id + styleJSON.layers.length
                 }));
             }
         }
 
-        return Promise.resolve(style);
+        this.parser = new TileParser(styleJSON, 'mapbox');
+        return this.parser.setup()
+            .then(() => {
+                return Promise.all(tileIDs.map(tileID => this.parser.fetchTile(tileID)));
+            })
+            .then((tiles) => {
+                this.tiles = tiles;
+                // parse tiles once to populate glyph/icon cache
+                return Promise.all(tiles.map(tile => this.parser.parseTile(tile)));
+            })
+            .then(() => {});
+    }
+
+    bench() {
+        let promise = Promise.resolve();
+        for (const tile of this.tiles) {
+            promise = promise.then(() => {
+                return this.parser.parseTile(tile).then(() => {});
+            });
+        }
+        return promise;
     }
 }

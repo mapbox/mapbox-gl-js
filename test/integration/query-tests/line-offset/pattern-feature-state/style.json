@@ -1,0 +1,64 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 64,
+            "height": 64,
+            "operations": [
+                [
+                  "wait"
+                ],
+                [
+                  "setFeatureState",
+                  { "source": "mapbox", "id": 1},
+                  { "big": true }
+                ],
+                [
+                  "wait"
+                ]
+              ],
+            "queryGeometry": [
+                32,
+                16
+            ]
+        }
+    },
+    "sprite": "local://sprites/emerald",
+    "sources": {
+        "mapbox": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "id": 1,
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [ 0, 0],
+                                [ 5, 15]
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "layers": [
+        {
+            "id": "line",
+            "type": "line",
+            "source": "mapbox",
+            "paint": {
+                "line-width": 12,
+                "line-pattern": "cemetery_icon",
+                "line-offset": ["case",
+                        ["boolean", ["feature-state", "big"], false],
+                        ["number", -5],
+                        ["number", 0]
+                    ]
+            }
+        }
+    ]
+}

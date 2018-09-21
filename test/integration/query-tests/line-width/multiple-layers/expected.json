@@ -1,0 +1,22 @@
+[
+  {
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          0,
+          0
+        ],
+        [
+          50.009765625,
+          0
+        ]
+      ]
+    },
+    "type": "Feature",
+    "properties": {},
+    "id": 1,
+    "source": "mapbox",
+    "state": {}
+  }
+]

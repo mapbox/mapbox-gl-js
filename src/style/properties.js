@@ -10,18 +10,25 @@ import { register } from '../util/web_worker_transfer';
 import EvaluationParameters from './evaluation_parameters';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
-import type {CrossFaded} from './cross_faded';
+import type {
+    TransitionSpecification,
+    PropertyValueSpecification
+} from '../style-spec/types';
 
 import type {
     Feature,
     FeatureState,
-    GlobalProperties,
     StylePropertyExpression,
     SourceExpression,
     CompositeExpression
 } from '../style-spec/expression';
 
 type TimePoint = number;
+
+export type CrossFaded<T> = {
+    to: T,
+    from: T
+};
 
 /**
  * Implements a number of classes that define state and behavior for paint and layout properties, most
@@ -426,12 +433,12 @@ type PossiblyEvaluatedValue<T> =
 export class PossiblyEvaluatedPropertyValue<T> {
     property: DataDrivenProperty<T>;
     value: PossiblyEvaluatedValue<T>;
-    globals: GlobalProperties;
+    parameters: EvaluationParameters;
 
-    constructor(property: DataDrivenProperty<T>, value: PossiblyEvaluatedValue<T>, globals: GlobalProperties) {
+    constructor(property: DataDrivenProperty<T>, value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters) {
         this.property = property;
         this.value = value;
-        this.globals = globals;
+        this.parameters = parameters;
     }
 
     isConstant(): boolean {
@@ -447,7 +454,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
     }
 
     evaluate(feature: Feature, featureState: FeatureState): T {
-        return this.property.evaluate(this.value, this.globals, feature, featureState);
+        return this.property.evaluate(this.value, this.parameters, feature, featureState);
     }
 }
 
@@ -557,26 +564,80 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         // `Properties#defaultPossiblyEvaluatedValues`, which serves as the prototype of
         // `PossiblyEvaluated#_values`.
         if (a.value.value === undefined || b.value.value === undefined) {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: (undefined: any)}, a.globals);
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: (undefined: any)}, a.parameters);
         }
 
         const interp: ?(a: T, b: T, t: number) => T = (interpolate: any)[this.specification.type];
         if (interp) {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: interp(a.value.value, b.value.value, t)}, a.globals);
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: interp(a.value.value, b.value.value, t)}, a.parameters);
         } else {
             return a;
         }
     }
 
-    evaluate(value: PossiblyEvaluatedValue<T>, globals: GlobalProperties, feature: Feature, featureState: FeatureState): T {
+    evaluate(value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, feature: Feature, featureState: FeatureState): T {
         if (value.kind === 'constant') {
             return value.value;
         } else {
-            return value.evaluate(globals, feature, featureState);
+            return value.evaluate(parameters, feature, featureState);
         }
     }
 }
 
+/**
+ * An implementation of `Property` for  data driven `line-pattern` which are transitioned by cross-fading
+ * rather than interpolation.
+ *
+ * @private
+ */
+
+export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFaded<T>> {
+
+    possiblyEvaluate(value: PropertyValue<?CrossFaded<T>, PossiblyEvaluatedPropertyValue<?CrossFaded<T>>>, parameters: EvaluationParameters): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
+        if (value.value === undefined) {
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: undefined}, parameters);
+        } else if (value.expression.kind === 'constant') {
+            const constantValue = value.expression.evaluate(parameters);
+            const constant = this._calculate(constantValue, constantValue, constantValue, parameters);
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: constant}, parameters);
+        } else if (value.expression.kind === 'camera') {
+            const cameraVal = this._calculate(
+                    value.expression.evaluate({zoom: parameters.zoom - 1.0}),
+                    value.expression.evaluate({zoom: parameters.zoom}),
+                    value.expression.evaluate({zoom: parameters.zoom + 1.0}),
+                    parameters);
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: cameraVal}, parameters);
+        } else {
+            // source or composite expression
+            return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
+        }
+    }
+
+
+    evaluate(value: PossiblyEvaluatedValue<?CrossFaded<T>>, globals: EvaluationParameters, feature: Feature, featureState: FeatureState): ?CrossFaded<T> {
+        if (value.kind === 'source') {
+            const constant = value.evaluate(globals, feature, featureState);
+            return this._calculate(constant, constant, constant, globals);
+        } else if (value.kind === 'composite') {
+            return this._calculate(
+                value.evaluate({zoom: Math.floor(globals.zoom) - 1.0}, feature, featureState),
+                value.evaluate({zoom: Math.floor(globals.zoom)}, feature, featureState),
+                value.evaluate({zoom: Math.floor(globals.zoom) + 1.0}, feature, featureState),
+                globals);
+        } else {
+            return value.value;
+        }
+    }
+
+    _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): CrossFaded<T> {
+        const z = parameters.zoom;
+        return z > parameters.zoomHistory.lastIntegerZoom ? { from: min, to: mid } : { from: max, to: mid };
+    }
+
+    interpolate(a: PossiblyEvaluatedPropertyValue<?CrossFaded<T>>): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
+        return a;
+    }
+}
 /**
  * An implementation of `Property` for `*-pattern` and `line-dasharray`, which are transitioned by cross-fading
  * rather than interpolation.
@@ -608,11 +669,7 @@ export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
 
     _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): ?CrossFaded<T> {
         const z = parameters.zoom;
-        const fraction = z - Math.floor(z);
-        const t = parameters.crossFadingFactor();
-        return z > parameters.zoomHistory.lastIntegerZoom ?
-            { from: min, to: mid, fromScale: 2, toScale: 1, t: fraction + (1 - fraction) * t } :
-            { from: max, to: mid, fromScale: 0.5, toScale: 1, t: 1 - (1 - t) * fraction };
+        return z > parameters.zoomHistory.lastIntegerZoom ? { from: min, to: mid } : { from: max, to: mid };
     }
 
     interpolate(a: ?CrossFaded<T>): ?CrossFaded<T> {
@@ -683,5 +740,6 @@ export class Properties<Props: Object> {
 
 register('DataDrivenProperty', DataDrivenProperty);
 register('DataConstantProperty', DataConstantProperty);
+register('CrossFadedDataDrivenProperty', CrossFadedDataDrivenProperty);
 register('CrossFadedProperty', CrossFadedProperty);
 register('ColorRampProperty', ColorRampProperty);

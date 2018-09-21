@@ -14,30 +14,30 @@ define(['exports'], function (exports) {
     // names rewritten to avoid collisions, etc.)
 })
 */
-import './build/mapboxgl/chunk1';
+import './build/mapboxgl/shared';
 
 // Worker and its unique dependencies, i.e.:
 /*
-define(['./chunk1.js'], function (__chunk1__js) {
+define(['./shared.js'], function (__shared__js) {
     //  Code for worker script and its unique dependencies.
-    //  Expects the output of 'chunk1' module to be passed in as an argument,
+    //  Expects the output of 'shared' module to be passed in as an argument,
     //  since all references to common deps look like, e.g.,
-    //  __chunk1__js.shapeText().
+    //  __shared__js.shapeText().
 });
 */
 // When this wrapper function is passed to our custom define() above,
-// it gets stringified, together with the chunk1 wrapper (using
+// it gets stringified, together with the shared wrapper (using
 // Function.toString()), and the resulting string of code is made into a
 // Blob URL that gets used by the main module to create the web workers.
 import './build/mapboxgl/worker';
 
 // Main module and its unique dependencies
 /*
-define(['./chunk1.js'], function (__chunk1__js) {
+define(['./shared.js'], function (__shared__js) {
     //  Code for main GL JS module and its unique dependencies.
-    //  Expects the output of 'chunk1' module to be passed in as an argument,
+    //  Expects the output of 'shared' module to be passed in as an argument,
     //  since all references to common deps look like, e.g.,
-    //  __chunk1__js.shapeText().
+    //  __shared__js.shapeText().
     //
     //  Returns the actual mapboxgl (i.e. src/index.js)
 });

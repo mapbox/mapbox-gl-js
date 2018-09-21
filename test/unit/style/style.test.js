@@ -4,7 +4,6 @@ import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
-import EvaluationParameters from '../../../src/style/evaluation_parameters';
 import { extend } from '../../../src/util/util';
 import { Event, Evented } from '../../../src/util/evented';
 import window from '../../../src/util/window';
@@ -1778,17 +1777,17 @@ test('Style#queryRenderedFeatures', (t) => {
         style.sourceCaches.mapbox.transform = transform;
         style.sourceCaches.other.transform = transform;
 
-        style.update(new EvaluationParameters(0));
+        style.update(0);
         style._updateSources(transform);
 
         t.test('returns feature type', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, transform);
+            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {}, transform);
             t.equal(results[0].geometry.type, 'Line');
             t.end();
         });
 
         t.test('filters by `layers` option', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land']}, transform);
+            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {layers: ['land']}, transform);
             t.equal(results.length, 2);
             t.end();
         });
@@ -1798,26 +1797,26 @@ test('Style#queryRenderedFeatures', (t) => {
             t.stub(style, 'fire').callsFake((event) => {
                 if (event.error && event.error.message.includes('parameters.layers must be an Array.')) errors++;
             });
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:'string'}, transform);
+            style.queryRenderedFeatures([{x: 0, y: 0}], {layers:'string'}, transform);
             t.equals(errors, 1);
             t.end();
         });
 
         t.test('includes layout properties', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, transform);
+            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {}, transform);
             const layout = results[0].layer.layout;
             t.deepEqual(layout['line-cap'], 'round');
             t.end();
         });
 
         t.test('includes paint properties', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, transform);
+            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {}, transform);
             t.deepEqual(results[2].layer.paint['line-color'], 'red');
             t.end();
         });
 
         t.test('includes metadata', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, transform);
+            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {}, transform);
 
             const layer = results[1].layer;
             t.equal(layer.metadata.something, 'else');
@@ -1826,14 +1825,14 @@ test('Style#queryRenderedFeatures', (t) => {
         });
 
         t.test('include multiple layers', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, transform);
+            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {layers: ['land', 'landref']}, transform);
             t.equals(results.length, 3);
             t.end();
         });
 
         t.test('does not query sources not implicated by `layers` parameter', (t) => {
             style.sourceCaches.mapbox.queryRenderedFeatures = function() { t.fail(); };
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land--other']}, transform);
+            style.queryRenderedFeatures([{x: 0, y: 0}], {layers: ['land--other']}, transform);
             t.end();
         });
 
@@ -1842,7 +1841,7 @@ test('Style#queryRenderedFeatures', (t) => {
             t.stub(style, 'fire').callsFake((event) => {
                 if (event.error && event.error.message.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
             });
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:['merp']}, transform);
+            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {layers:['merp']}, transform);
             t.equals(errors, 1);
             t.equals(results.length, 0);
             t.end();
@@ -1907,6 +1906,7 @@ test('Style#query*Features', (t) => {
 
     t.beforeEach((callback) => {
         transform = new Transform();
+        transform.resize(100, 100);
         style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -1935,7 +1935,7 @@ test('Style#query*Features', (t) => {
     });
 
     t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.queryRenderedFeatures({ worldCoordinate: [10, 100] }, {filter: 7}, transform), []);
+        t.deepEqual(style.queryRenderedFeatures([{x: 0, y: 0}], {filter: 7}, transform), []);
         t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
         t.end();
     });

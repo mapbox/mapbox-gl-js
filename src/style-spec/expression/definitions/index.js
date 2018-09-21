@@ -9,7 +9,6 @@ import Let from './let';
 import Var from './var';
 import Literal from './literal';
 import Assertion from './assertion';
-import ArrayAssertion from './array';
 import Coercion from './coercion';
 import At from './at';
 import Match from './match';
@@ -17,8 +16,16 @@ import Case from './case';
 import Step from './step';
 import Interpolate from './interpolate';
 import Coalesce from './coalesce';
-import { Equals, NotEquals } from './equals';
+import {
+    Equals,
+    NotEquals,
+    LessThan,
+    GreaterThan,
+    LessThanOrEqual,
+    GreaterThanOrEqual
+} from './comparison';
 import { CollatorExpression } from './collator';
+import { Formatted, FormatExpression } from './formatted';
 import Length from './length';
 
 import type { Type } from '../types';
@@ -29,13 +36,20 @@ const expressions: ExpressionRegistry = {
     // special forms
     '==': Equals,
     '!=': NotEquals,
-    'array': ArrayAssertion,
+    '>': GreaterThan,
+    '<': LessThan,
+    '>=': GreaterThanOrEqual,
+    '<=': LessThanOrEqual,
+    'array': Assertion,
     'at': At,
     'boolean': Assertion,
     'case': Case,
     'coalesce': Coalesce,
     'collator': CollatorExpression,
+    'format': FormatExpression,
     'interpolate': Interpolate,
+    'interpolate-hcl': Interpolate,
+    'interpolate-lab': Interpolate,
     'length': Length,
     'let': Let,
     'literal': Literal,
@@ -67,16 +81,6 @@ function get(key, obj) {
     const v = obj[key];
     return typeof v === 'undefined' ? null : v;
 }
-
-function lt(ctx, [a, b]) { return a.evaluate(ctx) < b.evaluate(ctx); }
-function gt(ctx, [a, b]) { return a.evaluate(ctx) > b.evaluate(ctx); }
-function lteq(ctx, [a, b]) { return a.evaluate(ctx) <= b.evaluate(ctx); }
-function gteq(ctx, [a, b]) { return a.evaluate(ctx) >= b.evaluate(ctx); }
-
-function ltCollate(ctx, [a, b, c]) { return c.evaluate(ctx).compare(a.evaluate(ctx), b.evaluate(ctx)) < 0; }
-function gtCollate(ctx, [a, b, c]) { return c.evaluate(ctx).compare(a.evaluate(ctx), b.evaluate(ctx)) > 0; }
-function lteqCollate(ctx, [a, b, c]) { return c.evaluate(ctx).compare(a.evaluate(ctx), b.evaluate(ctx)) <= 0; }
-function gteqCollate(ctx, [a, b, c]) { return c.evaluate(ctx).compare(a.evaluate(ctx), b.evaluate(ctx)) >= 0; }
 
 function binarySearch(v, a, i, j) {
     while (i <= j) {
@@ -116,7 +120,7 @@ CompoundExpression.register(expressions, {
                 return '';
             } else if (type === 'string' || type === 'number' || type === 'boolean') {
                 return String(v);
-            } else if (v instanceof Color) {
+            } else if (v instanceof Color || v instanceof Formatted) {
                 return v.toString();
             } else {
                 return JSON.stringify(v);
@@ -473,38 +477,6 @@ CompoundExpression.register(expressions, {
         // assumes v is a array literal with values sorted in ascending order and of a single type
         (ctx, [k, v]) => binarySearch(ctx.properties()[(k: any).value], (v: any).value, 0, (v: any).value.length - 1)
     ],
-    '>': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], gt],
-            [[StringType, StringType], gt],
-            [[StringType, StringType, CollatorType], gtCollate]
-        ]
-    },
-    '<': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], lt],
-            [[StringType, StringType], lt],
-            [[StringType, StringType, CollatorType], ltCollate]
-        ]
-    },
-    '>=': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], gteq],
-            [[StringType, StringType], gteq],
-            [[StringType, StringType, CollatorType], gteqCollate]
-        ]
-    },
-    '<=': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], lteq],
-            [[StringType, StringType], lteq],
-            [[StringType, StringType, CollatorType], lteqCollate]
-        ]
-    },
     'all': {
         type: BooleanType,
         overloads: [

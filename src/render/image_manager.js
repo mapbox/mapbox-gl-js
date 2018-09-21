@@ -1,6 +1,6 @@
 // @flow
 
-import ShelfPack from '@mapbox/shelf-pack';
+import potpack from 'potpack';
 
 import { RGBAImage } from '../util/image';
 import { ImagePosition } from './image_atlas';
@@ -9,7 +9,7 @@ import assert from 'assert';
 
 import type {StyleImage} from '../style/style_image';
 import type Context from '../gl/context';
-import type {Bin} from '@mapbox/shelf-pack';
+import type {Bin} from 'potpack';
 import type {Callback} from '../types/callback';
 
 type Pattern = {
@@ -38,7 +38,6 @@ class ImageManager {
     loaded: boolean;
     requestors: Array<{ids: Array<string>, callback: Callback<{[string]: StyleImage}>}>;
 
-    shelfPack: ShelfPack;
     patterns: {[string]: Pattern};
     atlasImage: RGBAImage;
     atlasTexture: ?Texture;
@@ -49,9 +48,8 @@ class ImageManager {
         this.loaded = false;
         this.requestors = [];
 
-        this.shelfPack = new ShelfPack(64, 64, {autoResize: true});
         this.patterns = {};
-        this.atlasImage = new RGBAImage({width: 64, height: 64});
+        this.atlasImage = new RGBAImage({width: 1, height: 1});
         this.dirty = true;
     }
 
@@ -86,15 +84,10 @@ class ImageManager {
     removeImage(id: string) {
         assert(this.images[id]);
         delete this.images[id];
-
-        const pattern = this.patterns[id];
-        if (pattern) {
-            this.shelfPack.unref(pattern.bin);
-            delete this.patterns[id];
-        }
+        delete this.patterns[id];
     }
 
-    listImages() {
+    listImages(): Array<string> {
         return Object.keys(this.images);
     }
 
@@ -139,10 +132,8 @@ class ImageManager {
     // Pattern stuff
 
     getPixelSize() {
-        return {
-            width: this.shelfPack.w,
-            height: this.shelfPack.h
-        };
+        const {width, height} = this.atlasImage;
+        return {width, height};
     }
 
     getPattern(id: string): ?ImagePosition {
@@ -156,36 +147,13 @@ class ImageManager {
             return null;
         }
 
-        const width = image.data.width + padding * 2;
-        const height = image.data.height + padding * 2;
-
-        const bin = this.shelfPack.packOne(width, height);
-        if (!bin) {
-            return null;
-        }
-
-        this.atlasImage.resize(this.getPixelSize());
-
-        const src = image.data;
-        const dst = this.atlasImage;
-
-        const x = bin.x + padding;
-        const y = bin.y + padding;
-        const w = src.width;
-        const h = src.height;
-
-        RGBAImage.copy(src, dst, { x: 0, y: 0 }, { x, y }, { width: w, height: h });
-
-        // Add 1 pixel wrapped padding on each side of the image.
-        RGBAImage.copy(src, dst, { x: 0, y: h - 1 }, { x: x, y: y - 1 }, { width: w, height: 1 }); // T
-        RGBAImage.copy(src, dst, { x: 0, y:     0 }, { x: x, y: y + h }, { width: w, height: 1 }); // B
-        RGBAImage.copy(src, dst, { x: w - 1, y: 0 }, { x: x - 1, y: y }, { width: 1, height: h }); // L
-        RGBAImage.copy(src, dst, { x: 0,     y: 0 }, { x: x + w, y: y }, { width: 1, height: h }); // R
-
-        this.dirty = true;
-
+        const w = image.data.width + padding * 2;
+        const h = image.data.height + padding * 2;
+        const bin = {w, h, x: 0, y: 0};
         const position = new ImagePosition(bin, image);
-        this.patterns[id] = { bin, position };
+        this.patterns[id] = {bin, position};
+        this._updatePatternAtlas();
+
         return position;
     }
 
@@ -199,6 +167,37 @@ class ImageManager {
         }
 
         this.atlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+    }
+
+    _updatePatternAtlas() {
+        const bins = [];
+        for (const id in this.patterns) {
+            bins.push(this.patterns[id].bin);
+        }
+
+        const {w, h} = potpack(bins);
+
+        const dst = this.atlasImage;
+        dst.resize({width: w || 1, height: h || 1});
+
+        for (const id in this.patterns) {
+            const {bin} = this.patterns[id];
+            const x = bin.x + padding;
+            const y = bin.y + padding;
+            const src = this.images[id].data;
+            const w = src.width;
+            const h = src.height;
+
+            RGBAImage.copy(src, dst, { x: 0, y: 0 }, { x, y }, { width: w, height: h });
+
+            // Add 1 pixel wrapped padding on each side of the image.
+            RGBAImage.copy(src, dst, { x: 0, y: h - 1 }, { x: x, y: y - 1 }, { width: w, height: 1 }); // T
+            RGBAImage.copy(src, dst, { x: 0, y:     0 }, { x: x, y: y + h }, { width: w, height: 1 }); // B
+            RGBAImage.copy(src, dst, { x: w - 1, y: 0 }, { x: x - 1, y: y }, { width: 1, height: h }); // L
+            RGBAImage.copy(src, dst, { x: 0,     y: 0 }, { x: x + w, y: y }, { width: 1, height: h }); // R
+        }
+
+        this.dirty = true;
     }
 }
 

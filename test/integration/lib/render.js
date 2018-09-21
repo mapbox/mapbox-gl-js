@@ -1,11 +1,9 @@
-'use strict';
-
-const fs = require('fs');
-const path = require('path');
-const PNG = require('pngjs').PNG;
-const harness = require('./harness');
-const pixelmatch = require('pixelmatch');
-const glob = require('glob');
+import path from 'path';
+import fs from 'fs';
+import {PNG} from 'pngjs';
+import harness from './harness';
+import pixelmatch from 'pixelmatch';
+import * as glob from 'glob';
 
 function compare(actualPath, expectedPaths, diffPath, callback) {
 
@@ -77,7 +75,7 @@ function compare(actualPath, expectedPaths, diffPath, callback) {
  * @param {renderFn} render - a function that performs the rendering
  * @returns {undefined} terminates the process when testing is complete
  */
-exports.run = function (implementation, ignores, render) {
+export function run(implementation, ignores, render) {
     const options = { ignores, tests:[], shuffle:false, recycleMap:false, seed:makeHash() };
 
     // https://stackoverflow.com/a/1349426/229714
@@ -138,8 +136,8 @@ exports.run = function (implementation, ignores, render) {
             const diff     = path.join(dir, 'diff.png');
 
             const png = new PNG({
-                width: params.width * params.pixelRatio,
-                height: params.height * params.pixelRatio
+                width: Math.floor(params.width * params.pixelRatio),
+                height: Math.floor(params.height * params.pixelRatio)
             });
 
             // PNG data must be unassociated (not premultiplied)
@@ -185,7 +183,7 @@ exports.run = function (implementation, ignores, render) {
             }
         });
     });
-};
+}
 
 /**
  * @callback renderFn

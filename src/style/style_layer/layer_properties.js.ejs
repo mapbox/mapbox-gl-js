@@ -13,11 +13,14 @@ import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
+    CrossFadedDataDrivenProperty,
     CrossFadedProperty,
     ColorRampProperty
 } from '../properties';
 
 import type Color from '../../style-spec/util/color';
+
+import type {Formatted} from '../../style-spec/expression/definitions/formatted';
 
 <% if (layoutProperties.length) { -%>
 export type LayoutProps = {|
@@ -47,4 +50,9 @@ const paint: Properties<PaintProps> = new Properties({
 <% } -%>
 });
 
-export default { paint<% if (layoutProperties.length) { %>, layout<% } %> };
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
+export default ({ paint<% if (layoutProperties.length) { %>, layout<% } %> }: $Exact<{
+  paint: Properties<PaintProps><% if (layoutProperties.length) { %>, layout: Properties<LayoutProps><% } %>
+}>);

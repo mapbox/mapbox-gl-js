@@ -35,7 +35,8 @@ function validSchema(k, t, obj, ref, version, kind) {
         'text-anchor-enum',
         'text-transform-enum',
         'visibility-enum',
-        'property-type'
+        'property-type',
+        'formatted'
     ]);
     const keys = [
         'default',

@@ -1,10 +1,11 @@
+// @flow
 
 import Benchmark from '../lib/benchmark';
 import createMap from '../lib/create_map';
+import type Map from '../../src/ui/map';
 
 const width = 1024;
 const height = 768;
-const zooms = [4, 8, 11, 13, 15, 17];
 
 const points = [];
 const d = 4;
@@ -18,16 +19,29 @@ for (let x = 0; x < d; x++) {
 }
 
 export default class QueryPoint extends Benchmark {
-    setup() {
-        return Promise.all(zooms.map(zoom => {
+    style: string;
+    locations: Array<Object>;
+    maps: Array<Map>;
+
+    constructor(style: string, locations: Array<Object>) {
+        super();
+        this.style = style;
+        this.locations = locations;
+    }
+
+    setup(): Promise<void> {
+        return Promise.all(this.locations.map(location => {
             return createMap({
-                zoom,
+                zoom: location.zoom,
                 width,
                 height,
-                center: [-77.032194, 38.912753],
-                style: 'mapbox://styles/mapbox/streets-v9'
+                center: location.center,
+                style: this.style
             });
-        })).then(maps => { this.maps = maps; });
+        }))
+            .then(maps => {
+                this.maps = maps;
+            });
     }
 
     bench() {

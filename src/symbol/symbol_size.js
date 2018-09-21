@@ -8,8 +8,11 @@ import EvaluationParameters from '../style/evaluation_parameters';
 
 import type {Property, PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
 import type {CameraExpression, CompositeExpression} from '../style-spec/expression/index';
+import type {PropertyValueSpecification} from '../style-spec/types';
 
-export { getSizeData, evaluateSizeForFeature, evaluateSizeForZoom };
+const SIZE_PACK_FACTOR = 256;
+
+export { getSizeData, evaluateSizeForFeature, evaluateSizeForZoom, SIZE_PACK_FACTOR };
 
 export type SizeData = {
     functionType: 'constant',
@@ -88,9 +91,9 @@ function evaluateSizeForFeature(sizeData: SizeData,
                                 symbol: { lowerSize: number, upperSize: number}) {
     const part = partiallyEvaluatedSize;
     if (sizeData.functionType === 'source') {
-        return symbol.lowerSize / 10;
+        return symbol.lowerSize / SIZE_PACK_FACTOR;
     } else if (sizeData.functionType === 'composite') {
-        return interpolate(symbol.lowerSize / 10, symbol.upperSize / 10, part.uSizeT);
+        return interpolate(symbol.lowerSize / SIZE_PACK_FACTOR, symbol.upperSize / SIZE_PACK_FACTOR, part.uSizeT);
     } else {
         return part.uSize;
     }

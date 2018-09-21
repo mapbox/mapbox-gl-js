@@ -4,7 +4,6 @@ import Anchor from './anchor';
 
 import { getAnchors, getCenterAnchor } from './get_anchors';
 import clipLine from './clip_line';
-import OpacityState from './opacity_state';
 import { shapeText, shapeIcon, WritingMode } from './shaping';
 import { getGlyphQuads, getIconQuads } from './quads';
 import CollisionFeature from './collision_feature';
@@ -18,6 +17,8 @@ import classifyRings from '../util/classify_rings';
 import EXTENT from '../data/extent';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import EvaluationParameters from '../style/evaluation_parameters';
+import {Formatted} from '../style-spec/expression/definitions/formatted';
+import {SIZE_PACK_FACTOR} from './symbol_size';
 
 import type {Shaping, PositionedIcon} from './shaping';
 import type {CollisionBoxArray} from '../data/array_types';
@@ -30,6 +31,7 @@ import type {GlyphPosition} from '../render/glyph_atlas';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties';
 
 import Point from '@mapbox/point-geometry';
+import murmur3 from 'murmurhash-js';
 
 // The symbol layout process needs `text-size` evaluated at up to five different zoom levels, and
 // `icon-size` at up to three:
@@ -60,7 +62,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              imagePositions: {[string]: ImagePosition},
                              showCollisionBoxes: boolean) {
     bucket.createArrays();
-    bucket.symbolInstances = [];
 
     const tileSize = 512 * bucket.overscaling;
     bucket.tilePixelRatio = EXTENT / tileSize;
@@ -100,24 +101,24 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
     for (const feature of bucket.features) {
         const fontstack = layout.get('text-font').evaluate(feature, {}).join(',');
-        const glyphs = glyphMap[fontstack] || {};
-        const glyphPositionMap = glyphPositions[fontstack] || {};
+        const glyphPositionMap = glyphPositions;
 
         const shapedTextOrientations = {};
         const text = feature.text;
         if (text) {
+            const unformattedText = text instanceof Formatted ? text.toString() : text;
             const textOffset: [number, number] = (layout.get('text-offset').evaluate(feature, {}).map((t)=> t * oneEm): any);
             const spacing = layout.get('text-letter-spacing').evaluate(feature, {}) * oneEm;
-            const spacingIfAllowed = allowsLetterSpacing(text) ? spacing : 0;
+            const spacingIfAllowed = allowsLetterSpacing(unformattedText) ? spacing : 0;
             const textAnchor = layout.get('text-anchor').evaluate(feature, {});
             const textJustify = layout.get('text-justify').evaluate(feature, {});
             const maxWidth = layout.get('symbol-placement') === 'point' ?
                 layout.get('text-max-width').evaluate(feature, {}) * oneEm :
                 0;
 
-            shapedTextOrientations.horizontal = shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal);
-            if (allowsVerticalWritingMode(text) && textAlongLine && keepUpright) {
-                shapedTextOrientations.vertical = shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical);
+            shapedTextOrientations.horizontal = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal);
+            if (allowsVerticalWritingMode(unformattedText) && textAlongLine && keepUpright) {
+                shapedTextOrientations.vertical = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical);
             }
         }
 
@@ -164,7 +165,7 @@ function addFeature(bucket: SymbolBucket,
                     feature: SymbolFeature,
                     shapedTextOrientations: any,
                     shapedIcon: PositionedIcon | void,
-                    glyphPositionMap: {[number]: GlyphPosition},
+                    glyphPositionMap: {[string]: {[number]: GlyphPosition}},
                     sizes: Sizes) {
     const layoutTextSize = sizes.layoutTextSize.evaluate(feature, {});
     const layoutIconSize = sizes.layoutIconSize.evaluate(feature, {});
@@ -204,11 +205,11 @@ function addFeature(bucket: SymbolBucket,
             return;
         }
 
-        bucket.symbolInstances.push(addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, bucket.layers[0],
+        addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex, bucket.index,
             textBoxScale, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
-            feature, glyphPositionMap, sizes));
+            feature, glyphPositionMap, sizes);
     };
 
     if (symbolPlacement === 'line') {
@@ -268,6 +269,8 @@ function addFeature(bucket: SymbolBucket,
     }
 }
 
+const MAX_PACKED_SIZE = 65535;
+
 function addTextVertices(bucket: SymbolBucket,
                          anchor: Point,
                          shapedText: Shaping,
@@ -278,7 +281,7 @@ function addTextVertices(bucket: SymbolBucket,
                          lineArray: {lineStartIndex: number, lineLength: number},
                          writingMode: number,
                          placedTextSymbolIndices: Array<number>,
-                         glyphPositionMap: {[number]: GlyphPosition},
+                         glyphPositionMap: {[string]: {[number]: GlyphPosition}},
                          sizes: Sizes) {
     const glyphQuads = getGlyphQuads(anchor, shapedText,
                             layer, textAlongLine, feature, glyphPositionMap);
@@ -288,13 +291,19 @@ function addTextVertices(bucket: SymbolBucket,
 
     if (sizeData.functionType === 'source') {
         textSizeData = [
-            10 * layer.layout.get('text-size').evaluate(feature, {})
+            SIZE_PACK_FACTOR * layer.layout.get('text-size').evaluate(feature, {})
         ];
+        if (textSizeData[0] > MAX_PACKED_SIZE) {
+            warnOnce(`${bucket.layerIds[0]}: Value for "text-size" is >= 256. Reduce your "text-size".`);
+        }
     } else if (sizeData.functionType === 'composite') {
         textSizeData = [
-            10 * sizes.compositeTextSizes[0].evaluate(feature, {}),
-            10 * sizes.compositeTextSizes[1].evaluate(feature, {})
+            SIZE_PACK_FACTOR * sizes.compositeTextSizes[0].evaluate(feature, {}),
+            SIZE_PACK_FACTOR * sizes.compositeTextSizes[1].evaluate(feature, {})
         ];
+        if (textSizeData[0] > MAX_PACKED_SIZE || textSizeData[1] > MAX_PACKED_SIZE) {
+            warnOnce(`${bucket.layerIds[0]}: Value for "text-size" is >= 256. Reduce your "text-size".`);
+        }
     }
 
     bucket.addSymbols(
@@ -341,7 +350,7 @@ function addSymbol(bucket: SymbolBucket,
                    iconAlongLine: boolean,
                    iconOffset: [number, number],
                    feature: SymbolFeature,
-                   glyphPositionMap: {[number]: GlyphPosition},
+                   glyphPositionMap: {[string]: {[number]: GlyphPosition}},
                    sizes: Sizes) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
@@ -350,7 +359,7 @@ function addSymbol(bucket: SymbolBucket,
     let numIconVertices = 0;
     let numGlyphVertices = 0;
     let numVerticalGlyphVertices = 0;
-    const key = shapedTextOrientations.horizontal ? shapedTextOrientations.horizontal.text : '';
+    const key = murmur3(shapedTextOrientations.horizontal ? shapedTextOrientations.horizontal.text : '');
     const placedTextSymbolIndices = [];
     if (shapedTextOrientations.horizontal) {
         // As a collision approximation, we can use either the vertical or the horizontal version of the feature
@@ -381,13 +390,19 @@ function addSymbol(bucket: SymbolBucket,
 
         if (sizeData.functionType === 'source') {
             iconSizeData = [
-                10 * layer.layout.get('icon-size').evaluate(feature, {})
+                SIZE_PACK_FACTOR * layer.layout.get('icon-size').evaluate(feature, {})
             ];
+            if (iconSizeData[0] > MAX_PACKED_SIZE) {
+                warnOnce(`${bucket.layerIds[0]}: Value for "icon-size" is >= 256. Reduce your "icon-size".`);
+            }
         } else if (sizeData.functionType === 'composite') {
             iconSizeData = [
-                10 * sizes.compositeIconSizes[0].evaluate(feature, {}),
-                10 * sizes.compositeIconSizes[1].evaluate(feature, {})
+                SIZE_PACK_FACTOR * sizes.compositeIconSizes[0].evaluate(feature, {}),
+                SIZE_PACK_FACTOR * sizes.compositeIconSizes[1].evaluate(feature, {})
             ];
+            if (iconSizeData[0] > MAX_PACKED_SIZE || iconSizeData[1] > MAX_PACKED_SIZE) {
+                warnOnce(`${bucket.layerIds[0]}: Value for "icon-size" is >= 256. Reduce your "icon-size".`);
+            }
         }
 
         bucket.addSymbols(
@@ -410,30 +425,21 @@ function addSymbol(bucket: SymbolBucket,
         "Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907"
     );
 
-    const textOpacityState = new OpacityState();
-    const iconOpacityState = new OpacityState();
-
-    return {
+    bucket.symbolInstances.emplaceBack(
+        anchor.x,
+        anchor.y,
+        placedTextSymbolIndices.length > 0 ? placedTextSymbolIndices[0] : -1,
+        placedTextSymbolIndices.length > 1 ? placedTextSymbolIndices[1] : -1,
         key,
         textBoxStartIndex,
         textBoxEndIndex,
         iconBoxStartIndex,
         iconBoxEndIndex,
-        textOffset,
-        iconOffset,
-        anchor,
-        line,
         featureIndex,
-        feature,
         numGlyphVertices,
         numVerticalGlyphVertices,
         numIconVertices,
-        textOpacityState,
-        iconOpacityState,
-        isDuplicate: false,
-        placedTextSymbolIndices,
-        crossTileID: 0
-    };
+        0);
 }
 
 function anchorIsTooClose(bucket: any, text: string, repeatDistance: number, anchor: Point) {

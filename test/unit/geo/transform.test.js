@@ -13,6 +13,7 @@ test('transform', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         t.equal(transform.unmodified, true);
+        t.equal(transform.maxValidLatitude, 85.051129);
         t.equal(transform.tileSize, 512, 'tileSize');
         t.equal(transform.worldSize, 512, 'worldSize');
         t.equal(transform.width, 500, 'width');
@@ -216,6 +217,14 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('clamps latitude', (t) => {
+        const transform = new Transform();
+
+        t.equal(transform.latY(-90), transform.latY(-transform.maxValidLatitude));
+        t.equal(transform.latY(90), transform.latY(transform.maxValidLatitude));
+        t.end();
+    });
+
     t.test('clamps pitch', (t) => {
         const transform = new Transform();
 
@@ -238,7 +247,7 @@ test('transform', (t) => {
         transform.center = { lng: -170.01, lat: 0.01 };
 
         let unwrappedCoords = transform.getVisibleUnwrappedCoordinates(new CanonicalTileID(0, 0, 0));
-        t.equal(unwrappedCoords.length, 2);
+        t.equal(unwrappedCoords.length, 4);
 
         //getVisibleUnwrappedCoordinates should honor _renderWorldCopies
         transform._renderWorldCopies = false;

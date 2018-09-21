@@ -24,6 +24,8 @@ global.flowType = function (property) {
             return Object.keys(property.values).map(JSON.stringify).join(' | ');
         case 'color':
             return `Color`;
+        case 'formatted':
+            return `string | Formatted`;
         case 'array':
             if (property.length) {
                 return `[${new Array(property.length).fill(flowType({type: property.value})).join(', ')}]`;
@@ -40,6 +42,8 @@ global.propertyType = function (property) {
             return `DataDrivenProperty<${flowType(property)}>`;
         case 'cross-faded':
             return `CrossFadedProperty<${flowType(property)}>`;
+        case 'cross-faded-data-driven':
+            return `CrossFadedDataDrivenProperty<${flowType(property)}>`;
         case 'color-ramp':
             return `ColorRampProperty`;
         case 'data-constant':
@@ -61,6 +65,8 @@ global.runtimeType = function (property) {
             return 'StringType';
         case 'color':
             return `ColorType`;
+        case 'formatted':
+            return `FormattedType`;
         case 'array':
             if (property.length) {
                 return `array(${runtimeType({type: property.value})}, ${property.length})`;
@@ -96,6 +102,8 @@ global.propertyValue = function (property, type) {
             return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'cross-faded':
             return `new CrossFadedProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        case 'cross-faded-data-driven':
+            return `new CrossFadedDataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'color-ramp':
             return `new ColorRampProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'data-constant':
@@ -131,4 +139,3 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 for (const layer of layers) {
     fs.writeFileSync(`src/style/style_layer/${layer.type.replace('-', '_')}_style_layer_properties.js`, propertiesJs(layer))
 }
-

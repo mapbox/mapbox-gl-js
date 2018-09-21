@@ -31,10 +31,7 @@ export const plugins = () => [
     commonjs({
         // global keyword handling causes Webpack compatibility issues, so we disabled it:
         // https://github.com/mapbox/mapbox-gl-js/pull/6956
-        ignoreGlobal: true,
-        namedExports: {
-            '@mapbox/whoots-js': ['getTileBBox']
-        }
+        ignoreGlobal: true
     }),
     production ? uglify() : false
 ].filter(Boolean);

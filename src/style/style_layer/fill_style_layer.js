@@ -14,6 +14,7 @@ import type Point from '@mapbox/point-geometry';
 import type {PaintProps} from './fill_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
 import type Transform from '../../geo/transform';
+import type {LayerSpecification} from '../../style-spec/types';
 
 class FillStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -25,7 +26,7 @@ class FillStyleLayer extends StyleLayer {
     }
 
     recalculate(parameters: EvaluationParameters) {
-        this.paint = this._transitioningPaint.possiblyEvaluate(parameters);
+        super.recalculate(parameters);
 
         const outlineColor = this.paint._values['fill-outline-color'];
         if (outlineColor.value.kind === 'constant' && outlineColor.value.value === undefined) {

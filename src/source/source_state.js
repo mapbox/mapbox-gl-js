@@ -22,15 +22,15 @@ class SourceFeatureState {
         this.stateChanges = {};
     }
 
-    updateState(sourceLayer: string, feature: string, state: Object) {
-        feature = String(feature);
+    updateState(sourceLayer: string, featureId: number, state: Object) {
+        const feature = String(featureId);
         this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || {};
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
         extend(this.stateChanges[sourceLayer][feature], state);
     }
 
-    getState(sourceLayer: string, feature: string) {
-        feature = String(feature);
+    getState(sourceLayer: string, featureId: number) {
+        const feature = String(featureId);
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};
         return extend({}, base[feature], changes[feature]);

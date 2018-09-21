@@ -1,0 +1,47 @@
+{
+  "expression": {
+    "type": "exponential",
+    "property": "p",
+    "stops": [[0, [0]], [1, [1]]],
+    "default": [-1]
+  },
+  "propertySpec": {
+    "type": "array",
+    "value": "number",
+    "length": 1,
+    "property-type": "data-driven",
+    "expression": {"interpolated": true, "parameters": ["zoom", "feature"]}
+  },
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": -1}}],
+    [{}, {"properties": {"p": 0}}],
+    [{}, {"properties": {"p": 0.5}}],
+    [{}, {"properties": {"p": 1}}],
+    [{}, {"properties": {"p": 2}}],
+    [{}, {"properties": {"p": "0"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "array<number, 1>"
+    },
+    "outputs": [[-1], [0], [0], [0.5], [1], [1], [-1]],
+    "serialized": [
+      "case",
+      ["==", ["typeof", ["get", "p"]], "number"],
+      [
+        "interpolate",
+        ["linear"],
+        ["number", ["get", "p"]],
+        0,
+        ["literal", [0]],
+        1,
+        ["literal", [1]]
+      ],
+      ["literal", [-1]]
+    ]
+  }
+}

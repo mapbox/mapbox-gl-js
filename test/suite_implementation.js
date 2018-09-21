@@ -10,6 +10,7 @@ import path from 'path';
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
+rtlTextPlugin['processStyledBidirectionalText'] = rtlText.processStyledBidirectionalText;
 
 module.exports = function(style, options, _callback) { // eslint-disable-line import/no-commonjs
     let wasCallbackCalled = false;
@@ -29,8 +30,8 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
     window.devicePixelRatio = options.pixelRatio;
 
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'offsetWidth', {value: options.width});
-    Object.defineProperty(container, 'offsetHeight', {value: options.height});
+    Object.defineProperty(container, 'clientWidth', {value: options.width});
+    Object.defineProperty(container, 'clientHeight', {value: options.height});
 
     // We are self-hosting test files.
     config.REQUIRE_ACCESS_TOKEN = false;

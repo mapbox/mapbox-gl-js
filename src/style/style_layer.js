@@ -18,8 +18,12 @@ import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter} from '../style-spec/feature_filter';
 import type {TransitionParameters} from './properties';
-import type EvaluationParameters from './evaluation_parameters';
+import type EvaluationParameters, {CrossfadeParameters} from './evaluation_parameters';
 import type Transform from '../geo/transform';
+import type {
+    LayerSpecification,
+    FilterSpecification
+} from '../style-spec/types';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -33,6 +37,7 @@ class StyleLayer extends Evented {
     maxzoom: ?number;
     filter: FilterSpecification | void;
     visibility: 'visible' | 'none';
+    _crossfadeParameters: CrossfadeParameters;
 
     _unevaluatedLayout: Layout<any>;
     +layout: mixed;
@@ -53,7 +58,7 @@ class StyleLayer extends Evented {
                               pixelsToTileUnits: number,
                               posMatrix: Float32Array) => boolean;
 
-    constructor(layer: LayerSpecification, properties: {layout?: Properties<*>, paint: Properties<*>}) {
+    constructor(layer: LayerSpecification, properties: $ReadOnly<{layout?: Properties<*>, paint: Properties<*>}>) {
         super();
 
         this.id = layer.id;
@@ -85,6 +90,10 @@ class StyleLayer extends Evented {
         }
 
         this._transitioningPaint = this._transitionablePaint.untransitioned();
+    }
+
+    getCrossfadeParameters() {
+        return this._crossfadeParameters;
     }
 
     getLayoutProperty(name: string) {
@@ -131,11 +140,17 @@ class StyleLayer extends Evented {
             this._transitionablePaint.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), (value: any) || undefined);
             return false;
         } else {
+            // if a cross-faded value is changed, we need to make sure the new icons get added to each tile's iconAtlas
+            // so a call to _updateLayer is necessary, and we return true from this function so it gets called in
+            // Style#setPaintProperty
+            const prop = this._transitionablePaint._values[name];
+            const newCrossFadedValue = prop.property.specification["property-type"] === 'cross-faded-data-driven' && !prop.value.value && value;
+
             const wasDataDriven = this._transitionablePaint._values[name].value.isDataDriven();
             this._transitionablePaint.setValue(name, value);
             const isDataDriven = this._transitionablePaint._values[name].value.isDataDriven();
             this._handleSpecialPaintPropertyUpdate(name);
-            return isDataDriven || wasDataDriven;
+            return isDataDriven || wasDataDriven || newCrossFadedValue;
         }
     }
 
@@ -158,6 +173,10 @@ class StyleLayer extends Evented {
     }
 
     recalculate(parameters: EvaluationParameters) {
+        if (parameters.getCrossfadeParameters) {
+            this._crossfadeParameters = parameters.getCrossfadeParameters();
+        }
+
         if (this._unevaluatedLayout) {
             (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters);
         }
@@ -166,7 +185,7 @@ class StyleLayer extends Evented {
     }
 
     serialize() {
-        const output : any = {
+        const output: any = {
             'id': this.id,
             'type': this.type,
             'source': this.source,

@@ -20,6 +20,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - check-size:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
       - test-flow:
           requires:
             - prepare
@@ -132,11 +138,19 @@ jobs:
       - run: yarn run build-dev
       - run: yarn run build-css
       - run: yarn run build-style-spec
+      - run: yarn run build-flow-types
       - run: yarn run test-build
       - persist_to_workspace:
           root: .
           paths:
             - dist
+
+  check-size:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: node build/check-bundle-size.js "dist/mapbox-gl.js" "GL JS - Minified"
 
   test-flow:
     <<: *defaults
@@ -187,7 +201,7 @@ jobs:
           command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
       - run:
           name: Upload
-          command: aws s3 cp --acl public-read --content-type application/javascript bench/benchmarks_generated.js s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js
+          command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js
 
   deploy-release:
     <<: *defaults

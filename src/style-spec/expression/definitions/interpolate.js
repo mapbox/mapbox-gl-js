@@ -3,13 +3,15 @@
 import UnitBezier from '@mapbox/unitbezier';
 
 import * as interpolate from '../../util/interpolate';
-import { toString, NumberType } from '../types';
+import { toString, NumberType, ColorType } from '../types';
 import { findStopLessThanOrEqualTo } from '../stops';
+import { hcl, lab } from '../../util/color_spaces';
 
 import type { Stops } from '../stops';
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+import type { Value } from '../values';
 import type { Type } from '../types';
 
 export type InterpolationType =
@@ -20,13 +22,15 @@ export type InterpolationType =
 class Interpolate implements Expression {
     type: Type;
 
+    operator: 'interpolate' | 'interpolate-hcl' | 'interpolate-lab';
     interpolation: InterpolationType;
     input: Expression;
     labels: Array<number>;
     outputs: Array<Expression>;
 
-    constructor(type: Type, interpolation: InterpolationType, input: Expression, stops: Stops) {
+    constructor(type: Type, operator: 'interpolate' | 'interpolate-hcl' | 'interpolate-lab', interpolation: InterpolationType, input: Expression, stops: Stops) {
         this.type = type;
+        this.operator = operator;
         this.interpolation = interpolation;
         this.input = input;
 
@@ -53,7 +57,7 @@ class Interpolate implements Expression {
     }
 
     static parse(args: Array<mixed>, context: ParsingContext) {
-        let [ , interpolation, input, ...rest] = args;
+        let [operator, interpolation, input, ...rest] = args;
 
         if (!Array.isArray(interpolation) || interpolation.length === 0) {
             return context.error(`Expected an interpolation type expression.`, 1);
@@ -100,7 +104,9 @@ class Interpolate implements Expression {
         const stops: Stops = [];
 
         let outputType: Type = (null: any);
-        if (context.expectedType && context.expectedType.kind !== 'value') {
+        if (operator === 'interpolate-hcl' || operator === 'interpolate-lab') {
+            outputType = ColorType;
+        } else if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
 
@@ -136,7 +142,7 @@ class Interpolate implements Expression {
             return context.error(`Type ${toString(outputType)} is not interpolatable.`);
         }
 
-        return new Interpolate(outputType, interpolation, input, stops);
+        return new Interpolate(outputType, (operator: any), interpolation, input, stops);
     }
 
     evaluate(ctx: EvaluationContext) {
@@ -165,7 +171,13 @@ class Interpolate implements Expression {
         const outputLower = outputs[index].evaluate(ctx);
         const outputUpper = outputs[index + 1].evaluate(ctx);
 
-        return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t); // eslint-disable-line import/namespace
+        if (this.operator === 'interpolate') {
+            return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t); // eslint-disable-line import/namespace
+        } else if (this.operator === 'interpolate-hcl') {
+            return hcl.reverse(hcl.interpolate(hcl.forward(outputLower), hcl.forward(outputUpper), t));
+        } else {
+            return lab.reverse(lab.interpolate(lab.forward(outputLower), lab.forward(outputUpper), t));
+        }
     }
 
     eachChild(fn: (Expression) => void) {
@@ -175,11 +187,11 @@ class Interpolate implements Expression {
         }
     }
 
-    possibleOutputs() {
+    possibleOutputs(): Array<Value | void> {
         return [].concat(...this.outputs.map((output) => output.possibleOutputs()));
     }
 
-    serialize() {
+    serialize(): Array<mixed> {
         let interpolation;
         if (this.interpolation.name === 'linear') {
             interpolation = ["linear"];
@@ -193,7 +205,7 @@ class Interpolate implements Expression {
             interpolation = ["cubic-bezier" ].concat(this.interpolation.controlPoints);
         }
 
-        const serialized = ["interpolate", interpolation, this.input.serialize()];
+        const serialized = [this.operator, interpolation, this.input.serialize()];
 
         for (let i = 0; i < this.labels.length; i++) {
             serialized.push(

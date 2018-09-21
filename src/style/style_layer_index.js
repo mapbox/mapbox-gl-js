@@ -8,6 +8,7 @@ import featureFilter from '../style-spec/feature_filter';
 import groupByLayout from '../style-spec/group_by_layout';
 
 import type {TypedStyleLayer} from './style_layer/typed_style_layer';
+import type {LayerSpecification} from '../style-spec/types';
 
 export type LayerConfigs = { [string]: LayerSpecification };
 export type Family<Layer: TypedStyleLayer> = Array<Layer>;

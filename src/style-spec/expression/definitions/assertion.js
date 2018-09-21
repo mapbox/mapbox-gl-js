@@ -9,7 +9,8 @@ import {
     NumberType,
     BooleanType,
     checkSubtype,
-    toString
+    toString,
+    array
 } from '../types';
 import RuntimeError from '../runtime_error';
 import { typeOf } from '../values';
@@ -17,6 +18,7 @@ import { typeOf } from '../values';
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+import type { Value } from '../values';
 import type { Type } from '../types';
 
 const types = {
@@ -39,13 +41,43 @@ class Assertion implements Expression {
         if (args.length < 2)
             return context.error(`Expected at least one argument.`);
 
-        const name: string = (args[0]: any);
-        assert(types[name], name);
+        let i = 1;
+        let type;
 
-        const type = types[name];
+        const name: string = (args[0]: any);
+        if (name === 'array') {
+            let itemType;
+            if (args.length > 2) {
+                const type = args[1];
+                if (typeof type !== 'string' || !(type in types) || type === 'object')
+                    return context.error('The item type argument of "array" must be one of string, number, boolean', 1);
+                itemType = types[type];
+                i++;
+            } else {
+                itemType = ValueType;
+            }
+
+            let N;
+            if (args.length > 3) {
+                if (args[2] !== null &&
+                    (typeof args[2] !== 'number' ||
+                        args[2] < 0 ||
+                        args[2] !== Math.floor(args[2]))
+                ) {
+                    return context.error('The length argument to "array" must be a positive integer literal', 2);
+                }
+                N = args[2];
+                i++;
+            }
+
+            type = array(itemType, N);
+        } else {
+            assert(types[name], name);
+            type = types[name];
+        }
 
         const parsed = [];
-        for (let i = 1; i < args.length; i++) {
+        for (; i < args.length; i++) {
             const input = context.parse(args[i], i, ValueType);
             if (!input) return null;
             parsed.push(input);
@@ -73,12 +105,26 @@ class Assertion implements Expression {
         this.args.forEach(fn);
     }
 
-    possibleOutputs() {
+    possibleOutputs(): Array<Value | void> {
         return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
     }
 
-    serialize() {
-        return [this.type.kind].concat(this.args.map(arg => arg.serialize()));
+    serialize(): Array<mixed> {
+        const type = this.type;
+        const serialized = [type.kind];
+        if (type.kind === 'array') {
+            const itemType = type.itemType;
+            if (itemType.kind === 'string' ||
+                itemType.kind === 'number' ||
+                itemType.kind === 'boolean') {
+                serialized.push(itemType.kind);
+                const N = type.N;
+                if (typeof N === 'number' || this.args.length > 1) {
+                    serialized.push(N);
+                }
+            }
+        }
+        return serialized.concat(this.args.map(arg => arg.serialize()));
     }
 }
 

@@ -1,0 +1,29 @@
+{
+  "expression": {
+    "type": "categorical",
+    "property": "p",
+    "stops": [["0", "0"], ["1", "1"]],
+    "default": "-1"
+  },
+  "propertySpec": {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": {"interpolated": false, "parameters": ["zoom", "feature"]}
+  },
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": "0"}}],
+    [{}, {"properties": {"p": "1"}}],
+    [{}, {"properties": {"p": 0}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["-1", "0", "1", "-1"],
+    "serialized": ["match", ["get", "p"], "0", "0", "1", "1", "-1"]
+  }
+}

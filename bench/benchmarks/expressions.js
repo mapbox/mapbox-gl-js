@@ -2,11 +2,11 @@
 
 import Benchmark from '../lib/benchmark';
 
-import accessToken from '../lib/access_token';
 import spec from '../../src/style-spec/reference/latest';
 import convertFunction from '../../src/style-spec/function/convert';
 import { isFunction, createFunction } from '../../src/style-spec/function';
 import { createPropertyExpression } from '../../src/style-spec/expression';
+import { normalizeStyleURL } from '../../src/util/mapbox';
 
 import type {StylePropertySpecification} from '../../src/style-spec/style-spec';
 import type {StylePropertyExpression} from '../../src/style-spec/expression';
@@ -19,9 +19,15 @@ class ExpressionBenchmark extends Benchmark {
         compiledFunction: StylePropertyExpression,
         compiledExpression: StylePropertyExpression
     }>;
+    style: string;
+
+    constructor(style: string) {
+        super();
+        this.style = style;
+    }
 
     setup() {
-        return fetch(`https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`)
+        return fetch(normalizeStyleURL(this.style))
             .then(response => response.json())
             .then(json => {
                 this.data = [];

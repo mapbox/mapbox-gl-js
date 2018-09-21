@@ -8,11 +8,14 @@ import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
+    CrossFadedDataDrivenProperty,
     CrossFadedProperty,
     ColorRampProperty
 } from '../properties';
 
 import type Color from '../../style-spec/util/color';
+
+import type {Formatted} from '../../style-spec/expression/definitions/formatted';
 
 export type LayoutProps = {|
     "line-cap": DataConstantProperty<"butt" | "round" | "square">,
@@ -38,7 +41,7 @@ export type PaintProps = {|
     "line-offset": DataDrivenProperty<number>,
     "line-blur": DataDrivenProperty<number>,
     "line-dasharray": CrossFadedProperty<Array<number>>,
-    "line-pattern": CrossFadedProperty<string>,
+    "line-pattern": CrossFadedDataDrivenProperty<string>,
     "line-gradient": ColorRampProperty,
 |};
 
@@ -52,8 +55,13 @@ const paint: Properties<PaintProps> = new Properties({
     "line-offset": new DataDrivenProperty(styleSpec["paint_line"]["line-offset"]),
     "line-blur": new DataDrivenProperty(styleSpec["paint_line"]["line-blur"]),
     "line-dasharray": new CrossFadedProperty(styleSpec["paint_line"]["line-dasharray"]),
-    "line-pattern": new CrossFadedProperty(styleSpec["paint_line"]["line-pattern"]),
+    "line-pattern": new CrossFadedDataDrivenProperty(styleSpec["paint_line"]["line-pattern"]),
     "line-gradient": new ColorRampProperty(styleSpec["paint_line"]["line-gradient"]),
 });
 
-export default { paint, layout };
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
+export default ({ paint, layout }: $Exact<{
+  paint: Properties<PaintProps>, layout: Properties<LayoutProps>
+}>);

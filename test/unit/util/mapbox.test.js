@@ -3,11 +3,17 @@ import * as mapbox from '../../../src/util/mapbox';
 import config from '../../../src/util/config';
 import browser from '../../../src/util/browser';
 import window from '../../../src/util/window';
+import { uuid } from '../../../src/util/util';
+import { version } from '../../../package.json';
 
 test("mapbox", (t) => {
     const mapboxSource = 'mapbox://user.map';
     const nonMapboxSource = 'http://www.example.com/tiles.json';
-    config.ACCESS_TOKEN = 'key';
+
+    t.beforeEach((callback) => {
+        config.ACCESS_TOKEN = 'key';
+        callback();
+    });
 
     t.test('.normalizeStyleURL', (t) => {
         t.test('returns an API URL with access_token parameter when no query string', (t) => {
@@ -268,6 +274,330 @@ test("mapbox", (t) => {
         });
 
         browser.supportsWebp = true;
+
+        t.end();
+    });
+
+    t.test('TurnstileEvent', (t) => {
+        const ms25Hours = (25 * 60 * 60 * 1000);
+        let event;
+        t.beforeEach((callback) => {
+            window.useFakeXMLHttpRequest();
+            event = new mapbox.TurnstileEvent();
+            callback();
+        });
+
+        t.afterEach((callback) => {
+            window.restore();
+            callback();
+        });
+
+        t.test('mapbox.postTurnstileEvent', (t) => {
+            t.ok(mapbox.postTurnstileEvent);
+            t.end();
+        });
+
+        t.test('does not POST when mapboxgl.ACCESS_TOKEN is not set', (t) => {
+            config.ACCESS_TOKEN = null;
+
+            event.postTurnstileEvent([' a.tiles.mapxbox.com']);
+
+            t.equal(window.server.requests.length, 0);
+            t.end();
+        });
+
+        t.test('does not POST when url does not point to mapbox.com', (t) => {
+            event.postTurnstileEvent(['a.tiles.boxmap.com']);
+
+            t.equal(window.server.requests.length, 0);
+            t.end();
+        });
+
+        t.test('POSTs cn event when API_URL change to cn endpoint', (t) => {
+            const previousUrl = config.API_URL;
+            config.API_URL = 'https://api.mapbox.cn';
+
+            event.postTurnstileEvent(['a.tiles.mapbox.cn']);
+
+            const req = window.server.requests[0];
+            req.respond(200);
+
+            t.true(req.url.indexOf('https://events.mapbox.cn') > -1);
+            config.API_URL = previousUrl;
+            t.end();
+        });
+
+        t.test('with LocalStorage available', (t) => {
+            let prevLocalStorage;
+            t.beforeEach((callback) => {
+                prevLocalStorage = window.localStorage;
+                window.localStorage = {
+                    data: {},
+                    setItem: function (id, val) {
+                        this.data[id] = String(val);
+                    },
+                    getItem: function (id) {
+                        return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
+                    },
+                    removeItem: function (id) {
+                        if (this.hasOwnProperty(id)) delete this[id];
+                    }
+                };
+                callback();
+            });
+
+            t.afterEach((callback) => {
+                window.localStorage = prevLocalStorage;
+                callback();
+            });
+
+            t.test('does not POST event when previously stored data is on the same day', (t) => {
+                const now = +Date.now();
+
+                window.localStorage.setItem(`mapbox.turnstileEventData:${config.ACCESS_TOKEN}`, JSON.stringify({
+                    anonId: uuid(),
+                    lastSuccess: now
+                }));
+
+                t.stub(browser, 'now').callsFake(() => now + 5); // A bit later
+
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                t.false(window.server.requests.length);
+                t.end();
+            });
+
+            t.test('POSTs event when previously stored anonId is not a valid uuid', (t) => {
+                const now = +Date.now();
+
+                window.localStorage.setItem(`mapbox.turnstileEventData:${config.ACCESS_TOKEN}`, JSON.stringify({
+                    anonId: 'anonymous',
+                    lastSuccess: now
+                }));
+
+                t.stub(browser, 'now').callsFake(() => now + ms25Hours); // next day
+
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.notEqual(reqBody.userId, 'anonymous');
+                t.end();
+            });
+
+            t.test('POSTs event when previously stored timestamp is more than 24 hours in the future', (t) => {
+                const now = +Date.now();
+
+                window.localStorage.setItem(`mapbox.turnstileEventData:${config.ACCESS_TOKEN}`, JSON.stringify({
+                    anonId: uuid(),
+                    lastSuccess: now + ms25Hours // 24-hours later
+                }));
+
+                t.stub(browser, 'now').callsFake(() => now); // Past relative ot lastSuccess
+
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(reqBody.created, new Date(now).toISOString());
+
+                t.end();
+            });
+
+            t.test('does not POST appuserTurnstile event second time within same calendar day', (t) => {
+                let now = +Date.now();
+                t.stub(browser, 'now').callsFake(() => now);
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                //Post second event
+                const firstEvent = now;
+                now += (60 * 1000); // A bit later
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                t.equal(window.server.requests.length, 1);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+
+                t.end();
+            });
+
+            t.test('does not POST appuserTurnstile event second time when clock goes backwards less than a day', (t) => {
+                let now = +Date.now();
+                t.stub(browser, 'now').callsFake(() => now);
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                //Post second event
+                const firstEvent = now;
+                now -= (60 * 1000); // A bit earlier
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                t.equal(window.server.requests.length, 1);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+
+                t.end();
+            });
+
+            t.test('POSTs appuserTurnstile event when access token changes', (t) => {
+                config.ACCESS_TOKEN = 'pk.new.*';
+
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                t.equal(req.url, `${config.EVENTS_URL}?access_token=pk.new.*`);
+
+                t.end();
+            });
+
+            t.end();
+        });
+
+        t.test('when LocalStorage is not available', (t) => {
+            t.test('POSTs appuserTurnstile event', (t) => {
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(req.url, `${config.EVENTS_URL}?access_token=key`);
+                t.equal(req.method, 'POST');
+                t.equal(reqBody.event, 'appUserTurnstile');
+                t.equal(reqBody.sdkVersion, version);
+                t.ok(reqBody.userId);
+
+                t.end();
+            });
+
+            t.test('does not POST appuserTurnstile event second time within same calendar day', (t) => {
+                let now = +Date.now();
+                const firstEvent = now;
+                t.stub(browser, 'now').callsFake(() => now);
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                //Post second event
+                now += (60 * 1000); // A bit later
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                t.equal(window.server.requests.length, 1);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+
+                t.end();
+            });
+
+            t.test('does not POST appuserTurnstile event second time when clock goes backwards less than a day', (t) => {
+                let now = +Date.now();
+                const firstEvent = now;
+                t.stub(browser, 'now').callsFake(() => now);
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                //Post second event
+                now -= (60 * 1000); // A bit earlier
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                t.equal(window.server.requests.length, 1);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+
+                t.end();
+            });
+
+            t.test('POSTs appuserTurnstile event when access token changes', (t) => {
+                config.ACCESS_TOKEN = 'pk.new.*';
+
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(req.url, `${config.EVENTS_URL}?access_token=pk.new.*`);
+                t.equal(req.method, 'POST');
+                t.equal(reqBody.event, 'appUserTurnstile');
+                t.equal(reqBody.sdkVersion, version);
+                t.ok(reqBody.userId);
+
+                t.end();
+            });
+
+            t.test('POSTs appUserTurnstile event on next calendar day', (t) => {
+                let now = +Date.now();
+                t.stub(browser, 'now').callsFake(() => now);
+
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                now += ms25Hours; // Add a day
+                const tomorrow = now;
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                let req = window.server.requests[0];
+                req.respond(200);
+
+                req = window.server.requests[1];
+                req.respond(200);
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(req.url, `${config.EVENTS_URL}?access_token=key`);
+                t.equal(req.method, 'POST');
+                t.equal(reqBody.event, 'appUserTurnstile');
+                t.equal(reqBody.sdkVersion, version);
+                t.ok(reqBody.userId);
+                t.equal(reqBody.created, new Date(tomorrow).toISOString());
+
+                t.end();
+            });
+
+            t.test('Queues and POSTs appuserTurnstile events when triggerred in quick succession', (t) => {
+                let now = Date.now();
+                t.stub(browser, 'now').callsFake(() => now);
+
+                const today = now;
+                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+                const laterToday = now + 1;
+                now = laterToday;
+                event.postTurnstileEvent(['b.tiles.mapbox.com']);
+
+                const tomorrow = laterToday + ms25Hours; // Add a day
+                now = tomorrow;
+                event.postTurnstileEvent(['c.tiles.mapbox.com']);
+
+                const reqToday = window.server.requests[0];
+                reqToday.respond(200);
+                let reqBody = JSON.parse(reqToday.requestBody)[0];
+                t.equal(reqBody.created, new Date(today).toISOString());
+
+                const reqTomorrow = window.server.requests[1];
+                reqTomorrow.respond(200);
+                reqBody = JSON.parse(reqTomorrow.requestBody)[0];
+                t.equal(reqBody.created, new Date(tomorrow).toISOString());
+
+                t.end();
+            });
+
+            t.end();
+        });
 
         t.end();
     });

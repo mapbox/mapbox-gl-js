@@ -2,7 +2,6 @@
 
 import DOM from '../../util/dom';
 
-import LngLatBounds from '../../geo/lng_lat_bounds';
 import { bindAll } from '../../util/util';
 import window from '../../util/window';
 import { Event } from '../../util/evented';
@@ -126,10 +125,7 @@ class BoxZoomHandler {
         if (e.button !== 0) return;
 
         const p0 = this._startPos,
-            p1 = DOM.mousePos(this._el, e),
-            bounds = new LngLatBounds()
-                .extend(this._map.unproject(p0))
-                .extend(this._map.unproject(p1));
+            p1 = DOM.mousePos(this._el, e);
 
         this._finish();
 
@@ -139,8 +135,8 @@ class BoxZoomHandler {
             this._fireEvent('boxzoomcancel', e);
         } else {
             this._map
-                .fitBounds(bounds, {linear: true})
-                .fire(new Event('boxzoomend', { originalEvent: e, boxZoomBounds: bounds }));
+                .fitScreenCoordinates(p0, p1, this._map.getBearing(), {linear: true})
+                .fire(new Event('boxzoomend', { originalEvent: e}));
         }
     }
 

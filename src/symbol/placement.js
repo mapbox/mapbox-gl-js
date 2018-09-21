@@ -5,8 +5,7 @@ import CollisionIndex from './collision_index';
 import EXTENT from '../data/extent';
 import * as symbolSize from './symbol_size';
 import * as projection from './projection';
-import properties from '../style/style_layer/symbol_style_layer_properties';
-const symbolLayoutProperties = properties.layout;
+import symbolLayerProperties from '../style/style_layer/symbol_style_layer_properties';
 import assert from 'assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 
@@ -176,26 +175,37 @@ export class Placement {
         );
 
         this.placeLayerBucket(symbolBucket, posMatrix, textLabelPlaneMatrix, iconLabelPlaneMatrix, scale, textPixelRatio,
-                showCollisionBoxes, seenCrossTileIDs, collisionBoxArray);
+                showCollisionBoxes, tile.holdingForFade(), seenCrossTileIDs, collisionBoxArray);
     }
 
     placeLayerBucket(bucket: SymbolBucket, posMatrix: mat4, textLabelPlaneMatrix: mat4, iconLabelPlaneMatrix: mat4,
-            scale: number, textPixelRatio: number, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean },
+            scale: number, textPixelRatio: number, showCollisionBoxes: boolean, holdingForFade: boolean, seenCrossTileIDs: { [string | number]: boolean },
             collisionBoxArray: ?CollisionBoxArray) {
         const layout = bucket.layers[0].layout;
 
-        const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayoutProperties.properties['text-size']);
+        const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayerProperties.layout.properties['text-size']);
 
-        const iconWithoutText = !bucket.hasTextData() || layout.get('text-optional');
-        const textWithoutIcon = !bucket.hasIconData() || layout.get('icon-optional');
+        const textOptional = layout.get('text-optional');
+        const iconOptional = layout.get('icon-optional');
 
         const collisionGroup = this.collisionGroups.get(bucket.sourceID);
 
-        for (const symbolInstance of bucket.symbolInstances) {
-            if (!seenCrossTileIDs[symbolInstance.crossTileID]) {
+        if (!bucket.collisionArrays && collisionBoxArray) {
+            bucket.deserializeCollisionBoxes(collisionBoxArray);
+        }
 
-                let placeText = symbolInstance.feature.text !== undefined;
-                let placeIcon = symbolInstance.feature.icon !== undefined;
+        for (let i = 0; i < bucket.symbolInstances.length; i++) {
+            const symbolInstance = bucket.symbolInstances.get(i);
+            if (!seenCrossTileIDs[symbolInstance.crossTileID]) {
+                if (holdingForFade) {
+                    // Mark all symbols from this tile as "not placed", but don't add to seenCrossTileIDs, because we don't
+                    // know yet if we have a duplicate in a parent tile that _should_ be placed.
+                    this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false);
+                    continue;
+                }
+
+                let placeText = false;
+                let placeIcon = false;
                 let offscreen = true;
 
                 let placedGlyphBoxes = null;
@@ -205,30 +215,25 @@ export class Placement {
                 let textFeatureIndex = 0;
                 let iconFeatureIndex = 0;
 
-                if (!symbolInstance.collisionArrays) {
-                    symbolInstance.collisionArrays = bucket.deserializeCollisionBoxes(
-                            ((collisionBoxArray: any): CollisionBoxArray),
-                            symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex);
-                }
+                const collisionArrays = bucket.collisionArrays[i];
 
-                if (symbolInstance.collisionArrays.textFeatureIndex) {
-                    textFeatureIndex = symbolInstance.collisionArrays.textFeatureIndex;
+                if (collisionArrays.textFeatureIndex) {
+                    textFeatureIndex = collisionArrays.textFeatureIndex;
                 }
-                if (symbolInstance.collisionArrays.textBox) {
-                    placedGlyphBoxes = this.collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.textBox,
+                if (collisionArrays.textBox) {
+                    placedGlyphBoxes = this.collisionIndex.placeCollisionBox(collisionArrays.textBox,
                             layout.get('text-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
                     placeText = placedGlyphBoxes.box.length > 0;
                     offscreen = offscreen && placedGlyphBoxes.offscreen;
                 }
-                const textCircles = symbolInstance.collisionArrays.textCircles;
+                const textCircles = collisionArrays.textCircles;
                 if (textCircles) {
-                    const placedSymbol = bucket.text.placedSymbolArray.get(symbolInstance.placedTextSymbolIndices[0]);
+                    const placedSymbol = bucket.text.placedSymbolArray.get(symbolInstance.horizontalPlacedTextSymbolIndex);
                     const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
                     placedGlyphCircles = this.collisionIndex.placeCollisionCircles(textCircles,
                             layout.get('text-allow-overlap'),
                             scale,
                             textPixelRatio,
-                            symbolInstance.key,
                             placedSymbol,
                             bucket.lineVertexArray,
                             bucket.glyphOffsetArray,
@@ -246,15 +251,18 @@ export class Placement {
                     offscreen = offscreen && placedGlyphCircles.offscreen;
                 }
 
-                if (symbolInstance.collisionArrays.iconFeatureIndex) {
-                    iconFeatureIndex = symbolInstance.collisionArrays.iconFeatureIndex;
+                if (collisionArrays.iconFeatureIndex) {
+                    iconFeatureIndex = collisionArrays.iconFeatureIndex;
                 }
-                if (symbolInstance.collisionArrays.iconBox) {
-                    placedIconBoxes = this.collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.iconBox,
+                if (collisionArrays.iconBox) {
+                    placedIconBoxes = this.collisionIndex.placeCollisionBox(collisionArrays.iconBox,
                             layout.get('icon-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
                     placeIcon = placedIconBoxes.box.length > 0;
                     offscreen = offscreen && placedIconBoxes.offscreen;
                 }
+
+                const iconWithoutText = textOptional || (symbolInstance.numGlyphVertices === 0 && symbolInstance.numVerticalGlyphVertices === 0);
+                const textWithoutIcon = iconOptional || symbolInstance.numIconVertices === 0;
 
                 // Combine the scales for icons and text.
                 if (!iconWithoutText && !textWithoutIcon) {
@@ -357,12 +365,23 @@ export class Placement {
 
         const layout = bucket.layers[0].layout;
         const duplicateOpacityState = new JointOpacityState(null, 0, false, false, true);
+        const textAllowOverlap = layout.get('text-allow-overlap');
+        const iconAllowOverlap = layout.get('icon-allow-overlap');
+        // If allow-overlap is true, we can show symbols before placement runs on them
+        // But we have to wait for placement if we potentially depend on a paired icon/text
+        // with allow-overlap: false.
+        // See https://github.com/mapbox/mapbox-gl-js/issues/7032
         const defaultOpacityState = new JointOpacityState(null, 0,
-                layout.get('text-allow-overlap'),
-                layout.get('icon-allow-overlap'), true);
+                textAllowOverlap && (iconAllowOverlap || !bucket.hasIconData() || layout.get('icon-optional')),
+                iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || layout.get('text-optional')),
+                true);
+
+        if (!bucket.collisionArrays && collisionBoxArray && (bucket.hasCollisionBoxData() || bucket.hasCollisionCircleData())) {
+            bucket.deserializeCollisionBoxes(collisionBoxArray);
+        }
 
         for (let s = 0; s < bucket.symbolInstances.length; s++) {
-            const symbolInstance = bucket.symbolInstances[s];
+            const symbolInstance = bucket.symbolInstances.get(s);
             const isDuplicate = seenCrossTileIDs[symbolInstance.crossTileID];
 
             let opacityState = this.opacities[symbolInstance.crossTileID];
@@ -387,11 +406,14 @@ export class Placement {
                 for (let i = 0; i < opacityEntryCount; i++) {
                     bucket.text.opacityVertexArray.emplaceBack(packedOpacity);
                 }
-                for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
-                    const placedSymbol = bucket.text.placedSymbolArray.get(placedTextSymbolIndex);
-                    // If this label is completely faded, mark it so that we don't have to calculate
-                    // its position at render time
-                    placedSymbol.hidden = (opacityState.text.isHidden(): any);
+                // If this label is completely faded, mark it so that we don't have to calculate
+                // its position at render time
+                bucket.text.placedSymbolArray.get(symbolInstance.horizontalPlacedTextSymbolIndex).hidden =
+                    (opacityState.text.isHidden(): any);
+
+                if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
+                    bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).hidden =
+                        (opacityState.text.isHidden(): any);
                 }
             }
 
@@ -400,31 +422,27 @@ export class Placement {
                 for (let i = 0; i < symbolInstance.numIconVertices / 4; i++) {
                     bucket.icon.opacityVertexArray.emplaceBack(packedOpacity);
                 }
-                const placedSymbol = bucket.icon.placedSymbolArray.get(s);
-                placedSymbol.hidden = (opacityState.icon.isHidden(): any);
+                bucket.icon.placedSymbolArray.get(s).hidden =
+                    (opacityState.icon.isHidden(): any);
             }
 
-            if (!symbolInstance.collisionArrays) {
-                symbolInstance.collisionArrays = bucket.deserializeCollisionBoxes(
-                        ((collisionBoxArray: any): CollisionBoxArray),
-                        symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex);
-            }
+            if (bucket.hasCollisionBoxData() || bucket.hasCollisionCircleData()) {
+                const collisionArrays = bucket.collisionArrays[s];
+                if (collisionArrays) {
+                    if (collisionArrays.textBox) {
+                        updateCollisionVertices(bucket.collisionBox.collisionVertexArray, opacityState.text.placed, false);
+                    }
 
-            const collisionArrays = symbolInstance.collisionArrays;
-            if (collisionArrays) {
-                if (collisionArrays.textBox && bucket.hasCollisionBoxData()) {
-                    updateCollisionVertices(bucket.collisionBox.collisionVertexArray, opacityState.text.placed, false);
-                }
+                    if (collisionArrays.iconBox) {
+                        updateCollisionVertices(bucket.collisionBox.collisionVertexArray, opacityState.icon.placed, false);
+                    }
 
-                if (collisionArrays.iconBox && bucket.hasCollisionBoxData()) {
-                    updateCollisionVertices(bucket.collisionBox.collisionVertexArray, opacityState.icon.placed, false);
-                }
-
-                const textCircles = collisionArrays.textCircles;
-                if (textCircles && bucket.hasCollisionCircleData()) {
-                    for (let k = 0; k < textCircles.length; k += 5) {
-                        const notUsed = isDuplicate || textCircles[k + 4] === 0;
-                        updateCollisionVertices(bucket.collisionCircle.collisionVertexArray, opacityState.text.placed, notUsed);
+                    const textCircles = collisionArrays.textCircles;
+                    if (textCircles && bucket.hasCollisionCircleData()) {
+                        for (let k = 0; k < textCircles.length; k += 5) {
+                            const notUsed = isDuplicate || textCircles[k + 4] === 0;
+                            updateCollisionVertices(bucket.collisionCircle.collisionVertexArray, opacityState.text.placed, notUsed);
+                        }
                     }
                 }
             }

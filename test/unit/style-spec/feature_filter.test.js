@@ -1,9 +1,10 @@
 import { test } from 'mapbox-gl-js-test';
-import filter from '../../../src/style-spec/feature_filter';
+import createFilter from '../../../src/style-spec/feature_filter';
+import convertFilter from '../../../src/style-spec/feature_filter/convert';
 
-test('filter', (t) => {
+test('filter', t => {
     t.test('expression, zoom', (t) => {
-        const f = filter(['>=', ['number', ['get', 'x']], ['zoom']]);
+        const f = createFilter(['>=', ['number', ['get', 'x']], ['zoom']]);
         t.equal(f({zoom: 1}, {properties: {x: 0}}), false);
         t.equal(f({zoom: 1}, {properties: {x: 1.5}}), true);
         t.equal(f({zoom: 1}, {properties: {x: 2.5}}), true);
@@ -15,7 +16,7 @@ test('filter', (t) => {
 
     t.test('expression, compare two properties', (t) => {
         t.stub(console, 'warn');
-        const f = filter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']]]);
+        const f = createFilter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']]]);
         t.equal(f({zoom: 0}, {properties: {x: 1, y: 1}}), false);
         t.equal(f({zoom: 0}, {properties: {x: '1', y: '1'}}), true);
         t.equal(f({zoom: 0}, {properties: {x: 'same', y: 'same'}}), true);
@@ -25,12 +26,12 @@ test('filter', (t) => {
     });
 
     t.test('expression, collator comparison', (t) => {
-        const caseSensitive = filter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': true }]]);
+        const caseSensitive = createFilter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': true }]]);
         t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'b'}}), false);
         t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'A'}}), false);
         t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'a'}}), true);
 
-        const caseInsensitive = filter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': false }]]);
+        const caseInsensitive = createFilter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': false }]]);
         t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'b'}}), false);
         t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'A'}}), true);
         t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'a'}}), true);
@@ -38,33 +39,71 @@ test('filter', (t) => {
     });
 
     t.test('expression, any/all', (t) => {
-        t.equal(filter(['all'])(), true);
-        t.equal(filter(['all', true])(), true);
-        t.equal(filter(['all', true, false])(), false);
-        t.equal(filter(['all', true, true])(), true);
-        t.equal(filter(['any'])(), false);
-        t.equal(filter(['any', true])(), true);
-        t.equal(filter(['any', true, false])(), true);
-        t.equal(filter(['any', false, false])(), false);
+        t.equal(createFilter(['all'])(), true);
+        t.equal(createFilter(['all', true])(), true);
+        t.equal(createFilter(['all', true, false])(), false);
+        t.equal(createFilter(['all', true, true])(), true);
+        t.equal(createFilter(['any'])(), false);
+        t.equal(createFilter(['any', true])(), true);
+        t.equal(createFilter(['any', true, false])(), true);
+        t.equal(createFilter(['any', false, false])(), false);
         t.end();
     });
 
     t.test('expression, type error', (t) => {
         t.throws(() => {
-            filter(['==', ['number', ['get', 'x']], ['string', ['get', 'y']]]);
+            createFilter(['==', ['number', ['get', 'x']], ['string', ['get', 'y']]]);
         });
 
         t.throws(() => {
-            filter(['number', ['get', 'x']]);
+            createFilter(['number', ['get', 'x']]);
         });
 
         t.doesNotThrow(() => {
-            filter(['boolean', ['get', 'x']]);
+            createFilter(['boolean', ['get', 'x']]);
         });
 
         t.end();
     });
 
+    legacyFilterTests(t, createFilter);
+
+    t.end();
+});
+
+test('convert legacy filters to expressions', t => {
+    t.beforeEach(done => {
+        t.stub(console, 'warn');
+        done();
+    });
+
+    legacyFilterTests(t, (f) => {
+        const converted = convertFilter(f);
+        return createFilter(converted);
+    });
+
+    t.test('mimic legacy type mismatch semantics', (t) => {
+        const filter = ["any",
+            ["all", [">", "y", 0], [">", "y", 0]],
+            [">", "x", 0]
+        ];
+
+        const converted = convertFilter(filter);
+        const f = createFilter(converted);
+
+        t.equal(f({zoom: 0}, {properties: {x: 0, y: 1, z: 1}}), true);
+        t.equal(f({zoom: 0}, {properties: {x: 1, y: 0, z: 1}}), true);
+        t.equal(f({zoom: 0}, {properties: {x: 0, y: 0, z: 1}}), false);
+        t.equal(f({zoom: 0}, {properties: {x: null, y: 1, z: 1}}), true);
+        t.equal(f({zoom: 0}, {properties: {x: 1, y: null, z: 1}}), true);
+        t.equal(f({zoom: 0}, {properties: {x: null, y: null, z: 1}}), false);
+        t.end();
+    });
+
+    t.end();
+});
+
+function legacyFilterTests(t, filter) {
     t.test('degenerate', (t) => {
         t.equal(filter()(), true);
         t.equal(filter(undefined)(), true);
@@ -100,7 +139,7 @@ test('filter', (t) => {
         t.equal(f({zoom: 0}, {properties: {foo: true}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: false}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: null}}), true);
-        t.equal(f({zoom: 0}, {properties: {foo: undefined}}), false);
+        // t.equal(f({zoom: 0}, {properties: {foo: undefined}}), false);
         t.equal(f({zoom: 0}, {properties: {}}), false);
         t.end();
     });
@@ -150,7 +189,7 @@ test('filter', (t) => {
         t.equal(f({zoom: 0}, {properties: {foo: true}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: false}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: null}}), false);
-        t.equal(f({zoom: 0}, {properties: {foo: undefined}}), true);
+        // t.equal(f({zoom: 0}, {properties: {foo: undefined}}), true);
         t.equal(f({zoom: 0}, {properties: {}}), true);
         t.end();
     });
@@ -322,7 +361,7 @@ test('filter', (t) => {
         t.equal(f({zoom: 0}, {properties: {foo: true}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: false}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: null}}), true);
-        t.equal(f({zoom: 0}, {properties: {foo: undefined}}), false);
+        // t.equal(f({zoom: 0}, {properties: {foo: undefined}}), false);
         t.end();
     });
 
@@ -403,7 +442,7 @@ test('filter', (t) => {
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: '0'}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: null}}), false);
-        t.equal(f({zoom: 0}, {properties: {foo: undefined}}), true);
+        // t.equal(f({zoom: 0}, {properties: {foo: undefined}}), true);
         t.end();
     });
 
@@ -505,6 +544,4 @@ test('filter', (t) => {
         t.equal(f({zoom: 0}, {properties: {}}), true);
         t.end();
     });
-
-    t.end();
-});
+}

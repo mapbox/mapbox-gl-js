@@ -2,6 +2,7 @@
 
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
+import type ImageAtlas from '../render/image_atlas';
 import type {OverscaledTileID} from './tile_id';
 import type {Bucket} from '../data/bucket';
 import type FeatureIndex from '../data/feature_index';
@@ -33,7 +34,7 @@ export type WorkerDEMTileParameters = TileParameters & {
 
 export type WorkerTileResult = {
     buckets: Array<Bucket>,
-    iconAtlasImage: RGBAImage,
+    imageAtlas: ImageAtlas,
     glyphAtlasImage: AlphaImage,
     featureIndex: FeatureIndex,
     collisionBoxArray: CollisionBoxArray,
