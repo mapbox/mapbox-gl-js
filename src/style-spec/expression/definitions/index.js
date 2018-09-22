@@ -271,7 +271,7 @@ CompoundExpression.register(expressions, {
     'log10': [
         NumberType,
         [NumberType],
-        (ctx, [n]) => Math.log10(n.evaluate(ctx))
+        (ctx, [n]) => Math.log(n.evaluate(ctx)) / Math.LN10
     ],
     'ln': [
         NumberType,
@@ -281,7 +281,7 @@ CompoundExpression.register(expressions, {
     'log2': [
         NumberType,
         [NumberType],
-        (ctx, [n]) => Math.log2(n.evaluate(ctx))
+        (ctx, [n]) => Math.log(n.evaluate(ctx)) / Math.LN2
     ],
     'sin': [
         NumberType,
