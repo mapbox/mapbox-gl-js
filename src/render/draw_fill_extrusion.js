@@ -70,10 +70,10 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             layer.paint.get('fill-extrusion-translate'),
             layer.paint.get('fill-extrusion-translate-anchor'));
 
-        const verticalGradientBoolean = +layer.paint.get('fill-extrusion-vertical-gradient');
+        const shouldUseVerticalGradient = +layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, verticalGradientBoolean, coord, crossfade, tile) :
-            fillExtrusionUniformValues(matrix, painter, verticalGradientBoolean);
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, coord, crossfade, tile) :
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient);
 
 
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,

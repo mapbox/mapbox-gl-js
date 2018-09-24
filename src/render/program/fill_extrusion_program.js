@@ -25,7 +25,7 @@ export type FillExtrusionUniformsType = {|
     'u_lightpos': Uniform3f,
     'u_lightintensity': Uniform1f,
     'u_lightcolor': Uniform3f,
-    'u_vertical_gradient': Uniform1f
+    'u_vertical_gradient': Uniform1i
 |};
 
 export type FillExtrusionPatternUniformsType = {|
@@ -34,7 +34,7 @@ export type FillExtrusionPatternUniformsType = {|
     'u_lightintensity': Uniform1f,
     'u_lightcolor': Uniform3f,
     'u_height_factor': Uniform1f,
-    'u_vertical_gradient': Uniform1f,
+    'u_vertical_gradient': Uniform1i,
     // pattern uniforms:
     'u_texsize': Uniform2f,
     'u_image': Uniform1i,
@@ -56,7 +56,7 @@ const fillExtrusionUniforms = (context: Context, locations: UniformLocations): F
     'u_lightpos': new Uniform3f(context, locations.u_lightpos),
     'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
     'u_lightcolor': new Uniform3f(context, locations.u_lightcolor),
-    'u_vertical_gradient': new Uniform1f(context, locations.u_vertical_gradient)
+    'u_vertical_gradient': new Uniform1i(context, locations.u_vertical_gradient)
 });
 
 const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocations): FillExtrusionPatternUniformsType => ({
@@ -64,7 +64,7 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_lightpos': new Uniform3f(context, locations.u_lightpos),
     'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
     'u_lightcolor': new Uniform3f(context, locations.u_lightcolor),
-    'u_vertical_gradient': new Uniform1f(context, locations.u_vertical_gradient),
+    'u_vertical_gradient': new Uniform1i(context, locations.u_vertical_gradient),
     'u_height_factor': new Uniform1f(context, locations.u_height_factor),
     // pattern uniforms
     'u_image': new Uniform1i(context, locations.u_image),
