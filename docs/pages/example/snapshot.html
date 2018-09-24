@@ -1,0 +1,151 @@
+<style>
+  html, body {
+    margin: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    font: sans-serif;
+    height: 100%;
+  }
+
+  #container {
+    display: flex;
+    height: 100%;
+  }
+
+  #container > * {
+    flex: 1;
+    height: 100%;
+  }
+
+  #map {
+    position: relative;
+    margin-right: 5px;
+  }
+
+  #instructions {
+    background: rgba(100,100,100, 0.4);
+    color: white;
+    font-family: "Open Sans", sans-serif;
+    font-size: 14px;
+    line-height: 1.25;
+    margin: 5px 10px;
+    padding: 10px;
+    position: absolute;
+    top: 10px;
+  }
+
+  #snapshot {
+    background-color: rgba(0,0,255,0.5);
+  }
+</style>
+    <div id="container">
+      <div id="map"></div>
+      <div>
+        <h3 id="instructions">Drag and pan the map on the left to change the snapshot area, then click to generate a static image on the right.</h3>
+        <canvas id='snapshot'></canvas>
+      </div>
+    </div>
+    </div>
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    center: {
+        lat: 37.4036,
+        lng: -122.0325
+    },
+    zoom: 10,
+    preserveDrawingBuffer: true // required for the map's canvas to be exported to a PNG
+});
+
+var snapshot = document.querySelector('#snapshot');
+var ctx = snapshot.getContext('2d');
+// scale factor to use for sizing canvas elements based on device pixel ratio
+var scale = window.devicePixelRatio;
+
+// draw snapshot canvas
+window.addEventListener('load', function() {
+    var halfWidth = window.innerWidth / 2 * scale;
+    var windowHeight = window.innerHeight * scale;
+
+    // resize canvas after iframe is loaded and account for device pixel ratio
+    snapshot.height = windowHeight;
+    snapshot.width = halfWidth;
+}, false);
+
+map.on('click', function() {
+    var png = map.getCanvas().toDataURL();
+    var copy = new Image();
+    copy.src = png;
+    copy.onload = function() {
+        ctx.drawImage(copy, 0, 0);
+        logo();
+        textbox();
+    };
+});
+
+function textbox() {
+    // OpenStreetMap and Mapbox attribution are required by
+    // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
+
+    // set text sizing
+    var text = '© Mapbox © OpenStreetMap';
+    if (snapshot.width < 300) text = '© OSM';
+    var fontsize = 14;
+    var height = (fontsize + 6) * scale;
+    var width = ((text.length + 3) / fontsize * 100) * scale;
+
+    // draw attribution to canvas
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillRect(snapshot.width - width, snapshot.height - height, width, height);
+    ctx.font = (fontsize * scale) + 'px Arial';
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(text, snapshot.width - width + 5, snapshot.height - 5);
+}
+
+function logo() {
+    // OpenStreetMap and Mapbox attribution are required by
+    // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
+    var img = new Image();
+
+    // use the Mapbox logo within the LogoControl as the source image
+    var a = document.querySelector('a.mapboxgl-ctrl-logo');
+    var style = window.getComputedStyle(a, false);
+
+    // remove "url('')" from the background-image property
+    var dataURL = style.backgroundImage.slice(5, -2);
+
+    // logo size
+    var logoHeight = style.height.replace('px', '');
+    var logoWidth = style.width.replace('px', '');
+    var logoSVG = firefoxBugFix(dataURL, logoHeight * scale, logoWidth * scale);
+
+    var logo = {'image': logoSVG, 'height': logoHeight * scale, 'width': logoWidth * scale};
+    img.src = logo.image;
+
+    // draw the logo in img (when ready)
+    img.onload = function() {
+        ctx.drawImage(img, 5, snapshot.height - logo.height - 5, logo.width, logo.height);
+    };
+}
+
+
+function firefoxBugFix(dataURL, height, width) {
+    // Firefox requires SVG to have height and width specified
+    // in the root SVG object when drawing to canvas
+
+    // get raw SVG markup by removing the data type, charset, and escaped quotes
+    var svg = unescape(dataURL.replace('data:image/svg+xml;charset=utf-8,', '').replace(/\\'/g, '"'));
+    var newHeader = "height= \"" + height + "px\" width= \"" + width + "px\"";
+    var newSvg = svg.replace('<svg', '<svg ' + newHeader);
+    var newBase64 = btoa(newSvg);
+    var newDataURL = 'data:image/svg+xml;base64,' + newBase64;
+
+    return newDataURL;
+}
+
+
+</script>
