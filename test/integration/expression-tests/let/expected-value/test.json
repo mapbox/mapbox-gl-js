@@ -12,27 +12,27 @@
         "interpolate",
         ["linear"],
         ["var", "density"],
-        274,
-        "#edf8e9",
-        1551,
-        "#006d2c"
+        1,
+        "#000000",
+        100,
+        "#ffffff"
       ],
       10,
       [
         "interpolate",
         ["linear"],
         ["var", "density"],
-        274,
-        "#eff3ff",
-        1551,
-        "#08519c"
+        1,
+        "#000000",
+        100,
+        "#ffffff"
       ]
     ]
   ],
   "propertySpec": {
     "type": "color"
   },
-  "inputs": [[{"zoom": 10}, {"properties": {"population": 100, "sq-km": 1000}}]],
+  "inputs": [[{"zoom": 9}, {"properties": {"population": 100, "sq-km": 10}}]],
   "expected": {
     "compiled": {
       "result": "success",
@@ -40,11 +40,13 @@
       "isZoomConstant": false,
       "type": "color"
     },
-    "outputs": [0.9372549019607843,0.9529411764705882,1,1],
+    "outputs": [
+      [0.09090909090909091,0.09090909090909091,0.09090909090909091,1]
+    ],
     "serialized": [
       "let",
       "density",
-      ["/", ["get", "population"], ["get", "sq-km"]],
+      ["/", ["number", ["get", "population"]], ["number", ["get", "sq-km"]]],
       [
         "interpolate",
         ["linear"],
@@ -54,20 +56,44 @@
           "interpolate",
           ["linear"],
           ["var", "density"],
-          274,
-          "#edf8e9",
-          1551,
-          "#006d2c"
+          1,
+          [
+            "rgba",
+            0,
+            0,
+            0,
+            1
+          ],
+          100,
+          [
+            "rgba",
+            255,
+            255,
+            255,
+            1
+          ]
         ],
         10,
         [
           "interpolate",
           ["linear"],
           ["var", "density"],
-          274,
-          "#eff3ff",
-          1551,
-          "#08519c"
+          1,
+          [
+            "rgba",
+            0,
+            0,
+            0,
+            1
+          ],
+          100,
+          [
+            "rgba",
+            255,
+            255,
+            255,
+            1
+          ]
         ]
       ]
     ]
