@@ -158,15 +158,11 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         } else if (imgData) {
             const img: HTMLImageElement = new window.Image();
             const URL = window.URL || window.webkitURL;
-            console.log('get image', imgData);
             img.onload = () => {
                 callback(null, img);
                 URL.revokeObjectURL(img.src);
             };
-            img.onerror = () => {
-                const err = new Error('Image sources cannot use SVG files');
-                callback(err);
-            };
+            img.onerror = () => callback(new Error('Image sources cannot use SVG files'));
             const blob: Blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
             (img: any).cacheControl = imgData.cacheControl;
             (img: any).expires = imgData.expires;
