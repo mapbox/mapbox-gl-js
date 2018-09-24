@@ -162,6 +162,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
                 callback(null, img);
                 URL.revokeObjectURL(img.src);
             };
+            img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
             const blob: Blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
             (img: any).cacheControl = imgData.cacheControl;
             (img: any).expires = imgData.expires;
