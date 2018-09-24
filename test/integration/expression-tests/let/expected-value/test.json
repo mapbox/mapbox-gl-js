@@ -6,38 +6,23 @@
     [
       "interpolate",
       ["linear"],
-      ["zoom"],
-      8,
-      [
-        "interpolate",
-        ["linear"],
-        ["var", "density"],
-        1,
-        "#000000",
-        100,
-        "#ffffff"
-      ],
-      10,
-      [
-        "interpolate",
-        ["linear"],
-        ["var", "density"],
-        1,
-        "#000000",
-        100,
-        "#ffffff"
-      ]
+      ["var", "density"],
+      1,
+      "#000000",
+      100,
+      "#ffffff"
     ]
   ],
   "propertySpec": {
     "type": "color"
   },
-  "inputs": [[{"zoom": 9}, {"properties": {"population": 100, "sq-km": 10}}]],
+  "description": "let should preserve expected type for child expressions. If the expected 'color' type in this test were not preserved, it would not get passed into the interpolation and the literal strings wouldn't automatically coerce to the 'color' type",
+  "inputs": [[{}, {"properties": {"population": 100, "sq-km": 10}}]],
   "expected": {
     "compiled": {
       "result": "success",
       "isFeatureConstant": false,
-      "isZoomConstant": false,
+      "isZoomConstant": true,
       "type": "color"
     },
     "outputs": [
@@ -50,50 +35,22 @@
       [
         "interpolate",
         ["linear"],
-        ["zoom"],
-        8,
+        ["var", "density"],
+        1,
         [
-          "interpolate",
-          ["linear"],
-          ["var", "density"],
-          1,
-          [
-            "rgba",
-            0,
-            0,
-            0,
-            1
-          ],
-          100,
-          [
-            "rgba",
-            255,
-            255,
-            255,
-            1
-          ]
+          "rgba",
+          0,
+          0,
+          0,
+          1
         ],
-        10,
+        100,
         [
-          "interpolate",
-          ["linear"],
-          ["var", "density"],
-          1,
-          [
-            "rgba",
-            0,
-            0,
-            0,
-            1
-          ],
-          100,
-          [
-            "rgba",
-            255,
-            255,
-            255,
-            1
-          ]
+          "rgba",
+          255,
+          255,
+          255,
+          1
         ]
       ]
     ]
