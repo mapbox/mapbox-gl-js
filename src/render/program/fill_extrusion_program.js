@@ -85,7 +85,7 @@ const extrusionTextureUniforms = (context: Context, locations: UniformLocations)
 const fillExtrusionUniformValues = (
     matrix: Float32Array,
     painter: Painter,
-    verticalGradient: number,
+    verticalGradient: number
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
