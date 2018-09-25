@@ -65,8 +65,8 @@ void main() {
     if (normal.y != 0.0) {
         // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
         // and otherwise calculates the gradient based on base + height
-        directional *= ((
-            (-1.0 + u_vertical_gradient) * -0.84) +
+        directional *= (
+            (1.0 - u_vertical_gradient) +
             (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
     }
 
