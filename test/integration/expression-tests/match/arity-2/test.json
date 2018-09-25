@@ -1,12 +1,30 @@
 {
-  "expression": ["match", "x", "y"],
-  "inputs": [[{}, {}]],
+  "expression": ["match", ["get", "x"], [1, 2]],
+  "inputs": [
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": 2}}],
+    [{}, {"properties": {"x": "1"}}]
+  ],
   "expected": {
     "compiled": {
-      "result": "error",
-      "errors": [
-        {"key": "", "error": "Expected at least 4 arguments, but found only 2."}
-      ]
-    }
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [
+      false,
+      true,
+      true,
+      false
+    ],
+    "serialized": [
+      "match",
+      ["get", "x"],
+      [1, 2],
+      true,
+      false
+    ]
   }
 }

@@ -152,6 +152,12 @@ const types = {
             'label_n: InputType | [InputType, InputType, ...], output_n: OutputType, ...',
             'default: OutputType'
         ]
+    }, {
+        type: 'boolean',
+        parameters: [
+            'input: InputType (number or string)',
+            'label: InputType'
+        ]
     }],
     var: [{
         type: 'the type of the bound expression',
