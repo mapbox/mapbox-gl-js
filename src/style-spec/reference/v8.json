@@ -3755,6 +3755,22 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "fill-extrusion-vertical-gradient": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Whether to apply a vertical gradient to the sides of a fill-extrusion layer. If true, sides will be shaded slightly darker farther down.",
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.50.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": ["zoom"]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_line": {
