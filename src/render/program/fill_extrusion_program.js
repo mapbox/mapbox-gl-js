@@ -85,7 +85,7 @@ const extrusionTextureUniforms = (context: Context, locations: UniformLocations)
 const fillExtrusionUniformValues = (
     matrix: Float32Array,
     painter: Painter,
-    verticalGradient: number
+    shouldUseVerticalGradient: boolean
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -103,19 +103,19 @@ const fillExtrusionUniformValues = (
         'u_lightpos': lightPos,
         'u_lightintensity': light.properties.get('intensity'),
         'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b],
-        'u_vertical_gradient': verticalGradient
+        'u_vertical_gradient': +shouldUseVerticalGradient
     };
 };
 
 const fillExtrusionPatternUniformValues = (
     matrix: Float32Array,
     painter: Painter,
-    verticalGradient: number,
+    shouldUseVerticalGradient: boolean,
     coord: OverscaledTileID,
     crossfade: CrossfadeParameters,
     tile: Tile
 ): UniformValues<FillExtrusionPatternUniformsType> => {
-    return extend(fillExtrusionUniformValues(matrix, painter, verticalGradient),
+    return extend(fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient),
         patternUniformValues(crossfade, painter, tile),
         {
             'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
