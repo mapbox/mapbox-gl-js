@@ -77,36 +77,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             gradient ? lineGradientUniformValues(painter, tile, layer) :
             lineUniformValues(painter, tile, layer);
 
-<<<<<<< HEAD
         if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
-=======
-            const widthA = posA.width * dasharray.fromScale;
-            const widthB = posB.width * dasharray.toScale;
-
-            gl.uniform2f(program.uniforms.u_patternscale_a, tileRatio / widthA, -posA.height / 2);
-            gl.uniform2f(program.uniforms.u_patternscale_b, tileRatio / widthB, -posB.height / 2);
-            gl.uniform1f(program.uniforms.u_sdfgamma, painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * config.DEVICE_PIXEL_RATIO) / 2);
-
-        } else if (image) {
-            imagePosA = painter.imageManager.getPattern(image.from);
-            imagePosB = painter.imageManager.getPattern(image.to);
-            if (!imagePosA || !imagePosB) return;
-
-            gl.uniform2f(program.uniforms.u_pattern_size_a, imagePosA.displaySize[0] * image.fromScale / tileRatio, imagePosA.displaySize[1]);
-            gl.uniform2f(program.uniforms.u_pattern_size_b, imagePosB.displaySize[0] * image.toScale / tileRatio, imagePosB.displaySize[1]);
-
-            const {width, height} = painter.imageManager.getPixelSize();
-            gl.uniform2fv(program.uniforms.u_texsize, [width, height]);
-        }
-
-        gl.uniform2f(program.uniforms.u_gl_units_to_pixels, 1 / painter.transform.pixelsToGLUnits[0], 1 / painter.transform.pixelsToGLUnits[1]);
-    }
-
-    if (programChanged) {
-
-        if (dasharray) {
-            gl.uniform1i(program.uniforms.u_image, 0);
->>>>>>> 3ef779542... Add devicePixelRatio option to config
             context.activeTexture.set(gl.TEXTURE0);
             painter.lineAtlas.bind(context);
         } else if (image) {

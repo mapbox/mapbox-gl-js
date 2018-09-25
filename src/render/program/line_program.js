@@ -9,7 +9,7 @@ import {
 } from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 import { extend } from '../../util/util';
-import browser from '../../util/browser';
+import config from '../../util/config';
 
 import type Context from '../../gl/context';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
@@ -134,7 +134,7 @@ const linePatternUniformValues = (
         'u_ratio': 1 / pixelsToTileUnits(tile, 1, transform.zoom),
         'u_image': 0,
         // this assumes all images in the icon atlas texture have the same pixel ratio
-        'u_scale': [browser.devicePixelRatio, tileZoomRatio, crossfade.fromScale, crossfade.toScale],
+        'u_scale': [config.DEVICE_PIXEL_RATIO, tileZoomRatio, crossfade.fromScale, crossfade.toScale],
         'u_fade': crossfade.t,
         'u_gl_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
@@ -165,7 +165,7 @@ const lineSDFUniformValues = (
     return extend(lineUniformValues(painter, tile, layer), {
         'u_patternscale_a': [tileRatio / widthA, -posA.height / 2],
         'u_patternscale_b': [tileRatio / widthB, -posB.height / 2],
-        'u_sdfgamma': lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2,
+        'u_sdfgamma': lineAtlas.width / (Math.min(widthA, widthB) * 256 * config.DEVICE_PIXEL_RATIO) / 2,
         'u_image': 0,
         'u_tex_y_a': posA.y,
         'u_tex_y_b': posB.y,

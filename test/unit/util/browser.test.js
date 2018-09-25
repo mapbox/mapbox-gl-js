@@ -25,7 +25,7 @@ test('browser', (t) => {
     });
 
     t.test('devicePixelRatio', (t) => {
-        t.equal(typeof config.DEVICE_PIXEL_RATIO, 'number');
+        t.equal(typeof browser.DEVICE_PIXEL_RATIO, 'number');
         t.end();
     });
 
