@@ -1,6 +1,5 @@
 import { test } from 'mapbox-gl-js-test';
 import browser from '../../../src/util/browser';
-import config from '../../../src/util/config';
 
 test('browser', (t) => {
     t.test('frame', (t) => {
@@ -25,7 +24,7 @@ test('browser', (t) => {
     });
 
     t.test('devicePixelRatio', (t) => {
-        t.equal(typeof browser.DEVICE_PIXEL_RATIO, 'number');
+        t.equal(typeof browser.devicePixelRatio, 'number');
         t.end();
     });
 
