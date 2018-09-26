@@ -52,17 +52,12 @@ export class StyleExpression {
     constructor(expression: Expression, propertySpec: StylePropertySpecification) {
         this.expression = expression;
         this._warningHistory = {};
+        this._evaluator = new EvaluationContext();
         this._defaultValue = getDefaultValue(propertySpec);
-        if (propertySpec.type === 'enum') {
-            this._enumValues = propertySpec.values;
-        }
+        this._enumValues = propertySpec.type === 'enum' ? propertySpec.values : {};
     }
 
     evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
-        if (!this._evaluator) {
-            this._evaluator = new EvaluationContext();
-        }
-
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
@@ -71,13 +66,9 @@ export class StyleExpression {
     }
 
     evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
-        if (!this._evaluator) {
-            this._evaluator = new EvaluationContext();
-        }
-
         this._evaluator.globals = globals;
-        this._evaluator.feature = feature;
-        this._evaluator.featureState = featureState;
+        if (feature !== undefined) this._evaluator.feature = feature;
+        if (featureState !== undefined) this._evaluator.featureState = featureState;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
