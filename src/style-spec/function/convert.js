@@ -5,6 +5,10 @@ import type {StylePropertySpecification} from '../style-spec';
 
 export default convertFunction;
 
+function convertLiteral(value) {
+    return typeof value === 'object' ? ['literal', value] : value;
+}
+
 function convertFunction(parameters: any, propertySpec: StylePropertySpecification) {
     let stops = parameters.stops;
     if (!stops) {
@@ -20,7 +24,7 @@ function convertFunction(parameters: any, propertySpec: StylePropertySpecificati
         if (!featureDependent && propertySpec.tokens && typeof stop[1] === 'string') {
             return [stop[0], convertTokenString(stop[1])];
         }
-        return [stop[0], ['literal', stop[1]]];
+        return [stop[0], convertLiteral(stop[1])];
     });
 
     if (zoomAndFeatureDependent) {
@@ -48,7 +52,7 @@ function convertIdentityFunction(parameters, propertySpec): Array<mixed> {
             parameters.default
         ];
     } else {
-        const expression = [propertySpec.type === 'color' ? 'to-color' : propertySpec.type, get, ['literal', parameters.default]];
+        const expression = [propertySpec.type === 'color' ? 'to-color' : propertySpec.type, get, convertLiteral(parameters.default)];
         if (propertySpec.type === 'array') {
             expression.splice(1, 0, propertySpec.value, propertySpec.length || null);
         }
@@ -126,14 +130,14 @@ function convertPropertyFunction(parameters, propertySpec, stops) {
         for (const stop of stops) {
             expression.push(['==', get, stop[0]], stop[1]);
         }
-        expression.push(['literal', coalesce(parameters.default, propertySpec.default)]);
+        expression.push(convertLiteral(coalesce(parameters.default, propertySpec.default)));
         return expression;
     } else if (type === 'categorical') {
         const expression = ['match', get];
         for (const stop of stops) {
             appendStopPair(expression, stop[0], stop[1], false);
         }
-        expression.push(['literal', coalesce(parameters.default, propertySpec.default)]);
+        expression.push(convertLiteral(coalesce(parameters.default, propertySpec.default)));
         return expression;
     } else if (type === 'interval') {
         const expression = ['step', ['number', get]];
@@ -145,7 +149,7 @@ function convertPropertyFunction(parameters, propertySpec, stops) {
             'case',
             ['==', ['typeof', get], 'number'],
             expression,
-            ['literal', parameters.default]
+            convertLiteral(parameters.default)
         ];
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
@@ -157,7 +161,7 @@ function convertPropertyFunction(parameters, propertySpec, stops) {
             'case',
             ['==', ['typeof', get], 'number'],
             expression,
-            ['literal', parameters.default]
+            convertLiteral(parameters.default)
         ];
     } else {
         throw new Error(`Unknown property function type ${type}`);
