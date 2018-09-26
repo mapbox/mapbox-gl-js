@@ -67,8 +67,8 @@ export class StyleExpression {
 
     evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
         this._evaluator.globals = globals;
-        if (feature !== undefined) this._evaluator.feature = feature;
-        if (featureState !== undefined) this._evaluator.featureState = featureState;
+        this._evaluator.feature = feature || null;
+        this._evaluator.featureState = featureState || null;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
