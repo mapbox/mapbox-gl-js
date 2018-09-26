@@ -112,6 +112,28 @@ class ImageSource extends Evented implements Source {
         });
     }
 
+    updateImage(options) {
+        if (!this.image || !options.url) {
+            return;
+        }
+
+        var updateCoords = Boolean(options.coordinates);
+
+        getImage(this.map._transformRequest(options.url, ResourceType.Image), (err, image) => {
+            if (err) {
+                this.fire(new ErrorEvent(err));
+            } else if (image) {
+                this.image = browser.getImageData(image);
+                this.texture = null;
+                this.fire(new Event('data', {dataType:'source', sourceDataType: 'content'}));
+            }
+
+            if (updateCoords && this.map) {
+                this.setCoordinates(options.coordinates);
+            }
+        });
+    }
+
     _finishLoading() {
         if (this.map) {
             this.setCoordinates(this.coordinates);
