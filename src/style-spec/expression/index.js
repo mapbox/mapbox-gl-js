@@ -47,14 +47,14 @@ export class StyleExpression {
     _evaluator: EvaluationContext;
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
-    _enumValues: {[string]: any};
+    _enumValues: ?{[string]: any};
 
     constructor(expression: Expression, propertySpec: StylePropertySpecification) {
         this.expression = expression;
         this._warningHistory = {};
         this._evaluator = new EvaluationContext();
         this._defaultValue = getDefaultValue(propertySpec);
-        this._enumValues = propertySpec.type === 'enum' ? propertySpec.values : {};
+        this._enumValues = propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
     evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
