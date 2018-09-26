@@ -28,11 +28,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         }
     }
 
-    // console.log('window.devicePixelRatio before', window.devicePixelRatio);
-    // console.log('config.DEVICE_PIXEL_RATIO', config.DEVICE_PIXEL_RATIO);
-    // console.log('options.pixelRatio', options.pixelRatio);
     config.DEVICE_PIXEL_RATIO = window.devicePixelRatio = options.pixelRatio;
-    // console.log('window.devicePixelRatio', window.devicePixelRatio);
 
     if (options.addFakeCanvas) {
         const fakeCanvas = createFakeCanvas(window.document, options.addFakeCanvas.id, options.addFakeCanvas.image);

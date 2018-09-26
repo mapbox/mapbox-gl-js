@@ -7,7 +7,7 @@ type Config = {|
   EVENTS_URL: string,
   REQUIRE_ACCESS_TOKEN: boolean,
   ACCESS_TOKEN: ?string,
-  DEVICE_PIXEL_RATIO: number,
+  DEVICE_PIXEL_RATIO: number
 |};
 
 const config: Config = {
@@ -21,7 +21,7 @@ const config: Config = {
     },
     REQUIRE_ACCESS_TOKEN: true,
     ACCESS_TOKEN: null,
-    DEVICE_PIXEL_RATIO: browser.devicePixelRatio,
+    DEVICE_PIXEL_RATIO: browser.devicePixelRatio
 };
 
 export default config;
