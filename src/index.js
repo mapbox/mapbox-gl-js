@@ -56,16 +56,8 @@ const exported = {
         config.ACCESS_TOKEN = token;
     },
 
-    get workerCount() {
-        return WorkerPool.workerCount;
-    },
-
-    set workerCount(count: number) {
-        WorkerPool.workerCount = count;
-    },
-
     /**
-     * Gets and sets map's pixel ratio
+     * Gets and sets the map's [pixel ratio](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio)
      *
      * @var {number} devicePixelRatio
      * @example
@@ -77,6 +69,14 @@ const exported = {
 
     set devicePixelRatio(devicePixelRatio: number) {
         config.DEVICE_PIXEL_RATIO = devicePixelRatio;
+    },
+
+    get workerCount() {
+        return WorkerPool.workerCount;
+    },
+
+    set workerCount(count: number) {
+        WorkerPool.workerCount = count;
     },
 
     workerUrl: ''

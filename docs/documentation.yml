@@ -1,6 +1,7 @@
 toc:
   - Map
   - accessToken
+  - devicePixelRatio
   - supported
   - version
   - setRTLTextPlugin
