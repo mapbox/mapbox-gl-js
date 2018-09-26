@@ -1,3 +1,8 @@
+## 13.2.1
+
+## 🐛 Bug fixes
+* Fix bug in which some expression output values were mistakenly being wrapped in `literal` expressions ([#7336](https://github.com/mapbox/mapbox-gl-js/issues/7336), fixed by [#7337](https://github.com/mapbox/mapbox-gl-js/pull/7337))
+
 ## 13.2.0
 
 ## 🐛 Bug fixes
