@@ -44,7 +44,7 @@ import type {
  *    ]
  * });
  *
- * // update
+ * // update coordinates
  * var mySource = map.getSource('some id');
  * mySource.setCoordinates([
  *     [-76.54335737228394, 39.18579907229748],
@@ -52,7 +52,24 @@ import type {
  *     [-76.5295386314392, 39.17683392507606],
  *     [-76.54520273208618, 39.17876344106642]
  * ]);
- *
+ * 
+ * // update url. 
+ * // Note: this is most effective if your layer has the `raster-fade-duration` paint property set to 0.
+ * mySource.updateImage({
+ *    url: 'https://www.mapbox.com/images/bar.png',
+ * })
+ * 
+ * // update url and coordinates simultaneously
+ * mySource.updateImage({
+ *    url: 'https://www.mapbox.com/images/bar.png',
+ *    coordinates: [
+ *        [-76.54335737228394, 39.18579907229748],
+ *        [-76.52803659439087, 39.1838364847587],
+ *        [-76.5295386314392, 39.17683392507606],
+ *        [-76.54520273208618, 39.17876344106642]
+ *    ]
+ * })
+ * 
  * map.removeSource('some id');  // remove
  * @see [Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  */
@@ -111,10 +128,22 @@ class ImageSource extends Evented implements Source {
             }
         });
     }
-
+    
+    /**
+     * Updates the image URL and, optionally, the coordinates. To avoid having the image flash after changing,
+     * set the `raster-fade-duration` paint property on the raster layer to 0.
+     *
+     * @param {Object} options
+     * @param {string} [options.url] Required image URL.
+     * @param {Array<Array<number>>} [options.coordinates] Four geographical coordinates,
+     *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
+     *   The coordinates start at the top left corner of the image and proceed in clockwise order.
+     *   They do not have to represent a rectangle.
+     * @returns {ImageSource} this
+     */
     updateImage(options) {
         if (!this.image || !options.url) {
-            return;
+            return this;
         }
 
         var updateCoords = Boolean(options.coordinates);
@@ -132,6 +161,8 @@ class ImageSource extends Evented implements Source {
                 this.setCoordinates(options.coordinates);
             }
         });
+
+        return this;
     }
 
     _finishLoading() {
