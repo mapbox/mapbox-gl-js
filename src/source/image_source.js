@@ -53,12 +53,6 @@ import type {
  *     [-76.54520273208618, 39.17876344106642]
  * ]);
  * 
- * // update url. 
- * // Note: this is most effective if your layer has the `raster-fade-duration` paint property set to 0.
- * mySource.updateImage({
- *    url: 'https://www.mapbox.com/images/bar.png',
- * })
- * 
  * // update url and coordinates simultaneously
  * mySource.updateImage({
  *    url: 'https://www.mapbox.com/images/bar.png',
@@ -114,7 +108,7 @@ class ImageSource extends Evented implements Source {
         this.options = options;
     }
 
-    load() {
+    load(newCoordinates?: Array<Array<number>>, successCallback?: () => void) {
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this.url = this.options.url;
@@ -124,6 +118,12 @@ class ImageSource extends Evented implements Source {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
                 this.image = browser.getImageData(image);
+                if (newCoordinates) {
+                    this.coordinates = newCoordinates;
+                }
+                if (successCallback) {
+                    successCallback();
+                }
                 this._finishLoading();
             }
         });
@@ -141,27 +141,12 @@ class ImageSource extends Evented implements Source {
      *   They do not have to represent a rectangle.
      * @returns {ImageSource} this
      */
-    updateImage(options) {
+    updateImage(options: {url: string, coordinates?: Array<Array<number>>}) {
         if (!this.image || !options.url) {
             return this;
         }
-
-        var updateCoords = Boolean(options.coordinates);
-
-        getImage(this.map._transformRequest(options.url, ResourceType.Image), (err, image) => {
-            if (err) {
-                this.fire(new ErrorEvent(err));
-            } else if (image) {
-                this.image = browser.getImageData(image);
-                this.texture = null;
-                this.fire(new Event('data', {dataType:'source', sourceDataType: 'content'}));
-            }
-
-            if (updateCoords && this.map) {
-                this.setCoordinates(options.coordinates);
-            }
-        });
-
+        this.options.url = options.url;
+        this.load(options.coordinates, () => this.texture = null);
         return this;
     }
 
