@@ -27,6 +27,8 @@ import type {
     VideoSourceSpecification
 } from '../style-spec/types';
 
+type Coordinates = [[number, number], [number, number], [number, number], [number, number]];
+
 /**
  * A data source containing an image.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
@@ -75,12 +77,12 @@ class ImageSource extends Evented implements Source {
     tileSize: number;
     url: string;
 
-    coordinates: [[number, number], [number, number], [number, number], [number, number]];
+    coordinates: Coordinates;
     tiles: {[string]: Tile};
     options: any;
     dispatcher: Dispatcher;
     map: Map;
-    texture: Texture;
+    texture: Texture | null;
     image: ImageData;
     centerCoord: Coordinate;
     tileID: CanonicalTileID;
@@ -108,7 +110,7 @@ class ImageSource extends Evented implements Source {
         this.options = options;
     }
 
-    load(newCoordinates?: Array<Array<number>>, successCallback?: () => void) {
+    load(newCoordinates?: Coordinates, successCallback?: () => void) {
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this.url = this.options.url;
@@ -141,7 +143,7 @@ class ImageSource extends Evented implements Source {
      *   They do not have to represent a rectangle.
      * @returns {ImageSource} this
      */
-    updateImage(options: {url: string, coordinates?: Array<Array<number>>}) {
+    updateImage(options: {url: string, coordinates?: Coordinates}) {
         if (!this.image || !options.url) {
             return this;
         }
@@ -171,7 +173,7 @@ class ImageSource extends Evented implements Source {
      *   They do not have to represent a rectangle.
      * @returns {ImageSource} this
      */
-    setCoordinates(coordinates: [[number, number], [number, number], [number, number], [number, number]]) {
+    setCoordinates(coordinates: Coordinates) {
         this.coordinates = coordinates;
 
         // Calculate which mercator tile is suitable for rendering the video in
