@@ -780,6 +780,35 @@ class Camera extends Evented {
         this.fire(new Event('moveend', eventData));
     }
 
+    captureVideo() {
+      const stream = this._canvas.captureStream();
+      const recordedChunks = [];
+      this._mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp9'});
+
+      this._mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, {type: 'video/webm;codecs=vp9'});
+        const url = window.URL.createObjectURL(blob);
+        const a = window.document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'test.webm';
+        window.document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          window.document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      };
+
+      this._mediaRecorder.ondataavailable = () => {
+        if (event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      this._mediaRecorder.start();
+    }
+
     /**
      * Changes any combination of center, zoom, bearing, and pitch, animating the transition along a curve that
      * evokes flight. The animation seamlessly incorporates zooming and panning to help
@@ -846,50 +875,7 @@ class Camera extends Evented {
 
         this.stop();
 
-        const stream = this._canvas.captureStream();
-        let mediaStreamOptions = {mimeType: 'video/webm'};
-        this._recordedBlobs = [];
-        try {
-          this._mediaRecorder = new MediaRecorder(stream, mediaStreamOptions);
-        } catch (e0) {
-          console.log('Unable to create MediaRecorder with options Object: ', e0);
-          try {
-            mediaStreamOptions = {mimeType: 'video/webm,codecs=vp9'};
-            this._mediaRecorder = new MediaRecorder(stream, mediaStreamOptions);
-          } catch (e1) {
-            console.log('Unable to create MediaRecorder with options Object: ', e1);
-            try {
-              mediaStreamOptions = 'video/vp8'; // Chrome 47
-              this._mediaRecorder = new MediaRecorder(stream, mediaStreamOptions);
-            } catch (e2) {
-              alert('MediaRecorder is not supported by this browser.\n\n' +
-                'Try Firefox 29 or later, or Chrome 47 or later, ' +
-                'with Enable experimental Web Platform features enabled from chrome://flags.');
-              console.error('Exception while creating MediaRecorder:', e2);
-              return;
-            }
-          }
-        }
-
-        this._mediaRecorder.onstop = () => {
-          console.log('Recorder stopped: ', event);
-          const blob = new Blob(this._recordedBlobs, {type: 'video/webm'});
-          const url = window.URL.createObjectURL(blob);
-          // const a = window.document.createElement('a');
-          // a.style.display = 'none';
-          // a.href = url;
-          // a.download = 'test.webm';
-          // document.body.appendChild(a);
-          // a.click();
-        };
-
-        this._mediaRecorder.ondataavailable = (event) => {
-          if (event.data && event.data.size > 0) {
-            console.log('event', event);
-            this._recordedBlobs.push(event.data);
-          }
-        };
-        this._mediaRecorder.start(); // collect 100ms of data
+        this.captureVideo();
 
         options = extend({
             offset: [0, 0],
