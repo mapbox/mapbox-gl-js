@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+ <html>
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
@@ -18,66 +18,34 @@
 <script src='/debug/access_token_generated.js'></script>
 <script>
 
-// Source: https://radar.weather.gov/ridge/Conus/RadarImg/southeast_radaronly.gfw
-const origin = {
-    lng: -90.24006072802854, 
-    lat: 36.928147474567794
-};
-
-const size = {
-    width: 840,
-    height: 800,
-}
-
-const opposite = {
-    lng: origin.lng + size.width * 0.017971305190311,
-    lat: origin.lat + size.height * -0.017971305190311,
-}
-
-const center = {
-    lng: origin.lng + (opposite.lng - origin.lng) / 2,
-    lat: origin.lat + (opposite.lat - origin.lat) / 2,
-}
-
 const map = new mapboxgl.Map({
     container: 'map',
     minZoom: 1,
     zoom: 6,
-    center: [center.lng, center.lat],
-    style: 'mapbox://styles/mapbox/streets-v10',
+    center: [-76, 43.5],
+    style: 'mapbox://styles/mapbox/dark-v9',
     hash: false
 });
 
-const path = "/test/integration/image/";
-const images = [
-    "southeast_20180926_1558_N0Ronly.gif",
-    "southeast_20180926_1618_N0Ronly.gif",
-    "southeast_20180926_1638_N0Ronly.gif",
-    "southeast_20180926_1658_N0Ronly.gif",
-    "southeast_20180926_1718_N0Ronly.gif",
-    "southeast_20180926_1738_N0Ronly.gif",
-    "southeast_20180926_1758_N0Ronly_small.gif",
-    "southeast_20180926_1818_N0Ronly.gif",
-    "southeast_20180926_1838_N0Ronly.gif",
-    "southeast_20180926_1858_N0Ronly.gif",
-    "southeast_20180926_1918_N0Ronly.gif",
-    "southeast_20180926_1938_N0Ronly.gif",
-    "southeast_20180926_1958_N0Ronly.gif",
-]
+const path = "/docs/pages/assets/";
+
+const frameCount = 5;
+
+const coordinates = [
+    [-80.425, 46.437],
+    [-71.516, 46.437],
+    [-71.516, 37.936],
+    [-80.425, 37.936]
+];
 
 map.on("load", () => {
     let currentImage = 0;
-    const getPath = () => path + images[currentImage];
+    const getPath = () => `${path}radar${currentImage}.gif`;
 
     map.addSource("radar", {
         type: "image",
         url: getPath(),
-        coordinates: [
-            [origin.lng, origin.lat],
-            [opposite.lng, origin.lat],
-            [opposite.lng, opposite.lat],
-            [origin.lng, opposite.lat]
-        ]
+        coordinates
     });
     map.addLayer({
         id: "radar-layer",
@@ -90,11 +58,11 @@ map.on("load", () => {
     });
 
     setInterval(() => {
-        currentImage = (currentImage + 1) % images.length
+        currentImage = (currentImage + 1) % frameCount;
         map.getSource("radar").updateImage({
             url: getPath()
         });
-    }, 1000);
+    }, 200);
 });
 
 </script>
