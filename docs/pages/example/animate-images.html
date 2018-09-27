@@ -9,11 +9,14 @@ var map = new mapboxgl.Map({
     center: [-75.789, 41.874]
 });
 
-const frameCount = 5;
+var frameCount = 5;
+var currentImage = 0;
+
+function getPath() {
+    return "https://www.mapbox.com/mapbox-gl-js/assets/radar" + currentImage + ".gif";
+}
 
 map.on('load', function() {
-    let currentImage = 0;
-    const getPath = () => `https://www.mapbox.com/mapbox-gl-js/assets/radar${currentImage}.gif`;
 
     map.addSource("radar", {
         type: "image",
@@ -34,7 +37,7 @@ map.on('load', function() {
         }
     });
 
-    setInterval(() => {
+    setInterval(function() {
         currentImage = (currentImage + 1) % frameCount;
         map.getSource("radar").updateImage({ url: getPath() });
     }, 200);

@@ -128,7 +128,7 @@ class ImageSource extends Evented implements Source {
             }
         });
     }
-    
+
     /**
      * Updates the image URL and, optionally, the coordinates. To avoid having the image flash after changing,
      * set the `raster-fade-duration` paint property on the raster layer to 0.
@@ -146,7 +146,7 @@ class ImageSource extends Evented implements Source {
             return this;
         }
         this.options.url = options.url;
-        this.load(options.coordinates, () => this.texture = null);
+        this.load(options.coordinates, () => { this.texture = null; });
         return this;
     }
 
