@@ -22,8 +22,18 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v10',
-    hash: true
+    style: 'mapbox://styles/mapbox/streets-v10'
+});
+
+map.on('load', function () {
+  console.log('map is loaded');
+  setTimeout(function () {
+    console.log('beginning fly to');
+    map.flyTo({
+      center: [6, 5],
+      zoom: 10
+    });
+  }, 1000);
 });
 
 </script>

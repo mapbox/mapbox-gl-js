@@ -948,6 +948,13 @@ class Camera extends Evented {
             options.duration = 0;
         }
 
+        const now = browser.now;
+        this._animationNow = browser.now();
+        this._frameCount = 0;
+        this._frameRate = 60;
+        this._framesNeeded = Math.ceil(options.duration / this._frameRate);
+        browser.now = () => this._animationNow;
+
         this._zooming = true;
         this._rotating = (startBearing !== bearing);
         this._pitching = (pitch !== startPitch);
@@ -974,6 +981,7 @@ class Camera extends Evented {
 
         }, () => this._afterEase(eventData), options);
 
+        // browser.now = now;
         return this;
     }
 
@@ -1022,13 +1030,19 @@ class Camera extends Evented {
 
     // Callback for map._requestRenderFrame
     _renderFrameCallback() {
-        const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
-        this._onEaseFrame(this._easeOptions.easing(t));
-        if (t < 1) {
+        setTimeout(() => {
+          // const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
+          console.log('this._frameCount', this._frameCount);
+          const t = Math.min(this._frameCount++ / this._framesNeeded, 1);
+          console.log('t', t);
+          this._animationNow = browser.now() + (1000 / 60);
+          this._onEaseFrame(this._easeOptions.easing(t));
+          if (this._frameCount <= this._framesNeeded) {
             this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
-        } else {
+          } else {
             this.stop();
-        }
+          }
+        }, 1000);
     }
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
