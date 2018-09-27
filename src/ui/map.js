@@ -1568,7 +1568,12 @@ class Map extends Camera {
         this.painter.context.setDirty();
         this.painter.setBaseState();
 
-        this._renderTaskQueue.run();
+        if (!this.skipRenderQueue) {
+            // Even though we're finishing animation frames,
+            // we only want to mark a render task as done (ie call the callback)
+            // when everything is loaded
+            this._renderTaskQueue.run();
+        }
 
         let crossFading = false;
 
@@ -1608,16 +1613,21 @@ class Map extends Camera {
 
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration, this._crossSourceCollisions);
 
-        // Actually draw
-        this.painter.render(this.style, {
-            showTileBoundaries: this.showTileBoundaries,
-            showOverdrawInspector: this._showOverdrawInspector,
-            rotating: this.isRotating(),
-            zooming: this.isZooming(),
-            fadeDuration: this._fadeDuration
-        });
+        if (!this._loaded || this.loaded()) { // only draw during initial load or once everything's loaded
+            // Actually draw
+            this.skipRenderQueue = false;
+            this.painter.render(this.style, {
+                showTileBoundaries: this.showTileBoundaries,
+                showOverdrawInspector: this._showOverdrawInspector,
+                rotating: this.isRotating(),
+                zooming: this.isZooming(),
+                fadeDuration: this._fadeDuration
+            });
 
-        this.fire(new Event('render'));
+            this.fire(new Event('render'));
+        } else {
+            this.skipRenderQueue = true;
+        }
 
         if (this.loaded() && !this._loaded) {
             this._loaded = true;
