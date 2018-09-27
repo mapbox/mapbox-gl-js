@@ -846,6 +846,51 @@ class Camera extends Evented {
 
         this.stop();
 
+        const stream = this._canvas.captureStream();
+        let mediaStreamOptions = {mimeType: 'video/webm'};
+        this._recordedBlobs = [];
+        try {
+          this._mediaRecorder = new MediaRecorder(stream, mediaStreamOptions);
+        } catch (e0) {
+          console.log('Unable to create MediaRecorder with options Object: ', e0);
+          try {
+            mediaStreamOptions = {mimeType: 'video/webm,codecs=vp9'};
+            this._mediaRecorder = new MediaRecorder(stream, mediaStreamOptions);
+          } catch (e1) {
+            console.log('Unable to create MediaRecorder with options Object: ', e1);
+            try {
+              mediaStreamOptions = 'video/vp8'; // Chrome 47
+              this._mediaRecorder = new MediaRecorder(stream, mediaStreamOptions);
+            } catch (e2) {
+              alert('MediaRecorder is not supported by this browser.\n\n' +
+                'Try Firefox 29 or later, or Chrome 47 or later, ' +
+                'with Enable experimental Web Platform features enabled from chrome://flags.');
+              console.error('Exception while creating MediaRecorder:', e2);
+              return;
+            }
+          }
+        }
+
+        this._mediaRecorder.onstop = () => {
+          console.log('Recorder stopped: ', event);
+          const blob = new Blob(this._recordedBlobs, {type: 'video/webm'});
+          const url = window.URL.createObjectURL(blob);
+          // const a = window.document.createElement('a');
+          // a.style.display = 'none';
+          // a.href = url;
+          // a.download = 'test.webm';
+          // document.body.appendChild(a);
+          // a.click();
+        };
+
+        this._mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            console.log('event', event);
+            this._recordedBlobs.push(event.data);
+          }
+        };
+        this._mediaRecorder.start(); // collect 100ms of data
+
         options = extend({
             offset: [0, 0],
             speed: 1.2,
@@ -948,11 +993,14 @@ class Camera extends Evented {
             options.duration = 0;
         }
 
+        // capture current implementation of browser.now so it can be restored later
         const now = browser.now;
         this._animationNow = browser.now();
         this._frameCount = 0;
         this._frameRate = 60;
+        // calculate the number of frames that the animation will take
         this._framesNeeded = Math.ceil(options.duration / this._frameRate);
+        // overwrite browser.now to return a moment in the animation which can be updated on each frame
         browser.now = () => this._animationNow;
 
         this._zooming = true;
@@ -996,6 +1044,7 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     stop(): this {
+        if (this._mediaRecorder) this._mediaRecorder.stop();
         if (this._easeFrameId) {
             this._cancelRenderFrame(this._easeFrameId);
             delete this._easeFrameId;
@@ -1030,7 +1079,7 @@ class Camera extends Evented {
 
     // Callback for map._requestRenderFrame
     _renderFrameCallback() {
-        setTimeout(() => {
+        // setTimeout(() => {
           // const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
           console.log('this._frameCount', this._frameCount);
           const t = Math.min(this._frameCount++ / this._framesNeeded, 1);
@@ -1042,7 +1091,7 @@ class Camera extends Evented {
           } else {
             this.stop();
           }
-        }, 1000);
+        // }, 1000);
     }
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
