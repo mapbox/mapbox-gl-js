@@ -36,7 +36,8 @@
     "rw": "^1.3.3",
     "supercluster": "^4.1.1",
     "tinyqueue": "^1.1.0",
-    "vt-pbf": "^3.0.1"
+    "vt-pbf": "^3.0.1",
+    "webm-writer": "^0.2.1"
   },
   "devDependencies": {
     "@mapbox/batfish": "^1.9.4",

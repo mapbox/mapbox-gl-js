@@ -31,9 +31,10 @@ map.on('load', function () {
     console.log('beginning fly to');
     map.flyTo({
       center: [6, 5],
-      zoom: 10
-    });
-  }, 1000);
+      zoom: 10,
+      duration: 20000
+  });
+}, 1000);
 });
 
 </script>

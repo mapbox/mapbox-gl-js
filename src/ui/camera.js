@@ -22,6 +22,10 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {TaskID} from '../util/task_queue';
 import type {PointLike} from '@mapbox/point-geometry';
 
+import DOM from '../util/dom';
+
+import WebMWriter from 'webm-writer';
+
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
  * zoom, bearing, and pitch of the camera. All properties are optional, and when a property is omitted, the current
@@ -781,32 +785,43 @@ class Camera extends Evented {
     }
 
     captureVideo() {
-      const stream = this._canvas.captureStream();
-      const recordedChunks = [];
-      this._mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp9'});
-
-      this._mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunks, {type: 'video/webm;codecs=vp9'});
-        const url = window.URL.createObjectURL(blob);
-        const a = window.document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = 'test.webm';
-        window.document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          window.document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-        }, 100);
-      };
-
-      this._mediaRecorder.ondataavailable = () => {
-        if (event.data.size > 0) {
-          recordedChunks.push(event.data);
-        }
-      };
-
-      this._mediaRecorder.start();
+        this._videoWriter = new WebMWriter({
+            quality: 0.7,    // WebM image quality from 0.0 (worst) to 1.0 (best)
+            fd: null,         // Node.js file descriptor to write to instead of buffering to memory (optional)
+            // You must supply one of:
+            frameDuration: null, // Duration of frames in milliseconds
+            frameRate: 60,     // Number of frames per second
+        });
+        // this._replayCanvas = DOM.create('canvas', 'replay-canvas', this._canvasContainer);
+        // this._replayCanvas.style.position = 'absolute';
+        // this._replayCanvas.width = this._canvas.width;
+        // this._replayCanvas.height = this._canvas.height;
+        // const stream = this._replayCanvas.captureStream(60);
+        // const recordedChunks = [];
+        // this._mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm'});
+        //
+        // this._mediaRecorder.onstop = () => {
+        //     const blob = new Blob(recordedChunks, {type: 'video/webm'});
+        //     const url = window.URL.createObjectURL(blob);
+        //     const a = window.document.createElement('a');
+        //     a.style.display = 'none';
+        //     a.href = url;
+        //     a.download = 'test.webm';
+        //     window.document.body.appendChild(a);
+        //     a.click();
+        //     setTimeout(() => {
+        //         window.document.body.removeChild(a);
+        //         window.URL.revokeObjectURL(url);
+        //     }, 100);
+        // };
+        //
+        // this._mediaRecorder.ondataavailable = (event) => {
+        //     if (event.data.size > 0) {
+        //         recordedChunks.push(event.data);
+        //     }
+        // };
+        //
+        // this._mediaRecorder.start();
     }
 
     /**
@@ -982,10 +997,11 @@ class Camera extends Evented {
         // capture current implementation of browser.now so it can be restored later
         const now = browser.now;
         this._animationNow = browser.now();
+        //this._renderedFrames = [];
         this._frameCount = 0;
         this._frameRate = 60;
         // calculate the number of frames that the animation will take
-        this._framesNeeded = Math.ceil(options.duration / this._frameRate);
+        this._framesNeeded = Math.ceil((options.duration / 1000) * this._frameRate);
         // overwrite browser.now to return a moment in the animation which can be updated on each frame
         browser.now = () => this._animationNow;
 
@@ -1030,7 +1046,21 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     stop(): this {
-        if (this._mediaRecorder) this._mediaRecorder.stop();
+        if (this._videoWriter) {
+            this._videoWriter.complete().then(function(webMBlob) {
+                const url = window.URL.createObjectURL(webMBlob);
+                const a = window.document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'test.webm';
+                window.document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    window.document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+            });
+        }
         if (this._easeFrameId) {
             this._cancelRenderFrame(this._easeFrameId);
             delete this._easeFrameId;
@@ -1045,6 +1075,27 @@ class Camera extends Evented {
             delete this._onEaseEnd;
             onEaseEnd.call(this);
         }
+
+        // if (this._renderedFrames) {
+        //     this.captureVideo(); // Start recording
+        //     const recordedFrames = this._renderedFrames;
+        //     const ctx = this._replayCanvas.getContext('2d');
+        //     const image = new Image(1000, 1000);   // using optional size for image
+        //     image.onload = function() {
+        //         ctx.drawImage(this, 0, 0);
+        //     };
+        //     const mediaRecorder = this._mediaRecorder;
+        //     const drawFrame = (index) => {
+        //         browser.frame(() => {
+        //             if (index >= recordedFrames.length) {
+        //                 mediaRecorder.stop();
+        //             }
+        //             image.src = recordedFrames[index];
+        //             drawFrame(index + 1);
+        //         });
+        //     };
+        //     drawFrame(0);
+        // }
         return this;
     }
 

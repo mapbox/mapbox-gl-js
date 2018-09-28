@@ -10611,6 +10611,10 @@ webidl-conversions@^4.0.1, webidl-conversions@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-4.0.2.tgz#a855980b1f0b6b359ba1d5d9fb39ae941faa63ad"
 
+webm-writer@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/webm-writer/-/webm-writer-0.2.1.tgz#19c75b9408af9dab38c51c7bb884ea5d7faf2b20"
+
 webpack-format-messages@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/webpack-format-messages/-/webpack-format-messages-1.0.2.tgz#875dba643e4a59af7183413ed79dea3949b51655"

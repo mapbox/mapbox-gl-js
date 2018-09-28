@@ -122,7 +122,7 @@ const defaultOptions = {
     attributionControl: true,
 
     failIfMajorPerformanceCaveat: false,
-    preserveDrawingBuffer: false,
+    preserveDrawingBuffer: true,
     trackResize: true,
     renderWorldCopies: true,
     refreshExpiredTiles: true,
@@ -1625,6 +1625,10 @@ class Map extends Camera {
             });
 
             this.fire(new Event('render'));
+            if (this._videoWriter) {
+                this._videoWriter.addFrame(this.getCanvas());
+                //this._renderedFrames.push(this.getCanvas().toDataURL());
+            }
         } else {
             this.skipRenderQueue = true;
         }
