@@ -40,6 +40,7 @@ import type {FilterSpecification} from '../style-spec/types';
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
     | 'loaded'    // Tile data has been loaded. Tile can be rendered.
+    | 'empty'     // Tile has been loaded (404'd), and has no data. Tile can be rendered as empty.
     | 'reloading' // Tile data has been loaded and is being updated. Tile can be rendered.
     | 'unloaded'  // Tile data has been deleted.
     | 'errored'   // Tile data was not loaded because of an error.
@@ -128,21 +129,21 @@ class Tile {
     }
 
     wasRequested() {
-        return this.state === 'errored' || this.state === 'loaded' || this.state === 'reloading';
+        return this.state === 'errored' || this.state === 'loaded' || this.state === 'reloading' || this.state === 'empty';
     }
 
     /**
      * Given a data object with a 'buffers' property, load it into
      * this tile's elementGroups and buffers properties and set loaded
      * to true. If the data is null, like in the case of an empty
-     * GeoJSON tile, no-op but still set loaded to true.
+     * GeoJSON tile or a 404'd vector tile, no-op but set tile state to empty.
      * @param {Object} data
      * @param painter
      * @returns {undefined}
      * @private
      */
     loadVectorData(data: WorkerTileResult, painter: any, justReloaded: ?boolean) {
-        if (this.hasData()) {
+        if (this.wasLoaded()) {
             this.unloadVectorData();
         }
 
@@ -151,6 +152,7 @@ class Tile {
         // empty GeoJSON tile
         if (!data) {
             this.collisionBoxArray = new CollisionBoxArray();
+            this.state = 'empty';
             return;
         }
 
@@ -366,8 +368,10 @@ class Tile {
         this.maskedIndexBuffer = context.createIndexBuffer(indexArray);
     }
 
-    hasData() {
-        return this.state === 'loaded' || this.state === 'reloading' || this.state === 'expired';
+    /* Indicates if a tile has or was ever previously loaded, and indicates that a tile may be rendered*/
+
+    wasLoaded() {
+        return this.state === 'loaded' || this.state === 'reloading' || this.state === 'expired' || this.state === 'empty';
     }
 
     patternsLoaded() {

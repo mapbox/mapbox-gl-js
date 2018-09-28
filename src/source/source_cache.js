@@ -121,7 +121,7 @@ class SourceCache extends Evented {
         if (!this._sourceLoaded) { return false; }
         for (const t in this._tiles) {
             const tile = this._tiles[t];
-            if (tile.state !== 'loaded' && tile.state !== 'errored')
+            if (tile.state !== 'loaded' && tile.state !== 'errored' && tile.state !== 'empty')
                 return false;
         }
         return true;
@@ -206,7 +206,7 @@ class SourceCache extends Evented {
     }
 
     _isIdRenderable(id: number, symbolLayer?: boolean) {
-        return this._tiles[id] && this._tiles[id].hasData() &&
+        return this._tiles[id] && this._tiles[id].wasLoaded() &&
             !this._coveredTiles[id] && (symbolLayer || !this._tiles[id].holdingForFade());
     }
 
@@ -219,7 +219,7 @@ class SourceCache extends Evented {
         this._cache.reset();
 
         for (const i in this._tiles) {
-            if (this._tiles[i].state !== "errored") this._reloadTile(i, 'reloading');
+            if (this._tiles[i].state !== "errored" && this._tiles[i].state !== "empty") this._reloadTile(i, 'reloading');
         }
     }
 
@@ -336,7 +336,7 @@ class SourceCache extends Evented {
 
             // only consider renderable tiles up to maxCoveringZoom
             if (retain[id] ||
-                !tile.hasData() ||
+                !tile.wasLoaded() ||
                 tile.tileID.overscaledZ <= zoom ||
                 tile.tileID.overscaledZ > maxCoveringZoom
             ) continue;
@@ -348,7 +348,7 @@ class SourceCache extends Evented {
 
                 tile = this._tiles[parentID.key];
 
-                if (tile && tile.hasData()) {
+                if (tile && tile.wasLoaded()) {
                     topmostLoadedID = parentID;
                 }
             }
@@ -376,7 +376,7 @@ class SourceCache extends Evented {
             if (!parent) return;
             const id = String(parent.key);
             const tile = this._tiles[id];
-            if (tile && tile.hasData()) {
+            if (tile && tile.wasLoaded()) {
                 return tile;
             }
             if (this._cache.has(parent)) {
@@ -565,7 +565,7 @@ class SourceCache extends Evented {
             // retain the tile even if it's not loaded because it's an ideal tile.
             retain[tileID.key] = tileID;
 
-            if (tile.hasData()) continue;
+            if (tile.wasLoaded()) continue;
 
             if (zoom < this._source.maxzoom) {
                 // save missing tiles that potentially have loaded children
@@ -579,7 +579,7 @@ class SourceCache extends Evented {
         for (const tileID of idealTileIDs) {
             let tile = this._tiles[tileID.key];
 
-            if (tile.hasData()) continue;
+            if (tile.wasLoaded()) continue;
 
             // The tile we require is not yet loaded or does not exist;
             // Attempt to find children that fully cover it.
@@ -588,7 +588,7 @@ class SourceCache extends Evented {
                 // We're looking for an overzoomed child tile.
                 const childCoord = tileID.children(this._source.maxzoom)[0];
                 const childTile = this.getTile(childCoord);
-                if (!!childTile && childTile.hasData()) {
+                if (!!childTile && childTile.wasLoaded()) {
                     retain[childCoord.key] = childCoord;
                     continue; // tile is covered by overzoomed child
                 }
@@ -625,7 +625,7 @@ class SourceCache extends Evented {
                     // Save the current values, since they're the parent of the next iteration
                     // of the parent tile ascent loop.
                     parentWasRequested = tile.wasRequested();
-                    if (tile.hasData()) break;
+                    if (tile.wasLoaded()) break;
                 }
             }
         }
@@ -706,7 +706,7 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
-        if (tile.hasData()) {
+        if (tile.wasLoaded()) {
             this._cache.add(tile.tileID, tile, tile.getExpiryTimeout());
         } else {
             tile.aborted = true;

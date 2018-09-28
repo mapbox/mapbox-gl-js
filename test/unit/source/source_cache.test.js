@@ -430,6 +430,35 @@ test('SourceCache / Source lifecycle', (t) => {
         t.end();
     });
 
+    t.test('does not reload empty tiles', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 1;
+
+        const sourceCache = createSourceCache({
+            loadTile: function (tile, callback) {
+                // this transform will try to load the four tiles at z1 and a single z0 tile
+                // we only expect _reloadTile to be called with the 'loaded' z0 tile
+                tile.state = tile.tileID.canonical.x === 1 ? 'empty' : 'loaded';
+                callback();
+            }
+        });
+
+        const reloadTileSpy = t.spy(sourceCache, '_reloadTile');
+        sourceCache.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                sourceCache.getSource().fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
+            }
+        });
+        sourceCache.onAdd();
+        // we expect the source cache to have four tiles, but only to have reloaded two
+        t.equal(Object.keys(sourceCache._tiles).length, 4);
+        t.ok(reloadTileSpy.calledTwice);
+
+        t.end();
+    });
+
     t.end();
 });
 
@@ -1438,7 +1467,7 @@ test('SourceCache#findLoadedParent', (t) => {
 
         const tile = {
             tileID: new OverscaledTileID(1, 0, 1, 0, 0),
-            hasData: function() { return true; }
+            wasLoaded: function() { return true; }
         };
 
         sourceCache._tiles[tile.tileID.key] = tile;
