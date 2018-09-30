@@ -46,6 +46,10 @@ const plugins = {
         "mapboxgl-minimap": {
             "website": "https://github.com/aesqe/mapboxgl-minimap",
             "description": "adds a control showing a miniature overview of the current map"
+        },
+        "mapbox-gl-controls": {
+            "website": "https://github.com/bravecow/mapbox-gl-controls",
+            "description": "alternative basic map controls"
         }
     },
     "Map Rendering Plugins": {
