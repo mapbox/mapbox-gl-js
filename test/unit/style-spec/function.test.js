@@ -1,6 +1,7 @@
 import { test } from 'mapbox-gl-js-test';
 import { createFunction } from '../../../src/style-spec/function';
 import Color from '../../../src/style-spec/util/color';
+import Formatted from '../../../src/style-spec/expression/types/formatted';
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {
@@ -985,6 +986,22 @@ test('identity function', (t) => {
         }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 3}}), 'def');
+
+        t.end();
+    });
+
+    t.test('formatted', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'formatted'
+        }).evaluate;
+
+        t.deepEqual(f({zoom: 0}, {properties: {foo: 'foo'}}), Formatted.fromString('foo'));
+        t.deepEqual(f({zoom: 1}, {properties: {foo: 'bar'}}), Formatted.fromString('bar'));
+        t.deepEqual(f({zoom: 2}, {properties: {foo: 2}}), Formatted.fromString('2'));
+        t.deepEqual(f({zoom: 3}, {properties: {foo: true}}), Formatted.fromString('true'));
 
         t.end();
     });
