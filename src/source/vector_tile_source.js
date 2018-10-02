@@ -136,6 +136,7 @@ class VectorTileSource extends Evented implements Source {
                 return callback(err);
             }
 
+
             if (data && data.resourceTiming)
                 tile.resourceTiming = data.resourceTiming;
 
