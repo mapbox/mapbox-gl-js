@@ -59,16 +59,7 @@ map.on("load", () => {
 
     setInterval(() => {
         currentImage = (currentImage + 1) % frameCount;
-        map.getSource("radar").updateImage({
-            url: getPath(),
-            coordinates
-        });
-
-        // To illustrate moving coordinates at the same time
-        coordinates.forEach(c => {
-            c[0] += 0.025;
-            c[1] += 0.025;
-        });
+        map.getSource("radar").updateImage({ url: getPath() });
     }, 200);
 });
 
