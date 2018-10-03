@@ -110,6 +110,8 @@ class VectorTileWorkerSource implements WorkerSource {
             delete this.loading[uid];
 
             if (err || !response) {
+                workerTile.status = 'done';
+                this.loaded[uid] = workerTile;
                 return callback(err);
             }
 
@@ -163,7 +165,12 @@ class VectorTileWorkerSource implements WorkerSource {
             if (workerTile.status === 'parsing') {
                 workerTile.reloadCallback = done;
             } else if (workerTile.status === 'done') {
-                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done);
+                // if there was no vector tile data on the initial load, don't try and re-parse tile
+                if (workerTile.vectorTile) {
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done);
+                } else {
+                    done();
+                }
             }
         }
     }
