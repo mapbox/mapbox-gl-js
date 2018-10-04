@@ -1,7 +1,7 @@
 /* eslint-disable */
 'use strict';
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+function _interopDefault(ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var React = require('react');
 var React__default = _interopDefault(React);
@@ -461,8 +461,8 @@ var PopupMenu = function (_React$Component) {
     key: 'renderName',
     value: function renderName() {
       var _props = this.props,
-          name = _props.name,
-          shortName = _props.shortName;
+        name = _props.name,
+        shortName = _props.shortName;
 
       if (shortName) {
         return React__default.createElement(
@@ -490,8 +490,8 @@ var PopupMenu = function (_React$Component) {
       menuNameClasses += this.props.darkText ? ' shell-navigation-menu-button shell-transition shell-color-gray-dark shell-color-blue-on-hover' : ' shell-navigation-menu-button shell-link shell-link--white';
 
       var _props2 = this.props,
-          name = _props2.name,
-          children = _props2.children;
+        name = _props2.name,
+        children = _props2.children;
 
 
       return React__default.createElement(
@@ -722,6 +722,10 @@ var navigationMenuData = {
           name: 'Studio',
           description: 'Design custom maps',
           to: '/mapbox-studio/'
+        }, {
+          name: 'Atlas',
+          description: 'Maps and location on-premise',
+          to: '/atlas/'
         }],
         more: {
           title: 'View all products',
@@ -917,6 +921,9 @@ var navigationMenuData = {
     }, {
       name: 'Studio',
       to: '/mapbox-studio/'
+    }, {
+      name: 'Atlas',
+      to: '/atlas/'
     }],
     highlightedLinks: [{
       name: 'Pricing',
@@ -2718,27 +2725,23 @@ var MetaTagger = function (_React$PureComponent) {
         'data-type': 'string',
         content: props.title
       }, {
-        class: 'swiftype',
-        name: 'excerpt',
-        'data-type': 'string',
-        content: props.description
-      }, { name: 'twitter:image:alt', content: props.imageAlt }, { property: 'og:image', content: props.imageUrl }, {
-        class: 'swiftype',
-        name: 'image',
-        'data-type': 'enum',
-        content: props.imageUrl
-      },
-      // https://developers.google.com/web/updates/2014/11/Support-for-theme-color-in-Chrome-39-for-Android
-      { name: 'theme-color', content: '#4264fb' });
+          class: 'swiftype',
+          name: 'excerpt',
+          'data-type': 'string',
+          content: props.description
+        }, { name: 'twitter:image:alt', content: props.imageAlt }, { property: 'og:image', content: props.imageUrl }, {
+          class: 'swiftype',
+          name: 'image',
+          'data-type': 'enum',
+          content: props.imageUrl
+        },
+        // https://developers.google.com/web/updates/2014/11/Support-for-theme-color-in-Chrome-39-for-Android
+        { name: 'theme-color', content: '#4264fb' });
 
       if (props.largeImage) {
         metaItems.push({ name: 'twitter:card', content: 'summary_large_image' }, { name: 'twitter:image', content: props.imageUrl });
       } else {
         metaItems.push({ name: 'twitter:card', content: 'summary' }, { name: 'twitter:image', content: props.imageUrlThumbnail });
-      }
-
-      if (process.env.DEPLOY_ENV !== 'production') {
-        metaItems.push({ name: 'robots', content: 'noindex' });
       }
 
       return React__default.createElement(Helmet__default, { title: suffixedTitle, meta: metaItems });

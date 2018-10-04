@@ -1,0 +1,35 @@
+<div id='map'></div>
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v10', // stylesheet location
+    center: [-116.231, 43.604], // starting position [lng, lat]
+    zoom: 11 // starting zoom
+});
+
+map.on('load', function() {
+    map.addLayer({
+        'id': 'off-leash-areas',
+        'type': 'symbol',
+        // data from opendata.cityofboise.org/
+        'source': {
+            'type': 'geojson',
+            'data': 'https://www.mapbox.com/mapbox-gl-js/assets/boise.geojson'
+
+        },
+        "layout": {
+            "icon-image": 'dog-park-11',
+            "text-field": ['format',
+                ['upcase', ['get', 'FacilityName']], { 'font-scale': .8 },
+                '\n', {},
+                ['downcase', ['get', 'Comments']], { 'font-scale': .6 }],
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top"
+        }
+    });
+
+});
+</script>
+</div>

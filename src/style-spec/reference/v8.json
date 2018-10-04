@@ -2554,6 +2554,7 @@
         "sdk-support": {
           "basic functionality": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3037,6 +3038,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3054,6 +3056,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3071,6 +3074,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3088,6 +3092,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3105,6 +3110,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3122,6 +3128,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3209,6 +3216,7 @@
         "sdk-support": {
           "basic functionality": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -4098,7 +4106,10 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.45.0"
+          "js": "0.45.0",
+          "android": "6.5.0",
+          "ios": "4.4.0",
+          "macos": "0.11.0"
         },
         "data-driven styling": {}
       },
