@@ -16,8 +16,9 @@ var nullIslandLayer = {
     onAdd: function (map, gl) {
         var vertexSource = "" +
         "uniform mat4 u_matrix;" +
+        "attribute vec2 a_pos;" +
         "void main() {" +
-        "    gl_Position = u_matrix * vec4(0.5, 0.5, 0.0, 1.0);" +
+        "    gl_Position = u_matrix * vec4(a_pos, 0.0, 1.0);" +
         "    gl_PointSize = 100.0;" +
         "}";
 
@@ -37,11 +38,20 @@ var nullIslandLayer = {
         gl.attachShader(this.program, vertexShader);
         gl.attachShader(this.program, fragmentShader);
         gl.linkProgram(this.program);
+
+        this.aPos = gl.getAttribLocation(this.program, "a_pos");
+
+        this.buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0.5, 0.5]), gl.STATIC_DRAW);
     },
 
     render: function(gl, matrix) {
         gl.useProgram(this.program);
         gl.uniformMatrix4fv(gl.getUniformLocation(this.program, "u_matrix"), false, matrix);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+        gl.enableVertexAttribArray(this.aPos);
+        gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.POINTS, 0, 1);
     }
 };
