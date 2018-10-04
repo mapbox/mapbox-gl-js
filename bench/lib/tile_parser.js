@@ -108,7 +108,7 @@ export default class TileParser {
             .then(buffer => ({tileID, buffer}));
     }
 
-    parseTile(tile: {tileID: OverscaledTileID, buffer: ArrayBuffer}): Promise<?WorkerTileResult> {
+    parseTile(tile: {tileID: OverscaledTileID, buffer: ArrayBuffer}, returnDependencies?: boolean): Promise<?WorkerTileResult> {
         const workerTile = new WorkerTile({
             tileID: tile.tileID,
             zoom: tile.tileID.overscaledZ,
@@ -123,7 +123,8 @@ export default class TileParser {
             angle: 0,
             pitch: 0,
             cameraToCenterDistance: 0,
-            cameraToTileDistance: 0
+            cameraToTileDistance: 0,
+            returnDependencies: returnDependencies
         });
 
         const vectorTile = new VT.VectorTile(new Protobuf(tile.buffer));
