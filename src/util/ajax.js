@@ -39,9 +39,13 @@ export type RequestParameters = {
     url: string,
     headers?: Object,
     method?: 'GET' | 'POST' | 'PUT',
+    body?: string,
+    type?: 'string' | 'json' | 'arraybuffer',
     credentials?: 'same-origin' | 'include',
     collectResourceTiming?: boolean
 };
+
+export type ResponseCallback<T> = (error: ?Error, data: ?T, cacheControl: ?string, expires: ?string) => void;
 
 class AJAXError extends Error {
     status: number;
@@ -61,32 +65,35 @@ class AJAXError extends Error {
     }
 }
 
-function makeRequest(requestParameters: RequestParameters): XMLHttpRequest {
+function makeRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     const xhr: XMLHttpRequest = new window.XMLHttpRequest();
 
     xhr.open(requestParameters.method || 'GET', requestParameters.url, true);
+    if (requestParameters.type === 'arraybuffer') {
+        xhr.responseType = 'arraybuffer';
+    }
     for (const k in requestParameters.headers) {
         xhr.setRequestHeader(k, requestParameters.headers[k]);
     }
+    if (requestParameters.type === 'json') {
+        xhr.setRequestHeader('Accept', 'application/json');
+    }
     xhr.withCredentials = requestParameters.credentials === 'include';
-    return xhr;
-}
-
-export const getJSON = function(requestParameters: RequestParameters, callback: Callback<mixed>): Cancelable {
-    const xhr = makeRequest(requestParameters);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.onerror = function() {
+    xhr.onerror = () => {
         callback(new Error(xhr.statusText));
     };
-    xhr.onload = function() {
-        if (((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) && xhr.response) {
-            let data;
-            try {
-                data = JSON.parse(xhr.response);
-            } catch (err) {
-                return callback(err);
+    xhr.onload = () => {
+        if (((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) && xhr.response !== null) {
+            let data: mixed = xhr.response;
+            if (requestParameters.type === 'json') {
+                // We're manually parsing JSON here to get better error messages.
+                try {
+                    data = JSON.parse(xhr.response);
+                } catch (err) {
+                    return callback(err);
+                }
             }
-            callback(null, data);
+            callback(null, data, xhr.getResponseHeader('Cache-Control'), xhr.getResponseHeader('Expires'));
         } else {
             if (xhr.status === 401 && requestParameters.url.match(/mapbox.com/)) {
                 callback(new AJAXError(`${xhr.statusText}: you may have provided an invalid Mapbox access token. See https://www.mapbox.com/api-documentation/#access-tokens`, xhr.status, requestParameters.url));
@@ -95,50 +102,20 @@ export const getJSON = function(requestParameters: RequestParameters, callback: 
             }
         }
     };
-    xhr.send();
+    xhr.send(requestParameters.body);
     return { cancel: () => xhr.abort() };
+}
+
+export const getJSON = function(requestParameters: RequestParameters, callback: ResponseCallback<Object>): Cancelable {
+    return makeRequest(extend(requestParameters, { type: 'json' }), callback);
 };
 
-export const getArrayBuffer = function(requestParameters: RequestParameters, callback: Callback<{data: ArrayBuffer, cacheControl: ?string, expires: ?string}>): Cancelable {
-    const xhr = makeRequest(requestParameters);
-    xhr.responseType = 'arraybuffer';
-    xhr.onerror = function() {
-        callback(new Error(xhr.statusText));
-    };
-    xhr.onload = function() {
-        const response: ArrayBuffer = xhr.response;
-        if (response.byteLength === 0 && xhr.status === 200) {
-            return callback(new Error('http status 200 returned without content.'));
-        }
-        if (((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) && xhr.response) {
-            callback(null, {
-                data: response,
-                cacheControl: xhr.getResponseHeader('Cache-Control'),
-                expires: xhr.getResponseHeader('Expires')
-            });
-        } else {
-            callback(new AJAXError(xhr.statusText, xhr.status, requestParameters.url));
-        }
-    };
-    xhr.send();
-    return { cancel: () => xhr.abort() };
+export const getArrayBuffer = function(requestParameters: RequestParameters, callback: ResponseCallback<ArrayBuffer>): Cancelable {
+    return makeRequest(extend(requestParameters, { type: 'arraybuffer' }), callback);
 };
 
-export const postData = function(requestParameters: RequestParameters, payload: string, callback: Callback<mixed>): Cancelable {
-    const xhr = makeRequest(extend(requestParameters, {method: 'POST'}));
-
-    xhr.onerror = function() {
-        callback(new Error(xhr.statusText));
-    };
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            callback(null, xhr.response);
-        } else {
-            callback(new AJAXError(xhr.statusText, xhr.status, requestParameters.url));
-        }
-    };
-    xhr.send(payload);
-    return { cancel: () => xhr.abort() };
+export const postData = function(requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
+    return makeRequest(extend(requestParameters, { method: 'POST' }), callback);
 };
 
 function sameOrigin(url) {
@@ -152,10 +129,10 @@ const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAA
 export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
     // request the image with XHR to work around caching issues
     // see https://github.com/mapbox/mapbox-gl-js/issues/1470
-    return getArrayBuffer(requestParameters, (err, imgData) => {
+    return getArrayBuffer(requestParameters, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
         if (err) {
             callback(err);
-        } else if (imgData) {
+        } else if (data) {
             const img: HTMLImageElement = new window.Image();
             const URL = window.URL || window.webkitURL;
             img.onload = () => {
@@ -163,10 +140,10 @@ export const getImage = function(requestParameters: RequestParameters, callback:
                 URL.revokeObjectURL(img.src);
             };
             img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
-            const blob: Blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
-            (img: any).cacheControl = imgData.cacheControl;
-            (img: any).expires = imgData.expires;
-            img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+            const blob: Blob = new window.Blob([new Uint8Array(data)], { type: 'image/png' });
+            (img: any).cacheControl = cacheControl;
+            (img: any).expires = expires;
+            img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
         }
     });
 };

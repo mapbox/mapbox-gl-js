@@ -188,12 +188,12 @@ class Style extends Evented {
         url = normalizeStyleURL(url, options.accessToken);
         const request = this.map._transformRequest(url, ResourceType.Style);
 
-        this._request = getJSON(request, (error, json) => {
+        this._request = getJSON(request, (error: ?Error, json: ?Object) => {
             this._request = null;
             if (error) {
                 this.fire(new ErrorEvent(error));
             } else if (json) {
-                this._load((json: any), validate);
+                this._load(json, validate);
             }
         });
     }

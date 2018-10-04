@@ -56,8 +56,8 @@ export const getArrayBuffer = function({ url }, callback) {
     if (cache[url]) return cached(cache[url], callback);
     return request({ url, encoding: null }, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            cache[url] = {data: body};
-            callback(null, {data: body});
+            cache[url] = body;
+            callback(null, body);
         } else {
             if (!error) error = { status: +response.statusCode };
             callback(error);
@@ -65,10 +65,10 @@ export const getArrayBuffer = function({ url }, callback) {
     });
 };
 
-export const postData = function({ url }, payload, callback) {
-    return request.post(url, payload, (error, response, body) => {
+export const postData = function({ url, body }, callback) {
+    return request.post(url, body, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            callback(null, {data: body});
+            callback(null, body);
         } else {
             callback(error || new Error(response.statusCode));
         }

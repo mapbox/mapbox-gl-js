@@ -17,18 +17,6 @@ test('ajax', (t) => {
         callback();
     });
 
-    t.test('getArrayBuffer, no content error', (t) => {
-        window.server.respondWith(request => {
-            request.respond(200, {'Content-Type': 'image/png'}, '');
-        });
-        getArrayBuffer({ url:'' }, (error) => {
-            t.pass('called getArrayBuffer');
-            t.ok(error, 'should error when the status is 200 without content.');
-            t.end();
-        });
-        window.server.respond();
-    });
-
     t.test('getArrayBuffer, 404', (t) => {
         window.server.respondWith(request => {
             request.respond(404);
@@ -102,7 +90,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(204);
         });
-        postData({ url:'api.mapbox.com' }, {}, (error) => {
+        postData({ url:'api.mapbox.com' }, (error) => {
             t.equal(error, null);
             t.end();
         });
