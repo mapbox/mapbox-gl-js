@@ -17,7 +17,7 @@ export default function(baseURL: string,
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
-    let jsonRequest = getJSON(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err, data) => {
+    let jsonRequest = getJSON(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err: ?Error, data: ?Object) => {
         jsonRequest = null;
         if (!error) {
             error = err;
