@@ -1,4 +1,4 @@
-## 0.50.0
+## 0.50.0-beta.1
 (Release date TBD)
 
 ### ✨ Features and improvements
@@ -25,7 +25,7 @@
 	* Fix `CanvasSource` not respecting alpha values set on `canvas` element ([#7302](https://github.com/mapbox/mapbox-gl-js/issues/7302), fixed by [#7309](https://github.com/mapbox/mapbox-gl-js/pull/7309))
 * **Rendering**
 	* Fix rendering of fill extrusions with really high heights ([#7292](https://github.com/mapbox/mapbox-gl-js/pull/7292))
-	* Fix reloading of empty tiles ([#7355](https://github.com/mapbox/mapbox-gl-js/pull/7355))
+	* Fix an error where the map state wouldn't return to `loaded` after certain runtime styling changes when there were errored tiles in the viewport ([#7355](https://github.com/mapbox/mapbox-gl-js/pull/7355))
 	* Fix errors when rendering symbol layers without symbols ([#7241](https://github.com/mapbox/mapbox-gl-js/issues/7241), fixed by [#7253](https://github.com/mapbox/mapbox-gl-js/pull/7253))
 	* Don't fade in symbols with `*-allow-overlap: true` when panning into the viewport ([#7172](https://github.com/mapbox/mapbox-gl-js/issues/7172), fixed by[#7244](https://github.com/mapbox/mapbox-gl-js/pull/7244))
 * **Library**
