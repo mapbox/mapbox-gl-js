@@ -34,6 +34,8 @@ function cached(data, callback) {
     });
 }
 
+export const getReferrer = () => undefined;
+
 export const getJSON = function({ url }, callback) {
     if (cache[url]) return cached(cache[url], callback);
     return request(url, (error, response, body) => {

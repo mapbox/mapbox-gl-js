@@ -11,7 +11,7 @@ import GlyphManager from '../render/glyph_manager';
 import Light from './light';
 import LineAtlas from '../render/line_atlas';
 import { pick, clone, extend, deepEqual, filterObject, mapObject } from '../util/util';
-import { getJSON, ResourceType } from '../util/ajax';
+import { getJSON, getReferrer, ResourceType } from '../util/ajax';
 import { isMapboxURL, normalizeStyleURL } from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
@@ -143,6 +143,8 @@ class Style extends Evented {
         this._loaded = false;
 
         this._resetUpdates();
+
+        this.dispatcher.broadcast('setReferrer', getReferrer());
 
         const self = this;
         this._rtlTextPluginCallback = Style.registerForPluginAvailability((args) => {
