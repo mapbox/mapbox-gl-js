@@ -46,7 +46,12 @@ function isMapboxURL(url: string) {
     return url.indexOf('mapbox:') === 0;
 }
 
-export { isMapboxURL };
+const mapboxHTTPURLRe = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/|\?|$)/i;
+function isMapboxHTTPURL(url: string): boolean {
+    return mapboxHTTPURLRe.test(url);
+}
+
+export { isMapboxURL, isMapboxHTTPURL };
 
 export const normalizeStyleURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
@@ -146,7 +151,7 @@ export class TurnstileEvent {
         // mapbox tiles.
         if (config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
-            tileUrls.some((url) => { return /(mapbox\.c)(n|om)/i.test(url); })) {
+            tileUrls.some(url => isMapboxHTTPURL(url))) {
             this.queueRequest(browser.now());
         }
     }
