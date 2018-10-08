@@ -62,7 +62,7 @@ test('Map', (t) => {
         const map = createMap(t, {container, bounds});
 
         t.deepEqual(fixedLngLat(map.getCenter(), 4), { lng: -100.5, lat: 34.7171 });
-        t.equal(fixedNum(map.getZoom(), 3), 2.469);
+        t.equal(fixedNum(map.getZoom(), 3), 2.113);
 
         t.end();
     });
