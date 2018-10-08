@@ -13,7 +13,8 @@ type Options = {
 
 const defaultOptions: Options = {
     showCompass: true,
-    showZoom: true
+    showCompassWhenNorth: true,
+    showZoom: true,
 };
 
 /**
@@ -22,6 +23,7 @@ const defaultOptions: Options = {
  * @implements {IControl}
  * @param {Object} [options]
  * @param {Boolean} [options.showCompass=true] If `true` the compass button is included.
+ * @param {Boolean} [options.showCompassWhenNorth=true] If `true` the compass button is shown even when the map is not rotated.
  * @param {Boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
  * @example
  * var nav = new mapboxgl.NavigationControl();
@@ -61,6 +63,15 @@ class NavigationControl {
     _rotateCompassArrow() {
         const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
         this._compassArrow.style.transform = rotate;
+
+        if (!this.options.showCompassWhenNorth) {
+            const display = this._map.getBearing() === 0 ? 'none' : '';
+            if (this.options.showZoom) {
+                this._compass.style.display = display;
+            } else {
+                this._container.style.display = display;
+            }
+        }
     }
 
     onAdd(map: Map) {
