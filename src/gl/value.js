@@ -43,12 +43,8 @@ class BaseValue<T> implements Value<T> {
     get(): T {
         return this.current;
     }
-    set(value: T) {
-        if (!this._equals(value) || this.dirty) {
-            this._set(value);
-            this.current = value;
-            this.dirty = false;
-        }
+    set(value: T) { // eslint-disable-line
+        // overridden in child classes;
     }
 
     getDefault(): T {
@@ -57,24 +53,18 @@ class BaseValue<T> implements Value<T> {
     setDefault() {
         this.set(this.default);
     }
-    _equals(value: T): boolean {
-        return this.current === value;
-    }
-    _set(value: T) { // eslint-disable-line
-        // overridden in child classes
-    }
 }
 
 export class ClearColor extends BaseValue<Color> {
     getDefault(): Color {
         return Color.transparent;
     }
-    _equals(v: Color): boolean {
+    set(v: Color) {
         const c = this.current;
-        return v.r === c.r && v.g === c.g && v.b === c.b && v.a === c.a;
-    }
-    _set(v: Color) {
+        if (v.r === c.r && v.g === c.g && v.b === c.b && v.a === c.a && !this.dirty) return;
         this.gl.clearColor(v.r, v.g, v.b, v.a);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -82,8 +72,11 @@ export class ClearDepth extends BaseValue<number> {
     getDefault(): number {
         return 1;
     }
-    _set(v: number) {
+    set(v: number) {
+        if (v === this.current && !this.dirty) return;
         this.gl.clearDepth(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -91,8 +84,11 @@ export class ClearStencil extends BaseValue<number> {
     getDefault(): number {
         return 0;
     }
-    _set(v: number) {
+    set(v: number) {
+        if (v === this.current && !this.dirty) return;
         this.gl.clearStencil(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -100,12 +96,12 @@ export class ColorMask extends BaseValue<ColorMaskType> {
     getDefault(): ColorMaskType {
         return [true, true, true, true];
     }
-    _equals(v: ColorMaskType): boolean {
+    set(v: ColorMaskType) {
         const c = this.current;
-        return v[0] === c[0] && v[1] === c[1] && v[2] === c[2] && v[3] === c[3];
-    }
-    _set(v: ColorMaskType) {
+        if (v[0] === c[0] && v[1] === c[1] && v[2] === c[2] && v[3] === c[3] && !this.dirty) return;
         this.gl.colorMask(v[0], v[1], v[2], v[3]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -113,8 +109,11 @@ export class DepthMask extends BaseValue<DepthMaskType> {
     getDefault(): DepthMaskType {
         return true;
     }
-    _set(v: DepthMaskType): void {
+    set(v: DepthMaskType): void {
+        if (v === this.current && !this.dirty) return;
         this.gl.depthMask(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -122,8 +121,11 @@ export class StencilMask extends BaseValue<number> {
     getDefault(): number {
         return 0xFF;
     }
-    _set(v: number): void {
+    set(v: number): void {
+        if (v === this.current && !this.dirty) return;
         this.gl.stencilMask(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -135,12 +137,12 @@ export class StencilFunc extends BaseValue<StencilFuncType> {
             mask: 0xFF
         };
     }
-    _equals(v: StencilFuncType): boolean {
+    set(v: StencilFuncType): void {
         const c = this.current;
-        return v.func === c.func && v.ref === c.ref && v.mask === c.mask;
-    }
-    _set(v: StencilFuncType): void {
+        if (v.func === c.func && v.ref === c.ref && v.mask === c.mask && !this.dirty) return;
         this.gl.stencilFunc(v.func, v.ref, v.mask);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -149,12 +151,12 @@ export class StencilOp extends BaseValue<StencilOpType> {
         const gl = this.gl;
         return [gl.KEEP, gl.KEEP, gl.KEEP];
     }
-    _equals(v: StencilOpType): boolean {
+    set(v: StencilOpType) {
         const c = this.current;
-        return v[0] === c[0] && v[1] === c[1] && v[2] === c[2];
-    }
-    _set(v: StencilOpType) {
+        if (v[0] === c[0] && v[1] === c[1] && v[2] === c[2] && !this.dirty) return;
         this.gl.stencilOp(v[0], v[1], v[2]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -162,13 +164,16 @@ export class StencilTest extends BaseValue<boolean> {
     getDefault(): boolean {
         return false;
     }
-    _set(v: boolean) {
+    set(v: boolean) {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         if (v) {
             gl.enable(gl.STENCIL_TEST);
         } else {
             gl.disable(gl.STENCIL_TEST);
         }
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -176,12 +181,12 @@ export class DepthRange extends BaseValue<DepthRangeType> {
     getDefault(): DepthRangeType {
         return [0, 1];
     }
-    _equals(v: DepthRangeType): boolean {
+    set(v: DepthRangeType) {
         const c = this.current;
-        return v[0] === c[0] && v[1] === c[1];
-    }
-    _set(v: DepthRangeType) {
+        if (v[0] === c[0] && v[1] === c[1] && !this.dirty) return;
         this.gl.depthRange(v[0], v[1]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -189,13 +194,16 @@ export class DepthTest extends BaseValue<boolean> {
     getDefault(): boolean {
         return false;
     }
-    _set(v: boolean) {
+    set(v: boolean) {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         if (v) {
             gl.enable(gl.DEPTH_TEST);
         } else {
             gl.disable(gl.DEPTH_TEST);
         }
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -203,8 +211,11 @@ export class DepthFunc extends BaseValue<DepthFuncType> {
     getDefault(): DepthFuncType {
         return this.gl.LESS;
     }
-    _set(v: DepthFuncType) {
+    set(v: DepthFuncType) {
+        if (v === this.current && !this.dirty) return;
         this.gl.depthFunc(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -212,13 +223,16 @@ export class Blend extends BaseValue<boolean> {
     getDefault(): boolean {
         return false;
     }
-    _set(v: boolean) {
+    set(v: boolean) {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         if (v) {
             gl.enable(gl.BLEND);
         } else {
             gl.disable(gl.BLEND);
         }
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -227,12 +241,12 @@ export class BlendFunc extends BaseValue<BlendFuncType> {
         const gl = this.gl;
         return [gl.ONE, gl.ZERO];
     }
-    _equals(v: BlendFuncType): boolean {
+    set(v: BlendFuncType) {
         const c = this.current;
-        return v[0] === c[0] && v[1] === c[1];
-    }
-    _set(v: BlendFuncType) {
+        if (v[0] === c[0] && v[1] === c[1] && !this.dirty) return;
         this.gl.blendFunc(v[0], v[1]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -240,12 +254,12 @@ export class BlendColor extends BaseValue<Color> {
     getDefault(): Color {
         return Color.transparent;
     }
-    _equals(v: Color): boolean {
+    set(v: Color) {
         const c = this.current;
-        return  v.r === c.r && v.g === c.g && v.b === c.b && v.a === c.a;
-    }
-    _set(v: Color) {
+        if (v.r === c.r && v.g === c.g && v.b === c.b && v.a === c.a && !this.dirty) return;
         this.gl.blendColor(v.r, v.g, v.b, v.a);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -253,8 +267,11 @@ export class BlendEquation extends BaseValue<BlendEquationType> {
     getDefault(): BlendEquationType {
         return this.gl.FUNC_ADD;
     }
-    _set(v: BlendEquationType) {
+    set(v: BlendEquationType) {
+        if (v === this.current && !this.dirty) return;
         this.gl.blendEquation(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -262,13 +279,16 @@ export class CullFace extends BaseValue<boolean> {
     getDefault(): boolean {
         return false;
     }
-    _set(v: boolean) {
+    set(v: boolean) {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         if (v) {
             gl.enable(gl.CULL_FACE);
         } else {
             gl.disable(gl.CULL_FACE);
         }
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -276,8 +296,11 @@ export class CullFaceSide extends BaseValue<CullFaceModeType> {
     getDefault(): CullFaceModeType {
         return this.gl.BACK;
     }
-    _set(v: CullFaceModeType) {
+    set(v: CullFaceModeType) {
+        if (v === this.current && !this.dirty) return;
         this.gl.cullFace(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -285,8 +308,11 @@ export class FrontFace extends BaseValue<FrontFaceType> {
     getDefault(): FrontFaceType {
         return this.gl.CCW;
     }
-    _set(v: FrontFaceType) {
+    set(v: FrontFaceType) {
+        if (v === this.current && !this.dirty) return;
         this.gl.frontFace(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -294,8 +320,11 @@ export class Program extends BaseValue<?WebGLProgram> {
     getDefault(): WebGLProgram {
         return null;
     }
-    _set(v: ?WebGLProgram) {
+    set(v: ?WebGLProgram) {
+        if (v === this.current && !this.dirty) return;
         this.gl.useProgram(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -303,8 +332,11 @@ export class ActiveTextureUnit extends BaseValue<TextureUnitType> {
     getDefault(): TextureUnitType {
         return this.gl.TEXTURE0;
     }
-    _set(v: TextureUnitType) {
+    set(v: TextureUnitType) {
+        if (v === this.current && !this.dirty) return;
         this.gl.activeTexture(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -313,12 +345,12 @@ export class Viewport extends BaseValue<ViewportType> {
         const gl = this.gl;
         return [0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight];
     }
-    _equals(v: ViewportType): boolean {
+    set(v: ViewportType) {
         const c = this.current;
-        return v[0] === c[0] && v[1] === c[1] && v[2] === c[2] && v[3] === c[3];
-    }
-    _set(v: ViewportType) {
+        if (v[0] === c[0] && v[1] === c[1] && v[2] === c[2] && v[3] === c[3] && !this.dirty) return;
         this.gl.viewport(v[0], v[1], v[2], v[3]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -326,9 +358,12 @@ export class BindFramebuffer extends BaseValue<?WebGLFramebuffer> {
     getDefault(): WebGLFramebuffer {
         return null;
     }
-    _set(v: ?WebGLFramebuffer) {
+    set(v: ?WebGLFramebuffer) {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -336,9 +371,12 @@ export class BindRenderbuffer extends BaseValue<?WebGLRenderbuffer> {
     getDefault(): WebGLRenderbuffer {
         return null;
     }
-    _set(v: ?WebGLRenderbuffer) {
+    set(v: ?WebGLRenderbuffer) {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         gl.bindRenderbuffer(gl.RENDERBUFFER, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -346,9 +384,12 @@ export class BindTexture extends BaseValue<?WebGLTexture> {
     getDefault(): WebGLTexture {
         return null;
     }
-    _set(v: ?WebGLTexture) {
+    set(v: ?WebGLTexture) {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -356,9 +397,12 @@ export class BindVertexBuffer extends BaseValue<?WebGLBuffer> {
     getDefault(): WebGLBuffer {
         return null;
     }
-    _set(v: ?WebGLBuffer) {
+    set(v: ?WebGLBuffer) {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         gl.bindBuffer(gl.ARRAY_BUFFER, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -385,10 +429,11 @@ export class BindVertexArrayOES extends BaseValue<any> {
     getDefault(): any {
         return null;
     }
-    _set(v: any) {
-        if (this.vao) {
-            this.vao.bindVertexArrayOES(v);
-        }
+    set(v: any) {
+        if (!this.vao || v === this.current && !this.dirty) return;
+        this.vao.bindVertexArrayOES(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -396,9 +441,12 @@ export class PixelStoreUnpack extends BaseValue<number> {
     getDefault(): number {
         return 4;
     }
-    _set(v: number) {
+    set(v: number) {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -406,9 +454,12 @@ export class PixelStoreUnpackPremultiplyAlpha extends BaseValue<boolean> {
     getDefault(): boolean {
         return false;
     }
-    _set(v: boolean): void {
+    set(v: boolean): void {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (v: any));
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -416,9 +467,12 @@ export class PixelStoreUnpackFlipY extends BaseValue<boolean> {
     getDefault(): boolean {
         return false;
     }
-    _set(v: boolean): void {
+    set(v: boolean): void {
+        if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, (v: any));
+        this.current = v;
+        this.dirty = false;
     }
 }
 
@@ -440,21 +494,27 @@ export class ColorAttachment extends FramebufferAttachment<WebGLTexture> {
     setDirty() {
         this.dirty = true;
     }
-    _set(v: ?WebGLTexture): void {
+    set(v: ?WebGLTexture): void {
+        if (v === this.current && !this.dirty) return;
         this.context.bindFramebuffer.set(this.parent);
         // note: it's possible to attach a renderbuffer to the color
         // attachment point, but thus far MBGL only uses textures for color
         const gl = this.gl;
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, v, 0);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
 export class DepthAttachment extends FramebufferAttachment<WebGLRenderbuffer> {
-    _set(v: ?WebGLRenderbuffer): void {
+    set(v: ?WebGLRenderbuffer): void {
+        if (v === this.current && !this.dirty) return;
         this.context.bindFramebuffer.set(this.parent);
         // note: it's possible to attach a texture to the depth attachment
         // point, but thus far MBGL only uses renderbuffers for depth
         const gl = this.gl;
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
