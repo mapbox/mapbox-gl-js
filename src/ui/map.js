@@ -367,12 +367,11 @@ class Map extends Camera {
 
         bindHandlers(this, options);
 
-        this.resize();
-
         this._hash = options.hash && (new Hash()).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
             if (options.bounds) {
+                this.resize();
                 this.fitBounds(options.bounds, { duration: 0 });
             } else {
                 this.jumpTo({
@@ -383,6 +382,8 @@ class Map extends Camera {
                 });
             }
         }
+
+        this.resize();
 
         if (options.style) this.setStyle(options.style, { localIdeographFontFamily: options.localIdeographFontFamily });
 
