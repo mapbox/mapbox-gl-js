@@ -7,6 +7,7 @@ function createSource(options, transformCallback) {
     const source = new RasterDEMTileSource('id', options, { send: function() {} }, options.eventedParent);
     source.onAdd({
         transform: { angle: 0, pitch: 0, showCollisionBoxes: false },
+        _getMapId: () => 1,
         _transformRequest: transformCallback ? transformCallback : (url) => { return { url }; }
     });
 

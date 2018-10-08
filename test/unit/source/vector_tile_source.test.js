@@ -8,6 +8,7 @@ function createSource(options, transformCallback) {
     const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
     source.onAdd({
         transform: { showCollisionBoxes: false },
+        _getMapId: () => 1,
         _transformRequest: transformCallback ? transformCallback : (url) => { return { url }; }
     });
 

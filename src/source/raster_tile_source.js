@@ -5,7 +5,7 @@ import { extend, pick } from '../util/util';
 import { getImage, ResourceType } from '../util/ajax';
 import { Event, ErrorEvent, Evented } from '../util/evented';
 import loadTileJSON from './load_tilejson';
-import { normalizeTileURL as normalizeURL, postTurnstileEvent } from '../util/mapbox';
+import { normalizeTileURL as normalizeURL, postTurnstileEvent, postMapLoadEvent } from '../util/mapbox';
 import TileBounds from './tile_bounds';
 import Texture from '../render/texture';
 
@@ -70,6 +70,7 @@ class RasterTileSource extends Evented implements Source {
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
 
                 postTurnstileEvent(tileJSON.tiles);
+                postMapLoadEvent(tileJSON.tiles, this.map._getMapId());
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
