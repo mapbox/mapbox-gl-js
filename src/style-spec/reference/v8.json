@@ -581,7 +581,7 @@
     },
     "filter": {
       "type": "filter",
-      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. The `feature-state` expression is not supported in filter expressions."
+      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. Zoom expressions in filters are only evaluated at integer zoom levels. The `feature-state` expression is not supported in filter expressions."
     },
     "layout": {
       "type": "layout",
