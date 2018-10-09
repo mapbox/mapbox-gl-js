@@ -217,18 +217,23 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
 @media screen {
     .mapboxgl-ctrl-attrib.mapboxgl-compact {
-        padding-top: 2px;
-        padding-bottom: 2px;
         margin: 0 10px 10px;
         position: relative;
-        padding-right: 24px;
         background-color: #fff;
         border-radius: 3px 12px 12px 3px;
-        visibility: hidden;
     }
 
     .mapboxgl-ctrl-attrib.mapboxgl-compact:hover {
+        padding: 2px 24px 2px 4px;
         visibility: visible;
+    }
+
+    .mapboxgl-ctrl-attrib.mapboxgl-compact > a {
+        display: none;
+    }
+
+    .mapboxgl-ctrl-attrib.mapboxgl-compact:hover > a {
+        display: inline;
     }
 
     .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
@@ -242,7 +247,6 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         width: 24px;
         height: 24px;
         box-sizing: border-box;
-        visibility: visible;
         border-radius: 12px;
     }
 }
