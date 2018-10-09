@@ -381,9 +381,9 @@ test("mapbox", (t) => {
                     lastSuccess: now
                 }));
 
-                t.stub(browser, 'now').callsFake(() => now + 5); // A bit later
-
+                const dateNow = t.stub(Date, 'now').callsFake(() => now + 5); // A bit later
                 event.postTurnstileEvent(mapboxTileURLs);
+                dateNow.restore();
 
                 t.false(window.server.requests.length);
                 t.end();
@@ -397,9 +397,9 @@ test("mapbox", (t) => {
                     lastSuccess: now
                 }));
 
-                t.stub(browser, 'now').callsFake(() => now + ms25Hours); // next day
-
+                const dateNow = t.stub(Date, 'now').callsFake(() => now + ms25Hours);
                 event.postTurnstileEvent(mapboxTileURLs);
+                dateNow.restore();
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -417,8 +417,6 @@ test("mapbox", (t) => {
                     lastSuccess: now + ms25Hours // 24-hours later
                 }));
 
-                t.stub(browser, 'now').callsFake(() => now); // Past relative ot lastSuccess
-
                 event.postTurnstileEvent(mapboxTileURLs);
 
                 const req = window.server.requests[0];
@@ -431,13 +429,14 @@ test("mapbox", (t) => {
 
             t.test('does not POST appuserTurnstile event second time within same calendar day', (t) => {
                 let now = +Date.now();
-                t.stub(browser, 'now').callsFake(() => now);
                 event.postTurnstileEvent(mapboxTileURLs);
 
                 //Post second event
                 const firstEvent = now;
                 now += (60 * 1000); // A bit later
+                const dateNow = t.stub(Date, 'now').callsFake(() => now);
                 event.postTurnstileEvent(mapboxTileURLs);
+                dateNow.restore();
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -452,13 +451,14 @@ test("mapbox", (t) => {
 
             t.test('does not POST appuserTurnstile event second time when clock goes backwards less than a day', (t) => {
                 let now = +Date.now();
-                t.stub(browser, 'now').callsFake(() => now);
                 event.postTurnstileEvent(mapboxTileURLs);
 
                 //Post second event
                 const firstEvent = now;
                 now -= (60 * 1000); // A bit earlier
+                const dateNow = t.stub(Date, 'now').callsFake(() => now);
                 event.postTurnstileEvent(mapboxTileURLs);
+                dateNow.restore();
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -507,12 +507,13 @@ test("mapbox", (t) => {
             t.test('does not POST appuserTurnstile event second time within same calendar day', (t) => {
                 let now = +Date.now();
                 const firstEvent = now;
-                t.stub(browser, 'now').callsFake(() => now);
                 event.postTurnstileEvent(mapboxTileURLs);
 
                 //Post second event
                 now += (60 * 1000); // A bit later
+                const dateNow = t.stub(Date, 'now').callsFake(() => now);
                 event.postTurnstileEvent(mapboxTileURLs);
+                dateNow.restore();
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -528,12 +529,13 @@ test("mapbox", (t) => {
             t.test('does not POST appuserTurnstile event second time when clock goes backwards less than a day', (t) => {
                 let now = +Date.now();
                 const firstEvent = now;
-                t.stub(browser, 'now').callsFake(() => now);
                 event.postTurnstileEvent(mapboxTileURLs);
 
                 //Post second event
                 now -= (60 * 1000); // A bit earlier
+                const dateNow = t.stub(Date, 'now').callsFake(() => now);
                 event.postTurnstileEvent(mapboxTileURLs);
+                dateNow.restore();
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -565,14 +567,13 @@ test("mapbox", (t) => {
             });
 
             t.test('POSTs appUserTurnstile event on next calendar day', (t) => {
-                let now = +Date.now();
-                t.stub(browser, 'now').callsFake(() => now);
-
+                const now = +Date.now();
                 event.postTurnstileEvent(mapboxTileURLs);
-
-                now += ms25Hours; // Add a day
-                const tomorrow = now;
+                // Add a day
+                const tomorrow = now + ms25Hours;
+                const dateNow = t.stub(Date, 'now').callsFake(() => tomorrow);
                 event.postTurnstileEvent(mapboxTileURLs);
+                dateNow.restore();
 
                 let req = window.server.requests[0];
                 req.respond(200);
@@ -592,18 +593,21 @@ test("mapbox", (t) => {
 
             t.test('Queues and POSTs appuserTurnstile events when triggerred in quick succession', (t) => {
                 let now = Date.now();
-                t.stub(browser, 'now').callsFake(() => now);
 
                 const today = now;
                 event.postTurnstileEvent(mapboxTileURLs);
 
                 const laterToday = now + 1;
+                let dateNow = t.stub(Date, 'now').callsFake(() => laterToday);
                 now = laterToday;
                 event.postTurnstileEvent(mapboxTileURLs);
+                dateNow.restore();
 
                 const tomorrow = laterToday + ms25Hours; // Add a day
                 now = tomorrow;
+                dateNow = t.stub(Date, 'now').callsFake(() => tomorrow);
                 event.postTurnstileEvent(mapboxTileURLs);
+                dateNow.restore();
 
                 const reqToday = window.server.requests[0];
                 reqToday.respond(200);

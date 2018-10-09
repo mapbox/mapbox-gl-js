@@ -152,7 +152,7 @@ export class TurnstileEvent {
         if (config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
             tileUrls.some(url => isMapboxHTTPURL(url))) {
-            this.queueRequest(browser.now());
+            this.queueRequest(Date.now());
         }
     }
 
