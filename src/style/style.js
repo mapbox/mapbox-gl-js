@@ -343,6 +343,7 @@ class Style extends Evented {
             return;
         }
 
+        const changed = this._changed;
         if (this._changed) {
             const updatedIds = Object.keys(this._updatedLayers);
             const removedIds = Object.keys(this._removedLayers);
@@ -367,8 +368,6 @@ class Style extends Evented {
             this.light.updateTransitions(parameters);
 
             this._resetUpdates();
-
-            this.fire(new Event('data', {dataType: 'style'}));
         }
 
         for (const sourceId in this.sourceCaches) {
@@ -386,6 +385,11 @@ class Style extends Evented {
 
         this.light.recalculate(parameters);
         this.z = parameters.zoom;
+
+        if (changed) {
+            this.fire(new Event('data', {dataType: 'style'}));
+        }
+
     }
 
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
