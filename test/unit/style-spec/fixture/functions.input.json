@@ -967,6 +967,25 @@
         "layout": {
           "line-join": [ "coalesce", ["feature-state", "myState"], "bevel"]
         }
+    }, {
+      "id": "invalid function - expression as stop value",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "base": 1,
+          "stops": [
+            [
+              6,
+              [
+                "literal",
+                3
+              ]
+            ]
+          ]
+        }
       }
+    }
   ]
 }

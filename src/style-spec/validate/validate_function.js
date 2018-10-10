@@ -1,6 +1,7 @@
 
 import ValidationError from '../error/validation_error';
 import getType from '../util/get_type';
+import extend from '../util/extend';
 import validate from './validate';
 import validateObject from './validate_object';
 import validateArray from './validate_array';
@@ -138,10 +139,15 @@ export default function validateFunction(options) {
             }, value));
         }
 
+        // Remove `expression` from the value spec because expressions
+        // and functions are not allowed as values within functions.
+        const stopValueSpec = extend({}, functionValueSpec);
+        delete stopValueSpec.expression;
+
         return errors.concat(validate({
             key: `${key}[1]`,
             value: value[1],
-            valueSpec: functionValueSpec,
+            valueSpec: stopValueSpec,
             style: options.style,
             styleSpec: options.styleSpec
         }));
