@@ -3,11 +3,11 @@ import sourcemaps from 'rollup-plugin-sourcemaps';
 import {plugins} from './build/rollup_plugins';
 
 const version = JSON.parse(fs.readFileSync('package.json')).version;
-const {BUILD} = process.env;
-const minified = BUILD === 'production';
-const production = BUILD === 'production' || BUILD === 'production-unminified';
+const {BUILD, MINIFY} = process.env;
+const minified = MINIFY === 'true';
+const production = BUILD === 'production';
 const outputFile =
-    minified ? 'dist/mapbox-gl.js' :
+    production && minified ? 'dist/mapbox-gl.js' :
     production ? 'dist/mapbox-gl-unminified.js' : 'dist/mapbox-gl-dev.js';
 
 const config = [{
