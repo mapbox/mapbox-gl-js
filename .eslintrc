@@ -10,7 +10,8 @@
   },
   "plugins": [
     "flowtype",
-    "import"
+    "import",
+    "geojson"
   ],
   "rules": {
     "array-bracket-spacing": "off",
