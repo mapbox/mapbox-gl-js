@@ -16,6 +16,12 @@ const nonMapboxTileURLs = [
     'https://b.example.com/tiles/{z}/{x}/{y}.mvt'
 ];
 
+function withFixedDate(t, now, fn) {
+    const dateNow = t.stub(Date, 'now').callsFake(() => now);
+    fn();
+    dateNow.restore();
+}
+
 test("mapbox", (t) => {
     const mapboxSource = 'mapbox://user.map';
     const nonMapboxSource = 'http://www.example.com/tiles.json';
@@ -381,9 +387,8 @@ test("mapbox", (t) => {
                     lastSuccess: now
                 }));
 
-                const dateNow = t.stub(Date, 'now').callsFake(() => now + 5); // A bit later
-                event.postTurnstileEvent(mapboxTileURLs);
-                dateNow.restore();
+                // Post 5 seconds later
+                withFixedDate(t, now + 5, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 t.false(window.server.requests.length);
                 t.end();
@@ -397,9 +402,7 @@ test("mapbox", (t) => {
                     lastSuccess: now
                 }));
 
-                const dateNow = t.stub(Date, 'now').callsFake(() => now + ms25Hours);
-                event.postTurnstileEvent(mapboxTileURLs);
-                dateNow.restore();
+                withFixedDate(t, now + ms25Hours, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -417,7 +420,7 @@ test("mapbox", (t) => {
                     lastSuccess: now + ms25Hours // 24-hours later
                 }));
 
-                event.postTurnstileEvent(mapboxTileURLs);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -429,14 +432,12 @@ test("mapbox", (t) => {
 
             t.test('does not POST appuserTurnstile event second time within same calendar day', (t) => {
                 let now = +Date.now();
-                event.postTurnstileEvent(mapboxTileURLs);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 //Post second event
                 const firstEvent = now;
                 now += (60 * 1000); // A bit later
-                const dateNow = t.stub(Date, 'now').callsFake(() => now);
-                event.postTurnstileEvent(mapboxTileURLs);
-                dateNow.restore();
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -451,14 +452,12 @@ test("mapbox", (t) => {
 
             t.test('does not POST appuserTurnstile event second time when clock goes backwards less than a day', (t) => {
                 let now = +Date.now();
-                event.postTurnstileEvent(mapboxTileURLs);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 //Post second event
                 const firstEvent = now;
                 now -= (60 * 1000); // A bit earlier
-                const dateNow = t.stub(Date, 'now').callsFake(() => now);
-                event.postTurnstileEvent(mapboxTileURLs);
-                dateNow.restore();
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -507,13 +506,11 @@ test("mapbox", (t) => {
             t.test('does not POST appuserTurnstile event second time within same calendar day', (t) => {
                 let now = +Date.now();
                 const firstEvent = now;
-                event.postTurnstileEvent(mapboxTileURLs);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 //Post second event
                 now += (60 * 1000); // A bit later
-                const dateNow = t.stub(Date, 'now').callsFake(() => now);
-                event.postTurnstileEvent(mapboxTileURLs);
-                dateNow.restore();
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -533,9 +530,7 @@ test("mapbox", (t) => {
 
                 //Post second event
                 now -= (60 * 1000); // A bit earlier
-                const dateNow = t.stub(Date, 'now').callsFake(() => now);
-                event.postTurnstileEvent(mapboxTileURLs);
-                dateNow.restore();
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -571,9 +566,7 @@ test("mapbox", (t) => {
                 event.postTurnstileEvent(mapboxTileURLs);
                 // Add a day
                 const tomorrow = now + ms25Hours;
-                const dateNow = t.stub(Date, 'now').callsFake(() => tomorrow);
-                event.postTurnstileEvent(mapboxTileURLs);
-                dateNow.restore();
+                withFixedDate(t, tomorrow, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 let req = window.server.requests[0];
                 req.respond(200);
@@ -598,16 +591,12 @@ test("mapbox", (t) => {
                 event.postTurnstileEvent(mapboxTileURLs);
 
                 const laterToday = now + 1;
-                let dateNow = t.stub(Date, 'now').callsFake(() => laterToday);
                 now = laterToday;
-                event.postTurnstileEvent(mapboxTileURLs);
-                dateNow.restore();
+                withFixedDate(t, laterToday, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const tomorrow = laterToday + ms25Hours; // Add a day
                 now = tomorrow;
-                dateNow = t.stub(Date, 'now').callsFake(() => tomorrow);
-                event.postTurnstileEvent(mapboxTileURLs);
-                dateNow.restore();
+                withFixedDate(t, tomorrow, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const reqToday = window.server.requests[0];
                 reqToday.respond(200);
