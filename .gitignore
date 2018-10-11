@@ -3,6 +3,7 @@
 /dist/
 /docs/pages/dist/mapbox-gl-dev.js
 /docs/pages/dist/mapbox-gl.js
+/docs/pages/dist/mapbox-gl-unminified.js
 *.js.map
 node_modules
 package-lock.json
