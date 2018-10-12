@@ -31,7 +31,7 @@ class Coalesce implements Expression {
         const parsedArgs = [];
 
         for (const arg of args.slice(1)) {
-            const parsed = context.parse(arg, 1 + parsedArgs.length, outputType, undefined, {omitTypeAnnotations: true});
+            const parsed = context.parse(arg, 1 + parsedArgs.length, outputType, undefined, {typeAnnotation: 'omit'});
             if (!parsed) return null;
             outputType = outputType || parsed.type;
             parsedArgs.push(parsed);

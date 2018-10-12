@@ -13,7 +13,8 @@
         "MapboxDirections": true,
         "turf": true,
         "d3": true,
-        "Uint8Array": true
+        "Uint8Array": true,
+        "Float32Array": true
       },
       "rules": {
         "flowtype/require-valid-file-annotation": [0],

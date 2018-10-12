@@ -1,8 +1,20 @@
 // @flow
 
-import { NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, ErrorType, CollatorType, array, toString } from '../types';
+import {
+    type Type,
+    NumberType,
+    StringType,
+    BooleanType,
+    ColorType,
+    ObjectType,
+    ValueType,
+    ErrorType,
+    CollatorType,
+    array,
+    toString as typeToString
+} from '../types';
 
-import { typeOf, Color, validateRGBA } from '../values';
+import { typeOf, Color, validateRGBA, toString as valueToString } from '../values';
 import CompoundExpression from '../compound_expression';
 import RuntimeError from '../runtime_error';
 import Let from './let';
@@ -24,11 +36,10 @@ import {
     LessThanOrEqual,
     GreaterThanOrEqual
 } from './comparison';
-import { CollatorExpression } from './collator';
-import { Formatted, FormatExpression } from './formatted';
+import CollatorExpression from './collator';
+import FormatExpression from './format';
 import Length from './length';
 
-import type { Type } from '../types';
 import type { Varargs } from '../compound_expression';
 import type { ExpressionRegistry } from '../expression';
 
@@ -58,8 +69,10 @@ const expressions: ExpressionRegistry = {
     'object': Assertion,
     'step': Step,
     'string': Assertion,
+    'to-boolean': Coercion,
     'to-color': Coercion,
     'to-number': Coercion,
+    'to-string': Coercion,
     'var': Var
 };
 
@@ -108,29 +121,7 @@ CompoundExpression.register(expressions, {
     'typeof': [
         StringType,
         [ValueType],
-        (ctx, [v]) => toString(typeOf(v.evaluate(ctx)))
-    ],
-    'to-string': [
-        StringType,
-        [ValueType],
-        (ctx, [v]) => {
-            v = v.evaluate(ctx);
-            const type = typeof v;
-            if (v === null) {
-                return '';
-            } else if (type === 'string' || type === 'number' || type === 'boolean') {
-                return String(v);
-            } else if (v instanceof Color || v instanceof Formatted) {
-                return v.toString();
-            } else {
-                return JSON.stringify(v);
-            }
-        }
-    ],
-    'to-boolean': [
-        BooleanType,
-        [ValueType],
-        (ctx, [v]) => Boolean(v.evaluate(ctx))
+        (ctx, [v]) => typeToString(typeOf(v.evaluate(ctx)))
     ],
     'to-rgba': [
         array(NumberType, 4),
@@ -280,7 +271,7 @@ CompoundExpression.register(expressions, {
     'log10': [
         NumberType,
         [NumberType],
-        (ctx, [n]) => Math.log10(n.evaluate(ctx))
+        (ctx, [n]) => Math.log(n.evaluate(ctx)) / Math.LN10
     ],
     'ln': [
         NumberType,
@@ -290,7 +281,7 @@ CompoundExpression.register(expressions, {
     'log2': [
         NumberType,
         [NumberType],
-        (ctx, [n]) => Math.log2(n.evaluate(ctx))
+        (ctx, [n]) => Math.log(n.evaluate(ctx)) / Math.LN2
     ],
     'sin': [
         NumberType,
@@ -544,8 +535,8 @@ CompoundExpression.register(expressions, {
     ],
     'concat': [
         StringType,
-        varargs(StringType),
-        (ctx, args) => args.map(arg => arg.evaluate(ctx)).join('')
+        varargs(ValueType),
+        (ctx, args) => args.map(arg => valueToString(arg.evaluate(ctx))).join('')
     ],
     'resolved-locale': [
         StringType,

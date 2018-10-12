@@ -58,6 +58,7 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) =
     source.loaded = {
         '0': {
             status: 'done',
+            vectorTile: {},
             parse
         }
     };
@@ -79,6 +80,7 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
     source.loaded = {
         '0': {
             status: 'done',
+            vectorTile: {},
             parse
         }
     };
@@ -112,6 +114,7 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
     source.loaded = {
         '0': {
             status: 'done',
+            vectorTile: {},
             parse
         }
     };
@@ -151,6 +154,27 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
 
     t.end();
 });
+
+test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTile data but does call callback', (t) => {
+    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const parse = t.spy();
+
+    source.loaded = {
+        '0': {
+            status: 'done',
+            parse
+        }
+    };
+
+    const callback = t.spy();
+
+    source.reloadTile({ uid: 0 }, callback);
+    t.ok(parse.notCalled);
+    t.ok(callback.calledOnce);
+
+    t.end();
+});
+
 
 test('VectorTileWorkerSource provides resource timing information', (t) => {
     const rawTileData = fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));

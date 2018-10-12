@@ -14,6 +14,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type DepthMode from '../gl/depth_mode';
 import type StencilMode from '../gl/stencil_mode';
 import type ColorMode from '../gl/color_mode';
+import type CullFaceMode from '../gl/cull_face_mode';
 import type {UniformBindings, UniformValues, UniformLocations} from './uniform_binding';
 
 export type DrawMode =
@@ -97,6 +98,7 @@ class Program<Us: UniformBindings> {
          depthMode: $ReadOnly<DepthMode>,
          stencilMode: $ReadOnly<StencilMode>,
          colorMode: $ReadOnly<ColorMode>,
+         cullFaceMode: $ReadOnly<CullFaceMode>,
          uniformValues: UniformValues<Us>,
          layerID: string,
          layoutVertexBuffer: VertexBuffer,
@@ -114,6 +116,7 @@ class Program<Us: UniformBindings> {
         context.setDepthMode(depthMode);
         context.setStencilMode(stencilMode);
         context.setColorMode(colorMode);
+        context.setCullFace(cullFaceMode);
 
         for (const name in this.fixedUniforms) {
             this.fixedUniforms[name].set(uniformValues[name]);

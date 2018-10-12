@@ -3199,7 +3199,7 @@
         }
       },
       "concat": {
-        "doc": "Returns a `string` consisting of the concatenation of the inputs. If any inputs are `formatted`, returns a `formatted` with default formatting options for all unformatted inputs.",
+        "doc": "Returns a `string` consisting of the concatenation of the inputs. Each input is converted to a string as if by `to-string`.",
         "group": "String",
         "sdk-support": {
           "basic functionality": {
@@ -3763,6 +3763,22 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "fill-extrusion-vertical-gradient": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Whether to apply a vertical gradient to the sides of a fill-extrusion layer. If true, sides will be shaded slightly darker farther down.",
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.50.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": ["zoom"]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_line": {

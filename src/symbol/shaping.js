@@ -9,7 +9,7 @@ import { plugin as rtlTextPlugin } from '../source/rtl_text_plugin';
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {ImagePosition} from '../render/image_atlas';
-import {Formatted} from '../style-spec/expression/definitions/formatted';
+import Formatted from '../style-spec/expression/types/formatted';
 
 const WritingMode = {
     horizontal: 1,
@@ -53,25 +53,17 @@ class TaggedString {
         this.sections = [];
     }
 
-    static fromFeature(text: string | Formatted, defaultFontStack: string) {
+    static fromFeature(text: Formatted, defaultFontStack: string) {
         const result = new TaggedString();
-        if (text instanceof Formatted) {
-            for (let i = 0; i < text.sections.length; i++) {
-                const section = text.sections[i];
-                result.sections.push({
-                    scale: section.scale || 1,
-                    fontStack: section.fontStack || defaultFontStack
-                });
-                result.text += section.text;
-                for (let j = 0; j < section.text.length; j++) {
-                    result.sectionIndex.push(i);
-                }
-            }
-        } else {
-            result.text = text;
-            result.sections.push({ scale: 1, fontStack: defaultFontStack });
-            for (let i = 0; i < text.length; i++) {
-                result.sectionIndex.push(0);
+        for (let i = 0; i < text.sections.length; i++) {
+            const section = text.sections[i];
+            result.sections.push({
+                scale: section.scale || 1,
+                fontStack: section.fontStack || defaultFontStack
+            });
+            result.text += section.text;
+            for (let j = 0; j < section.text.length; j++) {
+                result.sectionIndex.push(i);
             }
         }
         return result;
@@ -142,7 +134,7 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
     return lines;
 }
 
-function shapeText(text: string | Formatted,
+function shapeText(text: Formatted,
                    glyphs: {[string]: {[number]: ?StyleGlyph}},
                    defaultFontStack: string,
                    maxWidth: number,

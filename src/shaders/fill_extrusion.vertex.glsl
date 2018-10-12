@@ -2,20 +2,21 @@ uniform mat4 u_matrix;
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
+uniform float u_vertical_gradient;
 
 attribute vec2 a_pos;
 attribute vec4 a_normal_ed;
 
 varying vec4 v_color;
 
-#pragma mapbox: define lowp float base
-#pragma mapbox: define lowp float height
+#pragma mapbox: define highp float base
+#pragma mapbox: define highp float height
 
 #pragma mapbox: define highp vec4 color
 
 void main() {
-    #pragma mapbox: initialize lowp float base
-    #pragma mapbox: initialize lowp float height
+    #pragma mapbox: initialize highp float base
+    #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color
 
     vec3 normal = a_normal_ed.xyz;
@@ -47,7 +48,11 @@ void main() {
 
     // Add gradient along z axis of side surfaces
     if (normal.y != 0.0) {
-        directional *= clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0);
+        // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
+        // and otherwise calculates the gradient based on base + height
+        directional *= (
+            (1.0 - u_vertical_gradient) +
+            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
     }
 
     // Assign final color based on surface + ambient light color, diffuse light directional, and light color

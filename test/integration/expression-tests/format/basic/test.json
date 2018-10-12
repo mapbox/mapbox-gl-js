@@ -55,18 +55,13 @@
     "serialized": [
       "format",
       "a",
-      {
-        "font-scale": null,
-        "text-font": null
-      },
+      {},
       "b",
       {
-        "font-scale": 2,
-        "text-font": null
+        "font-scale": 2
       },
       "c",
       {
-        "font-scale": null,
         "text-font": [
           "literal",
           [

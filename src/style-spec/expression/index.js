@@ -47,22 +47,17 @@ export class StyleExpression {
     _evaluator: EvaluationContext;
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
-    _enumValues: {[string]: any};
+    _enumValues: ?{[string]: any};
 
     constructor(expression: Expression, propertySpec: StylePropertySpecification) {
         this.expression = expression;
         this._warningHistory = {};
+        this._evaluator = new EvaluationContext();
         this._defaultValue = getDefaultValue(propertySpec);
-        if (propertySpec.type === 'enum') {
-            this._enumValues = propertySpec.values;
-        }
+        this._enumValues = propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
     evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
-        if (!this._evaluator) {
-            this._evaluator = new EvaluationContext();
-        }
-
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
@@ -71,13 +66,9 @@ export class StyleExpression {
     }
 
     evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
-        if (!this._evaluator) {
-            this._evaluator = new EvaluationContext();
-        }
-
         this._evaluator.globals = globals;
-        this._evaluator.feature = feature;
-        this._evaluator.featureState = featureState;
+        this._evaluator.feature = feature || null;
+        this._evaluator.featureState = featureState || null;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
@@ -116,7 +107,11 @@ export function isExpression(expression: mixed) {
  */
 export function createExpression(expression: mixed, propertySpec: StylePropertySpecification): Result<StyleExpression, Array<ParsingError>> {
     const parser = new ParsingContext(definitions, [], getExpectedType(propertySpec));
-    const parsed = parser.parse(expression);
+
+    // For string-valued properties, coerce to string at the top level rather than asserting.
+    const parsed = parser.parse(expression, undefined, undefined, undefined,
+        propertySpec.type === 'string' ? {typeAnnotation: 'coerce'} : undefined);
+
     if (!parsed) {
         assert(parser.errors.length > 0);
         return error(parser.errors);
@@ -347,22 +342,23 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
     return result;
 }
 
-import { ColorType, StringType, NumberType, BooleanType, ValueType, array } from './types';
+import { ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, array } from './types';
 
-function getExpectedType(spec: StylePropertySpecification): Type | null {
+function getExpectedType(spec: StylePropertySpecification): Type {
     const types = {
         color: ColorType,
         string: StringType,
         number: NumberType,
         enum: StringType,
-        boolean: BooleanType
+        boolean: BooleanType,
+        formatted: FormattedType
     };
 
     if (spec.type === 'array') {
         return array(types[spec.value] || ValueType, spec.length);
     }
 
-    return types[spec.type] || null;
+    return types[spec.type];
 }
 
 function getDefaultValue(spec: StylePropertySpecification): Value {

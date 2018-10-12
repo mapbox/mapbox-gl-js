@@ -1,0 +1,10 @@
+{
+  "expression": ["to-boolean", ["get", "x"], ["get", "y"]],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [{"key": "", "error": "Expected one argument."}]
+    }
+  }
+}

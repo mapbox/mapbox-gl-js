@@ -333,7 +333,8 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
         "fill-extrusion-pattern"?: DataDrivenPropertyValueSpecification<string>,
         "fill-extrusion-height"?: DataDrivenPropertyValueSpecification<number>,
-        "fill-extrusion-base"?: DataDrivenPropertyValueSpecification<number>
+        "fill-extrusion-base"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-extrusion-vertical-gradient"?: PropertyValueSpecification<boolean>
     |}
 |}
 

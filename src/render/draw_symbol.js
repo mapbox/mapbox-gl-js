@@ -11,6 +11,7 @@ import properties from '../style/style_layer/symbol_style_layer_properties';
 const symbolLayoutProperties = properties.layout;
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
+import CullFaceMode from '../gl/cull_face_mode';
 import {
     symbolIconUniformValues,
     symbolSDFUniformValues
@@ -152,7 +153,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 function drawSymbolElements(buffers, layer, painter, program, depthMode, stencilMode, colorMode, uniformValues) {
     const context = painter.context;
     const gl = context.gl;
-    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, buffers.layoutVertexBuffer,
         buffers.indexBuffer, buffers.segments, layer.paint,
         painter.transform.zoom, buffers.programConfigurations.get(layer.id),

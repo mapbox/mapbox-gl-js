@@ -7,6 +7,7 @@ import {plugin as rtlTextPlugin} from '../src/source/rtl_text_plugin';
 import rtlText from '@mapbox/mapbox-gl-rtl-text';
 import fs from 'fs';
 import path from 'path';
+import customLayerImplementations from './integration/custom_layer_implementations';
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
@@ -28,6 +29,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
     }
 
     window.devicePixelRatio = options.pixelRatio;
+
+    if (options.addFakeCanvas) {
+        const fakeCanvas = createFakeCanvas(window.document, options.addFakeCanvas.id, options.addFakeCanvas.image);
+        window.document.body.appendChild(fakeCanvas);
+    }
 
     const container = window.document.createElement('div');
     Object.defineProperty(container, 'clientWidth', {value: options.width});
@@ -100,6 +106,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             gl.getExtension('STACKGL_destroy_context').destroy();
             delete map.painter.context.gl;
 
+            if (options.addFakeCanvas) {
+                const fakeCanvas = window.document.getElementById(options.addFakeCanvas.id);
+                fakeCanvas.parentNode.removeChild(fakeCanvas);
+            }
+
             callback(null, data, results.map((feature) => {
                 feature = feature.toJSON();
                 delete feature.layer;
@@ -141,6 +152,10 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             const {data, width, height} = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
             map.addImage(operation[1], {width, height, data: new Uint8Array(data)}, operation[3] || {});
             applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'addCustomLayer') {
+            map.addLayer(new customLayerImplementations[operation[1]](), operation[2]);
+            map._render();
+            applyOperations(map, operations.slice(1), callback);
 
         } else {
             map[operation[0]].apply(map, operation.slice(1));
@@ -148,3 +163,13 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         }
     }
 };
+
+function createFakeCanvas(document, id, imagePath) {
+    const fakeCanvas = document.createElement('canvas');
+    const image = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', imagePath)));
+    fakeCanvas.id = id;
+    fakeCanvas.data = image.data;
+    fakeCanvas.width = image.width;
+    fakeCanvas.height = image.height;
+    return fakeCanvas;
+}

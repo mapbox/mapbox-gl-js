@@ -81,6 +81,53 @@ test('ImageSource', (t) => {
         t.end();
     });
 
+    t.test('updates url from updateImage', (t) => {
+        const source = createSource({ url : '/image.png' });
+        const map = new StubMap();
+        const spy = t.spy(map, '_transformRequest');
+        source.onAdd(map);
+        respond();
+        t.ok(spy.calledOnce);
+        t.equal(spy.getCall(0).args[0], '/image.png');
+        t.equal(spy.getCall(0).args[1], 'Image');
+        source.updateImage({ url: '/image2.png' });
+        respond();
+        t.ok(spy.calledTwice);
+        t.equal(spy.getCall(1).args[0], '/image2.png');
+        t.equal(spy.getCall(1).args[1], 'Image');
+        t.end();
+    });
+
+    t.test('sets coordinates', (t) => {
+        const source = createSource({ url : '/image.png' });
+        const map = new StubMap();
+        source.onAdd(map);
+        respond();
+        const beforeSerialized = source.serialize();
+        t.deepEqual(beforeSerialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
+        source.setCoordinates([[0, 0], [-1, 0], [-1, -1], [0, -1]]);
+        const afterSerialized = source.serialize();
+        t.deepEqual(afterSerialized.coordinates, [[0, 0], [-1, 0], [-1, -1], [0, -1]]);
+        t.end();
+    });
+
+    t.test('sets coordinates via updateImage', (t) => {
+        const source = createSource({ url : '/image.png' });
+        const map = new StubMap();
+        source.onAdd(map);
+        respond();
+        const beforeSerialized = source.serialize();
+        t.deepEqual(beforeSerialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
+        source.updateImage({
+            url: '/image2.png',
+            coordinates: [[0, 0], [-1, 0], [-1, -1], [0, -1]]
+        });
+        respond();
+        const afterSerialized = source.serialize();
+        t.deepEqual(afterSerialized.coordinates, [[0, 0], [-1, 0], [-1, -1], [0, -1]]);
+        t.end();
+    });
+
     t.test('fires data event when content is loaded', (t) => {
         const source = createSource({ url : '/image.png' });
         source.on('data', (e) => {

@@ -19,6 +19,7 @@ import Context from '../gl/context';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
+import CullFaceMode from '../gl/cull_face_mode';
 import Texture from './texture';
 import updateTileMasks from './tile_mask';
 import { clippingMaskUniformValues } from './program/clipping_mask_program';
@@ -33,6 +34,7 @@ import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
 import debug from './draw_debug';
+import custom from './draw_custom';
 
 const draw = {
     symbol,
@@ -44,7 +46,8 @@ const draw = {
     hillshade,
     raster,
     background,
-    debug
+    debug,
+    custom
 };
 
 import type Transform from '../geo/transform';
@@ -225,7 +228,7 @@ class Painter {
         mat4.scale(matrix, matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]);
 
         this.useProgram('clippingMask').draw(context, gl.TRIANGLES,
-            DepthMode.disabled, this.stencilClearMode, ColorMode.disabled,
+            DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
             clippingMaskUniformValues(matrix),
             '$clipping', this.viewportBuffer,
             this.quadTriangleIndexBuffer, this.viewportSegments);
@@ -249,7 +252,7 @@ class Painter {
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({ func: gl.ALWAYS, mask: 0 }, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
-                ColorMode.disabled, clippingMaskUniformValues(tileID.posMatrix),
+                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.posMatrix),
                 '$clipping', this.tileExtentBuffer,
                 this.quadTriangleIndexBuffer, this.tileExtentSegments);
         }
@@ -332,7 +335,7 @@ class Painter {
             if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
             const coords = coordsDescending[layer.source];
-            if (!coords.length) continue;
+            if (layer.type !== 'custom' && !coords.length) continue;
 
             this.renderLayer(this, sourceCaches[layer.source], layer, coords);
         }
@@ -397,6 +400,8 @@ class Painter {
                 break;
             }
         }
+
+        this.setCustomLayerDefaults();
     }
 
     setupOffscreenDepthRenderbuffer(): void {
@@ -409,7 +414,7 @@ class Painter {
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if (layer.type !== 'background' && !coords.length) return;
+        if (layer.type !== 'background' && layer.type !== 'custom' && !coords.length) return;
         this.id = layer.id;
 
         draw[layer.type](painter, sourceCache, layer, coords);
@@ -480,6 +485,35 @@ class Painter {
             this.cache[key] = new Program(this.context, shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector);
         }
         return this.cache[key];
+    }
+
+    /*
+     * Reset some GL state to default values to avoid hard-to-debug bugs
+     * in custom layers.
+     */
+    setCustomLayerDefaults() {
+        // Prevent custom layers from unintentionally modify the last VAO used.
+        // All other state is state is restored on it's own, but for VAOs it's
+        // simpler to unbind so that we don't have to track the state of VAOs.
+        this.context.unbindVAO();
+
+        // The default values for this state is meaningful and often expected.
+        // Leaving this state dirty could cause a lot of confusion for users.
+        this.context.cullFace.setDefault();
+        this.context.activeTexture.setDefault();
+        this.context.pixelStoreUnpack.setDefault();
+        this.context.pixelStoreUnpackPremultiplyAlpha.setDefault();
+        this.context.pixelStoreUnpackFlipY.setDefault();
+    }
+
+    /*
+     * Set GL state that is shared by all layers.
+     */
+    setBaseState() {
+        const gl = this.context.gl;
+        this.context.cullFace.set(false);
+        this.context.viewport.set([0, 0, this.width, this.height]);
+        this.context.blendEquation.set(gl.FUNC_ADD);
     }
 }
 
