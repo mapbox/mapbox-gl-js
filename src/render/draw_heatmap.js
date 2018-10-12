@@ -67,9 +67,10 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
                 programConfiguration);
         }
 
-        context.viewport.set([0, 0, painter.width, painter.height]);
-
         convertHeatmapToSlope(painter, layer);
+
+        // Restore viewport after working with downsample
+        context.viewport.set([0, 0, painter.width, painter.height]);
 
     } else if (painter.renderPass === 'translucent') {
         painter.context.setColorMode(painter.colorModeForRenderPass());
@@ -82,7 +83,7 @@ function bindHeatmapFramebuffer(context, painter, layer) {
     context.activeTexture.set(gl.TEXTURE1);
 
     // Use a 4x downscaled screen texture for better performance
-    context.viewport.set([0, 0, painter.width, painter.height]);
+    context.viewport.set([0, 0, painter.width / 4, painter.height / 4]);
 
     let fbo = layer.heatmapFbo;
 
@@ -94,7 +95,7 @@ function bindHeatmapFramebuffer(context, painter, layer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        fbo = layer.heatmapFbo = context.createFramebuffer(painter.width, painter.height);
+        fbo = layer.heatmapFbo = context.createFramebuffer(painter.width / 4, painter.height / 4);
 
         bindTextureToFramebuffer(context, painter, texture, fbo);
 
@@ -107,7 +108,7 @@ function bindHeatmapFramebuffer(context, painter, layer) {
 function bindTextureToFramebuffer(context, painter, texture, fbo) {
     const gl = context.gl;
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA,
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA,
         context.extTextureHalfFloat ? context.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
 
     fbo.colorAttachment.set(texture);
@@ -145,15 +146,15 @@ function convertHeatmapToSlope(painter, layer) {
     let slopeFbo = layer.slopeFbo;
 
     if (!slopeFbo) {
-        const renderTexture = new Texture(context, {width: painter.width, height: painter.height, data: null}, gl.RGBA);
+        const renderTexture = new Texture(context, {width: painter.width / 4, height: painter.height / 4, data: null}, gl.RGBA);
         renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-        slopeFbo = layer.slopeFbo = context.createFramebuffer(painter.width, painter.height);
+        slopeFbo = layer.slopeFbo = context.createFramebuffer(painter.width / 4, painter.height / 4);
         slopeFbo.colorAttachment.set(renderTexture.texture);
     }
 
     context.bindFramebuffer.set(slopeFbo.framebuffer);
-    context.viewport.set([0, 0, painter.width, painter.height]);
+    context.viewport.set([0, 0, painter.width / 4, painter.height / 4]);
 
     painter.useProgram('hillshadePrepare').draw(context, gl.TRIANGLES,
         depthMode, stencilMode, colorMode,
