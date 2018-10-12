@@ -223,6 +223,12 @@ map.on('style.load', function() {
     if (map.getLayer('satellite')) {
         map.setPaintProperty('satellite', 'raster-brightness-max', 0.5);
     }
+    map.removeLayer('hillshade_highlight_bright');
+    map.removeLayer('hillshade_highlight_med');
+    map.removeLayer('hillshade_shadow_dark');
+    map.removeLayer('hillshade_shadow_extreme');
+    map.removeLayer('hillshade_shadow_faint');
+    map.removeLayer('hillshade_shadow_med');
     map.addLayer({
         "id": "plant-generation",
         "type": "heatmap",
@@ -231,7 +237,7 @@ map.on('style.load', function() {
             "data": "plant_generation.geojson"
         },
         "paint": {
-            'heatmap-radius': 100,
+            'heatmap-radius': 50,
             'heatmap-intensity': [
               "interpolate",
               [ "exponential", 2 ],
