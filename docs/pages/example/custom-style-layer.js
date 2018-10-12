@@ -1,6 +1,6 @@
 /*---
 title: Add a custom style layer
-description: Use a custom style layer to add custom gl rendering.
+description: Use a custom style layer to render custom WebGL content.
 tags:
   - layers
 pathname: /mapbox-gl-js/example/custom-style-layer/
