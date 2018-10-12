@@ -1,7 +1,6 @@
 
 import ValidationError from '../error/validation_error';
 import getType from '../util/get_type';
-import extend from '../util/extend';
 import validate from './validate';
 import validateObject from './validate_object';
 import validateArray from './validate_array';
@@ -142,7 +141,7 @@ export default function validateFunction(options) {
 
         if (isExpression(deepUnbundle(value[1]))) {
             return errors.concat([new ValidationError(`${key}[1]`, value[1], 'expressions are not allowed in function stops.')]);
-        };
+        }
 
         return errors.concat(validate({
             key: `${key}[1]`,
