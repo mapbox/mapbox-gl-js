@@ -71,9 +71,9 @@ const hillshadeUniformValues = (
     if (layer.paint.get('hillshade-illumination-anchor') === 'viewport') {
         azimuthal -= painter.transform.angle;
     }
-
+    const align = !painter.options.moving && (Math.round(painter.transform.zoom) === painter.transform.zoom);
     return {
-        'u_matrix': painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped(), true),
+        'u_matrix': painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped(), align),
         'u_image': 0,
         'u_latrange': getTileLatRange(painter, tile.tileID),
         'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
