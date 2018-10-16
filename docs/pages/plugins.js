@@ -95,7 +95,7 @@ const plugins = {
         "ember-mapbox-gl": {
             "website": "https://github.com/kturney/ember-mapbox-gl",
             "description": md`provides an [Ember](http://emberjs.com) integration for Mapbox GL JS`
-        },
+        }
     },
     "Utility Libraries": {
         "turf": {
