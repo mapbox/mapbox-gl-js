@@ -1,6 +1,6 @@
 /*---
 title: Slowly fly to a location
-description: Using .flyTo with flyOptions
+description: Using [`flyTo`](/mapbox-gl-js/api/#map#flyto) with flyOptions
 tags:
   - camera
 pathname: /mapbox-gl-js/example/flyto-options/

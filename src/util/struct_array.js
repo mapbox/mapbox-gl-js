@@ -2,7 +2,7 @@
 
 // Note: all "sizes" are measured in bytes
 
-const assert = require('assert');
+import assert from 'assert';
 
 import type {Transferable} from '../types/transferable';
 
@@ -98,6 +98,7 @@ class StructArray {
     members: Array<StructArrayMember>;
     bytesPerElement: number;
     +emplaceBack: Function;
+    +emplace: Function;
 
     constructor() {
         this.isTransferred = false;
@@ -238,7 +239,4 @@ function align(offset: number, size: number): number {
     return Math.ceil(offset / size) * size;
 }
 
-module.exports.StructArray = StructArray;
-module.exports.Struct = Struct;
-module.exports.viewTypes = viewTypes;
-module.exports.createLayout = createLayout;
+export { StructArray, Struct, viewTypes, createLayout };

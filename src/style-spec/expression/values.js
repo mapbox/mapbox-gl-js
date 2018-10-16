@@ -1,22 +1,15 @@
 // @flow
 
-const assert = require('assert');
-const Color = require('../util/color');
+import assert from 'assert';
 
-const {
-    NullType,
-    NumberType,
-    StringType,
-    BooleanType,
-    ColorType,
-    ObjectType,
-    ValueType,
-    array
-} = require('./types');
+import Color from '../util/color';
+import Collator from './types/collator';
+import Formatted from './types/formatted';
+import { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, FormattedType, array } from './types';
 
 import type { Type } from './types';
 
-function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
+export function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
     if (!(
         typeof r === 'number' && r >= 0 && r <= 255 &&
         typeof g === 'number' && g >= 0 && g <= 255 &&
@@ -35,9 +28,9 @@ function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
     return null;
 }
 
-export type Value = null | string | boolean | number | Color | $ReadOnlyArray<Value> | { +[string]: Value }
+export type Value = null | string | boolean | number | Color | Collator | Formatted | $ReadOnlyArray<Value> | { +[string]: Value }
 
-function isValue(mixed: mixed): boolean {
+export function isValue(mixed: mixed): boolean {
     if (mixed === null) {
         return true;
     } else if (typeof mixed === 'string') {
@@ -47,6 +40,10 @@ function isValue(mixed: mixed): boolean {
     } else if (typeof mixed === 'number') {
         return true;
     } else if (mixed instanceof Color) {
+        return true;
+    } else if (mixed instanceof Collator) {
+        return true;
+    } else if (mixed instanceof Formatted) {
         return true;
     } else if (Array.isArray(mixed)) {
         for (const item of mixed) {
@@ -67,7 +64,7 @@ function isValue(mixed: mixed): boolean {
     }
 }
 
-function typeOf(value: Value): Type {
+export function typeOf(value: Value): Type {
     if (value === null) {
         return NullType;
     } else if (typeof value === 'string') {
@@ -78,6 +75,10 @@ function typeOf(value: Value): Type {
         return NumberType;
     } else if (value instanceof Color) {
         return ColorType;
+    } else if (value instanceof Collator) {
+        return CollatorType;
+    } else if (value instanceof Formatted) {
+        return FormattedType;
     } else if (Array.isArray(value)) {
         const length = value.length;
         let itemType: ?Type;
@@ -101,9 +102,17 @@ function typeOf(value: Value): Type {
     }
 }
 
-module.exports = {
-    Color,
-    validateRGBA,
-    isValue,
-    typeOf
-};
+export function toString(value: Value) {
+    const type = typeof value;
+    if (value === null) {
+        return '';
+    } else if (type === 'string' || type === 'number' || type === 'boolean') {
+        return String(value);
+    } else if (value instanceof Color || value instanceof Formatted) {
+        return value.toString();
+    } else {
+        return JSON.stringify(value);
+    }
+}
+
+export { Color, Collator };

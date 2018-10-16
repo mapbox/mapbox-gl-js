@@ -1,4 +1,5 @@
 // @flow
+import type {GeoJSONGeometry} from '@mapbox/geojson-types';
 
 class Feature {
     type: 'Feature';
@@ -49,4 +50,4 @@ class Feature {
     }
 }
 
-module.exports = Feature;
+export default Feature;

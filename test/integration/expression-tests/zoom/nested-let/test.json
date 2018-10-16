@@ -2,17 +2,25 @@
   "expression": [
     "let",
     "x",
-    30,
+    ["number", ["get", "a"]],
     ["interpolate", ["linear"], ["zoom"], 0, 0, 30, ["var", "x"]]
   ],
-  "inputs": [[{"zoom": 5}, {}]],
+  "inputs": [[{"zoom": 5}, {"a": 30}]],
   "expected": {
-    "outputs": [5],
     "compiled": {
       "result": "success",
+      "isFeatureConstant": false,
       "isZoomConstant": false,
-      "isFeatureConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [
+      {"error": "Expected value to be of type number, but found null instead."}
+    ],
+    "serialized": [
+      "let",
+      "x",
+      ["number", ["get", "a"]],
+      ["interpolate", ["linear"], ["zoom"], 0, 0, 30, ["var", "x"]]
+    ]
   }
 }

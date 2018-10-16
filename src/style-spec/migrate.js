@@ -1,4 +1,7 @@
 
+import migrateToV8 from './migrate/v8';
+import migrateToExpressions from './migrate/expressions';
+
 /**
  * Migrate a Mapbox GL Style to the latest version.
  *
@@ -12,11 +15,16 @@
  * var style = fs.readFileSync('./style.json', 'utf8');
  * fs.writeFileSync('./style.json', JSON.stringify(migrate(style)));
  */
-module.exports = function(style) {
+export default function(style) {
     let migrated = false;
 
-    if (style.version === 7 || style.version === 8) {
-        style = require('./migrate/v8')(style);
+    if (style.version === 7) {
+        style = migrateToV8(style);
+        migrated = true;
+    }
+
+    if (style.version === 8) {
+        migrated = migrateToExpressions(style);
         migrated = true;
     }
 
@@ -25,4 +33,4 @@ module.exports = function(style) {
     }
 
     return style;
-};
+}

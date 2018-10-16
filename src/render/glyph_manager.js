@@ -1,10 +1,11 @@
 // @flow
 
-const loadGlyphRange = require('../style/load_glyph_range');
-const TinySDF = require('@mapbox/tiny-sdf');
-const isChar = require('../util/is_char_in_unicode_block');
-const {asyncAll} = require('../util/util');
-const {AlphaImage} = require('../util/image');
+import loadGlyphRange from '../style/load_glyph_range';
+
+import TinySDF from '@mapbox/tiny-sdf';
+import isChar from '../util/is_char_in_unicode_block';
+import { asyncAll } from '../util/util';
+import { AlphaImage } from '../util/image';
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {RequestTransformFunction} from '../ui/map';
@@ -22,6 +23,10 @@ class GlyphManager {
     localIdeographFontFamily: ?string;
     entries: {[string]: Entry};
     url: ?string;
+
+    // exposed as statics to enable stubbing in unit tests
+    static loadGlyphRange: typeof loadGlyphRange;
+    static TinySDF: Class<TinySDF>;
 
     constructor(requestTransform: RequestTransformFunction, localIdeographFontFamily: ?string) {
         this.requestTransform = requestTransform;
@@ -72,7 +77,7 @@ class GlyphManager {
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
-                loadGlyphRange(stack, range, (this.url: any), this.requestTransform,
+                GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestTransform,
                     (err, response: ?{[number]: StyleGlyph | null}) => {
                         if (response) {
                             for (const id in response) {
@@ -133,7 +138,7 @@ class GlyphManager {
             } else if (/light/i.test(stack)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new TinySDF(24, 3, 8, .25, family, fontWeight);
+            tinySDF = entry.tinySDF = new GlyphManager.TinySDF(24, 3, 8, .25, family, fontWeight);
         }
 
         return {
@@ -150,4 +155,7 @@ class GlyphManager {
     }
 }
 
-module.exports = GlyphManager;
+GlyphManager.loadGlyphRange = loadGlyphRange;
+GlyphManager.TinySDF = TinySDF;
+
+export default GlyphManager;

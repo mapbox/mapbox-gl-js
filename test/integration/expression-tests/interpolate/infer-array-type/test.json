@@ -2,8 +2,8 @@
   "propertySpec": {
     "type": "array",
     "value": "string",
-    "function": true,
-    "property-function": true
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
   },
   "expression": [
     "step",
@@ -14,12 +14,19 @@
   ],
   "inputs": [],
   "expected": {
-    "outputs": [],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "array<string>"
-    }
+    },
+    "outputs": [],
+    "serialized": [
+      "step",
+      ["number", ["get", "x"]],
+      ["literal", ["one"]],
+      10,
+      ["literal", ["one", "two"]]
+    ]
   }
 }

@@ -1,12 +1,17 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const DragRotateHandler = require('../handler/drag_rotate');
+import DOM from '../../util/dom';
+import { extend, bindAll } from '../../util/util';
+import DragRotateHandler from '../handler/drag_rotate';
 
 import type Map from '../map';
 
-const defaultOptions = {
+type Options = {
+    showCompass?: boolean,
+    showZoom?: boolean
+};
+
+const defaultOptions: Options = {
     showCompass: true,
     showZoom: true
 };
@@ -26,7 +31,7 @@ const defaultOptions = {
  */
 class NavigationControl {
     _map: Map;
-    options: any;
+    options: Options;
     _container: HTMLElement;
     _zoomInButton: HTMLElement;
     _zoomOutButton: HTMLElement;
@@ -34,8 +39,8 @@ class NavigationControl {
     _compassArrow: HTMLElement;
     _handler: DragRotateHandler;
 
-    constructor(options: any) {
-        this.options = util.extend({}, defaultOptions, options);
+    constructor(options: Options) {
+        this.options = extend({}, defaultOptions, options);
 
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
         this._container.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -45,7 +50,7 @@ class NavigationControl {
             this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom Out', () => this._map.zoomOut());
         }
         if (this.options.showCompass) {
-            util.bindAll([
+            bindAll([
                 '_rotateCompassArrow'
             ], this);
             this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset North', () => this._map.resetNorth());
@@ -64,6 +69,7 @@ class NavigationControl {
             this._map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
             this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
+            DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
             this._handler.enable();
         }
         return this._container;
@@ -73,6 +79,7 @@ class NavigationControl {
         DOM.remove(this._container);
         if (this.options.showCompass) {
             this._map.off('rotate', this._rotateCompassArrow);
+            DOM.removeEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
             this._handler.disable();
             delete this._handler;
         }
@@ -89,4 +96,4 @@ class NavigationControl {
     }
 }
 
-module.exports = NavigationControl;
+export default NavigationControl;

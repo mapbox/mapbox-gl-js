@@ -6,13 +6,16 @@ var map = new mapboxgl.Map({
     center: [-100.486052, 37.830348],
     zoom: 2
 });
+var hoveredStateId =  null;
 
 map.on('load', function () {
     map.addSource("states", {
         "type": "geojson",
-        "data": "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_admin_1_states_provinces.geojson"
+        "data": "https://www.mapbox.com/mapbox-gl-js/assets/us_states.geojson"
     });
 
+    // The feature-state dependent fill-opacity expression will render the hover effect
+    // when a feature's hover state is set to true.
     map.addLayer({
         "id": "state-fills",
         "type": "fill",
@@ -20,7 +23,11 @@ map.on('load', function () {
         "layout": {},
         "paint": {
             "fill-color": "#627BC1",
-            "fill-opacity": 0.5
+            "fill-opacity": ["case",
+                ["boolean", ["feature-state", "hover"], false],
+                1,
+                0.5
+            ]
         }
     });
 
@@ -35,27 +42,25 @@ map.on('load', function () {
         }
     });
 
-    map.addLayer({
-        "id": "state-fills-hover",
-        "type": "fill",
-        "source": "states",
-        "layout": {},
-        "paint": {
-            "fill-color": "#627BC1",
-            "fill-opacity": 1
-        },
-        "filter": ["==", "name", ""]
-    });
-
-    // When the user moves their mouse over the states-fill layer, we'll update the filter in
-    // the state-fills-hover layer to only show the matching state, thus making a hover effect.
+    // When the user moves their mouse over the state-fill layer, we'll update the
+    // feature state for the feature under the mouse.
     map.on("mousemove", "state-fills", function(e) {
-        map.setFilter("state-fills-hover", ["==", "name", e.features[0].properties.name]);
+        if (e.features.length > 0) {
+            if (hoveredStateId) {
+                map.setFeatureState({source: 'states', id: hoveredStateId}, { hover: false});
+            }
+            hoveredStateId = e.features[0].id;
+            map.setFeatureState({source: 'states', id: hoveredStateId}, { hover: true});
+        }
     });
 
-    // Reset the state-fills-hover layer's filter when the mouse leaves the layer.
+    // When the mouse leaves the state-fill layer, update the feature state of the
+    // previously hovered feature.
     map.on("mouseleave", "state-fills", function() {
-        map.setFilter("state-fills-hover", ["==", "name", ""]);
+        if (hoveredStateId) {
+            map.setFeatureState({source: 'states', id: hoveredStateId}, { hover: false});
+        }
+        hoveredStateId =  null;
     });
 });
 </script>

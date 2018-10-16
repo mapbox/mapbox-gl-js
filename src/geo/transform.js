@@ -1,18 +1,15 @@
 // @flow
 
-const LngLat = require('./lng_lat'),
-    Point = require('@mapbox/point-geometry'),
-    Coordinate = require('./coordinate'),
-    util = require('../util/util'),
-    interp = require('../style-spec/util/interpolate').number,
-    tileCover = require('../util/tile_cover'),
-    {CanonicalTileID, UnwrappedTileID} = require('../source/tile_id'),
-    EXTENT = require('../data/extent'),
-    glmatrix = require('@mapbox/gl-matrix');
-
-const vec4 = glmatrix.vec4,
-    mat4 = glmatrix.mat4,
-    mat2 = glmatrix.mat2;
+import LngLat from './lng_lat';
+import LngLatBounds from './lng_lat_bounds';
+import Point from '@mapbox/point-geometry';
+import Coordinate from './coordinate';
+import { wrap, clamp } from '../util/util';
+import {number as interpolate} from '../style-spec/util/interpolate';
+import tileCover from '../util/tile_cover';
+import { CanonicalTileID, UnwrappedTileID } from '../source/tile_id';
+import EXTENT from '../data/extent';
+import { vec4, mat4, mat2 } from 'gl-matrix';
 
 /**
  * A single transform, generally used for a single tile to be
@@ -24,14 +21,16 @@ class Transform {
     tileZoom: number;
     lngRange: ?[number, number];
     latRange: ?[number, number];
+    maxValidLatitude: number;
     scale: number;
     width: number;
     height: number;
     angle: number;
     rotationMatrix: Float64Array;
     zoomFraction: number;
-    pixelsToGLUnits: Array<number>;
+    pixelsToGLUnits: [number, number];
     cameraToCenterDistance: number;
+    mercatorMatrix: Array<number>;
     projMatrix: Float64Array;
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
@@ -50,12 +49,13 @@ class Transform {
 
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
+        this.maxValidLatitude = 85.051129; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
         this._minZoom = minZoom || 0;
         this._maxZoom = maxZoom || 22;
 
-        this.latRange = [-85.05113, 85.05113];
+        this.setMaxBounds();
 
         this.width = 0;
         this.height = 0;
@@ -99,19 +99,26 @@ class Transform {
         this.zoom = Math.min(this.zoom, zoom);
     }
 
-    get renderWorldCopies(): boolean {
-        return this._renderWorldCopies;
+    get renderWorldCopies(): boolean { return this._renderWorldCopies; }
+    set renderWorldCopies(renderWorldCopies?: ?boolean) {
+        if (renderWorldCopies === undefined) {
+            renderWorldCopies = true;
+        } else if (renderWorldCopies === null) {
+            renderWorldCopies = false;
+        }
+
+        this._renderWorldCopies = renderWorldCopies;
     }
 
     get worldSize(): number {
         return this.tileSize * this.scale;
     }
 
-    get centerPoint() {
+    get centerPoint(): Point {
         return this.size._div(2);
     }
 
-    get size() {
+    get size(): Point {
         return new Point(this.width, this.height);
     }
 
@@ -119,7 +126,7 @@ class Transform {
         return -this.angle / Math.PI * 180;
     }
     set bearing(bearing: number) {
-        const b = -util.wrap(bearing, -180, 180) * Math.PI / 180;
+        const b = -wrap(bearing, -180, 180) * Math.PI / 180;
         if (this.angle === b) return;
         this._unmodified = false;
         this.angle = b;
@@ -134,7 +141,7 @@ class Transform {
         return this._pitch / Math.PI * 180;
     }
     set pitch(pitch: number) {
-        const p = util.clamp(pitch, 0, 60) / 180 * Math.PI;
+        const p = clamp(pitch, 0, 60) / 180 * Math.PI;
         if (this._pitch === p) return;
         this._unmodified = false;
         this._pitch = p;
@@ -194,13 +201,21 @@ class Transform {
      * @private
      */
     getVisibleUnwrappedCoordinates(tileID: CanonicalTileID) {
-        const ul = this.pointCoordinate(new Point(0, 0), 0);
-        const ur = this.pointCoordinate(new Point(this.width, 0), 0);
-        const w0 = Math.floor(ul.column);
-        const w1 = Math.floor(ur.column);
         const result = [new UnwrappedTileID(0, tileID)];
         if (this._renderWorldCopies) {
-            for (let w = w0; w <= w1; w++) {
+            const utl = this.pointCoordinate(new Point(0, 0), 0);
+            const utr = this.pointCoordinate(new Point(this.width, 0), 0);
+            const ubl = this.pointCoordinate(new Point(this.width, this.height), 0);
+            const ubr = this.pointCoordinate(new Point(0, this.height), 0);
+            const w0 = Math.floor(Math.min(utl.column, utr.column, ubl.column, ubr.column));
+            const w1 = Math.floor(Math.max(utl.column, utr.column, ubl.column, ubr.column));
+
+            // Add an extra copy of the world on each side to properly render ImageSources and CanvasSources.
+            // Both sources draw outside the tile boundaries of the tile that "contains them" so we need
+            // to add extra copies on both sides in case offscreen tiles need to draw into on-screen ones.
+            const extraWorldCopy = 1;
+
+            for (let w = w0 - extraWorldCopy; w <= w1 + extraWorldCopy; w++) {
                 if (w === 0) continue;
                 result.push(new UnwrappedTileID(w, tileID));
             }
@@ -268,7 +283,7 @@ class Transform {
             this.latY(lnglat.lat));
     }
 
-    unproject(point) {
+    unproject(point: Point): LngLat {
         return new LngLat(
             this.xLng(point.x),
             this.yLat(point.y));
@@ -277,10 +292,10 @@ class Transform {
     get x(): number { return this.lngX(this.center.lng); }
     get y(): number { return this.latY(this.center.lat); }
 
-    get point() { return new Point(this.x, this.y); }
+    get point(): Point { return new Point(this.x, this.y); }
 
     /**
-     * latitude to absolute x coord
+     * longitude to absolute x coord
      * @returns {number} pixel coordinate
      */
     lngX(lng: number) {
@@ -291,14 +306,15 @@ class Transform {
      * @returns {number} pixel coordinate
      */
     latY(lat: number) {
+        lat = clamp(lat, -this.maxValidLatitude, this.maxValidLatitude);
         const y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
         return (180 - y) * this.worldSize / 360;
     }
 
-    xLng(x) {
+    xLng(x: number) {
         return x * 360 / this.worldSize - 180;
     }
-    yLat(y) {
+    yLat(y: number) {
         const y2 = 180 - y * 360 / this.worldSize;
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     }
@@ -347,7 +363,7 @@ class Transform {
      * @param {Coordinate} coord
      * @returns {LngLat} lnglat
      */
-    coordinateLocation(coord) {
+    coordinateLocation(coord: Coordinate) {
         const zoomedCoord = coord.zoomTo(this.zoom);
         return new LngLat(
             this.xLng(zoomedCoord.column * this.tileSize),
@@ -380,8 +396,8 @@ class Transform {
         const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
         return new Coordinate(
-            interp(x0, x1, t) / this.tileSize,
-            interp(y0, y1, t) / this.tileSize,
+            interpolate(x0, x1, t) / this.tileSize,
+            interpolate(y0, y1, t) / this.tileSize,
             this.zoom)._zoomTo(zoom);
     }
 
@@ -390,11 +406,47 @@ class Transform {
      * @param {Coordinate} coord
      * @returns {Point} screen point
      */
-    coordinatePoint(coord) {
+    coordinatePoint(coord: Coordinate) {
         const zoomedCoord = coord.zoomTo(this.zoom);
         const p = [zoomedCoord.column * this.tileSize, zoomedCoord.row * this.tileSize, 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
         return new Point(p[0] / p[3], p[1] / p[3]);
+    }
+
+    /**
+     * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
+     * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
+     */
+    getBounds(): LngLatBounds {
+        return new LngLatBounds()
+            .extend(this.pointLocation(new Point(0, 0)))
+            .extend(this.pointLocation(new Point(this.width, 0)))
+            .extend(this.pointLocation(new Point(this.width, this.height)))
+            .extend(this.pointLocation(new Point(0, this.height)));
+    }
+
+    /**
+     * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
+     */
+    getMaxBounds(): LngLatBounds | null {
+        if (!this.latRange || this.latRange.length !== 2 ||
+            !this.lngRange || this.lngRange.length !== 2) return null;
+
+        return new LngLatBounds([this.lngRange[0], this.latRange[0]], [this.lngRange[1], this.latRange[1]]);
+    }
+
+    /**
+     * Sets or clears the map's geographical constraints.
+     */
+    setMaxBounds(bounds?: LngLatBounds) {
+        if (bounds) {
+            this.lngRange = [bounds.getWest(), bounds.getEast()];
+            this.latRange = [bounds.getSouth(), bounds.getNorth()];
+            this._constrain();
+        } else {
+            this.lngRange = null;
+            this.latRange = [-this.maxValidLatitude, this.maxValidLatitude];
+        }
     }
 
     /**
@@ -419,6 +471,10 @@ class Transform {
 
         cache[posMatrixKey] = new Float32Array(posMatrix);
         return cache[posMatrixKey];
+    }
+
+    customLayerMatrix(): Array<number> {
+        return this.mercatorMatrix.slice();
     }
 
     _constrain() {
@@ -517,6 +573,10 @@ class Transform {
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-x, -y, 0]);
 
+        // The mercatorMatrix can be used to transform points from mercator coordinates
+        // ([0, 0] nw, [1, 1] se) to GL coordinates.
+        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize]);
+
         // scale vertically to meters per pixel (inverse of ground resolution):
         // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
         const verticalScale = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(this.center.lat * (Math.PI / 180))));
@@ -552,6 +612,16 @@ class Transform {
         this._posMatrixCache = {};
         this._alignedPosMatrixCache = {};
     }
+
+    maxPitchScaleFactor() {
+        // calcMatrices hasn't run yet
+        if (!this.pixelMatrixInverse) return 1;
+
+        const coord = this.pointCoordinate(new Point(0, 0)).zoomTo(this.zoom);
+        const p = [coord.column * this.tileSize, coord.row * this.tileSize, 0, 1];
+        const topPoint = vec4.transformMat4(p, p, this.pixelMatrix);
+        return topPoint[3] / this.cameraToCenterDistance;
+    }
 }
 
-module.exports = Transform;
+export default Transform;

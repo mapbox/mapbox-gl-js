@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/94/three.min.js"></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 16.5,
+    center: [-79.390307, 43.658956],
+    bearing: 20,
+    pitch: 60,
+    style: 'mapbox://styles/mapbox/light-v9',
+    hash: true
+});
+
+const THREE = window.THREE;
+
+class ThreeJSCube {
+    constructor() {
+        this.id = 'mycustomlayer';
+        this.type = 'custom';
+        this.renderingMode = '3d';
+
+        this.translate = [0.279471, 0.364935, 0.0000025];
+        this.scale = 0.000003;
+
+        this.camera = new THREE.Camera();
+        this.scene = new THREE.Scene();
+
+        var geometry = new THREE.BoxGeometry(1, 1, 1);
+        var material = new THREE.MeshPhongMaterial({ color: 0xeeeeff });
+        this.cube = new THREE.Mesh(geometry, material);
+        this.scene.add(this.cube);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff);
+        directionalLight.position.set(0, -70, 100).normalize();
+        this.scene.add(directionalLight);
+    }
+
+    onAdd(map, gl) {
+        this.map = map;
+
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: map.getCanvas(),
+            context: gl
+        });
+
+        this.renderer.autoClear = false;
+    }
+
+    render(gl, matrix) {
+        const m = new THREE.Matrix4().fromArray(matrix);
+        const l = new THREE.Matrix4().makeTranslation(this.translate[0], this.translate[1], this.translate[2])
+            .scale(new THREE.Vector3(this.scale, -this.scale, this.scale));
+        this.cube.rotation.x += 0.01;
+        this.cube.rotation.y += 0.01;
+
+        this.camera.projectionMatrix.elements = matrix;
+        this.camera.projectionMatrix = m.multiply(l);
+        this.renderer.state.reset();
+        this.renderer.render(this.scene, this.camera);
+        this.map.triggerRepaint();
+    }
+}
+
+map.on('load', function() {
+    map.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': '#ccc',
+            'fill-extrusion-height': ["get", "height"]
+        }
+    });
+
+    map.addLayer(new ThreeJSCube());
+});
+</script>
+</body>
+</html>

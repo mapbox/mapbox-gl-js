@@ -1,0 +1,23 @@
+{
+  "expression": {"type": "identity", "property": "p", "default": "red"},
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": "blue"}}],
+    [{}, {"properties": {"p": 0}}]
+  ],
+  "propertySpec": {
+    "type": "color",
+    "property-type": "data-driven",
+    "expression": {"interpolated": false, "parameters": ["zoom", "feature"]}
+  },
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [[1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1]],
+    "serialized": ["to-color", ["get", "p"], "red"]
+  }
+}

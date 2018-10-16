@@ -2,12 +2,13 @@
   "expression": ["literal", {"x": 1}],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [{"x": 1}],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "object"
-    }
+    },
+    "outputs": [{"x": 1}],
+    "serialized": ["literal", {"x": 1}]
   }
 }

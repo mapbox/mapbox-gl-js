@@ -1,8 +1,6 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const Point = require('@mapbox/point-geometry');
-const getAnchors = require('../../../src/symbol/get_anchors');
+import { test } from 'mapbox-gl-js-test';
+import Point from '@mapbox/point-geometry';
+import { getAnchors, getCenterAnchor } from '../../../src/symbol/get_anchors';
 
 const TILE_EXTENT = 4096;
 
@@ -100,5 +98,29 @@ test('getAnchors', (t) => {
             { x: 1, y: 2, angle: 1.5707963267948966, segment: 0 }]);
         t.end();
     });
+
+    test('getCenterAnchor', (t) => {
+        const line = [new Point(1, 1), new Point(1, 3.1), new Point(3, 6), new Point(4, 7)];
+        const anchor = getCenterAnchor(line, Math.PI, shapedText, shapedIcon, glyphSize, 1);
+        t.deepEqual(anchor,
+            { x: 2, y: 4, angle: 0.9670469933974603, segment: 1 });
+        t.end();
+    });
+
+    test('getCenterAnchor with center outside tile bounds', (t) => {
+        const line = [new Point(-10, -10), new Point(5, 5)];
+        const anchor = getCenterAnchor(line, 2, Math.PI, shapedText, shapedIcon, glyphSize, 1);
+        t.deepEqual(anchor,
+            { x: -2, y: -2, angle: 0.7853981633974483, segment: 0 });
+        t.end();
+    });
+
+    test('getCenterAnchor failing maxAngle test', (t) => {
+        const line = [new Point(1, 1), new Point(1, 3), new Point(3, 3)];
+        const anchor = getCenterAnchor(line, Math.PI / 4, shapedText, shapedIcon, glyphSize, 1);
+        t.notOk(anchor);
+        t.end();
+    });
+
     t.end();
 });

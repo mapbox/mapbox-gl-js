@@ -31,11 +31,17 @@ yarn install
 
 ### Linux
 
-Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 6 or greater), [yarn](https://yarnpkg.com/en/docs/install#linux-tab), [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
+Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 6 or greater), [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
 ```bash
 sudo apt-get update &&
-sudo apt-get install build-essential git nodejs yarn libglew-dev libxi-dev
+sudo apt-get install build-essential git nodejs libglew-dev libxi-dev
 ```
+
+Install [yarn](https://yarnpkg.com/en/docs/install#linux-tab)
+```bash
+curl -o- -L https://yarnpkg.com/install.sh | bash
+```
+(It is also possible to install yarn from Debian/Ubuntu packages. See [yarn's install instructions](https://yarnpkg.com/en/docs/install#linux-tab)).
 
 Clone the repository
 ```bash
@@ -86,9 +92,10 @@ A standalone build allows you to turn the contents of this repository into `mapb
 To create a standalone build, run
 ```bash
 yarn run build-min
+yarn run build-css
 ```
 
-Once that command finishes, you will have a standalone build at `dist/mapbox-gl.js` and `dist/mapbox-gl.css`
+Once those commands finish, you will have a standalone build at `dist/mapbox-gl.js` and `dist/mapbox-gl.css`
 
 ## Writing & Running Tests
 
@@ -112,11 +119,17 @@ See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench
   * Default parameters
   * Rest parameters
   * Destructuring
+  * Modules
 * The following ES6 features are not to be used, in order to maintain support for IE 11 and older mobile browsers. This may change in the future.
   * Spread (`...`) operator (because it requires Object.assign)
   * Iterators and generators
   * "Library" features such as `Map`, `Set`, `array.find`, etc.
-  * Modules
+
+The conventions for module exports are:
+
+* No exported "namespace objects" -- modules should export either classes or functions, with an occasional exception as needed for stubbing.
+* If a module exports something with the same name as the file name (modulo case), it should be the default export.
+* Anything else should be a named export.
 
 ### Version Control Conventions
 
@@ -152,7 +165,7 @@ We have divided our labels into categories to make them easier to use.
 ### GL Performance
 
 - [Debugging and Optimizing WebGL applications](https://docs.google.com/presentation/d/12AGAUmElB0oOBgbEEBfhABkIMCL3CUX7kdAPLuwZ964)
-- [Graphics Pipeline Performance](http://http.developer.nvidia.com/GPUGems/gpugems_ch28.html)
+- [Graphics Pipeline Performance](http://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch28.html)
 
 ### Misc
 

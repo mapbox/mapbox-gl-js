@@ -1,11 +1,11 @@
 // @flow
 
-const Evented = require('../util/evented');
-const util = require('../util/util');
-const window = require('../util/window');
-const EXTENT = require('../data/extent');
-const ResourceType = require('../util/ajax').ResourceType;
-const browser = require('../util/browser');
+import { Event, ErrorEvent, Evented } from '../util/evented';
+
+import { extend } from '../util/util';
+import EXTENT from '../data/extent';
+import { ResourceType } from '../util/ajax';
+import browser from '../util/browser';
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -13,14 +13,14 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
+import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
+import type {GeoJSONSourceSpecification} from '../style-spec/types';
 
 /**
  * A source containing GeoJSON.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options.)
  *
- * @interface GeoJSONSource
  * @example
- *
  * map.addSource('some id', {
  *     type: 'geojson',
  *     data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_ports.geojson'
@@ -60,6 +60,7 @@ import type {PerformanceResourceTiming} from '../types/performance_resource_timi
  * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
  * @see [Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
  * @see [Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
+ * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
  */
 class GeoJSONSource extends Evented implements Source {
     type: 'geojson';
@@ -67,6 +68,7 @@ class GeoJSONSource extends Evented implements Source {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
+    attribution: string;
 
     isTileClipped: boolean;
     reparseOverscaled: boolean;
@@ -79,8 +81,12 @@ class GeoJSONSource extends Evented implements Source {
     _loaded: boolean;
     _collectResourceTiming: boolean;
     _resourceTiming: Array<PerformanceResourceTiming>;
+    _removed: boolean;
 
-    constructor(id: string, options: GeojsonSourceSpecification & {workerOptions?: any, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
+    /**
+     * @private
+     */
+    constructor(id: string, options: GeoJSONSourceSpecification & {workerOptions?: any, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
 
         this.id = id;
@@ -94,18 +100,20 @@ class GeoJSONSource extends Evented implements Source {
         this.tileSize = 512;
         this.isTileClipped = true;
         this.reparseOverscaled = true;
+        this._removed = false;
 
         this.dispatcher = dispatcher;
         this.setEventedParent(eventedParent);
 
         this._data = (options.data: any);
-        this._options = util.extend({}, options);
+        this._options = extend({}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
         this._resourceTiming = [];
 
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
         if (options.type) this.type = options.type;
+        if (options.attribution) this.attribution = options.attribution;
 
         const scale = EXTENT / this.tileSize;
 
@@ -113,14 +121,16 @@ class GeoJSONSource extends Evented implements Source {
         // so that it can load/parse/index the geojson data
         // extending with `options.workerOptions` helps to make it easy for
         // third-party sources to hack/reuse GeoJSONSource.
-        this.workerOptions = util.extend({
+        this.workerOptions = extend({
             source: this.id,
             cluster: options.cluster || false,
             geojsonVtOptions: {
                 buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
                 tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
                 extent: EXTENT,
-                maxZoom: this.maxzoom
+                maxZoom: this.maxzoom,
+                lineMetrics: options.lineMetrics || false,
+                generateId: options.generateId || false
             },
             superclusterOptions: {
                 maxZoom: options.clusterMaxZoom !== undefined ?
@@ -134,10 +144,10 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     load() {
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire(new Event('dataloading', {dataType: 'source'}));
         this._updateWorkerData((err) => {
             if (err) {
-                this.fire('error', {error: err});
+                this.fire(new ErrorEvent(err));
                 return;
             }
 
@@ -149,7 +159,7 @@ class GeoJSONSource extends Evented implements Source {
 
             // although GeoJSON sources contain no metadata, we fire this event to let the SourceCache
             // know its ok to start requesting tiles.
-            this.fire('data', data);
+            this.fire(new Event('data', data));
         });
     }
 
@@ -166,10 +176,11 @@ class GeoJSONSource extends Evented implements Source {
      */
     setData(data: GeoJSON | string) {
         this._data = data;
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire(new Event('dataloading', {dataType: 'source'}));
         this._updateWorkerData((err) => {
             if (err) {
-                return this.fire('error', { error: err });
+                this.fire(new ErrorEvent(err));
+                return;
             }
 
             const data: Object = { dataType: 'source', sourceDataType: 'content' };
@@ -177,9 +188,52 @@ class GeoJSONSource extends Evented implements Source {
                 data.resourceTiming = this._resourceTiming;
                 this._resourceTiming = [];
             }
-            this.fire('data', data);
+            this.fire(new Event('data', data));
         });
 
+        return this;
+    }
+
+    /**
+     * For clustered sources, fetches the zoom at which the given cluster expands.
+     *
+     * @param clusterId The value of the cluster's `cluster_id` property.
+     * @param callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
+     * @returns {GeoJSONSource} this
+     */
+    getClusterExpansionZoom(clusterId: number, callback: Callback<number>) {
+        this.dispatcher.send('geojson.getClusterExpansionZoom', { clusterId, source: this.id }, callback, this.workerID);
+        return this;
+    }
+
+    /**
+     * For clustered sources, fetches the children of the given cluster on the next zoom level (as an array of GeoJSON features).
+     *
+     * @param clusterId The value of the cluster's `cluster_id` property.
+     * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @returns {GeoJSONSource} this
+     */
+    getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>) {
+        this.dispatcher.send('geojson.getClusterChildren', { clusterId, source: this.id }, callback, this.workerID);
+        return this;
+    }
+
+    /**
+     * For clustered sources, fetches the original points that belong to the cluster (as an array of GeoJSON features).
+     *
+     * @param clusterId The value of the cluster's `cluster_id` property.
+     * @param limit The maximum number of features to return.
+     * @param offset The number of features to skip (e.g. for pagination).
+     * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @returns {GeoJSONSource} this
+     */
+    getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
+        this.dispatcher.send('geojson.getClusterLeaves', {
+            source: this.id,
+            clusterId,
+            limit,
+            offset
+        }, callback, this.workerID);
         return this;
     }
 
@@ -188,11 +242,11 @@ class GeoJSONSource extends Evented implements Source {
      * handles loading the geojson data and preparing to serve it up as tiles,
      * using geojson-vt or supercluster as appropriate.
      */
-    _updateWorkerData(callback: Function) {
-        const options = util.extend({}, this.workerOptions);
+    _updateWorkerData(callback: Callback<void>) {
+        const options = extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {
-            options.request = this.map._transformRequest(resolveURL(data), ResourceType.Source);
+            options.request = this.map._transformRequest(browser.resolveURL(data), ResourceType.Source);
             options.request.collectResourceTiming = this._collectResourceTiming;
         } else {
             options.data = JSON.stringify(data);
@@ -202,17 +256,29 @@ class GeoJSONSource extends Evented implements Source {
         // so that other geojson-like source types can easily reuse this
         // implementation
         this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err, result) => {
+            if (this._removed || (result && result.abandoned)) {
+                return;
+            }
+
             this._loaded = true;
 
             if (result && result.resourceTiming && result.resourceTiming[this.id])
                 this._resourceTiming = result.resourceTiming[this.id].slice(0);
-
+            // Any `loadData` calls that piled up while we were processing
+            // this one will get coalesced into a single call when this
+            // 'coalesce' message is processed.
+            // We would self-send from the worker if we had access to its
+            // message queue. Waiting instead for the 'coalesce' to round-trip
+            // through the foreground just means we're throttling the worker
+            // to run at a little less than full-throttle.
+            this.dispatcher.send(`${this.type}.coalesce`, { source: options.source }, null, this.workerID);
             callback(err);
+
         }, this.workerID);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const message = tile.workerID === undefined || tile.state === 'expired' ? 'loadTile' : 'reloadTile';
+        const message = tile.workerID === undefined ? 'loadTile' : 'reloadTile';
         const params = {
             type: this.type,
             uid: tile.uid,
@@ -222,7 +288,6 @@ class GeoJSONSource extends Evented implements Source {
             tileSize: this.tileSize,
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
-            overscaling: tile.tileID.overscaleFactor(),
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
@@ -253,11 +318,12 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     onRemove() {
-        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id });
+        this._removed = true;
+        this.dispatcher.send('removeSource', { type: this.type, source: this.id }, null, this.workerID);
     }
 
     serialize() {
-        return util.extend({}, this._options, {
+        return extend({}, this._options, {
             type: this.type,
             data: this._data
         });
@@ -268,10 +334,4 @@ class GeoJSONSource extends Evented implements Source {
     }
 }
 
-function resolveURL(url) {
-    const a = window.document.createElement('a');
-    a.href = url;
-    return a.href;
-}
-
-module.exports = GeoJSONSource;
+export default GeoJSONSource;

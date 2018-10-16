@@ -1,15 +1,14 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const ImageSource = require('../../../src/source/image_source');
-const Evented = require('../../../src/util/evented');
-const Transform = require('../../../src/geo/transform');
-const util = require('../../../src/util/util');
-const ajax = require('../../../src/util/ajax');
-const browser = require('../../../src/util/browser');
+import { test } from 'mapbox-gl-js-test';
+import assert from 'assert';
+import ImageSource from '../../../src/source/image_source';
+import { Evented } from '../../../src/util/evented';
+import Transform from '../../../src/geo/transform';
+import { extend } from '../../../src/util/util';
+import browser from '../../../src/util/browser';
+import window from '../../../src/util/window';
 
 function createSource(options) {
-    options = util.extend({
+    options = extend({
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]]
     }, options);
 
@@ -29,8 +28,26 @@ class StubMap extends Evented {
 }
 
 test('ImageSource', (t) => {
-
-    t.stub(ajax, 'getImage').callsFake((params, callback) => callback(null, {}));
+    window.useFakeXMLHttpRequest();
+    // stub this manually because sinon does not stub non-existent methods
+    assert(!window.URL.createObjectURL);
+    window.URL.createObjectURL = () => 'blob:';
+    t.tearDown(() => delete window.URL.createObjectURL);
+    // stub Image so we can invoke 'onload'
+    // https://github.com/jsdom/jsdom/commit/58a7028d0d5b6aacc5b435daee9fd8f9eacbb14c
+    const img = {};
+    t.stub(window, 'Image').returns(img);
+    // fake the image request (sinon doesn't allow non-string data for
+    // server.respondWith, so we do so manually)
+    const requests = [];
+    window.XMLHttpRequest.onCreate = req => { requests.push(req); };
+    const respond = () => {
+        const req = requests.shift();
+        req.setStatus(200);
+        req.response = new ArrayBuffer(1);
+        req.onload();
+        img.onload();
+    };
     t.stub(browser, 'getImageData').callsFake(() => new ArrayBuffer(1));
 
     t.test('constructor', (t) => {
@@ -49,6 +66,7 @@ test('ImageSource', (t) => {
             t.end();
         });
         source.onAdd(new StubMap());
+        respond();
     });
 
     t.test('transforms url request', (t) => {
@@ -56,9 +74,57 @@ test('ImageSource', (t) => {
         const map = new StubMap();
         const spy = t.spy(map, '_transformRequest');
         source.onAdd(map);
+        respond();
         t.ok(spy.calledOnce);
         t.equal(spy.getCall(0).args[0], '/image.png');
         t.equal(spy.getCall(0).args[1], 'Image');
+        t.end();
+    });
+
+    t.test('updates url from updateImage', (t) => {
+        const source = createSource({ url : '/image.png' });
+        const map = new StubMap();
+        const spy = t.spy(map, '_transformRequest');
+        source.onAdd(map);
+        respond();
+        t.ok(spy.calledOnce);
+        t.equal(spy.getCall(0).args[0], '/image.png');
+        t.equal(spy.getCall(0).args[1], 'Image');
+        source.updateImage({ url: '/image2.png' });
+        respond();
+        t.ok(spy.calledTwice);
+        t.equal(spy.getCall(1).args[0], '/image2.png');
+        t.equal(spy.getCall(1).args[1], 'Image');
+        t.end();
+    });
+
+    t.test('sets coordinates', (t) => {
+        const source = createSource({ url : '/image.png' });
+        const map = new StubMap();
+        source.onAdd(map);
+        respond();
+        const beforeSerialized = source.serialize();
+        t.deepEqual(beforeSerialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
+        source.setCoordinates([[0, 0], [-1, 0], [-1, -1], [0, -1]]);
+        const afterSerialized = source.serialize();
+        t.deepEqual(afterSerialized.coordinates, [[0, 0], [-1, 0], [-1, -1], [0, -1]]);
+        t.end();
+    });
+
+    t.test('sets coordinates via updateImage', (t) => {
+        const source = createSource({ url : '/image.png' });
+        const map = new StubMap();
+        source.onAdd(map);
+        respond();
+        const beforeSerialized = source.serialize();
+        t.deepEqual(beforeSerialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
+        source.updateImage({
+            url: '/image2.png',
+            coordinates: [[0, 0], [-1, 0], [-1, -1], [0, -1]]
+        });
+        respond();
+        const afterSerialized = source.serialize();
+        t.deepEqual(afterSerialized.coordinates, [[0, 0], [-1, 0], [-1, -1], [0, -1]]);
         t.end();
     });
 
@@ -71,6 +137,7 @@ test('ImageSource', (t) => {
             }
         });
         source.onAdd(new StubMap());
+        respond();
     });
 
     t.test('fires data event when metadata is loaded', (t) => {
@@ -81,6 +148,7 @@ test('ImageSource', (t) => {
             }
         });
         source.onAdd(new StubMap());
+        respond();
     });
 
     t.test('serialize url and coordinates', (t) => {

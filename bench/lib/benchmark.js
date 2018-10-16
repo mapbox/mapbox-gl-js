@@ -1,5 +1,4 @@
 // @flow
-
 // According to https://developer.mozilla.org/en-US/docs/Web/API/Performance/now,
 // performance.now() should be accurate to 0.005ms. Set the minimum running
 // time for a single measurement at 5ms, so that the error due to timer
@@ -12,6 +11,7 @@ export type Measurement = {
 };
 
 class Benchmark {
+
     constructor() {
         this._measureAsync = this._measureAsync.bind(this);
     }
@@ -125,4 +125,4 @@ class Benchmark {
     }
 }
 
-module.exports = Benchmark;
+export default Benchmark;

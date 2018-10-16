@@ -19,14 +19,6 @@
 <pre id='coordinates' class='coordinates'></pre>
 
 <script>
-// Holds mousedown state for events. if this
-// flag is active, we move the point on `mousemove`.
-var isDragging;
-
-// Is the cursor over a point? if this
-// flag is active, we listen for a mousedown event.
-var isCursorOverPoint;
-
 var coordinates = document.getElementById('coordinates');
 var map = new mapboxgl.Map({
     container: 'map',
@@ -48,21 +40,7 @@ var geojson = {
     }]
 };
 
-function mouseDown() {
-    if (!isCursorOverPoint) return;
-
-    isDragging = true;
-
-    // Set a cursor indicator
-    canvas.style.cursor = 'grab';
-
-    // Mouse events
-    map.on('mousemove', onMove);
-    map.once('mouseup', onUp);
-}
-
 function onMove(e) {
-    if (!isDragging) return;
     var coords = e.lngLat;
 
     // Set a UI indicator for dragging.
@@ -75,7 +53,6 @@ function onMove(e) {
 }
 
 function onUp(e) {
-    if (!isDragging) return;
     var coords = e.lngLat;
 
     // Print the coordinates of where the point had
@@ -83,10 +60,10 @@ function onUp(e) {
     coordinates.style.display = 'block';
     coordinates.innerHTML = 'Longitude: ' + coords.lng + '<br />Latitude: ' + coords.lat;
     canvas.style.cursor = '';
-    isDragging = false;
 
-    // Unbind mouse events
+    // Unbind mouse/touch events
     map.off('mousemove', onMove);
+    map.off('touchmove', onMove);
 }
 
 map.on('load', function() {
@@ -111,17 +88,31 @@ map.on('load', function() {
     map.on('mouseenter', 'point', function() {
         map.setPaintProperty('point', 'circle-color', '#3bb2d0');
         canvas.style.cursor = 'move';
-        isCursorOverPoint = true;
-        map.dragPan.disable();
     });
 
     map.on('mouseleave', 'point', function() {
         map.setPaintProperty('point', 'circle-color', '#3887be');
         canvas.style.cursor = '';
-        isCursorOverPoint = false;
-        map.dragPan.enable();
     });
 
-    map.on('mousedown', mouseDown);
+    map.on('mousedown', 'point', function(e) {
+        // Prevent the default map drag behavior.
+        e.preventDefault();
+
+        canvas.style.cursor = 'grab';
+
+        map.on('mousemove', onMove);
+        map.once('mouseup', onUp);
+    });
+
+    map.on('touchstart', 'point', function(e) {
+        if (e.points.length !== 1) return;
+
+        // Prevent the default map drag behavior.
+        e.preventDefault();
+
+        map.on('touchmove', onMove);
+        map.once('touchend', onUp);
+    });
 });
 </script>

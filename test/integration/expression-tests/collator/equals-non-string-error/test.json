@@ -1,0 +1,16 @@
+{
+  "expression": [
+    "==",
+    1,
+    2,
+    ["collator", {"case-sensitive": false, "diacritic-sensitive": false}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "", "error": "Cannot use collator to compare non-string types."}
+      ]
+    }
+  }
+}

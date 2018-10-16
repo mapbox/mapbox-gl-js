@@ -1,0 +1,5 @@
+{
+    "tiles": [
+      "http://localhost:2900/tiles/mapbox.mapbox-streets-v7/{z}-{x}-{y}.mvt"
+    ]
+}

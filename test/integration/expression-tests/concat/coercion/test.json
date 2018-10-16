@@ -1,0 +1,14 @@
+{
+  "expression": ["concat", ["get", "a"], ["get", "1"], ["get", "true"]],
+  "inputs": [[{}, {"properties": {"a": "a", "1": 1, "true": true}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["a1true"],
+    "serialized": ["concat", ["get", "a"], ["get", "1"], ["get", "true"]]
+  }
+}

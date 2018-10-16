@@ -1,8 +1,7 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const {createFunction} = require('../../../src/style-spec/function');
-const Color = require('../../../src/style-spec/util/color');
+import { test } from 'mapbox-gl-js-test';
+import { createFunction } from '../../../src/style-spec/function';
+import Color from '../../../src/style-spec/util/color';
+import Formatted from '../../../src/style-spec/expression/types/formatted';
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {
@@ -11,7 +10,11 @@ test('binary search', (t) => {
             base: 2
         }, {
             type: 'number',
-            function: 'interpolated'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': true,
+                'parameters': ['zoom']
+            }
         }).evaluate;
 
         t.equal(f({zoom: 17}), 11);
@@ -28,7 +31,11 @@ test('exponential function', (t) => {
             base: 2
         }, {
             type: 'number',
-            function: 'interpolated'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': true,
+                'parameters': ['zoom']
+            }
         }).evaluate;
 
         t.equalWithPrecision(f({zoom: 2}), 30 / 9, 1e-6);
@@ -460,12 +467,16 @@ test('exponential function', (t) => {
 });
 
 test('interval function', (t) => {
-    t.test('is the default for piecewise-constant properties', (t) => {
+    t.test('is the default for non-interpolated properties', (t) => {
         const f = createFunction({
             stops: [[-1, 11], [0, 111]]
         }, {
             type: 'number',
-            function: 'piecewise-constant'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': false,
+                'parameters': ['zoom']
+            }
         }).evaluate;
 
         t.equal(f({zoom: -1.5}), 11);
@@ -975,6 +986,22 @@ test('identity function', (t) => {
         }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 3}}), 'def');
+
+        t.end();
+    });
+
+    t.test('formatted', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'formatted'
+        }).evaluate;
+
+        t.deepEqual(f({zoom: 0}, {properties: {foo: 'foo'}}), Formatted.fromString('foo'));
+        t.deepEqual(f({zoom: 1}, {properties: {foo: 'bar'}}), Formatted.fromString('bar'));
+        t.deepEqual(f({zoom: 2}, {properties: {foo: 2}}), Formatted.fromString('2'));
+        t.deepEqual(f({zoom: 3}, {properties: {foo: true}}), Formatted.fromString('true'));
 
         t.end();
     });

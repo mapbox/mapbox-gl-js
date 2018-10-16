@@ -1,8 +1,8 @@
 {
    "labels": {
-       "release blocker": 25,
+       "release blocker :no_entry:": 25,
        "high priority": 7,
        "medium priority": 5,
-       "bug": 2
+       "bug :beetle:": 2
    }
 }

@@ -2,17 +2,20 @@
 // @flow
 /* eslint-disable */
 
-const styleSpec = require('../../style-spec/reference/latest');
+import styleSpec from '../../style-spec/reference/latest';
 
-const {
+import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
+    CrossFadedDataDrivenProperty,
     CrossFadedProperty,
-    HeatmapColorProperty
-} = require('../properties');
+    ColorRampProperty
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
+
+import type Formatted from '../../style-spec/expression/types/formatted';
 
 
 export type PaintProps = {|
@@ -22,6 +25,7 @@ export type PaintProps = {|
     "raster-brightness-max": DataConstantProperty<number>,
     "raster-saturation": DataConstantProperty<number>,
     "raster-contrast": DataConstantProperty<number>,
+    "raster-resampling": DataConstantProperty<"linear" | "nearest">,
     "raster-fade-duration": DataConstantProperty<number>,
 |};
 
@@ -32,7 +36,13 @@ const paint: Properties<PaintProps> = new Properties({
     "raster-brightness-max": new DataConstantProperty(styleSpec["paint_raster"]["raster-brightness-max"]),
     "raster-saturation": new DataConstantProperty(styleSpec["paint_raster"]["raster-saturation"]),
     "raster-contrast": new DataConstantProperty(styleSpec["paint_raster"]["raster-contrast"]),
+    "raster-resampling": new DataConstantProperty(styleSpec["paint_raster"]["raster-resampling"]),
     "raster-fade-duration": new DataConstantProperty(styleSpec["paint_raster"]["raster-fade-duration"]),
 });
 
-module.exports = { paint };
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
+export default ({ paint }: $Exact<{
+  paint: Properties<PaintProps>
+}>);

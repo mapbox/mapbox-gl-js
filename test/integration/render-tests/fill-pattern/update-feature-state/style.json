@@ -1,0 +1,77 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": "1"
+          },
+          {
+            "hover": true
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "zoom": 1,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "id": 1,
+        "properties": {
+          "pattern": "generic_icon"
+        },
+        "coordinates": [
+          [
+            [
+              -10,
+              -10
+            ],
+            [
+              -10,
+              10
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              10,
+              -10
+            ],
+            [
+              -10,
+              -10
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+            "fill-pattern": [
+                "case",
+                ["boolean", ["feature-state", "hover"], false],
+                "generic_icon",
+                "generic_metro"
+            ]
+        }
+    }
+  ]
+}

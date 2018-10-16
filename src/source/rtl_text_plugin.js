@@ -1,52 +1,67 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const Evented = require('../util/evented');
-const window = require('../util/window');
+import { Event, Evented } from '../util/evented';
+import browser from '../util/browser';
 
 let pluginRequested = false;
-let pluginBlobURL = null;
+let pluginURL = null;
+let foregroundLoadComplete = false;
 
-module.exports.evented = new Evented();
+export const evented = new Evented();
 
+type CompletionCallback = (error?: Error) => void;
 type ErrorCallback = (error: Error) => void;
 
-module.exports.registerForPluginAvailability = function(
-    callback: (args: {pluginBlobURL: string, errorCallback: ErrorCallback}) => void
+let _completionCallback;
+
+export const registerForPluginAvailability = function(
+    callback: (args: {pluginURL: string, completionCallback: CompletionCallback}) => void
 ) {
-    if (pluginBlobURL) {
-        callback({ pluginBlobURL: pluginBlobURL, errorCallback: module.exports.errorCallback});
+    if (pluginURL) {
+        callback({ pluginURL: pluginURL, completionCallback: _completionCallback});
     } else {
-        module.exports.evented.once('pluginAvailable', callback);
+        evented.once('pluginAvailable', callback);
     }
     return callback;
 };
 
-// Exposed so it can be stubbed out by tests
-module.exports.createBlobURL = function(response: Object) {
-    return window.URL.createObjectURL(new window.Blob([response.data], {type: "text/javascript"}));
-};
-// Only exposed for tests
-module.exports.clearRTLTextPlugin = function() {
+export const clearRTLTextPlugin = function() {
     pluginRequested = false;
-    pluginBlobURL = null;
+    pluginURL = null;
 };
 
-module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCallback) {
+export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
     if (pluginRequested) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }
     pluginRequested = true;
-    module.exports.errorCallback = callback;
-    ajax.getArrayBuffer({ url: pluginURL }, (err, response) => {
-        if (err) {
-            callback(err);
-        } else if (response) {
-            pluginBlobURL = module.exports.createBlobURL(response);
-            module.exports.evented.fire('pluginAvailable', { pluginBlobURL: pluginBlobURL, errorCallback: callback });
+    pluginURL = browser.resolveURL(url);
+    _completionCallback = (error?: Error) => {
+        if (error) {
+            // Clear loaded state to allow retries
+            clearRTLTextPlugin();
+            if (callback) {
+                callback(error);
+            }
+        } else {
+            // Called once for each worker
+            foregroundLoadComplete = true;
         }
-    });
+    };
+    evented.fire(new Event('pluginAvailable', { pluginURL: pluginURL, completionCallback: _completionCallback }));
 };
 
-module.exports.applyArabicShaping = (null: ?Function);
-module.exports.processBidirectionalText = (null: ?(string, Array<number>) => Array<string>);
+export const plugin: {
+    applyArabicShaping: ?Function,
+    processBidirectionalText: ?(string, Array<number>) => Array<string>,
+    processStyledBidirectionalText: ?(string, Array<number>, Array<number>) => Array<[string, Array<number>]>,
+    isLoaded: () => boolean
+} = {
+    applyArabicShaping: null,
+    processBidirectionalText: null,
+    processStyledBidirectionalText: null,
+    isLoaded: function() {
+        return foregroundLoadComplete ||       // Foreground: loaded if the completion callback returned successfully
+            plugin.applyArabicShaping != null; // Background: loaded if the plugin functions have been compiled
+    }
+};

@@ -8,7 +8,7 @@
       "zoom": 0,
       "diff": 0.00075,
       "operations": [
-        ["setStyle", "local://../../node_modules/mapbox-gl-styles/styles/bright-v9.json"],
+        ["setStyle", "local://mapbox-gl-styles/styles/bright-v9.json"],
         ["wait"]
       ]
     }

@@ -1,29 +1,38 @@
 // @flow
 
-const browser = require('../util/browser');
-const shaders = require('../shaders');
-const assert = require('assert');
-const {ProgramConfiguration} = require('../data/program_configuration');
-const VertexArrayObject = require('./vertex_array_object');
-const Context = require('../gl/context');
+import browser from '../util/browser';
 
-import type {SegmentVector} from '../data/segment';
+import shaders from '../shaders';
+import assert from 'assert';
+import ProgramConfiguration from '../data/program_configuration';
+import VertexArrayObject from './vertex_array_object';
+import Context from '../gl/context';
+
+import type SegmentVector from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
+import type DepthMode from '../gl/depth_mode';
+import type StencilMode from '../gl/stencil_mode';
+import type ColorMode from '../gl/color_mode';
+import type CullFaceMode from '../gl/cull_face_mode';
+import type {UniformBindings, UniformValues, UniformLocations} from './uniform_binding';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>
-    | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>;
+    | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>
+    | $PropertyType<WebGLRenderingContext, 'LINE_STRIP'>;
 
-class Program {
+class Program<Us: UniformBindings> {
     program: WebGLProgram;
-    uniforms: {[string]: WebGLUniformLocation};
     attributes: {[string]: number};
     numAttributes: number;
+    fixedUniforms: Us;
+    binderUniforms: UniformBindings;
 
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
                 configuration: ProgramConfiguration,
+                fixedUniforms: (Context, UniformLocations) => Us,
                 showOverdrawInspector: boolean) {
         const gl = context.gl;
         this.program = gl.createProgram();
@@ -36,7 +45,6 @@ class Program {
 
         const fragmentSource = defines.concat(shaders.prelude.fragmentSource, source.fragmentSource).join('\n');
         const vertexSource = defines.concat(shaders.prelude.vertexSource, source.vertexSource).join('\n');
-
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
@@ -64,7 +72,7 @@ class Program {
         this.numAttributes = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
 
         this.attributes = {};
-        this.uniforms = {};
+        const uniformLocations = {};
 
         for (let i = 0; i < this.numAttributes; i++) {
             const attribute = gl.getActiveAttrib(this.program, i);
@@ -77,26 +85,51 @@ class Program {
         for (let i = 0; i < numUniforms; i++) {
             const uniform = gl.getActiveUniform(this.program, i);
             if (uniform) {
-                this.uniforms[uniform.name] = gl.getUniformLocation(this.program, uniform.name);
+                uniformLocations[uniform.name] = gl.getUniformLocation(this.program, uniform.name);
             }
         }
+
+        this.fixedUniforms = fixedUniforms(context, uniformLocations);
+        this.binderUniforms = configuration.getUniforms(context, uniformLocations);
     }
 
     draw(context: Context,
          drawMode: DrawMode,
+         depthMode: $ReadOnly<DepthMode>,
+         stencilMode: $ReadOnly<StencilMode>,
+         colorMode: $ReadOnly<ColorMode>,
+         cullFaceMode: $ReadOnly<CullFaceMode>,
+         uniformValues: UniformValues<Us>,
          layerID: string,
          layoutVertexBuffer: VertexBuffer,
          indexBuffer: IndexBuffer,
          segments: SegmentVector,
+         currentProperties: any,
+         zoom: ?number,
          configuration: ?ProgramConfiguration,
          dynamicLayoutBuffer: ?VertexBuffer,
          dynamicLayoutBuffer2: ?VertexBuffer) {
 
         const gl = context.gl;
 
+        context.program.set(this.program);
+        context.setDepthMode(depthMode);
+        context.setStencilMode(stencilMode);
+        context.setColorMode(colorMode);
+        context.setCullFace(cullFaceMode);
+
+        for (const name in this.fixedUniforms) {
+            this.fixedUniforms[name].set(uniformValues[name]);
+        }
+
+        if (configuration) {
+            configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
+        }
+
         const primitiveSize = {
             [gl.LINES]: 2,
-            [gl.TRIANGLES]: 3
+            [gl.TRIANGLES]: 3,
+            [gl.LINE_STRIP]: 1
         }[drawMode];
 
         for (const segment of segments.get()) {
@@ -123,4 +156,4 @@ class Program {
     }
 }
 
-module.exports = Program;
+export default Program;

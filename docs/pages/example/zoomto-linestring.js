@@ -2,8 +2,8 @@
 title: Fit to the bounds of a LineString
 description: >-
   Get the bounds of a LineString by passing its first coordinates to
-  [`LngLatBounds`](https://www.mapbox.com/mapbox-gl-js/api/#lnglatbounds)
-  and chaining [`extend`](https://www.mapbox.com/mapbox-gl-js/api/#lnglatbounds#extend)
+  [`LngLatBounds`](/mapbox-gl-js/api/#lnglatbounds)
+  and chaining [`extend`](/mapbox-gl-js/api/#lnglatbounds#extend)
   to include the last coordinates.
 tags:
   - user-interaction

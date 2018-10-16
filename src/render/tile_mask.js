@@ -1,11 +1,11 @@
 // @flow
 
-const {OverscaledTileID, CanonicalTileID} = require('../source/tile_id');
+import { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
 
 import type Tile from './../source/tile';
 import type Context from '../gl/context';
 
-export type Mask = {
+type Mask = {
     [number]: CanonicalTileID
 };
 
@@ -60,7 +60,7 @@ export type Mask = {
 // 2/1/3, since it is not a descendant of it.
 
 
-module.exports = function(renderableTiles: Array<Tile>, context: Context) {
+export default function(renderableTiles: Array<Tile>, context: Context) {
     const sortedRenderables = renderableTiles.sort((a, b) => { return a.tileID.isLessThan(b.tileID) ? -1 : b.tileID.isLessThan(a.tileID) ? 1 : 0; });
 
     for (let i = 0; i < sortedRenderables.length; i++) {
@@ -75,7 +75,7 @@ module.exports = function(renderableTiles: Array<Tile>, context: Context) {
         computeTileMasks(tile.tileID.wrapped(), tile.tileID, childArray, new OverscaledTileID(0, tile.tileID.wrap + 1, 0, 0, 0), mask);
         tile.setMask(mask, context);
     }
-};
+}
 
 function computeTileMasks(rootTile: OverscaledTileID, ref: OverscaledTileID, childArray: Array<Tile>, lowerBound: OverscaledTileID, mask: Mask) {
     // If the reference or any of its children is found in the list, we need to recurse.

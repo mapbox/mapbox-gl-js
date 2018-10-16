@@ -1,18 +1,27 @@
 // @flow
 
-const Evented = require('../../util/evented');
-const DOM = require('../../util/dom');
-const window = require('../../util/window');
-const util = require('../../util/util');
-const assert = require('assert');
-const LngLat = require('../../geo/lng_lat');
-const Marker = require('../marker');
+import { Event, Evented } from '../../util/evented';
+import DOM from '../../util/dom';
+import window from '../../util/window';
+import { extend, bindAll, warnOnce } from '../../util/util';
+import assert from 'assert';
+import LngLat from '../../geo/lng_lat';
+import Marker from '../marker';
 
 import type Map from '../map';
+import type { AnimationOptions, CameraOptions } from '../camera';
 
-const defaultOptions = {
+type Options = {
+    positionOptions?: PositionOptions,
+    fitBoundsOptions?: AnimationOptions & CameraOptions,
+    trackUserLocation?: boolean,
+    showUserLocation?: boolean
+};
+
+const defaultOptions: Options = {
     positionOptions: {
         enableHighAccuracy: false,
+        maximumAge: 0,
         timeout: 6000 /* 6 sec */
     },
     fitBoundsOptions: {
@@ -76,31 +85,32 @@ function checkGeolocationSupport(callback) {
  *     },
  *     trackUserLocation: true
  * }));
+ * @see [Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
  */
 class GeolocateControl extends Evented {
     _map: Map;
-    options: any;
+    options: Options;
     _container: HTMLElement;
     _dotElement: HTMLElement;
     _geolocateButton: HTMLElement;
     _geolocationWatchID: number;
-    _timeoutId: ?number;
+    _timeoutId: ?TimeoutID;
     _watchState: string;
     _lastKnownPosition: any;
     _userLocationDotMarker: Marker;
+    _setup: boolean; // set to true once the control has been setup
 
-    constructor(options: any) {
+    constructor(options: Options) {
         super();
-        this.options = util.extend({}, defaultOptions, options);
+        this.options = extend({}, defaultOptions, options);
 
-        util.bindAll([
+        bindAll([
             '_onSuccess',
             '_onError',
             '_finish',
             '_setupUI',
             '_updateCamera',
-            '_updateMarker',
-            '_onClickGeolocate'
+            '_updateMarker'
         ], this);
     }
 
@@ -119,7 +129,7 @@ class GeolocateControl extends Evented {
         }
 
         // clear the marker from the map
-        if (this.options.showUserLocation) {
+        if (this.options.showUserLocation && this._userLocationDotMarker) {
             this._userLocationDotMarker.remove();
         }
 
@@ -170,7 +180,7 @@ class GeolocateControl extends Evented {
             this._dotElement.classList.remove('mapboxgl-user-location-dot-stale');
         }
 
-        this.fire('geolocate', position);
+        this.fire(new Event('geolocate', position));
         this._finish();
     }
 
@@ -238,7 +248,7 @@ class GeolocateControl extends Evented {
             this._dotElement.classList.add('mapboxgl-user-location-dot-stale');
         }
 
-        this.fire('error', error);
+        this.fire(new Event('error', error));
 
         this._finish();
     }
@@ -249,7 +259,10 @@ class GeolocateControl extends Evented {
     }
 
     _setupUI(supported: boolean) {
-        if (supported === false) return;
+        if (supported === false) {
+            warnOnce('Geolocation support is not available, the GeolocateControl will not be visible.');
+            return;
+        }
         this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
         this._geolocateButton = DOM.create('button',
             `${className}-icon ${className}-geolocate`,
@@ -272,7 +285,9 @@ class GeolocateControl extends Evented {
         }
 
         this._geolocateButton.addEventListener('click',
-            this._onClickGeolocate.bind(this));
+            this.trigger.bind(this));
+
+        this._setup = true;
 
         // when the camera is changed (and it's not as a result of the Geolocation Control) change
         // the watch mode to background watch, so that the marker is updated but not the camera.
@@ -283,13 +298,22 @@ class GeolocateControl extends Evented {
                     this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
                     this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
 
-                    this.fire('trackuserlocationend');
+                    this.fire(new Event('trackuserlocationend'));
                 }
             });
         }
     }
 
-    _onClickGeolocate() {
+    /**
+     * Trigger a geolocation
+     *
+     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
+     */
+    trigger() {
+        if (!this._setup) {
+            warnOnce('Geolocate control triggered before added to a map');
+            return false;
+        }
         if (this.options.trackUserLocation) {
             // update watchState and do any outgoing state cleanup
             switch (this._watchState) {
@@ -297,7 +321,7 @@ class GeolocateControl extends Evented {
                 // turn on the Geolocate Control
                 this._watchState = 'WAITING_ACTIVE';
 
-                this.fire('trackuserlocationstart');
+                this.fire(new Event('trackuserlocationstart'));
                 break;
             case 'WAITING_ACTIVE':
             case 'ACTIVE_LOCK':
@@ -311,7 +335,7 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
 
-                this.fire('trackuserlocationend');
+                this.fire(new Event('trackuserlocationend'));
                 break;
             case 'BACKGROUND':
                 this._watchState = 'ACTIVE_LOCK';
@@ -319,7 +343,7 @@ class GeolocateControl extends Evented {
                 // set camera to last known location
                 if (this._lastKnownPosition) this._updateCamera(this._lastKnownPosition);
 
-                this.fire('trackuserlocationstart');
+                this.fire(new Event('trackuserlocationstart'));
                 break;
             default:
                 assert(false, `Unexpected watchState ${this._watchState}`);
@@ -372,6 +396,8 @@ class GeolocateControl extends Evented {
             // the user declines to share their location in Firefox
             this._timeoutId = setTimeout(this._finish, 10000 /* 10sec */);
         }
+
+        return true;
     }
 
     _clearWatch() {
@@ -387,7 +413,7 @@ class GeolocateControl extends Evented {
     }
 }
 
-module.exports = GeolocateControl;
+export default GeolocateControl;
 
 /* Geolocate Control Watch States
  * This is the private state of the control.

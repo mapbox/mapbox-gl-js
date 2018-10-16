@@ -1,0 +1,225 @@
+version: 2
+
+workflows:
+  version: 2
+  default:
+    jobs:
+      - prepare:
+          filters:
+            tags:
+              only: /.*/
+      - lint:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - build:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - check-size:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+      - test-flow:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - test-unit:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - test-render:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - test-query:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - test-expressions:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - deploy-benchmarks:
+          requires:
+            - lint
+            - build
+            - test-flow
+            - test-unit
+            - test-render
+            - test-query
+            - test-expressions
+          filters:
+            tags:
+              only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
+            branches:
+              only:
+                - master
+                - /release-.*/
+      - deploy-release:
+          requires:
+            - lint
+            - build
+            - test-flow
+            - test-unit
+            - test-render
+            - test-query
+            - test-expressions
+          filters:
+            tags:
+              only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
+            branches:
+              ignore: /.*/
+
+defaults: &defaults
+  docker:
+    - image: mbgl/ci:r4-linux-gl-js
+  working_directory: ~/mapbox-gl-js
+
+jobs:
+  prepare:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-yarn-{{ checksum "yarn.lock" }}
+            - v1-yarn
+      - run: yarn
+      - save_cache:
+          key: v1-yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - '~/.yarn'
+            - 'node_modules'
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  lint:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - v1-lint-{{ .Branch }}
+            - v1-lint
+      - run: yarn run lint
+      - run: yarn run lint-docs
+      - run: yarn run lint-css
+      - save_cache:
+          key: v1-lint-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - '.eslintcache'
+
+  build:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: yarn run build-min
+      - run: yarn run build-dev
+      - run: yarn run build-css
+      - run: yarn run build-style-spec
+      - run: yarn run build-flow-types
+      - run: yarn run test-build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+
+  check-size:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: node build/check-bundle-size.js "dist/mapbox-gl.js" "GL JS - Minified"
+
+  test-flow:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: yarn run test-flow
+
+  test-unit:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-unit
+
+  test-render:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-render
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-query:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-query
+      - store_artifacts:
+          path: "test/integration/query-tests/index.html"
+
+  test-expressions:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: yarn run test-expressions
+
+  deploy-benchmarks:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build
+          command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
+      - run:
+          name: Upload
+          command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js
+
+  deploy-release:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy release
+          command: |
+            function upload {
+                aws s3 cp --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js/$CIRCLE_TAG/$1
+
+                AWS_ACCESS_KEY_ID=$AWSCN_ACCESS_KEY_ID \
+                AWS_SECRET_ACCESS_KEY=$AWSCN_SECRET_ACCESS_KEY \
+                aws s3 cp --region cn-north-1 --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js-cn-north-1/$CIRCLE_TAG/$1
+            }
+
+            upload mapbox-gl.js     application/javascript
+            upload mapbox-gl.js.map application/octet-stream
+            upload mapbox-gl-dev.js application/javascript
+            upload mapbox-gl.css    text/css

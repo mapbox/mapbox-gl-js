@@ -1,21 +1,19 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const fs = require('fs');
-const path = require('path');
-const Protobuf = require('pbf');
-const VectorTile = require('@mapbox/vector-tile').VectorTile;
-const SymbolBucket = require('../../../src/data/bucket/symbol_bucket');
-const {CollisionBoxArray} = require('../../../src/data/array_types');
-const SymbolStyleLayer = require('../../../src/style/style_layer/symbol_style_layer');
-const util = require('../../../src/util/util');
-const featureFilter = require('../../../src/style-spec/feature_filter');
-const {performSymbolLayout} = require('../../../src/symbol/symbol_layout');
-const Placement = require('../../../src/symbol/placement');
-const Transform = require('../../../src/geo/transform');
-const {OverscaledTileID} = require('../../../src/source/tile_id');
-const Tile = require('../../../src/source/tile');
-const CrossTileSymbolIndex = require('../../../src/symbol/cross_tile_symbol_index');
+import { test } from 'mapbox-gl-js-test';
+import fs from 'fs';
+import path from 'path';
+import Protobuf from 'pbf';
+import { VectorTile } from '@mapbox/vector-tile';
+import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
+import { CollisionBoxArray } from '../../../src/data/array_types';
+import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
+import featureFilter from '../../../src/style-spec/feature_filter';
+import { performSymbolLayout } from '../../../src/symbol/symbol_layout';
+import { Placement } from '../../../src/symbol/placement';
+import Transform from '../../../src/geo/transform';
+import { OverscaledTileID } from '../../../src/source/tile_id';
+import Tile from '../../../src/source/tile';
+import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
+import FeatureIndex from '../../../src/data/feature_index';
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
@@ -52,7 +50,7 @@ test('SymbolBucket', (t) => {
     const bucketA = bucketSetup();
     const bucketB = bucketSetup();
     const options = {iconDependencies: {}, glyphDependencies: {}};
-    const placement = new Placement(transform, 0);
+    const placement = new Placement(transform, 0, true);
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
     const crossTileSymbolIndex = new CrossTileSymbolIndex();
 
@@ -60,6 +58,7 @@ test('SymbolBucket', (t) => {
     bucketA.populate([{feature}], options);
     performSymbolLayout(bucketA, stacks, {});
     const tileA = new Tile(tileID, 512);
+    tileA.latestFeatureIndex = new FeatureIndex(tileID);
     tileA.buckets = { test: bucketA };
     tileA.collisionBoxArray = collisionBoxArray;
 
@@ -85,7 +84,7 @@ test('SymbolBucket', (t) => {
 });
 
 test('SymbolBucket integer overflow', (t) => {
-    t.stub(util, 'warnOnce');
+    t.stub(console, 'warn');
     t.stub(SymbolBucket, 'MAX_GLYPHS').value(5);
 
     const bucket = bucketSetup();
@@ -95,7 +94,7 @@ test('SymbolBucket integer overflow', (t) => {
     const fakeGlyph = { rect: { w: 10, h: 10 }, metrics: { left: 10, top: 10, advance: 10 } };
     performSymbolLayout(bucket, stacks, { 'Test': {97: fakeGlyph, 98: fakeGlyph, 99: fakeGlyph, 100: fakeGlyph, 101: fakeGlyph, 102: fakeGlyph} });
 
-    t.ok(util.warnOnce.calledOnce);
-    t.ok(util.warnOnce.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));
+    t.ok(console.warn.calledOnce);
+    t.ok(console.warn.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));
     t.end();
 });

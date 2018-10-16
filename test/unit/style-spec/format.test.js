@@ -1,7 +1,5 @@
-'use strict';
-
-const t = require('mapbox-gl-js-test').test,
-    format = require('../../../src/style-spec/format');
+import { test as t } from 'mapbox-gl-js-test';
+import format from '../../../src/style-spec/format';
 
 function roundtrip(style) {
     return JSON.parse(format(style));

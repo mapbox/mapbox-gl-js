@@ -1,0 +1,53 @@
+{
+  "expression": {
+    "type": "exponential",
+    "property": "p",
+    "stops": [[0, "black"], [1, "white"]],
+    "default": "red"
+  },
+  "propertySpec": {
+    "type": "color",
+    "property-type": "data-driven",
+    "expression": {"interpolated": true, "parameters": ["zoom", "feature"]}
+  },
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": -1}}],
+    [{}, {"properties": {"p": 0}}],
+    [{}, {"properties": {"p": 0.5}}],
+    [{}, {"properties": {"p": 1}}],
+    [{}, {"properties": {"p": 2}}],
+    [{}, {"properties": {"p": "0"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [
+      [1, 0, 0, 1],
+      [0, 0, 0, 1],
+      [0, 0, 0, 1],
+      [0.5, 0.5, 0.5, 1],
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 0, 0, 1]
+    ],
+    "serialized": [
+      "case",
+      ["==", ["typeof", ["get", "p"]], "number"],
+      [
+        "interpolate",
+        ["linear"],
+        ["number", ["get", "p"]],
+        0,
+        ["rgba", 0, 0, 0, 1],
+        1,
+        ["rgba", 255, 255, 255, 1]
+      ],
+      ["rgba", 255, 0, 0, 1]
+    ]
+  }
+}

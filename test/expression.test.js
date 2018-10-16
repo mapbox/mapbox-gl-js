@@ -1,10 +1,9 @@
-'use strict';
-
-require('flow-remove-types/register');
-const expressionSuite = require('./integration').expression;
-const { createPropertyExpression } = require('../src/style-spec/expression');
-const { toString } = require('../src/style-spec/expression/types');
-const ignores = require('./ignores.json');
+import { run } from './integration/lib/expression';
+import { createPropertyExpression } from '../src/style-spec/expression';
+import { isFunction } from '../src/style-spec/function';
+import convertFunction from '../src/style-spec/function/convert';
+import { toString } from '../src/style-spec/expression/types';
+import ignores from './ignores.json';
 
 let tests;
 
@@ -12,60 +11,87 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
     tests = process.argv.slice(2);
 }
 
-expressionSuite.run('js', { ignores, tests }, (fixture) => {
-    const spec = fixture.propertySpec || {};
-    spec['function'] = true;
-    spec['property-function'] = true;
+run('js', { ignores, tests }, (fixture) => {
+    const spec = Object.assign({}, fixture.propertySpec);
 
-    let expression = createPropertyExpression(fixture.expression, spec, {handleErrors: false});
-    if (expression.result === 'error') {
-        return {
-            compiled: {
-                result: 'error',
-                errors: expression.value.map((err) => ({
-                    key: err.key,
-                    error: err.message
-                }))
-            }
+    if (!spec['property-type']) {
+        spec['property-type'] = 'data-driven';
+    }
+
+    if (!spec['expression']) {
+        spec['expression'] = {
+            'interpolated': true,
+            'parameters': ['zoom', 'feature']
         };
     }
 
-    expression = expression.value;
+    const evaluateExpression = (expression, compilationResult) => {
+        if (expression.result === 'error') {
+            compilationResult.result = 'error';
+            compilationResult.errors = expression.value.map((err) => ({
+                key: err.key,
+                error: err.message
+            }));
+            return;
+        }
 
-    const type = expression._styleExpression.expression.type; // :scream:
+        const evaluationResult = [];
 
-    const outputs = [];
-    const result = {
-        outputs,
-        compiled: {
-            result: 'success',
-            isZoomConstant: expression.kind === 'constant' || expression.kind === 'source',
-            isFeatureConstant: expression.kind === 'constant' || expression.kind === 'camera',
-            type: toString(type)
+        expression = expression.value;
+        const type = expression._styleExpression.expression.type; // :scream:
+
+        compilationResult.result = 'success';
+        compilationResult.isFeatureConstant = expression.kind === 'constant' || expression.kind === 'camera';
+        compilationResult.isZoomConstant = expression.kind === 'constant' || expression.kind === 'source';
+        compilationResult.type = toString(type);
+
+        for (const input of fixture.inputs || []) {
+            try {
+                const feature = { properties: input[1].properties || {} };
+                if ('id' in input[1]) {
+                    feature.id = input[1].id;
+                }
+                if ('geometry' in input[1]) {
+                    feature.type = input[1].geometry.type;
+                }
+                let value = expression.evaluateWithoutErrorHandling(input[0], feature);
+                if (type.kind === 'color') {
+                    value = [value.r, value.g, value.b, value.a];
+                }
+                evaluationResult.push(value);
+            } catch (error) {
+                if (error.name === 'ExpressionEvaluationError') {
+                    evaluationResult.push({ error: error.toJSON() });
+                } else {
+                    evaluationResult.push({ error: error.message });
+                }
+            }
+        }
+
+        if (fixture.inputs) {
+            return evaluationResult;
         }
     };
 
-    for (const input of fixture.inputs || []) {
-        try {
-            const feature = { properties: input[1].properties || {} };
-            if ('id' in input[1]) {
-                feature.id = input[1].id;
-            }
-            if ('geometry' in input[1]) {
-                feature.type = input[1].geometry.type;
-            }
-            let value = expression.evaluate(input[0], feature);
-            if (type.kind === 'color') {
-                value = [value.r, value.g, value.b, value.a];
-            }
-            outputs.push(value);
-        } catch (error) {
-            if (error.name === 'ExpressionEvaluationError') {
-                outputs.push({ error: error.toJSON() });
-            } else {
-                outputs.push({ error: error.message });
-            }
+    const result = { compiled: {}, recompiled: {} };
+    const expression = (() => {
+        if (isFunction(fixture.expression)) {
+            return createPropertyExpression(convertFunction(fixture.expression, spec), spec);
+        } else {
+            return createPropertyExpression(fixture.expression, spec);
         }
+    })();
+
+    result.outputs = evaluateExpression(expression, result.compiled);
+    if (expression.result === 'success') {
+        result.serialized = expression.value._styleExpression.expression.serialize();
+        result.roundTripOutputs = evaluateExpression(
+            createPropertyExpression(result.serialized, spec),
+            result.recompiled);
+        // Type is allowed to change through serialization
+        // (eg "array" -> "array<number, 3>")
+        // Override the round-tripped type here so that the equality check passes
+        result.recompiled.type = result.compiled.type;
     }
 
     return result;

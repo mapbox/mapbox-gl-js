@@ -1,0 +1,43 @@
+
+<style>
+.coordinates {
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding:5px 10px;
+    margin: 0;
+    font-size: 11px;
+    line-height: 18px;
+    border-radius: 3px;
+    display: none;
+}
+</style>
+
+<div id='map'></div>
+<pre id='coordinates' class='coordinates'></pre>
+
+<script>
+var coordinates = document.getElementById('coordinates');
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [0, 0],
+    zoom: 2
+});
+
+var marker = new mapboxgl.Marker({
+    draggable: true
+})
+    .setLngLat([0, 0])
+    .addTo(map);
+
+function onDragEnd() {
+    var lngLat = marker.getLngLat();
+    coordinates.style.display = 'block';
+    coordinates.innerHTML = 'Longitude: ' + lngLat.lng + '<br />Latitude: ' + lngLat.lat;
+}
+
+marker.on('dragend', onDragEnd);
+</script>

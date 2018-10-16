@@ -1,6 +1,6 @@
 // @flow
 
-const LngLat = require('./lng_lat');
+import LngLat from './lng_lat';
 
 import type {LngLatLike} from './lng_lat';
 
@@ -66,7 +66,7 @@ class LngLatBounds {
      * @param {LngLat|LngLatBounds} obj object to extend to
      * @returns {LngLatBounds} `this`
      */
-    extend(obj) {
+    extend(obj: LngLat | LngLatBounds) {
         const sw = this._sw,
             ne = this._ne;
         let sw2, ne2;
@@ -244,4 +244,4 @@ class LngLatBounds {
  */
 export type LngLatBoundsLike = LngLatBounds | [LngLatLike, LngLatLike] | [number, number, number, number];
 
-module.exports = LngLatBounds;
+export default LngLatBounds;

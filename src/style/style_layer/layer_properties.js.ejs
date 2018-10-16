@@ -7,17 +7,20 @@
 // @flow
 /* eslint-disable */
 
-const styleSpec = require('../../style-spec/reference/latest');
+import styleSpec from '../../style-spec/reference/latest';
 
-const {
+import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
+    CrossFadedDataDrivenProperty,
     CrossFadedProperty,
-    HeatmapColorProperty
-} = require('../properties');
+    ColorRampProperty
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
+
+import type Formatted from '../../style-spec/expression/types/formatted';
 
 <% if (layoutProperties.length) { -%>
 export type LayoutProps = {|
@@ -32,17 +35,24 @@ const layout: Properties<LayoutProps> = new Properties({
 <% } -%>
 });
 <% } -%>
-
+<% if(paintProperties.length){ %>
 export type PaintProps = {|
 <% for (const property of paintProperties) { -%>
     "<%= property.name %>": <%- propertyType(property) %>,
 <% } -%>
 |};
-
+<% } else{ %>
+export type PaintProps = {};
+<% } %>
 const paint: Properties<PaintProps> = new Properties({
 <% for (const property of paintProperties) { -%>
     "<%= property.name %>": <%- propertyValue(property, 'paint') %>,
 <% } -%>
 });
 
-module.exports = { paint<% if (layoutProperties.length) { %>, layout<% } %> };
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
+export default ({ paint<% if (layoutProperties.length) { %>, layout<% } %> }: $Exact<{
+  paint: Properties<PaintProps><% if (layoutProperties.length) { %>, layout: Properties<LayoutProps><% } %>
+}>);

@@ -1,6 +1,6 @@
 // @flow
 
-const {parseCSSColor} = require('csscolorparser');
+import { parseCSSColor } from 'csscolorparser';
 
 /**
  * An RGBA color value. Create instances from color strings using the static
@@ -29,6 +29,7 @@ class Color {
     static black: Color;
     static white: Color;
     static transparent: Color;
+    static red: Color;
 
     /**
      * Parses valid CSS color strings and returns a `Color` instance.
@@ -71,14 +72,24 @@ class Color {
      * translucentGreen.toString(); // = "rgba(26,207,26,0.73)"
      */
     toString(): string {
-        const transformRgb = (value: number) => Math.round(value * 255 / this.a);
-        const rgb = [this.r, this.g, this.b].map(transformRgb);
-        return `rgba(${rgb.concat(this.a).join(',')})`;
+        const [r, g, b, a] = this.toArray();
+        return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
+    }
+
+    toArray(): [number, number, number, number] {
+        const {r, g, b, a} = this;
+        return a === 0 ? [0, 0, 0, 0] : [
+            r * 255 / a,
+            g * 255 / a,
+            b * 255 / a,
+            a
+        ];
     }
 }
 
 Color.black = new Color(0, 0, 0, 1);
 Color.white = new Color(1, 1, 1, 1);
 Color.transparent = new Color(0, 0, 0, 0);
+Color.red = new Color(1, 0, 0, 1);
 
-module.exports = Color;
+export default Color;

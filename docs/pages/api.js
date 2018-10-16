@@ -4,8 +4,10 @@ import LeftNav from '../components/left_nav';
 import TopNav from '../components/top_nav';
 import {highlightJavascript} from '../components/prism_highlight.js';
 import Quickstart from '../components/quickstart';
-import docs from '../components/api.json';
+import docs from '../components/api.json'; // eslint-disable-line import/no-unresolved
 import GithubSlugger from 'github-slugger';
+import createFormatters from 'documentation/lib/output/util/formatters';
+import LinkerStack from 'documentation/lib/output/util/linker_stack';
 
 const meta = {
     title: 'Mapbox GL JS API',
@@ -13,8 +15,6 @@ const meta = {
     pathname: '/api'
 };
 
-const createFormatters = require('documentation/lib/output/util/formatters');
-const LinkerStack = require('documentation/lib/output/util/linker_stack');
 
 const linkerStack = new LinkerStack({})
     .namespaceResolver(docs, (namespace) => {
@@ -188,7 +188,9 @@ class Item extends React.Component {
                     <p>Extends {section.augments.map((tag, i) =>
                         <span key={i} dangerouslySetInnerHTML={{__html: formatters.autolink(tag.name)}}/>)}.</p>}
 
-                {section.kind === 'class' && !section.interface &&
+                {section.kind === 'class' &&
+                    !section.interface &&
+                    (!section.constructorComment || section.constructorComment.access !== 'private') &&
                     <div className='code pad1 small round fill-light'
                         dangerouslySetInnerHTML={{__html: `new ${section.name}${formatters.parameters(section)}`}}/>}
 
@@ -198,7 +200,7 @@ class Item extends React.Component {
                 {section.copyright && <div>Copyright: {section.copyright}</div>}
                 {section.since && <div>Since: {section.since}</div>}
 
-                {!empty(section.params) && !(section.kind === 'class' && section.interface) &&
+                {!empty(section.params) && (section.kind !== 'class' || !section.constructorComment || section.constructorComment.access !== 'private') &&
                     <div>
                         <div className='pad1y quiet space-top2 prose-big'>Parameters</div>
                         <div>

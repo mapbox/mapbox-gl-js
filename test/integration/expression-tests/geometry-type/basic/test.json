@@ -4,12 +4,13 @@
     [{}, {"geometry": {"type": "LineString", "coordinates": [[0, 0], [10, 0]]}}]
   ],
   "expected": {
-    "outputs": ["LineString"],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "string"
-    }
+    },
+    "outputs": ["LineString"],
+    "serialized": ["geometry-type"]
   }
 }

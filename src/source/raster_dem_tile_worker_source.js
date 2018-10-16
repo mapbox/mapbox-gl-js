@@ -1,6 +1,6 @@
 // @flow
 
-const {DEMData} = require('../data/dem_data');
+import DEMData from '../data/dem_data';
 
 import type Actor from '../util/actor';
 import type {
@@ -12,33 +12,23 @@ import type {
 
 class RasterDEMTileWorkerSource {
     actor: Actor;
-    loading: {[string]: {[string]: DEMData}};
-    loaded: {[string]: {[string]: DEMData}};
+    loaded: {[string]: DEMData};
 
     constructor() {
-        this.loading = {};
         this.loaded = {};
     }
 
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
-        const source = params.source,
-            uid = params.uid;
+        const {uid, encoding, rawImageData} = params;
+        const dem = new DEMData(uid, rawImageData, encoding);
 
-        if (!this.loading[source])
-            this.loading[source] = {};
-
-        const dem = new DEMData(uid);
-        this.loading[source][uid] = dem;
-        dem.loadFromImage(params.rawImageData);
-        delete this.loading[source][uid];
-
-        this.loaded[source] = this.loaded[source] || {};
-        this.loaded[source][uid] = dem;
+        this.loaded = this.loaded || {};
+        this.loaded[uid] = dem;
         callback(null, dem);
     }
 
     removeTile(params: TileParameters) {
-        const loaded = this.loaded[params.source],
+        const loaded = this.loaded,
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
@@ -46,4 +36,4 @@ class RasterDEMTileWorkerSource {
     }
 }
 
-module.exports = RasterDEMTileWorkerSource;
+export default RasterDEMTileWorkerSource;

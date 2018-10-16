@@ -1,6 +1,6 @@
 // @flow
 
-const assert = require('assert');
+import assert from 'assert';
 
 import type Program from './program';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -9,7 +9,7 @@ import type Context from '../gl/context';
 
 class VertexArrayObject {
     context: Context;
-    boundProgram: ?Program;
+    boundProgram: ?Program<*>;
     boundLayoutVertexBuffer: ?VertexBuffer;
     boundPaintVertexBuffers: Array<VertexBuffer>;
     boundIndexBuffer: ?IndexBuffer;
@@ -29,7 +29,7 @@ class VertexArrayObject {
     }
 
     bind(context: Context,
-         program: Program,
+         program: Program<*>,
          layoutVertexBuffer: VertexBuffer,
          paintVertexBuffers: Array<VertexBuffer>,
          indexBuffer: ?IndexBuffer,
@@ -77,7 +77,7 @@ class VertexArrayObject {
         }
     }
 
-    freshBind(program: Program,
+    freshBind(program: Program<*>,
               layoutVertexBuffer: VertexBuffer,
               paintVertexBuffers: Array<VertexBuffer>,
               indexBuffer: ?IndexBuffer,
@@ -160,4 +160,4 @@ class VertexArrayObject {
     }
 }
 
-module.exports = VertexArrayObject;
+export default VertexArrayObject;

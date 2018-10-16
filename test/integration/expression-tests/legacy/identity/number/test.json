@@ -1,0 +1,31 @@
+{
+  "expression": {"type": "identity", "property": "p"},
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": 0}}],
+    [{}, {"properties": {"p": 1}}],
+    [{}, {"properties": {"p": "wrong type"}}]
+  ],
+  "propertySpec": {
+    "type": "number",
+    "property-type": "data-driven",
+    "expression": {"interpolated": false, "parameters": ["zoom", "feature"]}
+  },
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      {"error": "Expected value to be of type number, but found null instead."},
+      0,
+      1,
+      {
+        "error": "Expected value to be of type number, but found string instead."
+      }
+    ],
+    "serialized": ["number", ["get", "p"]]
+  }
+}

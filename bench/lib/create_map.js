@@ -1,9 +1,8 @@
 // @flow
 
-const Map = require('../../src/ui/map');
-const browser = require('../../src/util/browser');
+import Map from '../../src/ui/map';
 
-module.exports = function (options: any): Promise<Map> {
+export default function (options: any): Promise<Map> {
     return new Promise((resolve, reject) => {
         const container = document.createElement('div');
         container.style.width = `${options.width || 512}px`;
@@ -14,7 +13,7 @@ module.exports = function (options: any): Promise<Map> {
 
         const map = new Map(Object.assign({
             container,
-            style: 'mapbox://styles/mapbox/streets-v9'
+            style: 'mapbox://styles/mapbox/streets-v10'
         }, options));
 
         map
@@ -23,9 +22,9 @@ module.exports = function (options: any): Promise<Map> {
                 map._rerender = () => {};
 
                 // If there's a pending rerender, cancel it.
-                if (map._frameId) {
-                    browser.cancelFrame(map._frameId);
-                    map._frameId = null;
+                if (map._frame) {
+                    map._frame.cancel();
+                    map._frame = null;
                 }
 
                 resolve(map);
@@ -33,4 +32,4 @@ module.exports = function (options: any): Promise<Map> {
             .on('error', (e) => reject(e.error))
             .on('remove', () => container.remove());
     });
-};
+}

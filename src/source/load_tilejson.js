@@ -1,20 +1,25 @@
 // @flow
 
-const util = require('../util/util');
-const ajax = require('../util/ajax');
-const browser = require('../util/browser');
-const normalizeURL = require('../util/mapbox').normalizeSourceURL;
+import { pick } from '../util/util';
+
+import { getJSON, ResourceType } from '../util/ajax';
+import browser from '../util/browser';
+import { normalizeSourceURL as normalizeURL } from '../util/mapbox';
 
 import type {RequestTransformFunction} from '../ui/map';
 import type {Callback} from '../types/callback';
 import type {TileJSON} from '../types/tilejson';
+import type {Cancelable} from '../types/cancelable';
 
-module.exports = function(options: any, requestTransformFn: RequestTransformFunction, callback: Callback<TileJSON>) {
+export default function(options: any, requestTransformFn: RequestTransformFunction, callback: Callback<TileJSON>): Cancelable {
     const loaded = function(err, tileJSON: any) {
         if (err) {
             return callback(err);
         } else if (tileJSON) {
-            const result: any = util.pick(tileJSON, ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds']);
+            const result: any = pick(
+                tileJSON,
+                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds']
+            );
 
             if (tileJSON.vector_layers) {
                 result.vectorLayers = tileJSON.vector_layers;
@@ -26,8 +31,8 @@ module.exports = function(options: any, requestTransformFn: RequestTransformFunc
     };
 
     if (options.url) {
-        ajax.getJSON(requestTransformFn(normalizeURL(options.url), ajax.ResourceType.Source), loaded);
+        return getJSON(requestTransformFn(normalizeURL(options.url), ResourceType.Source), loaded);
     } else {
-        browser.frame(() => loaded(null, options));
+        return browser.frame(() => loaded(null, options));
     }
-};
+}

@@ -10,11 +10,26 @@ Start the benchmark server
 MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} yarn start
 ```
 
-To run all benchmarks, open [the benchmark page, `http://localhost:9966/bench`](http://localhost:9966/bench).
+To run all benchmarks, open [the benchmark page, `http://localhost:9966/bench/versions`](http://localhost:9966/bench/versions).
 
-To run a specific benchmark, add its name to the url hash, for example [`http://localhost:9966/bench/#Layout`](http://localhost:9966/bench/#Layout).
+To run a specific benchmark, add its name to the url hash, for example [`http://localhost:9966/bench/versions#Layout`](http://localhost:9966/bench/versions#Layout).
 
-In either case, if you want to run only benchmarks from your local branch, without also running the current master branch build, then include a `no-master` query parameter, i.e. [localhost:9966/bench?no-master](http://localhost:9966/bench?no-master) or [localhost:9966/bench?no-master#Layout](http://localhost:9966/bench?no-master#Layout).
+By default, the benchmark page will compare the local branch against `master` and the latest release. To change this, include one or more `compare` query parameters in the URL: E.g., [localhost:9966/bench/versions?compare=master](http://localhost:9966/bench/versions?compare=master) or [localhost:9966/bench/versions?compare=master#Layout](http://localhost:9966/bench/versions?compare=master#Layout) to compare only to master, or [localhost:9966/bench/versions?compare=v0.44.0&compare=v0.44.1](http://localhost:9966/bench/versions?compare=v0.44.0&compare=v0.44.1) to compare to `v0.44.0` and `v0.44.1` (but not `master`).  Versions available for comparison are: `master` and `vX.Y.Z` for versions >= `v0.41.0`.
+
+## Running Style Benchmarks
+
+Start the benchmark server
+
+```bash
+MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} MAPBOX_STYLE_URL={YOUR STYLES HERE} yarn start
+```
+Note: `MAPBOX_STYLE_URL` takes a comma-separated list of up to 3 Mapbox style URLs (e.g. `mapbox://styles/mapbox/streets-v10,mapbox://styles/mapbox/streets-v9`)
+
+To run all benchmarks, open [the benchmark page, `http://localhost:9966/bench/styles`](http://localhost:9966/bench/styles).
+
+To run a specific benchmark, add its name to the url hash, for example [`http://localhost:9966/bench/styles#Layout`](http://localhost:9966/bench/styles#Layout).
+
+By default, the style benchmark page will run its benchmarks against `mapbox://styles/mapbox/streets-v10`. `Layout` and `Paint` styles will run one instance of the test for each tile/location in an internal list of tiles. This behavior helps visualize the ways in which a style performs given various conditions present in each tile (CJK text, dense urban areas, rural areas, etc). `QueryBox` and `QueryPoint` use the internal list of tiles but otherwise run the same as their non-style benchmark equivalents. `StyleLayerCreate` and `StyleValidate` are not tile/location dependent and run the same way as their non-style benchmark equivalents. All other benchmark tests from the non-style suite are not used when benchmarking styles.
 
 ## Writing a Benchmark
 

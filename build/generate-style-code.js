@@ -1,8 +1,7 @@
 'use strict';
 
-require('flow-remove-types/register');
-
 const fs = require('fs');
+
 const ejs = require('ejs');
 const spec = require('../src/style-spec/reference/v8');
 const Color = require('../src/style-spec/util/color');
@@ -11,10 +10,6 @@ global.camelize = function (str) {
     return str.replace(/(?:^|-)(.)/g, function (_, x) {
         return x.toUpperCase();
     });
-};
-
-global.isDataDriven = function (property) {
-    return property['property-function'] === true;
 };
 
 global.flowType = function (property) {
@@ -29,6 +24,8 @@ global.flowType = function (property) {
             return Object.keys(property.values).map(JSON.stringify).join(' | ');
         case 'color':
             return `Color`;
+        case 'formatted':
+            return `Formatted`;
         case 'array':
             if (property.length) {
                 return `[${new Array(property.length).fill(flowType({type: property.value})).join(', ')}]`;
@@ -40,14 +37,20 @@ global.flowType = function (property) {
 };
 
 global.propertyType = function (property) {
-    if (isDataDriven(property)) {
-        return `DataDrivenProperty<${flowType(property)}>`;
-    } else if (/-pattern$/.test(property.name) || property.name === 'line-dasharray') {
-        return `CrossFadedProperty<${flowType(property)}>`;
-    } else if (property.name === 'heatmap-color') {
-        return `HeatmapColorProperty`;
-    } else {
-        return `DataConstantProperty<${flowType(property)}>`;
+    switch (property['property-type']) {
+        case 'data-driven':
+            return `DataDrivenProperty<${flowType(property)}>`;
+        case 'cross-faded':
+            return `CrossFadedProperty<${flowType(property)}>`;
+        case 'cross-faded-data-driven':
+            return `CrossFadedDataDrivenProperty<${flowType(property)}>`;
+        case 'color-ramp':
+            return `ColorRampProperty`;
+        case 'data-constant':
+        case 'constant':
+            return `DataConstantProperty<${flowType(property)}>`;
+        default:
+            throw new Error(`unknown property-type "${property['property-type']}" for ${property.name}`);
     }
 };
 
@@ -62,6 +65,8 @@ global.runtimeType = function (property) {
             return 'StringType';
         case 'color':
             return `ColorType`;
+        case 'formatted':
+            return `FormattedType`;
         case 'array':
             if (property.length) {
                 return `array(${runtimeType({type: property.value})}, ${property.length})`;
@@ -92,14 +97,20 @@ global.defaultValue = function (property) {
 };
 
 global.propertyValue = function (property, type) {
-    if (isDataDriven(property)) {
-        return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
-    } else if (/-pattern$/.test(property.name) || property.name === 'line-dasharray') {
-        return `new CrossFadedProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
-    } else if (property.name === 'heatmap-color') {
-        return `new HeatmapColorProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
-    } else {
-        return `new DataConstantProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+    switch (property['property-type']) {
+        case 'data-driven':
+            return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        case 'cross-faded':
+            return `new CrossFadedProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        case 'cross-faded-data-driven':
+            return `new CrossFadedDataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        case 'color-ramp':
+            return `new ColorRampProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        case 'data-constant':
+        case 'constant':
+            return `new DataConstantProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        default:
+            throw new Error(`unknown property-type "${property['property-type']}" for ${property.name}`);
     }
 };
 
@@ -128,4 +139,3 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 for (const layer of layers) {
     fs.writeFileSync(`src/style/style_layer/${layer.type.replace('-', '_')}_style_layer_properties.js`, propertiesJs(layer))
 }
-

@@ -1,12 +1,17 @@
 // @flow
 
-const Scope = require('./scope');
-const {checkSubtype} = require('./types');
-const ParsingError = require('./parsing_error');
-const Literal = require('./definitions/literal');
-const Assertion = require('./definitions/assertion');
-const ArrayAssertion = require('./definitions/array');
-const Coercion = require('./definitions/coercion');
+import Scope from './scope';
+import { checkSubtype } from './types';
+import ParsingError from './parsing_error';
+import Literal from './definitions/literal';
+import Assertion from './definitions/assertion';
+import Coercion from './definitions/coercion';
+import EvaluationContext from './evaluation_context';
+import CompoundExpression from './compound_expression';
+import CollatorExpression from './definitions/collator';
+import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
+import Var from './definitions/var';
+
 
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
@@ -55,55 +60,62 @@ class ParsingContext {
         index?: number,
         expectedType?: ?Type,
         bindings?: Array<[string, Expression]>,
-        options: {omitTypeAnnotations?: boolean} = {}
+        options: {typeAnnotation?: 'assert' | 'coerce' | 'omit'} = {}
     ): ?Expression {
-        let context = this;
         if (index) {
-            context = context.concat(index, expectedType, bindings);
+            return this.concat(index, expectedType, bindings)._parse(expr, options);
         }
+        return this._parse(expr, options);
+    }
 
+    _parse(expr: mixed, options: {typeAnnotation?: 'assert' | 'coerce' | 'omit'}): ?Expression {
         if (expr === null || typeof expr === 'string' || typeof expr === 'boolean' || typeof expr === 'number') {
             expr = ['literal', expr];
         }
 
+        function annotate(parsed, type, typeAnnotation: 'assert' | 'coerce' | 'omit') {
+            if (typeAnnotation === 'assert') {
+                return new Assertion(type, [parsed]);
+            } else if (typeAnnotation === 'coerce') {
+                return new Coercion(type, [parsed]);
+            } else {
+                return parsed;
+            }
+        }
+
         if (Array.isArray(expr)) {
             if (expr.length === 0) {
-                return context.error(`Expected an array with at least one element. If you wanted a literal array, use ["literal", []].`);
+                return this.error(`Expected an array with at least one element. If you wanted a literal array, use ["literal", []].`);
             }
 
             const op = expr[0];
             if (typeof op !== 'string') {
-                context.error(`Expression name must be a string, but found ${typeof op} instead. If you wanted a literal array, use ["literal", [...]].`, 0);
+                this.error(`Expression name must be a string, but found ${typeof op} instead. If you wanted a literal array, use ["literal", [...]].`, 0);
                 return null;
             }
 
-            const Expr = context.registry[op];
+            const Expr = this.registry[op];
             if (Expr) {
-                let parsed = Expr.parse(expr, context);
+                let parsed = Expr.parse(expr, this);
                 if (!parsed) return null;
 
-                if (context.expectedType) {
-                    const expected = context.expectedType;
+                if (this.expectedType) {
+                    const expected = this.expectedType;
                     const actual = parsed.type;
 
-                    // When we expect a number, string, boolean, or array but
-                    // have a Value, we can wrap it in a refining assertion.
-                    // When we expect a Color but have a String or Value, we
-                    // can wrap it in "to-color" coercion.
+                    // When we expect a number, string, boolean, or array but have a value, wrap it in an assertion.
+                    // When we expect a color or formatted string, but have a string or value, wrap it in a coercion.
                     // Otherwise, we do static type-checking.
-                    if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean') && actual.kind === 'value') {
-                        if (!options.omitTypeAnnotations) {
-                            parsed = new Assertion(expected, [parsed]);
-                        }
-                    } else if (expected.kind === 'array' && actual.kind === 'value') {
-                        if (!options.omitTypeAnnotations) {
-                            parsed = new ArrayAssertion(expected, parsed);
-                        }
-                    } else if (expected.kind === 'color' && (actual.kind === 'value' || actual.kind === 'string')) {
-                        if (!options.omitTypeAnnotations) {
-                            parsed = new Coercion(expected, [parsed]);
-                        }
-                    } else if (context.checkSubtype(context.expectedType, parsed.type)) {
+                    //
+                    // These behaviors are overridable for:
+                    //   * The "coalesce" operator, which needs to omit type annotations.
+                    //   * String-valued properties (e.g. `text-field`), where coercion is more convenient than assertion.
+                    //
+                    if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object' || expected.kind === 'array') && actual.kind === 'value') {
+                        parsed = annotate(parsed, expected, options.typeAnnotation || 'assert');
+                    } else if ((expected.kind === 'color' || expected.kind === 'formatted') && (actual.kind === 'value' || actual.kind === 'string')) {
+                        parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
+                    } else if (this.checkSubtype(expected, actual)) {
                         return null;
                     }
                 }
@@ -112,11 +124,11 @@ class ParsingContext {
                 // it immediately and replace it with a literal value in the
                 // parsed/compiled result.
                 if (!(parsed instanceof Literal) && isConstant(parsed)) {
-                    const ec = new (require('./evaluation_context'))();
+                    const ec = new EvaluationContext();
                     try {
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));
                     } catch (e) {
-                        context.error(e.message);
+                        this.error(e.message);
                         return null;
                     }
                 }
@@ -124,13 +136,13 @@ class ParsingContext {
                 return parsed;
             }
 
-            return context.error(`Unknown expression "${op}". If you wanted a literal array, use ["literal", [...]].`, 0);
+            return this.error(`Unknown expression "${op}". If you wanted a literal array, use ["literal", [...]].`, 0);
         } else if (typeof expr === 'undefined') {
-            return context.error(`'undefined' value invalid. Use null instead.`);
+            return this.error(`'undefined' value invalid. Use null instead.`);
         } else if (typeof expr === 'object') {
-            return context.error(`Bare objects invalid. Use ["literal", {...}] instead.`);
+            return this.error(`Bare objects invalid. Use ["literal", {...}] instead.`);
         } else {
-            return context.error(`Expected an array, but found ${typeof expr} instead.`);
+            return this.error(`Expected an array, but found ${typeof expr} instead.`);
         }
     }
 
@@ -177,28 +189,42 @@ class ParsingContext {
     }
 }
 
-module.exports = ParsingContext;
+export default ParsingContext;
 
 function isConstant(expression: Expression) {
-    // requires within function body to workaround circular dependency
-    const {CompoundExpression} = require('./compound_expression');
-    const {isGlobalPropertyConstant, isFeatureConstant} = require('./is_constant');
-    const Var = require('./definitions/var');
-
     if (expression instanceof Var) {
-        return false;
+        return isConstant(expression.boundExpression);
     } else if (expression instanceof CompoundExpression && expression.name === 'error') {
+        return false;
+    } else if (expression instanceof CollatorExpression) {
+        // Although the results of a Collator expression with fixed arguments
+        // generally shouldn't change between executions, we can't serialize them
+        // as constant expressions because results change based on environment.
         return false;
     }
 
-    let literalArgs = true;
-    expression.eachChild(arg => {
-        if (!(arg instanceof Literal)) { literalArgs = false; }
+    const isTypeAnnotation = expression instanceof Coercion ||
+        expression instanceof Assertion;
+
+    let childrenConstant = true;
+    expression.eachChild(child => {
+        // We can _almost_ assume that if `expressions` children are constant,
+        // they would already have been evaluated to Literal values when they
+        // were parsed.  Type annotations are the exception, because they might
+        // have been inferred and added after a child was parsed.
+
+        // So we recurse into isConstant() for the children of type annotations,
+        // but otherwise simply check whether they are Literals.
+        if (isTypeAnnotation) {
+            childrenConstant = childrenConstant && isConstant(child);
+        } else {
+            childrenConstant = childrenConstant && child instanceof Literal;
+        }
     });
-    if (!literalArgs) {
+    if (!childrenConstant) {
         return false;
     }
 
     return isFeatureConstant(expression) &&
-        isGlobalPropertyConstant(expression, ['zoom', 'heatmap-density']);
+        isGlobalPropertyConstant(expression, ['zoom', 'heatmap-density', 'line-progress', 'is-supported-script']);
 }

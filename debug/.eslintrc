@@ -1,8 +1,12 @@
 {
+  "plugins": [
+      "html"
+  ],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
-    }
+    },
+    "sourceType": "script"
   },
   "rules": {
     "flowtype/require-valid-file-annotation": [0],
@@ -14,7 +18,7 @@
     "prefer-template": "off"
   },
   "env": {
-    "es6": false,
+    "es6": true,
     "browser": true
   },
   "globals": {

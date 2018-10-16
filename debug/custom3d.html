@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 1.69,
+    center: [-9.4, -26.8],
+    bearing: 131,
+    pitch: 60,
+    style: 'mapbox://styles/mapbox/light-v9',
+    hash: true
+});
+
+class Custom {
+    constructor() {
+        this.id = 'mycustomlayer';
+        this.type = 'custom';
+        this.renderingMode = '3d';
+    }
+
+    onAdd(map, gl) {
+
+        const vertexSource = `
+
+        attribute vec3 aPos;
+        uniform mat4 uMatrix;
+
+        void main() {
+            gl_Position = uMatrix * vec4(aPos, 1.0);
+        }
+        `;
+
+        const fragmentSource = `
+        void main() {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+        `;
+
+        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertexShader, vertexSource);
+        gl.compileShader(vertexShader);
+        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragmentShader, fragmentSource);
+        gl.compileShader(fragmentShader);
+
+        this.program = gl.createProgram();
+        gl.attachShader(this.program, vertexShader);
+        gl.attachShader(this.program, fragmentShader);
+        gl.linkProgram(this.program);
+        gl.validateProgram(this.program);
+
+        this.program.aPos = gl.getAttribLocation(this.program, "aPos");
+        this.program.uMatrix = gl.getUniformLocation(this.program, "uMatrix");
+
+        const x = 0.5;
+        const y = 0.5;
+        const z = 0.125;
+        const d = 0.125;
+
+        const vertexArray = new Float32Array([
+            x, y, 0,
+            x + d, y, 0,
+            x, y + d, z,
+            x + d, y + d, z,
+            x, y + d + d, 0,
+            x + d, y + d + d, 0]);
+        const indexArray = new Uint16Array([
+            0, 1, 2,
+            1, 2, 3,
+            2, 3, 4,
+            3, 4, 5
+        ]);
+
+        this.vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
+        this.indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexArray, gl.STATIC_DRAW);
+    }
+
+    render(gl, matrix) {
+        gl.useProgram(this.program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+        gl.enableVertexAttribArray(this.program.a_pos);
+        gl.vertexAttribPointer(this.program.aPos, 3, gl.FLOAT, false, 0, 0);
+        gl.uniformMatrix4fv(this.program.uMatrix, false, matrix);
+        gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_SHORT, 0);
+    }
+}
+
+map.on('load', function() {
+    map.addLayer(new Custom());
+});
+
+</script>
+</body>
+</html>

@@ -10,15 +10,10 @@ export type Result<T, E> =
     | {| result: 'success', value: T |}
     | {| result: 'error', value: E |};
 
-function success<T, E>(value: T): Result<T, E> {
+export function success<T, E>(value: T): Result<T, E> {
     return { result: 'success', value };
 }
 
-function error<T, E>(value: E): Result<T, E> {
+export function error<T, E>(value: E): Result<T, E> {
     return { result: 'error', value };
 }
-
-module.exports = {
-    success,
-    error
-};

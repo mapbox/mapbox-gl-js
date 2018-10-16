@@ -1,7 +1,5 @@
 {
-  "type": "raster",
   "tiles": [
     "http://localhost:2900/tiles/{z}-{x}-{y}.satellite.png"
-  ],
-  "tileSize": 256
+  ]
 }

@@ -1,20 +1,19 @@
-'use strict';
-
-const ajax =  require('../src/util/ajax');
-const request = require('request');
-const PNG = require('pngjs').PNG;
-const Map = require('../src/ui/map');
-const window = require('../src/util/window');
-const browser = require('../src/util/browser');
-const rtlTextPlugin = require('../src/source/rtl_text_plugin');
-const rtlText = require('@mapbox/mapbox-gl-rtl-text');
-const fs = require('fs');
-const path = require('path');
+import {PNG} from 'pngjs';
+import Map from '../src/ui/map';
+import config from '../src/util/config';
+import window from '../src/util/window';
+import browser from '../src/util/browser';
+import {plugin as rtlTextPlugin} from '../src/source/rtl_text_plugin';
+import rtlText from '@mapbox/mapbox-gl-rtl-text';
+import fs from 'fs';
+import path from 'path';
+import customLayerImplementations from './integration/custom_layer_implementations';
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
+rtlTextPlugin['processStyledBidirectionalText'] = rtlText.processStyledBidirectionalText;
 
-module.exports = function(style, options, _callback) {
+module.exports = function(style, options, _callback) { // eslint-disable-line import/no-commonjs
     let wasCallbackCalled = false;
 
     const timeout = setTimeout(() => {
@@ -31,9 +30,17 @@ module.exports = function(style, options, _callback) {
 
     window.devicePixelRatio = options.pixelRatio;
 
+    if (options.addFakeCanvas) {
+        const fakeCanvas = createFakeCanvas(window.document, options.addFakeCanvas.id, options.addFakeCanvas.image);
+        window.document.body.appendChild(fakeCanvas);
+    }
+
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'offsetWidth', {value: options.width});
-    Object.defineProperty(container, 'offsetHeight', {value: options.height});
+    Object.defineProperty(container, 'clientWidth', {value: options.width});
+    Object.defineProperty(container, 'clientHeight', {value: options.height});
+
+    // We are self-hosting test files.
+    config.REQUIRE_ACCESS_TOKEN = false;
 
     const map = new Map({
         container: container,
@@ -44,7 +51,8 @@ module.exports = function(style, options, _callback) {
         preserveDrawingBuffer: true,
         axonometric: options.axonometric || false,
         skew: options.skew || [0, 0],
-        fadeDuration: options.fadeDuration || 0
+        fadeDuration: options.fadeDuration || 0,
+        crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions
     });
 
     // Configure the map to never stop the render loop
@@ -98,6 +106,11 @@ module.exports = function(style, options, _callback) {
             gl.getExtension('STACKGL_destroy_context').destroy();
             delete map.painter.context.gl;
 
+            if (options.addFakeCanvas) {
+                const fakeCanvas = window.document.getElementById(options.addFakeCanvas.id);
+                fakeCanvas.parentNode.removeChild(fakeCanvas);
+            }
+
             callback(null, data, results.map((feature) => {
                 feature = feature.toJSON();
                 delete feature.layer;
@@ -139,6 +152,10 @@ module.exports = function(style, options, _callback) {
             const {data, width, height} = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
             map.addImage(operation[1], {width, height, data: new Uint8Array(data)}, operation[3] || {});
             applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'addCustomLayer') {
+            map.addLayer(new customLayerImplementations[operation[1]](), operation[2]);
+            map._render();
+            applyOperations(map, operations.slice(1), callback);
 
         } else {
             map[operation[0]].apply(map, operation.slice(1));
@@ -147,81 +164,12 @@ module.exports = function(style, options, _callback) {
     }
 };
 
-const cache = {};
-
-function cached(data, callback) {
-    setImmediate(() => {
-        callback(null, data);
-    });
+function createFakeCanvas(document, id, imagePath) {
+    const fakeCanvas = document.createElement('canvas');
+    const image = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', imagePath)));
+    fakeCanvas.id = id;
+    fakeCanvas.data = image.data;
+    fakeCanvas.width = image.width;
+    fakeCanvas.height = image.height;
+    return fakeCanvas;
 }
-
-ajax.getJSON = function({ url }, callback) {
-    if (cache[url]) return cached(cache[url], callback);
-    return request(url, (error, response, body) => {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            let data;
-            try {
-                data = JSON.parse(body);
-            } catch (err) {
-                return callback(err);
-            }
-            cache[url] = data;
-            callback(null, data);
-        } else {
-            callback(error || new Error(response.statusCode));
-        }
-    });
-};
-
-ajax.getArrayBuffer = function({ url }, callback) {
-    if (cache[url]) return cached(cache[url], callback);
-    return request({ url, encoding: null }, (error, response, body) => {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            cache[url] = {data: body};
-            callback(null, {data: body});
-        } else {
-            callback(error || new Error(response.statusCode));
-        }
-    });
-};
-
-ajax.getImage = function({ url }, callback) {
-    if (cache[url]) return cached(cache[url], callback);
-    return request({ url, encoding: null }, (error, response, body) => {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            new PNG().parse(body, (err, png) => {
-                if (err) return callback(err);
-                cache[url] = png;
-                callback(null, png);
-            });
-        } else {
-            callback(error || {status: response.statusCode});
-        }
-    });
-};
-
-browser.getImageData = function({width, height, data}) {
-    return {width, height, data: new Uint8Array(data)};
-};
-
-// Hack: since node doesn't have any good video codec modules, just grab a png with
-// the first frame and fake the video API.
-ajax.getVideo = function(urls, callback) {
-    return request({ url: urls[0], encoding: null }, (error, response, body) => {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            new PNG().parse(body, (err, png) => {
-                if (err) return callback(err);
-                callback(null, {
-                    readyState: 4, // HAVE_ENOUGH_DATA
-                    addEventListener: function() {},
-                    play: function() {},
-                    width: png.width,
-                    height: png.height,
-                    data: png.data
-                });
-            });
-        } else {
-            callback(error || new Error(response.statusCode));
-        }
-    });
-};

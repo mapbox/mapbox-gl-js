@@ -1,0 +1,61 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "collisionDebug": true,
+            "width": 512,
+            "height": 128
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 4,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "maxzoom": 1,
+            "data": {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [
+                        [
+                            -10,
+                            0
+                        ],
+                        [
+                            10,
+                            0
+                        ]
+                    ]
+                }
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "white"
+            }
+        },
+        {
+            "id": "line",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "text-field": "Cover me in Circles",
+                "symbol-spacing": 15,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "symbol-placement": "line"
+            }
+        }
+    ]
+}

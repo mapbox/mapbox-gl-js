@@ -2,12 +2,13 @@
   "expression": ["max", 1],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [1],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [1],
+    "serialized": 1
   }
 }

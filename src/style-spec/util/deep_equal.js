@@ -25,4 +25,4 @@ function deepEqual(a: ?mixed, b: ?mixed): boolean {
     return a === b;
 }
 
-module.exports = deepEqual;
+export default deepEqual;

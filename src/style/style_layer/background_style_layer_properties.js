@@ -2,17 +2,20 @@
 // @flow
 /* eslint-disable */
 
-const styleSpec = require('../../style-spec/reference/latest');
+import styleSpec from '../../style-spec/reference/latest';
 
-const {
+import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
+    CrossFadedDataDrivenProperty,
     CrossFadedProperty,
-    HeatmapColorProperty
-} = require('../properties');
+    ColorRampProperty
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
+
+import type Formatted from '../../style-spec/expression/types/formatted';
 
 
 export type PaintProps = {|
@@ -27,4 +30,9 @@ const paint: Properties<PaintProps> = new Properties({
     "background-opacity": new DataConstantProperty(styleSpec["paint_background"]["background-opacity"]),
 });
 
-module.exports = { paint };
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
+export default ({ paint }: $Exact<{
+  paint: Properties<PaintProps>
+}>);

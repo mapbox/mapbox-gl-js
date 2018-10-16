@@ -1,9 +1,21 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
+import DOM from '../../util/dom';
+import { extend, bindAll } from '../../util/util';
 
 import type Map from '../map';
+
+type Unit = 'imperial' | 'metric' | 'nautical';
+
+type Options = {
+    maxWidth?: number,
+    unit?: Unit;
+};
+
+const defaultOptions: Options = {
+    maxWidth: 100,
+    unit: 'metric'
+};
 
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
@@ -13,21 +25,25 @@ import type Map from '../map';
  * @param {number} [options.maxWidth='100'] The maximum length of the scale control in pixels.
  * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
  * @example
- * map.addControl(new mapboxgl.ScaleControl({
+ * var scale = new mapboxgl.ScaleControl({
  *     maxWidth: 80,
  *     unit: 'imperial'
- * }));
+ * });
+ * map.addControl(scale);
+ *
+ * scale.setUnit('metric');
  */
 class ScaleControl {
     _map: Map;
     _container: HTMLElement;
-    options: any;
+    options: Options;
 
-    constructor(options: any) {
-        this.options = options;
+    constructor(options: Options) {
+        this.options = extend({}, defaultOptions, options);
 
-        util.bindAll([
-            '_onMove'
+        bindAll([
+            '_onMove',
+            'setUnit'
         ], this);
     }
 
@@ -54,9 +70,19 @@ class ScaleControl {
         this._map.off('move', this._onMove);
         this._map = (undefined: any);
     }
+
+    /**
+     * Set the scale's unit of the distance
+     *
+     * @param unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
+     */
+    setUnit(unit: Unit) {
+        this.options.unit = unit;
+        updateScale(this._map, this._container, this.options);
+    }
 }
 
-module.exports = ScaleControl;
+export default ScaleControl;
 
 function updateScale(map, container, options) {
     // A horizontal scale is imagined to be present at center of the map

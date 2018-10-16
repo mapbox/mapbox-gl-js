@@ -8,12 +8,13 @@
     [{}, {"properties": {"x": null}}]
   ],
   "expected": {
-    "outputs": [false, true, true, true, true],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "boolean"
-    }
+    },
+    "outputs": [false, true, true, true, true],
+    "serialized": ["has", "x"]
   }
 }

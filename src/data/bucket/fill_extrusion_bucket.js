@@ -1,29 +1,37 @@
 // @flow
 
-const {FillExtrusionLayoutArray} = require('../array_types');
-const layoutAttributes = require('./fill_extrusion_attributes').members;
-const {SegmentVector, MAX_VERTEX_ARRAY_LENGTH} = require('../segment');
-const {ProgramConfigurationSet} = require('../program_configuration');
-const {TriangleIndexArray} = require('../index_array_type');
-const loadGeometry = require('../load_geometry');
-const EXTENT = require('../extent');
-const earcut = require('earcut');
-const classifyRings = require('../../util/classify_rings');
-const assert = require('assert');
+import { FillExtrusionLayoutArray } from '../array_types';
+
+import { members as layoutAttributes } from './fill_extrusion_attributes';
+import SegmentVector from '../segment';
+import { ProgramConfigurationSet } from '../program_configuration';
+import { TriangleIndexArray } from '../index_array_type';
+import EXTENT from '../extent';
+import earcut from 'earcut';
+import classifyRings from '../../util/classify_rings';
+import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
-const {register} = require('../../util/web_worker_transfer');
+import { register } from '../../util/web_worker_transfer';
+import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
+import loadGeometry from '../load_geometry';
+import EvaluationParameters from '../../style/evaluation_parameters';
 
 import type {
     Bucket,
     BucketParameters,
+    BucketFeature,
     IndexedFeature,
     PopulateParameters
 } from '../bucket';
+
 import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
+import type {FeatureStates} from '../../source/source_state';
+import type {ImagePosition} from '../../render/image_atlas';
+
 
 const FACTOR = Math.pow(2, 13);
 
@@ -48,6 +56,7 @@ class FillExtrusionBucket implements Bucket {
     overscaling: number;
     layers: Array<FillExtrusionStyleLayer>;
     layerIds: Array<string>;
+    stateDependentLayers: Array<FillExtrusionStyleLayer>;
 
     layoutVertexArray: FillExtrusionLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -55,9 +64,11 @@ class FillExtrusionBucket implements Bucket {
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
+    hasPattern: boolean;
     programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
+    features: Array<BucketFeature>;
 
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
@@ -65,6 +76,7 @@ class FillExtrusionBucket implements Bucket {
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
+        this.hasPattern = false;
 
         this.layoutVertexArray = new FillExtrusionLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -73,23 +85,64 @@ class FillExtrusionBucket implements Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
+        this.features = [];
+        this.hasPattern = hasPattern('fill-extrusion', this.layers, options);
+
         for (const {feature, index, sourceLayerIndex} of features) {
-            if (this.layers[0]._featureFilter({zoom: this.zoom}, feature)) {
-                const geometry = loadGeometry(feature);
-                this.addFeature(feature, geometry);
-                options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
+            if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
+
+            const geometry = loadGeometry(feature);
+
+            const patternFeature: BucketFeature = {
+                sourceLayerIndex: sourceLayerIndex,
+                index: index,
+                geometry: geometry,
+                properties: feature.properties,
+                type: feature.type,
+                patterns: {}
+            };
+
+            if (typeof feature.id !== 'undefined') {
+                patternFeature.id = feature.id;
             }
+
+            if (this.hasPattern) {
+                this.features.push(addPatternDependencies('fill-extrusion', this.layers, patternFeature, this.zoom, options));
+            } else {
+                this.addFeature(patternFeature, geometry, index, {});
+            }
+
+            options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
+    }
+
+    addFeatures(options: PopulateParameters, imagePositions: {[string]: ImagePosition}) {
+        for (const feature of this.features) {
+            const {geometry} = feature;
+            this.addFeature(feature, geometry, feature.index, imagePositions);
+        }
+    }
+
+    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[string]: ImagePosition}) {
+        if (!this.stateDependentLayers.length) return;
+        this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, imagePositions);
     }
 
     isEmpty() {
         return this.layoutVertexArray.length === 0;
     }
 
+    uploadPending() {
+        return !this.uploaded || this.programConfigurations.needsUpload;
+    }
+
     upload(context: Context) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-        this.indexBuffer = context.createIndexBuffer(this.indexArray);
+        if (!this.uploaded) {
+            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
+            this.indexBuffer = context.createIndexBuffer(this.indexArray);
+        }
         this.programConfigurations.upload(context);
+        this.uploaded = true;
     }
 
     destroy() {
@@ -100,7 +153,7 @@ class FillExtrusionBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, imagePositions: {[string]: ImagePosition}) {
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
             for (const ring of polygon) {
@@ -126,7 +179,7 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
-                            if (segment.vertexLength + 4 > MAX_VERTEX_ARRAY_LENGTH) {
+                            if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                             }
 
@@ -144,7 +197,12 @@ class FillExtrusionBucket implements Bucket {
 
                             const bottomRight = segment.vertexLength;
 
-                            this.indexArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
+                            // ┌──────┐
+                            // │ 0  1 │ Counter-clockwise winding order.
+                            // │      │ Triangle 1: 0 => 2 => 1
+                            // │ 2  3 │ Triangle 2: 1 => 2 => 3
+                            // └──────┘
+                            this.indexArray.emplaceBack(bottomRight, bottomRight + 2, bottomRight + 1);
                             this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
 
                             segment.vertexLength += 4;
@@ -154,7 +212,7 @@ class FillExtrusionBucket implements Bucket {
                 }
             }
 
-            if (segment.vertexLength + numVertices > MAX_VERTEX_ARRAY_LENGTH) {
+            if (segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                 segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
             }
 
@@ -185,23 +243,24 @@ class FillExtrusionBucket implements Bucket {
             assert(indices.length % 3 === 0);
 
             for (let j = 0; j < indices.length; j += 3) {
+                // Counter-clockwise winding order.
                 this.indexArray.emplaceBack(
                     triangleIndex + indices[j],
-                    triangleIndex + indices[j + 1],
-                    triangleIndex + indices[j + 2]);
+                    triangleIndex + indices[j + 2],
+                    triangleIndex + indices[j + 1]);
             }
 
             segment.primitiveLength += indices.length / 3;
             segment.vertexLength += numVertices;
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions);
     }
 }
 
-register('FillExtrusionBucket', FillExtrusionBucket, {omit: ['layers']});
+register('FillExtrusionBucket', FillExtrusionBucket, {omit: ['layers', 'features']});
 
-module.exports = FillExtrusionBucket;
+export default FillExtrusionBucket;
 
 function isBoundaryEdge(p1, p2) {
     return (p1.x === p2.x && (p1.x < 0 || p1.x > EXTENT)) ||

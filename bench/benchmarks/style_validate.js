@@ -1,11 +1,20 @@
+// @flow
 
-const Benchmark = require('../lib/benchmark');
-const accessToken = require('../lib/access_token');
-const validateStyle = require('../../src/style-spec/validate_style.min');
+import Benchmark from '../lib/benchmark';
+import validateStyle from '../../src/style-spec/validate_style.min';
+import { normalizeStyleURL } from '../../src/util/mapbox';
 
-module.exports = class StyleValidate extends Benchmark {
-    setup() {
-        return fetch(`https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`)
+export default class StyleValidate extends Benchmark {
+    style: string;
+    json: Object;
+
+    constructor(style: string) {
+        super();
+        this.style = style;
+    }
+
+    setup(): Promise<void> {
+        return fetch(normalizeStyleURL(this.style))
             .then(response => response.json())
             .then(json => { this.json = json; });
     }
@@ -13,4 +22,4 @@ module.exports = class StyleValidate extends Benchmark {
     bench() {
         validateStyle(this.json);
     }
-};
+}
