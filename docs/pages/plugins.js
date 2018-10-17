@@ -95,6 +95,10 @@ const plugins = {
         "elm-mapbox": {
             "website": "https://package.elm-lang.org/packages/gampleman/elm-mapbox/latest/",
             "description": md`provides an [Elm](https://elm-lang.org) integration for Mapbox GL JS`
+        },
+        "ember-mapbox-gl": {
+            "website": "https://github.com/kturney/ember-mapbox-gl",
+            "description": md`provides an [Ember](http://emberjs.com) integration for Mapbox GL JS`
         }
     },
     "Utility Libraries": {
