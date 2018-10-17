@@ -381,9 +381,8 @@ test("mapbox", (t) => {
 
             t.test('does not POST event when previously stored data is on the same day', (t) => {
                 const now = +Date.now();
-
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, uuid());
                 window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
-                    anonId: uuid(),
                     lastSuccess: now
                 }));
 
@@ -396,8 +395,8 @@ test("mapbox", (t) => {
             t.test('POSTs event when previously stored anonId is not a valid uuid', (t) => {
                 const now = +Date.now();
 
-                window.localStorage.setItem(`mapbox.turnstileEventData:${config.ACCESS_TOKEN}`, JSON.stringify({
-                    anonId: 'anonymous',
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, 'anonymous');
+                window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
                     lastSuccess: now
                 }));
 
@@ -414,8 +413,8 @@ test("mapbox", (t) => {
             t.test('POSTs event when previously stored timestamp is more than 24 hours in the future', (t) => {
                 const now = +Date.now();
 
-                window.localStorage.setItem(`mapbox.turnstileEventData:${config.ACCESS_TOKEN}`, JSON.stringify({
-                    anonId: uuid(),
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, uuid());
+                window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
                     lastSuccess: now + ms25Hours // 24-hours later
                 }));
 
@@ -617,9 +616,11 @@ test("mapbox", (t) => {
     });
     t.test('MapLoadEvent', (t) => {
         let event;
+        let turnstileEvent;
         t.beforeEach((callback) => {
             window.useFakeXMLHttpRequest();
             event = new mapbox.MapLoadEvent();
+            turnstileEvent = new mapbox.TurnstileEvent();
             callback();
         });
 
@@ -686,8 +687,8 @@ test("mapbox", (t) => {
                 callback();
             });
 
-            t.test('POSTs event when previously stored anonId is not a valid uuid', (t) => {
-                window.localStorage.setItem(`mapbox.turnstileEventData:${config.ACCESS_TOKEN}`, JSON.stringify({
+            t.test('generates new uuid when previously stored anonId is not a valid uuid', (t) => {
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, JSON.stringify({
                     anonId: 'anonymous'
                 }));
 
@@ -750,6 +751,27 @@ test("mapbox", (t) => {
 
                 t.equal(req.url, `${config.EVENTS_URL}?access_token=pk.new.*`);
 
+                t.end();
+            });
+
+            t.test('uses the same uuid as TurnstileEvent', (t) => {
+                const anonId = uuid();
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, anonId);
+                turnstileEvent.postTurnstileEvent(mapboxTileURLs);
+                event.postMapLoadEvent(mapboxTileURLs, 1);
+
+
+                const turnstileReq = window.server.requests[0];
+                turnstileReq.respond(200);
+                const mapLoadReq = window.server.requests[1];
+                mapLoadReq.respond(200);
+                const turnstileBody = JSON.parse(turnstileReq.requestBody)[0];
+                const loadBody = JSON.parse(mapLoadReq.requestBody)[0];
+
+                t.equal(turnstileBody.userId, loadBody.userId);
+                t.equal(turnstileBody.userId, anonId);
+                const turnstileEventData = JSON.parse(window.localStorage.getItem(`mapbox.eventData:${config.ACCESS_TOKEN}`));
+                t.ok(turnstileEventData.lastSuccess);
                 t.end();
             });
 
