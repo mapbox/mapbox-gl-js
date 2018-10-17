@@ -9,7 +9,9 @@ import uglify from 'rollup-plugin-uglify';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import { createFilter } from 'rollup-pluginutils';
 
-const production = process.env.BUILD === 'production';
+const {BUILD, MINIFY} = process.env;
+const minified = MINIFY === 'true';
+const production = BUILD === 'production';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
@@ -30,7 +32,7 @@ export const plugins = () => [
         // https://github.com/mapbox/mapbox-gl-js/pull/6956
         ignoreGlobal: true
     }),
-    production ? uglify() : false
+    minified ? uglify() : false
 ].filter(Boolean);
 
 // Using this instead of rollup-plugin-flow due to

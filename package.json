@@ -110,7 +110,8 @@
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
-    "build-min": "rollup -c --environment BUILD:production",
+    "build-prod": "rollup -c --environment BUILD:production",
+    "build-prod-min": "rollup -c --environment BUILD:production,MINIFY:true",
     "build-flow-types": "cp build/mapbox-gl.js.flow dist/mapbox-gl.js.flow && cp build/mapbox-gl.js.flow dist/mapbox-gl-dev.js.flow",
     "build-css": "postcss -o dist/mapbox-gl.css src/css/mapbox-gl.css",
     "build-style-spec": "cd src/style-spec && npm run build && cd ../.. && mkdir -p dist/style-spec && cp src/style-spec/dist/* dist/style-spec",
@@ -125,7 +126,7 @@
     "start-bench": "run-p build-token watch-benchmarks watch-style-benchmarks start-server",
     "build-docs": "documentation build --github --format json --config ./docs/documentation.yml --output docs/components/api.json src/index.js",
     "build": "run-s build-docs && . build/set-deploy-env.sh && batfish build # invoked by publisher when publishing docs on the mb-pages branch",
-    "start-docs": "run-s build-min build-css build-docs && DEPLOY_ENV=local batfish start",
+    "start-docs": "run-s build-prod-min build-css build-docs && DEPLOY_ENV=local batfish start",
     "lint": "eslint --cache --ignore-path .gitignore src test bench docs docs/pages/example/*.html debug/*.html",
     "lint-docs": "documentation lint src/index.js",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
@@ -141,7 +142,7 @@
     "test-flow": "build/run-node build/generate-flow-typed-style-spec && flow .",
     "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
     "test-cov": "nyc --require=@mapbox/flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
-    "prepublishOnly": "run-s build-flow-types build-dev build-min build-css build-style-spec test-build",
+    "prepublishOnly": "run-s build-flow-types build-dev build-prod-min build-prod build-css build-style-spec test-build",
     "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js"
   },
   "files": [
