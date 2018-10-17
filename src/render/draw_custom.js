@@ -13,7 +13,6 @@ import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
 function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomStyleLayer) {
 
     const context = painter.context;
-    const gl = context.gl;
     const implementation = layer.implementation;
 
     if (painter.renderPass === 'offscreen') {
