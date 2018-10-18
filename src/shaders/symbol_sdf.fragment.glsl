@@ -1,5 +1,6 @@
 #define SDF_PX 8.0
 #define EDGE_GAMMA 0.105/DEVICE_PIXEL_RATIO
+#define MAX_OUTSIDE_DISTANCE 1.0/256.0
 
 uniform bool u_is_halo;
 #pragma mapbox: define highp vec4 fill_color
@@ -45,8 +46,8 @@ void main() {
     lowp float dist = texture2D(u_texture, tex).a;
     highp float gamma_scaled = gamma * gamma_scale;
     highp float alpha = smoothstep(
-        clamp(buff - gamma_scaled, 0.0, 1.0),
-        clamp(buff + gamma_scaled, 0.0, 1.0),
+        clamp(buff - gamma_scaled, MAX_OUTSIDE_DISTANCE, 1.0),
+        clamp(buff + gamma_scaled, MAX_OUTSIDE_DISTANCE, 1.0),
         dist);
 
     gl_FragColor = color * (alpha * opacity * fade_opacity);
