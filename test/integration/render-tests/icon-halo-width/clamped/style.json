@@ -1,0 +1,59 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 128,
+            "height": 128,
+            "operations": [
+                [
+                    "addImage",
+                    "line.sdf",
+                    "./image/line.sdf.png",
+                    {
+                      "sdf": true
+                    }
+                ],
+                [
+                    "addLayer",
+                    {
+                        "id": "geometry",
+                        "type": "symbol",
+                        "source": "geojson",
+                        "layout": {
+                            "icon-image": "line.sdf"
+                        },
+                        "paint": {
+                            "icon-halo-color": "yellow",
+                            "icon-halo-width": 15
+                        }
+                    }
+                ],
+                [
+                    "wait"
+                ]
+            ]
+        }
+    },
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "Point",
+                "coordinates": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "sprite": "local://sprites/sprite",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "white"
+            }
+        }
+    ]
+}
