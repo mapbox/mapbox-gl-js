@@ -52,6 +52,10 @@ class HeatmapStyleLayer extends StyleLayer {
             this.heatmapFbo.destroy();
             this.heatmapFbo = null;
         }
+        if (this.slopeFbo) {
+            this.slopeFbo.destroy();
+            this.slopeFbo = null;
+        }
     }
 
     queryRadius(): number {

@@ -216,8 +216,8 @@ var toggleSatellite = function() {
     }
 }
 
-const baseIntensity = .3;
-const baseRadius = 16;
+const baseIntensity = 0.6;
+const baseRadius = 15;
 
 map.on('style.load', function() {
     if (map.getLayer('satellite')) {
@@ -237,7 +237,14 @@ map.on('style.load', function() {
             "data": "plant_generation.geojson"
         },
         "paint": {
-            'heatmap-radius': 50,
+            'heatmap-radius': ["interpolate",
+                [ "linear" ],
+                [ "zoom" ],
+                0,
+                0.5 * baseRadius,
+                16,
+                12 * baseRadius
+              ],
             'heatmap-intensity': [
               "interpolate",
               [ "exponential", 2 ],
@@ -260,10 +267,19 @@ map.on('style.load', function() {
             ],
             'heatmap-weight': ["/", ["to-number", ["get", "netgen_0"]], 2000000]
         }
-    });
+    }, 'admin-2-boundaries-dispute');
     updateFuelType();
+    //animateMonth();
 });
 
+var animateMonth = function() {
+    monthInput.value = parseFloat(monthInput.value) + 0.1;
+    if (parseFloat(monthInput.value) >= 11) {
+        monthInput.value = 0;
+    }
+    updateMonth();
+    setTimeout(animateMonth, 50);
+}
 
 var updateMonth = function() {
   const monthNames = ["January", "February", "March", "April", "May", "June",

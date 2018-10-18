@@ -9,6 +9,7 @@ uniform float u_intensity;
 attribute vec2 a_pos;
 
 varying vec2 v_extrude;
+varying vec2 v_pos;
 
 // Effective "0" in the kernel density texture to adjust the kernel size to;
 // this empirically chosen number minimizes artifacts on overlapping kernels
@@ -48,6 +49,8 @@ void main(void) {
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     vec4 pos = vec4(floor(a_pos * 0.5) + extrude, 0, 1);
+
+    v_pos = a_pos;
 
     gl_Position = u_matrix * pos;
 }
