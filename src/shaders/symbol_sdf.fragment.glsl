@@ -46,8 +46,8 @@ void main() {
     lowp float dist = texture2D(u_texture, tex).a;
     highp float gamma_scaled = gamma * gamma_scale;
     highp float alpha = smoothstep(
-        clamp(buff - gamma_scaled, MAX_OUTSIDE_DISTANCE, 1.0),
-        clamp(buff + gamma_scaled, MAX_OUTSIDE_DISTANCE, 1.0),
+        max(buff - gamma_scaled, MAX_OUTSIDE_DISTANCE),
+        max(buff + gamma_scaled, MAX_OUTSIDE_DISTANCE),
         dist);
 
     gl_FragColor = color * (alpha * opacity * fade_opacity);
