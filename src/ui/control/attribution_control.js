@@ -120,7 +120,7 @@ class AttributionControl {
                 attributions = attributions.concat(
                     this.options.customAttribution.map(attribution => {
                         if (typeof attribution !== 'string') return '';
-                        return `<a>${attribution}</a>`
+                        return `<p>${attribution}</p>`;
                     })
                 );
             } else if (typeof this.options.customAttribution === 'string') {
