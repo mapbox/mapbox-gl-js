@@ -31,16 +31,23 @@ void main() {
 
     lowp vec4 color = fill_color;
     highp float gamma = EDGE_GAMMA / (fontScale * u_gamma_scale);
+    // See https://blog.mapbox.com/drawing-text-with-signed-distance-fields-in-mapbox-gl-b0933af6f817
+    // Values above 192 indicate _inside_ the shape, below indicates _outside_
     lowp float buff = (256.0 - 64.0) / 256.0;
     if (u_is_halo) {
         color = halo_color;
         gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
+        // At halo_width = 0, this is 6.0 / 8.0, e.g. same as no halo
+        // At halo_width / fontScale = 6, this is 0, e.g. maximum
+        // distance that can be encoded in the SDF.
         buff = (6.0 - halo_width / fontScale) / SDF_PX;
     }
-
     lowp float dist = texture2D(u_texture, tex).a;
     highp float gamma_scaled = gamma * gamma_scale;
-    highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist);
+    highp float alpha = smoothstep(
+        clamp(buff - gamma_scaled, 0.0, 1.0),
+        clamp(buff + gamma_scaled, 0.0, 1.0),
+        dist);
 
     gl_FragColor = color * (alpha * opacity * fade_opacity);
 

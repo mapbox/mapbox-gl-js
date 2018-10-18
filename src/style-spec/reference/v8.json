@@ -4711,7 +4711,7 @@
       "minimum": 0,
       "transition": true,
       "units": "pixels",
-      "doc": "Distance of halo to the icon outline.",
+      "doc": "Distance of halo to the icon outline. Maximum halo width is constrained by SDF encoding; widths greater than 5px will be clamped for a typical icon at `icon-size: 1`.",
       "requires": [
         "icon-image"
       ],
