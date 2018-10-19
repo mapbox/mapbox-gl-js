@@ -117,9 +117,14 @@ class AttributionControl {
         let attributions: Array<string> = [];
         if (this.options.customAttribution) {
             if (Array.isArray(this.options.customAttribution)) {
-                attributions = attributions.concat(this.options.customAttribution);
+                attributions = attributions.concat(
+                    this.options.customAttribution.map(attribution => {
+                        if (typeof attribution !== 'string') return '';
+                        return `<p>${attribution}</p>`;
+                    })
+                );
             } else if (typeof this.options.customAttribution === 'string') {
-                attributions.push(this.options.customAttribution);
+                attributions.push(`<p>${this.options.customAttribution}</p>`);
             }
         }
 
@@ -150,7 +155,7 @@ class AttributionControl {
             return true;
         });
         if (attributions.length) {
-            this._container.innerHTML = attributions.join(' | ');
+            this._container.innerHTML = attributions.join('<p> | </p>');
             this._container.classList.remove('mapboxgl-attrib-empty');
         } else {
             this._container.classList.add('mapboxgl-attrib-empty');

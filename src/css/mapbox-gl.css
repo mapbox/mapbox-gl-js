@@ -228,11 +228,11 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         visibility: visible;
     }
 
-    .mapboxgl-ctrl-attrib.mapboxgl-compact > a {
+    .mapboxgl-ctrl-attrib.mapboxgl-compact > * {
         display: none;
     }
 
-    .mapboxgl-ctrl-attrib.mapboxgl-compact:hover > a {
+    .mapboxgl-ctrl-attrib.mapboxgl-compact:hover > * {
         display: inline;
     }
 

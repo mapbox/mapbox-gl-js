@@ -101,7 +101,7 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
     map.on('data', (e) => {
         if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
             if (++times === 7) {
-                t.equal(attribution._container.innerHTML, 'Hello World | Another Source | GeoJSON Source');
+                t.equal(attribution._container.innerHTML, 'Hello World<p> | </p>Another Source<p> | </p>GeoJSON Source');
                 t.end();
             }
         }
@@ -171,9 +171,22 @@ test('AttributionControl shows custom attribution if customAttribution option is
     });
     map.addControl(attributionControl);
 
-    t.equal(attributionControl._container.innerHTML, 'Custom string');
+    t.equal(attributionControl._container.innerHTML, '<p>Custom string</p>');
     t.end();
 });
+
+test('AttributionControl in compact mode shows custom attribution if customAttribution option is provided', (t) => {
+    const map = createMap(t);
+    const attributionControl = new AttributionControl({
+        customAttribution: 'Custom string',
+        compact: true
+    });
+    map.addControl(attributionControl);
+
+    t.equal(attributionControl._container.innerHTML, '<p>Custom string</p>');
+    t.end();
+});
+
 
 test('AttributionControl shows all custom attributions if customAttribution array of strings is provided', (t) => {
     const map = createMap(t);
@@ -184,7 +197,7 @@ test('AttributionControl shows all custom attributions if customAttribution arra
 
     t.equal(
         attributionControl._container.innerHTML,
-        'Custom string | Another custom string | Some very long custom string'
+        '<p>Custom string</p><p> | </p><p>Another custom string</p><p> | </p><p>Some very long custom string</p>'
     );
     t.end();
 });
