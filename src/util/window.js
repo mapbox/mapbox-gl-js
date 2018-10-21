@@ -9,6 +9,7 @@ import { extend } from './util';
 import type {Window} from '../types/window';
 
 const { window: _window } = new jsdom.JSDOM('', {
+    url: 'http://localhost',
     virtualConsole: new jsdom.VirtualConsole().sendTo(console)
 });
 
