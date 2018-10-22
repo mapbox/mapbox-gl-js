@@ -17,7 +17,7 @@
     "no-use-before-define": "off",
 
     // no-duplicate-imports doesn't play well with Flow
-    // https://github.com/gajus/eslint-plugin-flowtype/issues/213
+    // https://github.com/babel/eslint-plugin-babel/issues/59
     "no-duplicate-imports": "off",
     "import/no-duplicates": "error",
 
@@ -29,14 +29,10 @@
     "arrow-spacing": "off",
     "no-confusing-arrow": "off",
     "prefer-spread": "off",
-    "no-invalid-this": "off",
     "func-name-matching": "off",
     "no-control-regex": "off",
-    "prefer-rest-params": "off",
-    "no-useless-computed-key": "off",
-    "no-trailing-spaces": "off",
+    "no-invalid-this": "off",
     "no-buffer-constructor": "off",
-    "no-useless-return": "off",
 
     "array-bracket-spacing": "off",
     "consistent-return": "off",

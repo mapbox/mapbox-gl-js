@@ -20,11 +20,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         callback(new Error('Test timed out'));
     }, options.timeout || 20000);
 
-    function callback() {
+    function callback(...args) {
         if (!wasCallbackCalled) {
             clearTimeout(timeout);
             wasCallbackCalled = true;
-            _callback.apply(this, arguments);
+            _callback.apply(this, args);
         }
     }
 

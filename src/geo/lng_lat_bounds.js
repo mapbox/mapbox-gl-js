@@ -28,7 +28,7 @@ class LngLatBounds {
     // This constructor is too flexible to type. It should not be so flexible.
     constructor(sw: any, ne: any) {
         if (!sw) {
-            return;
+            // noop
         } else if (ne) {
             this.setSouthWest(sw).setNorthEast(ne);
         } else if (sw.length === 4) {
