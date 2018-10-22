@@ -28,8 +28,6 @@
     "arrow-body-style": "off",
     "arrow-spacing": "off",
     "no-confusing-arrow": "off",
-    "prefer-spread": "off",
-    "func-name-matching": "off",
     "no-control-regex": "off",
     "no-invalid-this": "off",
     "no-buffer-constructor": "off",

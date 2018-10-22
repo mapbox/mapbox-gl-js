@@ -650,7 +650,7 @@ export default class ProgramConfiguration {
     defines(): Array<string> {
         const result = [];
         for (const property in this.binders) {
-            result.push.apply(result, this.binders[property].defines());
+            result.push(...this.binders[property].defines());
         }
         return result;
     }

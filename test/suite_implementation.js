@@ -24,7 +24,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         if (!wasCallbackCalled) {
             clearTimeout(timeout);
             wasCallbackCalled = true;
-            _callback.apply(this, args);
+            _callback(...args);
         }
     }
 
@@ -158,7 +158,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             applyOperations(map, operations.slice(1), callback);
 
         } else {
-            map[operation[0]].apply(map, operation.slice(1));
+            map[operation[0]](...operation.slice(1));
             applyOperations(map, operations.slice(1), callback);
         }
     }
