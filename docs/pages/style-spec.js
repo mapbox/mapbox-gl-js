@@ -149,8 +149,7 @@ class Item extends React.Component {
                         Defaults to <code>{JSON.stringify(this.props.default)}</code>. </em>}
 
                     {this.props.requires &&
-                    <em className='color-gray'>
-                        {this.props.requires.map((r, i) => this.requires(r, i))} </em>}
+                    <em className='color-gray'>{this.props.requires.map((r, i) => this.requires(r, i))} </em>}
 
                     {this.props.function === "interpolated" &&
                     <em className='color-gray'>
@@ -178,7 +177,7 @@ class Item extends React.Component {
                 </div>}
 
                 {this.props['sdk-support'] &&
-                <div className='mb12'>
+                <div className='mb12 hmin120'>
                     <SDKSupportTable {...this.props['sdk-support']} />
                 </div>}
             </div>
@@ -424,7 +423,7 @@ export default class extends React.Component {
                                 }}/>
                             </div>
 
-                            <div id='sources-raster' className='px12 py12 border-b'>
+                            <div id='sources-raster' className='px12 py12 border-b border--gray-light'>
                                 <h3 className='mb6'><a href='#sources-raster' title='link to raster'>raster</a></h3>
                                 <p>
                                     A raster tile source. For raster tiles hosted by Mapbox, the <code>"url"</code> value should be of the
@@ -453,7 +452,7 @@ export default class extends React.Component {
                                 }}/>
                             </div>
 
-                            <div id='sources-raster-dem' className='px12 py12 border-b'>
+                            <div id='sources-raster-dem' className='px12 py12 border-b border--gray-light'>
                                 <h3 className='mb6'><a href='#sources-raster-dem' title='link to raster-dem'>raster-dem</a></h3>
                                 <p>
                                     A raster DEM source. Currently only supports <a href="https://blog.mapbox.com/global-elevation-data-6689f1d0ba65">Mapbox Terrain RGB</a> (<code>mapbox://mapbox.terrain-rgb</code>)
@@ -477,7 +476,7 @@ export default class extends React.Component {
                                 }}/>
                             </div>
 
-                            <div id='sources-geojson' className='px12 py12 border-b'>
+                            <div id='sources-geojson' className='px12 py12 border-b border--gray-light'>
                                 <h3 className='mb6'><a href='#sources-geojson' title='link to geojson'>geojson</a></h3>
                                 <p>
                                     A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
@@ -532,7 +531,7 @@ export default class extends React.Component {
                                 }}/>
                             </div>
 
-                            <div id='sources-image' className='px12 py12 border-b'>
+                            <div id='sources-image' className='px12 py12 border-b border--gray-light'>
                                 <h3 className='mb6'><a href='#sources-image' title='link to image'>image</a></h3>
                                 <p>
                                     An image source. The <code>"url"</code> value contains the image location.
@@ -569,7 +568,7 @@ export default class extends React.Component {
                                 }}/>
                             </div>
 
-                            <div id='sources-video' className='px12 py12 border-b'>
+                            <div id='sources-video' className='px12 py12 border-b border--gray-light'>
                                 <h3 className='mb6'><a href='#sources-video' title='link to video'>video</a></h3>
                                 <p>
                                     A video source. The <code>"urls"</code> value is an array. For each URL in the array,
@@ -753,7 +752,7 @@ export default class extends React.Component {
                         </p>
                         <div className='mb24 bg-white bg-white'>
                             {layerTypes.map((type, i) =>
-                                <div key={i} id={`layers-${type}`} className='px12 py12 border-b'>
+                                <div key={i} id={`layers-${type}`} className='px12 py12 border-b border--gray-light'>
                                     <h3 className='mb6'><a href={`#layers-${type}`}>{type}</a></h3>
 
                                     { entries(ref[`layout_${type}`]).map(([name, prop], i) =>
@@ -771,7 +770,7 @@ export default class extends React.Component {
                         <p>A Mapbox style contains values of various types, most commonly as values for the style properties of a layer.</p>
 
                         <div className='bg-white'>
-                            <div className='px12 py12 border-b'>
+                            <div className='px12 py12 border-b border--gray-light'>
                                 <a id='types-color' />
                                 <h3 className='mb6'><a href='#types-color' title='link to color'>Color</a></h3>
                                 <p>
@@ -790,7 +789,7 @@ export default class extends React.Component {
                                 <p>Especially of note is the support for hsl, which can be <a href='http://mothereffinghsl.com/'>easier to reason about than rgb()</a>.</p>
                             </div>
 
-                            <div className='px12 py12 border-b'>
+                            <div className='px12 py12 border-b border--gray-light'>
                                 <a id='types-formatted' />
                                 <h3 className='mb6'><a href='#types-formatted' title='link to formatted'>Formatted</a></h3>
                                 <p>The <code>formatted</code> type represents a string broken into sections annotated with separate formatting options.</p>
@@ -803,7 +802,7 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <div className='px12 py12 border-b'>
+                            <div className='px12 py12 border-b border--gray-light'>
                                 <a id='types-string' />
                                 <h3 className='mb6'><a href='#types-string' title='link to string'>String</a></h3>
                                 <p>A string is basically just text. In Mapbox styles, you're going to put it in quotes.</p>
@@ -813,7 +812,7 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <div className='px12 py12 border-b'>
+                            <div className='px12 py12 border-b border--gray-light'>
                                 <a id='types-boolean' />
                                 <h3 className='mb6'><a href='#types-boolean' title='link to boolean'>Boolean</a></h3>
                                 <p>Boolean means yes or no, so it accepts the values <code>true</code> or <code>false</code>.</p>
@@ -823,7 +822,7 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <div className='px12 py12 border-b'>
+                            <div className='px12 py12 border-b border--gray-light'>
                                 <a id='types-number' />
                                 <h3 className='mb6'><a href='#types-number' title='link to number'>Number</a></h3>
                                 <p>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
@@ -833,7 +832,7 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <div className='px12 py12 border-b'>
+                            <div className='px12 py12 border-b border--gray-light'>
                                 <a id='types-array' />
                                 <h3 className='mb6'><a href='#types-array' title='link to array'>Array</a></h3>
                                 <p>Arrays are comma-separated lists of one or more numbers in a specific
@@ -1071,9 +1070,9 @@ export default class extends React.Component {
 
                         <h3>Expression reference</h3>
 
-                        <div className='border bg-white'>
+                        <div>
                             {groupedExpressions.map((group, i) =>
-                                <div key={i} className='px12 py12 border-b'>
+                                <div key={i} className='px12 py12 border-b border--gray-light'>
                                     <h4 className="px12 py12" style={{fontSize: '100%'}}>
                                         <a id={`expressions-${slug(group.name)}`} href={`#expressions-${slug(group.name)}`}>{group.name}</a>
                                     </h4>
@@ -1125,7 +1124,7 @@ export default class extends React.Component {
                     <div className='px12 py12'>
                         <a id='other' className='anchor'/>
                         <h2><a className='unprose' href='#other' title='link to other'>Other</a></h2>
-                        <div className='border bg-white'>
+                        <div>
                             <div className='px12 py12 keyline-bottom'>
                                 <a id='other-function' className='anchor'/>
                                 <h3 className='mb6'><a href='#other-function' title='link to function'>Function</a></h3>

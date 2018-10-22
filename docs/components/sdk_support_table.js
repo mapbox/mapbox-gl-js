@@ -12,24 +12,24 @@ export default class SDKSupportTable extends React.Component {
 
     render() {
         return (
-            <table className='micro fixed'>
+            <table className='txt-s mb12'>
                 <thead>
-                    <tr className='fill-light'>
+                    <tr className='bg-gray-faint'>
                         <th>SDK Support</th>
-                        <td className='center'>Mapbox GL JS</td>
-                        <td className='center'>Android SDK</td>
-                        <td className='center'>iOS SDK</td>
-                        <td className='center'>macOS SDK</td>
+                        <td className='align-center'>Mapbox GL JS</td>
+                        <td className='align-center'>Android SDK</td>
+                        <td className='align-center'>iOS SDK</td>
+                        <td className='align-center'>macOS SDK</td>
                     </tr>
                 </thead>
                 <tbody>
                     {entries(this.props).map(([key, entry], i) =>
                         <tr key={i}>
                             <td>{md(key)}</td>
-                            <td className='center'>{this.support(entry, 'js')}</td>
-                            <td className='center'>{this.support(entry, 'android')}</td>
-                            <td className='center'>{this.support(entry, 'ios')}</td>
-                            <td className='center'>{this.support(entry, 'macos')}</td>
+                            <td className='align-center'>{this.support(entry, 'js')}</td>
+                            <td className='align-center'>{this.support(entry, 'android')}</td>
+                            <td className='align-center'>{this.support(entry, 'ios')}</td>
+                            <td className='align-center'>{this.support(entry, 'macos')}</td>
                         </tr>
                     )}
                 </tbody>
