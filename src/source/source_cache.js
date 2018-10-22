@@ -257,7 +257,7 @@ class SourceCache extends Evented {
         if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
 
-        this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
+        this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID}));
     }
 
     /**
@@ -667,7 +667,7 @@ class SourceCache extends Evented {
 
         tile.uses++;
         this._tiles[tileID.key] = tile;
-        if (!cached) this._source.fire(new Event('dataloading', {tile: tile, coord: tile.tileID, dataType: 'source'}));
+        if (!cached) this._source.fire(new Event('dataloading', {tile, coord: tile.tileID, dataType: 'source'}));
 
         return tile;
     }
@@ -776,10 +776,10 @@ class SourceCache extends Evented {
                 }
 
                 tileResults.push({
-                    tile: tile,
-                    tileID: tileID,
+                    tile,
+                    tileID,
                     queryGeometry: [tileSpaceQueryGeometry],
-                    scale: scale
+                    scale
                 });
             }
         }

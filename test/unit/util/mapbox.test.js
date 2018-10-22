@@ -361,13 +361,13 @@ test("mapbox", (t) => {
                 prevLocalStorage = window.localStorage;
                 window.localStorage = {
                     data: {},
-                    setItem: function (id, val) {
+                    setItem (id, val) {
                         this.data[id] = String(val);
                     },
-                    getItem: function (id) {
+                    getItem (id) {
                         return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
                     },
-                    removeItem: function (id) {
+                    removeItem (id) {
                         if (this.hasOwnProperty(id)) delete this[id];
                     }
                 };
@@ -668,13 +668,13 @@ test("mapbox", (t) => {
                 prevLocalStorage = window.localStorage;
                 window.localStorage = {
                     data: {},
-                    setItem: function (id, val) {
+                    setItem (id, val) {
                         this.data[id] = String(val);
                     },
-                    getItem: function (id) {
+                    getItem (id) {
                         return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
                     },
-                    removeItem: function (id) {
+                    removeItem (id) {
                         if (this.hasOwnProperty(id)) delete this[id];
                     }
                 };
@@ -831,7 +831,7 @@ test("mapbox", (t) => {
             t.test('POSTs distinct map.load for multiple maps', (t) => {
                 event.postMapLoadEvent(mapboxTileURLs, 1);
                 const now = +Date.now();
-                withFixedDate(t, now, ()=> event.postMapLoadEvent(mapboxTileURLs, 2));
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 2));
 
                 let req = window.server.requests[0];
                 req.respond(200);

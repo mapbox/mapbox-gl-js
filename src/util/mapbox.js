@@ -322,7 +322,7 @@ export class TurnstileEvent extends TelemetryEvent {
             return this.processRequests();
         }
 
-        this.postEvent(nextUpdate, {"enabled.telemetry": false}, (err)=> {
+        this.postEvent(nextUpdate, {"enabled.telemetry": false}, (err) => {
             if (!err) {
                 this.eventData.lastSuccess = nextUpdate;
                 this.eventData.accessToken = config.ACCESS_TOKEN;

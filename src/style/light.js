@@ -115,10 +115,10 @@ class Light extends Evented {
 
     _validate(validate: Function, value: mixed) {
         return emitValidationErrors(this, validate.call(validateStyle, extend({
-            value: value,
+            value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true},
-            styleSpec: styleSpec
+            styleSpec
         })));
     }
 }

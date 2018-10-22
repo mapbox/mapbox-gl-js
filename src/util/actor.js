@@ -47,9 +47,9 @@ class Actor {
         if (callback) this.callbacks[id] = callback;
         const buffers: Array<Transferable> = [];
         this.target.postMessage({
-            targetMapId: targetMapId,
+            targetMapId,
             sourceMapId: this.mapId,
-            type: type,
+            type,
             id: String(id),
             data: serialize(data, buffers)
         }, buffers);

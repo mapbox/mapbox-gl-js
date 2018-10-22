@@ -7,7 +7,7 @@ import LngLat from '../../../src/geo/lng_lat';
 import { extend } from '../../../src/util/util';
 
 const mockDispatcher = {
-    send: function () {}
+    send () {}
 };
 
 const hawkHill = {
@@ -49,7 +49,7 @@ test('GeoJSONSource#setData', (t) => {
         opts = opts || {};
         opts = extend(opts, { data: {} });
         return new GeoJSONSource('id', opts, {
-            send: function (type, data, callback) {
+            send (type, data, callback) {
                 if (callback) {
                     return setTimeout(callback, 0);
                 }
@@ -100,13 +100,13 @@ test('GeoJSONSource#setData', (t) => {
 test('GeoJSONSource#onRemove', (t) => {
     t.test('broadcasts "removeSource" event', (t) => {
         const source = new GeoJSONSource('id', {data: {}}, {
-            send: function (type, data, callback) {
+            send (type, data, callback) {
                 t.false(callback);
                 t.equal(type, 'removeSource');
                 t.deepEqual(data, { type: 'geojson', source: 'id' });
                 t.end();
             },
-            broadcast: function() {
+            broadcast() {
                 // Ignore
             }
         });
@@ -126,7 +126,7 @@ test('GeoJSONSource#update', (t) => {
 
     t.test('sends initial loadData request to dispatcher', (t) => {
         const mockDispatcher = {
-            send: function(message) {
+            send(message) {
                 t.equal(message, 'geojson.loadData');
                 t.end();
             }
@@ -138,7 +138,7 @@ test('GeoJSONSource#update', (t) => {
 
     t.test('forwards geojson-vt options with worker request', (t) => {
         const mockDispatcher = {
-            send: function(message, params) {
+            send(message, params) {
                 t.equal(message, 'geojson.loadData');
                 t.deepEqual(params.geojsonVtOptions, {
                     extent: 8192,
@@ -174,7 +174,7 @@ test('GeoJSONSource#update', (t) => {
     });
     t.test('fires event when metadata loads', (t) => {
         const mockDispatcher = {
-            send: function(message, args, callback) {
+            send(message, args, callback) {
                 if (callback) {
                     setTimeout(callback, 0);
                 }
@@ -192,7 +192,7 @@ test('GeoJSONSource#update', (t) => {
 
     t.test('fires "error"', (t) => {
         const mockDispatcher = {
-            send: function(message, args, callback) {
+            send(message, args, callback) {
                 if (callback) {
                     setTimeout(callback.bind(null, 'error'), 0);
                 }
@@ -212,7 +212,7 @@ test('GeoJSONSource#update', (t) => {
     t.test('sends loadData request to dispatcher after data update', (t) => {
         let expectedLoadDataCalls = 2;
         const mockDispatcher = {
-            send: function(message, args, callback) {
+            send(message, args, callback) {
                 if (message === 'geojson.loadData' && --expectedLoadDataCalls <= 0) {
                     t.end();
                 }

@@ -25,7 +25,7 @@ import WorkerPool from './util/worker_pool';
 const exported = {
     version,
     supported,
-    setRTLTextPlugin: setRTLTextPlugin,
+    setRTLTextPlugin,
     Map,
     NavigationControl,
     GeolocateControl,

@@ -43,8 +43,8 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
     config.REQUIRE_ACCESS_TOKEN = false;
 
     const map = new Map({
-        container: container,
-        style: style,
+        container,
+        style,
         classes: options.classes,
         interactive: false,
         attributionControl: false,

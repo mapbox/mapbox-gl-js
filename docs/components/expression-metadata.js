@@ -200,7 +200,7 @@ for (const name in types) {
     expressionGroups[spec.group] = expressionGroups[spec.group] || [];
     expressionGroups[spec.group].push(name);
     expressions[name] = {
-        name: name,
+        name,
         doc: spec.doc,
         type: types[name],
         sdkSupport: spec['sdk-support']

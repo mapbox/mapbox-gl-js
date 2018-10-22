@@ -5,7 +5,7 @@ import window from '../../../src/util/window';
 import { Evented } from '../../../src/util/evented';
 
 function createSource(options, transformCallback) {
-    const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
+    const source = new VectorTileSource('id', options, { send() {} }, options.eventedParent);
     source.onAdd({
         transform: { showCollisionBoxes: false },
         _getMapId: () => 1,
@@ -142,7 +142,7 @@ test('VectorTileSource', (t) => {
                 maxzoom: 10,
                 attribution: "Mapbox",
                 tiles: ["http://example.com/{z}/{x}/{y}.png"],
-                scheme: scheme
+                scheme
             });
 
             source.dispatcher.send = function(type, params) {
@@ -172,8 +172,8 @@ test('VectorTileSource', (t) => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData: function () {},
-                    setExpiryData: function() {}
+                    loadVectorData () {},
+                    setExpiryData() {}
                 };
                 source.loadTile(tile, () => {});
                 t.ok(transformSpy.calledOnce);
@@ -202,11 +202,11 @@ test('VectorTileSource', (t) => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData: function () {
+                    loadVectorData () {
                         this.state = 'loaded';
                         events.push('tileLoaded');
                     },
-                    setExpiryData: function() {}
+                    setExpiryData() {}
                 };
                 source.loadTile(tile, () => {});
                 t.equal(tile.state, 'loading');
@@ -289,8 +289,8 @@ test('VectorTileSource', (t) => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData: function () {},
-                    setExpiryData: function() {}
+                    loadVectorData () {},
+                    setExpiryData() {}
                 };
                 source.loadTile(tile, () => {});
             }

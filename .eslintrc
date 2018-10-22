@@ -24,7 +24,6 @@
     // temporarily disabled for easier upgrading of dependencies
     "implicit-arrow-linebreak": "off",
     "arrow-parens": "off",
-    "object-shorthand": "off",
     "arrow-body-style": "off",
     "no-confusing-arrow": "off",
     "no-control-regex": "off",

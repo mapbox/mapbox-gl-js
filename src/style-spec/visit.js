@@ -56,10 +56,10 @@ export function eachProperty(
         Object.keys(properties).forEach((key) => {
             callback({
                 path: [layer.id, propertyType, key],
-                key: key,
+                key,
                 value: properties[key],
                 reference: getPropertyReference(key),
-                set: function(x) {
+                set(x) {
                     properties[key] = x;
                 }
             });

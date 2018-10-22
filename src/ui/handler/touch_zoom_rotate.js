@@ -269,7 +269,7 @@ class TouchZoomRotateHandler {
 
         map.easeTo({
             zoom: targetScale,
-            duration: duration,
+            duration,
             easing: inertiaEasing,
             around: this._aroundCenter ? map.getCenter() : map.unproject(p),
             noMoveStart: true

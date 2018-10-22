@@ -42,7 +42,7 @@ export function addPatternDependencies(type: string, layers: PatternStyleLayers,
         const patternPropertyValue = patternProperty.value;
         if (patternPropertyValue.kind !== "constant") {
             const min = patternPropertyValue.evaluate({zoom: zoom - 1}, patternFeature, {});
-            const mid = patternPropertyValue.evaluate({zoom: zoom}, patternFeature, {});
+            const mid = patternPropertyValue.evaluate({zoom}, patternFeature, {});
             const max = patternPropertyValue.evaluate({zoom: zoom + 1}, patternFeature, {});
             // add to patternDependencies
             patterns[min] = true;

@@ -24,19 +24,19 @@ export default function validateLight(options) {
 
         if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
-                key: key,
+                key,
                 value: light[key],
                 valueSpec: styleSpec.transition,
-                style: style,
-                styleSpec: styleSpec
+                style,
+                styleSpec
             }));
         } else if (lightSpec[key]) {
             errors = errors.concat(validate({
-                key: key,
+                key,
                 value: light[key],
                 valueSpec: lightSpec[key],
-                style: style,
-                styleSpec: styleSpec
+                style,
+                styleSpec
             }));
         } else {
             errors = errors.concat([new ValidationError(key, light[key], `unknown property "${key}"`)]);

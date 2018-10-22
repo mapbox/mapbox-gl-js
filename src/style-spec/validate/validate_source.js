@@ -22,11 +22,11 @@ export default function validateSource(options) {
     case 'raster':
     case 'raster-dem':
         errors = errors.concat(validateObject({
-            key: key,
-            value: value,
+            key,
+            value,
             valueSpec: styleSpec[`source_${type.replace('-', '_')}`],
             style: options.style,
-            styleSpec: styleSpec
+            styleSpec
         }));
         if ('url' in value) {
             for (const prop in value) {
@@ -39,29 +39,29 @@ export default function validateSource(options) {
 
     case 'geojson':
         return validateObject({
-            key: key,
-            value: value,
+            key,
+            value,
             valueSpec: styleSpec.source_geojson,
-            style: style,
-            styleSpec: styleSpec
+            style,
+            styleSpec
         });
 
     case 'video':
         return validateObject({
-            key: key,
-            value: value,
+            key,
+            value,
             valueSpec: styleSpec.source_video,
-            style: style,
-            styleSpec: styleSpec
+            style,
+            styleSpec
         });
 
     case 'image':
         return validateObject({
-            key: key,
-            value: value,
+            key,
+            value,
             valueSpec: styleSpec.source_image,
-            style: style,
-            styleSpec: styleSpec
+            style,
+            styleSpec
         });
 
     case 'canvas':
@@ -73,8 +73,8 @@ export default function validateSource(options) {
             key: `${key}.type`,
             value: value.type,
             valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image']},
-            style: style,
-            styleSpec: styleSpec
+            style,
+            styleSpec
         });
     }
 }

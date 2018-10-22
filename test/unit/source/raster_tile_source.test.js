@@ -4,7 +4,7 @@ import window from '../../../src/util/window';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 
 function createSource(options, transformCallback) {
-    const source = new RasterTileSource('id', options, { send: function() {} }, options.eventedParent);
+    const source = new RasterTileSource('id', options, { send() {} }, options.eventedParent);
     source.onAdd({
         transform: { angle: 0, pitch: 0, showCollisionBoxes: false },
         _getMapId: () => 1,
@@ -118,8 +118,8 @@ test('RasterTileSource', (t) => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData: function () {},
-                    setExpiryData: function() {}
+                    loadVectorData () {},
+                    setExpiryData() {}
                 };
                 source.loadTile(tile, () => {});
                 t.ok(transformSpy.calledOnce);

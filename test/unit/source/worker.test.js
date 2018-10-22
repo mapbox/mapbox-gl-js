@@ -3,7 +3,7 @@ import Worker from '../../../src/source/worker';
 import window from '../../../src/util/window';
 
 const _self = {
-    addEventListener: function() {}
+    addEventListener() {}
 };
 
 test('load tile', (t) => {
