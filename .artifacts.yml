@@ -1,0 +1,4 @@
+version: v1
+
+defaults:
+  - publisher
