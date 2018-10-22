@@ -5,13 +5,16 @@ import md from './md';
 import PageShell from './page_shell';
 import LeftNav from './left_nav';
 import TopNav from './top_nav';
-import {highlightMarkup} from './prism_highlight';
+// import {highlightMarkup} from './prism_highlight';
+import Prism from 'prismjs';
 import supported from '@mapbox/mapbox-gl-supported';
 import {copy} from 'execcommand-copy';
 import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line import/no-unresolved
 import entries from 'object.entries';
 import Icon from '@mapbox/mr-ui/icon';
+import CodeSnippet from '@mapbox/mr-ui/code-snippet';
 
+const highlightTheme = require('raw-loader!./prism_highlight.css');
 
 const tags = {
     "styles": "Styles",
@@ -31,7 +34,6 @@ export default function (html) {
             super(props);
             this.state = {
                 filter: '',
-                copied: false,
                 token: undefined
             };
         }
@@ -106,10 +108,14 @@ ${html}
                                     ref={(iframe) => { this.iframe = iframe; }}/>}
 
                             <div className='bg-white'>
-                                <div id='code'>{highlightMarkup(this.displayHTML())}</div>
-                                <a className='btn w-full round-b color-white' href='#' onClick={(e) => this.copyExample(e)}>
-                                    {this.state.copied ? 'Copied to clipboard!' : 'Copy example'}
-                                </a>
+                                <div id='code'>
+                                    <CodeSnippet
+                                        code={this.displayHTML()}
+                                        highlightedCode={Prism.highlight(this.displayHTML(), Prism.languages['markup'])}
+                                        highlightThemeCss={highlightTheme}
+                                        onCopy={() => { analytics.track('Copied example with clipboard') }}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -129,12 +135,5 @@ ${html}
             });
         }
 
-        copyExample(e) {
-            e.preventDefault();
-            copy(this.displayHTML());
-            analytics.track('Copied example with clipboard');
-            this.setState({copied: true});
-            setTimeout(() => this.setState({copied: false}), 1000);
-        }
     };
 }
