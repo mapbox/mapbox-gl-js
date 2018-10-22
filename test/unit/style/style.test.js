@@ -1093,7 +1093,7 @@ test('Style#addLayer', (t) => {
         const layer = {id: 'c', type: 'background'};
 
         style.on('style.load', () => {
-            style.on('error', (error)=>{
+            style.on('error', (error) => {
                 t.match(error.error, /does not exist on this map/);
                 t.end();
             });

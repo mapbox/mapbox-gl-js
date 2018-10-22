@@ -26,7 +26,6 @@
     "arrow-parens": "off",
     "object-shorthand": "off",
     "arrow-body-style": "off",
-    "arrow-spacing": "off",
     "no-confusing-arrow": "off",
     "no-control-regex": "off",
     "no-invalid-this": "off",

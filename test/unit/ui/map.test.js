@@ -264,7 +264,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#is_Loaded', (t)=>{
+    t.test('#is_Loaded', (t) => {
 
         t.test('Map#isSourceLoaded', (t) => {
             const style = createStyle();
@@ -297,7 +297,7 @@ test('Map', (t) => {
             const style = createStyle();
             const map = createMap(t, {style: style});
             t.equal(map.areTilesLoaded(), true, 'returns true if there are no sources on the map');
-            map.on('load', ()=>{
+            map.on('load', () => {
 
                 map.addSource('geojson', createStyleSource());
                 map.style.sourceCaches.geojson._tiles.fakeTile = new Tile(new OverscaledTileID(0, 0, 0, 0, 0));

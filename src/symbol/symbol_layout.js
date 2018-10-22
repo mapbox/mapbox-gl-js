@@ -106,7 +106,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         const text = feature.text;
         if (text) {
             const unformattedText = text.toString();
-            const textOffset: [number, number] = (layout.get('text-offset').evaluate(feature, {}).map((t)=> t * oneEm): any);
+            const textOffset: [number, number] = (layout.get('text-offset').evaluate(feature, {}).map((t) => t * oneEm): any);
             const spacing = layout.get('text-letter-spacing').evaluate(feature, {}) * oneEm;
             const spacingIfAllowed = allowsLetterSpacing(unformattedText) ? spacing : 0;
             const textAnchor = layout.get('text-anchor').evaluate(feature, {});
