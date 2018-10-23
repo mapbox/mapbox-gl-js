@@ -3,6 +3,7 @@ const webpack = require('webpack');
 module.exports = () => {
     const config = {
         siteBasePath: '/mapbox-gl-js',
+        outputDirectory: '_site',
         siteOrigin: 'https://www.mapbox.com',
         pagesDirectory: `${__dirname}/docs/pages`,
         stylesheets: [
