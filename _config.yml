@@ -1,3 +1,0 @@
-# When Publisher runs Jekyll (which it always does), it will simply copy this
-# source directory to _site. Then Publisher will copy _site to S3.
-source: _batfish_site
