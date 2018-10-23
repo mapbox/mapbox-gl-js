@@ -147,7 +147,14 @@ function getRoundNum(num) {
     d = d >= 10 ? 10 :
         d >= 5 ? 5 :
         d >= 3 ? 3 :
-        d >= 2 ? 2 : 1;
+        d >= 2 ? 2 :
+        d >= 1 ? 1 :
+        d >= 0.1 ? Math.round(d * 10) / 10 :
+        d >= 0.01 ? Math.round(d * 100) / 100 :
+        d >= 0.001 ? Math.round(d * 1000) / 1000 :
+        d >= 0.0001 ? Math.round(d * 10000) / 10000 :
+        d >= 0.00001 ? Math.round(d * 100000) / 100000 : Math.round(d * 1000000) / 1000000;
+    // Could go on forever of course, depending on the unit used. But this is good enough for 'imperial', 'metric' and 'nautical'.
 
     return pow10 * d;
 }
