@@ -140,6 +140,11 @@ function getDistance(latlng1, latlng2) {
 
 }
 
+function getDecimalRoundNum(d) {
+    const multiplier = Math.pow(10, Math.ceil(-Math.log(d) / Math.LN10));
+    return Math.round(d * multiplier) / multiplier;
+}
+
 function getRoundNum(num) {
     const pow10 = Math.pow(10, (`${Math.floor(num)}`).length - 1);
     let d = num / pow10;
@@ -148,13 +153,7 @@ function getRoundNum(num) {
         d >= 5 ? 5 :
         d >= 3 ? 3 :
         d >= 2 ? 2 :
-        d >= 1 ? 1 :
-        d >= 0.1 ? Math.round(d * 10) / 10 :
-        d >= 0.01 ? Math.round(d * 100) / 100 :
-        d >= 0.001 ? Math.round(d * 1000) / 1000 :
-        d >= 0.0001 ? Math.round(d * 10000) / 10000 :
-        d >= 0.00001 ? Math.round(d * 100000) / 100000 : Math.round(d * 1000000) / 1000000;
-    // Could go on forever of course, depending on the unit used. But this is good enough for 'imperial', 'metric' and 'nautical'.
+        d >= 1 ? 1 : getDecimalRoundNum(d);
 
     return pow10 * d;
 }
