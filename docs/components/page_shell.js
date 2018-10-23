@@ -12,6 +12,7 @@ import PageLayout from '@mapbox/dr-ui/page-layout';
 import SectionedNavigation from '@mapbox/dr-ui/sectioned-navigation';
 import NavigationAccordion from '@mapbox/dr-ui/navigation-accordion';
 import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line import/no-unresolved
+import GithubSlugger from 'github-slugger';
 
 import ApiNavigation from './api-navigation';
 import TopNavTabs from './top-nav-tabs';
@@ -35,6 +36,8 @@ if (typeof window !== 'undefined' && window.initializeMapboxAnalytics) {
         sentry: sentryInit
     });
 }
+
+const slugger = new GithubSlugger();
 
 class PageShell extends React.Component {
 
@@ -106,20 +109,24 @@ class PageShell extends React.Component {
                 </div>
             );
         } else if (location.pathname.indexOf('style-spec') > -1) {
+            slugger.reset();
             const sections = styleSpecNavigation
               .map(section => {
                 let subNavItems = [];
+                const sectionSlug = slugger.slug(section.title);
                 if (section.subnav) {
                     subNavItems = section.subnav.map(item => {
+                        slugger.reset();
+                        const itemSlug = slugger.slug(item.title);
                         return {
                             text: item.title,
-                            url: item.title
+                            url: `#${sectionSlug}-${itemSlug}`
                         };
                      });
                 }
                 return {
                     title: section.title,
-                    url: section.title,
+                    url: `#${sectionSlug}`,
                     items: subNavItems
                 };
             });

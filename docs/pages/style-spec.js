@@ -114,8 +114,8 @@ class Item extends React.Component {
     render() {
         return (
             <div className='clearfix py0 px12'>
-                <div className='txt-code bg-white mb6 pt36 txt-l'>
-                    <a className='unprose' id={this.props.id} href={`#${this.props.id}`}>{this.props.name}</a>
+                <div className='txt-code bg-white mt36 mb6 txt-l'>
+                    <a className='unprose pt60' id={this.props.id} href={`#${this.props.id}`}>{this.props.name}</a>
                 </div>
 
                 <div className='mb6'>
@@ -349,12 +349,12 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div id='sources-geojson' className='pad2 keyline-bottom'>
-                                    <h3 className='space-bottom1'><a href='#sources-geojson' title='link to geojson'>geojson</a></h3>
+                                    <h3 className='mb6'><a href='#sources-geojson' title='link to geojson'>geojson</a></h3>
                                     <p>
                                         A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
                                         property, whose value can be a URL or inline GeoJSON.
                                     </p>
-                                    <div className='space-bottom1 clearfix'>
+                                    <div className='mb6 clearfix'>
                                         {highlightJSON(`
                                             "geojson-marker": {
                                                 "type": "geojson",
@@ -375,14 +375,14 @@ export default class extends React.Component {
                                         This example of a GeoJSON source refers to an external GeoJSON document via its URL. The
                                         GeoJSON document must be on the same domain or accessible using <a href='http://enable-cors.org/'>CORS</a>.
                                     </p>
-                                    <div className='space-bottom1 clearfix'>
+                                    <div className='mb6 clearfix'>
                                         {highlightJSON(`
                                             "geojson-lines": {
                                                 "type": "geojson",
                                                 "data": "./lines.geojson"
                                             }`)}
                                     </div>
-                                    <div className='space-bottom1 clearfix'>
+                                    <div className='mb6 clearfix'>
                                         { entries(ref.source_geojson).map(([name, prop], i) =>
                                             name !== '*' && name !== 'type' &&
                                             <Item key={i} id={`sources-geojson-${name}`} name={name} {...prop}/>)}
