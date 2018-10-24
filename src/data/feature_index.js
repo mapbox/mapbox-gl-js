@@ -143,8 +143,7 @@ class FeatureIndex {
         const matching3D = this.grid3D.query(
                 cameraMinX - queryPadding, cameraMinY - queryPadding, cameraMaxX + queryPadding, cameraMaxY + queryPadding,
                 (bx1, by1, bx2, by2) => {
-                    const a = polygonIntersectsBox(args.cameraQueryGeometry[0], bx1, by1, bx2, by2);
-                    return a;
+                    return polygonIntersectsBox(args.cameraQueryGeometry[0], bx1, by1, bx2, by2);
                 });
 
         for (const key of matching3D) {

@@ -738,8 +738,8 @@ class SourceCache extends Evented {
 
         const cameraPointQueryGeometry = transform.getCameraQueryGeometry(pointQueryGeometry);
 
-        const queryGeometry = pointQueryGeometry.map((p) => this.transform.pointCoordinate(p));
-        const cameraQueryGeometry = cameraPointQueryGeometry.map((p) => this.transform.pointCoordinate(p));
+        const queryGeometry = pointQueryGeometry.map((p) => transform.pointCoordinate(p));
+        const cameraQueryGeometry = cameraPointQueryGeometry.map((p) => transform.pointCoordinate(p));
 
         const tileResults = [];
         const ids = this.getIds();
@@ -763,7 +763,7 @@ class SourceCache extends Evented {
                 continue;
             }
             const tileID = tile.tileID;
-            const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
+            const scale = Math.pow(2, transform.zoom - tile.tileID.overscaledZ);
             const queryPadding = maxPitchScaleFactor * tile.queryPadding * EXTENT / tile.tileSize / scale;
 
             const tileSpaceBounds = [
