@@ -817,6 +817,30 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#remove calls onRemove on added controls before style is destroyed', (t) => {
+        const map = createMap(t);
+        let onRemoveCalled = 0;
+        let style;
+        const control = {
+            onRemove: function(map) {
+                onRemoveCalled++;
+                t.deepEqual(map.getStyle(), style);
+            },
+            onAdd: function (_) {
+                return window.document.createElement('div');
+            }
+        };
+
+        map.addControl(control);
+
+        map.on('style.load', () => {
+            style = map.getStyle();
+            map.remove();
+            t.equal(onRemoveCalled, 1);
+            t.end();
+        });
+    });
+
     t.test('#addControl', (t) => {
         const map = createMap(t);
         const control = {
