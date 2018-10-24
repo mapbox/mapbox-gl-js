@@ -7,7 +7,7 @@ import TopbarSticker from '@mapbox/dr-ui/topbar-sticker';
 import BackToTopButton from '@mapbox/dr-ui/back-to-top-button';
 import ProductMenu from '@mapbox/dr-ui/product-menu/product-menu';
 import ProductMenuDropdown from '@mapbox/dr-ui/product-menu-dropdown';
-import { ProductMenuItems } from '@mapbox/dr-ui/data/product-menu-items';
+import { ProductMenuItems } from '../data/product-menu-items';
 import PageLayout from '@mapbox/dr-ui/page-layout';
 import SectionedNavigation from '@mapbox/dr-ui/sectioned-navigation';
 import NavigationAccordion from '@mapbox/dr-ui/navigation-accordion';
@@ -46,9 +46,17 @@ class PageShell extends React.Component {
 
         let activeTab = location.pathname.split('/')[2];
         if (activeTab === 'example') activeTab = 'examples';
+        let topNavContent = (
+            <TopNavTabs 
+                activeTab={activeTab}
+            />
+        );
+        let productName = 'Mapbox GL JS';
 
         let sidebarContent = <div />;
+        let sidebarStackedOnNarrowScreens = false;
         if (location.pathname.indexOf('overview') > -1) {
+            sidebarStackedOnNarrowScreens = true;
             const sections = overviewNavigation.map(section => {
                 return {
                     title: section.title,
@@ -88,9 +96,11 @@ class PageShell extends React.Component {
                     return example.tags[0] === topic;
                   })
                   .map(example => {
+                    console.log(location.pathname, example.path)
                     return {
                       text: example.title,
-                      url: example.path
+                      url: example.path,
+                      active: location.pathname === example.path
                     };
                   });
 
@@ -135,6 +145,8 @@ class PageShell extends React.Component {
                     <SectionedNavigation sections={sections} includeCount={false} />
                 </div>
             );
+            productName = 'Mapbox Style Spec';
+            topNavContent = '';
         } else if (location.pathname.indexOf('plugins') > -1) {
             const sections = Object.keys(plugins)
               .map((section, i) => {
@@ -166,15 +178,13 @@ class PageShell extends React.Component {
                         <div className="grid grid--gut36 mr-neg36 mr0-mm">
                               <div className="col col--4-mm col--12">
                                 <div className="ml24 pt12">
-                                      <ProductMenu productName='Mapbox GL JS'>
+                                      <ProductMenu productName={productName}>
                                             <ProductMenuDropdown categories={ProductMenuItems} />
                                       </ProductMenu>
                                 </div>
                             </div>
                             <div className="col col--8-mm col--12">
-                                <TopNavTabs 
-                                    activeTab={activeTab}
-                                />
+                                <div style={{ height: '50px' }}>{topNavContent}</div>
                             </div>
                         </div>
                     </div>
@@ -186,7 +196,7 @@ class PageShell extends React.Component {
                         sidebarContentStickyTop={60}
                         sidebarContentStickyTopNarrow={0}
                         currentPath={location.pathname}
-                        sidebarStackedOnNarrowScreens={true}
+                        sidebarStackedOnNarrowScreens={sidebarStackedOnNarrowScreens}
                     >
                             <div id="docs-content" className='static-header-page prose'>
                                 {this.props.children}

@@ -3,10 +3,7 @@ import slug from 'slugg';
 import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
 import md from '@mapbox/batfish/modules/md'; // eslint-disable-line import/no-unresolved
 import PageShell from '../components/page_shell';
-import LeftNav from "../components/left_nav";
-import TopNav from "../components/top_nav";
 import entries from 'object.entries';
-// import { plugins } from '../data/plugins';
 
 const meta = {
     title: 'Mapbox GL JS Plugins',

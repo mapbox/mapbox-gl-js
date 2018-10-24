@@ -3,8 +3,6 @@ import slug from 'slugg';
 import assert from 'assert';
 import md from '../components/md';
 import PageShell from '../components/page_shell';
-import LeftNav from '../components/left_nav';
-import TopNav from '../components/top_nav';
 import SDKSupportTable from '../components/sdk_support_table';
 import {highlightJavascript, highlightJSON} from '../components/prism_highlight';
 import entries from 'object.entries';
@@ -16,8 +14,6 @@ const meta = {
     description: '',
     pathname: '/style-spec'
 };
-
-
 
 const sourceTypes = ['vector', 'raster', 'raster-dem', 'geojson', 'image', 'video'];
 const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade'];

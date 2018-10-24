@@ -14,9 +14,6 @@ const tabOrder = {
   reference: {
     title: 'Reference'
   },
-  'style-spec': {
-    title: 'Style Spec'
-  },
   'plugins': {
     title: 'Plugins'
   }
@@ -26,7 +23,8 @@ export function listTabs(arrayOfFolders) {
   let alltheTabs = arrayOfFolders
     .filter(folder => {
       return (
-        folder.path.indexOf('404') < 0
+        folder.path.indexOf('404') < 0 &&
+        folder.path.indexOf('style-spec') < 0
       );
     })
     .map(tab => {

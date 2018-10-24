@@ -1,7 +1,5 @@
 import React from 'react';
 import PageShell from '../components/page_shell';
-import LeftNav from '../components/left_nav';
-import TopNav from '../components/top_nav';
 import {highlightJavascript} from '../components/prism_highlight.js';
 import Quickstart from '../components/quickstart';
 import docs from '../components/api.json'; // eslint-disable-line import/no-unresolved
