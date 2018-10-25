@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:mapbox/mapbox-gl-style-spec.git"
+    "url": "git@github.com:mapbox/mapbox-gl-js.git"
   },
   "bin": {
     "gl-style-migrate": "bin/gl-style-migrate",
