@@ -19,7 +19,6 @@ class ExamplesLandingPage extends React.PureComponent {
     const renderedCardContainers = Object.keys(tags).map(topic => {
       const cardsForTopic = examples
         .filter(example => {
-          console.log(topic)
           return example.tags.indexOf(topic) > -1;
         })
         .map((example, index) => {
