@@ -3,7 +3,7 @@ import Benchmark from '../lib/benchmark';
 import { VectorTile } from '@mapbox/vector-tile';
 import Pbf from 'pbf';
 import createFilter from '../../src/style-spec/feature_filter';
-import filters from '../data/expression_filters2.json';
+import filters from '../data/expression_filters.json';
 import assert from 'assert';
 
 export default class FilterEvaluateExpressions extends Benchmark {

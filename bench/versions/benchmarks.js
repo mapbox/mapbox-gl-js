@@ -50,9 +50,7 @@ LayerBenchmarks.forEach((Bench) => register(new Bench()));
 register(new Load());
 register(new LayoutDDS());
 register(new FilterCreate());
-register(new FilterCreateExpressions());
-register(new FilterEvaluate());
-register(new FilterEvaluateExpressions());
+register(new FilterEvaluate(style));
 
 import getWorkerPool from '../../src/util/global_worker_pool';
 

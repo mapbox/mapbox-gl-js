@@ -40,11 +40,13 @@ import StyleLayerCreate from '../benchmarks/style_layer_create';
 import Validate from '../benchmarks/style_validate';
 import Layout from '../benchmarks/layout';
 import Paint from '../benchmarks/paint';
+import FilterEvaluate from '../benchmarks/filter_evaluate'
 import QueryPoint from '../benchmarks/query_point';
 import QueryBox from '../benchmarks/query_box';
 
 register(StyleLayerCreate);
 register(Validate);
+register(FilterEvaluate);
 locations.forEach(location => register(Layout, location.tileID, {location}));
 locations.forEach(location => register(Paint, [location], {location}));
 register(QueryPoint, locations);
