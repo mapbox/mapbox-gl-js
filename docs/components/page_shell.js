@@ -43,7 +43,6 @@ class PageShell extends React.Component {
 
     render() {
         const { frontMatter, location, children } = this.props;
-
         let activeTab = location.pathname.split('/')[2];
         if (activeTab === 'example') activeTab = 'examples';
         let topNavContent = (
@@ -96,7 +95,6 @@ class PageShell extends React.Component {
                     return example.tags[0] === topic;
                   })
                   .map(example => {
-                    console.log(location.pathname, example.path)
                     return {
                       text: example.title,
                       url: example.path,
