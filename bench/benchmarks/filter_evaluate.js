@@ -21,7 +21,7 @@ export default class FilterEvaluate extends Benchmark {
             this.filters = this.style.layers.filter(l => l.filter && l['source-layer']).map(l => {
                 return {layer: l['source-layer'], filter: l.filter}
             });
-            return fetch('/bench/data/785.vector.pbf')
+            return fetch('/bench/data/12-962-1692.vector.pbf')
         })
         .then(response => response.arrayBuffer())
         .then(data => {
