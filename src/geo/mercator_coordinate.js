@@ -64,7 +64,7 @@ class MercatorCoordinate {
      * var coord = new mapboxglMercatorCoordinate(0.5, 0.5, 0);
      * var latLng = coord.toLatLng(); // LngLat(0, 0)
      */
-    toLngLat(){
+    toLngLat() {
         const lng = this.x * 360 - 180;
         const y2 = 180 - this.y * 360;
         const lat = 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
