@@ -104,7 +104,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         if (response.ok) {
             response[requestParameters.type || 'text']().then(result => {
                 callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
-            }).catch(callback);
+            }).catch(err => callback(new Error(err.message)));
         } else {
             callback(new AJAXError(response.statusText, response.status, requestParameters.url));
         }
