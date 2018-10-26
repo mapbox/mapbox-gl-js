@@ -1160,7 +1160,7 @@ class Style extends Evented {
         const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0;
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement);
             this._layerOrderChanged = false;
         }
 
@@ -1174,7 +1174,7 @@ class Style extends Evented {
             this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles);
 
             if (this.pauseablePlacement.isDone()) {
-                this.placement = this.pauseablePlacement.commit(this.placement, browser.now());
+                this.placement = this.pauseablePlacement.commit(browser.now());
                 placementCommitted = true;
             }
 
