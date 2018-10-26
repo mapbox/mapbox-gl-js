@@ -38,10 +38,10 @@ class MercatorCoordinate {
     y: number;
     z: number;
 
-    constructor(x: number, y: number, z?: number) {
+    constructor(x: number, y: number, z: number = 0) {
         this.x = +x;
         this.y = +y;
-        this.z = z === undefined ? 0 : +z;
+        this.z = +z;
     }
 
     /**
@@ -54,12 +54,12 @@ class MercatorCoordinate {
      * var coord = mapboxgl.MercatorCoordinate.fromLngLat({ lng: 0, lat: 0}, 0);
      * coord; // MercatorCoordinate(0.5, 0.5, 0)
      */
-    static fromLngLat(lngLatLike: LngLatLike, altitude?: number) {
+    static fromLngLat(lngLatLike: LngLatLike, altitude: number = 0) {
         const lngLat = LngLat.convert(lngLatLike);
 
         const x = (180 + lngLat.lng) / 360;
         const y = (180 - (180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lngLat.lat * Math.PI / 360)))) / 360;
-        const z = altitude === undefined ? 0 : (altitude / circumferenceAtLatitude(lngLat.lat));
+        const z = altitude / circumferenceAtLatitude(lngLat.lat);
         return new MercatorCoordinate(x, y, z);
     }
 
