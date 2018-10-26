@@ -1664,6 +1664,10 @@ class Map extends Camera {
      */
     remove() {
         if (this._hash) this._hash.remove();
+
+        for (const control of this._controls) control.onRemove(this);
+        this._controls = [];
+
         if (this._frame) {
             this._frame.cancel();
             this._frame = null;
@@ -1674,9 +1678,6 @@ class Map extends Camera {
             window.removeEventListener('resize', this._onWindowResize, false);
             window.removeEventListener('online', this._onWindowOnline, false);
         }
-
-        for (const control of this._controls) control.onRemove(this);
-        this._controls = [];
 
         const extension = this.painter.context.gl.getExtension('WEBGL_lose_context');
         if (extension) extension.loseContext();
