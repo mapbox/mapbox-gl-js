@@ -46,5 +46,6 @@
   "bottom": 12,
   "left": -32.5,
   "right": 32.5,
-  "writingMode": 1
+  "writingMode": 1,
+  "lineCount": 1
 }
