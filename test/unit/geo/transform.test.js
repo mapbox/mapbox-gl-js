@@ -35,9 +35,9 @@ test('transform', (t) => {
         t.deepEqual(transform.point, new Point(262144, 262144));
         t.equal(transform.height, 500);
         t.deepEqual(fixedLngLat(transform.pointLocation(new Point(250, 250))), { lng: 0, lat: 0 });
-        t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), { column: 512, row: 512, zoom: 10 });
+        t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), { x: 0.5, y: 0.5, z: 0 });
         t.deepEqual(transform.locationPoint(new LngLat(0, 0)), { x: 250, y: 250 });
-        t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), { column: 512, row: 512, zoom: 10 });
+        t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), { x: 0.5, y: 0.5, z: 0 });
         t.end();
     });
 
