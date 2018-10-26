@@ -12,10 +12,18 @@ function circumferenceAtLatitude(latitude: number) {
 }
 
 /**
- * A `MercatorCoordinate` object represents a 3 dimensional position in projected web mercator coordinates.
+ * A `MercatorCoordinate` object represents a projected three dimensional position.
  *
- * The "world size" used by `MercatorCoordinate` is 1, meaning `MercatorCoordinate(0, 0, 0)` is the north-west
- * corner of the mercator world and `MercatorCoordinate(1, 1, 0)` is the south-east corner of the mercator world.
+ * `MercatorCoordinate` uses the web mercator projection ([EPSG:3857](https://epsg.io/3857)) with slightly different units:
+ * - the size of 1 unit is the width of the projected world instead of the "mercator meter"
+ * - the origin of the coordinate space is at the north-west corner instead of the middle
+ *
+ * For example, `MercatorCoordinate(0, 0, 0)` is the north-west corner of the mercator world and
+ * `MercatorCoordinate(1, 1, 0)` is the south-east corner. If you are familiar with
+ * [vector tiles](https://github.com/mapbox/vector-tile-spec) it may be helpful to think
+ * of the coordinate space as the `0/0/0` tile with an extent of `1`.
+ *
+ * The `z` dimension of `MercatorCoordinate` is conformal. A cube in the mercator coordinate space would be rendered as a cube.
  *
  * @param {number} x The x component of the position.
  * @param {number} y The y component of the position.
