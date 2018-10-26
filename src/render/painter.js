@@ -417,7 +417,7 @@ class Painter {
         if (layer.type !== 'background' && layer.type !== 'custom' && !coords.length) return;
         this.id = layer.id;
 
-        draw[layer.type](painter, sourceCache, layer, coords);
+        draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets);
     }
 
     /**

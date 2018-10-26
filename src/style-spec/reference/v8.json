@@ -1748,6 +1748,9 @@
     "text-justify": {
       "type": "enum",
       "values": {
+        "auto": {
+          "doc": "The text is aligned towards the anchor position."
+        },
         "left": {
           "doc": "The text is aligned to the left."
         },
@@ -1775,6 +1778,12 @@
           "android": "5.2.0",
           "ios": "3.7.0",
           "macos": "0.6.0"
+        },
+        "auto": {
+          "js": "next",
+          "android": "Not yet supported",
+          "ios": "Not yet supported",
+          "macos": "Not yet supported"
         }
       },
       "expression": {
@@ -1786,8 +1795,97 @@
       },
       "property-type": "data-driven"
     },
+    "text-radial-offset": {
+      "type": "number",
+      "units": "ems",
+      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which doesn't support the two-dimensional `text-offset`.",
+      "requires": [
+        {
+          "!" : "text-offset"
+        }
+      ],
+      "property-type": "data-driven",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      }
+    },
+    "text-variable-anchor": {
+      "type": "array",
+      "value": "enum",
+      "values": {
+        "center": {
+          "doc": "The center of the text is placed closest to the anchor."
+        },
+        "left": {
+          "doc": "The left side of the text is placed closest to the anchor."
+        },
+        "right": {
+          "doc": "The right side of the text is placed closest to the anchor."
+        },
+        "top": {
+          "doc": "The top of the text is placed closest to the anchor."
+        },
+        "bottom": {
+          "doc": "The bottom of the text is placed closest to the anchor."
+        },
+        "top-left": {
+          "doc": "The top left corner of the text is placed closest to the anchor."
+        },
+        "top-right": {
+          "doc": "The top right corner of the text is placed closest to the anchor."
+        },
+        "bottom-left": {
+          "doc": "The bottom left corner of the text is placed closest to the anchor."
+        },
+        "bottom-right": {
+          "doc": "The bottom right corner of the text is placed closest to the anchor."
+        }
+      },
+      "requires": [
+        {
+          "!": "text-anchor"
+        },
+        {
+          "!": "text-offset"
+        },
+        {
+            "symbol-placement": [
+                "point"
+            ]
+        }
+      ],
+      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the render will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` instead of the two-dimensional `text-offset`.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "next",
+          "android": "Not yet supported",
+          "ios": "Not yet supported",
+          "macos": "Not yet supported"
+        },
+        "data-driven styling": {
+          "js": "Not yet supported",
+          "android": "Not yet supported",
+          "ios": "Not yet supported",
+          "macos": "Not yet supported"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
     "text-anchor": {
       "type": "enum",
+      "requires": {
+        "!": "text-variable-anchor"
+      },
       "values": {
         "center": {
           "doc": "The center of the text is placed closest to the anchor."
@@ -2019,7 +2117,10 @@
         0
       ],
       "requires": [
-        "text-field"
+        "text-field",
+        {
+            "!": "text-radial-offset"
+        }
       ],
       "sdk-support": {
         "basic functionality": {
