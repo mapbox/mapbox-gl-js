@@ -2,8 +2,7 @@
 
 import { test } from 'mapbox-gl-js-test';
 
-import Coordinate from '../../../src/geo/coordinate';
-import { easeCubicInOut, keysDifference, extend, pick, uniqueId, getCoordinatesCenter, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid } from '../../../src/util/util';
+import { easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid } from '../../../src/util/util';
 import Point from '@mapbox/point-geometry';
 
 test('util', (t) => {
@@ -17,14 +16,6 @@ test('util', (t) => {
     t.deepEqual(pick({a:1, b:2, c:3}, ['a', 'c']), {a:1, c:3}, 'pick');
     t.deepEqual(pick({a:1, b:2, c:3}, ['a', 'c', 'd']), {a:1, c:3}, 'pick');
     t.ok(typeof uniqueId() === 'number', 'uniqueId');
-
-    t.test('getCoordinatesCenter', (t) => {
-        t.deepEqual(getCoordinatesCenter([
-            new Coordinate(0, 0, 2),
-            new Coordinate(1, 1, 2)
-        ]), new Coordinate(0.5, 0.5, 0));
-        t.end();
-    });
 
     t.test('bindAll', (t) => {
         function MyClass() {
