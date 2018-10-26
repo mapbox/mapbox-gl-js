@@ -2,6 +2,7 @@
 
 import LngLat from './lng_lat';
 import LngLatBounds from './lng_lat_bounds';
+import MercatorCoordinate from './mercator_coordinate';
 import Point from '@mapbox/point-geometry';
 import Coordinate from './coordinate';
 import { wrap, clamp } from '../util/util';
@@ -278,46 +279,17 @@ class Transform {
     scaleZoom(scale: number) { return Math.log(scale) / Math.LN2; }
 
     project(lnglat: LngLat) {
-        return new Point(
-            this.lngX(lnglat.lng),
-            this.latY(lnglat.lat));
+        const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
+        const clamped = new LngLat(lnglat.lng, lat);
+        const coord = MercatorCoordinate.fromLngLat(clamped);
+        return new Point(coord.x * this.worldSize, coord.y * this.worldSize);
     }
 
     unproject(point: Point): LngLat {
-        return new LngLat(
-            this.xLng(point.x),
-            this.yLat(point.y));
+        return new MercatorCoordinate(point.x / this.worldSize, point.y / this.worldSize).toLngLat();
     }
 
-    get x(): number { return this.lngX(this.center.lng); }
-    get y(): number { return this.latY(this.center.lat); }
-
-    get point(): Point { return new Point(this.x, this.y); }
-
-    /**
-     * longitude to absolute x coord
-     * @returns {number} pixel coordinate
-     */
-    lngX(lng: number) {
-        return (180 + lng) * this.worldSize / 360;
-    }
-    /**
-     * latitude to absolute y coord
-     * @returns {number} pixel coordinate
-     */
-    latY(lat: number) {
-        lat = clamp(lat, -this.maxValidLatitude, this.maxValidLatitude);
-        const y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
-        return (180 - y) * this.worldSize / 360;
-    }
-
-    xLng(x: number) {
-        return x * 360 / this.worldSize - 180;
-    }
-    yLat(y: number) {
-        const y2 = 180 - y * 360 / this.worldSize;
-        return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
-    }
+    get point(): Point { return this.project(this.center); }
 
     setLocationAtPoint(lnglat: LngLat, point: Point) {
         const translate = this.pointCoordinate(point)._sub(this.pointCoordinate(this.centerPoint));
@@ -352,9 +324,10 @@ class Transform {
      * @returns {Coordinate}
      */
     locationCoordinate(lnglat: LngLat) {
+        const coord = this.project(lnglat);
         return new Coordinate(
-            this.lngX(lnglat.lng) / this.tileSize,
-            this.latY(lnglat.lat) / this.tileSize,
+            coord.x / this.tileSize,
+            coord.y / this.tileSize,
             this.zoom).zoomTo(this.tileZoom);
     }
 
@@ -365,9 +338,9 @@ class Transform {
      */
     coordinateLocation(coord: Coordinate) {
         const zoomedCoord = coord.zoomTo(this.zoom);
-        return new LngLat(
-            this.xLng(zoomedCoord.column * this.tileSize),
-            this.yLat(zoomedCoord.row * this.tileSize));
+        return this.unproject(new Point(
+                    zoomedCoord.column * this.tileSize,
+                    zoomedCoord.row * this.tileSize));
     }
 
     pointCoordinate(p: Point, zoom?: number) {
@@ -492,25 +465,27 @@ class Transform {
 
         if (this.latRange) {
             const latRange = this.latRange;
-            minY = this.latY(latRange[1]);
-            maxY = this.latY(latRange[0]);
+            minY = this.project(new LngLat(0, latRange[1])).y;
+            maxY = this.project(new LngLat(0, latRange[0])).y;
             sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
         }
 
         if (this.lngRange) {
             const lngRange = this.lngRange;
-            minX = this.lngX(lngRange[0]);
-            maxX = this.lngX(lngRange[1]);
+            minX = this.project(new LngLat(lngRange[0], 0)).x;
+            maxX = this.project(new LngLat(lngRange[1], 0)).x;
             sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
         }
+
+        const point = this.point;
 
         // how much the map should scale to fit the screen into given latitude/longitude ranges
         const s = Math.max(sx || 0, sy || 0);
 
         if (s) {
             this.center = this.unproject(new Point(
-                sx ? (maxX + minX) / 2 : this.x,
-                sy ? (maxY + minY) / 2 : this.y));
+                sx ? (maxX + minX) / 2 : point.x,
+                sy ? (maxY + minY) / 2 : point.y));
             this.zoom += this.scaleZoom(s);
             this._unmodified = unmodified;
             this._constraining = false;
@@ -518,7 +493,7 @@ class Transform {
         }
 
         if (this.latRange) {
-            const y = this.y,
+            const y = point.y,
                 h2 = size.y / 2;
 
             if (y - h2 < minY) y2 = minY + h2;
@@ -526,7 +501,7 @@ class Transform {
         }
 
         if (this.lngRange) {
-            const x = this.x,
+            const x = point.x,
                 w2 = size.x / 2;
 
             if (x - w2 < minX) x2 = minX + w2;
@@ -536,8 +511,8 @@ class Transform {
         // pan the map if the screen goes off the range
         if (x2 !== undefined || y2 !== undefined) {
             this.center = this.unproject(new Point(
-                x2 !== undefined ? x2 : this.x,
-                y2 !== undefined ? y2 : this.y));
+                x2 !== undefined ? x2 : point.x,
+                y2 !== undefined ? y2 : point.y));
         }
 
         this._unmodified = unmodified;
@@ -556,7 +531,8 @@ class Transform {
         const halfFov = this._fov / 2;
         const groundAngle = Math.PI / 2 + this._pitch;
         const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
-        const x = this.x, y = this.y;
+        const point = this.point;
+        const x = point.x, y = point.y;
 
         // Calculate z distance of the farthest fragment that should be rendered.
         const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
