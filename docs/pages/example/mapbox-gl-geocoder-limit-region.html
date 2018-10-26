@@ -1,0 +1,36 @@
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.min.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.css' type='text/css' />
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [146.359, -32.648],
+    zoom: 4
+});
+
+map.addControl(new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+
+    // limit results to Australia
+    country: 'au',
+
+    // further limit results to the geographic bounds representing the region of
+    // New South Wales
+    bbox: [139.965, -38.030, 155.258, -27.839],
+
+    // apply a client side filter to further limit results to those strictly within
+    // the New South Wales region
+    filter: function (item) {
+        // returns true if item contains New South Wales region
+        return item.context.map(function (i) {
+            // id is in the form {index}.{id} per https://github.com/mapbox/carmen/blob/master/carmen-geojson.md
+            // this example attempts to find the `region` named `New South Wales`
+            return (i.id.split('.').shift() === 'region' && i.text === 'New South Wales');
+        }).reduce(function (acc, cur) {
+            return acc || cur;
+        });
+    }
+}));
+</script>

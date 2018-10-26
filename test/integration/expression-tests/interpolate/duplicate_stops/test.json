@@ -1,0 +1,15 @@
+{
+  "expression": ["interpolate", ["linear"], 0, 0, 1, 0, 2],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[5]",
+          "error": "Input/output pairs for \"interpolate\" expressions must be arranged with input values in strictly ascending order."
+        }
+      ]
+    }
+  }
+}

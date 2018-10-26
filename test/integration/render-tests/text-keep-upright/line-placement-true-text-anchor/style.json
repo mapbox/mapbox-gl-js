@@ -1,0 +1,128 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "operations": [
+          [ "setBearing", 20 ],
+          [ "wait" ]
+      ]
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-10, -10],
+            [10, -10],
+            [10, 10],
+            [-10, 10]
+          ]
+        }
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "guid",
+      "type": "line",
+      "source": "geojson"
+    },
+    {
+      "id": "left",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+          "symbol-placement": "line",
+          "symbol-spacing": 50,
+          "text-size": 10,
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+          "text-field": "A",
+          "text-font": [
+              "Open Sans Semibold",
+              "Arial Unicode MS Bold"
+          ],
+          "text-keep-upright": true,
+          "text-anchor": "left"
+      },
+      "paint": {
+          "text-color": "red"
+      }
+    },
+    {
+      "id": "right",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+          "symbol-placement": "line",
+          "symbol-spacing": 50,
+          "text-size": 10,
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+          "text-field": "A",
+          "text-font": [
+              "Open Sans Semibold",
+              "Arial Unicode MS Bold"
+          ],
+          "text-keep-upright": true,
+          "text-anchor": "right"
+      },
+      "paint": {
+          "text-color": "blue"
+      }
+    },
+    {
+      "id": "top",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+          "symbol-placement": "line",
+          "symbol-spacing": 50,
+          "text-size": 10,
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+          "text-field": "A",
+          "text-font": [
+              "Open Sans Semibold",
+              "Arial Unicode MS Bold"
+          ],
+          "text-keep-upright": true,
+          "text-anchor": "top"
+      },
+      "paint": {
+          "text-color": "green"
+      }
+    },
+    {
+      "id": "bottom",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+          "symbol-placement": "line",
+          "symbol-spacing": 50,
+          "text-size": 10,
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+          "text-field": "A",
+          "text-font": [
+              "Open Sans Semibold",
+              "Arial Unicode MS Bold"
+          ],
+          "text-keep-upright": true,
+          "text-anchor": "bottom"
+      },
+      "paint": {
+          "text-color": "black"
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "propertySpec": {"type": "string"},
+  "expression": ["coalesce", ["get", "a"], ["get", "b"]],
+  "inputs": [
+    [{}, {"properties": {"a": "one"}}],
+    [{}, {"properties": {"b": "two"}}],
+    [{}, {"properties": {"b": 5}}],
+    [{}, {"properties": {}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": [
+      "one",
+      "two",
+      "5",
+      ""
+    ],
+    "serialized": ["to-string", ["coalesce", ["get", "a"], ["get", "b"]]]
+  }
+}

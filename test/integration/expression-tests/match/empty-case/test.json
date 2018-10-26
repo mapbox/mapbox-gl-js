@@ -1,0 +1,9 @@
+{
+  "expression": ["match", ["get", "x"], [], "thing one", "thing two"],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [{"key": "[2]", "error": "Expected at least one branch label."}]
+    }
+  }
+}

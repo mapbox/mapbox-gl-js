@@ -1,0 +1,14 @@
+{
+  "expression": [">=", ["boolean", ["get", "x"]], ["boolean", ["get", "y"]]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[1]",
+          "error": "\">=\" comparisons are not supported for type 'boolean'."
+        }
+      ]
+    }
+  }
+}

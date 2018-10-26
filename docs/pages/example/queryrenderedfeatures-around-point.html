@@ -1,0 +1,60 @@
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [-98, 38.88],
+    minZoom: 2,
+    zoom: 3
+});
+
+map.on('load', function() {
+    // Add the source to query. In this example we're using
+    // county polygons uploaded as vector tiles
+    map.addSource('counties', {
+        "type": "vector",
+        "url": "mapbox://mapbox.82pkq93d"
+    });
+
+    map.addLayer({
+        "id": "counties",
+        "type": "fill",
+        "source": "counties",
+        "source-layer": "original",
+        "paint": {
+            "fill-outline-color": "rgba(0,0,0,0.1)",
+            "fill-color": "rgba(0,0,0,0.1)"
+        }
+    }, 'place-city-sm'); // Place polygon under these labels.
+
+    map.addLayer({
+        "id": "counties-highlighted",
+        "type": "fill",
+        "source": "counties",
+        "source-layer": "original",
+        "paint": {
+            "fill-outline-color": "#484896",
+            "fill-color": "#6e599f",
+            "fill-opacity": 0.75
+        },
+        "filter": ["in", "FIPS", ""]
+    }, 'place-city-sm'); // Place polygon under these labels.
+
+    map.on('click', function(e) {
+        // set bbox as 5px reactangle area around clicked point
+        var bbox = [[e.point.x - 5, e.point.y - 5], [e.point.x + 5, e.point.y + 5]];
+        var features = map.queryRenderedFeatures(bbox, { layers: ['counties'] });
+
+        // Run through the selected features and set a filter
+        // to match features with unique FIPS codes to activate
+        // the `counties-highlighted` layer.
+        var filter = features.reduce(function(memo, feature) {
+            memo.push(feature.properties.FIPS);
+            return memo;
+        }, ['in', 'FIPS']);
+
+        map.setFilter("counties-highlighted", filter);
+    });
+});
+</script>

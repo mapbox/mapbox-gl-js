@@ -1,0 +1,14 @@
+{
+  "expression": ["match", 0, 10000000000000000, "thing one", "thing two"],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]",
+          "error": "Branch labels must be integers no larger than 9007199254740991."
+        }
+      ]
+    }
+  }
+}

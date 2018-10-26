@@ -1,0 +1,31 @@
+{
+  "expression": [
+    "==",
+    ["get", "x"],
+    ["get", "y"],
+    ["collator", {"case-sensitive": false, "diacritic-sensitive": false}]
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": "a", "y": "A"}}],
+    [{}, {"properties": {"x": "1", "y": "2"}}],
+    [{}, {"properties": {"x": "1", "y": null}}],
+    [{}, {"properties": {"x": null, "y": null}}],
+    [{}, {"properties": {"x": 1, "y": "1"}}],
+    [{}, {"properties": {"x": 1, "y": 1}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true, false, false, true, false, true],
+    "serialized": [
+      "==",
+      ["get", "x"],
+      ["get", "y"],
+      ["collator", {"case-sensitive": false, "diacritic-sensitive": false}]
+    ]
+  }
+}

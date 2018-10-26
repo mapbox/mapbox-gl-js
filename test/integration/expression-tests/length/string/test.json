@@ -1,0 +1,14 @@
+{
+  "expression": ["length", ["string", ["get", "x"]]],
+  "inputs": [[{}, {"properties": {"x": "a string"}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [8],
+    "serialized": ["length", ["string", ["get", "x"]]]
+  }
+}

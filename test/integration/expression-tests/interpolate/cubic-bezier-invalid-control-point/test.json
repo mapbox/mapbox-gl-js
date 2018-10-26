@@ -1,0 +1,26 @@
+{
+  "expression": [
+    "number",
+    [
+      "interpolate",
+      ["cubic-bezier", 0, 1.75, 1, 1],
+      ["number", ["get", "x"]],
+      0,
+      0,
+      100,
+      100
+    ]
+  ],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[1][1]",
+          "error": "Cubic bezier interpolation requires four numeric arguments with values between 0 and 1."
+        }
+      ]
+    }
+  }
+}

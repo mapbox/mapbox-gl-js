@@ -1,0 +1,26 @@
+{
+  "expression": [">", ["string", ["get", "x"]], ["get", "y"]],
+  "inputs": [
+    [{}, {"properties": {"x": "2", "y": "1"}}],
+    [{}, {"properties": {"x": "2", "y": 1}}],
+    [{}, {"properties": {"x": 2, "y": "1"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [
+      true,
+      {
+        "error": "Expected value to be of type string, but found number instead."
+      },
+      {
+        "error": "Expected value to be of type string, but found number instead."
+      }
+    ],
+    "serialized": [">", ["string", ["get", "x"]], ["string", ["get", "y"]]]
+  }
+}

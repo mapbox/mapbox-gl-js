@@ -1,0 +1,10 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "indentation": 4,
+    "declaration-block-semicolon-newline-after": "always-multi-line",
+    "block-opening-brace-space-before": "always-multi-line",
+    "declaration-block-single-line-max-declarations": 3,
+    "selector-class-pattern": "mapboxgl-[a-z-]+"
+  }
+}

@@ -1,0 +1,95 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 128,
+            "height": 128,
+            "queryGeometry": [
+                64,
+                64
+            ]
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sources": {
+        "firstSource": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "properties": {
+                    "identifier": "firstSource"
+                  },
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      0,
+                      0
+                    ]
+                  }
+                }
+            ]
+            }
+        },
+        "secondSource": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "properties": {
+                    "identifier": "secondSource"
+                  },
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      0,
+                      5
+                    ]
+                  }
+                }
+            ]
+            }
+        }
+    },
+    "layers": [
+        {
+          "id": "background",
+          "type": "background",
+          "paint": {
+            "background-color": "white"
+          }
+        },
+        {
+            "id": "firstLabel",
+            "source": "firstSource",
+            "type": "symbol",
+            "layout": {
+                "text-field": "First Source",
+                "text-size": 11,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "symbol-placement": "point"
+            }
+        },
+        {
+            "id": "secondLabel",
+            "source": "secondSource",
+            "type": "symbol",
+            "layout": {
+                "text-field": "Second Source",
+                "text-size": 11,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "symbol-placement": "point"
+            }
+        }
+    ]
+}

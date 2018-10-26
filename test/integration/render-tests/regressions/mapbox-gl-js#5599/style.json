@@ -1,0 +1,87 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": []
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "icon": "dot.sdf",
+          "name": "X"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [{
+    "id": "icon-expression",
+    "type": "symbol",
+    "source": "geojson",
+    "layout": {
+      "icon-offset": [-16, -16],
+      "icon-image": ["step", ["zoom"], "{icon}", 10, ""],
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true
+    }
+  }, {
+    "id": "text-expression",
+    "type": "symbol",
+    "source": "geojson",
+    "layout": {
+      "text-offset": [1, -1],
+      "text-field": ["step", ["zoom"], "{name}", 10, ""],
+      "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+      "text-allow-overlap": true,
+      "text-ignore-placement": true
+    }
+  }, {
+    "id": "icon-function",
+    "type": "symbol",
+    "source": "geojson",
+    "layout": {
+      "icon-offset": [-16, 16],
+
+      "icon-image": {
+        "stops": [
+          [0, "{icon}"],
+          [22, ""]
+        ]
+      },
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true
+    }
+  }, {
+    "id": "text-function",
+    "type": "symbol",
+    "source": "geojson",
+    "layout": {
+      "text-offset": [1, 1],
+      "text-field": {
+        "stops": [
+          [0, "{name}"],
+          [22, ""]
+        ]
+      },
+      "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+      "text-allow-overlap": true,
+      "text-ignore-placement": true
+    }
+  }]
+}

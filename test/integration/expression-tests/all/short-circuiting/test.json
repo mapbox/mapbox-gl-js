@@ -1,0 +1,14 @@
+{
+  "expression": ["all", false, ["error", "unreachable"]],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [false],
+    "serialized": ["all", false, ["error", "unreachable"]]
+  }
+}

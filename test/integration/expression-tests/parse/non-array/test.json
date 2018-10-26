@@ -1,0 +1,14 @@
+{
+  "expression": ["+", ["-", 0, {}], 10],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[1][2]",
+          "error": "Bare objects invalid. Use [\"literal\", {...}] instead."
+        }
+      ]
+    }
+  }
+}

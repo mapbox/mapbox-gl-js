@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+ <html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    minZoom: 1,
+    zoom: 6,
+    center: [-76, 43.5],
+    style: 'mapbox://styles/mapbox/dark-v9',
+    hash: false
+});
+
+const path = "/docs/pages/assets/";
+
+const frameCount = 5;
+
+const coordinates = [
+    [-80.425, 46.437],
+    [-71.516, 46.437],
+    [-71.516, 37.936],
+    [-80.425, 37.936]
+];
+
+map.on("load", () => {
+    let currentImage = 0;
+    const getPath = () => `${path}radar${currentImage}.gif`;
+
+    map.addSource("radar", {
+        type: "image",
+        url: getPath(),
+        coordinates
+    });
+    map.addLayer({
+        id: "radar-layer",
+        "type": "raster",
+        "source": "radar",
+        "paint": {
+            "raster-resampling": "nearest",
+            "raster-fade-duration": 0
+        }
+    });
+
+    setInterval(() => {
+        currentImage = (currentImage + 1) % frameCount;
+        map.getSource("radar").updateImage({ url: getPath() });
+    }, 200);
+});
+
+</script>
+
+</body>
+</html>

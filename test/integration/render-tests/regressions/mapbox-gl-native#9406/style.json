@@ -1,0 +1,48 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "color": "blue"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "a",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-color": {
+          "type": "identity",
+          "property": "color"
+        }
+      }
+    },
+    {
+      "id": "b",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-color": "red"
+      }
+    }
+  ]
+}

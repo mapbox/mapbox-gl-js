@@ -1,0 +1,21 @@
+{
+  "expression": [
+    "match",
+    ["get", "x"],
+    "a",
+    "the letter a",
+    0,
+    "the number 0",
+    true,
+    "The Truth",
+    "otherwise"
+  ],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "[4]", "error": "Expected string but found number instead."}
+      ]
+    }
+  }
+}

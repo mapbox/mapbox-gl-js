@@ -1,13 +1,11 @@
-'use strict';
+/* eslint-disable import/unambiguous, import/no-commonjs, no-global-assign */
 
-require('flow-remove-types/register');
-const renderSuite = require('./integration').render;
+require('./stub_loader');
+require('@mapbox/flow-remove-types/register');
+require = require("esm")(module, true);
+
+const suite = require('./integration/lib/render');
 const suiteImplementation = require('./suite_implementation');
+const ignores = require('./ignores.json');
 
-let tests;
-
-if (process.argv[1] === __filename && process.argv.length > 2) {
-    tests = process.argv.slice(2);
-}
-
-renderSuite.run('js', {tests: tests}, suiteImplementation);
+suite.run('js', ignores, suiteImplementation);

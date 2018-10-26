@@ -1,0 +1,21 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "minimum",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["Helvetica"],
+        "text-field": "{foo}"
+      }
+    }
+  ]
+}

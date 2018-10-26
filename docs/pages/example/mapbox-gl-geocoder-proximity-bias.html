@@ -1,0 +1,31 @@
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.min.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.css' type='text/css' />
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [-79.4512, 43.6568],
+    zoom: 13
+});
+
+var geocoder = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken
+});
+map.addControl(geocoder);
+
+map.on('load', updateGeocoderProximity); // set proximity on map load
+map.on('moveend', updateGeocoderProximity); // and then update proximity each time the map moves
+
+function updateGeocoderProximity() {
+    // proximity is designed for local scale, if the user is looking at the whole world,
+    // it doesn't make sense to factor in the arbitrary centre of the map
+    if (map.getZoom() > 9) {
+        var center = map.getCenter().wrap(); // ensures the longitude falls within -180 to 180 as the Geocoding API doesn't accept values outside this range
+        geocoder.setProximity({ longitude: center.lng, latitude: center.lat });
+    } else {
+        geocoder.setProximity(null);
+    }
+}
+</script>

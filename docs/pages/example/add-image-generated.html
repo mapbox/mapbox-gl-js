@@ -1,0 +1,50 @@
+<div id='map'></div>
+
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9'
+});
+
+map.on('load', function () {
+
+    var width = 64; // The image will be 64 pixels square
+    var bytesPerPixel = 4; // Each pixel is represented by 4 bytes: red, green, blue, and alpha.
+    var data = new Uint8Array(width * width * bytesPerPixel);
+
+    for (var x = 0; x < width; x++) {
+        for (var y = 0; y < width; y++) {
+            var offset = (y * width + x) * bytesPerPixel;
+            data[offset + 0] = y / width * 255; // red
+            data[offset + 1] = x / width * 255; // green
+            data[offset + 2] = 128;             // blue
+            data[offset + 3] = 255;             // alpha
+        }
+    }
+
+    map.addImage('gradient', {width: width, height: width, data: data});
+
+    map.addLayer({
+        "id": "points",
+        "type": "symbol",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [0, 0]
+                    }
+                }]
+            }
+        },
+        "layout": {
+            "icon-image": "gradient"
+        }
+    });
+});
+
+</script>

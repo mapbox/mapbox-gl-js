@@ -1,0 +1,14 @@
+{
+  "expression": ["asin", 0.5],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [0.523598],
+    "serialized": 0.5235987755982989
+  }
+}

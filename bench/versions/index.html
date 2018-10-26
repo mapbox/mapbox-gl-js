@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS Benchmarks</title>
+
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+    <link rel='stylesheet' href='/dist/mapbox-gl.css'/>
+    <script href='https://unpkg.com/url-search-params@0.10.0/build/url-search-params.js'></script>
+</head>
+
+<body>
+    <div id="benchmarks"></div>
+    <script>
+        const params = new URLSearchParams(location.search.slice(1));
+        Promise.resolve(params.has('compare') ?
+            params.getAll('compare').filter(Boolean) :
+            fetch('/package.json')
+            .then(response => response.json())
+            .then(pkg => [`v${pkg.version}`, 'master']))
+            .then(versions => {
+                const scripts = versions.map(v => `https://s3.amazonaws.com/mapbox-gl-js/${v}/benchmarks.js`)
+                    .concat('/bench/versions/benchmarks_generated.js');
+                return scripts.reduce((p, script) => p.then(() => loadScript(script)), Promise.resolve());
+            })
+            .then(() => {
+                window.runBenchmarks();
+            })
+            .catch(err => console.error(err));
+
+        function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+    </script>
+</body>
+
+</html>

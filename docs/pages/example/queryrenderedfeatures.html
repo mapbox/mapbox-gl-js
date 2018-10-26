@@ -1,0 +1,29 @@
+<style>
+    #features {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 300px;
+        overflow: auto;
+        background: rgba(255, 255, 255, 0.8);
+    }
+    #map canvas {
+        cursor: crosshair;
+    }
+</style>
+<div id='map'></div>
+<pre id='features'></pre>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [-96, 37.8],
+    zoom: 3
+});
+
+map.on('mousemove', function (e) {
+    var features = map.queryRenderedFeatures(e.point);
+    document.getElementById('features').innerHTML = JSON.stringify(features, null, 2);
+});
+</script>

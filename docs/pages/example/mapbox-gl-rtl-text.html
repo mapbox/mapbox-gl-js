@@ -1,0 +1,13 @@
+<div id='map'></div>
+
+<script>
+mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [44.3763, 33.2788],
+    zoom: 11
+});
+
+</script>

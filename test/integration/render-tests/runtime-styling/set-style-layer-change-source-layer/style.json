@@ -25,7 +25,10 @@
                 "id": "fill",
                 "type": "fill",
                 "source": "vector",
-                "source-layer": "building"
+                "source-layer": "building",
+                "paint": {
+                  "fill-antialias": false
+                }
               }
             ]
           }
@@ -33,10 +36,7 @@
         [
           "wait"
         ]
-      ],
-      "skipped": {
-        "native": "needs issue"
-      }
+      ]
     }
   },
   "center": [

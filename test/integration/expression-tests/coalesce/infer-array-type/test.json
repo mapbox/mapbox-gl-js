@@ -1,0 +1,26 @@
+{
+  "propertySpec": {
+    "type": "array",
+    "value": "string",
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
+  },
+  "expression": [
+    "coalesce",
+    ["literal", ["one"]],
+    ["literal", ["one", "two"]],
+    null
+  ],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[3]",
+          "error": "Expected array<string> but found null instead."
+        }
+      ]
+    }
+  }
+}

@@ -1,54 +1,32 @@
 [
   {
-    "properties": {
-      "id": "B"
-    },
-    "type": "Feature",
-    "geometry": {
-      "type": "Point",
-      "coordinates": [
-        -270,
-        0
-      ]
-    }
-  },
-  {
-    "properties": {
-      "id": "C"
-    },
-    "type": "Feature",
-    "geometry": {
-      "type": "Point",
-      "coordinates": [
-        -90,
-        0
-      ]
-    }
-  },
-  {
-    "properties": {
-      "id": "B"
-    },
-    "type": "Feature",
     "geometry": {
       "type": "Point",
       "coordinates": [
         90,
         0
       ]
-    }
-  },
-  {
-    "properties": {
-      "id": "C"
     },
     "type": "Feature",
+    "properties": {
+      "id": "B"
+    },
+    "source": "geojson",
+    "state": {}
+  },
+  {
     "geometry": {
       "type": "Point",
       "coordinates": [
-        270,
+        -90,
         0
       ]
-    }
+    },
+    "type": "Feature",
+    "properties": {
+      "id": "C"
+    },
+    "source": "geojson",
+    "state": {}
   }
 ]

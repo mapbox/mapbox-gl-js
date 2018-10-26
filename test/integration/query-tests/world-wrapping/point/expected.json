@@ -1,18 +1,12 @@
 [
   {
-    "properties": {
-      "class": "shadow",
-      "level": 56
-    },
-    "id": 967,
-    "type": "Feature",
     "geometry": {
       "type": "Polygon",
       "coordinates": [
         [
           [
             121.640625,
-            23.644524198573677
+            23.64452419857369
           ],
           [
             121.46484375,
@@ -24,10 +18,19 @@
           ],
           [
             121.640625,
-            23.644524198573677
+            23.64452419857369
           ]
         ]
       ]
-    }
+    },
+    "type": "Feature",
+    "properties": {
+      "class": "shadow",
+      "level": 56
+    },
+    "id": 967,
+    "source": "mapbox",
+    "sourceLayer": "hillshade",
+    "state": {}
   }
 ]

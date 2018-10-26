@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "'Carribean Sea' crosses a tile boundary, but we don't draw the tile boundary in the test because JS and Native render tile boundaries differently.",
+      "height": 256,
+      "width": 1024
+    }
+  },
+  "center": [
+    -73,
+    15
+  ],
+  "zoom": 4.5,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/mapbox.mapbox-streets-v7/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line-center",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "marine_label",
+      "layout": {
+        "text-field": "{name_en}",
+        "symbol-placement": "line-center",
+        "text-allow-overlap": true,
+        "text-size": 35,
+        "text-letter-spacing": 0.4,
+        "text-offset": [3, 0],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "marine_label",
+      "paint": {
+        "line-width": 1
+      }
+    }
+  ]
+}

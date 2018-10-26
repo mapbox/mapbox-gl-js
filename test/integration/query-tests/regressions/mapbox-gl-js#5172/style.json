@@ -1,0 +1,70 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 128,
+            "height": 128,
+            "queryGeometry": [
+                64,
+                64
+            ],
+            "queryOptions": {
+              "layers": ["iconlayer"]
+            }
+        }
+    },
+    "zoom": 0,
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sprite": "local://sprites/sprite",
+    "sources": {
+        "source": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [{
+                "type": "Feature",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [0, 0]
+                }
+
+              }]
+            }
+        }
+    },
+    "layers": [
+        {
+          "id": "background",
+          "type": "background",
+          "paint": {
+            "background-color": "white"
+          }
+        },
+        {
+          "id": "iconlayer",
+          "type": "symbol",
+          "source": "source",
+          "layout": {
+            "icon-image": "building-12",
+            "icon-allow-overlap": true
+          }
+        },
+        {
+          "id": "textlayer",
+          "type": "symbol",
+          "source": "source",
+          "layout": {
+            "text-field": "ABC",
+            "text-font": [
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+            ],
+            "text-size": 24,
+            "text-offset": [0, 0]
+          },
+          "paint": {
+            "text-color": "green"
+          }
+        }
+    ]
+}

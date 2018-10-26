@@ -5,24 +5,21 @@
       "width": 256,
       "height": 256,
       "operations": [
-          [
-              "setBearing",
-              45
-          ]
+        [
+          "setBearing",
+          45
+        ]
       ],
       "queryGeometry": [
-          [
-              0,
-              0
-          ],
-          [
-              256,
-              256
-          ]
-      ],
-      "ignored": {
-        "js": "https://github.com/mapbox/mapbox-gl-js/issues/3346"
-      }
+        [
+          0,
+          0
+        ],
+        [
+          256,
+          256
+        ]
+      ]
     }
   },
   "center": [

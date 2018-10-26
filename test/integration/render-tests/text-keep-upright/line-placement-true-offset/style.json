@@ -1,0 +1,81 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "operations": [
+        [
+          "setBearing",
+          20
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -20,
+              -20
+            ],
+            [
+              20,
+              -20
+            ],
+            [
+              20,
+              20
+            ],
+            [
+              -20,
+              20
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "guid",
+      "type": "line",
+      "source": "geojson"
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 3,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-field": "A",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-keep-upright": true,
+        "text-offset": [
+          0.2,
+          -1
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    zoom: 12,
+    center: [-87.622088, 41.878781]
+});
+
+map.on('load', function() {
+    // Add Mapillary sequence layer.
+    // https://www.mapillary.com/developer/tiles-documentation/#sequence-layer
+    map.addLayer({
+        "id": "mapillary",
+        "type": "line",
+        "source": {
+            "type": "vector",
+            "tiles": ["https://d25uarhxywzl1j.cloudfront.net/v0.1/{z}/{x}/{y}.mvt"],
+            "minzoom": 6,
+            "maxzoom": 14
+        },
+        "source-layer": "mapillary-sequences",
+        "layout": {
+            "line-cap": "round",
+            "line-join": "round"
+        },
+        "paint": {
+            "line-opacity": 0.6,
+            "line-color": "rgb(53, 175, 109)",
+            "line-width": 2
+        }
+    }, 'waterway-label');
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+</script>

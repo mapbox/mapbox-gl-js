@@ -1,0 +1,22 @@
+{
+  "expression": {
+    "type": "interval",
+    "stops": [[0, "a"], [1, "b"], [1, "c"], [2, "d"]]
+  },
+  "propertySpec": {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": {"interpolated": true, "parameters": ["zoom", "feature"]}
+  },
+  "inputs": [[{"zoom": 1}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": false,
+      "type": "string"
+    },
+    "outputs": ["b"],
+    "serialized": ["step", ["zoom"], "a", 1, "b", 2, "d"]
+  }
+}

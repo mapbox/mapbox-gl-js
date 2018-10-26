@@ -1,0 +1,38 @@
+<style>
+    #fit {
+        display: block;
+        position: relative;
+        margin: 0px auto;
+        width: 50%;
+        height: 40px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: #fff;
+        background: #ee8a65;
+    }
+</style>
+<div id='map'></div>
+<br/>
+<button id='fit'>Fit to Kenya</button>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [-74.50, 40],
+    zoom: 9
+});
+
+document.getElementById('fit').addEventListener('click', function() {
+    map.fitBounds([[
+        32.958984,
+        -5.353521
+    ], [
+        43.50585,
+        5.615985
+    ]]);
+});
+
+</script>

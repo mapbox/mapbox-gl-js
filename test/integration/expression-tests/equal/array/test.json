@@ -1,0 +1,14 @@
+{
+  "expression": ["==", ["get", "x"], ["literal", [1]]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]",
+          "error": "\"==\" comparisons are not supported for type 'array<number, 1>'."
+        }
+      ]
+    }
+  }
+}

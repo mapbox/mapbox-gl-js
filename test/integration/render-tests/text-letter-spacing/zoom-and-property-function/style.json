@@ -1,0 +1,69 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256
+    }
+  },
+  "center": [ 35, 0 ],
+  "zoom": 1.5,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "spacing": "varying" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 35, 15 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "spacing": "fixed" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 35, -15 ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "These lines have the same letter spacing",
+        "text-letter-spacing": {
+          "type": "categorical",
+          "property": "spacing",
+          "stops": [
+            [{"zoom": 0, "value": "varying"}, 0],
+            [{"zoom": 0, "value": "fixed"}, 0.8],
+            [{"zoom": 2, "value": "varying"}, 1.6],
+            [{"zoom": 2, "value": "fixed"}, 0.8]
+          ]
+        },
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

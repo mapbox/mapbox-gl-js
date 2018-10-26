@@ -1,0 +1,15 @@
+{
+  "expression": ["length", 0],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Expected argument of type string or array, but found number instead."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,77 @@
+<style>
+.map-overlay {
+    font:bold 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 25%;
+    top: 0;
+    left: 0;
+    padding: 10px;
+}
+
+.map-overlay .map-overlay-inner {
+    background-color: #fff;
+    box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.map-overlay label {
+    display: block;
+    margin: 0 0 10px;
+}
+
+.map-overlay input {
+    background-color: transparent;
+    display: inline-block;
+    width: 100%;
+    position: relative;
+    margin: 0;
+    cursor: ew-resize;
+}
+</style>
+
+<div id='map'></div>
+
+<div class='map-overlay top'>
+    <div class='map-overlay-inner'>
+        <label>Layer opacity: <span id='slider-value'>100%</span></label>
+        <input id='slider' type='range' min='0' max='100' step='0' value='100' />
+    </div>
+</div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [-87.6321, 41.8362],
+    minZoom: 9.5,
+    maxZoom: 13,
+    zoom: 9.5
+});
+
+var slider = document.getElementById('slider');
+var sliderValue = document.getElementById('slider-value');
+
+map.on('load', function() {
+
+    map.addLayer({
+        "id": "chicago",
+        "source": {
+            "type": "raster",
+            "url": "mapbox://mapbox.u8yyzaor"
+        },
+        "type": "raster"
+    });
+
+    slider.addEventListener('input', function(e) {
+        // Adjust the layers opacity. layer here is arbitrary - this could
+        // be another layer name found in your style or a custom layer
+        // added on the fly using `addSource`.
+        map.setPaintProperty('chicago', 'raster-opacity', parseInt(e.target.value, 10) / 100);
+
+        // Value indicator
+        sliderValue.textContent = e.target.value + '%';
+    });
+});
+</script>

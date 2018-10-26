@@ -1,0 +1,62 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "zoom": 2.75,
+  "center": [-20, -10],
+  "sources": {
+    "geojson": {
+      "type":"geojson",
+      "data":{
+        "type":"FeatureCollection",
+        "features": [{
+          "type":"Feature",
+          "properties":{"x":0},
+          "geometry":{
+            "type":"LineString","coordinates":[
+              [-10,-1], [-20,-10], [-30,-1], [-40,-10]]
+          }
+        }]
+      }
+    }
+  },
+  "layers":[
+    {
+      "id": "symbol-camera",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 1,
+        "text-anchor": "left",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-max-angle": 180,
+        "text-field": "abcdefghijklmnopqrstuvwxyz",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": {
+          "property": "x",
+          "stops": [
+            [ {"value": 0, "zoom": 0}, 2 ],
+            [ {"value": 0, "zoom": 1}, 4 ],
+            [ {"value": 0, "zoom": 2}, 6 ],
+            [ {"value": 0, "zoom": 3}, 12 ],
+            [ {"value": 0, "zoom": 10}, 12 ]
+          ]
+        }
+      },
+      "paint": {
+        "text-color": "red",
+        "text-opacity": 0.5
+      }
+    }
+  ],
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf"
+}

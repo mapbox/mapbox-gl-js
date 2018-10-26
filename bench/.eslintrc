@@ -4,9 +4,13 @@
       "jsx": true
     }
   },
-  "globals": {
-    "React": false,
-    "ReactDOM": false
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "flowtype/require-valid-file-annotation": [0],
+    "react/jsx-uses-vars": [2],
+    "no-restricted-properties": "off"
   },
   "env": {
     "browser": true

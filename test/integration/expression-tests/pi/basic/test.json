@@ -1,0 +1,14 @@
+{
+  "expression": ["pi"],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [3.14159],
+    "serialized": 3.141592653589793
+  }
+}

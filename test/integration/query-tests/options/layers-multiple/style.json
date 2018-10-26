@@ -1,0 +1,46 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "queryGeometry": [
+        32,
+        32
+      ],
+      "queryOptions": {
+        "layers": ["a", "b"]
+      }
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        },
+        "properties": {
+          "key": "value"
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "a",
+      "type": "circle",
+      "source": "geojson"
+    },
+    {
+      "id": "b",
+      "type": "circle",
+      "source": "geojson"
+    }
+  ]
+}

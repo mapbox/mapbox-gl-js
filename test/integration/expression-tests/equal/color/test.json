@@ -1,0 +1,14 @@
+{
+  "expression": ["==", ["get", "x"], ["to-color", "red"]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]",
+          "error": "\"==\" comparisons are not supported for type 'color'."
+        }
+      ]
+    }
+  }
+}

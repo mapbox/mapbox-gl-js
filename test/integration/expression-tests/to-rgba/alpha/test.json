@@ -1,0 +1,14 @@
+{
+  "expression": ["to-rgba", ["rgba", 0, 128, 255, 0.5]],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "array<number, 4>"
+    },
+    "outputs": [[0, 128, 255, 0.5]],
+    "serialized": ["literal", [0, 128, 255, 0.5]]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 100,
+      "height": 100,
+      "queryGeometry": [
+        50,
+        50
+      ]
+    }
+  },
+  "center": [
+    0, 0
+  ],
+  "zoom": 5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-1.0, -1.0],
+              [1.0, -1.0],
+              [1.0, 1.0],
+              [-1.0, 1.0],
+              [-1.0, -1.0]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "invisible",
+      "type": "fill",
+      "source": "geojson",
+      "layout": {
+        "visibility": "none"
+      }
+    }
+  ]
+}

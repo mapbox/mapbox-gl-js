@@ -1,0 +1,12 @@
+{
+  "propertySpec": {"type": "string"},
+  "expression": ["coalesce", ["get", "a"], 5],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "[2]", "error": "Expected string but found number instead."}
+      ]
+    }
+  }
+}

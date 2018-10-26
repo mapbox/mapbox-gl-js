@@ -1,0 +1,16 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "light": {
+    "anchor": true,
+    "position": [1, 2],
+    "color": [255, 255, 255, 1],
+    "intensity": 1.5
+  },
+  "layers": []
+}

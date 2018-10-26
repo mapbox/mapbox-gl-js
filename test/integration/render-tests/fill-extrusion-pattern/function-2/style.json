@@ -2,11 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "ignored": {
-        "js": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/4860"
-      }
+      "diff": 0.0005,
+      "height": 256
     }
   },
   "sources": {
@@ -23,11 +20,28 @@
             "geometry": {
               "type": "Polygon",
               "coordinates": [
-                [ [ -0.0004, 0 ],
-                  [ -0.0002, 0.0002 ],
-                  [ 0.0000, 0 ],
-                  [ -0.0002, -0.0002 ],
-                  [ -0.0004, 0 ] ]
+                [
+                  [
+                    -0.0004,
+                    0
+                  ],
+                  [
+                    -0.0002,
+                    0.0002
+                  ],
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    -0.0002,
+                    -0.0002
+                  ],
+                  [
+                    -0.0004,
+                    0
+                  ]
+                ]
               ]
             }
           },
@@ -39,11 +53,28 @@
             "geometry": {
               "type": "Polygon",
               "coordinates": [
-                [ [ -0.0000, -0.0002 ],
-                  [ -0.0000, 0.0002 ],
-                  [ 0.0003, 0.0002 ],
-                  [ 0.0003, -0.0002 ],
-                  [ -0.0000, -0.0002 ] ]
+                [
+                  [
+                    0,
+                    -0.0002
+                  ],
+                  [
+                    0,
+                    0.0002
+                  ],
+                  [
+                    0.0003,
+                    0.0002
+                  ],
+                  [
+                    0.0003,
+                    -0.0002
+                  ],
+                  [
+                    0,
+                    -0.0002
+                  ]
+                ]
               ]
             }
           }
@@ -61,7 +92,16 @@
       "source": "geojson",
       "paint": {
         "fill-extrusion-pattern": {
-          "stops": [[18, "generic_icon"], [19, "generic_metro"]],
+          "stops": [
+            [
+              18,
+              "generic_icon"
+            ],
+            [
+              19,
+              "generic_metro"
+            ]
+          ],
           "type": "interval"
         },
         "fill-extrusion-height": 10

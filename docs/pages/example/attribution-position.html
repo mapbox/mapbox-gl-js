@@ -1,0 +1,12 @@
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [-77.04, 38.907],
+    zoom: 11.15,
+    attributionControl: false
+});
+map.addControl(new mapboxgl.AttributionControl(), 'top-left');
+</script>

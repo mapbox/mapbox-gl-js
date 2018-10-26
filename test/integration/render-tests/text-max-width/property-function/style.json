@@ -1,0 +1,63 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 512
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "width": 12, "text": "Longer lines = fewer line wraps" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ -50, 0 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "width": 2, "text": "Shorter lines = more line wraps" },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 75, 0 ]
+            }
+          }  
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "{text}",
+        "text-max-width": {
+          "type": "identity",
+          "property": "width"
+        },
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

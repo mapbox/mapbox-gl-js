@@ -1,0 +1,25 @@
+{
+  "version": 8,
+  "zoom": 5,
+  "center": [10, 10],
+  "bearing": 20,
+  "glyphs": "https://example.com/{fontstack}/{range}",
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "minimum",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["Helvetica"],
+        "text-field": "{foo}"
+      }
+    }
+  ]
+}

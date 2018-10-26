@@ -1,5 +1,3 @@
-'use strict';
-
 const accessToken = (
     process.env.MapboxAccessToken ||
     process.env.MAPBOX_ACCESS_TOKEN ||
@@ -9,7 +7,7 @@ const accessToken = (
 
 localStorage.setItem('accessToken', accessToken);
 
-module.exports = accessToken;
+export default accessToken;
 
 function getURLParameter(name) {
     const regexp = new RegExp(`[?&]${name}=([^&#]*)`, 'i');

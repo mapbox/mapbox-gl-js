@@ -1,0 +1,25 @@
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    zoom: 8,
+    center: [-74.5447, 40.6892]
+});
+
+map.on('load', function() {
+
+    map.addLayer({
+        'id': 'wms-test-layer',
+        'type': 'raster',
+        'source': {
+            'type': 'raster',
+            'tiles': [
+                'https://geodata.state.nj.us/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=Natural2015'
+            ],
+            'tileSize': 256
+        },
+        'paint': {}
+    }, 'aeroway-taxiway');
+});
+</script>

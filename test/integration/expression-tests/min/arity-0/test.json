@@ -1,0 +1,14 @@
+{
+  "expression": ["all", [">", ["min"], 0], ["==", 0, ["/", 1, ["min"]]]],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true],
+    "serialized": true
+  }
+}

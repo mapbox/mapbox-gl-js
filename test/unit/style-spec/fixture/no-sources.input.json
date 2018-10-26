@@ -1,0 +1,10 @@
+{
+  "version": 8,
+  "layers": [
+    {
+      "id": "vector-raster-mismatch",
+      "type": "line",
+      "source": "raster"
+    }
+  ]
+}

@@ -5,27 +5,24 @@
       "width": 256,
       "height": 256,
       "operations": [
+        [
+          "setCenter",
           [
-              "setCenter",
-              [
-                  1,
-                  1
-              ]
+            1,
+            1
           ]
+        ]
       ],
       "queryGeometry": [
-          [
-              0,
-              0
-          ],
-          [
-              256,
-              256
-          ]
-      ],
-      "ignored": {
-        "js": "https://github.com/mapbox/mapbox-gl-js/issues/3346"
-      }
+        [
+          0,
+          0
+        ],
+        [
+          256,
+          256
+        ]
+      ]
     }
   },
   "center": [

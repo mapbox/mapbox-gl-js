@@ -1,0 +1,30 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "minimum",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": [1,2,3],
+        "fill-outline-color": "not a color"
+      }
+    },
+    {
+      "id": "ops",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-outline-color": ["darken", 10, "#FF0000"]
+      }
+    }
+  ]
+}

@@ -56,10 +56,7 @@
         [
           "wait"
         ]
-      ],
-      "skipped": {
-        "native": "needs issue"
-      }
+      ]
     }
   },
   "transition": {
