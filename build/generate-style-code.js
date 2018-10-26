@@ -30,7 +30,7 @@ global.flowType = function (property) {
             if (property.length) {
                 return `[${new Array(property.length).fill(flowType({type: property.value})).join(', ')}]`;
             } else {
-                return `Array<${flowType({type: property.value})}>`;
+                return `Array<${flowType({type: property.value, values: property.values})}>`;
             }
         default: throw new Error(`unknown type for ${property.name}`)
     }
