@@ -36,6 +36,8 @@ import background from './draw_background';
 import debug from './draw_debug';
 import custom from './draw_custom';
 
+import compile from '../shaders/compile';
+
 const draw = {
     symbol,
     circle,
@@ -478,11 +480,17 @@ class Painter {
         return !imagePosA || !imagePosB;
     }
 
-    useProgram(name: string, programConfiguration: ProgramConfiguration = this.emptyProgramConfiguration): Program<any> {
+    useProgram(name: string, programConfiguration: ProgramConfiguration = this.emptyProgramConfiguration, customShaders: ?Array<string>): Program<any> {
         this.cache = this.cache || {};
         const key = `${name}${programConfiguration.cacheKey || ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector);
+            let _shaders = null;
+            if (customShaders) {
+                _shaders = compile(customShaders[0], customShaders[1]);
+            } else {
+                _shaders = shaders[name];
+            }
+            this.cache[key] = new Program(this.context, _shaders, programConfiguration, programUniforms[name], this._showOverdrawInspector);
         }
         return this.cache[key];
     }

@@ -579,6 +579,11 @@
       "maximum": 24,
       "doc": "The maximum zoom level for the layer. At zoom levels equal to or greater than the maxzoom, the layer will be hidden."
     },
+    "shaders": {
+      "type": "array",
+      "value": "string",
+      "doc": "Optional array of fragment (first element) and vertex (second element) shaders in glsl format to use to override default layer shaders. Can be used with circle and line types."
+    },
     "filter": {
       "type": "filter",
       "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. Zoom expressions in filters are only evaluated at integer zoom levels. The `feature-state` expression is not supported in filter expressions."

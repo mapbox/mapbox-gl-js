@@ -35,6 +35,7 @@ class StyleLayer extends Evented {
     type: string;
     source: string;
     sourceLayer: ?string;
+    shaders: ?Array<string>;
     minzoom: ?number;
     maxzoom: ?number;
     filter: FilterSpecification | void;
@@ -82,6 +83,7 @@ class StyleLayer extends Evented {
         if (layer.type !== 'background') {
             this.source = layer.source;
             this.sourceLayer = layer['source-layer'];
+            this.shaders = layer.shaders;
             this.filter = layer.filter;
         }
 
@@ -199,6 +201,7 @@ class StyleLayer extends Evented {
         const output: any = {
             'id': this.id,
             'type': this.type,
+            'shaders': this.shaders,
             'source': this.source,
             'source-layer': this.sourceLayer,
             'metadata': this.metadata,

@@ -153,6 +153,7 @@ export type FillLayerSpecification = {|
     "source-layer"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
+    "shaders"?: Array<string>,
     "filter"?: FilterSpecification,
     "layout"?: {|
         "visibility"?: "visible" | "none"
@@ -176,6 +177,7 @@ export type LineLayerSpecification = {|
     "source-layer"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
+    "shaders"?: Array<string>,
     "filter"?: FilterSpecification,
     "layout"?: {|
         "line-cap"?: PropertyValueSpecification<"butt" | "round" | "square">,
@@ -207,6 +209,7 @@ export type SymbolLayerSpecification = {|
     "source-layer"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
+    "shaders"?: Array<string>,
     "filter"?: FilterSpecification,
     "layout"?: {|
         "symbol-placement"?: PropertyValueSpecification<"point" | "line" | "line-center">,
@@ -274,6 +277,7 @@ export type CircleLayerSpecification = {|
     "source-layer"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
+    "shaders"?: Array<string>,
     "filter"?: FilterSpecification,
     "layout"?: {|
         "visibility"?: "visible" | "none"
@@ -301,6 +305,7 @@ export type HeatmapLayerSpecification = {|
     "source-layer"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
+    "shaders"?: Array<string>,
     "filter"?: FilterSpecification,
     "layout"?: {|
         "visibility"?: "visible" | "none"
@@ -322,6 +327,7 @@ export type FillExtrusionLayerSpecification = {|
     "source-layer"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
+    "shaders"?: Array<string>,
     "filter"?: FilterSpecification,
     "layout"?: {|
         "visibility"?: "visible" | "none"
@@ -346,6 +352,7 @@ export type RasterLayerSpecification = {|
     "source-layer"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
+    "shaders"?: Array<string>,
     "filter"?: FilterSpecification,
     "layout"?: {|
         "visibility"?: "visible" | "none"
@@ -370,6 +377,7 @@ export type HillshadeLayerSpecification = {|
     "source-layer"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
+    "shaders"?: Array<string>,
     "filter"?: FilterSpecification,
     "layout"?: {|
         "visibility"?: "visible" | "none"
@@ -390,6 +398,7 @@ export type BackgroundLayerSpecification = {|
     "metadata"?: mixed,
     "minzoom"?: number,
     "maxzoom"?: number,
+    "shaders"?: Array<string>,
     "layout"?: {|
         "visibility"?: "visible" | "none"
     |},

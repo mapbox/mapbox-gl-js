@@ -1,2 +1,2 @@
 
-export default ['type', 'source', 'source-layer', 'minzoom', 'maxzoom', 'filter', 'layout'];
+export default ['type', 'source', 'source-layer', 'minzoom', 'maxzoom', 'filter', 'layout', 'shaders'];

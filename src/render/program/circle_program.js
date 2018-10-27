@@ -20,7 +20,8 @@ export type CircleUniformsType = {|
     'u_scale_with_map': Uniform1i,
     'u_pitch_with_map': Uniform1i,
     'u_extrude_scale': Uniform2f,
-    'u_matrix': UniformMatrix4f
+    'u_matrix': UniformMatrix4f,
+    'u_time': Uniform1f
 |};
 
 const circleUniforms = (context: Context, locations: UniformLocations): CircleUniformsType => ({
@@ -28,7 +29,8 @@ const circleUniforms = (context: Context, locations: UniformLocations): CircleUn
     'u_scale_with_map': new Uniform1i(context, locations.u_scale_with_map),
     'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
     'u_extrude_scale': new Uniform2f(context, locations.u_extrude_scale),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix)
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_time': new Uniform1f(context, locations.u_time)
 });
 
 const circleUniformValues = (
@@ -58,7 +60,8 @@ const circleUniformValues = (
             layer.paint.get('circle-translate'),
             layer.paint.get('circle-translate-anchor')),
         'u_pitch_with_map': +(pitchWithMap),
-        'u_extrude_scale': extrudeScale
+        'u_extrude_scale': extrudeScale,
+        'u_time': performance.now() / 1000
     };
 };
 

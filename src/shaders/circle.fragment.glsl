@@ -7,6 +7,7 @@
 #pragma mapbox: define lowp float stroke_opacity
 
 varying vec3 v_data;
+uniform float u_time;
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
