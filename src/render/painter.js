@@ -484,13 +484,7 @@ class Painter {
         this.cache = this.cache || {};
         const key = `${name}${programConfiguration.cacheKey || ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
         if (!this.cache[key]) {
-            let _shaders = null;
-            if (customShaders) {
-                _shaders = compile(customShaders[0], customShaders[1]);
-            } else {
-                _shaders = shaders[name];
-            }
-            this.cache[key] = new Program(this.context, _shaders, programConfiguration, programUniforms[name], this._showOverdrawInspector);
+            this.cache[key] = new Program(this.context, customShaders ? compile(customShaders[0], customShaders[1]) : shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector);
         }
         return this.cache[key];
     }

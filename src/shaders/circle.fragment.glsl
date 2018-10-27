@@ -24,7 +24,7 @@ void main() {
     lowp float antialiasblur = v_data.z;
     float antialiased_blur = -max(blur, antialiasblur);
 
-    float opacity_t = smoothstep(0.5, antialiased_blur, extrude_length - 4.0);
+    float opacity_t = smoothstep(0.0, antialiased_blur, extrude_length - 1.0);
 
     float color_t = stroke_width < 0.01 ? 0.0 : smoothstep(
         antialiased_blur,
