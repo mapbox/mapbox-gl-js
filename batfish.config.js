@@ -1,10 +1,12 @@
-const webpack = require('webpack');
+const { webpack } = require('@mapbox/batfish');
+const path = require('path');
 
 module.exports = () => {
     const config = {
         siteBasePath: '/mapbox-gl-js',
         siteOrigin: 'https://www.mapbox.com',
         pagesDirectory: `${__dirname}/docs/pages`,
+        outputDirectory: path.join(__dirname, '_site'),
         stylesheets: [
             `${__dirname}/docs/components/site.css`,
             `${__dirname}/docs/components/prism_highlight.css`,
