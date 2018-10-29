@@ -11,6 +11,31 @@ function circumferenceAtLatitude(latitude: number) {
     return circumference * Math.cos(latitude * Math.PI / 180);
 }
 
+export function mercatorXfromLng(lng: number) {
+    return (180 + lng) / 360;
+}
+
+export function mercatorYfromLat(lat: number) {
+    return (180 - (180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)))) / 360;
+}
+
+export function mercatorZfromAltitude(altitude: number, lat: number) {
+    return altitude / circumferenceAtLatitude(lat);
+}
+
+export function lngFromMercatorX(x: number) {
+    return x * 360 - 180;
+}
+
+export function latFromMercatorY(y: number) {
+    const y2 = 180 - y * 360;
+    return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
+}
+
+export function altitudeFromMercatorZ(z: number, y: number) {
+    return z * circumferenceAtLatitude(latFromMercatorY(y));
+}
+
 /**
  * A `MercatorCoordinate` object represents a projected three dimensional position.
  *
@@ -57,10 +82,10 @@ class MercatorCoordinate {
     static fromLngLat(lngLatLike: LngLatLike, altitude: number = 0) {
         const lngLat = LngLat.convert(lngLatLike);
 
-        const x = (180 + lngLat.lng) / 360;
-        const y = (180 - (180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lngLat.lat * Math.PI / 360)))) / 360;
-        const z = altitude / circumferenceAtLatitude(lngLat.lat);
-        return new MercatorCoordinate(x, y, z);
+        return new MercatorCoordinate(
+                mercatorXfromLng(lngLat.lng),
+                mercatorYfromLat(lngLat.lat),
+                mercatorZfromAltitude(altitude, lngLat.lat));
     }
 
     /**
@@ -68,14 +93,13 @@ class MercatorCoordinate {
      *
      * @returns {LngLat} The `LngLat` object.
      * @example
-     * var coord = new mapboxglMercatorCoordinate(0.5, 0.5, 0);
+     * var coord = new mapboxgl.MercatorCoordinate(0.5, 0.5, 0);
      * var latLng = coord.toLatLng(); // LngLat(0, 0)
      */
     toLngLat() {
-        const lng = this.x * 360 - 180;
-        const y2 = 180 - this.y * 360;
-        const lat = 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
-        return new LngLat(lng, lat);
+        return new LngLat(
+                lngFromMercatorX(this.x),
+                latFromMercatorY(this.y));
     }
 
     /**
@@ -87,8 +111,7 @@ class MercatorCoordinate {
      * coord.toAltitude(); // 6914.281956295339
      */
     toAltitude() {
-        const lat = this.toLngLat().lat;
-        return this.z * circumferenceAtLatitude(lat);
+        return altitudeFromMercatorZ(this.z, this.y);
     }
 }
 

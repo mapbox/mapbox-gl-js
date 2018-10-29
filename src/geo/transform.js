@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat';
 import LngLatBounds from './lng_lat_bounds';
-import MercatorCoordinate from './mercator_coordinate';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from './mercator_coordinate';
 import Point from '@mapbox/point-geometry';
 import { wrap, clamp } from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
@@ -281,8 +281,9 @@ class Transform {
     project(lnglat: LngLat) {
         const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
         const clamped = new LngLat(lnglat.lng, lat);
-        const coord = MercatorCoordinate.fromLngLat(clamped);
-        return new Point(coord.x * this.worldSize, coord.y * this.worldSize);
+        return new Point(
+                mercatorXfromLng(lnglat.lng) * this.worldSize,
+                mercatorYfromLat(lat) * this.worldSize);
     }
 
     unproject(point: Point): LngLat {
@@ -459,15 +460,15 @@ class Transform {
 
         if (this.latRange) {
             const latRange = this.latRange;
-            minY = this.project(new LngLat(0, latRange[1])).y;
-            maxY = this.project(new LngLat(0, latRange[0])).y;
+            minY = mercatorYfromLat(latRange[1]) * this.worldSize;
+            maxY = mercatorYfromLat(latRange[0]) * this.worldSize;
             sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
         }
 
         if (this.lngRange) {
             const lngRange = this.lngRange;
-            minX = this.project(new LngLat(lngRange[0], 0)).x;
-            maxX = this.project(new LngLat(lngRange[1], 0)).x;
+            minX = mercatorXfromLng(lngRange[0]) * this.worldSize;
+            maxX = mercatorXfromLng(lngRange[1]) * this.worldSize;
             sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
         }
 
@@ -548,9 +549,7 @@ class Transform {
         this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize]);
 
         // scale vertically to meters per pixel (inverse of ground resolution):
-        // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
-        const verticalScale = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(this.center.lat * (Math.PI / 180))));
-        mat4.scale(m, m, [1, 1, verticalScale, 1]);
+        mat4.scale(m, m, [1, 1, mercatorZfromAltitude(1, this.center.lat) * this.worldSize, 1]);
 
         this.projMatrix = m;
 
