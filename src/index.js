@@ -48,7 +48,7 @@ const exported = {
      * mapboxgl.accessToken = myAccessToken;
      * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
      */
-    get accessToken(): string {
+    get accessToken(): ?string {
         return config.ACCESS_TOKEN;
     },
 
