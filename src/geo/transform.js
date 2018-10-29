@@ -280,7 +280,6 @@ class Transform {
 
     project(lnglat: LngLat) {
         const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
-        const clamped = new LngLat(lnglat.lng, lat);
         return new Point(
                 mercatorXfromLng(lnglat.lng) * this.worldSize,
                 mercatorYfromLat(lat) * this.worldSize);
