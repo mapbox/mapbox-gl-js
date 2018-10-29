@@ -28,6 +28,10 @@ const plugins = {
             "description": "enables users to compare two maps by swiping left and right",
             "example": "mapbox-gl-compare"
         },
+        "mapbox-gl-controls": {
+            "website": "https://github.com/bravecow/mapbox-gl-controls",
+            "description": "alternative basic map controls"
+        },
         "mapbox-gl-directions": {
             "website": "https://github.com/mapbox/mapbox-gl-directions",
             "description": "adds a control which allows users to plot driving, walking, and cycling directions on the map",
@@ -43,13 +47,13 @@ const plugins = {
             "description": "adds a Geocoder control to Mapbox GL JS",
             "example": "mapbox-gl-geocoder"
         },
+        "mapbox-gl-style-switcher": {
+            "website": "https://github.com/el/style-switcher",
+            "description": "adds a control to switch between styles"
+        },
         "mapboxgl-minimap": {
             "website": "https://github.com/aesqe/mapboxgl-minimap",
             "description": "adds a control showing a miniature overview of the current map"
-        },
-        "mapbox-gl-controls": {
-            "website": "https://github.com/bravecow/mapbox-gl-controls",
-            "description": "alternative basic map controls"
         }
     },
     "Map Rendering Plugins": {
