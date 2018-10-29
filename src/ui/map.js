@@ -6,7 +6,8 @@ import browser from '../util/browser';
 import window from '../util/window';
 const { HTMLImageElement, HTMLElement } = window;
 import DOM from '../util/dom';
-import { getImage, ResourceType } from '../util/ajax';
+import { getImage, getJSON, ResourceType } from '../util/ajax';
+import { normalizeStyleURL } from '../util/mapbox';
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
@@ -934,16 +935,15 @@ class Map extends Camera {
     }
 
     /**
-     * Updates the map's Mapbox style object with a new value.  If the given
-     * value is style JSON object, compares it against the the map's current
-     * state and perform only the changes necessary to make the map style match
-     * the desired state.
+     * Updates the map's Mapbox style object with a new value. If a style already is set and options.diff is true,
+     * this compares the style against the map's current state and performs only the changes necessary to make
+     * the map style match the desired state.
      *
      * @param style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
      * @param {Object} [options]
      * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
-     *   and adding building the given one instead of attempting a diff-based update.
+     *   and building the given one instead of attempting a diff-based update.
      * @param {string} [options.localIdeographFontFamily=null] If non-null, defines a css font-family
      *   for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables'
      *   ranges. Forces a full update.
@@ -951,20 +951,15 @@ class Map extends Camera {
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
-        const shouldTryDiff = (!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style;
-        if (shouldTryDiff && style && typeof style === 'object') {
-            try {
-                if (this.style.setState(style)) {
-                    this._update(true);
-                }
-                return this;
-            } catch (e) {
-                warnOnce(
-                    `Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`
-                );
-            }
+        if ((!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style && style) {
+            this._diffStyle(style, options);
+            return this;
+        } else {
+            return this._updateStyle(style, options);
         }
+    }
 
+    _updateStyle(style: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions) {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
@@ -986,6 +981,35 @@ class Map extends Camera {
         }
 
         return this;
+    }
+
+    _diffStyle(style: StyleSpecification | string,  options?: {diff?: boolean} & StyleOptions) {
+        if (typeof style === 'string') {
+            const url = normalizeStyleURL(style);
+            const request = this._transformRequest(url, ResourceType.Style);
+            getJSON(request, (error: ?Error, json: ?Object) => {
+                if (error) {
+                    this.fire(new ErrorEvent(error));
+                } else if (json) {
+                    this._updateDiff(json, options);
+                }
+            });
+        } else if (typeof style === 'object') {
+            this._updateDiff(style, options);
+        }
+    }
+
+    _updateDiff(style: StyleSpecification,  options?: {diff?: boolean} & StyleOptions) {
+        try {
+            if (this.style.setState(style)) {
+                this._update(true);
+            }
+        } catch (e) {
+            warnOnce(
+                `Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`
+            );
+            this._updateStyle(style, options);
+        }
     }
 
     /**
