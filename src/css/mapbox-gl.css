@@ -217,7 +217,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
 @media screen {
     .mapboxgl-ctrl-attrib.mapboxgl-compact {
-        margin: 0 10px 10px;
+        margin: 10px;
         position: relative;
         background-color: #fff;
         border-radius: 3px 12px 12px 3px;
@@ -226,6 +226,12 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     .mapboxgl-ctrl-attrib.mapboxgl-compact:hover {
         padding: 2px 24px 2px 4px;
         visibility: visible;
+    }
+
+    .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact:hover,
+    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact:hover {
+        padding: 2px 4px 2px 24px;
+        border-radius: 12px 3px 3px 12px;
     }
 
     .mapboxgl-ctrl-attrib.mapboxgl-compact > * {
@@ -240,14 +246,32 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         content: '';
         cursor: pointer;
         position: absolute;
-        bottom: 0;
-        right: 0;
         background-image: svg-load('svg/mapboxgl-ctrl-attrib.svg');
         background-color: rgba(255, 255, 255, 0.5);
         width: 24px;
         height: 24px;
         box-sizing: border-box;
         border-radius: 12px;
+    }
+
+    .mapboxgl-ctrl-bottom-right > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        bottom: 0;
+        right: 0;
+    }
+
+    .mapboxgl-ctrl-top-right > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        top: 0;
+        right: 0;
+    }
+
+    .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        top: 0;
+        left: 0;
+    }
+
+    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        bottom: 0;
+        left: 0;
     }
 }
 
