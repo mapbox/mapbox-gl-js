@@ -11,7 +11,7 @@ import {
     UniformMatrix4f
 } from '../uniform_binding';
 import EXTENT from '../../data/extent';
-import Coordinate from '../../geo/coordinate';
+import MercatorCoordinate from '../../geo/mercator_coordinate';
 
 import type Context from '../../gl/context';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
@@ -104,13 +104,11 @@ const hillshadeUniformPrepareValues = (
 
 function getTileLatRange(painter: Painter, tileID: OverscaledTileID) {
     // for scaling the magnitude of a points slope by its latitude
-    const coordinate0 = tileID.toCoordinate();
-    const coordinate1 = new Coordinate(
-        coordinate0.column, coordinate0.row + 1, coordinate0.zoom);
+    const tilesAtZoom = Math.pow(2, tileID.canonical.z);
+    const y = tileID.canonical.y;
     return [
-        painter.transform.coordinateLocation(coordinate0).lat,
-        painter.transform.coordinateLocation(coordinate1).lat
-    ];
+        new MercatorCoordinate(0, y / tilesAtZoom).toLngLat().lat,
+        new MercatorCoordinate(0, (y + 1) / tilesAtZoom).toLngLat().lat];
 }
 
 export {
