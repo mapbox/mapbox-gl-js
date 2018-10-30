@@ -72,6 +72,7 @@ class PageShell extends React.Component {
                     } 
                 });
             })[0];
+            console.log(sections, location.pathname)
             sidebarContent = (
                 <div className="mx0-mm ml-neg24 mr-neg36 relative-mm absolute right left">
                     <NavigationAccordion

@@ -15,7 +15,7 @@ export const overviewNavigation = [
     },
     {
         "title": "Roadmap",
-        "path": "roadmap",
+        "path": "roadmap/",
         "subnav": [
             {
                 "title": "Active",

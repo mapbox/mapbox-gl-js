@@ -6,6 +6,7 @@ import Card from '@mapbox/dr-ui/card';
 import PageShell from '../components/page_shell';
 import { tags } from '../data/tags.js';
 import examples from '@mapbox/batfish/data/examples';
+import md from '@mapbox/batfish/modules/md'; // eslint-disable-line import/no-unresolved
 
 const meta = {
     title: 'Mapbox GL JS Examples',
@@ -46,7 +47,7 @@ class ExamplesLandingPage extends React.PureComponent {
     });
 
     const gettingStartedSection = (
-      <div>
+      <div className="mb-neg60">
         <div className="txt-xl mb24" id='getting-started'>
           Getting started
         </div>
