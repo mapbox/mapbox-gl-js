@@ -1,6 +1,6 @@
 // @flow
 
-import { extend, bindAll, warnOnce } from '../util/util';
+import { extend, bindAll, warnOnce, uniqueId } from '../util/util';
 
 import browser from '../util/browser';
 import window from '../util/window';
@@ -262,6 +262,7 @@ class Map extends Camera {
     _collectResourceTiming: boolean;
     _renderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
+    _mapId: number;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -323,6 +324,7 @@ class Map extends Camera {
         this._collectResourceTiming = options.collectResourceTiming;
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
+        this._mapId = uniqueId();
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?
@@ -404,6 +406,16 @@ class Map extends Camera {
         this.on('dataloading', (event: MapDataEvent) => {
             this.fire(new Event(`${event.dataType}dataloading`, event));
         });
+    }
+
+    /*
+    * Returns a unique number for this map instance which is used for the MapLoadEvent
+    * to make sure we only fire one event per instantiated map object.
+    * @private
+    * @returns {number}
+    */
+    _getMapId() {
+        return this._mapId;
     }
 
     /**

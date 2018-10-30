@@ -5,14 +5,14 @@ import config from './config';
 import browser from './browser';
 import window from './window';
 import { version } from '../../package.json';
-import { uuid, validateUuid, storageAvailable, warnOnce } from './util';
+import { uuid, validateUuid, storageAvailable, warnOnce, extend } from './util';
 import { postData } from './ajax';
 
 import type { RequestParameters } from './ajax';
 import type { Cancelable } from '../types/cancelable';
 
 const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
-const turnstileEventStorageKey = 'mapbox.turnstileEventData';
+const telemEventKey = 'mapbox.eventData';
 
 type UrlObject = {|
     protocol: string,
@@ -133,17 +133,147 @@ function formatUrl(obj: UrlObject): string {
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
 
-export class TurnstileEvent {
-    eventData: { anonId: ?string, lastSuccess: ?number, accessToken: ?string};
-    queue: Array<number>;
-    pending: boolean
+type TelemetryEventType = 'appUserTurnstile' | 'map.load';
+
+class TelemetryEvent {
+    eventData: { lastSuccess: ?number, accessToken: ?string};
+    anonId: ?string;
+    queue: Array<any>;
+    type: TelemetryEventType;
     pendingRequest: ?Cancelable;
 
-    constructor() {
-        this.eventData = { anonId: null, lastSuccess: null, accessToken: config.ACCESS_TOKEN};
+    constructor(type: TelemetryEventType) {
+        this.type = type;
+        this.anonId = null;
+        this.eventData = {lastSuccess: null, accessToken: config.ACCESS_TOKEN};
         this.queue = [];
-        this.pending = false;
         this.pendingRequest = null;
+    }
+
+    fetchEventData() {
+        const isLocalStorageAvailable = storageAvailable('localStorage');
+        const storageKey = `${telemEventKey}:${config.ACCESS_TOKEN || ''}`;
+        const uuidKey = `${telemEventKey}.uuid:${config.ACCESS_TOKEN || ''}`;
+
+        if (isLocalStorageAvailable) {
+            //Retrieve cached data
+            try {
+                const data = window.localStorage.getItem(storageKey);
+                if (data) {
+                    this.eventData = JSON.parse(data);
+                }
+
+                const uuid = window.localStorage.getItem(uuidKey);
+                if (uuid) this.anonId = uuid;
+            } catch (e) {
+                warnOnce('Unable to read from LocalStorage');
+            }
+        }
+    }
+
+    saveEventData() {
+        const isLocalStorageAvailable = storageAvailable('localStorage');
+        const storageKey = `${telemEventKey}:${config.ACCESS_TOKEN || ''}`;
+        const uuidKey = `${telemEventKey}.uuid:${config.ACCESS_TOKEN || ''}`;
+        if (isLocalStorageAvailable) {
+            try {
+                window.localStorage.setItem(uuidKey, this.anonId);
+                if (this.eventData.lastSuccess) {
+                    window.localStorage.setItem(storageKey, JSON.stringify(this.eventData));
+                }
+            } catch (e) {
+                warnOnce('Unable to write to LocalStorage');
+            }
+        }
+
+    }
+
+    processRequests() {}
+
+    /*
+    * If any event data should be persisted after the POST request, the callback should modify eventData`
+    * to the values that should be saved. For this reason, the callback should be invoked prior to the call
+    * to TelemetryEvent#saveData
+    */
+    postEvent(timestamp: number, additionalPayload: {[string]: any}, callback: (err: ?Error) => void) {
+        const eventsUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
+        eventsUrlObject.params.push(`access_token=${config.ACCESS_TOKEN || ''}`);
+        const payload: Object = {
+            event: this.type,
+            created: new Date(timestamp).toISOString(),
+            sdkIdentifier: 'mapbox-gl-js',
+            sdkVersion: version,
+            userId: this.anonId
+        };
+
+        const finalPayload = additionalPayload ? extend(payload, additionalPayload) : payload;
+        const request: RequestParameters = {
+            url: formatUrl(eventsUrlObject),
+            headers: {
+                'Content-Type': 'text/plain' //Skip the pre-flight OPTIONS request
+            },
+            body: JSON.stringify([finalPayload])
+        };
+
+        this.pendingRequest = postData(request, (error) => {
+            this.pendingRequest = null;
+            callback(error);
+            this.saveEventData();
+            this.processRequests();
+        });
+    }
+
+    queueRequest(event: number | {id: number, timestamp: number}) {
+        this.queue.push(event);
+        this.processRequests();
+    }
+}
+
+export class MapLoadEvent extends TelemetryEvent {
+    +success: {[number]: boolean};
+
+    constructor() {
+        super('map.load');
+        this.success = {};
+    }
+
+    postMapLoadEvent(tileUrls: Array<string>, mapId: number) {
+        //Enabled only when Mapbox Access Token is set and a source uses
+        // mapbox tiles.
+        if (config.ACCESS_TOKEN &&
+            Array.isArray(tileUrls) &&
+            tileUrls.some(url => isMapboxHTTPURL(url))) {
+            this.queueRequest({id: mapId, timestamp: Date.now()});
+        }
+    }
+
+    processRequests() {
+        if (this.pendingRequest || this.queue.length === 0) return;
+        const {id, timestamp} = this.queue.shift();
+
+        // Only one load event should fire per map
+        if (id && this.success[id]) return;
+
+        if (!this.anonId) {
+            this.fetchEventData();
+        }
+
+        if (!validateUuid(this.anonId)) {
+            this.anonId = uuid();
+        }
+
+        this.postEvent(timestamp, {}, (err) => {
+            if (!err) {
+                if (id) this.success[id] = true;
+            }
+        });
+    }
+}
+
+
+export class TurnstileEvent extends TelemetryEvent {
+    constructor() {
+        super('appUserTurnstile');
     }
 
     postTurnstileEvent(tileUrls: Array<string>) {
@@ -156,90 +286,53 @@ export class TurnstileEvent {
         }
     }
 
-    queueRequest(date: number) {
-        this.queue.push(date);
-        this.processRequests();
-    }
 
     processRequests() {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
-        const storageKey = `${turnstileEventStorageKey}:${config.ACCESS_TOKEN || ''}`;
-        const isLocalStorageAvailable = storageAvailable('localStorage');
-        let dueForEvent = this.eventData.accessToken ? (this.eventData.accessToken !== config.ACCESS_TOKEN) : false;
 
+        let dueForEvent = this.eventData.accessToken ? (this.eventData.accessToken !== config.ACCESS_TOKEN) : false;
         //Reset event data cache if the access token changed.
         if (dueForEvent) {
-            this.eventData.anonId = this.eventData.lastSuccess = null;
+            this.anonId = this.eventData.lastSuccess = null;
         }
-        if ((!this.eventData.anonId || !this.eventData.lastSuccess) &&
-            isLocalStorageAvailable) {
+        if (!this.anonId || !this.eventData.lastSuccess) {
             //Retrieve cached data
-            try {
-                const data = window.localStorage.getItem(storageKey);
-                if (data) {
-                    this.eventData = JSON.parse(data);
-                }
-            } catch (e) {
-                warnOnce('Unable to read from LocalStorage');
-            }
+            this.fetchEventData();
         }
 
-        if (!validateUuid(this.eventData.anonId)) {
-            this.eventData.anonId = uuid();
+        if (!validateUuid(this.anonId)) {
+            this.anonId = uuid();
             dueForEvent = true;
         }
-        const nextUpdate = this.queue.shift();
 
+        const nextUpdate = this.queue.shift();
         // Record turnstile event once per calendar day.
         if (this.eventData.lastSuccess) {
             const lastUpdate = new Date(this.eventData.lastSuccess);
             const nextDate = new Date(nextUpdate);
             const daysElapsed = (nextUpdate - this.eventData.lastSuccess) / (24 * 60 * 60 * 1000);
             dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < -1 || lastUpdate.getDate() !== nextDate.getDate();
+        } else {
+            dueForEvent = true;
         }
 
         if (!dueForEvent) {
             return this.processRequests();
         }
 
-        const eventsUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
-        eventsUrlObject.params.push(`access_token=${config.ACCESS_TOKEN || ''}`);
-
-        const request: RequestParameters = {
-            url: formatUrl(eventsUrlObject),
-            headers: {
-                'Content-Type': 'text/plain' // Skip the pre-flight OPTIONS request
-            },
-            body: JSON.stringify([{
-                event: 'appUserTurnstile',
-                created: (new Date(nextUpdate)).toISOString(),
-                sdkIdentifier: 'mapbox-gl-js',
-                sdkVersion: version,
-                'enabled.telemetry': false,
-                userId: this.eventData.anonId
-            }])
-        };
-
-        this.pendingRequest = postData(request, (error: ?Error) => {
-            this.pendingRequest = null;
-            if (!error) {
+        this.postEvent(nextUpdate, {"enabled.telemetry": false}, (err)=> {
+            if (!err) {
                 this.eventData.lastSuccess = nextUpdate;
                 this.eventData.accessToken = config.ACCESS_TOKEN;
-                if (isLocalStorageAvailable) {
-                    try {
-                        window.localStorage.setItem(storageKey, JSON.stringify(this.eventData));
-                    } catch (e) {
-                        warnOnce('Unable to write to LocalStorage');
-                    }
-                }
-                this.processRequests();
             }
         });
     }
 }
 
 const turnstileEvent_ = new TurnstileEvent();
-
 export const postTurnstileEvent = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
+
+const mapLoadEvent_ = new MapLoadEvent();
+export const postMapLoadEvent = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);

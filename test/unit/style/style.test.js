@@ -52,6 +52,10 @@ class StubMap extends Evented {
     _transformRequest(url) {
         return { url };
     }
+
+    _getMapId() {
+        return 1;
+    }
 }
 
 test('Style', (t) => {
