@@ -92,11 +92,12 @@ class LngLat {
     }
 
     /**
-     * Converts an array of two numbers to a `LngLat` object.
+     * Converts an array of two numbers or an object with `lng` and `lat` or `lon` and `lat` properties
+     * to a `LngLat` object.
      *
      * If a `LngLat` object is passed in, the function returns it unchanged.
      *
-     * @param {LngLatLike} input An array of two numbers to convert, or a `LngLat` object to return.
+     * @param {LngLatLike} input An array of two numbers or object to convert, or a `LngLat` object to return.
      * @returns {LngLat} A new `LngLat` object, if a conversion occurred, or the original `LngLat` object.
      * @example
      * var arr = [-73.9749, 40.7736];
