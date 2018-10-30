@@ -589,7 +589,6 @@ test("mapbox", (t) => {
                 event.postTurnstileEvent(mapboxTileURLs);
 
                 const laterToday = now + 1;
-                now = laterToday;
                 withFixedDate(t, laterToday, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const tomorrow = laterToday + ms25Hours; // Add a day
