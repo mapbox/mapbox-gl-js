@@ -38,6 +38,12 @@ function restore(): Window {
         virtualConsole: new jsdom.VirtualConsole().sendTo(console)
     });
 
+    // Delete local and session storage from JSDOM
+    // Accessing these properties during extend() produces an error in Node environments
+    // See https://github.com/mapbox/mapbox-gl-js/pull/7455 for discussion
+    delete window.localStorage;
+    delete window.sessionStorage;
+
     window.devicePixelRatio = 1;
 
     window.requestAnimationFrame = function(callback) {
