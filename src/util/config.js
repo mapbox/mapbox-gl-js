@@ -4,7 +4,8 @@ type Config = {|
   API_URL: string,
   EVENTS_URL: string,
   REQUIRE_ACCESS_TOKEN: boolean,
-  ACCESS_TOKEN: ?string
+  ACCESS_TOKEN: ?string,
+  MAX_PARALLEL_IMAGE_REQUESTS: number
 |};
 
 const config: Config = {
@@ -17,7 +18,8 @@ const config: Config = {
         }
     },
     REQUIRE_ACCESS_TOKEN: true,
-    ACCESS_TOKEN: null
+    ACCESS_TOKEN: null,
+    MAX_PARALLEL_IMAGE_REQUESTS: 16
 };
 
 export default config;
