@@ -1714,8 +1714,44 @@ test('camera', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
-            const transform = camera.cameraForBounds(bb, { padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0 });
+            const transform = camera.cameraForBounds(bb, { padding: {top: 15, right: 15, bottom: 15, left: 15}, duration: 0 });
             t.deepEqual(fixedLngLat(transform.center, 4), { lng: -100.5, lat: 34.7171 }, 'correctly calculates coordinates for bounds with padding option as object applied');
+            t.end();
+        });
+
+        t.test('asymetrical padding', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, { padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0 });
+            t.deepEqual(fixedLngLat(transform.center, 4), { lng: -96.5558, lat: 32.0833 }, 'correctly calculates coordinates for bounds with padding option as object applied');
+            t.end();
+        });
+
+        t.test('offset', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, { offset: [0, 100] });
+            t.deepEqual(fixedLngLat(transform.center, 4), { lng: -100.5, lat: 44.4717 }, 'correctly calculates coordinates for bounds with padding option as object applied');
+            t.end();
+        });
+
+        t.test('offset as object', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, { offset: { x: 0, y: 100 } });
+            t.deepEqual(fixedLngLat(transform.center, 4), { lng: -100.5, lat: 44.4717 }, 'correctly calculates coordinates for bounds with padding option as object applied');
+            t.end();
+        });
+
+        t.test('offset and padding', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, { padding: {top: 10, right: 75, bottom: 50, left: 25}, offset: [0, 100] });
+            t.deepEqual(fixedLngLat(transform.center, 4), { lng: -96.5558, lat: 44.4189 }, 'correctly calculates coordinates for bounds with padding option as object applied');
             t.end();
         });
 

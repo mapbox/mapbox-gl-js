@@ -434,17 +434,9 @@ class Camera extends Evented {
             return;
         }
 
-        // we separate the passed padding option into two parts, the part that does not affect the map's center
-        // (lateral and vertical padding), and the part that does (paddingOffset). We add the padding offset
-        // to the options `offset` object where it can alter the map's center in the subsequent calls to
-        // `easeTo` and `flyTo`.
-        const paddingOffset = [(options.padding.left - options.padding.right) / 2, (options.padding.top - options.padding.bottom) / 2],
-            lateralPadding = Math.min(options.padding.right, options.padding.left),
-            verticalPadding = Math.min(options.padding.top, options.padding.bottom);
-        options.offset = [options.offset[0] + paddingOffset[0], options.offset[1] + paddingOffset[1]];
-
         const tr = this.transform;
-        // we want to calculate the upper right and lower left of the box defined by p0 and p1
+
+        // We want to calculate the upper right and lower left of the box defined by p0 and p1
         // in a coordinate system rotate to match the destination bearing.
         const p0world = tr.project(LngLat.convert(p0));
         const p1world = tr.project(LngLat.convert(p1));
@@ -454,10 +446,10 @@ class Camera extends Evented {
         const upperRight = new Point(Math.max(p0rotated.x, p1rotated.x), Math.max(p0rotated.y, p1rotated.y));
         const lowerLeft = new Point(Math.min(p0rotated.x, p1rotated.x), Math.min(p0rotated.y, p1rotated.y));
 
-        const offset = Point.convert(options.offset),
-            size = upperRight.sub(lowerLeft),
-            scaleX = (tr.width - lateralPadding * 2 - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - verticalPadding * 2 - Math.abs(offset.y) * 2) / size.y;
+        // Calculate zoom: consider the original bbox and padding.
+        const size = upperRight.sub(lowerLeft);
+        const scaleX = (tr.width - options.padding.left - options.padding.right) / size.x;
+        const scaleY = (tr.height - options.padding.top - options.padding.bottom) / size.y;
 
         if (scaleY < 0 || scaleX < 0) {
             warnOnce(
@@ -465,11 +457,23 @@ class Camera extends Evented {
             );
             return;
         }
-        options.center =  tr.unproject(p0world.add(p1world).div(2));
-        options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
-        options.bearing = bearing;
 
-        return options;
+        const zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+
+        // Calculate center: apply the zoom, the configured offset, as well as offset that exists as a result of padding.
+        const offset = Point.convert(options.offset);
+        const paddingOffsetX = (options.padding.left - options.padding.right) / 2;
+        const paddingOffsetY = (options.padding.top - options.padding.bottom) / 2;
+        const offsetAtInitialZoom = new Point(offset.x + paddingOffsetX, offset.y + paddingOffsetY);
+        const offsetAtFinalZoom = offsetAtInitialZoom.mult(tr.scale / tr.zoomScale(zoom));
+
+        const center =  tr.unproject(p0world.add(p1world).div(2).sub(offsetAtFinalZoom));
+
+        return {
+            center,
+            zoom,
+            bearing
+        };
     }
 
     /**
