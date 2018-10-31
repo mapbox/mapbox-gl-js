@@ -1737,6 +1737,15 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('offset as object', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, { offset: { x: 0, y: 100 } });
+            t.deepEqual(fixedLngLat(transform.center, 4), { lng: -100.5, lat: 44.4717 }, 'correctly calculates coordinates for bounds with padding option as object applied');
+            t.end();
+        });
+
         t.test('offset and padding', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
