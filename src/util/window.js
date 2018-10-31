@@ -38,6 +38,13 @@ function restore(): Window {
         virtualConsole: new jsdom.VirtualConsole().sendTo(console)
     });
 
+    // Delete local and session storage from JSDOM and stub them out with a warning log
+    // Accessing these properties during extend() produces an error in Node environments
+    // See https://github.com/mapbox/mapbox-gl-js/pull/7455 for discussion
+    delete window.localStorage;
+    delete window.sessionStorage;
+    window.localStorage = window.sessionStorage = () => console.log('Local and session storage not available in Node. Use a stub implementation if needed for testing.');
+
     window.devicePixelRatio = 1;
 
     window.requestAnimationFrame = function(callback) {
