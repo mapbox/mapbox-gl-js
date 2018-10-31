@@ -43,7 +43,7 @@ function restore(): Window {
     // See https://github.com/mapbox/mapbox-gl-js/pull/7455 for discussion
     delete window.localStorage;
     delete window.sessionStorage;
-    window.localStorage = window.sessionStorage = () => console.log('local and session storage not available in Node');
+    window.localStorage = window.sessionStorage = () => console.log('Local and session storage not available in Node. Use a stub implementation if needed for testing.');
 
     window.devicePixelRatio = 1;
 
