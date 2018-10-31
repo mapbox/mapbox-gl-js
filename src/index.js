@@ -50,7 +50,7 @@ const exported = {
      * mapboxgl.accessToken = myAccessToken;
      * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
      */
-    get accessToken() {
+    get accessToken(): ?string {
         return config.ACCESS_TOKEN;
     },
 
@@ -58,12 +58,20 @@ const exported = {
         config.ACCESS_TOKEN = token;
     },
 
-    get workerCount() {
+    get workerCount(): number {
         return WorkerPool.workerCount;
     },
 
     set workerCount(count: number) {
         WorkerPool.workerCount = count;
+    },
+
+    get maxParallelImageRequests(): number {
+        return config.MAX_PARALLEL_IMAGE_REQUESTS;
+    },
+
+    set maxParallelImageRequests(numRequests: number) {
+        config.MAX_PARALLEL_IMAGE_REQUESTS = numRequests;
     },
 
     workerUrl: ''
