@@ -22,6 +22,8 @@ export const plugins = () => [
     json(),
     glsl('./src/shaders/*.glsl', production),
     production ? unassert() : false,
+    minified ? terser() : false,
+    buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
     resolve({
         browser: true,
         preferBuiltins: false
@@ -30,9 +32,7 @@ export const plugins = () => [
         // global keyword handling causes Webpack compatibility issues, so we disabled it:
         // https://github.com/mapbox/mapbox-gl-js/pull/6956
         ignoreGlobal: true
-    }),
-    minified ? terser() : false,
-    buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"})
+    })
 ].filter(Boolean);
 
 // Using this instead of rollup-plugin-flow due to
