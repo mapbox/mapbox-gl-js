@@ -99,11 +99,11 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-yarn-{{ checksum "yarn.lock" }}
-            - v1-yarn
+            - v2-yarn-{{ checksum "yarn.lock" }}
+            - v2-yarn
       - run: yarn
       - save_cache:
-          key: v1-yarn-{{ checksum "yarn.lock" }}
+          key: v2-yarn-{{ checksum "yarn.lock" }}
           paths:
             - '~/.yarn'
             - 'node_modules'
