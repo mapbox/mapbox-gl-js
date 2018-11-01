@@ -76,7 +76,7 @@ export default function validateFunction(options) {
 
         errors = errors.concat(validateArray({
             key: options.key,
-            value: value,
+            value,
             valueSpec: options.valueSpec,
             style: options.style,
             styleSpec: options.styleSpec,

@@ -50,8 +50,8 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
             callback(null, {
                 vectorTile: new vt.VectorTile(new Protobuf(data)),
                 rawData: data,
-                cacheControl: cacheControl,
-                expires: expires
+                cacheControl,
+                expires
             });
         }
     });

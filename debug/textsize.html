@@ -30,7 +30,7 @@ var stops = [
 ];
 
 var layer = (id, x, textSize, color) => ({
-    "id": id,
+    id,
     "type": "symbol",
     "source": "geojson",
     "filter": ["==", "x", x],
@@ -94,9 +94,7 @@ var style = {
     "sprite": "mapbox://sprites/mapbox/streets-v10",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     "layers": [
-        layer('symbol-camera', 0, {
-            "stops": stops
-        }, 'red'),
+        layer('symbol-camera', 0, {stops}, 'red'),
 
         layer('symbol-composite', 0, {
             "property": "x",
@@ -115,7 +113,7 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [-77.01866, 38.888],
-    style: style,
+    style,
     hash: true
 });
 

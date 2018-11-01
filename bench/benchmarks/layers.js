@@ -10,7 +10,7 @@ function generateLayers(layer) {
     const generated = [];
     for (let i = 0; i < 50; i++) {
         const id = layer.id + i;
-        generated.push(Object.assign({}, layer, {id: id}));
+        generated.push(Object.assign({}, layer, {id}));
     }
     return generated;
 }
@@ -111,7 +111,7 @@ class LayerHeatmap extends LayerBenchmark {
                     sources: {
                         'heatmap': {
                             'type': 'geojson',
-                            'data': data,
+                            data,
                             'maxzoom': 23
                         }
                     },

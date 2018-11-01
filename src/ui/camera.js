@@ -123,7 +123,7 @@ class Camera extends Evented {
      * map.setCenter([-74, 38]);
      */
     setCenter(center: LngLatLike, eventData?: Object) {
-        return this.jumpTo({center: center}, eventData);
+        return this.jumpTo({center}, eventData);
     }
 
     /**
@@ -186,7 +186,7 @@ class Camera extends Evented {
      * map.setZoom(5);
      */
     setZoom(zoom: number, eventData?: Object) {
-        this.jumpTo({zoom: zoom}, eventData);
+        this.jumpTo({zoom}, eventData);
         return this;
     }
 
@@ -207,7 +207,7 @@ class Camera extends Evented {
      */
     zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
-            zoom: zoom
+            zoom
         }, options), eventData);
     }
 
@@ -276,7 +276,7 @@ class Camera extends Evented {
      * map.setBearing(90);
      */
     setBearing(bearing: number, eventData?: Object) {
-        this.jumpTo({bearing: bearing}, eventData);
+        this.jumpTo({bearing}, eventData);
         return this;
     }
 
@@ -294,7 +294,7 @@ class Camera extends Evented {
      */
     rotateTo(bearing: number, options?: AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
-            bearing: bearing
+            bearing
         }, options), eventData);
     }
 
@@ -351,7 +351,7 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     setPitch(pitch: number, eventData?: Object) {
-        this.jumpTo({pitch: pitch}, eventData);
+        this.jumpTo({pitch}, eventData);
         return this;
     }
 

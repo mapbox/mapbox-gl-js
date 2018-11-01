@@ -50,7 +50,7 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
  *     [-76.5295386314392, 39.17683392507606],
  *     [-76.54520273208618, 39.17876344106642]
  * ]);
- * 
+ *
  * // update url and coordinates simultaneously
  * mySource.updateImage({
  *    url: 'https://www.mapbox.com/images/bar.png',
@@ -61,7 +61,7 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
  *        [-76.54520273208618, 39.17876344106642]
  *    ]
  * })
- * 
+ *
  * map.removeSource('some id');  // remove
  * @see [Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  */

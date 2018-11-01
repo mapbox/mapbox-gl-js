@@ -55,12 +55,12 @@ var style = {
 
 function addMap (container) {
     var map = new mapboxgl.Map({
-        container: container,
+        container,
         minZoom: 14,
         zoom: 15.5,
         center: [-122.514426, 37.562984],
         bearing: -96,
-        style: style,
+        style,
         hash: false
     });
 }

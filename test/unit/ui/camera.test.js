@@ -151,7 +151,7 @@ test('camera', (t) => {
             t.end();
         });
 
-        t.test('emits pitch events, preserving eventData', (t)=>{
+        t.test('emits pitch events, preserving eventData', (t) => {
             let started, pitched, ended;
             const eventData = { data: 'ok'};
 
@@ -889,19 +889,19 @@ test('camera', (t) => {
             t.end();
         });
 
-        t.test('does not throw when cameras current zoom is sufficiently greater than passed zoom option', (t)=>{
+        t.test('does not throw when cameras current zoom is sufficiently greater than passed zoom option', (t) => {
             const camera = createCamera({zoom: 22, center:[0, 0]});
-            t.doesNotThrow(()=>camera.flyTo({zoom:10, center:[0, 0]}));
+            t.doesNotThrow(() => camera.flyTo({zoom:10, center:[0, 0]}));
             t.end();
         });
 
-        t.test('does not throw when cameras current zoom is above maxzoom and an offset creates infinite zoom out factor', (t)=>{
+        t.test('does not throw when cameras current zoom is above maxzoom and an offset creates infinite zoom out factor', (t) => {
             const transform = new Transform(0, 20.9999, true);
             transform.resize(512, 512);
             const camera = attachSimulateFrame(new Camera(transform, {}))
                 .jumpTo({zoom: 21, center:[0, 0]});
             camera._update = () => {};
-            t.doesNotThrow(()=>camera.flyTo({zoom:7.5, center:[0, 0], offset:[0, 70]}));
+            t.doesNotThrow(() => camera.flyTo({zoom:7.5, center:[0, 0], offset:[0, 70]}));
             t.end();
         });
 

@@ -397,7 +397,7 @@ class Style extends Evented {
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
         this.dispatcher.broadcast('updateLayers', {
             layers: this._serializeLayers(updatedIds),
-            removedIds: removedIds
+            removedIds
         });
     }
 
@@ -598,7 +598,7 @@ class Style extends Evented {
             layer = createStyleLayer(layerObject);
             this._validateLayer(layer);
 
-            layer.setEventedParent(this, {layer: {id: id}});
+            layer.setEventedParent(this, {layer: {id}});
         }
 
         const index = before ? this._order.indexOf(before) : this._order.length;
@@ -986,7 +986,7 @@ class Style extends Evented {
         }
 
         this.dispatcher.broadcast('loadWorkerSource', {
-            name: name,
+            name,
             url: SourceType.workerSourceURL
         }, callback);
     }
@@ -1025,10 +1025,10 @@ class Style extends Evented {
             return false;
         }
         return emitValidationErrors(this, validate.call(validateStyle, extend({
-            key: key,
+            key,
             style: this.serialize(),
-            value: value,
-            styleSpec: styleSpec
+            value,
+            styleSpec
         }, props)));
     }
 

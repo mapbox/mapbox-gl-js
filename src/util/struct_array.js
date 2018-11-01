@@ -217,7 +217,7 @@ function createLayout(
         return {
             name: member.name,
             type: member.type,
-            components: components,
+            components,
             offset: memberOffset,
         };
     });

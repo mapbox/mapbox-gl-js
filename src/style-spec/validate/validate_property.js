@@ -19,11 +19,11 @@ export default function validateProperty(options, propertyType) {
     const transitionMatch = propertyKey.match(/^(.*)-transition$/);
     if (propertyType === 'paint' && transitionMatch && layerSpec[transitionMatch[1]] && layerSpec[transitionMatch[1]].transition) {
         return validate({
-            key: key,
-            value: value,
+            key,
+            value,
             valueSpec: styleSpec.transition,
-            style: style,
-            styleSpec: styleSpec
+            style,
+            styleSpec
         });
     }
 
@@ -53,12 +53,12 @@ export default function validateProperty(options, propertyType) {
 
     return errors.concat(validate({
         key: options.key,
-        value: value,
-        valueSpec: valueSpec,
-        style: style,
-        styleSpec: styleSpec,
+        value,
+        valueSpec,
+        style,
+        styleSpec,
         expressionContext: 'property',
-        propertyType: propertyType,
+        propertyType,
         propertyKey
     }));
 }

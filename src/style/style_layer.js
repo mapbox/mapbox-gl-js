@@ -226,11 +226,11 @@ class StyleLayer extends Evented {
             return false;
         }
         return emitValidationErrors(this, validate.call(validateStyle, {
-            key: key,
+            key,
             layerType: this.type,
             objectKey: name,
-            value: value,
-            styleSpec: styleSpec,
+            value,
+            styleSpec,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true}
         }));

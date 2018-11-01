@@ -123,7 +123,7 @@ export function getGlyphQuads(anchor: Anchor,
 
     const oneEm = 24;
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
-    const textOffset = layer.layout.get('text-offset').evaluate(feature, {}).map((t)=> t * oneEm);
+    const textOffset = layer.layout.get('text-offset').evaluate(feature, {}).map((t) => t * oneEm);
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];

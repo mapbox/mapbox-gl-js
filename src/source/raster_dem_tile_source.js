@@ -62,7 +62,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                     uid: tile.uid,
                     coord: tile.tileID,
                     source: this.id,
-                    rawImageData: rawImageData,
+                    rawImageData,
                     encoding: this.encoding
                 };
 

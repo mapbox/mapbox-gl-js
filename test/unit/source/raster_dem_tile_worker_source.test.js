@@ -12,7 +12,7 @@ test('loadTile', (t) => {
             uid: 0,
             rawImageData: {data: new Uint8ClampedArray(256), height: 8, width: 8},
             dim: 256
-        }, (err, data)=>{
+        }, (err, data) => {
             if (err) t.fail();
             t.deepEqual(Object.keys(source.loaded), [0]);
             t.ok(data instanceof DEMData, 'returns DEM data');

@@ -268,12 +268,12 @@ class Tile {
             return {};
 
         return this.latestFeatureIndex.query({
-            queryGeometry: queryGeometry,
-            scale: scale,
+            queryGeometry,
+            scale,
             tileSize: this.tileSize,
-            posMatrix: posMatrix,
-            transform: transform,
-            params: params,
+            posMatrix,
+            transform,
+            params,
             queryPadding: this.queryPadding * maxPitchScaleFactor
         }, layers, sourceFeatureState);
     }

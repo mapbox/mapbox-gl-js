@@ -903,7 +903,7 @@ test('Style#addLayer', (t) => {
                     "coordinates": [ 0, 0]
                 }
             };
-            const layer = {id: 'inline-source-layer', type: 'circle', source: source };
+            const layer = {id: 'inline-source-layer', type: 'circle', source };
             style.addLayer(layer);
             t.deepEqual(layer.source, source);
             t.end();
@@ -1093,7 +1093,7 @@ test('Style#addLayer', (t) => {
         const layer = {id: 'c', type: 'background'};
 
         style.on('style.load', () => {
-            style.on('error', (error)=>{
+            style.on('error', (error) => {
                 t.match(error.error, /does not exist on this map/);
                 t.end();
             });
@@ -1948,7 +1948,7 @@ test('Style#query*Features', (t) => {
 });
 
 test('Style#addSourceType', (t) => {
-    const _types = { 'existing': function () {} };
+    const _types = { 'existing' () {} };
 
     t.stub(Style, 'getSourceType').callsFake(name => _types[name]);
     t.stub(Style, 'setSourceType').callsFake((name, create) => {

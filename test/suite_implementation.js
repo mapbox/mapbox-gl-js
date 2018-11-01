@@ -20,11 +20,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         callback(new Error('Test timed out'));
     }, options.timeout || 20000);
 
-    function callback() {
+    function callback(...args) {
         if (!wasCallbackCalled) {
             clearTimeout(timeout);
             wasCallbackCalled = true;
-            _callback.apply(this, arguments);
+            _callback(...args);
         }
     }
 
@@ -43,8 +43,8 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
     config.REQUIRE_ACCESS_TOKEN = false;
 
     const map = new Map({
-        container: container,
-        style: style,
+        container,
+        style,
         classes: options.classes,
         interactive: false,
         attributionControl: false,
@@ -158,7 +158,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             applyOperations(map, operations.slice(1), callback);
 
         } else {
-            map[operation[0]].apply(map, operation.slice(1));
+            map[operation[0]](...operation.slice(1));
             applyOperations(map, operations.slice(1), callback);
         }
     }
