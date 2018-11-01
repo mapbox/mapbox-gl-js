@@ -48,7 +48,7 @@ class TableOfContentsItem extends React.Component {
                     className='toggle-sibling color-blue-on-hover txt-s mt6'
                     onClick={() => this.setState({disclosed: !this.state.disclosed})}>
                     {doc.name}
-                    <Icon name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} themeIcon="inline-block mb-neg6" />
+                    <div className="inline-block mb-neg6"><Icon name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} /></div>
                 </a>
 
                 {this.state.disclosed &&
