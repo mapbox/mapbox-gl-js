@@ -89,7 +89,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: mbgl/80dbb7f452:linux
+    - image: mbgl/713217453d:linux
   working_directory: ~/mapbox-gl-js
 
 jobs:
