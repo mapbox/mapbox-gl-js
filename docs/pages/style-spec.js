@@ -1348,7 +1348,7 @@ export default class extends React.Component {
                                             <div>
                                                 <em className='quiet'>Optional <a href='#types-string'>string</a>. One
                                                 of <code>"identity"</code>, <code>"exponential"</code>,
-                                                    <code>"interval"</code>, or <code>"categorical"</code>.</em>
+                                                <code>"interval"</code>, or <code>"categorical"</code>.</em>
                                             </div>
                                             <dl>
                                                 <dt><code>"identity"</code></dt>
