@@ -7,26 +7,36 @@ import window from '../../util/window';
 
 import type Map from '../map';
 
+type Options = {
+    source?: HTMLElement
+};
+
 /**
  * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode.
  *
  * @implements {IControl}
+ * @param {Object} [options]
+ * @param {HTMLElement} [options.source] `source` is the [compatible DOM element](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen#Compatible_elements) which should be made full screen. By default, the map container element will be made full screen.
+ *
  * @example
- * map.addControl(new mapboxgl.FullscreenControl());
+ * map.addControl(new mapboxgl.FullscreenControl({source: document.querySelector('body')}));
  * @see [View a fullscreen map](https://www.mapbox.com/mapbox-gl-js/example/fullscreen/)
  */
 
 class FullscreenControl {
     _map: Map;
-    _mapContainer: HTMLElement;
     _container: HTMLElement;
     _fullscreen: boolean;
     _fullscreenchange: string;
     _fullscreenButton: HTMLElement;
     _className: string;
+    _source: HTMLElement;
 
-    constructor() {
+    constructor(options: Options) {
         this._fullscreen = false;
+        if (options && options.source) {
+            this._source = options.source;
+        }
         bindAll([
             '_onClickFullscreen',
             '_changeIcon'
@@ -45,7 +55,7 @@ class FullscreenControl {
 
     onAdd(map: Map) {
         this._map = map;
-        this._mapContainer = this._map.getContainer();
+        if (!this._source) this._source = this._map.getContainer();
         this._container = DOM.create('div', `${this._className} mapboxgl-ctrl-group`);
         if (this._checkFullscreenSupport()) {
             this._setupUI();
@@ -90,7 +100,7 @@ class FullscreenControl {
             (window.document: any).webkitFullscreenElement ||
             (window.document: any).msFullscreenElement;
 
-        if ((fullscreenElement === this._mapContainer) !== this._fullscreen) {
+        if ((fullscreenElement === this._source) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
             this._fullscreenButton.classList.toggle(`${this._className}-shrink`);
             this._fullscreenButton.classList.toggle(`${this._className}-fullscreen`);
@@ -108,14 +118,14 @@ class FullscreenControl {
             } else if (window.document.webkitCancelFullScreen) {
                 (window.document: any).webkitCancelFullScreen();
             }
-        } else if (this._mapContainer.requestFullscreen) {
-            this._mapContainer.requestFullscreen();
-        } else if ((this._mapContainer: any).mozRequestFullScreen) {
-            (this._mapContainer: any).mozRequestFullScreen();
-        } else if ((this._mapContainer: any).msRequestFullscreen) {
-            (this._mapContainer: any).msRequestFullscreen();
-        } else if ((this._mapContainer: any).webkitRequestFullscreen) {
-            (this._mapContainer: any).webkitRequestFullscreen();
+        } else if (this._source.requestFullscreen) {
+            this._source.requestFullscreen();
+        } else if ((this._source: any).mozRequestFullScreen) {
+            (this._source: any).mozRequestFullScreen();
+        } else if ((this._source: any).msRequestFullscreen) {
+            (this._source: any).msRequestFullscreen();
+        } else if ((this._source: any).webkitRequestFullscreen) {
+            (this._source: any).webkitRequestFullscreen();
         }
     }
 }

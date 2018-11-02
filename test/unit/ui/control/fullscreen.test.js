@@ -27,3 +27,14 @@ test('FullscreenControl does not appears when fullscreen is not enabled', (t) =>
     t.equal(consoleWarn.getCall(0).args[0], 'This device does not support fullscreen mode.');
     t.end();
 });
+
+test('FullscreenControl works with source element other than map container', (t) => {
+    window.document.fullscreenEnabled = true;
+
+    const map = createMap(t);
+    const fullscreen = new FullscreenControl({source: 'body'});
+    map.addControl(fullscreen);
+
+    t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-fullscreen').length, 1);
+    t.end();
+});
