@@ -1231,6 +1231,28 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#getLayoutProperty', (t) => {
+        t.test('fires an error if layer not found', (t) => {
+            const map = createMap(t, {
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style/);
+                    t.end();
+                });
+                map.getLayoutProperty('non-existant', 'text-transform', 'lowercase');
+            });
+        });
+
+        t.end();
+    });
+
     t.test('#setPaintProperty', (t) => {
         t.test('sets property', (t) => {
             const map = createMap(t, {
