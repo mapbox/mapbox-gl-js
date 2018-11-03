@@ -47,6 +47,10 @@ const plugins = {
             "description": "adds a Geocoder control to Mapbox GL JS",
             "example": "mapbox-gl-geocoder"
         },
+        "mapbox-gl-infobox": {
+            "website": "https://github.com/el/infobox-control",
+            "description": "adds a control to display an infobox or a gradient"
+        },
         "mapbox-gl-style-switcher": {
             "website": "https://github.com/el/style-switcher",
             "description": "adds a control to switch between styles"
