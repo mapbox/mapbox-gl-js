@@ -3,7 +3,6 @@
 import { CanonicalTileID } from './tile_id';
 import { Event, ErrorEvent, Evented } from '../util/evented';
 import { getImage, ResourceType } from '../util/ajax';
-import browser from '../util/browser';
 import EXTENT from '../data/extent';
 import { RasterBoundsArray } from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
