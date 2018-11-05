@@ -179,6 +179,7 @@ export type LineLayerSpecification = {|
     "filter"?: FilterSpecification,
     "layout"?: {|
         "line-cap"?: PropertyValueSpecification<"butt" | "round" | "square">,
+        "line-z-offset"?: PropertyValueSpecification<number>,
         "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter">,
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
@@ -410,4 +411,3 @@ export type LayerSpecification =
     | RasterLayerSpecification
     | HillshadeLayerSpecification
     | BackgroundLayerSpecification;
-

@@ -199,16 +199,18 @@ class LineBucket implements Bucket {
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, imagePositions: {[string]: ImagePosition}) {
         const layout = this.layers[0].layout;
         const join = layout.get('line-join').evaluate(feature, {});
+        const offset = layout.get('line-z-offset').evaluate(feature, {});
+        console.log('offset', offset);
         const cap = layout.get('line-cap');
         const miterLimit = layout.get('line-miter-limit');
         const roundLimit = layout.get('line-round-limit');
 
         for (const line of geometry) {
-            this.addLine(line, feature, join, cap, miterLimit, roundLimit, index, imagePositions);
+            this.addLine(line, feature, join, offset, cap, miterLimit, roundLimit, index, imagePositions);
         }
     }
 
-    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number, index: number, imagePositions: {[string]: ImagePosition}) {
+    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, offset: number, cap: string, miterLimit: number, roundLimit: number, index: number, imagePositions: {[string]: ImagePosition}) {
         let lineDistances = null;
         if (!!feature.properties &&
             feature.properties.hasOwnProperty('mapbox_clip_start') &&

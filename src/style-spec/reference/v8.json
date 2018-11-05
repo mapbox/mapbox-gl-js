@@ -756,6 +756,23 @@
       },
       "property-type": "data-constant"
     },
+    "line-z-offset": {
+      "type": "number",
+      "default": 0,
+      "doc": "Define an order for line layers to appear in relative to each other",
+      "transition": true,
+      "sdk-support": {
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "line-join": {
       "type": "enum",
       "values": {

@@ -26,6 +26,97 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
+map.on('load', function () {
+
+    map.addLayer({
+        "id": "points",
+        "type": "line",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                  {
+                    "type": "Feature",
+                    "properties": {
+                        "color": "black",
+                        "offset": 1
+                    },
+                    "geometry": {
+                      "type": "LineString",
+                      "coordinates": [
+                        [
+                          -77.05046653747559,
+                          38.899115841683425
+                        ],
+                        [
+                          -77.02969551086424,
+                          38.905194197410545
+                        ],
+                        [
+                          -77.0262622833252,
+                          38.888026511775855
+                        ],
+                        [
+                          -77.03913688659668,
+                          38.88655671160987
+                        ],
+                        [
+                          -77.04703330993652,
+                          38.89403901396578
+                        ]
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Feature",
+                    "properties": {
+                        "color": "green",
+                        "offset": 2
+                    },
+                    "geometry": {
+                      "type": "LineString",
+                      "coordinates": [
+                        [
+                          -77.04694747924805,
+                          38.90639644788812
+                        ],
+                        [
+                          -77.03338623046875,
+                          38.896043068262976
+                        ],
+                        [
+                          -77.02497482299805,
+                          38.900986160406624
+                        ],
+                        [
+                          -77.02265739440918,
+                          38.891567269117026
+                        ],
+                        [
+                          -77.03252792358398,
+                          38.88969670232407
+                        ],
+                        [
+                          -77.03192710876465,
+                          38.882347570180826
+                        ]
+                      ]
+                    }
+                  }
+                ]
+              }
+        },
+        "layout": {
+            "line-z-offset": { "type": "identity", "property": "offset" },
+        },
+        "paint": {
+            "line-color": { "type": "identity", "property": "color" },
+            "line-width": 10
+        }
+    });
+});
+
 </script>
 </body>
 </html>

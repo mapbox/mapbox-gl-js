@@ -23,13 +23,15 @@ import type {CrossfadeParameters} from '../../style/evaluation_parameters';
 export type LineUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_ratio': Uniform1f,
-    'u_gl_units_to_pixels': Uniform2f
+    'u_gl_units_to_pixels': Uniform2f,
+    'u_z_offset': Uniform1f
 |};
 
 export type LineGradientUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_ratio': Uniform1f,
     'u_gl_units_to_pixels': Uniform2f,
+    'u_z_offset': Uniform1f,
     'u_image': Uniform1i
 |};
 
@@ -38,6 +40,7 @@ export type LinePatternUniformsType = {|
     'u_texsize': Uniform2f,
     'u_ratio': Uniform1f,
     'u_gl_units_to_pixels': Uniform2f,
+    'u_z_offset': Uniform1f,
     'u_image': Uniform1i,
     'u_scale': Uniform4f,
     'u_fade': Uniform1f
@@ -47,6 +50,7 @@ export type LineSDFUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_ratio': Uniform1f,
     'u_gl_units_to_pixels': Uniform2f,
+    'u_z_offset': Uniform1f,
     'u_patternscale_a': Uniform2f,
     'u_patternscale_b': Uniform2f,
     'u_sdfgamma': Uniform1f,
@@ -59,13 +63,15 @@ export type LineSDFUniformsType = {|
 const lineUniforms = (context: Context, locations: UniformLocations): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
-    'u_gl_units_to_pixels': new Uniform2f(context, locations.u_gl_units_to_pixels)
+    'u_gl_units_to_pixels': new Uniform2f(context, locations.u_gl_units_to_pixels),
+    'u_z_offset': new Uniform1f(context, locations.u_z_offset)
 });
 
 const lineGradientUniforms = (context: Context, locations: UniformLocations): LineGradientUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_gl_units_to_pixels': new Uniform2f(context, locations.u_gl_units_to_pixels),
+    'u_z_offset': new Uniform1f(context, locations.u_z_offset),
     'u_image': new Uniform1i(context, locations.u_image)
 });
 
@@ -75,6 +81,7 @@ const linePatternUniforms = (context: Context, locations: UniformLocations): Lin
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_image': new Uniform1i(context, locations.u_image),
     'u_gl_units_to_pixels': new Uniform2f(context, locations.u_gl_units_to_pixels),
+    'u_z_offset': new Uniform1f(context, locations.u_z_offset),
     'u_scale': new Uniform4f(context, locations.u_scale),
     'u_fade': new Uniform1f(context, locations.u_fade)
 });
@@ -83,6 +90,7 @@ const lineSDFUniforms = (context: Context, locations: UniformLocations): LineSDF
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_gl_units_to_pixels': new Uniform2f(context, locations.u_gl_units_to_pixels),
+    'u_z_offset': new Uniform1f(context, locations.u_z_offset),
     'u_patternscale_a': new Uniform2f(context, locations.u_patternscale_a),
     'u_patternscale_b': new Uniform2f(context, locations.u_patternscale_b),
     'u_sdfgamma': new Uniform1f(context, locations.u_sdfgamma),
@@ -98,14 +106,14 @@ const lineUniformValues = (
     layer: LineStyleLayer
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
-
     return {
         'u_matrix': calculateMatrix(painter, tile, layer),
         'u_ratio': 1 / pixelsToTileUnits(tile, 1, transform.zoom),
         'u_gl_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
-        ]
+        ],
+        'u_z_offset': 0.0
     };
 };
 
@@ -115,7 +123,7 @@ const lineGradientUniformValues = (
     layer: LineStyleLayer
 ): UniformValues<LineGradientUniformsType> => {
     return extend(lineUniformValues(painter, tile, layer), {
-        'u_image': 0
+        'u_image': 0.0
     });
 };
 
@@ -139,7 +147,8 @@ const linePatternUniformValues = (
         'u_gl_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
-        ]
+        ],
+        'u_z_offset': 0.0
     };
 };
 
