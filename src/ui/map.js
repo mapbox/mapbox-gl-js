@@ -644,7 +644,7 @@ class Map extends Camera {
      */
     isZooming(): boolean {
         return this._zooming ||
-            this.scrollZoom.isActive();
+            this.scrollZoom.isZooming();
     }
 
     /**
