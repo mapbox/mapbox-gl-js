@@ -177,8 +177,35 @@ test('Style#loadURL', (t) => {
 });
 
 test('Style#loadJSON', (t) => {
+    t.beforeEach((callback) => {
+        window.useFakeXMLHttpRequest();
+
+        // Stubbing to bypass Web APIs that supported by jsdom:
+        // * `URL.createObjectURL` in ajax.getImage (https://github.com/tmpvar/jsdom/issues/1721)
+        // * `canvas.getContext('2d')` in browser.getImageData
+        t.stub(window.URL, 'revokeObjectURL');
+        t.stub(browser, 'getImageData');
+
+        // stub Image so we can invoke 'onload'
+        t.stub(window, 'Image').returns({
+            get src() { return null; },
+            set src(value) {
+                setTimeout(() => this.onload(), 1);
+            }
+        });
+
+        // stub this manually because sinon does not stub non-existent methods
+        assert(!window.URL.createObjectURL);
+        window.URL.createObjectURL = () => 'blob:';
+
+        callback();
+    });
+
     t.afterEach((callback) => {
+        browser.getImageData.restore();
+        window.Image.restore();
         window.restore();
+        delete window.URL.createObjectURL;
         callback();
     });
 
@@ -208,40 +235,18 @@ test('Style#loadJSON', (t) => {
     });
 
     t.test('fires "data" when the sprite finishes loading', (t) => {
-        window.useFakeXMLHttpRequest();
-
-        // Stubbing to bypass Web APIs that supported by jsdom:
-        // * `URL.createObjectURL` in ajax.getImage (https://github.com/tmpvar/jsdom/issues/1721)
-        // * `canvas.getContext('2d')` in browser.getImageData
-        t.stub(window.URL, 'revokeObjectURL');
-        t.stub(browser, 'getImageData');
-        // stub Image so we can invoke 'onload'
-        // https://github.com/jsdom/jsdom/commit/58a7028d0d5b6aacc5b435daee9fd8f9eacbb14c
-        const img = {};
-        t.stub(window, 'Image').returns(img);
-        // stub this manually because sinon does not stub non-existent methods
-        assert(!window.URL.createObjectURL);
-        window.URL.createObjectURL = () => 'blob:';
-        t.tearDown(() => delete window.URL.createObjectURL);
-
-        // fake the image request (sinon doesn't allow non-string data for
-        // server.respondWith, so we do so manually)
-        const requests = [];
-        window.XMLHttpRequest.onCreate = req => { requests.push(req); };
-        const respond = () => {
-            let req = requests.find(req => req.url === 'http://example.com/sprite.png');
-            req.setStatus(200);
-            req.response = new ArrayBuffer(8);
-            req.onload();
-            img.onload();
-
-            req = requests.find(req => req.url === 'http://example.com/sprite.json');
-            req.setStatus(200);
-            req.response = '{}';
-            req.onload();
-        };
+        window.server.autoRespond = true;
+        window.server.respondWith('http://example.com/sprite.png', [
+            200, {"Content-Type" : "image/png"},
+            new Uint8Array([ 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a ]).buffer
+        ]);
+        window.server.respondWith('http://example.com/sprite.json', [
+            200, {"Content-Type": "application/json"}, '{}'
+        ]);
 
         const style = new Style(new StubMap());
+
+        style.once('error', (e) => t.error(e));
 
         style.loadJSON({
             "version": 8,
@@ -255,14 +260,14 @@ test('Style#loadJSON', (t) => {
         style.once('data', (e) => {
             t.equal(e.target, style);
             t.equal(e.dataType, 'style');
+            t.ok(!style.imageManager.isLoaded());
 
             style.once('data', (e) => {
                 t.equal(e.target, style);
                 t.equal(e.dataType, 'style');
+                t.ok(style.imageManager.isLoaded());
                 t.end();
             });
-
-            respond();
         });
     });
 
@@ -321,19 +326,32 @@ test('Style#loadJSON', (t) => {
     });
 
     t.test('transforms sprite json and image URLs before request', (t) => {
-        window.useFakeXMLHttpRequest();
+        window.server.autoRespond = true;
+        window.server.respondWith('http://example.com/sprites/bright-v8.png', [
+            200, {"Content-Type" : "image/png"},
+            new Uint8Array([ 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a ]).buffer
+        ]);
+        window.server.respondWith('http://example.com/sprites/bright-v8.json', [
+            200, {"Content-Type": "application/json"}, '{}'
+        ]);
 
         const map = new StubMap();
         const transformSpy = t.spy(map, '_transformRequest');
         const style = new Style(map);
 
-        style.on('style.load', () => {
-            t.equal(transformSpy.callCount, 2);
-            t.equal(transformSpy.getCall(0).args[0], 'http://example.com/sprites/bright-v8.json');
-            t.equal(transformSpy.getCall(0).args[1], 'SpriteJSON');
-            t.equal(transformSpy.getCall(1).args[0], 'http://example.com/sprites/bright-v8.png');
-            t.equal(transformSpy.getCall(1).args[1], 'SpriteImage');
-            t.end();
+        style.once('data', () => {
+            // After the first load event, we should only have loaded the sprite.
+            t.equal(transformSpy.callCount, 1);
+            t.equal(transformSpy.getCall(0).args[0], 'http://example.com/sprites/bright-v8.png');
+            t.equal(transformSpy.getCall(0).args[1], 'SpriteImage');
+
+            style.once('data', () => {
+                // The second data load event also loads the JSON manifest.
+                t.equal(transformSpy.callCount, 2);
+                t.equal(transformSpy.getCall(1).args[0], 'http://example.com/sprites/bright-v8.json');
+                t.equal(transformSpy.getCall(1).args[1], 'SpriteJSON');
+                t.end();
+            });
         });
 
         style.loadJSON(extend(createStyleJSON(), {

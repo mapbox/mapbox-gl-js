@@ -78,13 +78,13 @@ export const postData = function({ url, body }, callback) {
 };
 
 export const getImage = function({ url }, callback) {
-    if (cache[url]) return cached(cache[url], callback);
+    if (cache[url]) return setImmediate(() => { callback(null, cache[url].png, cache[url].body.buffer); });
     return request({ url, encoding: null }, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             new PNG().parse(body, (err, png) => {
                 if (err) return callback(err);
-                cache[url] = png;
-                callback(null, png);
+                cache[url] = { png, body };
+                callback(null, png, body.buffer);
             });
         } else {
             callback(error || {status: response.statusCode});

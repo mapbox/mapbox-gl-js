@@ -178,7 +178,7 @@ const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAA
 const imageQueue = [];
 let numImageRequests = 0;
 
-export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
+export const getImage = function(requestParameters: RequestParameters, callback: (error: ?Error, img: ?HTMLImageElement, data: ?ArrayBuffer) => void): Cancelable {
     // limit concurrent image loads to help with raster sources performance on big screens
     if (numImageRequests >= config.MAX_PARALLEL_IMAGE_REQUESTS) {
         const queued = {requestParameters, callback, cancelled: false};
@@ -205,7 +205,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
             const img: HTMLImageElement = new window.Image();
             const URL = window.URL || window.webkitURL;
             img.onload = () => {
-                callback(null, img);
+                callback(null, img, data);
                 URL.revokeObjectURL(img.src);
             };
             img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
