@@ -16,6 +16,30 @@
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
+"@jingsam/geojson-vt@^3.2.1":
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/@jingsam/geojson-vt/-/geojson-vt-3.2.1.tgz#f8826a328fca09cdde848586bf0c95ab77dbc0b3"
+  integrity sha512-2ViC1BQ+41XYepSdZKF4kzSQwaCEd+f/VRA/F3y0ivxn2JpGxwuKHpYfgnVuQds4e7HMEXOnIYaW+WZ+Uie+LQ==
+
+"@jingsam/supercluster@^4.1.2":
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/@jingsam/supercluster/-/supercluster-4.1.2.tgz#ea2ba6e51ebc1c389573ccce072cd9897fb2ce10"
+  integrity sha512-9E4u2VgxDZVxAzHkLmanYEIi1APPdGpESE2/OhzhkdNpLnlw9NfmdLkBUwbmD0+n5AptjxfcPQsOmHoUXb6Qbg==
+  dependencies:
+    kdbush "^2.0.1"
+
+"@jingsam/vector-tile@^1.3.3":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@jingsam/vector-tile/-/vector-tile-1.3.3.tgz#7ab0c0343cc6363fdf47e2037e962c77b9421b5d"
+  integrity sha512-hXu7J5CmlDj8esYuNjb5QySbsdBQYwB0R2kvYobGW3rkZ97xydnkbyMjeD3QQpz0EDM27qp6aXL9t8xPF41mIQ==
+  dependencies:
+    "@mapbox/point-geometry" "~0.1.0"
+
+"@jingsam/whoots-js@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@jingsam/whoots-js/-/whoots-js-3.1.0.tgz#528e6cd92ac404f54f5f505ab495cbe3735a67ca"
+  integrity sha512-rCpEFOW+mRvl7wJ6vzt4DTt+SoRYWMNk5MRxTGkg0NlfKS0npGs3W3p9wDowrym9Tn3Xj+ZC31N9GS6NIHzlCQ==
+
 "@mapbox/babel-plugin-transform-jsxtreme-markdown@^0.5.0":
   version "0.5.3"
   resolved "https://registry.yarnpkg.com/@mapbox/babel-plugin-transform-jsxtreme-markdown/-/babel-plugin-transform-jsxtreme-markdown-0.5.3.tgz#fdd4a519dbd897d7e8c67d833f0e7b6fd16d7c2f"
@@ -251,7 +275,7 @@
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/@mapbox/unitbezier/-/unitbezier-0.0.0.tgz#15651bd553a67b8581fb398810c98ad86a34524e"
 
-"@mapbox/vector-tile@^1.3.0", "@mapbox/vector-tile@^1.3.1":
+"@mapbox/vector-tile@^1.3.0":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@mapbox/vector-tile/-/vector-tile-1.3.1.tgz#d3a74c90402d06e89ec66de49ec817ff53409666"
   dependencies:
@@ -4276,10 +4300,6 @@ geojson-rewind@^0.3.0:
     concat-stream "~1.6.0"
     minimist "1.2.0"
 
-geojson-vt@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/geojson-vt/-/geojson-vt-3.2.0.tgz#039cea549df5f892c48cff8eb66c2e217d61c241"
-
 get-caller-file@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-1.0.2.tgz#f702e63127e7e231c160a80c1554acb70d5047e5"
@@ -5768,6 +5788,7 @@ jws@^3.1.5:
 kdbush@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/kdbush/-/kdbush-2.0.1.tgz#90c6128e3001ac68c550d7c9e2f222c0269666f1"
+  integrity sha512-9KqSdmWCkBIisFIGclT0FRagKhI7IVbMyUjsxCFG0Ly1Dg6whlxJ7b9lrq8ifk3X/fGeJzok1R75LQfZTfA5zQ==
 
 kebab-case@^1.0.0:
   version "1.0.0"
@@ -9614,12 +9635,6 @@ sugarss@^1.0.0:
   resolved "https://registry.yarnpkg.com/sugarss/-/sugarss-1.0.1.tgz#be826d9003e0f247735f92365dc3fd7f1bae9e44"
   dependencies:
     postcss "^6.0.14"
-
-supercluster@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/supercluster/-/supercluster-4.1.1.tgz#cf13c3b28a3fb3db5290bfad7f524e244bd4ce78"
-  dependencies:
-    kdbush "^2.0.1"
 
 supports-color@^2.0.0:
   version "2.0.0"

@@ -7,7 +7,7 @@ import rewind from 'geojson-rewind';
 import GeoJSONWrapper from './geojson_wrapper';
 import vtpbf from 'vt-pbf';
 import supercluster from 'supercluster';
-import geojsonvt from 'geojson-vt';
+import geojsonvt from '@jingsam/geojson-vt';
 import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
 

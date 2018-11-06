@@ -11,7 +11,7 @@ import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
 import {allowsVerticalWritingMode} from '../../util/script_detection';
 import loadGeometry from '../load_geometry';
-import mvt from '@mapbox/vector-tile';
+import mvt from '@jingsam/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import Anchor from '../../symbol/anchor';

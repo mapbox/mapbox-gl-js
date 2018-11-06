@@ -1,5 +1,5 @@
 {
-  "name": "mapbox-gl",
+  "name": "@jingsam/mapbox-gl",
   "description": "A WebGL interactive maps library",
   "version": "0.50.0",
   "main": "dist/mapbox-gl.js",
@@ -7,25 +7,27 @@
   "license": "SEE LICENSE IN LICENSE.txt",
   "repository": {
     "type": "git",
-    "url": "git://github.com/mapbox/mapbox-gl-js.git"
+    "url": "git://github.com/jingsam/mapbox-gl-js.git"
   },
   "engines": {
     "node": ">=6.4.0"
   },
   "dependencies": {
+    "@jingsam/geojson-vt": "^3.2.1",
+    "@jingsam/supercluster": "^4.1.2",
+    "@jingsam/vector-tile": "^1.3.3",
+    "@jingsam/whoots-js": "^3.1.0",
     "@mapbox/geojson-types": "^1.0.2",
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
     "@mapbox/mapbox-gl-supported": "^1.4.0",
     "@mapbox/point-geometry": "^0.1.0",
     "@mapbox/tiny-sdf": "^1.1.0",
     "@mapbox/unitbezier": "^0.0.0",
-    "@mapbox/vector-tile": "^1.3.1",
     "@mapbox/whoots-js": "^3.1.0",
     "brfs": "^1.4.4",
     "csscolorparser": "~1.0.2",
     "earcut": "^2.1.3",
     "geojson-rewind": "^0.3.0",
-    "geojson-vt": "^3.2.0",
     "gl-matrix": "^2.6.1",
     "grid-index": "^1.0.0",
     "minimist": "0.0.8",
@@ -34,7 +36,6 @@
     "potpack": "^1.0.1",
     "quickselect": "^1.0.0",
     "rw": "^1.3.3",
-    "supercluster": "^4.1.1",
     "tinyqueue": "^1.1.0",
     "vt-pbf": "^3.0.1"
   },

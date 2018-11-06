@@ -7,7 +7,7 @@ import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray } from '../index_array_type';
 import EXTENT from '../extent';
-import mvt from '@mapbox/vector-tile';
+import mvt from '@jingsam/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import { register } from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';

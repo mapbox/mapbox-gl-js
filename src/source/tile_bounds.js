@@ -39,9 +39,7 @@ class TileBounds {
     }
 
     latY(lat: number, zoom: number) {
-        const f = clamp(Math.sin(Math.PI / 180 * lat), -0.9999, 0.9999);
-        const scale = Math.pow(2, zoom) / (2 * Math.PI);
-        return Math.pow(2, zoom - 1) + 0.5 * Math.log((1 + f) / (1 - f)) * -scale;
+        return (90 - lat) * (Math.pow(2, zoom) / 360);
     }
 }
 

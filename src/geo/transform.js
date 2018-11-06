@@ -49,7 +49,7 @@ class Transform {
 
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
-        this.maxValidLatitude = 85.051129; // constant
+        this.maxValidLatitude = 90; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
         this._minZoom = minZoom || 0;
@@ -307,16 +307,14 @@ class Transform {
      */
     latY(lat: number) {
         lat = clamp(lat, -this.maxValidLatitude, this.maxValidLatitude);
-        const y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
-        return (180 - y) * this.worldSize / 360;
+        return (90 - lat) * this.worldSize / 360;
     }
 
     xLng(x: number) {
         return x * 360 / this.worldSize - 180;
     }
     yLat(y: number) {
-        const y2 = 180 - y * 360 / this.worldSize;
-        return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
+        return 90 - y * 360 / this.worldSize;
     }
 
     setLocationAtPoint(lnglat: LngLat, point: Point) {
