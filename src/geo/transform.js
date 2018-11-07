@@ -11,6 +11,8 @@ import { CanonicalTileID, UnwrappedTileID } from '../source/tile_id';
 import EXTENT from '../data/extent';
 import { vec4, mat4, mat2 } from 'gl-matrix';
 
+import { OverscaledTileID } from '../source/tile_id';
+
 /**
  * A single transform, generally used for a single tile to be
  * scaled, rotated, and zoomed.
@@ -244,7 +246,7 @@ class Transform {
             reparseOverscaled?: boolean,
             renderWorldCopies?: boolean
         }
-    ) {
+    ): Array<OverscaledTileID> {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;
 
