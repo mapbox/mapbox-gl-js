@@ -57,8 +57,7 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-react": "^7.11.1",
     "execcommand-copy": "^1.1.0",
-    "flow-bin": "^0.77.0",
-    "flow-coverage-report": "^0.3.0",
+    "flow-bin": "^0.85.0",
     "github-slugger": "^1.1.1",
     "gl": "^4.1.1",
     "glob": "^7.0.3",
@@ -140,7 +139,6 @@
     "test-query": "node test/query.test.js",
     "test-expressions": "build/run-node test/expression.test.js",
     "test-flow": "build/run-node build/generate-flow-typed-style-spec && flow .",
-    "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
     "test-cov": "nyc --require=@mapbox/flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
     "prepublishOnly": "run-s build-flow-types build-dev build-prod-min build-prod build-css build-style-spec test-build",
     "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js"

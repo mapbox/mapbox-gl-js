@@ -11,6 +11,8 @@ export type ErrorTypeT = { kind: 'error' };
 export type CollatorTypeT = { kind: 'collator' };
 export type FormattedTypeT = { kind: 'formatted' };
 
+export type EvaluationKind = 'constant' | 'source' | 'camera' | 'composite';
+
 export type Type =
     NullTypeT |
     NumberTypeT |

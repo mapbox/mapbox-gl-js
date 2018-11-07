@@ -54,7 +54,7 @@ export default class WorkerTransfer extends Benchmark {
             });
     }
 
-    sendPayload(obj: any) {
+    sendPayload(obj: any): Promise<void> {
         return new Promise((resolve) => {
             this.worker.onmessage = () => resolve();
             this.worker.postMessage(obj);
