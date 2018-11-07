@@ -12,7 +12,7 @@ import type {TileJSON} from '../types/tilejson';
 import type {Cancelable} from '../types/cancelable';
 
 export default function(options: any, requestTransformFn: RequestTransformFunction, callback: Callback<TileJSON>): Cancelable {
-    const loaded = function(err, tileJSON: any) {
+    const loaded = function(err: ?Error, tileJSON: ?Object) {
         if (err) {
             return callback(err);
         } else if (tileJSON) {

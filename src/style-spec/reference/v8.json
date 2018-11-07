@@ -581,7 +581,7 @@
     },
     "filter": {
       "type": "filter",
-      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. The `feature-state` expression is not supported in filter expressions."
+      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. Zoom expressions in filters are only evaluated at integer zoom levels. The `feature-state` expression is not supported in filter expressions."
     },
     "layout": {
       "type": "layout",
@@ -972,7 +972,8 @@
       "doc": "Controls the order in which overlapping symbols in the same layer are rendered",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.49.0"
+          "js": "0.49.0",
+          "ios": "4.5.0"
         },
         "data-driven styling": {}
       },

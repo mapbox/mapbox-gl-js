@@ -2,6 +2,7 @@ import mapboxgl from '../../src';
 import accessToken from '../lib/access_token';
 import { summaryStatistics, regression } from '../lib/statistics';
 import updateUI from '../benchmarks_view';
+import styleLocations from '../lib/style_locations';
 
 mapboxgl.accessToken = accessToken;
 
@@ -17,6 +18,7 @@ function register(benchmark) {
 
 import Layout from '../benchmarks/layout';
 import LayoutDDS from '../benchmarks/layout_dds';
+import SymbolLayout from '../benchmarks/symbol_layout';
 import WorkerTransfer from '../benchmarks/worker_transfer';
 import Paint from '../benchmarks/paint';
 import PaintStates from '../benchmarks/paint_states';
@@ -47,6 +49,7 @@ register(new PaintStates(center));
 LayerBenchmarks.forEach((Bench) => register(new Bench()));
 register(new Load());
 register(new LayoutDDS());
+register(new SymbolLayout(style, styleLocations.map(location => location.tileID[0])));
 register(new FilterCreate());
 register(new FilterEvaluate());
 

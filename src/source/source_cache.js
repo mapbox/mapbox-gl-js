@@ -5,7 +5,7 @@ import { create as createSource } from './source';
 import Tile from './tile';
 import { Event, ErrorEvent, Evented } from '../util/evented';
 import TileCache from './tile_cache';
-import Coordinate from '../geo/coordinate';
+import MercatorCoordinate from '../geo/mercator_coordinate';
 import { keysDifference } from '../util/util';
 import EXTENT from '../data/extent';
 import Context from '../gl/context';
@@ -734,7 +734,7 @@ class SourceCache extends Evented {
      * @param queryGeometry coordinates of the corners of bounding rectangle
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
      */
-    tilesIn(queryGeometry: Array<Coordinate>, maxPitchScaleFactor: number) {
+    tilesIn(queryGeometry: Array<MercatorCoordinate>, maxPitchScaleFactor: number) {
         const tileResults = [];
         const ids = this.getIds();
 
@@ -742,14 +742,13 @@ class SourceCache extends Evented {
         let minY = Infinity;
         let maxX = -Infinity;
         let maxY = -Infinity;
-        const z = queryGeometry[0].zoom;
 
         for (let k = 0; k < queryGeometry.length; k++) {
             const p = queryGeometry[k];
-            minX = Math.min(minX, p.column);
-            minY = Math.min(minY, p.row);
-            maxX = Math.max(maxX, p.column);
-            maxY = Math.max(maxY, p.row);
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x);
+            maxY = Math.max(maxY, p.y);
         }
 
 
@@ -764,8 +763,8 @@ class SourceCache extends Evented {
             const queryPadding = maxPitchScaleFactor * tile.queryPadding * EXTENT / tile.tileSize / scale;
 
             const tileSpaceBounds = [
-                coordinateToTilePoint(tileID, new Coordinate(minX, minY, z)),
-                coordinateToTilePoint(tileID, new Coordinate(maxX, maxY, z))
+                tileID.getTilePoint(new MercatorCoordinate(minX, minY)),
+                tileID.getTilePoint(new MercatorCoordinate(maxX, maxY))
             ];
 
             if (tileSpaceBounds[0].x - queryPadding < EXTENT && tileSpaceBounds[0].y - queryPadding < EXTENT &&
@@ -773,7 +772,7 @@ class SourceCache extends Evented {
 
                 const tileSpaceQueryGeometry = [];
                 for (let j = 0; j < queryGeometry.length; j++) {
-                    tileSpaceQueryGeometry.push(coordinateToTilePoint(tileID, queryGeometry[j]));
+                    tileSpaceQueryGeometry.push(tileID.getTilePoint(queryGeometry[j]));
                 }
 
                 tileResults.push({
@@ -834,18 +833,6 @@ class SourceCache extends Evented {
 
 SourceCache.maxOverzooming = 10;
 SourceCache.maxUnderzooming = 3;
-
-/**
- * Convert a coordinate to a point in a tile's coordinate space.
- * @private
- */
-function coordinateToTilePoint(tileID: OverscaledTileID, coord: Coordinate): Point {
-    const zoomedCoord = coord.zoomTo(tileID.canonical.z);
-    return new Point(
-        (zoomedCoord.column - (tileID.canonical.x + tileID.wrap * Math.pow(2, tileID.canonical.z))) * EXTENT,
-        (zoomedCoord.row - tileID.canonical.y) * EXTENT
-    );
-}
 
 function compareKeyZoom(a, b) {
     return ((a % 32) - (b % 32)) || (b - a);

@@ -16,6 +16,7 @@ import Style from './style/style';
 import LngLat from './geo/lng_lat';
 import LngLatBounds from './geo/lng_lat_bounds';
 import Point from '@mapbox/point-geometry';
+import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
 import config from './util/config';
 import {setRTLTextPlugin} from './source/rtl_text_plugin';
@@ -37,6 +38,7 @@ const exported = {
     LngLat,
     LngLatBounds,
     Point,
+    MercatorCoordinate,
     Evented,
     config,
 
@@ -48,7 +50,7 @@ const exported = {
      * mapboxgl.accessToken = myAccessToken;
      * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
      */
-    get accessToken() {
+    get accessToken(): ?string {
         return config.ACCESS_TOKEN;
     },
 
@@ -56,12 +58,20 @@ const exported = {
         config.ACCESS_TOKEN = token;
     },
 
-    get workerCount() {
+    get workerCount(): number {
         return WorkerPool.workerCount;
     },
 
     set workerCount(count: number) {
         WorkerPool.workerCount = count;
+    },
+
+    get maxParallelImageRequests(): number {
+        return config.MAX_PARALLEL_IMAGE_REQUESTS;
+    },
+
+    set maxParallelImageRequests(numRequests: number) {
+        config.MAX_PARALLEL_IMAGE_REQUESTS = numRequests;
     },
 
     workerUrl: ''

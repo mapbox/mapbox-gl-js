@@ -92,11 +92,12 @@ class LngLat {
     }
 
     /**
-     * Converts an array of two numbers to a `LngLat` object.
+     * Converts an array of two numbers or an object with `lng` and `lat` or `lon` and `lat` properties
+     * to a `LngLat` object.
      *
      * If a `LngLat` object is passed in, the function returns it unchanged.
      *
-     * @param {LngLatLike} input An array of two numbers to convert, or a `LngLat` object to return.
+     * @param {LngLatLike} input An array of two numbers or object to convert, or a `LngLat` object to return.
      * @returns {LngLat} A new `LngLat` object, if a conversion occurred, or the original `LngLat` object.
      * @example
      * var arr = [-73.9749, 40.7736];
@@ -111,21 +112,26 @@ class LngLat {
             return new LngLat(Number(input[0]), Number(input[1]));
         }
         if (!Array.isArray(input) && typeof input === 'object' && input !== null) {
-            return new LngLat(Number(input.lng), Number(input.lat));
+            return new LngLat(
+                // flow can't refine this to have one of lng or lat, so we have to cast to any
+                Number('lng' in input ? (input: any).lng : (input: any).lon),
+                Number(input.lat)
+            );
         }
-        throw new Error("`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]");
+        throw new Error("`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, an object {lon: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]");
     }
 }
 
 /**
  * A {@link LngLat} object, an array of two numbers representing longitude and latitude,
- * or an object with `lng` and `lat` properties.
+ * or an object with `lng` and `lat` or `lon` and `lat` properties.
  *
- * @typedef {LngLat | {lng: number, lat: number} | [number, number]} LngLatLike
+ * @typedef {LngLat | {lng: number, lat: number} | {lon: number, lat: number} | [number, number]} LngLatLike
  * @example
  * var v1 = new mapboxgl.LngLat(-122.420679, 37.772537);
  * var v2 = [-122.420679, 37.772537];
+ * var v3 = {lon: -122.420679, lat: 37.772537};
  */
-export type LngLatLike = LngLat | {lng: number, lat: number} | [number, number];
+export type LngLatLike = LngLat | {lng: number, lat: number} | {lon: number, lat: number} | [number, number];
 
 export default LngLat;

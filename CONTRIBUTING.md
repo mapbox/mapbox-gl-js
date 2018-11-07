@@ -91,7 +91,7 @@ A standalone build allows you to turn the contents of this repository into `mapb
 
 To create a standalone build, run
 ```bash
-yarn run build-min
+yarn run build-prod-min
 yarn run build-css
 ```
 

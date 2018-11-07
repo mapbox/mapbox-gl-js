@@ -12,7 +12,7 @@ import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import posAttributes from '../data/pos_attributes';
 import ProgramConfiguration from '../data/program_configuration';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
-import shaders from '../shaders';
+import * as shaders from '../shaders';
 import Program from './program';
 import { programUniforms } from './program/program_uniforms';
 import Context from '../gl/context';

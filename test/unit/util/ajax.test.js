@@ -2,9 +2,11 @@ import { test } from 'mapbox-gl-js-test';
 import {
     getArrayBuffer,
     getJSON,
-    postData
+    postData,
+    getImage
 } from '../../../src/util/ajax';
 import window from '../../../src/util/window';
+import config from '../../../src/util/config';
 
 test('ajax', (t) => {
     t.beforeEach(callback => {
@@ -15,18 +17,6 @@ test('ajax', (t) => {
     t.afterEach(callback => {
         window.restore();
         callback();
-    });
-
-    t.test('getArrayBuffer, no content error', (t) => {
-        window.server.respondWith(request => {
-            request.respond(200, {'Content-Type': 'image/png'}, '');
-        });
-        getArrayBuffer({ url:'' }, (error) => {
-            t.pass('called getArrayBuffer');
-            t.ok(error, 'should error when the status is 200 without content.');
-            t.end();
-        });
-        window.server.respond();
     });
 
     t.test('getArrayBuffer, 404', (t) => {
@@ -102,11 +92,40 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(204);
         });
-        postData({ url:'api.mapbox.com' }, {}, (error) => {
+        postData({ url:'api.mapbox.com' }, (error) => {
             t.equal(error, null);
             t.end();
         });
         window.server.respond();
+    });
+
+    t.test('getImage respects maxParallelImageRequests', (t) => {
+        window.server.respondWith(request => request.respond(200, {'Content-Type': 'image/png'}, ''));
+
+        const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
+
+        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
+        const jsdomImage = window.Image;
+        window.Image = class {
+            set src(src) {
+                setTimeout(() => this.onload());
+            }
+        };
+
+        function callback(err) {
+            if (err) return;
+            // last request is only added after we got a response from one of the previous ones
+            t.equals(window.server.requests.length, maxRequests + 1);
+            window.Image = jsdomImage;
+            t.end();
+        }
+
+        for (let i = 0; i < maxRequests + 1; i++) {
+            getImage({url: ''}, callback);
+        }
+        t.equals(window.server.requests.length, maxRequests);
+
+        window.server.requests[0].respond();
     });
 
     t.end();

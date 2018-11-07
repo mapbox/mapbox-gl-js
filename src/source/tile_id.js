@@ -1,10 +1,12 @@
 // @flow
 
 import {getTileBBox} from '@mapbox/whoots-js';
+import EXTENT from '../data/extent';
+import Point from '@mapbox/point-geometry';
+import MercatorCoordinate from '../geo/mercator_coordinate';
 
 import assert from 'assert';
 import { register } from '../util/web_worker_transfer';
-import Coordinate from '../geo/coordinate';
 
 export class CanonicalTileID {
     z: number;
@@ -38,6 +40,13 @@ export class CanonicalTileID {
             .replace('{y}', String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
             .replace('{quadkey}', quadkey)
             .replace('{bbox-epsg-3857}', bbox);
+    }
+
+    getTilePoint(coord: MercatorCoordinate) {
+        const tilesAtZoom = Math.pow(2, this.z);
+        return new Point(
+            (coord.x * tilesAtZoom - this.x) * EXTENT,
+            (coord.y * tilesAtZoom - this.y) * EXTENT);
     }
 }
 
@@ -142,8 +151,8 @@ export class OverscaledTileID {
         return `${this.overscaledZ}/${this.canonical.x}/${this.canonical.y}`;
     }
 
-    toCoordinate() {
-        return new Coordinate(this.canonical.x + Math.pow(2, this.wrap), this.canonical.y, this.canonical.z);
+    getTilePoint(coord: MercatorCoordinate) {
+        return this.canonical.getTilePoint(new MercatorCoordinate(coord.x - this.wrap, coord.y));
     }
 }
 

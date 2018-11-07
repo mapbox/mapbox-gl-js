@@ -19,7 +19,6 @@ import type {
 } from './types';
 
 export interface Value<T> {
-    context: Context;
     current: T;
     default: T;
     dirty: boolean;
@@ -28,920 +27,494 @@ export interface Value<T> {
     set(value: T): void;
 }
 
-export class ClearColor implements Value<Color> {
-    context: Context;
-    current: Color;
-    default: Color;
+class BaseValue<T> implements Value<T> {
+    gl: WebGLRenderingContext;
+    current: T;
+    default: T;
     dirty: boolean;
 
     constructor(context: Context) {
-        this.context = context;
-        this.default = Color.transparent;
+        this.gl = context.gl;
+        this.default = this.getDefault();
         this.current = this.default;
         this.dirty = false;
     }
 
-    get(): Color { return this.current; }
+    get(): T {
+        return this.current;
+    }
+    set(value: T) { // eslint-disable-line
+        // overridden in child classes;
+    }
 
-    setDefault(): void { this.set(this.default); }
+    getDefault(): T {
+        return this.default; // overriden in child classes
+    }
+    setDefault() {
+        this.set(this.default);
+    }
+}
 
-    set(v: Color): void {
+export class ClearColor extends BaseValue<Color> {
+    getDefault(): Color {
+        return Color.transparent;
+    }
+    set(v: Color) {
         const c = this.current;
-        if (v.r !== c.r || v.g !== c.g || v.b !== c.b || v.a !== c.a || this.dirty === true) {
-            this.context.gl.clearColor(v.r, v.g, v.b, v.a);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v.r === c.r && v.g === c.g && v.b === c.b && v.a === c.a && !this.dirty) return;
+        this.gl.clearColor(v.r, v.g, v.b, v.a);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class ClearDepth implements Value<number> {
-    context: Context;
-    current: number;
-    default: number;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = 1;
-        this.current = this.default;
-        this.dirty = false;
+export class ClearDepth extends BaseValue<number> {
+    getDefault(): number {
+        return 1;
     }
-
-    get(): number { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: number): void {
-        if (this.current !== v || this.dirty === true) {
-            this.context.gl.clearDepth(v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: number) {
+        if (v === this.current && !this.dirty) return;
+        this.gl.clearDepth(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class ClearStencil implements Value<number> {
-    context: Context;
-    current: number;
-    default: number;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = 0;
-        this.current = this.default;
-        this.dirty = false;
+export class ClearStencil extends BaseValue<number> {
+    getDefault(): number {
+        return 0;
     }
-
-    get(): number { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: number): void {
-        if (this.current !== v || this.dirty === true) {
-            this.context.gl.clearStencil(v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: number) {
+        if (v === this.current && !this.dirty) return;
+        this.gl.clearStencil(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class ColorMask implements Value<ColorMaskType> {
-    context: Context;
-    current: ColorMaskType;
-    default: ColorMaskType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = [true, true, true, true];
-        this.current = this.default;
-        this.dirty = false;
+export class ColorMask extends BaseValue<ColorMaskType> {
+    getDefault(): ColorMaskType {
+        return [true, true, true, true];
     }
-
-    get(): ColorMaskType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: ColorMaskType): void {
+    set(v: ColorMaskType) {
         const c = this.current;
-        if (v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || v[3] !== c[3] || this.dirty === true) {
-            this.context.gl.colorMask(v[0], v[1], v[2], v[3]);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v[0] === c[0] && v[1] === c[1] && v[2] === c[2] && v[3] === c[3] && !this.dirty) return;
+        this.gl.colorMask(v[0], v[1], v[2], v[3]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class DepthMask implements Value<DepthMaskType> {
-    context: Context;
-    current: DepthMaskType;
-    default: DepthMaskType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = true;
-        this.current = this.default;
-        this.dirty = false;
+export class DepthMask extends BaseValue<DepthMaskType> {
+    getDefault(): DepthMaskType {
+        return true;
     }
-
-    get(): DepthMaskType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
     set(v: DepthMaskType): void {
-        if (this.current !== v || this.dirty === true) {
-            this.context.gl.depthMask(v);
-            this.current = v;
-            this.dirty = false;
-        }
-    }
-}
-
-export class StencilMask implements Value<number> {
-    context: Context;
-    current: number;
-    default: number;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = 0xFF;
-        this.current = this.default;
+        if (v === this.current && !this.dirty) return;
+        this.gl.depthMask(v);
+        this.current = v;
         this.dirty = false;
     }
+}
 
-    get(): number { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
+export class StencilMask extends BaseValue<number> {
+    getDefault(): number {
+        return 0xFF;
+    }
     set(v: number): void {
-        if (this.current !== v || this.dirty === true) {
-            this.context.gl.stencilMask(v);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v === this.current && !this.dirty) return;
+        this.gl.stencilMask(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class StencilFunc implements Value<StencilFuncType> {
-    context: Context;
-    current: StencilFuncType;
-    default: StencilFuncType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = {
-            func: context.gl.ALWAYS,
+export class StencilFunc extends BaseValue<StencilFuncType> {
+    getDefault(): StencilFuncType {
+        return {
+            func: this.gl.ALWAYS,
             ref: 0,
             mask: 0xFF
         };
-        this.current = this.default;
-        this.dirty = false;
     }
-
-    get(): StencilFuncType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
     set(v: StencilFuncType): void {
         const c = this.current;
-        if (v.func !== c.func || v.ref !== c.ref || v.mask !== c.mask || this.dirty === true) {
-            this.context.gl.stencilFunc(v.func, v.ref, v.mask);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v.func === c.func && v.ref === c.ref && v.mask === c.mask && !this.dirty) return;
+        this.gl.stencilFunc(v.func, v.ref, v.mask);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class StencilOp implements Value<StencilOpType> {
-    context: Context;
-    current: StencilOpType;
-    default: StencilOpType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        const gl = this.context.gl;
-        this.default = [gl.KEEP, gl.KEEP, gl.KEEP];
-        this.current = this.default;
-        this.dirty = false;
+export class StencilOp extends BaseValue<StencilOpType> {
+    getDefault(): StencilOpType {
+        const gl = this.gl;
+        return [gl.KEEP, gl.KEEP, gl.KEEP];
     }
-
-    get(): StencilOpType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: StencilOpType): void {
+    set(v: StencilOpType) {
         const c = this.current;
-        if (v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || this.dirty === true) {
-            this.context.gl.stencilOp(v[0], v[1], v[2]);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v[0] === c[0] && v[1] === c[1] && v[2] === c[2] && !this.dirty) return;
+        this.gl.stencilOp(v[0], v[1], v[2]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class StencilTest implements Value<boolean> {
-    context: Context;
-    current: boolean;
-    default: boolean;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = false;
-        this.current = this.default;
-        this.dirty = false;
+export class StencilTest extends BaseValue<boolean> {
+    getDefault(): boolean {
+        return false;
     }
-
-    get(): boolean { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: boolean): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            if (v) {
-                gl.enable(gl.STENCIL_TEST);
-            } else {
-                gl.disable(gl.STENCIL_TEST);
-            }
-            this.current = v;
-            this.dirty = false;
+    set(v: boolean) {
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        if (v) {
+            gl.enable(gl.STENCIL_TEST);
+        } else {
+            gl.disable(gl.STENCIL_TEST);
         }
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class DepthRange implements Value<DepthRangeType> {
-    context: Context;
-    current: DepthRangeType;
-    default: DepthRangeType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = [0, 1];
-        this.current = this.default;
-        this.dirty = false;
+export class DepthRange extends BaseValue<DepthRangeType> {
+    getDefault(): DepthRangeType {
+        return [0, 1];
     }
-
-    get(): DepthRangeType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: DepthRangeType): void {
+    set(v: DepthRangeType) {
         const c = this.current;
-        if (v[0] !== c[0] || v[1] !== c[1] || this.dirty === true) {
-            this.context.gl.depthRange(v[0], v[1]);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v[0] === c[0] && v[1] === c[1] && !this.dirty) return;
+        this.gl.depthRange(v[0], v[1]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class DepthTest implements Value<boolean> {
-    context: Context;
-    current: boolean;
-    default: boolean;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = false;
-        this.current = this.default;
-        this.dirty = false;
+export class DepthTest extends BaseValue<boolean> {
+    getDefault(): boolean {
+        return false;
     }
-
-    get(): boolean { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: boolean): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            if (v) {
-                gl.enable(gl.DEPTH_TEST);
-            } else {
-                gl.disable(gl.DEPTH_TEST);
-            }
-            this.current = v;
-            this.dirty = false;
+    set(v: boolean) {
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        if (v) {
+            gl.enable(gl.DEPTH_TEST);
+        } else {
+            gl.disable(gl.DEPTH_TEST);
         }
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class DepthFunc implements Value<DepthFuncType> {
-    context: Context;
-    current: DepthFuncType;
-    default: DepthFuncType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = context.gl.LESS;
-        this.current = this.default;
-        this.dirty = false;
+export class DepthFunc extends BaseValue<DepthFuncType> {
+    getDefault(): DepthFuncType {
+        return this.gl.LESS;
     }
-
-    get(): DepthFuncType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: DepthFuncType): void {
-        if (this.current !== v || this.dirty === true) {
-            this.context.gl.depthFunc(v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: DepthFuncType) {
+        if (v === this.current && !this.dirty) return;
+        this.gl.depthFunc(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class Blend implements Value<boolean> {
-    context: Context;
-    current: boolean;
-    default: boolean;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = false;
-        this.current = this.default;
-        this.dirty = false;
+export class Blend extends BaseValue<boolean> {
+    getDefault(): boolean {
+        return false;
     }
-
-    get(): boolean { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: boolean): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            if (v) {
-                gl.enable(gl.BLEND);
-            } else {
-                gl.disable(gl.BLEND);
-            }
-            this.current = v;
-            this.dirty = false;
+    set(v: boolean) {
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        if (v) {
+            gl.enable(gl.BLEND);
+        } else {
+            gl.disable(gl.BLEND);
         }
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class BlendFunc implements Value<BlendFuncType> {
-    context: Context;
-    current: BlendFuncType;
-    default: BlendFuncType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        const gl = this.context.gl;
-        this.default = [gl.ONE, gl.ZERO];
-        this.current = this.default;
-        this.dirty = false;
+export class BlendFunc extends BaseValue<BlendFuncType> {
+    getDefault(): BlendFuncType {
+        const gl = this.gl;
+        return [gl.ONE, gl.ZERO];
     }
-
-    get(): BlendFuncType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: BlendFuncType): void {
+    set(v: BlendFuncType) {
         const c = this.current;
-        if (v[0] !== c[0] || v[1] !== c[1] || this.dirty === true) {
-            this.context.gl.blendFunc(v[0], v[1]);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v[0] === c[0] && v[1] === c[1] && !this.dirty) return;
+        this.gl.blendFunc(v[0], v[1]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class BlendColor implements Value<Color> {
-    context: Context;
-    current: Color;
-    default: Color;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = Color.transparent;
-        this.current = this.default;
-        this.dirty = false;
+export class BlendColor extends BaseValue<Color> {
+    getDefault(): Color {
+        return Color.transparent;
     }
-
-    get(): Color { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: Color): void {
+    set(v: Color) {
         const c = this.current;
-        if (v.r !== c.r || v.g !== c.g || v.b !== c.b || v.a !== c.a || this.dirty === true) {
-            this.context.gl.blendColor(v.r, v.g, v.b, v.a);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v.r === c.r && v.g === c.g && v.b === c.b && v.a === c.a && !this.dirty) return;
+        this.gl.blendColor(v.r, v.g, v.b, v.a);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class BlendEquation implements Value<BlendEquationType> {
-    context: Context;
-    current: BlendEquationType;
-    default: BlendEquationType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = this.context.gl.FUNC_ADD;
-        this.current = this.default;
-        this.dirty = false;
+export class BlendEquation extends BaseValue<BlendEquationType> {
+    getDefault(): BlendEquationType {
+        return this.gl.FUNC_ADD;
     }
-
-    get(): BlendEquationType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: BlendEquationType): void {
-        if (v !== this.current || this.dirty === true) {
-            this.context.gl.blendEquation(v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: BlendEquationType) {
+        if (v === this.current && !this.dirty) return;
+        this.gl.blendEquation(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class CullFace implements Value<boolean> {
-    context: Context;
-    current: boolean;
-    default: boolean;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = false;
-        this.current = this.default;
-        this.dirty = false;
+export class CullFace extends BaseValue<boolean> {
+    getDefault(): boolean {
+        return false;
     }
-
-    get(): boolean { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: boolean): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            if (v) {
-                gl.enable(gl.CULL_FACE);
-            } else {
-                gl.disable(gl.CULL_FACE);
-            }
-            this.current = v;
-            this.dirty = false;
+    set(v: boolean) {
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        if (v) {
+            gl.enable(gl.CULL_FACE);
+        } else {
+            gl.disable(gl.CULL_FACE);
         }
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class CullFaceSide implements Value<CullFaceModeType> {
-    context: Context;
-    current: CullFaceModeType;
-    default: CullFaceModeType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        const gl = this.context.gl;
-        this.default = gl.BACK;
-        this.current = this.default;
-        this.dirty = false;
+export class CullFaceSide extends BaseValue<CullFaceModeType> {
+    getDefault(): CullFaceModeType {
+        return this.gl.BACK;
     }
-
-    get(): CullFaceModeType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: CullFaceModeType): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            gl.cullFace(v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: CullFaceModeType) {
+        if (v === this.current && !this.dirty) return;
+        this.gl.cullFace(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class FrontFace implements Value<FrontFaceType> {
-    context: Context;
-    current: FrontFaceType;
-    default: FrontFaceType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        const gl = this.context.gl;
-        this.default = gl.CCW;
-        this.current = this.default;
-        this.dirty = false;
+export class FrontFace extends BaseValue<FrontFaceType> {
+    getDefault(): FrontFaceType {
+        return this.gl.CCW;
     }
-
-    get(): FrontFaceType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: FrontFaceType): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            gl.frontFace(v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: FrontFaceType) {
+        if (v === this.current && !this.dirty) return;
+        this.gl.frontFace(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class Program implements Value<?WebGLProgram> {
-    context: Context;
-    current: ?WebGLProgram;
-    default: ?WebGLProgram;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = null;
-        this.current = this.default;
-        this.dirty = false;
+export class Program extends BaseValue<?WebGLProgram> {
+    getDefault(): WebGLProgram {
+        return null;
     }
-
-    get(): ?WebGLProgram { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: ?WebGLProgram): void {
-        if (this.current !== v || this.dirty === true) {
-            this.context.gl.useProgram(v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: ?WebGLProgram) {
+        if (v === this.current && !this.dirty) return;
+        this.gl.useProgram(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class ActiveTextureUnit implements Value<TextureUnitType> {
-    context: Context;
-    current: TextureUnitType;
-    default: TextureUnitType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = context.gl.TEXTURE0;
-        this.current = this.default;
-        this.dirty = false;
+export class ActiveTextureUnit extends BaseValue<TextureUnitType> {
+    getDefault(): TextureUnitType {
+        return this.gl.TEXTURE0;
     }
-
-    get(): TextureUnitType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: TextureUnitType): void {
-        if (this.current !== v || this.dirty === true) {
-            this.context.gl.activeTexture(v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: TextureUnitType) {
+        if (v === this.current && !this.dirty) return;
+        this.gl.activeTexture(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class Viewport implements Value<ViewportType> {
-    context: Context;
-    current: ViewportType;
-    default: ViewportType;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        const gl = this.context.gl;
-        this.default = [0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight];
-        this.current = this.default;
-        this.dirty = false;
+export class Viewport extends BaseValue<ViewportType> {
+    getDefault(): ViewportType {
+        const gl = this.gl;
+        return [0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight];
     }
-
-    get(): ViewportType { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: ViewportType): void {
+    set(v: ViewportType) {
         const c = this.current;
-        if (v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || v[3] !== c[3] || this.dirty === true) {
-            this.context.gl.viewport(v[0], v[1], v[2], v[3]);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v[0] === c[0] && v[1] === c[1] && v[2] === c[2] && v[3] === c[3] && !this.dirty) return;
+        this.gl.viewport(v[0], v[1], v[2], v[3]);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class BindFramebuffer implements Value<?WebGLFramebuffer> {
-    context: Context;
-    current: ?WebGLFramebuffer;
-    default: ?WebGLFramebuffer;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = null;
-        this.current = this.default;
-        this.dirty = false;
+export class BindFramebuffer extends BaseValue<?WebGLFramebuffer> {
+    getDefault(): WebGLFramebuffer {
+        return null;
     }
-
-    get(): ?WebGLFramebuffer { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: ?WebGLFramebuffer): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            gl.bindFramebuffer(gl.FRAMEBUFFER, v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: ?WebGLFramebuffer) {
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class BindRenderbuffer implements Value<?WebGLRenderbuffer> {
-    context: Context;
-    current: ?WebGLRenderbuffer;
-    default: ?WebGLRenderbuffer;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = null;
-        this.current = this.default;
-        this.dirty = false;
+export class BindRenderbuffer extends BaseValue<?WebGLRenderbuffer> {
+    getDefault(): WebGLRenderbuffer {
+        return null;
     }
-
-    get(): ?WebGLRenderbuffer { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: ?WebGLRenderbuffer): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            gl.bindRenderbuffer(gl.RENDERBUFFER, v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: ?WebGLRenderbuffer) {
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        gl.bindRenderbuffer(gl.RENDERBUFFER, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class BindTexture implements Value<?WebGLTexture> {
-    context: Context;
-    current: ?WebGLTexture;
-    default: ?WebGLTexture;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = null;
-        this.current = this.default;
-        this.dirty = false;
+export class BindTexture extends BaseValue<?WebGLTexture> {
+    getDefault(): WebGLTexture {
+        return null;
     }
-
-    get(): ?WebGLTexture { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: ?WebGLTexture): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            gl.bindTexture(gl.TEXTURE_2D, v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: ?WebGLTexture) {
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        gl.bindTexture(gl.TEXTURE_2D, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class BindVertexBuffer implements Value<?WebGLBuffer> {
-    context: Context;
-    current: ?WebGLBuffer;
-    default: ?WebGLBuffer;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = null;
-        this.current = this.default;
-        this.dirty = false;
+export class BindVertexBuffer extends BaseValue<?WebGLBuffer> {
+    getDefault(): WebGLBuffer {
+        return null;
     }
-
-    get(): ?WebGLBuffer { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: ?WebGLBuffer): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            gl.bindBuffer(gl.ARRAY_BUFFER, v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: ?WebGLBuffer) {
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        gl.bindBuffer(gl.ARRAY_BUFFER, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class BindElementBuffer implements Value<?WebGLBuffer> {
-    context: Context;
-    current: ?WebGLBuffer;
-    default: ?WebGLBuffer;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = null;
-        this.current = this.default;
-        this.dirty = false;
+export class BindElementBuffer extends BaseValue<?WebGLBuffer> {
+    getDefault(): WebGLBuffer {
+        return null;
     }
-
-    get(): ?WebGLBuffer { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: ?WebGLBuffer): void {
+    set(v: ?WebGLBuffer) {
         // Always rebind
-        const gl = this.context.gl;
+        const gl = this.gl;
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, v);
         this.current = v;
         this.dirty = false;
     }
 }
 
-export class BindVertexArrayOES implements Value<any> {
-    context: Context;
-    current: any;
-    default: any;
-    dirty: boolean;
+export class BindVertexArrayOES extends BaseValue<any> {
+    vao: any;
 
     constructor(context: Context) {
-        this.context = context;
-        this.default = null;
-        this.current = this.default;
-        this.dirty = false;
+        super(context);
+        this.vao = context.extVertexArrayObject;
     }
-
-    get(): any { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: any): void {
-        if (this.current !== v && this.context.extVertexArrayObject || this.dirty === true) {
-            this.context.extVertexArrayObject.bindVertexArrayOES(v);
-            this.current = v;
-            this.dirty = false;
-        }
+    getDefault(): any {
+        return null;
+    }
+    set(v: any) {
+        if (!this.vao || v === this.current && !this.dirty) return;
+        this.vao.bindVertexArrayOES(v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class PixelStoreUnpack implements Value<number> {
-    context: Context;
-    current: number;
-    default: number;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = 4;
-        this.current = this.default;
-        this.dirty = false;
+export class PixelStoreUnpack extends BaseValue<number> {
+    getDefault(): number {
+        return 4;
     }
-
-    get(): number { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: number): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            gl.pixelStorei(gl.UNPACK_ALIGNMENT, v);
-            this.current = v;
-            this.dirty = false;
-        }
+    set(v: number) {
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, v);
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-export class PixelStoreUnpackPremultiplyAlpha implements Value<boolean> {
-    context: Context;
-    current: boolean;
-    default: boolean;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = false;
-        this.current = this.default;
-        this.dirty = false;
+export class PixelStoreUnpackPremultiplyAlpha extends BaseValue<boolean> {
+    getDefault(): boolean {
+        return false;
     }
-
-    get(): boolean { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
     set(v: boolean): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (v: any));
-            this.current = v;
-            this.dirty = false;
-        }
-    }
-}
-
-export class PixelStoreUnpackFlipY implements Value<boolean> {
-    context: Context;
-    current: boolean;
-    default: boolean;
-    dirty: boolean;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.default = false;
-        this.current = this.default;
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (v: any));
+        this.current = v;
         this.dirty = false;
     }
+}
 
-    get(): boolean { return this.current; }
-
-    setDefault(): void { this.set(this.default); }
-
+export class PixelStoreUnpackFlipY extends BaseValue<boolean> {
+    getDefault(): boolean {
+        return false;
+    }
     set(v: boolean): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, (v: any));
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v === this.current && !this.dirty) return;
+        const gl = this.gl;
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, (v: any));
+        this.current = v;
+        this.dirty = false;
     }
 }
 
-/**
- * Framebuffer values
- * @private
- */
-export class FramebufferValue<T> {
-    context: Context;
+class FramebufferAttachment<T> extends BaseValue<?T> {
     parent: WebGLFramebuffer;
-    current: ?T;
-    default: ?T;
-    dirty: boolean;
+    context: Context;
 
     constructor(context: Context, parent: WebGLFramebuffer) {
+        super(context);
         this.context = context;
-        this.default = null;
-        this.current = this.default;
-        this.dirty = false;
         this.parent = parent;
     }
-
-    get(): ?T { return this.current; }
+    getDefault() {
+        return null;
+    }
 }
 
-export class ColorAttachment extends FramebufferValue<?WebGLTexture> implements Value<?WebGLTexture> {
-    dirty: boolean;
-
-    constructor(context: Context, parent: WebGLFramebuffer) {
-        super(context, parent);
-        this.dirty = false;
-    }
-
-    setDefault(): void { this.set(this.default); }
-
-    set(v: ?WebGLTexture): void {
-        if (this.dirty || this.current !== v) {
-            const gl = this.context.gl;
-            this.context.bindFramebuffer.set(this.parent);
-            // note: it's possible to attach a renderbuffer to the color
-            // attachment point, but thus far MBGL only uses textures for color
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, v, 0);
-            this.current = v;
-            this.dirty = false;
-        }
-    }
-
+export class ColorAttachment extends FramebufferAttachment<WebGLTexture> {
     setDirty() {
         this.dirty = true;
     }
+    set(v: ?WebGLTexture): void {
+        if (v === this.current && !this.dirty) return;
+        this.context.bindFramebuffer.set(this.parent);
+        // note: it's possible to attach a renderbuffer to the color
+        // attachment point, but thus far MBGL only uses textures for color
+        const gl = this.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, v, 0);
+        this.current = v;
+        this.dirty = false;
+    }
 }
 
-export class DepthAttachment extends FramebufferValue<?WebGLRenderbuffer> implements Value<?WebGLRenderbuffer> {
-
-    setDefault(): void { this.set(this.default); }
-
+export class DepthAttachment extends FramebufferAttachment<WebGLRenderbuffer> {
     set(v: ?WebGLRenderbuffer): void {
-        if (this.current !== v || this.dirty === true) {
-            const gl = this.context.gl;
-            this.context.bindFramebuffer.set(this.parent);
-            // note: it's possible to attach a texture to the depth attachment
-            // point, but thus far MBGL only uses renderbuffers for depth
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, v);
-            this.current = v;
-            this.dirty = false;
-        }
+        if (v === this.current && !this.dirty) return;
+        this.context.bindFramebuffer.set(this.parent);
+        // note: it's possible to attach a texture to the depth attachment
+        // point, but thus far MBGL only uses renderbuffers for depth
+        const gl = this.gl;
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, v);
+        this.current = v;
+        this.dirty = false;
     }
 }

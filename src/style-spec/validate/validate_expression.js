@@ -23,5 +23,10 @@ export default function validateExpression(options: any) {
         (!isStateConstant((expression.value: any)._styleExpression.expression))) {
         return [new ValidationError(options.key, options.value, '"feature-state" data expressions are not supported with layout properties.')];
     }
+
+    if (options.expressionContext === 'filter' && !isStateConstant((expression.value: any).expression)) {
+        return [new ValidationError(options.key, options.value, '"feature-state" data expressions are not supported with filters.')];
+    }
+
     return [];
 }
