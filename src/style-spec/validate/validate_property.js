@@ -6,6 +6,7 @@ import getType from '../util/get_type';
 import { isFunction } from '../function';
 import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
 import { supportsPropertyExpression } from '../util/properties';
+import { warnOnce } from '../util/util';
 
 export default function validateProperty(options, propertyType) {
     const key = options.key;
