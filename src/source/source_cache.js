@@ -298,7 +298,6 @@ class SourceCache extends Evented {
         if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
 
-        this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID}));
         if (this._tiles[id] && !tile.holdingForFade()) {
             // Only add to global bucket if we're still rendering this tile
             this._addToGlobalBuckets(tile);
