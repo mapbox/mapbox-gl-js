@@ -124,6 +124,7 @@ createStructArrayType('pos', posAttributes);
 createStructArrayType('raster_bounds', rasterBoundsAttributes);
 
 const circleAttributes = require('../src/data/bucket/circle_attributes').default;
+const heatmapAttributes = require('../src/data/bucket/heatmap_attributes').default;
 const fillAttributes = require('../src/data/bucket/fill_attributes').default;
 const fillExtrusionAttributes = require('../src/data/bucket/fill_extrusion_attributes').default;
 const lineAttributes = require('../src/data/bucket/line_attributes').default;
@@ -134,7 +135,7 @@ const layoutAttributes = {
     circle: circleAttributes,
     fill: fillAttributes,
     'fill-extrusion': fillExtrusionAttributes,
-    heatmap: circleAttributes,
+    heatmap: heatmapAttributes,
     line: lineAttributes,
     pattern: patternAttributes
 };

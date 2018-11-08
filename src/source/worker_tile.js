@@ -116,7 +116,8 @@ class WorkerTile {
                     overscaling: this.overscaling,
                     collisionBoxArray: this.collisionBoxArray,
                     sourceLayerIndex,
-                    sourceID: this.source
+                    sourceID: this.source,
+                    tileID: this.tileID
                 });
 
                 bucket.populate(features, options);

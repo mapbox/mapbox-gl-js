@@ -3,13 +3,12 @@
 import { CircleLayoutArray } from '../array_types';
 
 import { members as layoutAttributes } from './circle_attributes';
-import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
-import { TriangleIndexArray } from '../index_array_type';
 import loadGeometry from '../load_geometry';
 import EXTENT from '../extent';
 import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
+import type { OverscaledTileID, CanonicalTileID } from '../../source/tile_id';
 
 import type {
     Bucket,
@@ -18,19 +17,39 @@ import type {
     PopulateParameters
 } from '../bucket';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
-import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer';
 import type Context from '../../gl/context';
-import type IndexBuffer from '../../gl/index_buffer';
-import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state';
 import type {ImagePosition} from '../../render/image_atlas';
 
 
-function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
+function addCircleVertex(layoutVertexArray, globalPosition, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
-        (x * 2) + ((extrudeX + 1) / 2),
-        (y * 2) + ((extrudeY + 1) / 2));
+        globalPosition[0], // x high bits
+        globalPosition[1], // y high bits
+        (globalPosition[2] * 2) + ((extrudeX + 1) / 2),  // x low bits + x extrude
+        (globalPosition[3] * 2) + ((extrudeY + 1) / 2)); // y low bits + y extrude
+}
+
+const maxUint15 = Math.pow(2, 15);
+
+function globalPosition(tileX: number, tileY: number, canonical: CanonicalTileID): Array<number> {
+    // Convert to a global representation:
+    // xHigh (UINT16): coordinate of z16 tile containing this point
+    // yHigh (UINT16): coordinate of z16 tile containing this point
+    // xLow (UINT15): 15 bits of x precision within the z16 tile
+    // yLow (UINT15): 15 bits of y precision within the z16 tile
+    const scaleDiff = Math.pow(2, 16 - canonical.z);
+    const tileXFractional = tileX / EXTENT;
+    const tileYFractional = tileY / EXTENT;
+    const fullPrecisionX = scaleDiff * canonical.x + tileXFractional * scaleDiff;
+    const fullPrecisionY = scaleDiff * canonical.y + tileYFractional * scaleDiff;
+    return [
+        Math.floor(fullPrecisionX),
+        Math.floor(fullPrecisionY),
+        Math.floor((fullPrecisionX % 1) * maxUint15),
+        Math.floor((fullPrecisionY % 1) * maxUint15)
+    ];
 }
 
 
@@ -41,36 +60,31 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
  * vector that is where it points.
  * @private
  */
-class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
+class CircleBucket implements Bucket {
     index: number;
     zoom: number;
     overscaling: number;
     layerIds: Array<string>;
-    layers: Array<Layer>;
-    stateDependentLayers: Array<Layer>;
+    layers: Array<CircleStyleLayer>;
+    stateDependentLayers: Array<CircleStyleLayer>;
 
     layoutVertexArray: CircleLayoutArray;
-    layoutVertexBuffer: VertexBuffer;
-
-    indexArray: TriangleIndexArray;
-    indexBuffer: IndexBuffer;
 
     hasPattern: boolean;
-    programConfigurations: ProgramConfigurationSet<Layer>;
-    segments: SegmentVector;
+    programConfigurations: ProgramConfigurationSet<CircleStyleLayer>;
     uploaded: boolean;
+    tileID: OverscaledTileID;
 
-    constructor(options: BucketParameters<Layer>) {
+    constructor(options: BucketParameters<CircleStyleLayer>) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
         this.hasPattern = false;
+        this.tileID = options.tileID;
 
         this.layoutVertexArray = new CircleLayoutArray();
-        this.indexArray = new TriangleIndexArray();
-        this.segments = new SegmentVector();
         this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
     }
 
@@ -98,20 +112,13 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 
     upload(context: Context) {
-        if (!this.uploaded) {
-            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-            this.indexBuffer = context.createIndexBuffer(this.indexArray);
-        }
-        this.programConfigurations.upload(context);
         this.uploaded = true;
     }
 
     destroy() {
-        if (!this.layoutVertexBuffer) return;
-        this.layoutVertexBuffer.destroy();
-        this.indexBuffer.destroy();
-        this.programConfigurations.destroy();
-        this.segments.destroy();
+        if (this.programConfigurations) {
+            this.programConfigurations.destroy();
+        }
     }
 
     addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>, index: number) {
@@ -132,19 +139,12 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 // │ 0     1 │
                 // └─────────┘
 
-                const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-                const index = segment.vertexLength;
+                const globalPos = globalPosition(x, y, this.tileID.canonical);
 
-                addCircleVertex(this.layoutVertexArray, x, y, -1, -1);
-                addCircleVertex(this.layoutVertexArray, x, y, 1, -1);
-                addCircleVertex(this.layoutVertexArray, x, y, 1, 1);
-                addCircleVertex(this.layoutVertexArray, x, y, -1, 1);
-
-                this.indexArray.emplaceBack(index, index + 1, index + 2);
-                this.indexArray.emplaceBack(index, index + 3, index + 2);
-
-                segment.vertexLength += 4;
-                segment.primitiveLength += 2;
+                addCircleVertex(this.layoutVertexArray, globalPos, -1, -1);
+                addCircleVertex(this.layoutVertexArray, globalPos, 1, -1);
+                addCircleVertex(this.layoutVertexArray, globalPos, 1, 1);
+                addCircleVertex(this.layoutVertexArray, globalPos, -1, 1);
             }
         }
 

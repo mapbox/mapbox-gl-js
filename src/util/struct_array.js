@@ -140,7 +140,7 @@ class StructArray {
      * Resize the array to discard unused capacity.
      */
     _trim() {
-        if (this.length !== this.capacity) {
+        if (this.arrayBuffer && this.capacity > this.length) {
             this.capacity = this.length;
             this.arrayBuffer = this.arrayBuffer.slice(0, this.length * this.bytesPerElement);
             this._refreshViews();

@@ -13,6 +13,9 @@ import { vec4, mat4, mat2 } from 'gl-matrix';
 
 import type { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
 
+const globalCoordWorldSize = Math.pow(2, 31);
+const globalCoordLowBits = Math.pow(2, 15);
+
 /**
  * A single transform, generally used for a single tile to be
  * scaled, rotated, and zoomed.
@@ -32,6 +35,7 @@ class Transform {
     zoomFraction: number;
     pixelsToGLUnits: [number, number];
     cameraToCenterDistance: number;
+    globalCenterPos: [number, number, number, number];
     mercatorMatrix: Array<number>;
     projMatrix: Float64Array;
     alignedProjMatrix: Float64Array;
@@ -48,6 +52,9 @@ class Transform {
     _constraining: boolean;
     _posMatrixCache: {[number]: Float32Array};
     _alignedPosMatrixCache: {[number]: Float32Array};
+    _globalMatrix: Array<number>;
+    _globalCenterX: number;
+    _globalCenterY: number;
 
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
@@ -293,6 +300,24 @@ class Transform {
 
     get point(): Point { return this.project(this.center); }
 
+    /**
+     * longitude to absolute x coord
+     * @returns {number} pixel coordinate
+     */
+    lngX(lng: number, worldSize?: number) {
+        return (180 + lng) * (worldSize || this.worldSize) / 360;
+    }
+    /**
+     * latitude to absolute y coord
+     * @returns {number} pixel coordinate
+     */
+    latY(lat: number, worldSize?: number) {
+        lat = clamp(lat, -this.maxValidLatitude, this.maxValidLatitude);
+        const y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+        return (180 - y) * (worldSize || this.worldSize) / 360;
+    }
+
+
     setLocationAtPoint(lnglat: LngLat, point: Point) {
         const a = this.pointCoordinate(point);
         const b = this.pointCoordinate(this.centerPoint);
@@ -446,6 +471,22 @@ class Transform {
         return this.mercatorMatrix.slice();
     }
 
+    globalPixelRatio(): number {
+        return globalCoordWorldSize / this.worldSize;
+    }
+
+    relativeToEyeMatrix(wrap: number, translate: [number, number]): Float32Array {
+        const pixelRatio = this.globalPixelRatio();
+        const translation = [
+            translate[0] * pixelRatio + wrap * globalCoordWorldSize + this._globalCenterX,
+            translate[1] * pixelRatio + this._globalCenterY,
+            0
+        ];
+        const translatedMatrix = new Float32Array(16);
+        mat4.translate(translatedMatrix, this._globalMatrix, translation);
+        return translatedMatrix;
+    }
+
     _constrain() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
@@ -548,6 +589,17 @@ class Transform {
         // The mercatorMatrix can be used to transform points from mercator coordinates
         // ([0, 0] nw, [1, 1] se) to GL coordinates.
         this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize]);
+
+        this._globalCenterX = this.lngX(this.center.lng, globalCoordWorldSize);
+        this._globalCenterY = this.latY(this.center.lat, globalCoordWorldSize);
+        this.globalCenterPos = [
+            Math.floor(this._globalCenterX / globalCoordLowBits),
+            Math.floor(this._globalCenterY / globalCoordLowBits),
+            Math.floor(this._globalCenterX % globalCoordLowBits),
+            Math.floor(this._globalCenterY % globalCoordLowBits)
+        ];
+        const inverseGlobalPixelRatio = this.worldSize / globalCoordWorldSize;
+        this._globalMatrix = mat4.scale([], m, [inverseGlobalPixelRatio, inverseGlobalPixelRatio, inverseGlobalPixelRatio]);
 
         // scale vertically to meters per pixel (inverse of ground resolution):
         mat4.scale(m, m, [1, 1, mercatorZfromAltitude(1, this.center.lat) * this.worldSize, 1]);

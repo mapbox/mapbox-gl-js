@@ -452,6 +452,21 @@ class Painter {
         return translatedMatrix;
     }
 
+    relativeToEyeMatrix(wrap: number, translate: [number, number], translateAnchor: 'map' | 'viewport'): Float32Array {
+        const angle = translateAnchor === 'viewport' ? -this.transform.angle : 0;
+
+        if (angle) {
+            const sinA = Math.sin(angle);
+            const cosA = Math.cos(angle);
+            translate = [
+                translate[0] * cosA - translate[1] * sinA,
+                translate[0] * sinA + translate[1] * cosA
+            ];
+        }
+
+        return this.transform.relativeToEyeMatrix(wrap, translate);
+    }
+
     saveTileTexture(texture: Texture) {
         const textures = this._tileTextures[texture.size[0]];
         if (!textures) {

@@ -14,6 +14,8 @@ import browser from '../util/browser';
 import { OverscaledTileID } from './tile_id';
 import assert from 'assert';
 import SourceFeatureState from './source_state';
+import CircleBucket from '../data/bucket/circle_bucket';
+import GlobalCircleBucket from '../data/bucket/global_circle_bucket';
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -57,6 +59,9 @@ class SourceCache extends Evented {
     _isIdRenderable: (id: number, symbolLayer?: boolean) => boolean;
     used: boolean;
     _state: SourceFeatureState;
+    _globalBuckets: {[string]: {[string | number]: GlobalCircleBucket}};
+    _leaderIdMap: {[string]: string};
+    _usedWraps: Array<number>;
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
@@ -96,6 +101,9 @@ class SourceCache extends Evented {
 
         this._coveredTiles = {};
         this._state = new SourceFeatureState();
+        this._globalBuckets = {};
+        this._leaderIdMap = {};
+        this._usedWraps = [];
     }
 
     onAdd(map: Map) {
@@ -170,6 +178,39 @@ class SourceCache extends Evented {
         this._state.coalesceChanges(this._tiles, this.map ? this.map.painter : null);
         for (const i in this._tiles) {
             this._tiles[i].upload(context);
+
+        }
+        for (const tileID of this.getRenderableIds()) {
+            const tile = this._tiles[tileID];
+            for (const bucketId in tile.buckets) {
+                const bucket = tile.buckets[bucketId];
+                if (bucket instanceof CircleBucket) {
+                    const bucketKey = bucket.zoom;
+                    const leaderId = bucket.layerIds[0];
+                    if (this._globalBuckets[leaderId] && this._globalBuckets[leaderId][bucketKey]) {
+                        this._globalBuckets[leaderId][bucketKey].markUsed(bucket);
+                    }
+                }
+            }
+        }
+        const emptyGlobalBuckets = [];
+        for (const layer in this._globalBuckets) {
+            for (const key in this._globalBuckets[layer]) {
+                const globalBucket = this._globalBuckets[layer][key];
+                globalBucket.upload(context);
+                if (globalBucket.tileCount() === 0) {
+                    // If last tiles of this global bucket have been garbage
+                    // collected stop tracking it
+                    emptyGlobalBuckets.push({ layer, key });
+                }
+            }
+        }
+        for (const empty of emptyGlobalBuckets) {
+            // TODO: There are edge cases where this will cause us to discard
+            // tile buckets that are still in the source cache, because none
+            // of them are being rendered. Since they're already loaded, nothing
+            // gets re-added to the global bucket when they start rendering again.
+            //delete this._globalBuckets[empty.layer][empty.key];
         }
     }
 
@@ -258,6 +299,41 @@ class SourceCache extends Evented {
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
 
         this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID}));
+        if (this._tiles[id] && !tile.holdingForFade()) {
+            // Only add to global bucket if we're still rendering this tile
+            this._addToGlobalBuckets(tile);
+        }
+        this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
+    }
+
+    _addToGlobalBuckets(tile: ?Tile) {
+        if (!tile) {
+            return;
+        }
+        for (const bucketId in tile.buckets) {
+            const bucket = tile.buckets[bucketId];
+            if (bucket instanceof CircleBucket) {
+                // TODO: look out for changes to the style that change the bucket->layerId mapping
+                const leaderId = bucket.layerIds[0];
+                let globalBucketsForLayer = this._globalBuckets[leaderId];
+                if (!globalBucketsForLayer) {
+                    globalBucketsForLayer = this._globalBuckets[leaderId] = {};
+                }
+                const bucketKey = bucket.zoom;
+                let globalBucket = globalBucketsForLayer[bucketKey];
+                if (!globalBucket) {
+                    globalBucket = globalBucketsForLayer[bucketKey] = new GlobalCircleBucket({
+                        layerIds: bucket.layerIds,
+                        layers: bucket.layers,
+                        zoom: bucket.zoom
+                    });
+                }
+                for (const layerId of bucket.layerIds) {
+                    this._leaderIdMap[layerId] = leaderId;
+                }
+                globalBucket.addTileBucket(bucket);
+            }
+        }
     }
 
     /**
@@ -559,6 +635,7 @@ class SourceCache extends Evented {
         const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
         const missingTiles = {};
+
         for (const tileID of idealTileIDs) {
             const tile = this._addTile(tileID);
 
@@ -630,6 +707,15 @@ class SourceCache extends Evented {
             }
         }
 
+        const usedWraps = {};
+        for (const key in retain) {
+            usedWraps[retain[key].wrap] = true;
+        }
+        this._usedWraps = [];
+        for (const wrap in usedWraps) {
+            this._usedWraps.push(+wrap);
+        }
+
         return retain;
     }
 
@@ -660,6 +746,8 @@ class SourceCache extends Evented {
         if (!cached) {
             tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor());
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
+        } else {
+            this._addToGlobalBuckets(tile);
         }
 
         // Impossible, but silence flow.
@@ -715,6 +803,10 @@ class SourceCache extends Evented {
         }
     }
 
+    getCoveringWraps(): Array<number> {
+        return this._usedWraps;
+    }
+
     /**
      * Remove all tiles from this pyramid
      */
@@ -722,8 +814,9 @@ class SourceCache extends Evented {
         this._shouldReloadOnResume = false;
         this._paused = false;
 
-        for (const id in this._tiles)
+        for (const id in this._tiles) {
             this._removeTile(id);
+        }
 
         this._cache.reset();
     }
@@ -819,6 +912,11 @@ class SourceCache extends Evented {
     setFeatureState(sourceLayer?: string, feature: number, state: Object) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         this._state.updateState(sourceLayer, feature, state);
+        for (const layer in this._globalBuckets) {
+            for (const key in this._globalBuckets[layer]) {
+                this._globalBuckets[layer][key].update(null, null);
+            }
+        }
     }
 
     /**
@@ -828,6 +926,10 @@ class SourceCache extends Evented {
     getFeatureState(sourceLayer?: string, feature: number) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         return this._state.getState(sourceLayer, feature);
+    }
+
+    getGlobalBuckets(layerId: string): {[string | number]: GlobalCircleBucket} {
+        return this._globalBuckets[this._leaderIdMap[layerId]];
     }
 }
 
