@@ -6,14 +6,12 @@ import { members as layoutAttributes } from './circle_attributes';
 import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray } from '../index_array_type';
-import EXTENT from '../extent';
 import CircleBucket from './circle_bucket';
 
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
-import type {FeatureStates} from '../../source/source_state';
 
 /**
  * See CircleBucket for per-tile implementation
@@ -61,7 +59,7 @@ class GlobalCircleBucket {
         this._usedTileBuckets = {};
     }
 
-    update(states: ?FeatureStates, vtLayer: ?VectorTileLayer) {
+    update() {
         // TODO: Actually hook up all the plumbing to update in place
         // For now, count on the per-tile buckets re-generating, and just copy everything over
         // again.

@@ -205,13 +205,13 @@ class SourceCache extends Evented {
                 }
             }
         }
-        for (const empty of emptyGlobalBuckets) {
-            // TODO: There are edge cases where this will cause us to discard
-            // tile buckets that are still in the source cache, because none
-            // of them are being rendered. Since they're already loaded, nothing
-            // gets re-added to the global bucket when they start rendering again.
-            //delete this._globalBuckets[empty.layer][empty.key];
-        }
+        // TODO: There are edge cases where this will cause us to discard
+        // tile buckets that are still in the source cache, because none
+        // of them are being rendered. Since they're already loaded, nothing
+        // gets re-added to the global bucket when they start rendering again.
+        // for (const empty of emptyGlobalBuckets) {
+        //     delete this._globalBuckets[empty.layer][empty.key];
+        // }
     }
 
     /**
@@ -303,7 +303,7 @@ class SourceCache extends Evented {
             // Only add to global bucket if we're still rendering this tile
             this._addToGlobalBuckets(tile);
         }
-        this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
+        this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID}));
     }
 
     _addToGlobalBuckets(tile: ?Tile) {
@@ -914,7 +914,7 @@ class SourceCache extends Evented {
         this._state.updateState(sourceLayer, feature, state);
         for (const layer in this._globalBuckets) {
             for (const key in this._globalBuckets[layer]) {
-                this._globalBuckets[layer][key].update(null, null);
+                this._globalBuckets[layer][key].update();
             }
         }
     }

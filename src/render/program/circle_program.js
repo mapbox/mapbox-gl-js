@@ -40,7 +40,7 @@ const circleUniformValues = (
 
     let pitchWithMap: boolean, extrudeScale: [number, number];
     if (layer.paint.get('circle-pitch-alignment') === 'map') {
-    const pixelRatio = transform.globalPixelRatio();
+        const pixelRatio = transform.globalPixelRatio();
         pitchWithMap = true;
         extrudeScale = [pixelRatio, pixelRatio];
     } else {

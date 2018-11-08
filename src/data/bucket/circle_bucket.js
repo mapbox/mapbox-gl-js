@@ -17,7 +17,6 @@ import type {
     PopulateParameters
 } from '../bucket';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
-import type Context from '../../gl/context';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state';
 import type {ImagePosition} from '../../render/image_atlas';
@@ -111,7 +110,7 @@ class CircleBucket implements Bucket {
         return !this.uploaded || this.programConfigurations.needsUpload;
     }
 
-    upload(context: Context) {
+    upload() {
         this.uploaded = true;
     }
 
