@@ -35,7 +35,11 @@ class FullscreenControl {
     constructor(options: Options) {
         this._fullscreen = false;
         if (options && options.source) {
-            this._source = options.source;
+            if (options.source instanceof HTMLElement) {
+                this._source = options.source;
+            } else {
+                warnOnce('Full screen control \'source\' must be a DOM element.');
+            }
         }
         bindAll([
             '_onClickFullscreen',
