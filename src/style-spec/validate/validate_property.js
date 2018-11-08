@@ -6,7 +6,7 @@ import getType from '../util/get_type';
 import { isFunction } from '../function';
 import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
 import { supportsPropertyExpression } from '../util/properties';
-import { warnOnce } from '../util/util';
+import { styleWarnOnce } from '../util/util';
 
 export default function validateProperty(options, propertyType) {
     const key = options.key;
@@ -55,7 +55,7 @@ export default function validateProperty(options, propertyType) {
 
     if (options.layerType === 'background' || options.layerType === 'fill' || options.layerType === 'fill-extrusion' || options.layerType === 'line' || options.layerType === 'symbol') {
         if (propsThatRequireSprite.indexOf(propertyKey) > -1 && style && !style.sprite) {
-            warnOnce(`Use of "${propertyKey}" in style "${style.name}" may require a style "sprite" property. If you're experiencing a problem, please ensure that your image has loaded correctly.`);
+            styleWarnOnce(`Use of "${propertyKey}" in style "${style.name}" may require a style "sprite" property. If you're experiencing a problem, please ensure that your image has loaded correctly.`);
         }
     }
 

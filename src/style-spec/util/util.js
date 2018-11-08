@@ -6,7 +6,7 @@
  */
 const warnOnceHistory = {};
 
-export function warnOnce(message) {
+export function styleWarnOnce(message) {
     if (!warnOnceHistory[message]) {
         // console isn't defined in some WebWorkers, see #2558
         if (typeof console !== "undefined") console.warn(message);
