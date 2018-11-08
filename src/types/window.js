@@ -18,6 +18,7 @@ export interface Window extends EventTarget, IDBEnvironment {
     +isSecureContext: boolean;
     +length: number;
     +location: Location;
+    +origin: string;
     name: string;
     +navigator: Navigator;
     offscreenBuffering: string | boolean;
@@ -131,6 +132,8 @@ export interface Window extends EventTarget, IDBEnvironment {
     WheelEvent: typeof WheelEvent;
     Worker: typeof Worker;
     XMLHttpRequest: typeof XMLHttpRequest;
+    Request: typeof Request;
+    AbortController: any;
 
     alert(message?: any): void;
     blur(): void;

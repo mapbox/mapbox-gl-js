@@ -198,5 +198,9 @@
   {                                                                                                                     
     "message": "layers[55].layout.line-join: \"feature-state\" data expressions are not supported with layout properties.",
     "line": 968
+  },
+  {
+    "message": "layers[56].paint.line-width.stops[0][1]: expressions are not allowed in function stops.",
+    "line": 981
   }
 ]

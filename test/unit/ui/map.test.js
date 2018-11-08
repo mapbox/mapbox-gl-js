@@ -53,6 +53,20 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('initial bounds in constructor options', (t) => {
+        const container = window.document.createElement('div');
+        Object.defineProperty(container, 'offsetWidth', {value: 512});
+        Object.defineProperty(container, 'offsetHeight', {value: 512});
+
+        const bounds = [[-133, 16], [-68, 50]];
+        const map = createMap(t, {container, bounds});
+
+        t.deepEqual(fixedLngLat(map.getCenter(), 4), { lng: -100.5, lat: 34.7171 });
+        t.equal(fixedNum(map.getZoom(), 3), 2.113);
+
+        t.end();
+    });
+
     t.test('disables handlers', (t) => {
         t.test('disables all handlers', (t) => {
             const map = createMap(t, {interactive: false});
@@ -801,6 +815,30 @@ test('Map', (t) => {
         map.remove();
         t.ok(control.onRemove.calledOnce);
         t.end();
+    });
+
+    t.test('#remove calls onRemove on added controls before style is destroyed', (t) => {
+        const map = createMap(t);
+        let onRemoveCalled = 0;
+        let style;
+        const control = {
+            onRemove: function(map) {
+                onRemoveCalled++;
+                t.deepEqual(map.getStyle(), style);
+            },
+            onAdd: function (_) {
+                return window.document.createElement('div');
+            }
+        };
+
+        map.addControl(control);
+
+        map.on('style.load', () => {
+            style = map.getStyle();
+            map.remove();
+            t.equal(onRemoveCalled, 1);
+            t.end();
+        });
     });
 
     t.test('#addControl', (t) => {

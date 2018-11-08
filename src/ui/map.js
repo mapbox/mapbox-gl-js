@@ -1,6 +1,6 @@
 // @flow
 
-import { extend, bindAll, warnOnce } from '../util/util';
+import { extend, bindAll, warnOnce, uniqueId } from '../util/util';
 
 import browser from '../util/browser';
 import window from '../util/window';
@@ -196,6 +196,7 @@ const defaultOptions = {
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
+ * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered, when zoomed out.
  * @param {number} [options.maxTileCacheSize=null]  The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
  * @param {string} [options.localIdeographFontFamily=null] If specified, defines a CSS font-family
@@ -261,6 +262,7 @@ class Map extends Camera {
     _collectResourceTiming: boolean;
     _renderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
+    _mapId: number;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -322,6 +324,7 @@ class Map extends Camera {
         this._collectResourceTiming = options.collectResourceTiming;
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
+        this._mapId = uniqueId();
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?
@@ -369,12 +372,17 @@ class Map extends Camera {
         this._hash = options.hash && (new Hash()).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
-            this.jumpTo({
-                center: options.center,
-                zoom: options.zoom,
-                bearing: options.bearing,
-                pitch: options.pitch
-            });
+            if (options.bounds) {
+                this.resize();
+                this.fitBounds(options.bounds, { duration: 0 });
+            } else {
+                this.jumpTo({
+                    center: options.center,
+                    zoom: options.zoom,
+                    bearing: options.bearing,
+                    pitch: options.pitch
+                });
+            }
         }
 
         this.resize();
@@ -398,6 +406,16 @@ class Map extends Camera {
         this.on('dataloading', (event: MapDataEvent) => {
             this.fire(new Event(`${event.dataType}dataloading`, event));
         });
+    }
+
+    /*
+    * Returns a unique number for this map instance which is used for the MapLoadEvent
+    * to make sure we only fire one event per instantiated map object.
+    * @private
+    * @returns {number}
+    */
+    _getMapId() {
+        return this._mapId;
     }
 
     /**
@@ -626,7 +644,7 @@ class Map extends Camera {
      */
     isZooming(): boolean {
         return this._zooming ||
-            this.scrollZoom.isActive();
+            this.scrollZoom.isZooming();
     }
 
     /**
@@ -1658,6 +1676,10 @@ class Map extends Camera {
      */
     remove() {
         if (this._hash) this._hash.remove();
+
+        for (const control of this._controls) control.onRemove(this);
+        this._controls = [];
+
         if (this._frame) {
             this._frame.cancel();
             this._frame = null;
@@ -1668,9 +1690,6 @@ class Map extends Camera {
             window.removeEventListener('resize', this._onWindowResize, false);
             window.removeEventListener('online', this._onWindowOnline, false);
         }
-
-        for (const control of this._controls) control.onRemove(this);
-        this._controls = [];
 
         const extension = this.painter.context.gl.getExtension('WEBGL_lose_context');
         if (extension) extension.loseContext();

@@ -142,6 +142,24 @@ export default class extends React.Component {
                             directives. For Mapbox, you can use this <code>connect-src</code> directive:</p>
                         <pre><code>{`connect-src https://*.tiles.mapbox.com https://api.mapbox.com`}</code></pre>
                     </div>
+                    <div>
+                        <h2 className='strong' id='mapbox-css'>Mapbox CSS</h2>
+                        <p>
+                            The CSS referenced in the Quickstart is used to style DOM elements created by Mapbox code.
+                            Without the CSS, elements like Popups and Markers won't work.
+                        </p>
+                        <p>
+                            Including it with a {'<link>'} in the head of the document via the Mapbox CDN is
+                            the simplest and easiest way to provide the CSS,
+                            but it is also bundled in the Mapbox module, meaning that if you have a bundler
+                            that can handle CSS, you can import the CSS from
+                            <pre><code>{`mapbox-gl/dist/mapbox-gl.css`}</code></pre>.
+                        </p>
+                        <p>
+                            Note too that if the CSS isn't available by the first render, as soon as the CSS is provided,
+                            the DOM elements that depend on this CSS should recover.
+                        </p>
+                    </div>
                 </div>
             </section>
         );

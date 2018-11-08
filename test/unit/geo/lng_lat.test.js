@@ -28,10 +28,13 @@ test('LngLat', (t) => {
         t.ok(LngLat.convert({lng: 0, lat: 10}) instanceof LngLat, 'convert creates a LngLat instance');
         t.ok(LngLat.convert({lng: 0, lat: 0}) instanceof LngLat, 'convert creates a LngLat instance');
         t.ok(LngLat.convert({lng: 0, lat: 0, elev: 0}) instanceof LngLat, 'convert creates a LngLat instance');
+        t.ok(LngLat.convert({lon: 0, lat: 10}) instanceof LngLat, 'convert creates a LngLat instance');
+        t.ok(LngLat.convert({lon: 0, lat: 0}) instanceof LngLat, 'convert creates a LngLat instance');
+        t.ok(LngLat.convert({lon: 0, lat: 0, elev: 0}) instanceof LngLat, 'convert creates a LngLat instance');
         t.ok(LngLat.convert(new LngLat(0, 0)) instanceof LngLat, 'convert creates a LngLat instance');
         t.throws(() => {
             LngLat.convert(0, 10);
-        }, "`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]", 'detects and throws on invalid input');
+        }, "`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, an object {lon: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]", 'detects and throws on invalid input');
         t.end();
     });
 

@@ -11,7 +11,7 @@ import GlyphManager from '../render/glyph_manager';
 import Light from './light';
 import LineAtlas from '../render/line_atlas';
 import { pick, clone, extend, deepEqual, filterObject, mapObject } from '../util/util';
-import { getJSON, ResourceType } from '../util/ajax';
+import { getJSON, getReferrer, ResourceType } from '../util/ajax';
 import { isMapboxURL, normalizeStyleURL } from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
@@ -144,6 +144,8 @@ class Style extends Evented {
 
         this._resetUpdates();
 
+        this.dispatcher.broadcast('setReferrer', getReferrer());
+
         const self = this;
         this._rtlTextPluginCallback = Style.registerForPluginAvailability((args) => {
             self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginURL, args.completionCallback);
@@ -188,12 +190,12 @@ class Style extends Evented {
         url = normalizeStyleURL(url, options.accessToken);
         const request = this.map._transformRequest(url, ResourceType.Style);
 
-        this._request = getJSON(request, (error, json) => {
+        this._request = getJSON(request, (error: ?Error, json: ?Object) => {
             this._request = null;
             if (error) {
                 this.fire(new ErrorEvent(error));
             } else if (json) {
-                this._load((json: any), validate);
+                this._load(json, validate);
             }
         });
     }
@@ -343,6 +345,7 @@ class Style extends Evented {
             return;
         }
 
+        const changed = this._changed;
         if (this._changed) {
             const updatedIds = Object.keys(this._updatedLayers);
             const removedIds = Object.keys(this._removedLayers);
@@ -367,8 +370,6 @@ class Style extends Evented {
             this.light.updateTransitions(parameters);
 
             this._resetUpdates();
-
-            this.fire(new Event('data', {dataType: 'style'}));
         }
 
         for (const sourceId in this.sourceCaches) {
@@ -386,6 +387,11 @@ class Style extends Evented {
 
         this.light.recalculate(parameters);
         this.z = parameters.zoom;
+
+        if (changed) {
+            this.fire(new Event('data', {dataType: 'style'}));
+        }
+
     }
 
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {

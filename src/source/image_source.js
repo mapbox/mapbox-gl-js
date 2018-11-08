@@ -1,10 +1,6 @@
 // @flow
 
-import { getCoordinatesCenter } from '../util/util';
-
 import { CanonicalTileID } from './tile_id';
-import LngLat from '../geo/lng_lat';
-import Point from '@mapbox/point-geometry';
 import { Event, ErrorEvent, Evented } from '../util/evented';
 import { getImage, ResourceType } from '../util/ajax';
 import browser from '../util/browser';
@@ -13,13 +9,13 @@ import { RasterBoundsArray } from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
+import MercatorCoordinate from '../geo/mercator_coordinate';
 
 import type {Source} from './source';
 import type {CanvasSourceSpecification} from './canvas_source';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
-import type Coordinate from '../geo/coordinate';
 import type {Callback} from '../types/callback';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {
@@ -84,7 +80,6 @@ class ImageSource extends Evented implements Source {
     map: Map;
     texture: Texture | null;
     image: ImageData;
-    centerCoord: Coordinate;
     tileID: CanonicalTileID;
     _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
@@ -180,35 +175,21 @@ class ImageSource extends Evented implements Source {
         // and create a buffer with the corner coordinates. These coordinates
         // may be outside the tile, because raster tiles aren't clipped when rendering.
 
-        const map = this.map;
-
         // transform the geo coordinates into (zoom 0) tile space coordinates
-        const cornerZ0Coords = coordinates.map((coord) => {
-            return map.transform.locationCoordinate(LngLat.convert(coord)).zoomTo(0);
-        });
+        const cornerCoords = coordinates.map(MercatorCoordinate.fromLngLat);
 
         // Compute the coordinates of the tile we'll use to hold this image's
         // render data
-        const centerCoord = this.centerCoord = getCoordinatesCenter(cornerZ0Coords);
-        // `column` and `row` may be fractional; round them down so that they
-        // represent integer tile coordinates
-        centerCoord.column = Math.floor(centerCoord.column);
-        centerCoord.row = Math.floor(centerCoord.row);
-        this.tileID = new CanonicalTileID(centerCoord.zoom, centerCoord.column, centerCoord.row);
+        this.tileID = getCoordinatesCenterTileID(cornerCoords);
 
         // Constrain min/max zoom to our tile's zoom level in order to force
         // SourceCache to request this tile (no matter what the map's zoom
         // level)
-        this.minzoom = this.maxzoom = centerCoord.zoom;
+        this.minzoom = this.maxzoom = this.tileID.z;
 
         // Transform the corner coordinates into the coordinate space of our
         // tile.
-        const tileCoords = cornerZ0Coords.map((coord) => {
-            const zoomedCoord = coord.zoomTo(centerCoord.zoom);
-            return new Point(
-                Math.round((zoomedCoord.column - centerCoord.column) * EXTENT),
-                Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
-        });
+        const tileCoords = cornerCoords.map((coord) => this.tileID.getTilePoint(coord)._round());
 
         this._boundsArray = new RasterBoundsArray();
         this._boundsArray.emplaceBack(tileCoords[0].x, tileCoords[0].y, 0, 0);
@@ -283,6 +264,37 @@ class ImageSource extends Evented implements Source {
     hasTransition() {
         return false;
     }
+}
+
+/**
+ * Given a list of coordinates, get their center as a coordinate.
+ *
+ * @returns centerpoint
+ * @private
+ */
+export function getCoordinatesCenterTileID(coords: Array<MercatorCoordinate>) {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const coord of coords) {
+        minX = Math.min(minX, coord.x);
+        minY = Math.min(minY, coord.y);
+        maxX = Math.max(maxX, coord.x);
+        maxY = Math.max(maxY, coord.y);
+    }
+
+    const dx = maxX - minX;
+    const dy = maxY - minY;
+    const dMax = Math.max(dx, dy);
+    const zoom = Math.max(0, Math.floor(-Math.log(dMax) / Math.LN2));
+    const tilesAtZoom = Math.pow(2, zoom);
+
+    return new CanonicalTileID(
+            zoom,
+            Math.floor((minX + maxX) / 2 * tilesAtZoom),
+            Math.floor((minY + maxY) / 2 * tilesAtZoom));
 }
 
 export default ImageSource;

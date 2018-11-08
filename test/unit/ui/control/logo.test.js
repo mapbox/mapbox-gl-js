@@ -25,7 +25,8 @@ function createMap(t, logoPosition, logoRequired) {
 function createSource(options, logoRequired) {
     const source = new VectorTileSource('id', options, { send: function () {} });
     source.onAdd({
-        transform: { angle: 0, pitch: 0, showCollisionBoxes: false }
+        transform: { angle: 0, pitch: 0, showCollisionBoxes: false },
+        _getMapId: () => 1
     });
     source.on('error', (e) => {
         throw e.error;

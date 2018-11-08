@@ -46,7 +46,9 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
             painter.setCustomLayerDefaults();
 
             context.setStencilMode(StencilMode.disabled);
-            context.setDepthMode(DepthMode.disabled);
+
+            const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
+            context.setDepthMode(depthMode);
 
             implementation.render(context.gl, painter.transform.customLayerMatrix());
 
