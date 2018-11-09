@@ -1,6 +1,7 @@
 // @flow
 
 import LngLat from '../geo/lng_lat';
+import { clamp } from '../util/util';
 import type {LngLatLike} from '../geo/lng_lat';
 
 /*
@@ -16,7 +17,7 @@ export function mercatorXfromLng(lng: number) {
 }
 
 export function mercatorYfromLat(lat: number) {
-    return (90 - lat) / 360;
+    return clamp((90 - lat) / 360, -90, 90);
 }
 
 export function mercatorZfromAltitude(altitude: number, lat: number) {
