@@ -973,7 +973,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.49.0",
-          "ios": "4.5.0"
+          "ios": "4.5.0",
+          "macos": "0.12.0"
         },
         "data-driven styling": {}
       },
@@ -2566,7 +2567,10 @@
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.48.0"
+            "js": "0.48.0",
+            "android": "6.7.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
           }
         }
       },
