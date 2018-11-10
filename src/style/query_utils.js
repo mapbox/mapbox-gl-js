@@ -29,8 +29,7 @@ export function translate(queryGeometry: Array<Point>,
     if (!translate[0] && !translate[1]) {
         return queryGeometry;
     }
-
-    const pt = Point.convert(translate);
+    const pt = Point.convert(translate)._mult(pixelsToTileUnits);
 
     if (translateAnchor === "viewport") {
         pt._rotate(-bearing);
@@ -39,7 +38,7 @@ export function translate(queryGeometry: Array<Point>,
     const translated = [];
     for (let i = 0; i < queryGeometry.length; i++) {
         const point = queryGeometry[i];
-        translated.push(point.sub(pt._mult(pixelsToTileUnits)));
+        translated.push(point.sub(pt));
     }
     return translated;
 }
