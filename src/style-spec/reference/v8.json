@@ -373,6 +373,10 @@
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
     },
+    "clusterProperties": {
+      "type": "*",
+      "doc": "TODO cluster properties"
+    },
     "lineMetrics": {
       "type": "boolean",
       "default": false,

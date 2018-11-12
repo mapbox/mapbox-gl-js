@@ -10,6 +10,7 @@ import Supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
 import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
+import { createExpression } from '../style-spec/expression';
 
 import type {
     WorkerTileParameters,
@@ -171,7 +172,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
 
                 try {
                     this._geoJSONIndex = params.cluster ?
-                        new Supercluster(params.superclusterOptions).load(data.features) :
+                        new Supercluster(getSuperclusterOptions(params)).load(data.features) :
                         geojsonvt(data, params.geojsonVtOptions);
                 } catch (err) {
                     return callback(err);
@@ -291,6 +292,59 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     getClusterLeaves(params: {clusterId: number, limit: number, offset: number}, callback: Callback<Array<GeoJSONFeature>>) {
         callback(null, this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset));
     }
+}
+
+function getSuperclusterOptions({superclusterOptions, clusterProperties}) {
+    if (!clusterProperties || !superclusterOptions) return superclusterOptions;
+
+    const initialValues = {};
+    const mapExpressions = {};
+    const reduceExpressions = {};
+    const globals = {accumulated: null};
+    const feature = {properties: null};
+    const propertyNames = Object.keys(clusterProperties);
+
+    for (const key of propertyNames) {
+        const [operator, initialExpression, mapExpression] = clusterProperties[key];
+        initialValues[key] = createClusterExpression(key, initialExpression).evaluate(globals);
+        mapExpressions[key] = createClusterExpression(key, mapExpression);
+        reduceExpressions[key] = createClusterExpression(key, [operator, ['accumulated'], ['get', key]]);
+    }
+
+    superclusterOptions.initial = () => {
+        const properties = {};
+        for (const key of propertyNames) {
+            properties[key] = initialValues[key];
+        }
+        return properties;
+    };
+    superclusterOptions.map = (pointProperties) => {
+        feature.properties = pointProperties;
+        const properties = {};
+        for (const key of propertyNames) {
+            properties[key] = mapExpressions[key].evaluate(globals, feature);
+        }
+        return properties;
+    };
+    superclusterOptions.reduce = (accumulated, clusterProperties) => {
+        feature.properties = clusterProperties;
+        for (const key of propertyNames) {
+            globals.accumulated = accumulated[key];
+            accumulated[key] = reduceExpressions[key].evaluate(globals, feature);
+        }
+    };
+
+    return superclusterOptions;
+}
+
+function createClusterExpression(key, expression) {
+    const parsed = createExpression(expression, {});
+    if (parsed.result === 'success') {
+        return parsed.value;
+    }
+    /* eslint no-warning-comments: 0 */
+    // TODO proper error handling
+    console.log(`Error: ${parsed.value.map(e => e.message).join('; ')}`);
 }
 
 export default GeoJSONWorkerSource;
