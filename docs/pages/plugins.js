@@ -167,12 +167,10 @@ export default class extends React.Component {
                     <div id='plugins' className='doc' data-swiftype-index='true'>
                         {entries(plugins).map(([title, plugins], i) =>
                             <div key={i} className='space-bottom4'>
-                                <a id={slug(title)}/>
-                                <h2 className='space-bottom1'>{title}</h2>
+                                <h2 className='space-bottom1' id={slug(title)}><a className="unprose color-blue-on-hover" href={`#${slug(title)}`}>{title}</a></h2>
                                 {entries(plugins).map(([name, plugin], i) =>
                                     <div key={i} className='space-bottom1 keyline-all pad2 fill-white'>
-                                        <a id={slug(name)}/>
-                                        <h3>{name}</h3>
+                                        <h3 id={slug(name)}><a className="unprose color-blue-on-hover" href={`#${slug(name)}`}>{name}</a></h3>
                                         <p>{ plugin.description }</p>
                                         <div className="my12">
                                             { plugin.website && 

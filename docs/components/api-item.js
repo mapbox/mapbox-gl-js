@@ -49,7 +49,7 @@ class ApiItem extends React.Component {
             <section className='px12 py12 clearfix prose mb24 bg-white contain'>
                 {!this.props.nested &&
                     <div className='mb24 clearfix'>
-                        <h3 className='mb0' id={section.namespace.toLowerCase()}>{section.name}</h3>
+                        <h2 className='mb12' id={section.namespace.toLowerCase()}><a className="unprose color-blue-on-hover" href={`#${section.namespace.toLowerCase()}`}>{section.name}</a></h2>
                         {section.context && section.context.github &&
                             <a className='pt6 color-gray color-gray-dark-on-hover txt-s txt-bold unprose' href={section.context.github.url}><span class="inline-block mb-neg6 mr6"><Icon name="github" /></span><span>{section.context.github.path}</span></a>}
                     </div>}
@@ -168,7 +168,7 @@ class ApiItem extends React.Component {
                 {!empty(section.sees) &&
                     <div>
                         <div className='py6 color-gray mt12 txt-l'>Related</div>
-                        <ul>{section.sees.map((see, i) => <li key={i}>{this.md(see)}</li>)}</ul>
+                        <ul>{section.sees.map((see, i) => <li key={i}>{this.md(see, true)}</li>)}</ul>
                     </div>}
             </section>
         );

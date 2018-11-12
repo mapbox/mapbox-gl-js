@@ -10,20 +10,10 @@ export const overviewNavigation = [
             {
                 "title": "CSP Directives",
                 "path": "csp-directives"
-            }
-        ]
-    },
-    {
-        "title": "Roadmap",
-        "path": "roadmap/",
-        "subnav": [
-            {
-                "title": "Active",
-                "path": "active"
             },
             {
-                "title": "Upcoming",
-                "path": "upcoming"
+                "title": "Mapbox CSS",
+                "path": "mapbox-css"
             }
         ]
     }

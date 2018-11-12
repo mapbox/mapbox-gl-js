@@ -326,7 +326,7 @@ export default class extends React.Component {
 
                         <div className='mb24 bg-white bg-white'>
                             <div id='sources-vector' className='px12 py12'>
-                                <h3 className='mb6'><a href='#sources-vector' title='link to vector'>vector</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#sources-vector' title='link to vector'>vector</a></h3>
                                 <p>
                                     A vector tile source. Tiles must be in <a
                                         href="https://www.mapbox.com/developers/vector-tiles/">Mapbox
@@ -345,7 +345,7 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div id='sources-geojson' className='pad2 keyline-bottom'>
-                                    <h3 className='mb6'><a href='#sources-geojson' title='link to geojson'>geojson</a></h3>
+                                    <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#sources-geojson' title='link to geojson'>geojson</a></h3>
                                     <p>
                                         A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
                                         property, whose value can be a URL or inline GeoJSON.
@@ -420,7 +420,7 @@ export default class extends React.Component {
                             </div>
 
                             <div id='sources-raster' className='px12 py12 border-b border--gray-light'>
-                                <h3 className='mb6'><a href='#sources-raster' title='link to raster'>raster</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#sources-raster' title='link to raster'>raster</a></h3>
                                 <p>
                                     A raster tile source. For raster tiles hosted by Mapbox, the <code>"url"</code> value should be of the
                                     form <code>mapbox://<var>mapid</var></code>.
@@ -449,7 +449,7 @@ export default class extends React.Component {
                             </div>
 
                             <div id='sources-raster-dem' className='px12 py12 border-b border--gray-light'>
-                                <h3 className='mb6'><a href='#sources-raster-dem' title='link to raster-dem'>raster-dem</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#sources-raster-dem' title='link to raster-dem'>raster-dem</a></h3>
                                 <p>
                                     A raster DEM source. Currently only supports <a href="https://blog.mapbox.com/global-elevation-data-6689f1d0ba65">Mapbox Terrain RGB</a> (<code>mapbox://mapbox.terrain-rgb</code>)
                                 </p>
@@ -473,7 +473,7 @@ export default class extends React.Component {
                             </div>
 
                             <div id='sources-geojson' className='px12 py12 border-b border--gray-light'>
-                                <h3 className='mb6'><a href='#sources-geojson' title='link to geojson'>geojson</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#sources-geojson' title='link to geojson'>geojson</a></h3>
                                 <p>
                                     A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
                                     property, whose value can be a URL or inline GeoJSON.
@@ -528,7 +528,7 @@ export default class extends React.Component {
                             </div>
 
                             <div id='sources-image' className='px12 py12 border-b border--gray-light'>
-                                <h3 className='mb6'><a href='#sources-image' title='link to image'>image</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#sources-image' title='link to image'>image</a></h3>
                                 <p>
                                     An image source. The <code>"url"</code> value contains the image location.
                                 </p>
@@ -564,8 +564,8 @@ export default class extends React.Component {
                                 }}/>
                             </div>
 
-                            <div id='sources-video' className='px12 py12 border-b border--gray-light'>
-                                <h3 className='mb6'><a href='#sources-video' title='link to video'>video</a></h3>
+                            <div id='sources-video' className='px12 py12'>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#sources-video' title='link to video'>video</a></h3>
                                 <p>
                                     A video source. The <code>"urls"</code> value is an array. For each URL in the array,
                                     a video element <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source">source</a> will
@@ -748,8 +748,8 @@ export default class extends React.Component {
                         </p>
                         <div className='mb24 bg-white bg-white'>
                             {layerTypes.map((type, i) =>
-                                <div key={i} id={`layers-${type}`} className='px12 py12 border-b border--gray-light'>
-                                    <h3 className='mb6'><a href={`#layers-${type}`}>{type}</a></h3>
+                                <div key={i} id={`layers-${type}`} className='px12 py12'>
+                                    <h3 className='mb6'><a className='unprose color-blue-on-hover' href={`#layers-${type}`}>{type}</a></h3>
 
                                     { entries(ref[`layout_${type}`]).map(([name, prop], i) =>
                                         <Item key={i} id={`layout-${type}-${name}`} name={name} kind="layout" {...prop}/>)}
@@ -766,9 +766,9 @@ export default class extends React.Component {
                         <p>A Mapbox style contains values of various types, most commonly as values for the style properties of a layer.</p>
 
                         <div className='bg-white'>
-                            <div className='px12 py12 border-b border--gray-light'>
+                            <div className='px12 pb36 border-b border--gray-light'>
                                 <a id='types-color' />
-                                <h3 className='mb6'><a href='#types-color' title='link to color'>Color</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#types-color' title='link to color'>Color</a></h3>
                                 <p>
                                     The <code>color</code> type represents a color in the <a href="https://en.wikipedia.org/wiki/SRGB">sRGB color space</a>. Colors are written as JSON strings in a variety of permitted formats: HTML-style hex values, rgb, rgba, hsl, and hsla. Predefined HTML colors names, like <code>yellow</code> and <code>blue</code>, are also permitted.
                                 </p>
@@ -785,9 +785,9 @@ export default class extends React.Component {
                                 <p>Especially of note is the support for hsl, which can be <a href='http://mothereffinghsl.com/'>easier to reason about than rgb()</a>.</p>
                             </div>
 
-                            <div className='px12 py12 border-b border--gray-light'>
+                            <div className='px12 pb36 border-b border--gray-light'>
                                 <a id='types-formatted' />
-                                <h3 className='mb6'><a href='#types-formatted' title='link to formatted'>Formatted</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#types-formatted' title='link to formatted'>Formatted</a></h3>
                                 <p>The <code>formatted</code> type represents a string broken into sections annotated with separate formatting options.</p>
                                 {highlightJSON(`
                                     {
@@ -798,9 +798,9 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <div className='px12 py12 border-b border--gray-light'>
+                            <div className='px12 pb36 border-b border--gray-light'>
                                 <a id='types-string' />
-                                <h3 className='mb6'><a href='#types-string' title='link to string'>String</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#types-string' title='link to string'>String</a></h3>
                                 <p>A string is basically just text. In Mapbox styles, you're going to put it in quotes.</p>
                                 {highlightJSON(`
                                     {
@@ -808,9 +808,9 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <div className='px12 py12 border-b border--gray-light'>
+                            <div className='px12 pb36 border-b border--gray-light'>
                                 <a id='types-boolean' />
-                                <h3 className='mb6'><a href='#types-boolean' title='link to boolean'>Boolean</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#types-boolean' title='link to boolean'>Boolean</a></h3>
                                 <p>Boolean means yes or no, so it accepts the values <code>true</code> or <code>false</code>.</p>
                                 {highlightJSON(`
                                     {
@@ -818,9 +818,9 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <div className='px12 py12 border-b border--gray-light'>
+                            <div className='px12 pb36 border-b border--gray-light'>
                                 <a id='types-number' />
-                                <h3 className='mb6'><a href='#types-number' title='link to number'>Number</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#types-number' title='link to number'>Number</a></h3>
                                 <p>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
                                 {highlightJSON(`
                                     {
@@ -828,9 +828,9 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <div className='px12 py12 border-b border--gray-light'>
+                            <div className='px12 pb36'>
                                 <a id='types-array' />
-                                <h3 className='mb6'><a href='#types-array' title='link to array'>Array</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#types-array' title='link to array'>Array</a></h3>
                                 <p>Arrays are comma-separated lists of one or more numbers in a specific
                                     order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
                                 {highlightJSON(`
@@ -870,7 +870,7 @@ export default class extends React.Component {
                             {highlightJSON(`[expression_name, argument_0, argument_1, ...]`)}
                         </div>
 
-                        <h3>Data expressions</h3>
+                        <h3 id='data-expressions'><a className="unprose color-blue-on-hover" href="#data-expressions">Data expressions</a></h3>
                         <p>A <em>data expression</em> is any expression that access feature data -- that is, any
                             expression that uses one of the data operators:
                             <a href="#expressions-get"><code>get</code></a>,
@@ -910,8 +910,8 @@ export default class extends React.Component {
                             <a href="#expressions-feature-state"><code>feature-state</code></a> operator are allowed
                             only on paint properties.</p>
 
-                        <h3>Camera expressions</h3>
-                        <p>A <a id="camera-expression" className="anchor"></a><em>camera expression</em> is any
+                        <h3 id="camera-expression"><a className="unprose color-blue-on-hover" href="#camera-expression">Camera expressions</a></h3>
+                        <p>A <em>camera expression</em> is any
                             expression that uses the <a href="#expressions-zoom"><code>zoom</code></a> operator. Such
                             expressions allow the the appearance of a layer to change with the map's zoom level.
                             Camera expressions can be used to create the appearance of depth and to control data
@@ -988,7 +988,7 @@ export default class extends React.Component {
                             changes from 4.1 to 4.6 -- only if it goes above 5 or below 4.
                         </p>
 
-                        <h3>Composition</h3>
+                        <h3 id="composition"><a className="unprose color-blue-on-hover" href="#composition">Composition</a></h3>
                         <p>A single expression may use a mix of data operators, camera operators, and other
                             operators. Such composite expressions allows a layer's appearance to be determined by a
                             combination of the zoom level <em>and</em> individual feature properties.
@@ -1010,7 +1010,7 @@ export default class extends React.Component {
                         <p>An expression that uses both data and camera operators is considered both a data expression
                             and a camera expression, and must adhere to the restrictions described above for both.</p>
 
-                        <h3>Type system</h3>
+                        <h3 id="type-system"><a className="unprose color-blue-on-hover" href="#type-system">Type system</a></h3>
                         <p>The input arguments to expressions, and their result values, use the same set of <a
                             href="#types">types</a> as the rest of the style specification: boolean, string,
                             number, color, and arrays of these types. Furthermore, expressions are <em>type safe</em>:
@@ -1064,13 +1064,14 @@ export default class extends React.Component {
                             as <code>["to-number", ["get", "property-name"]]</code>.
                         </p>
 
-                        <h3>Expression reference</h3>
+                        <h3 id='expression-referece'><a className='unprose color-blue-on-hover' href='#expression-referece'>Expression reference</a></h3>
 
                         <div>
                             {groupedExpressions.map((group, i) =>
-                                <div key={i} className='px12 py12 border-b border--gray-light'>
-                                    <h4 className="px12 py12" style={{fontSize: '100%'}}>
-                                        <a id={`expressions-${slug(group.name)}`} href={`#expressions-${slug(group.name)}`}>{group.name}</a>
+                                <div key={i} className={`px12 py12 ${groupedExpressions.length - 1 === i ? '' : 'border-b border--gray-light'}`}>
+                                    <div className='pt60' style={{ marginTop: '-40px' }} id={`expressions-${slug(group.name)}`} />
+                                    <h4 className='pb12' style={{fontSize: '100%'}}>
+                                        <a className="unprose color-blue-on-hover" href={`#expressions-${slug(group.name)}`}>{group.name}</a>
                                     </h4>
 
                                     {group.name === "Types" &&
@@ -1100,16 +1101,18 @@ export default class extends React.Component {
                                         </p>}
 
                                     {group.expressions.map(({name, doc, type, sdkSupport}, i) =>
-                                        <div key={i} className='w-full clearfix px12 py0 mt0'>
-                                            <span className='space-right'>
-                                                <a className='txt-code'
-                                                    id={`expressions-${group.name === "Types" ? "types-" : ""}${name}`}
-                                                    href={`#expressions-${group.name === "Types" ? "types-" : ""}${name}`}>{name}</a>
-                                                {doc && <div>{md(doc)}</div>}
-                                            </span>
-                                            {type.map((overload, i) =>
-                                                <div key={i}>{highlightJavascript(renderSignature(name, overload))}</div>)}
-                                            {sdkSupport && <div className='mt12 mb12'><SDKSupportTable {...sdkSupport} /></div>}
+                                        <div>
+                                        <div className='pt60' style={{ marginTop: '-30px' }} id={`expressions-${group.name === "Types" ? "types-" : ""}${name}`} />
+                                            <div key={i} className='w-full clearfix px12 mt0'>
+                                                <span className='space-right'>
+                                                    <a className='txt-code'
+                                                        href={`#expressions-${group.name === "Types" ? "types-" : ""}${name}`}>{name}</a>
+                                                    {doc && <div>{md(doc)}</div>}
+                                                </span>
+                                                {type.map((overload, i) =>
+                                                    <div key={i}>{highlightJavascript(renderSignature(name, overload))}</div>)}
+                                                {sdkSupport && <div className='mt12 mb12'><SDKSupportTable {...sdkSupport} /></div>}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -1119,18 +1122,18 @@ export default class extends React.Component {
 
                     <div className='px12 py12'>
                         <a id='other' className='anchor'/>
-                        <h2><a className='unprose' href='#other' title='link to other'>Other</a></h2>
+                        <h2><a className='unprose color-blue-on-hover' href='#other' title='link to other'>Other</a></h2>
                         <div>
                             <div className='px12 py12 keyline-bottom'>
                                 <a id='other-function' className='anchor'/>
-                                <h3 className='mb6'><a href='#other-function' title='link to function'>Function</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#other-function' title='link to function'>Function</a></h3>
 
                                 <p>The value for any layout or paint property may be specified as
                                     a <em>function</em>. Functions allow you to make the appearance of a map feature
                                     change with the current zoom level and/or the feature's properties.</p>
                                 <div className='col12 pad1x'>
                                     <div className="col12 clearfix pad0y px12 py12x mb12">
-                                        <div><span className='code'><a id="function-stops" href="#function-stops">stops</a></span>
+                                        <div><span className='code'><a className='unprose color-blue-on-hover' id="function-stops" href="#function-stops">stops</a></span>
                                         </div>
                                         <div><em className='color-gray'>Required (except
                                             for <var>identity</var> functions) <a href='#types-array'>array</a>.</em></div>
@@ -1142,7 +1145,7 @@ export default class extends React.Component {
                                         </div>
                                     </div>
                                     <div className="col12 clearfix pad0y px12 py12x mb12">
-                                        <div><span className='code'><a id="function-property"
+                                        <div><span className='code'><a className='unprose color-blue-on-hover' id="function-property"
                                             href="#function-property">property</a></span>
                                         </div>
                                         <div><em className='color-gray'>Optional <a href='#types-string'>string</a>.</em>
@@ -1153,7 +1156,7 @@ export default class extends React.Component {
                                         </div>
                                     </div>
                                     <div className="col12 clearfix pad0y px12 py12x mb12">
-                                        <div><span className='code'><a id="function-base"
+                                        <div><span className='code'><a className='unprose color-blue-on-hover' id="function-base"
                                             href="#function-base">base</a></span></div>
                                         <div><em className='color-gray'>Optional <a href='#types-number'>number</a>.
                                             Default is {ref.function.base.default}.</em></div>
@@ -1164,7 +1167,7 @@ export default class extends React.Component {
                                         </div>
                                     </div>
                                     <div className="col12 clearfix pad0y px12 py12x mb12">
-                                        <div><span className='code'><a id="function-type"
+                                        <div><span className='code'><a className='unprose color-blue-on-hover' id="function-type"
                                             href="#function-type">type</a></span></div>
                                         <div><em className='color-gray'>Optional <a href='#types-string'>string</a>. One
                                             of <code>"identity"</code>, <code>"exponential"</code>, <code>"interval"
@@ -1201,7 +1204,7 @@ export default class extends React.Component {
                                         </dl>
                                     </div>
                                     <div className="col12 clearfix pad0y px12 py12x mb12">
-                                        <div><span className='code'><a id="function-default"
+                                        <div><span className='code'><a className='unprose color-blue-on-hover' id="function-default"
                                             href="#function-default">default</a></span>
                                         </div>
                                         <div>A value to serve as a fallback function result when a value isn't
@@ -1228,7 +1231,7 @@ export default class extends React.Component {
                                         </div>
                                     </div>
                                     <div className="col12 clearfix pad0y px12 py12x mb12">
-                                        <div><span className='code'><a id="function-colorSpace"
+                                        <div><span className='code'><a className='unprose color-blue-on-hover' id="function-colorSpace"
                                             href="#function-colorSpace">colorSpace</a></span>
                                         </div>
                                         <div><em className='color-gray'>Optional <a href='#types-string'>string</a>. One of
@@ -1372,7 +1375,7 @@ export default class extends React.Component {
 
                             <div className='px12 py12'>
                                 <a id='other-filter' className='anchor'></a>
-                                <h3 className='mb6'><a href='#other-filter' title='link to filter'>Filter (deprecated syntax)</a></h3>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href='#other-filter' title='link to filter'>Filter (deprecated syntax)</a></h3>
                                 <p>In previous versions of the style specification, <a href="#layer-filter">filters</a> were defined using the deprecated syntax documented below. Though filters defined with this syntax will continue to work, we recommend using the more flexible <a href="#expressions">expression</a> syntax instead. Expression syntax and the deprecated syntax below cannot be mixed in a single filter definition.</p>
 
                                 <div className='col12 clearfix mb12'>

@@ -13,7 +13,6 @@ import SectionedNavigation from '@mapbox/dr-ui/sectioned-navigation';
 import NavigationAccordion from '@mapbox/dr-ui/navigation-accordion';
 import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line import/no-unresolved
 import GithubSlugger from 'github-slugger';
-
 import ApiNavigation from './api-navigation';
 import TopNavTabs from './top-nav-tabs';
 
@@ -51,10 +50,11 @@ class PageShell extends React.Component {
             />
         );
         let productName = 'Mapbox GL JS';
-
+        let contentType = '';
         let sidebarContent = <div />;
         let sidebarStackedOnNarrowScreens = false;
         if (location.pathname.indexOf('overview') > -1) {
+            contentType = 'Overview';
             sidebarStackedOnNarrowScreens = true;
             const sections = overviewNavigation.map(section => {
                 return {
@@ -68,11 +68,10 @@ class PageShell extends React.Component {
                 return section.subnav.map(subNavItem => {
                     return {
                         title: subNavItem.title,
-                        path: `#${subNavItem.path}`
+                        path: subNavItem.path
                     } 
                 });
             })[0];
-            console.log(sections, location.pathname)
             sidebarContent = (
                 <div className="mx0-mm ml-neg24 mr-neg36 relative-mm absolute right left">
                     <NavigationAccordion
@@ -88,6 +87,7 @@ class PageShell extends React.Component {
                 </div>
             );
         } else if (location.pathname.indexOf('example') > -1) {
+            contentType = 'Examples';
             const allTopics = Object.keys(tags);
             const sections = allTopics
               .map(topic => {
@@ -105,7 +105,7 @@ class PageShell extends React.Component {
 
                 return {
                   title: tags[topic],
-                  url: topic,
+                  url: `#${topic}`,
                   items: examplesForTopic
                 };
               })
@@ -114,11 +114,12 @@ class PageShell extends React.Component {
               });
             sidebarContent = (
                 <div className="ml36 mr12">
-                    <SectionedNavigation sections={sections} />
+                    <SectionedNavigation sections={sections} includeFilterBar={true} />
                 </div>
             );
         } else if (location.pathname.indexOf('style-spec') > -1) {
             slugger.reset();
+            contentType = 'Specification';
             const sections = styleSpecNavigation
               .map(section => {
                 let subNavItems = [];
@@ -147,6 +148,8 @@ class PageShell extends React.Component {
             productName = 'Mapbox Style Spec';
             topNavContent = '';
         } else if (location.pathname.indexOf('plugins') > -1) {
+            slugger.reset();
+            contentType = 'Plugins';
             const sections = Object.keys(plugins)
               .map((section, i) => {
                 const subNavItems = Object.keys(plugins[section]).map(item => {
@@ -157,7 +160,7 @@ class PageShell extends React.Component {
                  });
                 return {
                     title: section,
-                    url: i,
+                    url: `#${slugger.slug(section)}`,
                     items: subNavItems
                 };
             });
@@ -167,6 +170,7 @@ class PageShell extends React.Component {
                 </div>
             );
         } else {
+            contentType = 'API reference';
             sidebarContent = <ApiNavigation />;
         }
         return (
@@ -190,7 +194,7 @@ class PageShell extends React.Component {
                 </TopbarSticker>
                 <div className="limiter">
                     <PageLayout
-                        sidebarTitle={<div className="ml36">API</div>}
+                        sidebarTitle={<div className="ml36">{contentType}</div>}
                         sidebarContent={sidebarContent}
                         sidebarContentStickyTop={60}
                         sidebarContentStickyTopNarrow={0}

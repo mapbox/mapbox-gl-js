@@ -39,7 +39,7 @@ class ExamplesLandingPage extends React.PureComponent {
       return (
         <CardContainer
           title={tags[topic]}
-          path={topic}
+          path={`#${topic}`}
           fullWidthCards={false}
           cards={cardsForTopic}
         />

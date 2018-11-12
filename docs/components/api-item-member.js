@@ -17,7 +17,7 @@ class ApiItemMember extends React.Component {
     constructor(props) {
         super(props);
         this.state = {disclosed: false};
-        // this.hashChange = this.hashChange.bind(this);
+        this.hashChange = this.hashChange.bind(this);
     }
 
     href = m => {
@@ -27,16 +27,18 @@ class ApiItemMember extends React.Component {
     render() {
         const member = this.props;
         return (
-            <div className='border-b border--gray-light'>
-                <div id={member.namespace.toLowerCase()}
-                    className='clearfix txt-s cursor-pointer toggle-sibling'
-                    onClick={(e) => {
-                        this.setState({disclosed: !this.state.disclosed});
-                        window.location = this.href(member)                    
-                        e.preventDefault();
-                    }}>
-                    <div className='py12'>
-                        <span className='txt-code txt-s truncate'>{member.name}</span>
+            <div>
+                <div>
+                    <div className='pt60 border-b border--gray-light' style={{ marginTop: '-40px' }} id={member.namespace.toLowerCase()} />
+                    <div
+                        className='clearfix cursor-pointer toggle-sibling pt18'
+                        onClick={(e) => {
+                            this.setState({disclosed: !this.state.disclosed});
+                            window.location = this.href(member)                    
+                            e.preventDefault();
+                        }}
+                    >
+                        <span className='txt-code truncate'>{member.name}</span>
                         {member.kind === 'function' &&
                             <span className='color-gray txt-code mr12' dangerouslySetInnerHTML={{__html: formatters.parameters(member, true)}}/>}
                         <Icon name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} themeIcon="fr" inline={true} />
@@ -51,18 +53,21 @@ class ApiItemMember extends React.Component {
         );
     }
 
-    // hashChange() {
-    //     this.setState({disclosed: window.location.hash === this.href(this.props)});
-    // }
+    hashChange() {
+        if (window.location.hash === this.href(this.props)) {
+            this.setState({disclosed: true });    
+        }
+        console.log(window.location.hash, this.state.disclosed)
+    }
 
-    // componentDidMount() {
-    //     window.addEventListener("hashchange", this.hashChange);
-    //     this.hashChange();
-    // }
+    componentDidMount() {
+        window.addEventListener("hashchange", this.hashChange);
+        this.hashChange();
+    }
 
-    // componentWillUnmount() {
-    //     window.removeEventListener("hashchange", this.hashChange);
-    // }
+    componentWillUnmount() {
+        window.removeEventListener("hashchange", this.hashChange);
+    }
 }
 
 export default ApiItemMember;

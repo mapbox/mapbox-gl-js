@@ -64,7 +64,6 @@ export default class extends React.Component {
         return (
             <PageShell meta={meta} onUser={(_, token) => this.setState({token})}>
                 <h1>Mapbox GL JS API reference</h1>
-                <hr />
                 <div className='round doc clip mb6'>
                     {docs.map((doc, i) => doc.kind === 'note' ?
                         <Note key={i} {...doc}/> :

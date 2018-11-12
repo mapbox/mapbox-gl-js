@@ -30,11 +30,9 @@ Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps 
 
 To get started, you need to obtain an [access token](https://www.mapbox.com/help/create-api-access-token/) and a [style URL](https://www.mapbox.com/help/define-style-url/). You can choose from one of our [professionally designed styles](https://www.mapbox.com/api-documentation/#styles) or create your own using [Mapbox Studio](https://www.mapbox.com/studio).
 
-<!-- {{
-
-    {this.state.tab === 'cdn' && <QuickstartCDN token={this.state.userAccessToken}/>}
-    {this.state.tab !== 'cdn' && <QuickstartBundler token={this.state.userAccessToken}/>}
-}} -->
+{{
+<Quickstart />
+}}
 
 
 ## CSP Directives
@@ -50,3 +48,11 @@ Requesting styles from Mapbox or other services will require additional directiv
 ```
 connect-src https://*.tiles.mapbox.com https://api.mapbox.com
 ```
+
+## Mapbox CSS
+
+The CSS referenced in the Quickstart is used to style DOM elements created by Mapbox code. Without the CSS, elements like Popups and Markers won't work.
+
+Including it with a `<link>` in the head of the document via the Mapbox CDN is the simplest and easiest way to provide the CSS, but it is also bundled in the Mapbox module, meaning that if you have a bundler that can handle CSS, you can import the CSS from `mapbox-gl/dist/mapbox-gl.css`.
+
+Note too that if the CSS isn't available by the first render, as soon as the CSS is provided, the DOM elements that depend on this CSS should recover.

@@ -4,12 +4,14 @@ import urls from './urls';
 import {version} from '../../package.json';
 import {highlightJavascript, highlightMarkup, highlightShell} from './prism_highlight';
 import Copyable from './copyable';
+import ControlToggleSet from '@mapbox/mr-ui/control-toggle-set';
 
-class QuickstartCDN extends React.Component {
+class Quickstart extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            userAccessToken: undefined
+            userAccessToken: undefined,
+            selectedMethod: 'cdn-select'
         };
     }
 
@@ -21,7 +23,7 @@ class QuickstartCDN extends React.Component {
         });
     }
 
-    render() {
+    renderCdn() {
         return (
             <div id='quickstart-cdn'>
                 <p>Include the JavaScript and CSS files in the <code>&lt;head&gt;</code> of your HTML file.</p>
@@ -48,10 +50,8 @@ class QuickstartCDN extends React.Component {
             </div>
         );
     }
-}
 
-class QuickstartBundler extends React.Component {
-    render() {
+    renderBundler() {
         return (
             <div id='quickstart-bundler'>
                 <p>Install the npm package.</p>
@@ -78,105 +78,41 @@ class QuickstartBundler extends React.Component {
             </div>
         );
     }
-}
 
-export default class extends React.Component {
-    constructor() {
-        super();
-        this.state = {tab: 'cdn'};
+    renderContents(selectedMethod) {
+        if (selectedMethod === 'cdn-select') return this.renderCdn();
+        if (selectedMethod === 'bundler-select') return this.renderBundler();
     }
 
     render() {
         return (
-            <section className='pad4 contain'>
-                <h1 className=''>Mapbox GL JS</h1>
-                <div className='pad1y quiet small'>Current version:
-                    <span className='round fill-light pad0'><a href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{version}</a></span>
-                </div>
-                <div className='prose space-bottom2'>
-                    <p className='space-bottom2 pad1y'>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps
-                        from <a href='https://www.mapbox.com/help/define-vector-tiles'>vector tiles</a> and <a
-                            href={prefixUrl('/style-spec')}>Mapbox styles</a>.
-                        It is part of the Mapbox GL ecosystem, which includes <a
-                            href='https://www.mapbox.com/mobile/'>Mapbox Mobile</a>, a compatible renderer written in C++ with bindings
-                        for desktop and mobile platforms. To see what new features our team is working on, take a look at our <a href={prefixUrl('/roadmap')}>roadmap</a>.</p>
-
-                    <div className='col12 fill-light round pad2 clearfix space-top2'>
-                        <div className='space-bottom2 space-left1 space-top1 contain'>
-                            <div className='icon inline dark pad0 round fill-green space-bottom1 github space-right1'/>
-                            <div className='pin-left pad0x space-left4'>
-                                <a className='block line-height15' href='https://github.com/mapbox/mapbox-gl-js'>Project on Github</a>
-                                <span className='quiet small'>View source code and contribute</span>
-                            </div>
-                        </div>
-                        <div className='space-bottom2 space-left1 contain'>
-                            <div className='icon inline dark pad0 round fill-blue space-bottom1 document space-right1'/>
-                            <div className='pin-left pad0x space-left4'>
-                                <a className='block line-height15' href='https://www.mapbox.com/help/mapbox-gl-js-fundamentals/'>GL JS
-                                    Fundamentals</a>
-                                <span className='quiet small'>Essential functions and common patterns</span>
-                            </div>
-                        </div>
-                        <div className='contain space-left1'>
-                            <div className='icon inline dark pad0 round fill-red space-bottom1 globe space-right1'/>
-                            <div className='pin-left pad0x space-left4'>
-                                <a className='block line-height15' href='https://www.mapbox.com/gallery/'>Gallery</a>
-                                <span className='quiet small'>Project showcase</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h2 className='strong'>Quickstart</h2>
-                    <div className='space-bottom1'>To get started, you need to obtain an <a
-                        href='https://www.mapbox.com/help/create-api-access-token/'>access token</a> and a <a
-                        href='https://www.mapbox.com/help/define-style-url/'>style URL</a>. You can choose from one of our <a
-                        href='https://www.mapbox.com/api-documentation/#styles'>professionally designed styles</a> or create
-                        your own using <a href="https://www.mapbox.com/studio">Mapbox Studio</a>.
-                    </div>
-
-                    <div className='rounded-toggle space-bottom2 inline'>
-                        <a onClick={() => this.setState({tab: 'cdn'})}
-                            className={this.state.tab === 'cdn' ? 'active' : ''}>Mapbox CDN</a>
-                        <a onClick={() => this.setState({tab: 'bundler'})}
-                            className={this.state.tab !== 'cdn' ? 'active' : ''}>module bundler</a>
-                    </div>
-
-                    {this.state.tab === 'cdn' && <QuickstartCDN token={this.state.userAccessToken}/>}
-                    {this.state.tab !== 'cdn' && <QuickstartBundler token={this.state.userAccessToken}/>}
-
-                    <div>
-                        <h2 className='strong' id='csp-directives'>CSP Directives</h2>
-
-                        <p>As a mitigation for Cross-Site Scripting and other types of web security vulnerabilities, you may use
-                            a <a href='https://developer.mozilla.org/en-US/docs/Web/Security/CSP'>Content Security Policy (CSP)</a> to
-                            specify security policies for your website. If you do, Mapbox GL JS requires the following CSP
-                            directives:</p>
-                        <pre><code>{`worker-src blob: ;\nchild-src blob: ;\nimg-src data: blob: ;`}</code></pre>
-
-                        <p>Requesting styles from Mapbox or other services will require additional
-                            directives. For Mapbox, you can use this <code>connect-src</code> directive:</p>
-                        <pre><code>{`connect-src https://*.tiles.mapbox.com https://api.mapbox.com`}</code></pre>
-                    </div>
-                    <div>
-                        <h2 className='strong' id='mapbox-css'>Mapbox CSS</h2>
-                        <p>
-                            The CSS referenced in the Quickstart is used to style DOM elements created by Mapbox code.
-                            Without the CSS, elements like Popups and Markers won't work.
-                        </p>
-                        <p>
-                            Including it with a {'<link>'} in the head of the document via the Mapbox CDN is
-                            the simplest and easiest way to provide the CSS,
-                            but it is also bundled in the Mapbox module, meaning that if you have a bundler
-                            that can handle CSS, you can import the CSS from
-                            <pre><code>{`mapbox-gl/dist/mapbox-gl.css`}</code></pre>.
-                        </p>
-                        <p>
-                            Note too that if the CSS isn't available by the first render, as soon as the CSS is provided,
-                            the DOM elements that depend on this CSS should recover.
-                        </p>
-                    </div>
-                </div>
-            </section>
+            <div>
+                <ControlToggleSet
+                    id="select-quickstart"
+                    themeToggleGroup="bg-blue py3 px3 my12"
+                    themeToggle="txt-s py3 toggle--white toggle--active-blue"
+                    onChange={
+                      (value) => {
+                        this.setState({ selectedMethod: value });
+                      }
+                    }
+                    value={this.state.selectedMethod}
+                    options={[
+                      {
+                        label: 'Mapbox CDN',
+                        value: 'cdn-select'
+                      },
+                      {
+                        label: 'Module bundler',
+                        value: 'bundler-select'
+                      }
+                    ]}
+                />
+                {this.renderContents(this.state.selectedMethod)}
+            </div>
         );
     }
 }
+
+export default Quickstart;
+
