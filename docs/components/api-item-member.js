@@ -57,7 +57,6 @@ class ApiItemMember extends React.Component {
         if (window.location.hash === this.href(this.props)) {
             this.setState({disclosed: true });    
         }
-        console.log(window.location.hash, this.state.disclosed)
     }
 
     componentDidMount() {

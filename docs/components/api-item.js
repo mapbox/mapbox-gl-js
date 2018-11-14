@@ -51,7 +51,7 @@ class ApiItem extends React.Component {
                     <div className='mb24 clearfix'>
                         <h2 className='mb12' id={section.namespace.toLowerCase()}><a className="unprose color-blue-on-hover" href={`#${section.namespace.toLowerCase()}`}>{section.name}</a></h2>
                         {section.context && section.context.github &&
-                            <a className='pt6 color-gray color-gray-dark-on-hover txt-s txt-bold unprose' href={section.context.github.url}><span class="inline-block mb-neg6 mr6"><Icon name="github" /></span><span>{section.context.github.path}</span></a>}
+                            <a className='pt6 color-gray color-gray-dark-on-hover txt-s txt-bold unprose' href={section.context.github.url}><span className="inline-block mb-neg6 mr6"><Icon name="github" /></span><span>{section.context.github.path}</span></a>}
                     </div>}
 
                 {this.md(section.description)}

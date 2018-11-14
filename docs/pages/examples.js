@@ -1,3 +1,9 @@
+/*---
+title: 'Mapbox GL JS Examples'
+description: 'Code examples for Mapbox GL JS.'
+product: maps
+---*/
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import ExamplesPage from '@mapbox/dr-ui/examples-page';

@@ -1,7 +1,9 @@
 import React from 'react';
 import PageShell from '../components/page_shell';
 import {highlightJavascript} from '../components/prism_highlight.js';
+import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
 import Quickstart from '../components/quickstart';
+import {version} from '../../package.json';
 import docs from '../components/api.json'; // eslint-disable-line import/no-unresolved
 import GithubSlugger from 'github-slugger';
 import createFormatters from 'documentation/lib/output/util/formatters';
@@ -63,7 +65,12 @@ export default class extends React.Component {
     render() {
         return (
             <PageShell meta={meta} onUser={(_, token) => this.setState({token})}>
-                <h1>Mapbox GL JS API reference</h1>
+                <h1>Mapbox GL JS</h1>
+                <div className='py6 color-gray txt-s mt-neg24 mb12'>
+                    Current version:
+                    <span className='round bg-gray-faint py3 px3'><a href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{version}</a></span>
+                </div>
+                <p>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href="https://www.mapbox.com/help/define-vector-tiles">vector tiles</a> and <a href={prefixUrl('/style-spec')}>Mapbox styles</a>. It is part of the Mapbox GL ecosystem, which includes <a href="https://www.mapbox.com/mobile/">Mapbox Mobile</a>, a compatible renderer written in C++ with bindings for desktop and mobile platforms. To see what new features our team is working on, take a look at our <a href={prefixUrl('/roadmap')}>roadmap</a>.</p>
                 <div className='round doc clip mb6'>
                     {docs.map((doc, i) => doc.kind === 'note' ?
                         <Note key={i} {...doc}/> :
