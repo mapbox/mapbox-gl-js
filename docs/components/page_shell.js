@@ -15,7 +15,6 @@ import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line imp
 import GithubSlugger from 'github-slugger';
 import ApiNavigation from './api-navigation';
 import TopNavTabs from './top-nav-tabs';
-
 import { tags } from '../data/tags.js';
 import { overviewNavigation } from '../data/overview-navigation';
 import { styleSpecNavigation } from '../data/style-spec-navigation';
@@ -40,122 +39,75 @@ const slugger = new GithubSlugger();
 
 class PageShell extends React.Component {
 
-    render() {
-        const { frontMatter, location, children } = this.props;
-        let activeTab = location.pathname.split('/')[2];
-        if (activeTab === 'example') activeTab = 'examples';
-        let topNavContent = (
-            <TopNavTabs 
-                activeTab={activeTab}
-            />
-        );
-        let productName = 'Mapbox GL JS';
-        let contentType = '';
-        let sidebarContent = <div />;
-        let sidebarStackedOnNarrowScreens = false;
-        if (location.pathname.indexOf('overview') > -1) {
-            contentType = 'Overview';
-            sidebarStackedOnNarrowScreens = true;
-            const sections = overviewNavigation.map(section => {
+    accordionNavProps() {
+        const { frontMatter } = this.props;
+        const sections = overviewNavigation.map(section => {
+            return {
+                title: section.title,
+                path: `/mapbox-gl-js/overview/${section.path}`
+            }
+        });
+        const subtitles = overviewNavigation.filter(section => {
+            return section.title === frontMatter.title;
+        }).map(section => {
+            return section.subnav.map(subNavItem => {
                 return {
-                    title: section.title,
-                    path: `/mapbox-gl-js/overview/${section.path}`
-                }
+                    title: subNavItem.title,
+                    path: subNavItem.path
+                } 
             });
-            const subtitles = overviewNavigation.filter(section => {
-                return section.title === frontMatter.title;
-            }).map(section => {
-                return section.subnav.map(subNavItem => {
+        })[0];
+        const sidebarContent = (
+            <div className='mx0-mm ml-neg24 mr-neg36 relative-mm absolute right left'>
+                <NavigationAccordion
+                    currentPath={location.pathname}
+                    contents={{
+                        firstLevelItems: sections,
+                        secondLevelItems: subtitles
+                    }}
+                    onDropdownChange={value => {
+                        routeToPrefixed(value);
+                    }}
+                />
+            </div>
+        );
+        return {
+            contentType: "Overview",
+            sidebarContent: sidebarContent,
+            sidebarStackedOnNarrowScreens: true
+        }
+    }
+
+    getExampleSections(data) {
+        return ( 
+            Object.keys(data).map(topic => {
+                const subNavItems = examples
+                  .filter(item => { return item.tags[0] === topic; })
+                  .map(item => {
                     return {
-                        title: subNavItem.title,
-                        path: subNavItem.path
-                    } 
-                });
-            })[0];
-            sidebarContent = (
-                <div className="mx0-mm ml-neg24 mr-neg36 relative-mm absolute right left">
-                    <NavigationAccordion
-                        currentPath={location.pathname}
-                        contents={{
-                            firstLevelItems: sections,
-                            secondLevelItems: subtitles
-                        }}
-                        onDropdownChange={value => {
-                            routeToPrefixed(value);
-                        }}
-                    />
-                </div>
-            );
-        } else if (location.pathname.indexOf('example') > -1) {
-            contentType = 'Examples';
-            const allTopics = Object.keys(tags);
-            const sections = allTopics
-              .map(topic => {
-                const examplesForTopic = examples
-                  .filter(example => {
-                    return example.tags[0] === topic;
-                  })
-                  .map(example => {
-                    return {
-                      text: example.title,
-                      url: example.path,
-                      active: location.pathname === example.path
+                      text: item.title,
+                      url: item.path,
+                      active: location.pathname === item.path
                     };
                   });
-
                 return {
-                  title: tags[topic],
+                  title: data[topic],
                   url: `#${topic}`,
-                  items: examplesForTopic
+                  items: subNavItems
                 };
-              })
-              .filter(topic => {
+              }).filter(topic => {
                 return topic.items.length > 0;
-              });
-            sidebarContent = (
-                <div className="ml36 mr12">
-                    <SectionedNavigation sections={sections} includeFilterBar={true} />
-                </div>
-            );
-        } else if (location.pathname.indexOf('style-spec') > -1) {
-            slugger.reset();
-            contentType = 'Specification';
-            const sections = styleSpecNavigation
-              .map(section => {
-                let subNavItems = [];
-                const sectionSlug = slugger.slug(section.title);
-                if (section.subnav) {
-                    subNavItems = section.subnav.map(item => {
-                        slugger.reset();
-                        const itemSlug = slugger.slug(item.title);
-                        return {
-                            text: item.title,
-                            url: `#${sectionSlug}-${itemSlug}`
-                        };
-                     });
-                }
-                return {
-                    title: section.title,
-                    url: `#${sectionSlug}`,
-                    items: subNavItems
-                };
-            });
-            sidebarContent = (
-                <div className="ml36 mr12">
-                    <SectionedNavigation sections={sections} includeCount={false} />
-                </div>
-            );
-            productName = 'Mapbox Style Spec';
-            topNavContent = '';
-        } else if (location.pathname.indexOf('plugins') > -1) {
-            slugger.reset();
-            contentType = 'Plugins';
-            const sections = Object.keys(plugins)
-              .map((section, i) => {
-                const subNavItems = Object.keys(plugins[section]).map(item => {
+              })
+        )
+    }
+
+    getPluginSections(data) {
+        return (
+            Object.keys(data).map(section => {
+                const subNavItems = Object.keys(data[section]).map(item => {
                     return {
                         text: item,
-                        url: plugins[section][item].website
+                        url: data[section][item].website
                     };
                  });
                 return {
@@ -163,16 +115,106 @@ class PageShell extends React.Component {
                     url: `#${slugger.slug(section)}`,
                     items: subNavItems
                 };
-            });
-            sidebarContent = (
-                <div className="ml36 mr12">
-                    <SectionedNavigation sections={sections} includeCount={false} />
-                </div>
-            );
-        } else {
-            contentType = 'API reference';
-            sidebarContent = <ApiNavigation />;
+            })
+        );
+    }
+
+    sectionedNavProps(activeTab, sections) {
+        const contentType = activeTab.charAt(0).toUpperCase() + activeTab.substr(1).toLowerCase();
+        const sidebarContent = (
+            <div className='ml36 mr12'>
+                <SectionedNavigation sections={sections} includeFilterBar={true} />
+            </div>
+        );
+        return {
+            contentType: contentType,
+            sidebarContent: sidebarContent,
+            sidebarStackedOnNarrowScreens: false
         }
+    }
+
+    apiNavProps() {
+        return {
+            contentType: "API reference",
+            sidebarContent: <ApiNavigation />,
+            sidebarStackedOnNarrowScreens: false
+        }
+    }  
+
+    styleSpecNavProps() {
+        slugger.reset();
+        const sections = styleSpecNavigation
+          .map(section => {
+            let subNavItems = [];
+            const sectionSlug = slugger.slug(section.title);
+            if (section.subnav) {
+                subNavItems = section.subnav.map(item => {
+                    slugger.reset();
+                    const itemSlug = slugger.slug(item.title);
+                    return {
+                        text: item.title,
+                        url: `#${sectionSlug}-${itemSlug}`
+                    };
+                 });
+            }
+            return {
+                title: section.title,
+                url: `#${sectionSlug}`,
+                items: subNavItems
+            };
+        });
+        const sidebarContent = (
+            <div className='ml36 mr12'>
+                <SectionedNavigation sections={sections} includeCount={false} />
+            </div>
+        );
+        
+        return {
+            contentType: "Specification",
+            sidebarContent: sidebarContent,
+            sidebarStackedOnNarrowScreens: false
+        }
+    }
+
+    getSidebarProps(activeTab) {
+        if (activeTab === 'overview') {
+            return this.accordionNavProps();
+        } else if (activeTab === 'examples') {
+            return this.sectionedNavProps(activeTab, this.getExampleSections(tags));
+        } else if (activeTab === 'api') {
+            return this.apiNavProps();
+        } else if (activeTab === 'plugins') {
+            return this.sectionedNavProps(activeTab, this.getPluginSections(plugins));
+        } else if (activeTab === 'style-spec') {
+            return this.styleSpecNavProps();
+        } else {
+            return;
+        }
+    }
+
+    getTopbarContent(activeTab) {
+        if (activeTab === 'style-spec') {
+            return {
+                productName: "Mapbox Style Spec",
+                topNav: ""
+            }
+        } else {
+            return {
+                productName: "Mapbox GL JS",
+                topNav: <TopNavTabs activeTab={activeTab} />
+            }
+        }
+    }
+
+    render() {
+        const { frontMatter, location, children } = this.props;
+        
+        let activeTab = location.pathname.split('/')[2];
+        if (activeTab === 'example') activeTab = 'examples';
+        
+        const sidebarProps = this.getSidebarProps(activeTab);
+        const topbarContent = this.getTopbarContent(activeTab);
+
         return (
             <ReactPageShell darkHeaderText={true} includeFooter={true} {...this.props}>
                 <div className="shell-header-buffer" />
@@ -181,25 +223,27 @@ class PageShell extends React.Component {
                         <div className="grid grid--gut36 mr-neg36 mr0-mm">
                               <div className="col col--4-mm col--12">
                                 <div className="ml24 pt12">
-                                      <ProductMenu productName={productName}>
+                                      <ProductMenu productName={topbarContent.productName}>
                                             <ProductMenuDropdown categories={ProductMenuItems} />
                                       </ProductMenu>
                                 </div>
                             </div>
                             <div className="col col--8-mm col--12">
-                                <div style={{ height: '50px' }}>{topNavContent}</div>
+                                <div style={{ height: '50px' }}>
+                                    {topbarContent.topNav}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </TopbarSticker>
                 <div className="limiter">
                     <PageLayout
-                        sidebarTitle={<div className="ml36">{contentType}</div>}
-                        sidebarContent={sidebarContent}
+                        sidebarTitle={<div className="ml36">{sidebarProps.contentType}</div>}
+                        sidebarContent={sidebarProps.sidebarContent}
                         sidebarContentStickyTop={60}
                         sidebarContentStickyTopNarrow={0}
                         currentPath={location.pathname}
-                        sidebarStackedOnNarrowScreens={sidebarStackedOnNarrowScreens}
+                        sidebarStackedOnNarrowScreens={sidebarProps.sidebarStackedOnNarrowScreens}
                     >
                             <div id="docs-content" className='static-header-page prose'>
                                 {this.props.children}
