@@ -127,10 +127,10 @@
     webpack-merge "^4.1.2"
     worker-farm "^1.6.0"
 
-"@mapbox/dr-ui@0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.0.8.tgz#c64bc4e8ce1f3104130e014e81a523100712bc80"
-  integrity sha512-yrbySJ24YPDRR9QPIKT6qm4rqB9XacDvH7ptpSHIUkHouSO1bQqDXlx5ulU6v022GrsMQ4CGXI/J69yFmjvzfg==
+"@mapbox/dr-ui@0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.0.9.tgz#61c8e9677df0fd5ba6dff176b61c8d8c8d1b4862"
+  integrity sha512-RKFCy6I4NRatfGO8WEe/0sB3mdfPfI9ipziOoD3ArmzMpB8iultxN2KWdWBq4+v0eRqLLpQiLNtNd1Px0ea4IQ==
   dependencies:
     "@mapbox/mr-ui" "^0.1.0"
     classnames "^2.2.6"
