@@ -1682,6 +1682,20 @@ class Map extends Camera {
 
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration, this._crossSourceCollisions);
 
+        let continueRenderingTextures = false;
+        for (const id in this.style.sourceCaches) {
+            const source = this.style.sourceCaches[id]._source;
+            if (source.type === 'raster') {
+                const queued = source._textureQueue.pop();
+                if (queued) {
+                    source.createTexture(queued.tile, queued.img);
+                }
+            }
+            if (source._textureQueue.length > 0) {
+                continueRenderingTextures = true;
+            }
+        }
+
         // Actually draw
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
@@ -1715,7 +1729,7 @@ class Map extends Camera {
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
-        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
+        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty || continueRenderingTextures) {
             this.triggerRepaint();
         } else if (!this.isMoving() && this.loaded()) {
             this.fire(new Event('idle'));
