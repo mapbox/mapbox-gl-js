@@ -180,11 +180,13 @@ class SourceCache extends Evented {
             this._tiles[i].upload(context);
 
         }
+        const usedTiles = [];
         for (const tileID of this.getRenderableIds()) {
             const tile = this._tiles[tileID];
             for (const bucketId in tile.buckets) {
                 const bucket = tile.buckets[bucketId];
                 if (bucket instanceof CircleBucket) {
+                    usedTiles.push(tile.tileID.toString());
                     const bucketKey = bucket.zoom;
                     const leaderId = bucket.layerIds[0];
                     if (this._globalBuckets[leaderId] && this._globalBuckets[leaderId][bucketKey]) {
@@ -193,6 +195,7 @@ class SourceCache extends Evented {
                 }
             }
         }
+        //console.log(`Used tiles ${usedTiles.join(", ")}`);
         const emptyGlobalBuckets = [];
         for (const layer in this._globalBuckets) {
             for (const key in this._globalBuckets[layer]) {

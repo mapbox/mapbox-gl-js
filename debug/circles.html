@@ -26,6 +26,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
+map.showTileBoundaries = true;
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
 
@@ -41,23 +42,25 @@ map.on('load', function() {
         "type": "circle",
         "source": "circles",
         "paint": {
-            "circle-radius": [
-                "interpolate",
-                ["exponential", 2.0],
-                ["zoom"],
-                0, 5,
-                5, ['*', ["get", "scalerank"], 20],
-            ],
-            "circle-color": [
-                "match",
-                ["get", "featureclass"],
-                "cape", "orange",
-                "island", "#0088ff",
-                "plain", "yellow",
-                "pole", "white",
-                "waterfall", "blue",
-                "red"
-            ],
+            "circle-radius": 15,
+            "circle-color": "blue",
+            // "circle-radius": [
+            //     "interpolate",
+            //     ["exponential", 2.0],
+            //     ["zoom"],
+            //     0, 5,
+            //     5, ['*', ["get", "scalerank"], 20],
+            // ],
+            // "circle-color": [
+            //     "match",
+            //     ["get", "featureclass"],
+            //     "cape", "orange",
+            //     "island", "#0088ff",
+            //     "plain", "yellow",
+            //     "pole", "white",
+            //     "waterfall", "blue",
+            //     "red"
+            // ],
             "circle-pitch-scale": "map",
             "circle-pitch-alignment": "map",
             "circle-stroke-width": 1
@@ -73,22 +76,24 @@ map.on('load', function() {
         },
         'source-layer': 'sf2010',
         'paint': {
-            // make circles larger as the user zooms from z12 to z22
-            'circle-radius': {
-                'base': 1.75,
-                'stops': [[12, 2], [22, 180]]
-            },
-            // color circles by ethnicity, using a match expression
-            // https://www.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
-            'circle-color': [
-                'match',
-                ['get', 'ethnicity'],
-                'White', '#fbb03b',
-                'Black', '#223b53',
-                'Hispanic', '#e55e5e',
-                'Asian', '#3bb2d0',
-                /* other */ '#ccc'
-            ]
+            'circle-radius': 2,
+            'circle-color': "gray"
+            // // make circles larger as the user zooms from z12 to z22
+            // 'circle-radius': {
+            //     'base': 1.75,
+            //     'stops': [[12, 2], [22, 180]]
+            // },
+            // // color circles by ethnicity, using a match expression
+            // // https://www.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
+            // 'circle-color': [
+            //     'match',
+            //     ['get', 'ethnicity'],
+            //     'White', '#fbb03b',
+            //     'Black', '#223b53',
+            //     'Hispanic', '#e55e5e',
+            //     'Asian', '#3bb2d0',
+            //     /* other */ '#ccc'
+            // ]
         }
     });
 

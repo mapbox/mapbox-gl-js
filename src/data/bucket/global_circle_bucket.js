@@ -12,6 +12,7 @@ import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
+import GlobalVertexBuffer from '../../gl/global_vertex_buffer';
 
 /**
  * See CircleBucket for per-tile implementation
@@ -26,7 +27,7 @@ class GlobalCircleBucket {
     stateDependentLayers: Array<CircleStyleLayer>;
 
     layoutVertexArray: CircleLayoutArray;
-    layoutVertexBuffer: VertexBuffer;
+    layoutVertexBuffer: GlobalVertexBuffer;
 
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
@@ -84,7 +85,10 @@ class GlobalCircleBucket {
 
         this.uploaded = false;
 
-        this._tileLayoutVertexArrays[key] = bucket.layoutVertexArray;
+        this._tileLayoutVertexArrays[key] = {
+            array: bucket.layoutVertexArray,
+            uploaded: false
+        };
         this._tileProgramConfigurations[key] = bucket.programConfigurations;
 
         this._tileBuckets[key] = bucket;
@@ -108,9 +112,20 @@ class GlobalCircleBucket {
     }
 
     upload(context: Context) {
+        if (!this.layoutVertexBuffer) {
+            // After initial creation, size management will be handled by the buffer itself
+            let combinedLength = 0;
+            for (const key in this._tileLayoutVertexArrays) {
+                combinedLength += this._tileLayoutVertexArrays[key].array.length;
+            }
+            this.layoutVertexBuffer = new GlobalVertexBuffer(context, combinedLength, 8 /*TODO: read from attributes */, layoutAttributes);
+            this.layoutVertexBuffer.key = this.zoom;
+        }
+
         for (const key in this._tileLayoutVertexArrays) {
             if (!this._usedTileBuckets[key]) {
                 this.uploaded = false;
+                this.layoutVertexBuffer.removeSection(this._tileLayoutVertexArrays[key].index);
                 delete this._tileLayoutVertexArrays[key];
                 delete this._tileProgramConfigurations[key];
             }
@@ -120,7 +135,11 @@ class GlobalCircleBucket {
                 const tileBucket = this._tileBuckets[key];
                 if (!this._tileLayoutVertexArrays[key]) {
                     this.uploaded = false;
-                    this._tileLayoutVertexArrays[key] = tileBucket.layoutVertexArray;
+                    this._tileLayoutVertexArrays[key]= {
+                        array: tileBucket.layoutVertexArray,
+                        uploaded: false
+                    };
+                    this._tileLayoutVertexArrays[key].uploaded = false;
                 }
                 if (!this._tileProgramConfigurations[key]) {
                     this.uploaded = false;
@@ -130,8 +149,7 @@ class GlobalCircleBucket {
         }
         if (!this.uploaded) {
             this.generateArrays();
-            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-            this.indexBuffer = context.createIndexBuffer(this.indexArray);
+            this.indexBuffer = context.createIndexBuffer(this.indexArray, true);
         }
         this.programConfigurations.upload(context);
         this.uploaded = true;
@@ -150,15 +168,6 @@ class GlobalCircleBucket {
         this.segments.destroy();
     }
 
-    copyLayoutVertex(tileLayoutVertexArray: CircleLayoutArray, i: number) {
-        this.layoutVertexArray.emplaceBack(
-            tileLayoutVertexArray.uint16[i],
-            tileLayoutVertexArray.uint16[i + 1],
-            tileLayoutVertexArray.uint16[i + 2],
-            tileLayoutVertexArray.uint16[i + 3]
-        );
-    }
-
     generateArrays() {
         // TODO: Resetting all state, Copying and reuploading everything is the least efficient way to do this!
         if (this.programConfigurations) {
@@ -167,16 +176,12 @@ class GlobalCircleBucket {
         if (this.segments) {
             this.segments.destroy();
         }
-        if (this.layoutVertexBuffer) {
-            this.layoutVertexBuffer.destroy();
-        }
         if (this.indexBuffer) {
             this.indexBuffer.destroy();
         }
 
         this.segments = new SegmentVector();
         this.layoutVertexArray = new CircleLayoutArray();
-        this.indexArray = new TriangleIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, this.layers, this.zoom);
 
         for (const layerId of this.layerIds) {
@@ -202,46 +207,45 @@ class GlobalCircleBucket {
         }
         this.programConfigurations.needsUpload = true;
 
-        let combinedLength = 0;
-        for (const key in this._tileLayoutVertexArrays) {
-            combinedLength += this._tileLayoutVertexArrays[key].length;
-        }
-        this.layoutVertexArray.reserve(combinedLength);
-
-        const indexPositions = [];
         for (const key in this._tileLayoutVertexArrays) {
             const tileLayoutVertexArray = this._tileLayoutVertexArrays[key];
-            for (let i = 0; i < tileLayoutVertexArray.length * 4; i += 16) {
-                const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-                const index = segment.vertexLength;
-
-                this.copyLayoutVertex(tileLayoutVertexArray, i);
-                this.copyLayoutVertex(tileLayoutVertexArray, i + 4);
-                this.copyLayoutVertex(tileLayoutVertexArray, i + 8);
-                this.copyLayoutVertex(tileLayoutVertexArray, i + 12);
-
-                // TODO: this is a poor-man's low precision, no rotation y-sort
-                const y = tileLayoutVertexArray.uint16[i + 1];
-
-                indexPositions.push({ y, index });
-
-                segment.vertexLength += 4;
-                segment.primitiveLength += 2; // Is it OK that we add these later?
+            if (!tileLayoutVertexArray.uploaded) {
+                const newIndex =
+                    this.layoutVertexBuffer.addSection(tileLayoutVertexArray.array, tileLayoutVertexArray.index);
+                tileLayoutVertexArray.index = newIndex
+                tileLayoutVertexArray.uploaded = true;
             }
         }
-        if (indexPositions.length * 4 < SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
+
+        // TODO:
+        // (1) for each non-uploaded array, upload to global buffer
+        // (2) in global buffer, keep track of segment size, automatically break
+        //     indexing on going over segment limit
+        // (3) At vertex upload time, iterate through array collecting
+        //      - sort key (just crude y for now)
+        //      - offset in array
+        //      - index to global buffer section
+        // (4) To create index buffers
+        //      - sort
+        //      - for each entry, lookup buffer index, then get segment index from offset
+
+        // What to do if we go over the segment limit? Sorting doesn't work, but we can't
+        // even fall back to data order.
+        const indexPositions = this.layoutVertexBuffer.buildIndexPositions(this.segments);
+
+        if (this.segments.segments.length === 1) {
             // Sorting only works if all circles fit inside a single segment.
             indexPositions.sort((a, b) => {
                 return a.y - b.y;
             });
         }
+        this.indexArray = new TriangleIndexArray();
+        this.indexArray.reserve(indexPositions.length * 2);
         for (const indexPosition of indexPositions) {
             const index = indexPosition.index;
             this.indexArray.emplaceBack(index, index + 1, index + 2);
             this.indexArray.emplaceBack(index, index + 3, index + 2);
         }
-        this.indexArray._trim();
-        this.layoutVertexArray._trim();
     }
 }
 
