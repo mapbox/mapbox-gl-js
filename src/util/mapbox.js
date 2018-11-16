@@ -89,6 +89,7 @@ export const normalizeSpriteURL = function(url: string, format: string, extensio
 };
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
+const vectorExtensionRe = /(\.pbf)(?=$)/;
 
 export const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
@@ -111,8 +112,8 @@ export const canonicalizeTileURL = function(url: string) {
 
     const urlObject = parseUrl(url);
     // Make sure that we are dealing with a valid Mapbox tile URL.
-    // Has to be /v4/, with a valid filename + extension
-    if (!urlObject.path.match(version) || !(urlObject.path.match(imageExtensionRe) || urlObject.path.match('.pbf'))) {
+    // Has to begin with /v4/, with a valid filename + extension
+    if (!urlObject.path.match(/(^\/v4\/)/) || !(urlObject.path.match(imageExtensionRe) || urlObject.path.match(vectorExtensionRe))) {
         // Not a proper Mapbox tile URL.
         return url;
     }
@@ -121,14 +122,8 @@ export const canonicalizeTileURL = function(url: string) {
     result +=  urlObject.path.replace(version, '');
 
     // Append the query string, minus the access token parameter.
-    let ampersand = false;
-    for (const param of urlObject.params) {
-        if (!param.match('access_token')) {
-            result += ampersand ? "&" : "?";
-            result += param;
-            ampersand = true;
-        }
-    }
+    const params = urlObject.params.filter(p => !p.match(/^access_token=/));
+    if (params.length) result += `?${params.join('&')}`;
     return result;
 };
 

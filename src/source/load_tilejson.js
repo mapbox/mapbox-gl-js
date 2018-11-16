@@ -28,8 +28,7 @@ export default function(options: any, requestTransformFn: RequestTransformFuncti
 
             // only canonicalize tile tileset if source is declared using a tilejson url
             if (options.url) {
-                const canonicalTileUrls = canonicalizeTileset(result, options.url);
-                result.tiles = canonicalTileUrls;
+                result.tiles = canonicalizeTileset(result, options.url);
             }
             callback(null, result);
         }
