@@ -19,6 +19,7 @@ import type {RasterDEMSourceSpecification} from '../style-spec/types';
 
 class RasterDEMTileSource extends RasterTileSource implements Source {
     encoding: "mapbox" | "terrarium";
+    textureQueue: Array<Object>;
 
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
@@ -26,6 +27,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         this.maxzoom = 22;
         this._options = extend({}, options);
         this.encoding = options.encoding || "mapbox";
+        this.textureQueue = [];
     }
 
     serialize() {
@@ -57,18 +59,22 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
 
-                const rawImageData = browser.getImageData(img);
-                const params = {
-                    uid: tile.uid,
-                    coord: tile.tileID,
-                    source: this.id,
-                    rawImageData,
-                    encoding: this.encoding
-                };
+                this.textureQueue.push({tile, img, callback: textureCallback.bind(this)});
+            }
+        }
 
-                if (!tile.workerID || tile.state === 'expired') {
-                    tile.workerID = this.dispatcher.send('loadDEMTile', params, done.bind(this));
-                }
+        function textureCallback(tile, img) {
+            const rawImageData = browser.getImageData(img);
+            const params = {
+                uid: tile.uid,
+                coord: tile.tileID,
+                source: this.id,
+                rawImageData,
+                encoding: this.encoding
+            };
+
+            if (!tile.workerID || tile.state === 'expired') {
+                tile.workerID = this.dispatcher.send('loadDEMTile', params, done.bind(this));
             }
         }
 
@@ -84,6 +90,21 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 tile.state = 'loaded';
                 callback(null);
             }
+        }
+    }
+
+    createTexture(tile: Tile, img: any) {
+        const rawImageData = browser.getImageData(img);
+        const params = {
+            uid: tile.uid,
+            coord: tile.tileID,
+            source: this.id,
+            rawImageData,
+            encoding: this.encoding
+        };
+
+        if (!tile.workerID || tile.state === 'expired') {
+            tile.workerID = this.dispatcher.send('loadDEMTile', params, done.bind(this));
         }
     }
 

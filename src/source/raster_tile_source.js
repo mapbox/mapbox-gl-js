@@ -36,11 +36,11 @@ class RasterTileSource extends Evented implements Source {
     dispatcher: Dispatcher;
     map: Map;
     tiles: Array<string>;
+    textureQueue: Array<Object>;
 
     _loaded: boolean;
     _options: RasterSourceSpecification | RasterDEMSourceSpecification;
     _tileJSONRequest: ?Cancelable;
-    _textureQueue: Array<Object>;
 
     constructor(id: string, options: RasterSourceSpecification | RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -56,7 +56,7 @@ class RasterTileSource extends Evented implements Source {
         this.tileSize = 512;
         this._loaded = false;
 
-        this._textureQueue = [];
+        this.textureQueue = [];
         this._options = extend({}, options);
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
@@ -119,28 +119,29 @@ class RasterTileSource extends Evented implements Source {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
-                this._textureQueue.push({tile, img});
+
+                function textureCallback (tile, img) {
+                    const context = this.map.painter.context;
+                    const gl = context.gl;
+                    tile.texture = this.map.painter.getTileTexture(img.width);
+                    if (tile.texture) {
+                        tile.texture.update(img, { useMipmap: true });
+                    } else {
+                        tile.texture = new Texture(context, img, gl.RGBA, { useMipmap: true });
+                        tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+
+                        if (context.extTextureFilterAnisotropic) {
+                            gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
+                        }
+                    }
+
+                    tile.state = 'loaded';
+                }
+
+                this.textureQueue.push({tile, img, callback: textureCallback.bind(this)});
                 callback(null);
             }
         });
-    }
-
-    createTexture(tile: Tile, img: any) {
-        const context = this.map.painter.context;
-        const gl = context.gl;
-        tile.texture = this.map.painter.getTileTexture(img.width);
-        if (tile.texture) {
-            tile.texture.update(img, { useMipmap: true });
-        } else {
-            tile.texture = new Texture(context, img, gl.RGBA, { useMipmap: true });
-            tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
-
-            if (context.extTextureFilterAnisotropic) {
-                gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
-            }
-        }
-
-        tile.state = 'loaded';
     }
 
     abortTile(tile: Tile, callback: Callback<void>) {

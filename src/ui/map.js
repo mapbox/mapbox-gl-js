@@ -1685,14 +1685,15 @@ class Map extends Camera {
         let continueRenderingTextures = false;
         for (const id in this.style.sourceCaches) {
             const source = this.style.sourceCaches[id]._source;
-            if (source.type === 'raster') {
-                const queued = source._textureQueue.pop();
+            if (source.type === 'raster' || source.type === 'raster-dem') {
+                const queued = source.textureQueue.shift();
                 if (queued) {
-                    source.createTexture(queued.tile, queued.img);
+                    const cb = queued.callback;
+                    cb(queued.tile, queued.img);
                 }
-            }
-            if (source._textureQueue.length > 0) {
-                continueRenderingTextures = true;
+                if (source.textureQueue.length > 0) {
+                    continueRenderingTextures = true;
+                }
             }
         }
 
