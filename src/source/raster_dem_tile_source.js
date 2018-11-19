@@ -19,7 +19,6 @@ import type {RasterDEMSourceSpecification} from '../style-spec/types';
 
 class RasterDEMTileSource extends RasterTileSource implements Source {
     encoding: "mapbox" | "terrarium";
-    textureQueue: Array<Object>;
 
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
@@ -27,7 +26,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         this.maxzoom = 22;
         this._options = extend({}, options);
         this.encoding = options.encoding || "mapbox";
-        this.textureQueue = [];
     }
 
     serialize() {
@@ -58,8 +56,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
-
-                this.textureQueue.push({tile, img, callback: textureCallback.bind(this)});
+                this.map.style.textureQueue.push({tile, img, callback: textureCallback.bind(this)});
             }
         }
 
@@ -90,21 +87,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 tile.state = 'loaded';
                 callback(null);
             }
-        }
-    }
-
-    createTexture(tile: Tile, img: any) {
-        const rawImageData = browser.getImageData(img);
-        const params = {
-            uid: tile.uid,
-            coord: tile.tileID,
-            source: this.id,
-            rawImageData,
-            encoding: this.encoding
-        };
-
-        if (!tile.workerID || tile.state === 'expired') {
-            tile.workerID = this.dispatcher.send('loadDEMTile', params, done.bind(this));
         }
     }
 

@@ -1682,19 +1682,18 @@ class Map extends Camera {
 
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration, this._crossSourceCollisions);
 
+        // For performance reasons, we limit texture uploading to the GPU to
+        // one upload per animation frame
         let continueRenderingTextures = false;
-        for (const id in this.style.sourceCaches) {
-            const source = this.style.sourceCaches[id]._source;
-            if (source.type === 'raster' || source.type === 'raster-dem') {
-                const queued = source.textureQueue.shift();
-                if (queued) {
-                    const cb = queued.callback;
-                    cb(queued.tile, queued.img);
-                }
-                if (source.textureQueue.length > 0) {
-                    continueRenderingTextures = true;
-                }
-            }
+        // shift() causes the textures to be drawn from the center of the screen -> edges
+        // pop() would have the opposite animation effect
+        const queued = this.style.textureQueue.shift();
+        if (queued) {
+            const cb = queued.callback;
+            cb(queued.tile, queued.img);
+        }
+        if (this.style.textureQueue.length > 0) {
+            continueRenderingTextures = true;
         }
 
         // Actually draw
