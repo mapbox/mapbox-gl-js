@@ -56,7 +56,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
-                this.map.style.textureQueue.push({tile, img, callback: textureCallback.bind(this)});
+                this.map.style._textureQueue.push({tile, img, callback: textureCallback.bind(this)});
             }
         }
 

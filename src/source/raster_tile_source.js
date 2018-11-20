@@ -118,7 +118,7 @@ class RasterTileSource extends Evented implements Source {
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
 
-                this.map.style.textureQueue.push({tile, img, callback: textureCallback.bind(this)});
+                this.map.style._textureQueue.push({tile, img, callback: textureCallback.bind(this)});
                 callback(null);
             }
 

@@ -1685,7 +1685,7 @@ class Map extends Camera {
         // For performance reasons, we limit texture uploading to the GPU to
         // one upload per animation frame
         let continueRenderingTextures = false;
-        const queued = this.style.textureQueue.shift();
+        const queued = this.style._textureQueue.shift();
         if (queued) {
             const {tile, img, callback} = queued;
             // do not upload aborted tiles to the GPU
@@ -1694,7 +1694,7 @@ class Map extends Camera {
             }
         }
 
-        if (this.style.textureQueue.length > 0) {
+        if (this.style._textureQueue.length > 0) {
             continueRenderingTextures = true;
         }
 
