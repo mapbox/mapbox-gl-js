@@ -1685,13 +1685,15 @@ class Map extends Camera {
         // For performance reasons, we limit texture uploading to the GPU to
         // one upload per animation frame
         let continueRenderingTextures = false;
-        // shift() causes the textures to be drawn from the center of the screen -> edges
-        // pop() would have the opposite animation effect
         const queued = this.style.textureQueue.shift();
         if (queued) {
-            const cb = queued.callback;
-            cb(queued.tile, queued.img);
+            const {tile, img, callback} = queued;
+            // do not upload aborted tiles to the GPU
+            if (tile && !tile.aborted) {
+                callback(tile, img);
+            }
         }
+
         if (this.style.textureQueue.length > 0) {
             continueRenderingTextures = true;
         }
