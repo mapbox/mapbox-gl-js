@@ -28,8 +28,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
     const minTileZ = coords.length && coords[0].overscaledZ;
-    const align = !painter.options.moving && (Math.round(painter.transform.zoom) === painter.transform.zoom);
-
+    const align = !painter.options.moving;
     for (const coord of coords) {
         // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
         // Use gl.LESS to prevent double drawing in areas where tiles overlap.
