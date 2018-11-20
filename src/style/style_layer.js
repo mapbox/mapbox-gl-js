@@ -115,7 +115,7 @@ class StyleLayer extends Evented {
         return this._unevaluatedLayout.getValue(name);
     }
 
-    setLayoutProperty(name: string, value: mixed, options: {validate: boolean}) {
+    setLayoutProperty(name: string, value: mixed, options?: {validate?: boolean}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.layout.${name}`;
             if (this._validate(validateLayoutProperty, key, name, value, options)) {
@@ -139,7 +139,7 @@ class StyleLayer extends Evented {
         }
     }
 
-    setPaintProperty(name: string, value: mixed, options: {validate: boolean}) {
+    setPaintProperty(name: string, value: mixed, options?: {validate?: boolean}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.paint.${name}`;
             if (this._validate(validatePaintProperty, key, name, value, options)) {
@@ -221,7 +221,7 @@ class StyleLayer extends Evented {
         });
     }
 
-    _validate(validate: Function, key: string, name: string, value: mixed, options: {validate: boolean}) {
+    _validate(validate: Function, key: string, name: string, value: mixed, options?: {validate?: boolean}) {
         if (options && options.validate === false) {
             return false;
         }

@@ -733,7 +733,7 @@ class Style extends Evented {
         this._updateLayer(layer);
     }
 
-    setFilter(layerId: string, filter: ?FilterSpecification) {
+    setFilter(layerId: string, filter: ?FilterSpecification,  options?: {validate?: boolean}) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -752,7 +752,7 @@ class Style extends Evented {
             return;
         }
 
-        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) {
+        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, null, options)) {
             return;
         }
 
@@ -769,7 +769,7 @@ class Style extends Evented {
         return clone(this.getLayer(layer).filter);
     }
 
-    setLayoutProperty(layerId: string, name: string, value: any) {
+    setLayoutProperty(layerId: string, name: string, value: any,  options?: {validate?: boolean}) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -780,7 +780,7 @@ class Style extends Evented {
 
         if (deepEqual(layer.getLayoutProperty(name), value)) return;
 
-        layer.setLayoutProperty(name, value);
+        layer.setLayoutProperty(name, value, options);
         this._updateLayer(layer);
     }
 
@@ -800,7 +800,7 @@ class Style extends Evented {
         return layer.getLayoutProperty(name);
     }
 
-    setPaintProperty(layerId: string, name: string, value: any) {
+    setPaintProperty(layerId: string, name: string, value: any, options?: {validate?: boolean}) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -811,7 +811,7 @@ class Style extends Evented {
 
         if (deepEqual(layer.getPaintProperty(name), value)) return;
 
-        const requiresRelayout = layer.setPaintProperty(name, value);
+        const requiresRelayout = layer.setPaintProperty(name, value, options);
         if (requiresRelayout) {
             this._updateLayer(layer);
         }
@@ -1001,7 +1001,7 @@ class Style extends Evented {
         return this.light.getLight();
     }
 
-    setLight(lightOptions: LightSpecification) {
+    setLight(lightOptions: LightSpecification, options?: {validate?: boolean}) {
         this._checkLoaded();
 
         const light = this.light.getLight();
@@ -1022,7 +1022,7 @@ class Style extends Evented {
             }, this.stylesheet.transition)
         };
 
-        this.light.setLight(lightOptions);
+        this.light.setLight(lightOptions, options);
         this.light.updateTransitions(parameters);
     }
 

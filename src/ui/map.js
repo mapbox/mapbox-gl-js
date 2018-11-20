@@ -1264,6 +1264,9 @@ class Map extends Camera {
      * @param {string} layer The ID of the layer to which the filter will be applied.
      * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
      *   [filter definition](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
+     * @param {Object} [options]
+     * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
+     *
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
@@ -1271,8 +1274,8 @@ class Map extends Camera {
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
-    setFilter(layer: string, filter: ?FilterSpecification) {
-        this.style.setFilter(layer, filter);
+    setFilter(layer: string, filter: ?FilterSpecification,  options?: {validate?: boolean}) {
+        this.style.setFilter(layer, filter, options);
         return this._update(true);
     }
 
@@ -1308,6 +1311,8 @@ class Map extends Camera {
      * @param {string} name The name of the paint property to set.
      * @param {*} value The value of the paint propery to set.
      *   Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @param {Object} [options]
+     * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      * @example
      * map.setPaintProperty('my-layer', 'fill-color', '#faafee');
@@ -1315,8 +1320,8 @@ class Map extends Camera {
      * @see [Adjust a layer's opacity](https://www.mapbox.com/mapbox-gl-js/example/adjust-layer-opacity/)
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    setPaintProperty(layer: string, name: string, value: any) {
-        this.style.setPaintProperty(layer, name, value);
+    setPaintProperty(layer: string, name: string, value: any, options?: {validate?: boolean}) {
+        this.style.setPaintProperty(layer, name, value, options);
         return this._update(true);
     }
 
@@ -1337,12 +1342,14 @@ class Map extends Camera {
      * @param {string} layer The ID of the layer to set the layout property in.
      * @param {string} name The name of the layout property to set.
      * @param {*} value The value of the layout propery. Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @param {Object} [options]
+     * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      * @example
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
      */
-    setLayoutProperty(layer: string, name: string, value: any) {
-        this.style.setLayoutProperty(layer, name, value);
+    setLayoutProperty(layer: string, name: string, value: any, options?: {validate?: boolean}) {
+        this.style.setLayoutProperty(layer, name, value, options);
         return this._update(true);
     }
 
@@ -1361,10 +1368,12 @@ class Map extends Camera {
      * Sets the any combination of light values.
      *
      * @param light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
+     * @param {Object} [options]
+     * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      */
-    setLight(light: LightSpecification) {
-        this.style.setLight(light);
+    setLight(light: LightSpecification, options?: {validate?: boolean}) {
+        this.style.setLight(light, options);
         return this._update(true);
     }
 

@@ -86,13 +86,13 @@ class Light extends Evented {
         return this._transitionable.serialize();
     }
 
-    setLight(options?: LightSpecification) {
-        if (this._validate(validateLight, options)) {
+    setLight(light?: LightSpecification, options?: {validate?: boolean}) {
+        if (this._validate(validateLight, light, options)) {
             return;
         }
 
-        for (const name in options) {
-            const value = options[name];
+        for (const name in light) {
+            const value = light[name];
             if (endsWith(name, TRANSITION_SUFFIX)) {
                 this._transitionable.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), value);
             } else {
@@ -113,7 +113,11 @@ class Light extends Evented {
         this.properties = this._transitioning.possiblyEvaluate(parameters);
     }
 
-    _validate(validate: Function, value: mixed) {
+    _validate(validate: Function, value: mixed, options?: {validate?: boolean}) {
+        if (options && options.validate === false) {
+            return false;
+        }
+
         return emitValidationErrors(this, validate.call(validateStyle, extend({
             value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
