@@ -89,7 +89,8 @@ export const normalizeSpriteURL = function(url: string, format: string, extensio
 };
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
-const vectorExtensionRe = /(\.pbf)(?=$)/;
+// matches any file extension specified by a dot and one or more alphanumeric characters
+const extensionRe = /\.[\w]+$/;
 
 export const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
@@ -113,7 +114,7 @@ export const canonicalizeTileURL = function(url: string) {
     const urlObject = parseUrl(url);
     // Make sure that we are dealing with a valid Mapbox tile URL.
     // Has to begin with /v4/, with a valid filename + extension
-    if (!urlObject.path.match(/(^\/v4\/)/) || !(urlObject.path.match(imageExtensionRe) || urlObject.path.match(vectorExtensionRe))) {
+    if (!urlObject.path.match(/(^\/v4\/)/) || !urlObject.path.match(extensionRe)) {
         // Not a proper Mapbox tile URL.
         return url;
     }
@@ -128,14 +129,11 @@ export const canonicalizeTileURL = function(url: string) {
 };
 
 export const canonicalizeTileset = function(tileJSON: TileJSON, sourceURL: string) {
+    if (!isMapboxURL(sourceURL)) return tileJSON.tiles || [];
     const canonical = [];
-    if (isMapboxURL(sourceURL)) {
-        for (const url of tileJSON.tiles) {
-            const canonicalUrl = canonicalizeTileURL(url);
-            canonical.push(canonicalUrl);
-        }
-    } else {
-        return tileJSON.tiles;
+    for (const url of tileJSON.tiles) {
+        const canonicalUrl = canonicalizeTileURL(url);
+        canonical.push(canonicalUrl);
     }
     return canonical;
 };
