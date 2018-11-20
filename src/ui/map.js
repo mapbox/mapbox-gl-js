@@ -360,6 +360,7 @@ class Map extends Camera {
         }
 
         this.on('move', () => this._update(false));
+        this.on('moveend', () => this._update(false));
         this.on('zoom', () => this._update(true));
 
         if (typeof window !== 'undefined') {
