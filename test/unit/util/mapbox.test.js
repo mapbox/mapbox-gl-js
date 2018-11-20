@@ -243,23 +243,40 @@ test("mapbox", (t) => {
     });
 
     t.test('.canonicalizeTileURL', (t) => {
-        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"), "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-        t.equals(mapbox.canonicalizeTileURL("http://b.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"), "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"), "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key"), "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-        t.equals(mapbox.canonicalizeTileURL("https://api.mapbox.cn/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key"), "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b,c.d/{z}/{x}/{y}.vector.pbf?access_token=key"), "mapbox://tiles/a.b,c.d/{z}/{x}/{y}.vector.pbf");
-        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key&custom=parameter"), "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter");
-        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key"), "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter");
-        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key&second=param"), "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&second=param");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key"), "mapbox://tiles/a.b/{z}/{x}/{y}.jpg");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key"), "mapbox://tiles/a.b/{z}/{x}/{y}.jpg70");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key"), "mapbox://tiles/a.b/{z}/{x}/{y}.jpg");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key"), "mapbox://tiles/a.b/{z}/{x}/{y}.jpg70");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png"), "mapbox://tiles/a.b/{z}/{x}/{y}.png");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key"), "mapbox://tiles/a.b/{z}/{x}/{y}.png");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png"), "mapbox://tiles/a.b/{z}/{x}/{y}.png");
-        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key"), "mapbox://tiles/a.b/{z}/{x}/{y}.png");
+        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://b.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("https://api.mapbox.cn/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b,c.d/{z}/{x}/{y}.vector.pbf?access_token=key"),
+            "mapbox://tiles/a.b,c.d/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key&custom=parameter"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter");
+        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter");
+        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key&second=param"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&second=param");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.jpg");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.jpg70");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.jpg");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.jpg70");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.png");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.png");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.png");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.png");
 
         // We don't ever expect to see these inputs, but be safe anyway.
         t.equals(mapbox.canonicalizeTileURL("http://path"), "http://path");
