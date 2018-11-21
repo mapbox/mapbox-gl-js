@@ -1101,7 +1101,9 @@ class Style extends Evented {
         // to start over. When we start over, we do a full placement instead of incremental
         // to prevent starvation.
         // We need to restart placement to keep layer indices in sync.
-        const forceFullPlacement = this._layerOrderChanged;
+        // Also force full placement when fadeDuration === 0 to ensure that newly loaded
+        // tiles will fully display symbols in their first frame
+        const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0;
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
             this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions);
