@@ -278,9 +278,8 @@ class Painter {
     }
 
     depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType): DepthMode {
-        const farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
-        const nearDepth = farDepth - 1 + this.depthRange;
-        return new DepthMode(func || this.context.gl.LEQUAL, mask, [nearDepth, farDepth]);
+        const depth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
+        return new DepthMode(func || this.context.gl.LEQUAL, mask, [depth, depth]);
     }
 
     render(style: Style, options: PainterOptions) {
