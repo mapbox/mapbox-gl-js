@@ -234,12 +234,12 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         border-radius: 12px 3px 3px 12px;
     }
 
-    .mapboxgl-ctrl-attrib.mapboxgl-compact > * {
+    .mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-inner {
         display: none;
     }
 
-    .mapboxgl-ctrl-attrib.mapboxgl-compact:hover > * {
-        display: inline;
+    .mapboxgl-ctrl-attrib.mapboxgl-compact:hover .mapboxgl-ctrl-attrib-inner {
+        display: block;
     }
 
     .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
