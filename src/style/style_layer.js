@@ -17,7 +17,7 @@ import type { FeatureState } from '../style-spec/expression';
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter} from '../style-spec/feature_filter';
-import type {TransitionParameters} from './properties';
+import type { TransitionParameters, PossiblyEvaluated } from './properties';
 import type EvaluationParameters, {CrossfadeParameters} from './evaluation_parameters';
 import type Transform from '../geo/transform';
 import type {
@@ -42,11 +42,11 @@ class StyleLayer extends Evented {
     _crossfadeParameters: CrossfadeParameters;
 
     _unevaluatedLayout: Layout<any>;
-    +layout: mixed;
+    +layout: ?PossiblyEvaluated<any>;
 
     _transitionablePaint: Transitionable<any>;
     _transitioningPaint: Transitioning<any>;
-    +paint: mixed;
+    +paint: ?PossiblyEvaluated<any>;
 
     _featureFilter: FeatureFilter;
 
@@ -245,8 +245,11 @@ class StyleLayer extends Evented {
     }
 
     isStateDependent() {
-        for (const property in (this: any).paint._values) {
-            const value = (this: any).paint.get(property);
+        if (!this.paint)
+            return false;
+
+        for (const property in this.paint._values) {
+            const value = this.paint.get(property);
             if (!(value instanceof PossiblyEvaluatedPropertyValue) || !supportsPropertyExpression(value.property.specification)) {
                 continue;
             }
