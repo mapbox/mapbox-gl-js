@@ -375,7 +375,13 @@ class Camera extends Evented {
      */
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         bounds = LngLatBounds.convert(bounds);
-        return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), 0, options);
+
+        let bearingForBounds = 0;
+        if (typeof options.bearing === 'number') {
+            bearingForBounds =  options.bearing;
+        }
+
+        return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearingForBounds, options);
     }
 
     /**
