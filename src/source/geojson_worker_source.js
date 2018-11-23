@@ -6,7 +6,7 @@ import performance from '../util/performance';
 import rewind from 'geojson-rewind';
 import GeoJSONWrapper from './geojson_wrapper';
 import vtpbf from 'vt-pbf';
-import supercluster from 'supercluster';
+import Supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
 import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
@@ -171,7 +171,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
 
                 try {
                     this._geoJSONIndex = params.cluster ?
-                        supercluster(params.superclusterOptions).load(data.features) :
+                        new Supercluster(params.superclusterOptions).load(data.features) :
                         geojsonvt(data, params.geojsonVtOptions);
                 } catch (err) {
                     return callback(err);
