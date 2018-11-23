@@ -373,16 +373,16 @@ class Map extends Camera {
         this._hash = options.hash && (new Hash()).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
+            this.jumpTo({
+                center: options.center,
+                zoom: options.zoom,
+                bearing: options.bearing,
+                pitch: options.pitch
+            });
+
             if (options.bounds) {
                 this.resize();
                 this.fitBounds(options.bounds, { duration: 0 });
-            } else {
-                this.jumpTo({
-                    center: options.center,
-                    zoom: options.zoom,
-                    bearing: options.bearing,
-                    pitch: options.pitch
-                });
             }
         }
 
