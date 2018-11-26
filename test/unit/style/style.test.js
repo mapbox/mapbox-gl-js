@@ -1390,6 +1390,39 @@ test('Style#setPaintProperty', (t) => {
         });
     });
 
+    t.test('respects validate option', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background"
+                }
+            ]
+        });
+
+        style.on('style.load', () => {
+            const backgroundLayer = style.getLayer('background');
+            t.stub(console, 'error');
+            const validate = t.spy(backgroundLayer, '_validate');
+
+            style.setPaintProperty('background', 'background-color', 'notacolor', {validate: false});
+            t.deepEqual(validate.args[0][4], {validate: false});
+            t.ok(console.error.notCalled);
+
+            t.ok(style._changed);
+            style.update({});
+
+            style.setPaintProperty('background', 'background-color', 'alsonotacolor');
+            t.ok(console.error.calledOnce, 'validates input by default');
+            t.deepEqual(validate.args[1][4], {});
+
+            t.end();
+        });
+    });
+
     t.end();
 });
 
@@ -1459,6 +1492,47 @@ test('Style#setLayoutProperty', (t) => {
             value.stops[0][0] = 1;
             style.setLayoutProperty('line', 'line-cap', value);
             t.ok(style._changed);
+
+            t.end();
+        });
+    });
+
+    t.test('respects validate option', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [
+                {
+                    "id": "line",
+                    "type": "line",
+                    "source": "geojson"
+                }
+            ]
+        });
+
+        style.on('style.load', () => {
+            const lineLayer = style.getLayer('line');
+            t.stub(console, 'error');
+            const validate = t.spy(lineLayer, '_validate');
+
+            style.setLayoutProperty('line', 'line-cap', 'invalidcap', {validate: false});
+            t.deepEqual(validate.args[0][4], {validate: false});
+            t.ok(console.error.notCalled);
+            t.ok(style._changed);
+            style.update({});
+
+            style.setLayoutProperty('line', 'line-cap', 'differentinvalidcap');
+            t.ok(console.error.calledOnce, 'validates input by default');
+            t.deepEqual(validate.args[1][4], {});
 
             t.end();
         });
@@ -1611,6 +1685,35 @@ test('Style#setFilter', (t) => {
                 t.end();
             });
             style.setFilter('non-existant', ['==', 'id', 1]);
+        });
+    });
+
+    t.test('validates filter by default', (t) => {
+        const style = createStyle();
+        t.stub(console, 'error');
+        style.on('style.load', () => {
+            style.setFilter('symbol', 'notafilter');
+            t.deepEqual(style.getFilter('symbol'), ['==', 'id', 0]);
+            t.ok(console.error.calledOnce);
+            style.update({}); // trigger dispatcher broadcast
+            t.end();
+        });
+    });
+
+    t.test('respects validate option', (t) => {
+        const style = createStyle();
+
+        style.on('style.load', () => {
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'updateLayers');
+                t.deepEqual(value.layers[0].id, 'symbol');
+                t.deepEqual(value.layers[0].filter, 'notafilter');
+                t.end();
+            };
+
+            style.setFilter('symbol', 'notafilter', {validate: false});
+            t.deepEqual(style.getFilter('symbol'), 'notafilter');
+            style.update({}); // trigger dispatcher broadcast
         });
     });
 
