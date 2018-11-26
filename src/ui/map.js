@@ -1407,6 +1407,23 @@ class Map extends Camera {
     }
 
     /**
+     * Removes a specific key of the feature state, setting it back to the default behavior. If the key doesn't currently exist in the state object, an error will return.
+     *
+     * @param {Object} feature Feature identifier. Feature objects returned from
+     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string | number} feature.id Unique id of the feature.
+     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.*
+     * @param {string} key The key in the feature state to reset.
+    */    
+
+    removeStateKey(feature: { source: string; sourceLayer?: string; id: string | number; }, key: string) {
+        this.style.removeStateKey(feature, key);
+        return this._update();
+    }
+
+    /**
      * Gets the state of a feature.
      *
      * @param {Object} feature Feature identifier. Feature objects returned from

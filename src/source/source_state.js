@@ -29,6 +29,11 @@ class SourceFeatureState {
         extend(this.stateChanges[sourceLayer][feature], state);
     }
 
+    removeStateKey(sourceLayer: string, featureId: number, key: string) {
+        const feature = String(featureId);
+        delete this.stateChanges[sourceLayer][feature][key];
+    }
+
     getState(sourceLayer: string, featureId: number) {
         const feature = String(featureId);
         const base = this.state[sourceLayer] || {};
