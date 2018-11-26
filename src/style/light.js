@@ -14,7 +14,7 @@ import { number as interpolate } from '../style-spec/util/interpolate';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type EvaluationParameters from './evaluation_parameters';
-
+import type {StyleSetterOptions} from '../style/style';
 import { Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty } from './properties';
 
 import type {
@@ -86,7 +86,7 @@ class Light extends Evented {
         return this._transitionable.serialize();
     }
 
-    setLight(light?: LightSpecification, options?: {validate?: boolean}) {
+    setLight(light?: LightSpecification, options: StyleSetterOptions = {}) {
         if (this._validate(validateLight, light, options)) {
             return;
         }

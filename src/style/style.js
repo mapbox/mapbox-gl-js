@@ -89,6 +89,9 @@ export type StyleOptions = {
     localIdeographFontFamily?: string
 };
 
+export type StyleSetterOptions = {
+    validate?: boolean
+};
 /**
  * @private
  */
@@ -200,9 +203,7 @@ class Style extends Evented {
         });
     }
 
-    loadJSON(json: StyleSpecification, options: {
-        validate?: boolean
-    } = {}) {
+    loadJSON(json: StyleSpecification, options: StyleSetterOptions = {}) {
         this.fire(new Event('dataloading', {dataType: 'style'}));
 
         this._request = browser.frame(() => {
@@ -481,7 +482,7 @@ class Style extends Evented {
         return this.imageManager.listImages();
     }
 
-    addSource(id: string, source: SourceSpecification, options?: {validate?: boolean}) {
+    addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         if (this.sourceCaches[id] !== undefined) {
@@ -567,7 +568,7 @@ class Style extends Evented {
      * ID `before`, or appended if `before` is omitted.
      * @param {string} [before] ID of an existing layer to insert before
      */
-    addLayer(layerObject: LayerSpecification | CustomLayerInterface, before?: string, options?: {validate?: boolean}) {
+    addLayer(layerObject: LayerSpecification | CustomLayerInterface, before?: string, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const id = layerObject.id;
@@ -733,7 +734,7 @@ class Style extends Evented {
         this._updateLayer(layer);
     }
 
-    setFilter(layerId: string, filter: ?FilterSpecification,  options?: {validate?: boolean}) {
+    setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -769,7 +770,7 @@ class Style extends Evented {
         return clone(this.getLayer(layer).filter);
     }
 
-    setLayoutProperty(layerId: string, name: string, value: any,  options?: {validate?: boolean}) {
+    setLayoutProperty(layerId: string, name: string, value: any,  options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -800,7 +801,7 @@ class Style extends Evented {
         return layer.getLayoutProperty(name);
     }
 
-    setPaintProperty(layerId: string, name: string, value: any, options?: {validate?: boolean}) {
+    setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -1001,7 +1002,7 @@ class Style extends Evented {
         return this.light.getLight();
     }
 
-    setLight(lightOptions: LightSpecification, options?: {validate?: boolean}) {
+    setLight(lightOptions: LightSpecification, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const light = this.light.getLight();
@@ -1026,7 +1027,7 @@ class Style extends Evented {
         this.light.updateTransitions(parameters);
     }
 
-    _validate(validate: ({}) => void, key: string, value: any, props: any, options?: {validate?: boolean}) {
+    _validate(validate: ({}) => void, key: string, value: any, props: any, options: StyleSetterOptions = {}) {
         if (options && options.validate === false) {
             return false;
         }

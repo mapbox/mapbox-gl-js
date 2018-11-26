@@ -76,7 +76,7 @@ test('Light#setLight', (t) => {
         light.recalculate({zoom: 16, zoomHistory: {}, now: 10});
         t.ok(lightSpy.calledOnce);
         t.ok(console.error.calledOnce);
-        t.deepEqual(lightSpy.args[0][2], undefined);
+        t.deepEqual(lightSpy.args[0][2], {});
         t.end();
     });
 

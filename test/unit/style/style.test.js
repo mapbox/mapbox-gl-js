@@ -1417,7 +1417,7 @@ test('Style#setPaintProperty', (t) => {
 
             style.setPaintProperty('background', 'background-color', 'alsonotacolor');
             t.ok(console.error.calledOnce, 'validates input by default');
-            t.deepEqual(validate.args[1][4], undefined);
+            t.deepEqual(validate.args[1][4], {});
 
             t.end();
         });
@@ -1532,7 +1532,7 @@ test('Style#setLayoutProperty', (t) => {
 
             style.setLayoutProperty('line', 'line-cap', 'differentinvalidcap');
             t.ok(console.error.calledOnce, 'validates input by default');
-            t.deepEqual(validate.args[1][4], undefined);
+            t.deepEqual(validate.args[1][4], {});
 
             t.end();
         });

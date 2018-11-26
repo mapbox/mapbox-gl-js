@@ -30,7 +30,7 @@ import type {PointLike} from '@mapbox/point-geometry';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {RequestParameters} from '../util/ajax';
-import type {StyleOptions} from '../style/style';
+import type {StyleOptions, StyleSetterOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 
@@ -52,7 +52,6 @@ import type {
 } from '../style-spec/types';
 
 type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-
 /* eslint-disable no-use-before-define */
 type IControl = {
     onAdd(map: Map): HTMLElement;
@@ -1274,7 +1273,7 @@ class Map extends Camera {
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
-    setFilter(layer: string, filter: ?FilterSpecification,  options?: {validate?: boolean}) {
+    setFilter(layer: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this.style.setFilter(layer, filter, options);
         return this._update(true);
     }
@@ -1320,7 +1319,7 @@ class Map extends Camera {
      * @see [Adjust a layer's opacity](https://www.mapbox.com/mapbox-gl-js/example/adjust-layer-opacity/)
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    setPaintProperty(layer: string, name: string, value: any, options?: {validate?: boolean}) {
+    setPaintProperty(layer: string, name: string, value: any, options: StyleSetterOptions = {}) {
         this.style.setPaintProperty(layer, name, value, options);
         return this._update(true);
     }
@@ -1348,7 +1347,7 @@ class Map extends Camera {
      * @example
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
      */
-    setLayoutProperty(layer: string, name: string, value: any, options?: {validate?: boolean}) {
+    setLayoutProperty(layer: string, name: string, value: any, options: StyleSetterOptions = {}) {
         this.style.setLayoutProperty(layer, name, value, options);
         return this._update(true);
     }
@@ -1372,7 +1371,7 @@ class Map extends Camera {
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      */
-    setLight(light: LightSpecification, options?: {validate?: boolean}) {
+    setLight(light: LightSpecification, options: StyleSetterOptions = {}) {
         this.style.setLight(light, options);
         return this._update(true);
     }
