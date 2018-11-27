@@ -168,6 +168,13 @@ const types = {
             '...',
             'input_n: string, options_n: { "font-scale": number, "text-font": array<string> }'
         ]
+    }],
+    'number-format': [{
+        type: 'string',
+        parameters: [
+            'input: number',
+            'options: { "locale": string, "currency": string, "min-fraction-digits": number, "max-fraction-digits": number }'
+        ]
     }]
 };
 
