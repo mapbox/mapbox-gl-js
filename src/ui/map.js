@@ -1683,15 +1683,20 @@ class Map extends Camera {
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration, this._crossSourceCollisions);
 
         // For performance reasons, we limit texture uploading to the GPU to
-        // one upload per animation frame
+        // a max of two uploads per animation frame
         let continueRenderingTextures = false;
-        const queued = this.style._textureQueue.shift();
-        if (queued) {
+        console.log('render called');
+        let max = Math.min(2, this.style._textureQueue.length);
+        for (let i = 0; i < max; i++) {
+          const queued = this.style._textureQueue.shift();
+          console.log('upload texture*********', this.style._textureQueue.length, queued);
+          if (queued) {
             const {tile, img, callback} = queued;
             // do not upload aborted tiles to the GPU
             if (tile && !tile.aborted) {
-                callback(tile, img);
+              callback(tile, img);
             }
+          }
         }
 
         if (this.style._textureQueue.length > 0) {

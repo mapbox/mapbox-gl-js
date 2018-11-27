@@ -40,11 +40,13 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
+        console.log('loadTile', tile);
         const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
         tile.request = getImage(this.map._transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
         function imageLoaded(err, img) {
+            console.log('imageLoaded', img);
             delete tile.request;
             if (tile.aborted) {
                 tile.state = 'unloaded';
@@ -57,7 +59,9 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
                 this.map.style._textureQueue.push({tile, img, callback: textureCallback.bind(this)});
+                callback(null);
             }
+            console.log('queue', this.map.style._textureQueue);
         }
 
         function textureCallback(tile, img) {
