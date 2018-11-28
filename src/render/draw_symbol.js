@@ -74,9 +74,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     // Unpitched point labels need to have their rotation applied after projection
     const rotateInShader = rotateWithMap && !pitchWithMap && !alongLine;
 
-    const depthOn = pitchWithMap;
-
-    const depthMode = depthOn ? painter.depthModeForSublayer(0, DepthMode.ReadOnly) : DepthMode.disabled;
+    const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
 
     let program;
     let size;
