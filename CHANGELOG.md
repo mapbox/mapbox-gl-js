@@ -102,7 +102,7 @@ August 16, 2018
 * Treat tiles that error with status 404 as empty renderable tiles to prevent rendering duplicate features in some sparse tilesets ([#6803](https://github.com/mapbox/mapbox-gl-js/pull/6803))
 
 ### 🐛 Bug fixes
-* Fix issue where `text-max-angle` property was being calculated incorrectly internally, causing potential rendering errors when `"text-placement": line`
+* Fix issue where `text-max-angle` property was being calculated incorrectly internally, causing potential rendering errors when `"symbol-placement": line`
 * Require `feature.id` when using `Map#setFeatureState` ([#6974](https://github.com/mapbox/mapbox-gl-js/pull/6974))
 * Fix issue with removing the `GeolocateControl` when user location is being used ([#6977](https://github.com/mapbox/mapbox-gl-js/pull/6977)) (h/t [sergei-zelinsky](https://github.com/sergei-zelinsky))
 * Fix memory leak caused by a failure to remove all controls added to the map ([#7042](https://github.com/mapbox/mapbox-gl-js/pull/7042))
