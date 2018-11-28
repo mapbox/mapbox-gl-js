@@ -63,7 +63,7 @@ class CircleStyleLayer extends StyleLayer {
         for (const ring of geometry) {
             for (const point of ring) {
 
-                const transformedPoint = alignWithMap ? point : projectPoint(point, posMatrix, transform);
+                const transformedPoint = alignWithMap ? point : projectPoint(point, posMatrix);
 
                 let adjustedSize = transformedSize;
                 const projectedCenter = vec4.transformMat4([], [point.x, point.y, 0, 1], posMatrix);
@@ -86,10 +86,10 @@ function projectPoint(p: Point, posMatrix: Float32Array) {
     return new Point(point[0] / point[3], point[1] / point[3]);
 }
 
-function projectQueryGeometry(queryGeometry: Array<Array<Point>>, posMatrix: Float32Array, transform: Transform) {
+function projectQueryGeometry(queryGeometry: Array<Array<Point>>, posMatrix: Float32Array) {
     return queryGeometry.map((r) => {
         return r.map((p) => {
-            return projectPoint(p, posMatrix, transform);
+            return projectPoint(p, posMatrix);
         });
     });
 }
