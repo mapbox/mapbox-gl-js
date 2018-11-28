@@ -57,7 +57,7 @@ class CircleStyleLayer extends StyleLayer {
         // // A circle with fixed scaling relative to the viewport gets larger in tile space as it moves into the distance
         // // A circle with fixed scaling relative to the map gets smaller in viewport space as it moves into the distance
         const alignWithMap = this.paint.get('circle-pitch-alignment') === 'map';
-        const transformedPolygon = alignWithMap ? translatedPolygon : projectQueryGeometry(translatedPolygon, posMatrix, transform);
+        const transformedPolygon = alignWithMap ? translatedPolygon : projectQueryGeometry(translatedPolygon, posMatrix);
         const transformedSize = alignWithMap ? size * pixelsToTileUnits : size;
 
         for (const ring of geometry) {
@@ -81,7 +81,7 @@ class CircleStyleLayer extends StyleLayer {
     }
 }
 
-function projectPoint(p: Point, posMatrix: Float32Array, transform: Transform) {
+function projectPoint(p: Point, posMatrix: Float32Array) {
     const point = vec4.transformMat4([], [p.x, p.y, 0, 1], posMatrix);
     return new Point(point[0] / point[3], point[1] / point[3]);
 }
