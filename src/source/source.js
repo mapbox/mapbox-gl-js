@@ -48,6 +48,7 @@ export interface Source {
     tileID?: CanonicalTileID;
     reparseOverscaled?: boolean,
     vectorLayerIds?: Array<string>,
+    _textureQueue?: Array<Object>;
 
     hasTransition(): boolean;
 

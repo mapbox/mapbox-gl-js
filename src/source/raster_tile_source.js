@@ -36,6 +36,7 @@ class RasterTileSource extends Evented implements Source {
     dispatcher: Dispatcher;
     map: Map;
     tiles: Array<string>;
+    _textureQueue: Array<Object>;
 
     _loaded: boolean;
     _options: RasterSourceSpecification | RasterDEMSourceSpecification;
@@ -54,6 +55,7 @@ class RasterTileSource extends Evented implements Source {
         this.scheme = 'xyz';
         this.tileSize = 512;
         this._loaded = false;
+        this._textureQueue = [];
 
         this._options = extend({}, options);
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
@@ -118,7 +120,7 @@ class RasterTileSource extends Evented implements Source {
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
 
-                this.map.style._textureQueue.push({tile, img, callback: textureCallback.bind(this)});
+                this._textureQueue.push({tileKey: tile.tileID.key, img, callback: textureCallback.bind(this)});
                 callback(null);
             }
 

@@ -1685,22 +1685,29 @@ class Map extends Camera {
         // For performance reasons, we limit texture uploading to the GPU to
         // a max of two uploads per animation frame
         let continueRenderingTextures = false;
-        console.log('render called');
-        let max = Math.min(2, this.style._textureQueue.length);
-        for (let i = 0; i < max; i++) {
-          const queued = this.style._textureQueue.shift();
-          console.log('upload texture*********', this.style._textureQueue.length, queued);
-          if (queued) {
-            const {tile, img, callback} = queued;
-            // do not upload aborted tiles to the GPU
-            if (tile && !tile.aborted) {
-              callback(tile, img);
+        const sources = this.style && this.style.sourceCaches;
+        for (const id in sources) {
+            const cache = sources[id];
+            const source = cache._source;
+            if ((source.type === 'raster' || source.type === 'raster-dem')) {
+                const textureQueue = Array.isArray(source._textureQueue) ? source._textureQueue : [];
+                const max = Math.min(2, textureQueue.length);
+                for (let i = 0; i < max; i++) {
+                    const queued = textureQueue.shift();
+                    if (queued) {
+                        const {tileKey, img, callback} = queued;
+                        const tile = cache.getTileByID(tileKey);
+                        // do not upload aborted tiles to the GPU
+                        if (tile && !tile.aborted) {
+                            console.log('create texture', textureQueue.length);
+                            callback(tile, img);
+                        }
+                        if (textureQueue.length > 0) {
+                            continueRenderingTextures = true;
+                        }
+                    }
+                }
             }
-          }
-        }
-
-        if (this.style._textureQueue.length > 0) {
-            continueRenderingTextures = true;
         }
 
         // Actually draw
