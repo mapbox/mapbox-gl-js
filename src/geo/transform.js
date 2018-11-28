@@ -235,7 +235,7 @@ class Transform {
      * @param {boolean} options.roundZoom
      * @param {boolean} options.reparseOverscaled
      * @param {boolean} options.renderWorldCopies
-     * @returns {Array<Tile>} tiles
+     * @returns {Array<OverscaledTileID>} OverscaledTileIDs
      */
     coveringTiles(
         options: {
