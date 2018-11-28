@@ -83,9 +83,7 @@ class CircleStyleLayer extends StyleLayer {
 
 function projectPoint(p: Point, posMatrix: Float32Array, transform: Transform) {
     const point = vec4.transformMat4([], [p.x, p.y, 0, 1], posMatrix);
-    return new Point(
-            (point[0] / point[3] + 1) * transform.width * 0.5,
-            (point[1] / point[3] + 1) * transform.height * 0.5);
+    return new Point(point[0] / point[3], point[1] / point[3]);
 }
 
 function projectQueryGeometry(queryGeometry: Array<Array<Point>>, posMatrix: Float32Array, transform: Transform) {
