@@ -752,8 +752,8 @@ export default class extends React.Component {
                                             "video": {
                                                 "type": "video",
                                                 "urls": [
-                                                    "https://www.mapbox.com/drone/video/drone.mp4",
-                                                    "https://www.mapbox.com/drone/video/drone.webm"
+                                                    "https://static-assets.mapbox.com/mapbox-gl-js/drone.mp4",
+                                                    "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm"
                                                 ],
                                                 "coordinates": [
                                                     [-122.51596391201019, 37.56238816766053],
