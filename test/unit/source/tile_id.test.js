@@ -113,5 +113,11 @@ test('OverscaledTileID', (t) => {
         t.end();
     });
 
+    t.test('.isChildOf', (t) => {
+        t.ok(new OverscaledTileID(2, 0, 2, 0, 0).isChildOf(new OverscaledTileID(0, 0, 0, 0, 0)), "child of z0 tile");
+        t.notOk(new OverscaledTileID(2, 0, 2, 0, 0).isChildOf(new OverscaledTileID(0, 1, 0, 0, 0)), "not child of tile with different wrap");
+        t.end();
+    });
+
     t.end();
 });
