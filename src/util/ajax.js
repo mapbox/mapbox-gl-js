@@ -149,6 +149,11 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
             callback(new AJAXError(xhr.statusText, xhr.status, requestParameters.url));
         }
     };
+
+    xhr.onabort = () => {
+        callback(new Error('The user aborted a request.'));
+    }
+
     xhr.send(requestParameters.body);
     return { cancel: () => xhr.abort() };
 }
@@ -175,8 +180,12 @@ function sameOrigin(url) {
 
 const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
 
-const imageQueue = [];
-let numImageRequests = 0;
+let imageQueue, numImageRequests;
+export const resetImageRequestQueue = () => {
+    imageQueue = [];
+    numImageRequests = 0;
+};
+resetImageRequestQueue();
 
 export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
     // limit concurrent image loads to help with raster sources performance on big screens
