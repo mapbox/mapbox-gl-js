@@ -33,6 +33,10 @@ class ExpressionBenchmark extends Benchmark {
                 this.data = [];
 
                 for (const layer of json.layers) {
+                    if (layer.ref) {
+                        continue;
+                    }
+
                     const expressionData = function(rawValue, propertySpec: StylePropertySpecification) {
                         const rawExpression = convertFunction(rawValue, propertySpec);
                         const compiledFunction = createFunction(rawValue, propertySpec);
