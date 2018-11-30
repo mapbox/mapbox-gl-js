@@ -50,6 +50,7 @@ class VideoSource extends ImageSource {
     urls: Array<string>;
     video: HTMLVideoElement;
     roundZoom: boolean;
+    videoSeeked: boolean;
 
     /**
      * @private
@@ -79,6 +80,13 @@ class VideoSource extends ImageSource {
                 // Start repainting when video starts playing. hasTransition() will then return
                 // true to trigger additional frames as long as the videos continues playing.
                 this.video.addEventListener('playing', () => {
+                    this.map.triggerRepaint();
+                });
+
+                // After video is seeked and ready to be shown, start repainting and set flag
+                // hasTransition() will return true to trigger a single frame repaint, then remove flag
+                this.video.addEventListener('seeked', () => {
+                    this.videoSeeked = true;
                     this.map.triggerRepaint();
                 });
 
@@ -143,7 +151,7 @@ class VideoSource extends ImageSource {
         if (!this.texture) {
             this.texture = new Texture(context, this.video, gl.RGBA);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        } else if (!this.video.paused) {
+        } else if (!this.video.paused || this.videoSeeked) {
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
@@ -166,7 +174,11 @@ class VideoSource extends ImageSource {
     }
 
     hasTransition() {
-        return this.video && !this.video.paused;
+        var result = this.video && (!this.video.paused || this.videoSeeked);
+        if (this.videoSeeked) {
+            this.videoSeeked = false;
+        }
+        return result;
     }
 }
 
