@@ -111,6 +111,10 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             callback(new AJAXError(response.statusText, response.status, requestParameters.url));
         }
     }).catch((error) => {
+        if (error.code === 20) {
+            // silence expected AbortError
+            return;
+        }
         callback(new Error(error.message));
     });
 
