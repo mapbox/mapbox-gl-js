@@ -190,9 +190,14 @@ resetImageRequestQueue();
 export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
     // limit concurrent image loads to help with raster sources performance on big screens
     if (numImageRequests >= config.MAX_PARALLEL_IMAGE_REQUESTS) {
-        const queued = {requestParameters, callback, cancelled: false};
+        const queued = {
+            requestParameters,
+            callback,
+            cancelled: false,
+            cancel() { this.cancelled = true; }
+        };
         imageQueue.push(queued);
-        return { cancel() { queued.cancelled = true; } };
+        return queued;
     }
     numImageRequests++;
 
@@ -203,9 +208,10 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         numImageRequests--;
         assert(numImageRequests >= 0);
         while (imageQueue.length && numImageRequests < config.MAX_PARALLEL_IMAGE_REQUESTS) { // eslint-disable-line
-            const {requestParameters, callback, cancelled} = imageQueue.shift();
+            const request = imageQueue.shift();
+            const {requestParameters, callback, cancelled} = request;
             if (!cancelled) {
-                getImage(requestParameters, callback);
+                request.cancel = getImage(requestParameters, callback).cancel;
             }
         }
     };
