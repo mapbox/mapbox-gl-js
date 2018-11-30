@@ -55,17 +55,13 @@ class ExpressionBenchmark extends Benchmark {
 
                     for (const key in layer.paint) {
                         if (isFunction(layer.paint[key])) {
-                            // if (layer.type) {
-                                this.data.push(expressionData(layer.paint[key], spec[`paint_${layer.type}`][key]));
-                            // }
+                            this.data.push(expressionData(layer.paint[key], spec[`paint_${layer.type}`][key]));
                         }
                     }
 
                     for (const key in layer.layout) {
                         if (isFunction(layer.layout[key])) {
-                            // if (layer.type) {
-                                this.data.push(expressionData(layer.layout[key], spec[`layout_${layer.type}`][key]));
-                            // }
+                            this.data.push(expressionData(layer.layout[key], spec[`layout_${layer.type}`][key]));
                         }
                     }
                 }
