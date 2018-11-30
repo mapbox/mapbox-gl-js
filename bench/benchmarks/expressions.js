@@ -33,6 +33,12 @@ class ExpressionBenchmark extends Benchmark {
                 this.data = [];
 
                 for (const layer of json.layers) {
+                    // some older layers still use the deprecated `ref property` instead of `type`
+                    // if we don't filter out these older layers, the logic below will cause a fatal error
+                    if (!layer.type) {
+                        continue;
+                    }
+
                     const expressionData = function(rawValue, propertySpec: StylePropertySpecification) {
                         const rawExpression = convertFunction(rawValue, propertySpec);
                         const compiledFunction = createFunction(rawValue, propertySpec);
