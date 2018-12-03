@@ -849,7 +849,7 @@ class Style extends Evented {
         sourceCache.setFeatureState(sourceLayer, featureId, state);
     }
 
-    removeStateKey(feature: { source: string; sourceLayer?: string; id: string | number; }, key: string) {
+    removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
         this._checkLoaded();
         const sourceId = feature.source;
         const sourceLayer = feature.sourceLayer;
@@ -870,7 +870,7 @@ class Style extends Evented {
             return;
         }
 
-        sourceCache.removeStateKey(sourceLayer, featureId, key);
+        sourceCache.removeFeatureState(sourceLayer, featureId, key);
     }
 
     getFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }) {

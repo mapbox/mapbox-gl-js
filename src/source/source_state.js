@@ -29,9 +29,12 @@ class SourceFeatureState {
         extend(this.stateChanges[sourceLayer][feature], state);
     }
 
-    removeStateKey(sourceLayer: string, featureId: number, key: string) {
+    removeFeatureState(sourceLayer: string, featureId: number, key: string) {
         const feature = String(featureId);
-        delete this.stateChanges[sourceLayer][feature][key];
+
+        if (key) delete this.stateChanges[sourceLayer][feature][key];
+        else if (featureId) delete this.stateChanges[sourceLayer][feature];
+        else delete this.stateChanges[sourceLayer];
     }
 
     getState(sourceLayer: string, featureId: number) {

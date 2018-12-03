@@ -1407,7 +1407,7 @@ class Map extends Camera {
     }
 
     /**
-     * Removes a specific key of the feature state, setting it back to the default behavior. If the key doesn't currently exist in the state object, an error will return.
+     * Removes feature state, setting it back to the default behavior. If only source is specified, removes all feature states of that source. If feature.id is specified, removes all keys for only that feature's feature state. If key is specified, removes only that key from the feature state.
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
@@ -1418,8 +1418,8 @@ class Map extends Camera {
      * @param {string} key The key in the feature state to reset.
     */    
 
-    removeStateKey(feature: { source: string; sourceLayer?: string; id: string | number; }, key: string) {
-        this.style.removeStateKey(feature, key);
+    removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
+        this.style.removeFeatureState(feature, key);
         return this._update();
     }
 
