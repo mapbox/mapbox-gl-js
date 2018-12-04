@@ -181,7 +181,7 @@ class VideoSource extends ImageSource {
     }
 
     hasTransition() {
-        let result = this.video && (!this.video.paused || this.videoSeeked);
+        const result = this.video && (!this.video.paused || this.videoSeeked);
         if (this.videoSeeked && this.textureDrawn) {
             this.videoSeeked = false;
             this.textureDrawn = false;
