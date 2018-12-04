@@ -27,6 +27,8 @@ class SourceFeatureState {
         this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || {};
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
         extend(this.stateChanges[sourceLayer][feature], newState);
+
+        if (this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature]) delete this.deletedStates[sourceLayer][feature]
     }
 
     removeFeatureState(sourceLayer: string, featureId: number, key: string) {
@@ -34,16 +36,15 @@ class SourceFeatureState {
 
         this.deletedStates = {};
         this.deletedStates[sourceLayer] = {};
-        this.deletedStates[sourceLayer][id] = {};
 
 
         if (key) {
-            this.deletedStates[sourceLayer][id][feature] = {}
-            this.deletedStates[sourceLayer][id][feature][key] = this.state[sourceLayer][id][feature][key]
+            this.deletedStates[sourceLayer][feature] = {}
+            this.deletedStates[sourceLayer][feature][key] = this.state[sourceLayer][feature][key]
         }
 
-        else if (feature) this.deletedStates[sourceLayer][id][feature] = this.state[sourceLayer][id][feature];
-        else  this.deletedStates[sourceLayer][id] = this.state[sourceLayer][id]
+        else if (feature) this.deletedStates[sourceLayer][feature] = this.state[sourceLayer][feature];
+        else  this.deletedStates[sourceLayer] = this.state[sourceLayer]
     }
 
     getState(sourceLayer: string, featureId: number) {
@@ -60,6 +61,7 @@ class SourceFeatureState {
     coalesceChanges(tiles: {[any]: Tile}, painter: any) {
 
         const currentChanges: LayerFeatureStates = {};
+
         for (const sourceLayer in this.stateChanges) {
             this.state[sourceLayer]  = this.state[sourceLayer] || {};
             const layerStates = {};
@@ -81,14 +83,12 @@ class SourceFeatureState {
                 const layerStates = {};
                 for (const id in this.deletedStates[sourceLayer]) {
                     for (const feature in this.deletedStates[sourceLayer][id]){
-                        for (const key in this.deletedStates[sourceLayer][id][feature]){
-                            this.state[sourceLayer][id][feature][key] = null;
-                        }
+                        this.state[sourceLayer][id][key] = null;
                     }
 
-                    layerStates[id] = this.state[sourceLayer][id];
+                    extend(layerStates[id], this.state[sourceLayer][id]);
                 }
-                currentChanges[sourceLayer] = layerStates;
+                extend(currentChanges[sourceLayer], layerStates);
             }
 
         }
