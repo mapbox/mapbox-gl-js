@@ -865,10 +865,10 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
         }
-        if (isNaN(featureId) || featureId < 0) {
-            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided and non-negative.`)));
-            return;
-        }
+        // if (isNaN(featureId) || featureId < 0) {
+        //     this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided and non-negative.`)));
+        //     return;
+        // }
 
         sourceCache.removeFeatureState(sourceLayer, featureId, key);
     }
