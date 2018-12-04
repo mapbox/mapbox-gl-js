@@ -38,7 +38,7 @@ class SourceFeatureState {
         this.deletedStates[sourceLayer] = {};
 
 
-        if (key) {
+        if (key && featureId) {
             this.deletedStates[sourceLayer][feature] = {};
             this.deletedStates[sourceLayer][feature][key] = null;
         }
@@ -56,8 +56,6 @@ class SourceFeatureState {
                     this.deletedStates[sourceLayer][feature][key] = null;
                 }
             }
-
-            console.log(this.deletedStates)
         }
     }
 
@@ -117,7 +115,7 @@ class SourceFeatureState {
 
         this.stateChanges = {};
         this.deletedStates = null;
-        console.log(currentChanges)
+
         if (Object.keys(currentChanges).length === 0) return;
 
         for (const id in tiles) {
