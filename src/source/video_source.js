@@ -51,6 +51,7 @@ class VideoSource extends ImageSource {
     video: HTMLVideoElement;
     roundZoom: boolean;
     videoSeeked: boolean;
+    textureDrawn: boolean;
 
     /**
      * @private
@@ -60,6 +61,8 @@ class VideoSource extends ImageSource {
         this.roundZoom = true;
         this.type = 'video';
         this.options = options;
+        this.videoSeeked = false;
+        this.textureDrawn = false;
     }
 
     load() {
@@ -156,6 +159,10 @@ class VideoSource extends ImageSource {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
 
+        if (this.videoSeeked) {
+            this.textureDrawn = true;
+        }
+
         for (const w in this.tiles) {
             const tile = this.tiles[w];
             if (tile.state !== 'loaded') {
@@ -175,8 +182,9 @@ class VideoSource extends ImageSource {
 
     hasTransition() {
         var result = this.video && (!this.video.paused || this.videoSeeked);
-        if (this.videoSeeked) {
+        if (this.videoSeeked && this.textureDrawn) {
             this.videoSeeked = false;
+            this.textureDrawn = false;
         }
         return result;
     }
