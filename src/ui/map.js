@@ -1828,7 +1828,12 @@ class Map extends Camera {
      * @memberof Map
      */
     get repaint(): boolean { return !!this._repaint; }
-    set repaint(value: boolean) { this._repaint = value; this._update(); }
+    set repaint(value: boolean) {
+        if (this._repaint !== value) {
+            this._repaint = value;
+            this.triggerRepaint();
+        }
+    }
 
     // show vertices
     get vertices(): boolean { return !!this._vertices; }
