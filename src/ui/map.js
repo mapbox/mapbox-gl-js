@@ -98,6 +98,11 @@ type MapOptions = {
 const defaultMinZoom = 0;
 const defaultMaxZoom = 22;
 const defaultOptions = {
+    style: {
+        version: 8,
+        sources: {},
+        layers: []
+    },
     center: [0, 0],
     zoom: 0,
     bearing: 0,
