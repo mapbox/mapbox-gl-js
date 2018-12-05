@@ -1529,6 +1529,27 @@ test('Map', (t) => {
                 t.end();
             });
         });
+        t.test('remove and add state', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+
+                map.removeFeatureState({ source: 'geojson', id: 12345});
+                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+
+                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
+                t.equal(fState, {'hover': true});
+                t.end();
+            });
+        });
         t.test('throw before loaded', (t) => {
             const map = createMap(t, {
                 style: {
