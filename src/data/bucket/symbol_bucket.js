@@ -56,6 +56,7 @@ export type CollisionArrays = {
 };
 
 export type SymbolFeature = {|
+    sortKey: number | void,
     text: Formatted | void,
     icon: string | void,
     index: number,
@@ -101,7 +102,7 @@ function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, a
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
 }
 
-class SymbolBuffers {
+export class SymbolBuffers {
     layoutVertexArray: SymbolLayoutArray;
     layoutVertexBuffer: VertexBuffer;
 
@@ -261,6 +262,7 @@ class SymbolBucket implements Bucket {
     tilePixelRatio: number;
     compareText: {[string]: Array<Point>};
     fadeStartTime: number;
+    sortFeaturesByKey: boolean;
     sortFeaturesByY: boolean;
     sortedAngle: number;
     featureSortOrder: Array<number>;
@@ -291,7 +293,10 @@ class SymbolBucket implements Bucket {
         this.iconSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['icon-size']);
 
         const layout = this.layers[0].layout;
-        const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
+        const sortKey = layout.get('symbol-sort-key');
+        const zOrder = layout.get('symbol-z-order');
+        this.sortFeaturesByKey = zOrder !== 'viewport-y' && sortKey.constantOr(1) !== undefined;
+        const zOrderByViewportY = zOrder === 'viewport-y' || (zOrder === 'auto' && !this.sortFeaturesByKey);
         this.sortFeaturesByY = zOrderByViewportY && (layout.get('text-allow-overlap') || layout.get('icon-allow-overlap') ||
             layout.get('text-ignore-placement') || layout.get('icon-ignore-placement'));
 
@@ -333,6 +338,7 @@ class SymbolBucket implements Bucket {
             (textField.value.kind !== 'constant' || textField.value.value.toString().length > 0) &&
             (textFont.value.kind !== 'constant' || textFont.value.value.length > 0);
         const hasIcon = iconImage.value.kind !== 'constant' || iconImage.value.value && iconImage.value.value.length > 0;
+        const symbolSortKey = layout.get('symbol-sort-key');
 
         this.features = [];
 
@@ -370,6 +376,10 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
+            const sortKey = this.sortFeaturesByKey ?
+                symbolSortKey.evaluate(feature, {}) :
+                undefined;
+
             const symbolFeature: SymbolFeature = {
                 text,
                 icon,
@@ -377,7 +387,8 @@ class SymbolBucket implements Bucket {
                 sourceLayerIndex,
                 geometry: loadGeometry(feature),
                 properties: feature.properties,
-                type: vectorTileFeatureTypes[feature.type]
+                type: vectorTileFeatureTypes[feature.type],
+                sortKey
             };
             if (typeof feature.id !== 'undefined') {
                 symbolFeature.id = feature.id;
@@ -404,6 +415,13 @@ class SymbolBucket implements Bucket {
             // Merge adjacent lines with the same text to improve labelling.
             // It's better to place labels on one long line than on many short segments.
             this.features = mergeLines(this.features);
+        }
+
+        if (this.sortFeaturesByKey) {
+            this.features.sort((a, b) => {
+                // a.sortKey is always a number when sortFeaturesByKey is true
+                return ((a.sortKey: any): number) - ((b.sortKey: any): number);
+            });
         }
     }
 
@@ -481,7 +499,7 @@ class SymbolBucket implements Bucket {
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
 
-        const segment = arrays.segments.prepareSegment(4 * quads.length, arrays.layoutVertexArray, arrays.indexArray);
+        const segment = arrays.segments.prepareSegment(4 * quads.length, arrays.layoutVertexArray, arrays.indexArray, feature.sortKey);
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
         const vertexStartIndex = segment.vertexLength;
 

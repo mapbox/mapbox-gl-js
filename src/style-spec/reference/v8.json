@@ -958,9 +958,27 @@
       },
       "property-type": "data-constant"
     },
+    "symbol-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key wehn they overlap. Features with a lower sort key will have priority over other features when doing placement.",
+      "sdk-support": {
+          "js": "0.53.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "symbol-z-order": {
       "type": "enum",
       "values": {
+        "auto": {
+          "doc": "If `symbol-sort-key` is set, sort based on that. Otherwise sort symbols by their position relative to the viewport."
+        },
         "viewport-y": {
           "doc": "Symbols will be sorted by their y-position relative to the viewport."
         },
@@ -968,7 +986,7 @@
           "doc": "Symbols will be rendered in the same order as the source data with no sorting applied."
         }
       },
-      "default": "viewport-y",
+      "default": "auto",
       "doc": "Controls the order in which overlapping symbols in the same layer are rendered",
       "sdk-support": {
         "basic functionality": {
