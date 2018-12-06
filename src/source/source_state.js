@@ -28,7 +28,8 @@ class SourceFeatureState {
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
         extend(this.stateChanges[sourceLayer][feature], newState);
 
-        if (this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature]) delete this.deletedStates[sourceLayer][feature];
+        const deletionInQueue = this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature]
+        if (deletionInQueue) delete this.deletedStates[sourceLayer][feature];
     }
 
     removeFeatureState(sourceLayer: string, featureId: number, key: string) {
@@ -95,10 +96,10 @@ class SourceFeatureState {
                     this.state[sourceLayer]  = this.state[sourceLayer] || {};
                     const layerStates = {};
                     for (const id in this.deletedStates[sourceLayer]) {
-                        for (const feature in this.deletedStates[sourceLayer][id]){
-                            for (const key in this.deletedStates[sourceLayer][id][key]){
-                                this.state[sourceLayer][id][key] = null;
-                            }
+
+
+                        for (const key in this.deletedStates[sourceLayer][id]){
+                            this.state[sourceLayer][id][key] = null;
                         }
 
                         layerStates[id] = layerStates[id] || {};
