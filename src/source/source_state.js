@@ -28,15 +28,18 @@ class SourceFeatureState {
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
         extend(this.stateChanges[sourceLayer][feature], newState);
 
-        const deletionInQueue = this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature];
-        if (deletionInQueue) delete this.deletedStates[sourceLayer][feature];
+
+        for (const key in newState) {
+            const deletionInQueue = this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature] && this.deletedStates[sourceLayer][feature][key];
+            if (deletionInQueue) delete this.deletedStates[sourceLayer][feature][key];
+        }
     }
 
     removeFeatureState(sourceLayer: string, featureId: number, key: string) {
 
         const feature = String(featureId);
 
-        this.deletedStates = {};
+        this.deletedStates = this.deletedStates || {};
         this.deletedStates[sourceLayer] = {};
 
 
@@ -90,15 +93,14 @@ class SourceFeatureState {
             for (const sourceLayer in this.deletedStates) {
                 this.state[sourceLayer]  = this.state[sourceLayer] || {};
                 const layerStates = {};
-                for (const id in this.deletedStates[sourceLayer]) {
+                for (const feature in this.deletedStates[sourceLayer]) {
 
-
-                    for (const key in this.deletedStates[sourceLayer][id]) {
-                        if (this.state[sourceLayer][id][key]) this.state[sourceLayer][id][key] = null;
+                    for (const key in this.deletedStates[sourceLayer][feature]) {
+                        if (this.state[sourceLayer][feature][key]) this.state[sourceLayer][feature][key] = null;
                     }
 
-                    layerStates[id] = layerStates[id] || {};
-                    extend(layerStates[id], this.deletedStates[sourceLayer][id]);
+                    layerStates[feature] = layerStates[feature] || {};
+                    extend(layerStates[feature], this.deletedStates[sourceLayer][feature]);
                 }
 
                 currentChanges[sourceLayer] = currentChanges[sourceLayer] || {};
