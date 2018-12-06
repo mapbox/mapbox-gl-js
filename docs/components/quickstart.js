@@ -140,7 +140,7 @@ export default class extends React.Component {
 
                         <p>Requesting styles from Mapbox or other services will require additional
                             directives. For Mapbox, you can use this <code>connect-src</code> directive:</p>
-                        <pre><code>{`connect-src https://*.tiles.mapbox.com https://api.mapbox.com`}</code></pre>
+                        <pre><code>{`connect-src https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com`}</code></pre>
                     </div>
                     <div>
                         <h2 className='strong' id='mapbox-css'>Mapbox CSS</h2>
