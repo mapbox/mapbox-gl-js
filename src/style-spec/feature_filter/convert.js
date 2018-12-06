@@ -92,7 +92,7 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
         return ['any'].concat(children);
     } else if (op === 'all') {
         const children = (filter: any).slice(1).map(f => _convertFilter(f, expectedTypes));
-        return ['all'].concat(children);
+        return children.length > 1 ? ['all'].concat(children) : [].concat(...children);
     } else if (op === 'none') {
         return ['!', _convertFilter(['any'].concat(filter.slice(1)), {})];
     } else if (op === 'in') {
