@@ -67,6 +67,24 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('initial bounds options in constructor options', (t) => {
+        const bounds = [[-133, 16], [-68, 50]];
+
+        const map = (fitBoundsOptions, skipCSSStub) => {
+            const container = window.document.createElement('div');
+            Object.defineProperty(container, 'offsetWidth', {value: 512});
+            Object.defineProperty(container, 'offsetHeight', {value: 512});
+            return createMap(t, { skipCSSStub, container, bounds, fitBoundsOptions });
+        };
+
+        const unpadded = map(undefined, false);
+        const padded = map({ padding: 100 }, true);
+
+        t.ok(unpadded.getZoom() > padded.getZoom());
+
+        t.end();
+    });
+
     t.test('disables handlers', (t) => {
         t.test('disables all handlers', (t) => {
             const map = createMap(t, {interactive: false});
