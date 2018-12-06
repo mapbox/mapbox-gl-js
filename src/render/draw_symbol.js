@@ -223,7 +223,9 @@ function drawSymbolsSorted(painter: Painter, renderData: Array<SymbolTileRenderS
         }
     }
 
-    symbols.sort((a, b) => a.segment.sortKey - b.segment.sortKey);
+    symbols.sort((a, b) => {
+        return ((a.segment.sortKey: any): number) - ((b.segment.sortKey: any): number);
+    });
 
     for (const symbol of symbols) {
         const data = symbol.data;
