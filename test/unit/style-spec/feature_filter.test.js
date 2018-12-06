@@ -100,6 +100,45 @@ test('convert legacy filters to expressions', t => {
         t.end();
     });
 
+    t.test('flattens nested, single child all expressions', (t) => {
+        const filter = [
+            "all",
+            [
+                "in",
+                "$type",
+                "Polygon",
+                "LineString",
+                "Point"
+            ],
+            [
+                "all",
+                ["in", "type", "island"]
+            ]
+        ];
+
+        const expected = [
+            "all",
+            [
+                "match",
+                ["geometry-type"],
+                ["Polygon", "LineString", "Point"],
+                true,
+                false
+            ],
+            [
+                "match",
+                ["get", "type"],
+                ["island"],
+                true,
+                false
+            ]
+        ];
+
+        const converted = convertFilter(filter);
+        t.same(converted, expected);
+        t.end();
+    });
+
     t.end();
 });
 
