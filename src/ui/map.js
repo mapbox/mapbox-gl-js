@@ -1416,7 +1416,7 @@ class Map extends Camera {
      * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
      *  required.*
      * @param {string} key The key in the feature state to reset.
-    */    
+    */
 
     removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
         this.style.removeFeatureState(feature, key);
