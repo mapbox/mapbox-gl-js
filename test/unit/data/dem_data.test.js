@@ -17,8 +17,7 @@ test('DEMData', (t) => {
         const dem = new DEMData(0, {width: 4, height: 4, data: new Uint8ClampedArray(4 * 4 * 4)});
         t.equal(dem.uid, 0);
         t.equal(dem.dim, 4);
-        t.equal(dem.border, 2);
-        t.equal(dem.stride, 8);
+        t.equal(dem.stride, 6);
         t.true(dem.data instanceof Int32Array);
         t.end();
     });
@@ -141,8 +140,7 @@ test('DEMData#backfillBorder', (t) => {
             $name: 'DEMData',
             uid: 0,
             dim: 4,
-            border: 2,
-            stride: 8,
+            stride: 6,
             data: dem0.data,
         }, 'serializes DEM');
 
