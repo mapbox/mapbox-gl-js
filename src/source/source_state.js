@@ -32,6 +32,7 @@ class SourceFeatureState {
         for (const key in newState) {
             const deletionInQueue = this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature] && this.deletedStates[sourceLayer][feature][key] === null;
             if (deletionInQueue) {
+                console.log('diq')
                 delete this.deletedStates[sourceLayer][feature][key];
             }
         }
@@ -50,7 +51,22 @@ class SourceFeatureState {
             this.deletedStates[sourceLayer][feature][key] = null;
         } else if (featureId) {
             this.deletedStates[sourceLayer][feature] = {};
-            for (key in this.state[sourceLayer][feature]) this.deletedStates[sourceLayer][feature][key] = null;
+
+            const featureStateExists = this.state[sourceLayer] && this.state[sourceLayer][feature];
+            const updateInQueue = this.stateChanges[sourceLayer] && this.stateChanges[sourceLayer][feature];
+
+            if (featureStateExists) {
+                for (key in this.state[sourceLayer][feature]) {
+                    this.deletedStates[sourceLayer][feature][key] = null;
+                }
+            }
+
+            if (updateInQueue) {
+                for (key in this.stateChanges[sourceLayer][feature]) {
+                    this.deletedStates[sourceLayer][feature][key] = null;
+                }
+            }
+
         } else  {
             this.deletedStates[sourceLayer] = {};
             for (const feature in this.state[sourceLayer]) {
@@ -66,6 +82,7 @@ class SourceFeatureState {
         const feature = String(featureId);
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};
+        
         return extend({}, base[feature], changes[feature]);
     }
 
@@ -75,6 +92,7 @@ class SourceFeatureState {
 
     coalesceChanges(tiles: {[any]: Tile}, painter: any) {
 
+        //track changes with full state objects, but only for features that got modified
         const featuresChanged: LayerFeatureStates = {};
 
         for (const sourceLayer in this.stateChanges) {

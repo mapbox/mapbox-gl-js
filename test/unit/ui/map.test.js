@@ -1486,7 +1486,7 @@ test('Map', (t) => {
                 t.end();
             });
         });
-        t.test('remove all properties of one feature state', (t) => {
+        t.test('remove all state properties of one feature', (t) => {
             const map = createMap(t, {
                 style: {
                     "version": 8,
