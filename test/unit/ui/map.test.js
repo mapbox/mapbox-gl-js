@@ -1486,7 +1486,7 @@ test('Map', (t) => {
                 t.end();
             });
         });
-        t.test('remove all state properties of one feature', (t) => {
+        t.test('remove all properties of one feature state', (t) => {
             const map = createMap(t, {
                 style: {
                     "version": 8,
@@ -1497,15 +1497,15 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true, 'foo': true});
-                map.removeFeatureState({ source: 'geojson', id: 12345});
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.removeFeatureState({ source: 'geojson', id: 1});
 
-                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
+                const fState = map.getFeatureState({ source: 'geojson', id: 1});
                 t.equal(fState, {});
                 t.end();
             });
         });
-        t.test('remove all state properties all features in source', (t) => {
+        t.test('remove all properties all feature states in source', (t) => {
             const map = createMap(t, {
                 style: {
                     "version": 8,
@@ -1516,16 +1516,16 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true, 'foo': true});
-                map.setFeatureState({ source: 'geojson', id: 123456}, {'hover': true, 'foo': true});
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
 
-                map.removeFeatureState({ source: 'geojson'});
+                map.removeFeatureState({ source: 'geojson', id:1});
 
-                const fState1 = map.getFeatureState({ source: 'geojson', id: 12345});
-                t.equal(fState1, {});
+                const fState1 = map.getFeatureState({ source: 'geojson', id: 1});
+                t.equal(fState1, {'hover': null, 'foo': null});
 
-                const fState2 = map.getFeatureState({ source: 'geojson', id: 123456});
-                t.equal(fState2, {});
+                const fState2 = map.getFeatureState({ source: 'geojson', id: 2});
+                t.equal(fState2, {'hover': null, 'foo': null});
                 t.end();
             });
         });
