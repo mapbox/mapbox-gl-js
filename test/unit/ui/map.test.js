@@ -1501,11 +1501,13 @@ test('Map', (t) => {
                 map.removeFeatureState({ source: 'geojson', id: 1});
 
                 const fState = map.getFeatureState({ source: 'geojson', id: 1});
-                t.equal(fState, {});
+                t.equal(fState.hover, null);
+                t.equal(fState.foo, null);
+
                 t.end();
             });
         });
-        t.test('remove all properties all feature states in source', (t) => {
+        t.test('remove all state properties of all features in source', (t) => {
             const map = createMap(t, {
                 style: {
                     "version": 8,
@@ -1519,13 +1521,16 @@ test('Map', (t) => {
                 map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
                 map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
 
-                map.removeFeatureState({ source: 'geojson', id:1});
+                map.removeFeatureState({ source: 'geojson'});
 
                 const fState1 = map.getFeatureState({ source: 'geojson', id: 1});
-                t.equal(fState1, {'hover': null, 'foo': null});
+                t.equal(fState1.hover, null);
+                t.equal(fState1.foo, null);
 
                 const fState2 = map.getFeatureState({ source: 'geojson', id: 2});
-                t.equal(fState2, {'hover': null, 'foo': null});
+                t.equal(fState2.hover, null);
+                t.equal(fState2.foo, null);   
+
                 t.end();
             });
         });
@@ -1546,7 +1551,7 @@ test('Map', (t) => {
                 map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
 
                 const fState = map.getFeatureState({ source: 'geojson', id: 12345});
-                t.equal(fState, {'hover': true});
+                t.equal(fState.hover, true);
                 t.end();
             });
         });
@@ -1606,7 +1611,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('fires an error if id is less than zero', (t) => {
+        t.test('removeFeatureState fires an error if id is less than zero', (t) => {
             const map = createMap(t, {
                 style: {
                     "version": 8,
