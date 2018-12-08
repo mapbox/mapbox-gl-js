@@ -447,3 +447,23 @@ export function storageAvailable(type: string): boolean {
         return false;
     }
 }
+
+// The following methods are from https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
+//Unicode compliant base64 encoder for strings
+export function b64EncodeUnicode(str: string) {
+    return window.btoa(
+        encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+            (match, p1) => {
+                return String.fromCharCode(Number('0x' + p1)); //eslint-disable-line
+            }
+        )
+    );
+}
+
+
+// Unicode compliant decoder for base64-encoded strings
+export function b64DecodeUnicode(str: string) {
+    return decodeURIComponent(window.atob(str).split('').map((c) => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); //eslint-disable-line
+    }).join(''));
+}
