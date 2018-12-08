@@ -1703,7 +1703,7 @@ test('Map', (t) => {
                 map.off('render');
                 map.on('render', t.fail);
                 t.notOk(map._frameId, 'no rerender scheduled');
-                // t.end();
+                t.end();
             }, 100);
         });
     });
