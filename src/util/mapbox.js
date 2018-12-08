@@ -6,7 +6,7 @@ import browser from './browser';
 import webpSupported from './webp_supported';
 import window from './window';
 import { version } from '../../package.json';
-import { uuid, validateUuid, storageAvailable, warnOnce, extend } from './util';
+import { uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend } from './util';
 import { postData } from './ajax';
 
 import type { RequestParameters } from './ajax';
@@ -159,10 +159,28 @@ function formatUrl(obj: UrlObject): string {
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
 
+function parseAccessToken(accessToken: ?string) {
+    if (!accessToken) {
+        return null;
+    }
+
+    const parts = accessToken.split('.');
+    if (!parts || parts.length !== 3) {
+        return null;
+    }
+
+    try {
+        const jsonData = JSON.parse(b64DecodeUnicode(parts[1]));
+        return jsonData;
+    } catch (e) {
+        return null;
+    }
+}
+
 type TelemetryEventType = 'appUserTurnstile' | 'map.load';
 
 class TelemetryEvent {
-    eventData: { lastSuccess: ?number, accessToken: ?string};
+    eventData: any;
     anonId: ?string;
     queue: Array<any>;
     type: TelemetryEventType;
@@ -171,15 +189,28 @@ class TelemetryEvent {
     constructor(type: TelemetryEventType) {
         this.type = type;
         this.anonId = null;
-        this.eventData = {lastSuccess: null, accessToken: config.ACCESS_TOKEN};
+        this.eventData = {};
         this.queue = [];
         this.pendingRequest = null;
     }
 
+    getStorageKey(domain: ?string) {
+        const tokenData = parseAccessToken(config.ACCESS_TOKEN);
+        let u = '';
+        if (tokenData && tokenData['u']) {
+            u = b64EncodeUnicode(tokenData['u']);
+        } else {
+            u = config.ACCESS_TOKEN || '';
+        }
+        return domain ?
+            `${telemEventKey}.${domain}:${u}` :
+            `${telemEventKey}:${u}`;
+    }
+
     fetchEventData() {
         const isLocalStorageAvailable = storageAvailable('localStorage');
-        const storageKey = `${telemEventKey}:${config.ACCESS_TOKEN || ''}`;
-        const uuidKey = `${telemEventKey}.uuid:${config.ACCESS_TOKEN || ''}`;
+        const storageKey = this.getStorageKey();
+        const uuidKey = this.getStorageKey('uuid');
 
         if (isLocalStorageAvailable) {
             //Retrieve cached data
@@ -199,12 +230,12 @@ class TelemetryEvent {
 
     saveEventData() {
         const isLocalStorageAvailable = storageAvailable('localStorage');
-        const storageKey = `${telemEventKey}:${config.ACCESS_TOKEN || ''}`;
-        const uuidKey = `${telemEventKey}.uuid:${config.ACCESS_TOKEN || ''}`;
+        const storageKey =  this.getStorageKey();
+        const uuidKey = this.getStorageKey('uuid');
         if (isLocalStorageAvailable) {
             try {
                 window.localStorage.setItem(uuidKey, this.anonId);
-                if (this.eventData.lastSuccess) {
+                if (Object.keys(this.eventData).length >= 1) {
                     window.localStorage.setItem(storageKey, JSON.stringify(this.eventData));
                 }
             } catch (e) {
@@ -268,7 +299,7 @@ export class MapLoadEvent extends TelemetryEvent {
         // mapbox tiles.
         if (config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
-            tileUrls.some(url => isMapboxHTTPURL(url))) {
+            tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
             this.queueRequest({id: mapId, timestamp: Date.now()});
         }
     }
@@ -307,7 +338,7 @@ export class TurnstileEvent extends TelemetryEvent {
         // mapbox tiles.
         if (config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
-            tileUrls.some(url => isMapboxHTTPURL(url))) {
+            tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
             this.queueRequest(Date.now());
         }
     }
@@ -318,15 +349,15 @@ export class TurnstileEvent extends TelemetryEvent {
             return;
         }
 
-        let dueForEvent = this.eventData.accessToken ? (this.eventData.accessToken !== config.ACCESS_TOKEN) : false;
-        //Reset event data cache if the access token changed.
-        if (dueForEvent) {
-            this.anonId = this.eventData.lastSuccess = null;
-        }
-        if (!this.anonId || !this.eventData.lastSuccess) {
+        if (!this.anonId || !this.eventData.lastSuccess || !this.eventData.tokenU) {
             //Retrieve cached data
             this.fetchEventData();
         }
+
+        const tokenData = parseAccessToken(config.ACCESS_TOKEN);
+        const tokenU = tokenData ? tokenData['u'] : config.ACCESS_TOKEN;
+        //Reset event data cache if the access token owner changed.
+        let dueForEvent = tokenU !== this.eventData.tokenU;
 
         if (!validateUuid(this.anonId)) {
             this.anonId = uuid();
@@ -351,7 +382,7 @@ export class TurnstileEvent extends TelemetryEvent {
         this.postEvent(nextUpdate, {"enabled.telemetry": false}, (err) => {
             if (!err) {
                 this.eventData.lastSuccess = nextUpdate;
-                this.eventData.accessToken = config.ACCESS_TOKEN;
+                this.eventData.tokenU = tokenU;
             }
         });
     }
