@@ -453,7 +453,8 @@ test("mapbox", (t) => {
                 const now = +Date.now();
                 window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, uuid());
                 window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
-                    lastSuccess: now
+                    lastSuccess: now,
+                    tokenU: 'key'
                 }));
 
                 // Post 5 seconds later
