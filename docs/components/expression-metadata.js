@@ -199,6 +199,7 @@ for (const name in CompoundExpression.definitions) {
 }
 
 delete types['error'];
+delete types['accumulated']; // skip documenting `accumulated` since it is internal use only
 
 export const expressions = {};
 export const expressionGroups = {};

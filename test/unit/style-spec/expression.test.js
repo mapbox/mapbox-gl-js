@@ -7,7 +7,7 @@ import {expressions as definitionMetadata} from '../../../docs/components/expres
 // filter out interal "error" and "filter-*" expressions from definition list
 const filterExpressionRegex = /filter-/;
 const definitionList = Object.keys(definitions).filter((expression) => {
-    return expression !== 'error' && !filterExpressionRegex.exec(expression);
+    return expression !== 'error' && expression !== 'accumulated' && !filterExpressionRegex.exec(expression);
 }).sort();
 
 test('v8.json includes all definitions from style-spec', (t) => {
