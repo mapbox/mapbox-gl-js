@@ -90,7 +90,7 @@ class SourceFeatureState {
                         this.deletedStates[sourceLayer][feature][key] = null;
                     }
                 }
-            }    
+            }
         }
     }
 
