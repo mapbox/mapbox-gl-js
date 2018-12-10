@@ -74,7 +74,7 @@ class SourceFeatureState {
             const featureStateExists = this.state[sourceLayer];
             const updateInQueue = this.stateChanges[sourceLayer];
 
-            if (featureStateExists){
+            if (featureStateExists) {
                 for (const feature in featureStateExists) {
                     this.deletedStates[sourceLayer][feature] = {};
                     for (key in this.state[sourceLayer][feature]) {
@@ -83,14 +83,14 @@ class SourceFeatureState {
                 }
             }
 
-            if (updateInQueue){
+            if (updateInQueue) {
                 for (const feature in updateInQueue) {
                     this.deletedStates[sourceLayer][feature] = {};
                     for (key in this.stateChanges[sourceLayer][feature]) {
                         this.deletedStates[sourceLayer][feature][key] = null;
                     }
                 }
-            }        
+            }       
         }
     }
 

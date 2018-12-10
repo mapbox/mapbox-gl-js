@@ -871,6 +871,11 @@ class Style extends Evented {
             return;
         }
 
+        if (key && !feature.id) {
+            this.fire(new ErrorEvent(new Error(`A feature id is requred to remove its specific state property.`)));
+            return;
+        }
+
         sourceCache.removeFeatureState(sourceLayer, featureId, key);
     }
 

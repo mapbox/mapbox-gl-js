@@ -1529,7 +1529,7 @@ test('Map', (t) => {
 
                 const fState2 = map.getFeatureState({ source: 'geojson', id: 2});
                 t.equal(fState2.hover, null);
-                t.equal(fState2.foo, null);   
+                t.equal(fState2.foo, null);
 
                 t.end();
             });
@@ -1610,7 +1610,27 @@ test('Map', (t) => {
                 map.removeFeatureState({ source: 'vector', sourceLayer: 0, id: 12345}, {'hover': true});
             });
         });
-
+        t.test('removeFeatureState fires an error if state property is provided without a feature id', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /id/);
+                    t.end();
+                });
+                map.removeFeatureState({ source: 'vector', sourceLayer: "1"}, {'hover': true});
+            });
+        });
         t.test('removeFeatureState fires an error if id is less than zero', (t) => {
             const map = createMap(t, {
                 style: {
