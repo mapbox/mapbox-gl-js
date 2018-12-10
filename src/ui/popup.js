@@ -80,6 +80,8 @@ export default class Popup extends Evented {
     _tip: HTMLElement;
     _lngLat: LngLat;
     _pos: ?Point;
+    _tipSize: ?number;
+    _anchor: ?string;
 
     constructor(options: PopupOptions) {
         super();
@@ -274,6 +276,8 @@ export default class Popup extends Evented {
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
 
+            this._tipSize = this._tip.offsetWidth / 2;
+
             if (this.options.className) {
                 this.options.className.split(' ').forEach(name =>
                     this._container.classList.add(name));
@@ -294,18 +298,34 @@ export default class Popup extends Evented {
             const height = this._container.offsetHeight;
             let anchorComponents;
 
-            if (pos.y + offset.bottom.y < height) {
-                anchorComponents = ['top'];
-            } else if (pos.y > this._map.transform.height - height) {
+            // the size of the container can change depending on which side
+            // the popup is on. The threshold prevents the popup from jumping back and forth.
+            const thresholdTop = this._anchor === 'top' ? 0 : (this._tipSize || 0);
+            const thresholdBottom = this._anchor === 'bottom' ? 0 : (this._tipSize || 0);
+
+            if (pos.y + offset.bottom.y >= height + thresholdBottom) {
                 anchorComponents = ['bottom'];
+            } else if (pos.y <= this._map.transform.height - height - thresholdTop) {
+                anchorComponents = ['top'];
             } else {
                 anchorComponents = [];
             }
 
-            if (pos.x < width / 2) {
-                anchorComponents.push('left');
-            } else if (pos.x > this._map.transform.width - width / 2) {
-                anchorComponents.push('right');
+            if (anchorComponents.length === 0) {
+                // popop does not fit above or below, so place left or right
+                if (pos.x >= width) {
+                    anchorComponents.push('right');
+                } else if (pos.x <= this._map.transform.width - width) {
+                    anchorComponents.push('left');
+                }
+
+            } else {
+                // popup fits above or below, so only move if popup crosses left or right edge
+                if (pos.x < width / 2) {
+                    anchorComponents.push('left');
+                } else if (pos.x > this._map.transform.width - width / 2) {
+                    anchorComponents.push('right');
+                }
             }
 
             if (anchorComponents.length === 0) {
@@ -319,6 +339,7 @@ export default class Popup extends Evented {
 
         DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
         applyAnchorClass(this._container, anchor, 'popup');
+        this._anchor = anchor;
     }
 
     _onClickClose() {
