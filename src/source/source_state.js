@@ -16,7 +16,7 @@ export type LayerFeatureStates = {[layer: string]: FeatureStates};
 class SourceFeatureState {
     state: LayerFeatureStates;
     stateChanges: LayerFeatureStates;
-    deletedStates: null;
+    deletedStates: {};
 
     constructor() {
         this.state = {};
@@ -145,7 +145,7 @@ class SourceFeatureState {
         }
 
         this.stateChanges = {};
-        this.deletedStates = null;
+        this.deletedStates = {};
 
         if (Object.keys(featuresChanged).length === 0) return;
 
