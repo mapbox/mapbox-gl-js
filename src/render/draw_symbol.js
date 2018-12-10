@@ -30,14 +30,17 @@ import type {SymbolSDFUniformsType} from '../render/program/symbol_program';
 export default drawSymbols;
 
 type SymbolTileRenderState = {
-    buffers: SymbolBuffers,
-    program: any,
-    depthMode: DepthMode,
-    uniformValues: any,
-    atlasTexture: Texture,
-    atlasInterpolation: any,
-    isSDF: boolean,
-    hasHalo: boolean
+    segments: SegmentVector,
+    sortKey: number,
+    state: {
+        program: any,
+        buffers: SymbolBuffers,
+        uniformValues: any,
+        atlasTexture: Texture,
+        atlasInterpolation: any,
+        isSDF: boolean,
+        hasHalo: boolean
+    }
 };
 
 function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>) {
@@ -47,36 +50,26 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
 
-    const sortFeaturesByKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
-
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
-        const tileRenderState = sortFeaturesByKey ? [] : undefined;
         drawLayerSymbols(painter, sourceCache, layer, coords, false,
             layer.paint.get('icon-translate'),
             layer.paint.get('icon-translate-anchor'),
             layer.layout.get('icon-rotation-alignment'),
             layer.layout.get('icon-pitch-alignment'),
             layer.layout.get('icon-keep-upright'),
-            stencilMode, colorMode, tileRenderState
+            stencilMode, colorMode
         );
-        if (sortFeaturesByKey) {
-            drawSymbolsSorted(painter, ((tileRenderState: any): Array<SymbolTileRenderState>), layer, colorMode, stencilMode);
-        }
     }
 
     if (layer.paint.get('text-opacity').constantOr(1) !== 0) {
-        const tileRenderState = sortFeaturesByKey ? [] : undefined;
         drawLayerSymbols(painter, sourceCache, layer, coords, true,
             layer.paint.get('text-translate'),
             layer.paint.get('text-translate-anchor'),
             layer.layout.get('text-rotation-alignment'),
             layer.layout.get('text-pitch-alignment'),
             layer.layout.get('text-keep-upright'),
-            stencilMode, colorMode, tileRenderState
+            stencilMode, colorMode
         );
-        if (sortFeaturesByKey) {
-            drawSymbolsSorted(painter, ((tileRenderState: any): Array<SymbolTileRenderState>), layer, colorMode, stencilMode);
-        }
     }
 
     if (sourceCache.map.showCollisionBoxes) {
@@ -85,13 +78,12 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-    rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode, tileRenderState) {
+    rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode) {
 
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
 
-    const sortByFeature = Boolean(tileRenderState);
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap = pitchAlignment === 'map';
     const alongLine = rotateWithMap && layer.layout.get('symbol-placement') !== 'point';
@@ -100,10 +92,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     // Unpitched point labels need to have their rotation applied after projection
     const rotateInShader = rotateWithMap && !pitchWithMap && !alongLine;
 
+    const sortFeaturesByKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
+
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
 
     let program;
     let size;
+
+    const tileRenderState: Array<SymbolTileRenderState> = [];
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -143,10 +139,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             texSize = tile.imageAtlasTexture.size;
         }
 
-        if (!sortByFeature) {
-            atlasTexture.bind(atlasInterpolation, gl.CLAMP_TO_EDGE);
-        }
-
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
@@ -163,17 +155,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         let uniformValues;
         if (isSDF) {
-
             uniformValues = symbolSDFUniformValues(sizeData.functionType,
                 size, rotateInShader, pitchWithMap, painter, matrix,
                 uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true);
-
-            if (!sortByFeature) {
-                if (hasHalo) {
-                    drawSymbolElements(buffers, buffers.segments, layer, painter, program, depthMode, stencilMode, colorMode, uniformValues);
-                }
-                uniformValues['u_is_halo'] = 0;
-            }
 
         } else {
             uniformValues = symbolIconUniformValues(sizeData.functionType,
@@ -181,21 +165,52 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 uLabelPlaneMatrix, uglCoordMatrix, isText, texSize);
         }
 
-        if (sortByFeature) {
-            ((tileRenderState: any): Array<SymbolTileRenderState>).push({
-                buffers,
-                program,
-                depthMode,
-                uniformValues,
-                atlasTexture,
-                atlasInterpolation,
-                isSDF,
-                hasHalo
-            });
+        const state = {
+            program,
+            buffers,
+            uniformValues,
+            atlasTexture,
+            atlasInterpolation,
+            isSDF,
+            hasHalo
+        };
+
+        if (sortFeaturesByKey) {
+            const oldSegments = buffers.segments.get();
+            for (const segment of oldSegments) {
+                tileRenderState.push({
+                    segments: new SegmentVector([segment]),
+                    sortKey: ((segment.sortKey: any): number),
+                    state
+                });
+            }
         } else {
-            atlasTexture.bind(atlasInterpolation, gl.CLAMP_TO_EDGE);
-            drawSymbolElements(buffers, buffers.segments, layer, painter, program, depthMode, stencilMode, colorMode, uniformValues);
+            tileRenderState.push({
+                segments: buffers.segments,
+                sortKey: 0,
+                state
+            });
         }
+    }
+
+    if (sortFeaturesByKey) {
+        tileRenderState.sort((a, b) => a.sortKey - b.sortKey);
+    }
+
+    for (const segmentState of tileRenderState) {
+        const state = segmentState.state;
+
+        state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
+
+        if (state.isSDF) {
+            const uniformValues = ((state.uniformValues: any): UniformValues<SymbolSDFUniformsType>);
+            if (state.hasHalo) {
+                uniformValues['u_is_halo'] = 1;
+                drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, uniformValues);
+            }
+            uniformValues['u_is_halo'] = 0;
+        }
+        drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, state.uniformValues);
     }
 }
 
@@ -209,39 +224,3 @@ function drawSymbolElements(buffers, segments, layer, painter, program, depthMod
         buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer);
 }
 
-function drawSymbolsSorted(painter: Painter, renderData: Array<SymbolTileRenderState>, layer, colorMode, stencilMode) {
-    const symbols = [];
-
-    for (const data of renderData) {
-
-        const segments = data.buffers.segments.get();
-        for (const segment of segments) {
-            symbols.push({
-                data,
-                segment
-            });
-        }
-    }
-
-    symbols.sort((a, b) => {
-        return ((a.segment.sortKey: any): number) - ((b.segment.sortKey: any): number);
-    });
-
-    for (const symbol of symbols) {
-        const data = symbol.data;
-        const segments = new SegmentVector([symbol.segment]);
-
-        const gl = painter.context.gl;
-        data.atlasTexture.bind(data.atlasInterpolation, gl.CLAMP_TO_EDGE);
-
-        if (data.isSDF) {
-            const uniformValues = ((data.uniformValues: any): UniformValues<SymbolSDFUniformsType>);
-            if (data.hasHalo) {
-                uniformValues['u_is_halo'] = 1;
-                drawSymbolElements(data.buffers, segments, layer, painter, data.program, data.depthMode, stencilMode, colorMode, uniformValues);
-            }
-            data.uniformValues['u_is_halo'] = 0;
-        }
-        drawSymbolElements(data.buffers, segments, layer, painter, data.program, data.depthMode, stencilMode, colorMode, data.uniformValues);
-    }
-}
