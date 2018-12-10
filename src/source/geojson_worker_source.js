@@ -11,6 +11,7 @@ import geojsonvt from 'geojson-vt';
 import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
 import { createExpression } from '../style-spec/expression';
+import { isGlobalPropertyConstant, isFeatureConstant } from '../style-spec/expression/is_constant';
 
 import type {
     WorkerTileParameters,
@@ -31,7 +32,8 @@ export type LoadGeoJSONParameters = {
     source: string,
     cluster: boolean,
     superclusterOptions?: Object,
-    geojsonVtOptions?: Object
+    geojsonVtOptions?: Object,
+    clusterProperties?: Object
 };
 
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<Object>) => void;
@@ -300,15 +302,38 @@ function getSuperclusterOptions({superclusterOptions, clusterProperties}) {
     const initialValues = {};
     const mapExpressions = {};
     const reduceExpressions = {};
-    const globals = {accumulated: null};
+    const globals = {accumulated: null, zoom: 0};
     const feature = {properties: null};
     const propertyNames = Object.keys(clusterProperties);
 
     for (const key of propertyNames) {
         const [operator, initialExpression, mapExpression] = clusterProperties[key];
-        initialValues[key] = createClusterExpression(key, initialExpression).evaluate(globals);
-        mapExpressions[key] = createClusterExpression(key, mapExpression);
-        reduceExpressions[key] = createClusterExpression(key, [operator, ['accumulated'], ['get', key]]);
+
+        const parsed = createExpression(clusterProperties[key]);
+        if (parsed.result === 'error') {
+            const message = parsed.value.map(e => e.message).join('; ');
+            throw new Error(`Error parsing expression for cluster property "${key}": ${message}`);
+
+        } else if (!isGlobalPropertyConstant(parsed.value.expression, ['zoom'])) {
+            throw new Error(`Error parsing expression for cluster property "${key}": zoom expressions not supported.`);
+        }
+
+        const initialExpressionParsed = createExpression(initialExpression);
+        const mapExpressionParsed = createExpression(mapExpression);
+        const reduceExpressionParsed = createExpression([operator, ['accumulated'], ['get', key]]);
+
+        if (initialExpressionParsed.result === 'success') {
+            if (!isFeatureConstant(initialExpressionParsed.value.expression))
+                throw new Error(`Error parsing expression for cluster property "${key}": can't use feature properties in initial expression.`);
+
+            initialValues[key] = initialExpressionParsed.value.evaluate(globals);
+        }
+
+        if (mapExpressionParsed.result === 'success')
+            mapExpressions[key] = mapExpressionParsed.value;
+
+        if (reduceExpressionParsed.result === 'success')
+            reduceExpressions[key] = reduceExpressionParsed.value;
     }
 
     superclusterOptions.initial = () => {
@@ -335,16 +360,6 @@ function getSuperclusterOptions({superclusterOptions, clusterProperties}) {
     };
 
     return superclusterOptions;
-}
-
-function createClusterExpression(key, expression) {
-    const parsed = createExpression(expression, {});
-    if (parsed.result === 'success') {
-        return parsed.value;
-    }
-    /* eslint no-warning-comments: 0 */
-    // TODO proper error handling
-    console.log(`Error: ${parsed.value.map(e => e.message).join('; ')}`);
 }
 
 export default GeoJSONWorkerSource;

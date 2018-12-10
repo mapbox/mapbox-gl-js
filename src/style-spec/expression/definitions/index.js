@@ -204,7 +204,7 @@ CompoundExpression.register(expressions, {
     'accumulated': [
         ValueType,
         [],
-        (ctx) => ctx.globals.accumulated
+        (ctx) => ctx.globals.accumulated === undefined ? null : ctx.globals.accumulated
     ],
     '+': [
         NumberType,
