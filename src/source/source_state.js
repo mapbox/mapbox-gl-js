@@ -16,7 +16,7 @@ export type LayerFeatureStates = {[layer: string]: FeatureStates};
 class SourceFeatureState {
     state: LayerFeatureStates;
     stateChanges: LayerFeatureStates;
-    deletedStates: {};
+    deletedStates: null;
 
     constructor() {
         this.state = {};
@@ -38,7 +38,7 @@ class SourceFeatureState {
         }
     }
 
-    removeFeatureState(sourceLayer: string, featureId: number, key: string) {
+    removeFeatureState(sourceLayer: string, featureId?: number, key?: string) {
 
         const feature = String(featureId);
 
@@ -68,7 +68,7 @@ class SourceFeatureState {
                 }
             }
 
-        } else  {
+        } else {
             this.deletedStates[sourceLayer] = {};
 
             const featureStateExists = this.state[sourceLayer];
@@ -90,7 +90,7 @@ class SourceFeatureState {
                         this.deletedStates[sourceLayer][feature][key] = null;
                     }
                 }
-            }       
+            }    
         }
     }
 
