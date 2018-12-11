@@ -56,33 +56,3 @@ const exported = {
 };
 
 export default exported;
-
-if (window.document) {
-    testWebp();
-}
-
-function testWebp() {
-    const webpImgTest = window.document.createElement('img');
-    webpImgTest.onload = function() {
-
-        // Edge 18 supports WebP but not uploading a WebP image to a gl texture
-        // Test support for this before allowing WebP images.
-        // https://github.com/mapbox/mapbox-gl-js/issues/7671
-        const canvas = window.document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-
-        try {
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, webpImgTest);
-            exported.supportsWebp = true;
-        } catch (e) {
-            // Catch "Unspecified Error." in Edge 18.
-        }
-
-        gl.deleteTexture(texture);
-        const extension = gl.getExtension('WEBGL_lose_context');
-        if (extension) extension.loseContext();
-    };
-    webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';
-}
