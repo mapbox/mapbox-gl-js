@@ -1,5 +1,6 @@
 // @flow
 
+import window from './window';
 import browser from './browser';
 
 let glForTesting;
@@ -11,11 +12,11 @@ if (window.document) {
     webpImgTest.onload = function() {
         if (glForTesting) testWebpTextureUpload(glForTesting);
         glForTesting = null;
-    }
+    };
     webpImgTest.onerror = function() {
         webpCheckComplete = true;
         glForTesting = null;
-    }
+    };
     webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';
 }
 
