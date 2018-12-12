@@ -1,7 +1,6 @@
 import { test } from 'mapbox-gl-js-test';
 import * as mapbox from '../../../src/util/mapbox';
 import config from '../../../src/util/config';
-import browser from '../../../src/util/browser';
 import webpSupported from '../../../src/util/webp_supported';
 import window from '../../../src/util/window';
 import { uuid } from '../../../src/util/util';
