@@ -70,6 +70,7 @@ type PainterOptions = {
     showTileBoundaries: boolean,
     rotating: boolean,
     zooming: boolean,
+    moving: boolean,
     fadeDuration: number
 }
 
