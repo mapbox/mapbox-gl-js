@@ -33,10 +33,5 @@ test('browser', (t) => {
         t.end();
     });
 
-    t.test('supportsWebp', (t) => {
-        t.equal(typeof browser.supportsWebp, 'boolean');
-        t.end();
-    });
-
     t.end();
 });

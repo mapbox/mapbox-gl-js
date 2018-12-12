@@ -25,6 +25,7 @@ import { RGBAImage } from '../util/image';
 import { Event, ErrorEvent } from '../util/evented';
 import { MapMouseEvent } from './events';
 import TaskQueue from '../util/task_queue';
+import webpSupported from '../util/webp_supported';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -1540,6 +1541,8 @@ class Map extends Camera {
         }
 
         this.painter = new Painter(gl, this.transform);
+
+        webpSupported.testSupport(gl);
     }
 
     _contextLost(event: *) {
