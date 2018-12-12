@@ -25,6 +25,7 @@ import { RGBAImage } from '../util/image';
 import { Event, ErrorEvent } from '../util/evented';
 import { MapMouseEvent } from './events';
 import TaskQueue from '../util/task_queue';
+import webpSupported from '../util/webp_supported';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -360,6 +361,7 @@ class Map extends Camera {
         }
 
         this.on('move', () => this._update(false));
+        this.on('moveend', () => this._update(false));
         this.on('zoom', () => this._update(true));
 
         if (typeof window !== 'undefined') {
@@ -1558,6 +1560,8 @@ class Map extends Camera {
         }
 
         this.painter = new Painter(gl, this.transform);
+
+        webpSupported.testSupport(gl);
     }
 
     _contextLost(event: *) {
@@ -1712,8 +1716,9 @@ class Map extends Camera {
         // Style#_updateSources could have caused them to be set again.
         if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
             this.triggerRepaint();
+        } else if (!this.isMoving() && this.loaded()) {
+            this.fire(new Event('idle'));
         }
-
         return this;
     }
 
@@ -1846,8 +1851,12 @@ class Map extends Camera {
      * @memberof Map
      */
     get repaint(): boolean { return !!this._repaint; }
-    set repaint(value: boolean) { this._repaint = value; this._update(); }
-
+    set repaint(value: boolean) {
+        if (this._repaint !== value) {
+            this._repaint = value;
+            this.triggerRepaint();
+        }
+    }
     // show vertices
     get vertices(): boolean { return !!this._vertices; }
     set vertices(value: boolean) { this._vertices = value; this._update(); }
