@@ -8,6 +8,7 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #map { transform: scale(1); }
     </style>
 </head>
 
@@ -65,6 +66,12 @@ var map = window.map = new mapboxgl.Map({
     style: style,
     hash: true
 });
+
+var popup = new mapboxgl.Popup()
+
+map.on('click', 'points', e => {
+    popup.setLngLat(e.lngLat).setText(e.features[0].properties['name']).addTo(map)
+})
 
 </script>
 </body>
