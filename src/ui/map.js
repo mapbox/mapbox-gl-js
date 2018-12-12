@@ -25,7 +25,6 @@ import { RGBAImage } from '../util/image';
 import { Event, ErrorEvent } from '../util/evented';
 import { MapMouseEvent } from './events';
 import TaskQueue from '../util/task_queue';
-import webpSupported from '../util/webp_supported';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -361,7 +360,6 @@ class Map extends Camera {
         }
 
         this.on('move', () => this._update(false));
-        this.on('moveend', () => this._update(false));
         this.on('zoom', () => this._update(true));
 
         if (typeof window !== 'undefined') {
@@ -1409,6 +1407,25 @@ class Map extends Camera {
     }
 
     /**
+     * Removes feature state, setting it back to the default behavior. If only
+     * source is specified, removes all feature states of that source. If
+     * feature.id is also specified, removes all keys for that feature's state.
+     * If key is also specified, removes that key from that feature's state.
+     *
+     * @param {Object} feature Feature identifier. Feature objects returned from
+     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string | number} feature.id (optional) Unique id of the feature. Optional if key is not specified.
+     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.*
+     * @param {string} key (optional) The key in the feature state to reset.
+    */
+    removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
+        this.style.removeFeatureState(feature, key);
+        return this._update();
+    }
+
+    /**
      * Gets the state of a feature.
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
@@ -1541,8 +1558,6 @@ class Map extends Camera {
         }
 
         this.painter = new Painter(gl, this.transform);
-
-        webpSupported.testSupport(gl);
     }
 
     _contextLost(event: *) {
@@ -1668,7 +1683,6 @@ class Map extends Camera {
             showOverdrawInspector: this._showOverdrawInspector,
             rotating: this.isRotating(),
             zooming: this.isZooming(),
-            moving: this.isMoving(),
             fadeDuration: this._fadeDuration
         });
 
@@ -1697,8 +1711,6 @@ class Map extends Camera {
         // Style#_updateSources could have caused them to be set again.
         if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
             this.triggerRepaint();
-        } else if (!this.isMoving() && this.loaded()) {
-            this.fire(new Event('idle'));
         }
 
         return this;
@@ -1833,12 +1845,7 @@ class Map extends Camera {
      * @memberof Map
      */
     get repaint(): boolean { return !!this._repaint; }
-    set repaint(value: boolean) {
-        if (this._repaint !== value) {
-            this._repaint = value;
-            this.triggerRepaint();
-        }
-    }
+    set repaint(value: boolean) { this._repaint = value; this._update(); }
 
     // show vertices
     get vertices(): boolean { return !!this._vertices; }
