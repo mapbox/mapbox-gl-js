@@ -3,6 +3,7 @@
 import config from './config';
 
 import browser from './browser';
+import webpSupported from './webp_supported';
 import window from './window';
 import { version } from '../../package.json';
 import { uuid, validateUuid, storageAvailable, warnOnce, extend } from './util';
@@ -101,7 +102,7 @@ export const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, t
     // is appended to the tile URL. If `tileSize: 512` is specified for
     // a Mapbox raster source force the @2x suffix even if a non hidpi device.
     const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
-    const extension = browser.supportsWebp ? '.webp' : '$1';
+    const extension = webpSupported.supported ? '.webp' : '$1';
     urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
     urlObject.path = `/v4${urlObject.path}`;
 

@@ -51,8 +51,7 @@ const exported = {
     },
 
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
-    get devicePixelRatio() { return window.devicePixelRatio; },
-    supportsWebp: false
+    get devicePixelRatio() { return window.devicePixelRatio; }
 };
 
 export default exported;

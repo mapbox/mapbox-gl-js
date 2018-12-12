@@ -1,7 +1,13 @@
 // @flow
 
 import window from './window';
-import browser from './browser';
+
+const exported = {
+    supported: false,
+    testSupport
+};
+
+export default exported;
 
 let glForTesting;
 let webpCheckComplete = false;
@@ -20,9 +26,7 @@ if (window.document) {
     webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';
 }
 
-export default testWebp;
-
-function testWebp(gl: WebGLRenderingContext) {
+function testSupport(gl: WebGLRenderingContext) {
     if (webpCheckComplete || !webpImgTest) return;
 
     if (!webpImgTest.complete) {
@@ -42,7 +46,11 @@ function testWebpTextureUpload(gl: WebGLRenderingContext) {
 
     try {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, webpImgTest);
-        browser.supportsWebp = true;
+
+        // The error does not get triggered in Edge if the context is lost
+        if (gl.isContextLost()) return;
+
+        exported.supported = true;
     } catch (e) {
         // Catch "Unspecified Error." in Edge 18.
     }
