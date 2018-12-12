@@ -1,7 +1,7 @@
 import { test } from 'mapbox-gl-js-test';
 import * as mapbox from '../../../src/util/mapbox';
 import config from '../../../src/util/config';
-import browser from '../../../src/util/browser';
+import webpSupported from '../../../src/util/webp_supported';
 import window from '../../../src/util/window';
 import { uuid } from '../../../src/util/util';
 import { version } from '../../../package.json';
@@ -287,7 +287,7 @@ test("mapbox", (t) => {
     });
 
     t.test('.normalizeTileURL', (t) => {
-        browser.supportsWebp = false;
+        webpSupported.supported = false;
 
         t.test('does nothing on 1x devices', (t) => {
             config.API_URL = 'http://path.png';
@@ -321,14 +321,14 @@ test("mapbox", (t) => {
         });
 
         t.test('replaces img extension with webp on supporting devices', (t) => {
-            browser.supportsWebp = true;
+            webpSupported.supported = true;
             config.API_URL = 'http://path.png';
             config.REQUIRE_ACCESS_TOKEN = false;
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/v4/tile.webp');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/v4/tile.webp');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/v4/tile.webp');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/v4/tile.webp?access_token=foo');
-            browser.supportsWebp = false;
+            webpSupported.supported = false;
             t.end();
         });
 
@@ -372,7 +372,7 @@ test("mapbox", (t) => {
             t.end();
         });
 
-        browser.supportsWebp = true;
+        webpSupported.supported = true;
         t.end();
     });
 
