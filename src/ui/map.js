@@ -1409,6 +1409,25 @@ class Map extends Camera {
     }
 
     /**
+     * Removes feature state, setting it back to the default behavior. If only
+     * source is specified, removes all feature states of that source. If
+     * feature.id is also specified, removes all keys for that feature's state.
+     * If key is also specified, removes that key from that feature's state.
+     *
+     * @param {Object} feature Feature identifier. Feature objects returned from
+     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string | number} feature.id (optional) Unique id of the feature. Optional if key is not specified.
+     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.*
+     * @param {string} key (optional) The key in the feature state to reset.
+    */
+    removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
+        this.style.removeFeatureState(feature, key);
+        return this._update();
+    }
+
+    /**
      * Gets the state of a feature.
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
@@ -1700,7 +1719,6 @@ class Map extends Camera {
         } else if (!this.isMoving() && this.loaded()) {
             this.fire(new Event('idle'));
         }
-
         return this;
     }
 
@@ -1839,7 +1857,6 @@ class Map extends Camera {
             this.triggerRepaint();
         }
     }
-
     // show vertices
     get vertices(): boolean { return !!this._vertices; }
     set vertices(value: boolean) { this._vertices = value; this._update(); }
