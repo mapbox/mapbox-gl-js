@@ -204,6 +204,14 @@ class WorkerTile {
                     iconMap: this.returnDependencies ? iconMap : null,
                     glyphPositions: this.returnDependencies ? glyphAtlas.positions : null
                 });
+                values(buckets).filter(b => b.isEmpty()).forEach(emptyBucket => {
+                    const bucketKeys = Object.keys(emptyBucket);
+                    for (const key of bucketKeys) {
+                        if (emptyBucket[key] && emptyBucket[key].releaseBuffer) {
+                            emptyBucket[key].releaseBuffer();
+                        }
+                    }
+                });
             }
         }
     }

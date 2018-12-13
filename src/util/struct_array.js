@@ -48,6 +48,16 @@ class Struct {
 const DEFAULT_CAPACITY = 128;
 const RESIZE_MULTIPLIER = 5;
 
+let resizeCount = 0;
+let reuseCount = 0;
+let sliceCount = 0;
+let noSliceCount = 0;
+let sizeCounts = {};
+let bufferPool = {};
+
+let constructedTypes = {};
+let transferedTypes = {};
+
 export type StructArrayMember = {
     name: string,
     type: ViewType,
@@ -140,10 +150,25 @@ class StructArray {
      * Resize the array to discard unused capacity.
      */
     _trim() {
+        transferedTypes[this.constructor.name] = true;
         if (this.length !== this.capacity) {
+            const prevSize = this.capacity * this.bytesPerElement;
+            if (!bufferPool[prevSize]) {
+                bufferPool[prevSize] = [];
+            }
+            bufferPool[prevSize].push(this.arrayBuffer);
             this.capacity = this.length;
             this.arrayBuffer = this.arrayBuffer.slice(0, this.length * this.bytesPerElement);
+            sliceCount++;
+            if (sliceCount % 1000 === 0) {
+                console.log(`${sliceCount} slices on ${resizeCount} allocations and ${reuseCount} buffers reused from pool, with ${noSliceCount} not requiring slice.`);
+                // for (const size in sizeCounts) {
+                //     console.log(`${size} allocated ${sizeCounts[size]} times`);
+                // }
+            }
             this._refreshViews();
+        } else {
+            noSliceCount++;
         }
     }
 
@@ -173,12 +198,43 @@ class StructArray {
      */
     reserve(n: number) {
         if (n > this.capacity) {
-            this.capacity = Math.max(n, Math.floor(this.capacity * RESIZE_MULTIPLIER), DEFAULT_CAPACITY);
-            this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
+            constructedTypes[this.constructor.name] = true;
+            const prevSize = this.capacity * this.bytesPerElement;
+            const exponent = Math.max(0, Math.ceil(Math.log(n * this.bytesPerElement / DEFAULT_CAPACITY) / Math.log(RESIZE_MULTIPLIER)));
+            const newSize = DEFAULT_CAPACITY * Math.pow(RESIZE_MULTIPLIER, exponent);//Math.max(n, Math.floor(this.capacity * RESIZE_MULTIPLIER), DEFAULT_CAPACITY);
+            this.capacity = newSize / this.bytesPerElement;
+            if (!sizeCounts[newSize]) {
+                sizeCounts[newSize] = 0;
+            }
+            sizeCounts[newSize]++;
+            if (prevSize > 0) {
+                if (!bufferPool[prevSize]) {
+                    bufferPool[prevSize] = [];
+                }
+                bufferPool[prevSize].push(this.arrayBuffer);
+            }
+
+            if (bufferPool[newSize] && bufferPool[newSize].length > 0) {
+                reuseCount++;
+                this.arrayBuffer = bufferPool[newSize].pop();
+            } else {
+                resizeCount++;
+                this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
+            }
 
             const oldUint8Array = this.uint8;
             this._refreshViews();
             if (oldUint8Array) this.uint8.set(oldUint8Array);
+        }
+    }
+
+    releaseBuffer() {
+        const prevSize = this.capacity * this.bytesPerElement;
+        if (prevSize > 0) {
+            if (!bufferPool[prevSize]) {
+                bufferPool[prevSize] = [];
+            }
+            bufferPool[prevSize].push(this.arrayBuffer);
         }
     }
 

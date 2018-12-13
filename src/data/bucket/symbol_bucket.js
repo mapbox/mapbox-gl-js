@@ -132,6 +132,15 @@ class SymbolBuffers {
         this.placedSymbolArray = new PlacedSymbolArray();
     }
 
+    releaseBuffer() {
+        const keys = Object.keys(this);
+        for (const key of keys) {
+            if (this[key] && this[key].releaseBuffer) {
+                this[key].releaseBuffer();
+            }
+        }
+    }
+
     upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean) {
         if (upload) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, symbolLayoutAttributes.members);
@@ -181,6 +190,15 @@ class CollisionBuffers {
         this.indexArray = new IndexArray();
         this.segments = new SegmentVector();
         this.collisionVertexArray = new CollisionVertexArray();
+    }
+
+    releaseBuffer() {
+        const keys = Object.keys(this);
+        for (const key of keys) {
+            if (this[key] && this[key].releaseBuffer) {
+                this[key].releaseBuffer();
+            }
+        }
     }
 
     upload(context: Context) {
