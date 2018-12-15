@@ -1482,7 +1482,7 @@ test('Map', (t) => {
                 map.removeFeatureState({ source: 'geojson', id: 12345}, 'hover');
 
                 const fState = map.getFeatureState({ source: 'geojson', id: 12345});
-                t.equal(fState.hover, null);
+                t.equal(fState.hover, undefined);
                 t.end();
             });
         });
@@ -1501,8 +1501,8 @@ test('Map', (t) => {
                 map.removeFeatureState({ source: 'geojson', id: 1});
 
                 const fState = map.getFeatureState({ source: 'geojson', id: 1});
-                t.equal(fState.hover, null);
-                t.equal(fState.foo, null);
+                t.equal(fState.hover, undefined);
+                t.equal(fState.foo, undefined);
 
                 t.end();
             });
@@ -1524,12 +1524,12 @@ test('Map', (t) => {
                 map.removeFeatureState({ source: 'geojson'});
 
                 const fState1 = map.getFeatureState({ source: 'geojson', id: 1});
-                t.equal(fState1.hover, null);
-                t.equal(fState1.foo, null);
+                t.equal(fState1.hover, undefined);
+                t.equal(fState1.foo, undefined);
 
                 const fState2 = map.getFeatureState({ source: 'geojson', id: 2});
-                t.equal(fState2.hover, null);
-                t.equal(fState2.foo, null);
+                t.equal(fState2.hover, undefined);
+                t.equal(fState2.foo, undefined);
 
                 t.end();
             });

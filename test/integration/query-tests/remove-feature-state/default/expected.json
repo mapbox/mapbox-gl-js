@@ -35,10 +35,7 @@
     "id": 4612696,
     "source": "mapbox",
     "sourceLayer": "road",
-    "state": {
-      "stateA": null,
-      "stateB": null
-    }
+    "state": {}
   },
   {
     "geometry": {
