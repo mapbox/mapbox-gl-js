@@ -2,8 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 32,
-      "height": 32
+      "width" : 32,
+      "height": 128
     }
   },
   "sources": {
