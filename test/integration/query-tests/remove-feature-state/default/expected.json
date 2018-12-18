@@ -86,8 +86,7 @@
     "source": "mapbox",
     "sourceLayer": "road",
     "state": {
-      "stateA": false,
-      "stateB": null
+      "stateA": false
     }
   }
 ]

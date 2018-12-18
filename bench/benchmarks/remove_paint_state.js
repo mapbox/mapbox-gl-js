@@ -78,7 +78,7 @@ class propertyLevelRemove extends RemovePaintState {
             this.map.removeFeatureState({ source: 'land', id: i }, 'bench');
         }
         this.map._render();
-        
+
     }
 }
 
