@@ -96,8 +96,16 @@ class SourceFeatureState {
         const feature = String(featureId);
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};
-        const deletions = this.deletedStates && this.deletedStates[sourceLayer] ? this.deletedStates[sourceLayer] : {};
-        return extend({}, base[feature], changes[feature], deletions[feature]);
+
+        const reconciledState = extend({}, base[feature], changes[feature]);
+
+        const propsToDelete = this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][featureId];
+
+        if (propsToDelete) {
+            for (const prop in this.deletedStates[sourceLayer][featureId]) delete reconciledState[prop];
+        }
+
+        return reconciledState;
     }
 
     initializeTileState(tile: Tile, painter: any) {

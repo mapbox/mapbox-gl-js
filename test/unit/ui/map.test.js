@@ -1480,7 +1480,6 @@ test('Map', (t) => {
             map.on('load', () => {
                 map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
                 map.removeFeatureState({ source: 'geojson', id: 12345}, 'hover');
-
                 const fState = map.getFeatureState({ source: 'geojson', id: 12345});
                 t.equal(fState.hover, undefined);
                 t.end();
