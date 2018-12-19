@@ -127,7 +127,7 @@ class Camera extends Evented {
     }
 
     /**
-     * Pans the map by the specified offest.
+     * Pans the map by the specified offset.
      *
      * @memberof Map#
      * @param offset `x` and `y` coordinates by which to pan the map.
