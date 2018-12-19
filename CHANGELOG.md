@@ -24,6 +24,7 @@
 * Fix shaking by aligning raster sources to pixel grid only when map is idle ([7426](https://github.com/mapbox/mapbox-gl-js/pull/7426))
 * Fix raster layers in Edge 18 by disabling it's incomplete WebP support ([7687](https://github.com/mapbox/mapbox-gl-js/pull/7687))
 * Fix memory leak in hillshade layer ([7691](https://github.com/mapbox/mapbox-gl-js/pull/7691))
+* Fix disappearing custom layers ([7711](https://github.com/mapbox/mapbox-gl-js/pull/7711))
 
 ## 0.51.0
 November 7, 2018
