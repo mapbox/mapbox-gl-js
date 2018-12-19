@@ -678,6 +678,20 @@ export type MapEvent =
     | 'render'
 
     /**
+     * Fired after the last frame rendered before the map enters an
+     * "idle" state:
+     *
+     * - No camera transitions are in progress
+     * - All currently requested tiles have loaded
+     * - All fade/transition animations have completed
+     *
+     * @event idle
+     * @memberof Map
+     * @instance
+     */
+    | 'idle'
+
+    /**
      * Fired immediately after the map has been removed with {@link Map.event:remove}.
      *
      * @event remove

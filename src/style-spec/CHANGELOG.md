@@ -1,3 +1,9 @@
+## 13.5.0
+
+### Features and improvements
+* Flattens `all` expressions in converted filters ([#7679](https://github.com/mapbox/mapbox-gl-js/pull/7679))
+* Compatibility tables are updated ([#7574](https://github.com/mapbox/mapbox-gl-js/pull/7574))
+
 ## 13.4.0
 
 ### ✨ Features and improvements

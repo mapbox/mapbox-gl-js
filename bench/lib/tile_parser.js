@@ -124,7 +124,7 @@ export default class TileParser {
             pitch: 0,
             cameraToCenterDistance: 0,
             cameraToTileDistance: 0,
-            returnDependencies: returnDependencies
+            returnDependencies
         });
 
         const vectorTile = new VT.VectorTile(new Protobuf(tile.buffer));

@@ -76,7 +76,7 @@ export function createFunction(parameters, propertySpec) {
             const zoom = stop[0].zoom;
             if (featureFunctions[zoom] === undefined) {
                 featureFunctions[zoom] = {
-                    zoom: zoom,
+                    zoom,
                     type: parameters.type,
                     property: parameters.property,
                     default: parameters.default,

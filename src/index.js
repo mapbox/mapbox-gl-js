@@ -25,7 +25,7 @@ import WorkerPool from './util/worker_pool';
 const exported = {
     version,
     supported,
-    setRTLTextPlugin: setRTLTextPlugin,
+    setRTLTextPlugin,
     Map,
     NavigationControl,
     GeolocateControl,
@@ -56,6 +56,20 @@ const exported = {
 
     set accessToken(token: string) {
         config.ACCESS_TOKEN = token;
+    },
+    /**
+     * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
+     *
+     * @var {string} url
+     * @example
+     * mapboxgl.baseApiUrl = 'https://api.mapbox.com';
+     */
+    get baseApiUrl(): ?string {
+        return config.API_URL;
+    },
+
+    set baseApiUrl(url: string) {
+        config.API_URL = url;
     },
 
     get workerCount(): number {

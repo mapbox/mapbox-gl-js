@@ -12,7 +12,7 @@ function createSource(options) {
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]]
     }, options);
 
-    const source = new ImageSource('id', options, { send: function() {} }, options.eventedParent);
+    const source = new ImageSource('id', options, { send() {} }, options.eventedParent);
     return source;
 }
 

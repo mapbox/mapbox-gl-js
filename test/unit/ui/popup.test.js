@@ -14,7 +14,7 @@ function createMap(t, options) {
     const container = window.document.createElement('div');
     Object.defineProperty(container, 'clientWidth', {value: options.width || containerWidth});
     Object.defineProperty(container, 'clientHeight', {value: options.height || containerHeight});
-    return globalCreateMap(t, { container: container });
+    return globalCreateMap(t, { container });
 }
 
 test('Popup#addTo adds a .mapboxgl-popup element', (t) => {
@@ -335,7 +335,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
         const map = createMap(t);
         t.stub(map, 'project').returns(new Point(0, 0));
 
-        const popup = new Popup({anchor: anchor, offset: 10})
+        const popup = new Popup({anchor, offset: 10})
             .setLngLat([0, 0])
             .setText('Test')
             .addTo(map);

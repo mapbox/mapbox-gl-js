@@ -28,6 +28,7 @@ class AttributionControl {
     options: Options;
     _map: Map;
     _container: HTMLElement;
+    _innerContainer: HTMLElement;
     _editLink: ?HTMLAnchorElement;
     styleId: string;
     styleOwner: string;
@@ -51,6 +52,7 @@ class AttributionControl {
 
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
+        this._innerContainer = DOM.create('div', 'mapboxgl-ctrl-attrib-inner', this._container);
 
         if (compact) {
             this._container.classList.add('mapboxgl-compact');
@@ -120,11 +122,11 @@ class AttributionControl {
                 attributions = attributions.concat(
                     this.options.customAttribution.map(attribution => {
                         if (typeof attribution !== 'string') return '';
-                        return `<p>${attribution}</p>`;
+                        return attribution;
                     })
                 );
             } else if (typeof this.options.customAttribution === 'string') {
-                attributions.push(`<p>${this.options.customAttribution}</p>`);
+                attributions.push(this.options.customAttribution);
             }
         }
 
@@ -155,7 +157,7 @@ class AttributionControl {
             return true;
         });
         if (attributions.length) {
-            this._container.innerHTML = attributions.join('<p> | </p>');
+            this._innerContainer.innerHTML = attributions.join(' | ');
             this._container.classList.remove('mapboxgl-attrib-empty');
         } else {
             this._container.classList.add('mapboxgl-attrib-empty');

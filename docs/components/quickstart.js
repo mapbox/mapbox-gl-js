@@ -79,12 +79,16 @@ export default class extends React.Component {
                     <span className='round fill-light pad0'><a href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{version}</a></span>
                 </div>
                 <div className='prose space-bottom2'>
-                    <p className='space-bottom2 pad1y'>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps
-                        from <a href='https://www.mapbox.com/help/define-vector-tiles'>vector tiles</a> and <a
-                            href={prefixUrl('/style-spec')}>Mapbox styles</a>.
-                        It is part of the Mapbox GL ecosystem, which includes <a
-                            href='https://www.mapbox.com/mobile/'>Mapbox Mobile</a>, a compatible renderer written in C++ with bindings
-                        for desktop and mobile platforms. To see what new features our team is working on, take a look at our <a href={prefixUrl('/roadmap')}>roadmap</a>.</p>
+                    <p className='space-bottom2 pad1y'>
+                        Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from
+                        <a href='https://www.mapbox.com/help/define-vector-tiles'>vector tiles</a> and
+                        <a href={prefixUrl('/style-spec')}>Mapbox styles</a>.
+                        It is part of the Mapbox GL ecosystem, which includes
+                        <a href='https://www.mapbox.com/mobile/'>Mapbox Mobile</a>,
+                        a compatible renderer written in C++ with bindings
+                        for desktop and mobile platforms. To see what new features our team is working on,
+                        take a look at our <a href={prefixUrl('/roadmap')}>roadmap</a>.
+                    </p>
 
                     <div className='col12 fill-light round pad2 clearfix space-top2'>
                         <div className='space-bottom2 space-left1 space-top1 contain'>

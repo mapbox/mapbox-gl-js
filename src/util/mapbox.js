@@ -3,6 +3,7 @@
 import config from './config';
 
 import browser from './browser';
+import webpSupported from './webp_supported';
 import window from './window';
 import { version } from '../../package.json';
 import { uuid, validateUuid, storageAvailable, warnOnce, extend } from './util';
@@ -10,6 +11,7 @@ import { postData } from './ajax';
 
 import type { RequestParameters } from './ajax';
 import type { Cancelable } from '../types/cancelable';
+import type {TileJSON} from '../types/tilejson';
 
 const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
 const telemEventKey = 'mapbox.eventData';
@@ -88,6 +90,8 @@ export const normalizeSpriteURL = function(url: string, format: string, extensio
 };
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
+// matches any file extension specified by a dot and one or more alphanumeric characters
+const extensionRe = /\.[\w]+$/;
 
 export const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
@@ -98,20 +102,42 @@ export const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, t
     // is appended to the tile URL. If `tileSize: 512` is specified for
     // a Mapbox raster source force the @2x suffix even if a non hidpi device.
     const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
-    const extension = browser.supportsWebp ? '.webp' : '$1';
+    const extension = webpSupported.supported ? '.webp' : '$1';
     urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
+    urlObject.path = `/v4${urlObject.path}`;
 
-    replaceTempAccessToken(urlObject.params);
-    return formatUrl(urlObject);
+    return makeAPIURL(urlObject);
 };
 
-function replaceTempAccessToken(params: Array<string>) {
-    for (let i = 0; i < params.length; i++) {
-        if (params[i].indexOf('access_token=tk.') === 0) {
-            params[i] = `access_token=${config.ACCESS_TOKEN || ''}`;
-        }
+export const canonicalizeTileURL = function(url: string) {
+    const version = "/v4/";
+
+    const urlObject = parseUrl(url);
+    // Make sure that we are dealing with a valid Mapbox tile URL.
+    // Has to begin with /v4/, with a valid filename + extension
+    if (!urlObject.path.match(/(^\/v4\/)/) || !urlObject.path.match(extensionRe)) {
+        // Not a proper Mapbox tile URL.
+        return url;
     }
-}
+    // Reassemble the canonical URL from the parts we've parsed before.
+    let result = "mapbox://tiles/";
+    result +=  urlObject.path.replace(version, '');
+
+    // Append the query string, minus the access token parameter.
+    const params = urlObject.params.filter(p => !p.match(/^access_token=/));
+    if (params.length) result += `?${params.join('&')}`;
+    return result;
+};
+
+export const canonicalizeTileset = function(tileJSON: TileJSON, sourceURL: string) {
+    if (!isMapboxURL(sourceURL)) return tileJSON.tiles || [];
+    const canonical = [];
+    for (const url of tileJSON.tiles) {
+        const canonicalUrl = canonicalizeTileURL(url);
+        canonical.push(canonicalUrl);
+    }
+    return canonical;
+};
 
 const urlRe = /^(\w+):\/\/([^/?]*)(\/[^?]+)?\??(.+)?/;
 
@@ -322,7 +348,7 @@ export class TurnstileEvent extends TelemetryEvent {
             return this.processRequests();
         }
 
-        this.postEvent(nextUpdate, {"enabled.telemetry": false}, (err)=> {
+        this.postEvent(nextUpdate, {"enabled.telemetry": false}, (err) => {
             if (!err) {
                 this.eventData.lastSuccess = nextUpdate;
                 this.eventData.accessToken = config.ACCESS_TOKEN;

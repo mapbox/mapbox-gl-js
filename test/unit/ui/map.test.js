@@ -264,11 +264,11 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#is_Loaded', (t)=>{
+    t.test('#is_Loaded', (t) => {
 
         t.test('Map#isSourceLoaded', (t) => {
             const style = createStyle();
-            const map = createMap(t, {style: style});
+            const map = createMap(t, {style});
 
             map.on('load', () => {
                 map.on('data', (e) => {
@@ -284,7 +284,7 @@ test('Map', (t) => {
 
         t.test('Map#isStyleLoaded', (t) => {
             const style = createStyle();
-            const map = createMap(t, {style: style});
+            const map = createMap(t, {style});
 
             t.equal(map.isStyleLoaded(), false, 'false before style has loaded');
             map.on('load', () => {
@@ -295,9 +295,9 @@ test('Map', (t) => {
 
         t.test('Map#areTilesLoaded', (t) => {
             const style = createStyle();
-            const map = createMap(t, {style: style});
+            const map = createMap(t, {style});
             t.equal(map.areTilesLoaded(), true, 'returns true if there are no sources on the map');
-            map.on('load', ()=>{
+            map.on('load', () => {
 
                 map.addSource('geojson', createStyleSource());
                 map.style.sourceCaches.geojson._tiles.fakeTile = new Tile(new OverscaledTileID(0, 0, 0, 0, 0));
@@ -313,7 +313,7 @@ test('Map', (t) => {
     t.test('#getStyle', (t) => {
         t.test('returns the style', (t) => {
             const style = createStyle();
-            const map = createMap(t, {style: style});
+            const map = createMap(t, {style});
 
             map.on('load', () => {
                 t.deepEqual(map.getStyle(), style);
@@ -323,7 +323,7 @@ test('Map', (t) => {
 
         t.test('returns the style with added sources', (t) => {
             const style = createStyle();
-            const map = createMap(t, {style: style});
+            const map = createMap(t, {style});
 
             map.on('load', () => {
                 map.addSource('geojson', createStyleSource());
@@ -336,7 +336,7 @@ test('Map', (t) => {
 
         t.test('fires an error on checking if non-existant source is loaded', (t) => {
             const style = createStyle();
-            const map = createMap(t, {style: style});
+            const map = createMap(t, {style});
 
             map.on('load', () => {
                 map.on('error', ({ error }) => {
@@ -349,7 +349,7 @@ test('Map', (t) => {
 
         t.test('returns the style with added layers', (t) => {
             const style = createStyle();
-            const map = createMap(t, {style: style});
+            const map = createMap(t, {style});
             const layer = {
                 id: 'background',
                 type: 'background'
@@ -366,7 +366,7 @@ test('Map', (t) => {
 
         t.test('returns the style with added source and layer', (t) => {
             const style = createStyle();
-            const map = createMap(t, {style: style});
+            const map = createMap(t, {style});
             const source = createStyleSource();
             const layer = {
                 id: 'fill',
@@ -387,7 +387,7 @@ test('Map', (t) => {
 
         t.test('creates a new Style if diff fails', (t) => {
             const style = createStyle();
-            const map = createMap(t, { style: style });
+            const map = createMap(t, { style });
             t.stub(map.style, 'setState').callsFake(() => {
                 throw new Error('Dummy error');
             });
@@ -401,7 +401,7 @@ test('Map', (t) => {
 
         t.test('creates a new Style if diff option is false', (t) => {
             const style = createStyle();
-            const map = createMap(t, { style: style });
+            const map = createMap(t, { style });
             t.stub(map.style, 'setState').callsFake(() => {
                 t.fail();
             });
@@ -807,7 +807,7 @@ test('Map', (t) => {
         const map = createMap(t);
         const control = {
             onRemove: t.spy(),
-            onAdd: function (_) {
+            onAdd (_) {
                 return window.document.createElement('div');
             }
         };
@@ -822,11 +822,11 @@ test('Map', (t) => {
         let onRemoveCalled = 0;
         let style;
         const control = {
-            onRemove: function(map) {
+            onRemove(map) {
                 onRemoveCalled++;
                 t.deepEqual(map.getStyle(), style);
             },
-            onAdd: function (_) {
+            onAdd (_) {
                 return window.document.createElement('div');
             }
         };
@@ -844,7 +844,7 @@ test('Map', (t) => {
     t.test('#addControl', (t) => {
         const map = createMap(t);
         const control = {
-            onAdd: function(_) {
+            onAdd(_) {
                 t.equal(map, _, 'addTo() called with map');
                 return window.document.createElement('div');
             }
@@ -870,10 +870,10 @@ test('Map', (t) => {
     t.test('#removeControl', (t) => {
         const map = createMap(t);
         const control = {
-            onAdd: function() {
+            onAdd() {
                 return window.document.createElement('div');
             },
-            onRemove: function(_) {
+            onRemove(_) {
                 t.equal(map, _, 'onRemove() called with map');
             }
         };
@@ -1231,6 +1231,28 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#getLayoutProperty', (t) => {
+        t.test('fires an error if layer not found', (t) => {
+            const map = createMap(t, {
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style/);
+                    t.end();
+                });
+                map.getLayoutProperty('non-existant', 'text-transform', 'lowercase');
+            });
+        });
+
+        t.end();
+    });
+
     t.test('#setPaintProperty', (t) => {
         t.test('sets property', (t) => {
             const map = createMap(t, {
@@ -1484,7 +1506,7 @@ test('Map', (t) => {
         });
 
         let timer;
-        const map = createMap(t, { style: style });
+        const map = createMap(t, { style });
         map.on('render', () => {
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => {
@@ -1493,6 +1515,30 @@ test('Map', (t) => {
                 t.notOk(map._frameId, 'no rerender scheduled');
                 t.end();
             }, 100);
+        });
+    });
+
+    t.test('no render after idle event', (t) => {
+        const style = createStyle();
+        const map = createMap(t, { style });
+        map.on('idle', () => {
+            map.on('render', t.fail);
+            setTimeout(() => {
+                t.end();
+            }, 100);
+        });
+    });
+
+    t.test('no idle event during move', (t) => {
+        const style = createStyle();
+        const map = createMap(t, { style, fadeDuration: 0 });
+        map.once('idle', () => {
+            map.zoomTo(0.5, { duration: 100 });
+            t.ok(map.isMoving(), "map starts moving immediately after zoomTo");
+            map.once('idle', () => {
+                t.ok(!map.isMoving(), "map stops moving before firing idle event");
+                t.end();
+            });
         });
     });
 

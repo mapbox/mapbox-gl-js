@@ -52,12 +52,12 @@ export default class Marker extends Evented {
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
     _positionDelta: ?number;
 
-    constructor(options?: Options) {
+    constructor(options?: Options, legacyOptions?: Options) {
         super();
         // For backward compatibility -- the constructor used to accept the element as a
         // required first argument, before it was made optional.
-        if (arguments[0] instanceof window.HTMLElement || arguments.length === 2) {
-            options = extend({element: options}, arguments[1]);
+        if (options instanceof window.HTMLElement || legacyOptions) {
+            options = extend({element: options}, legacyOptions);
         }
 
         bindAll([

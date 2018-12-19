@@ -208,6 +208,9 @@ function shapeText(text: Formatted,
     return shaping;
 }
 
+// using computed properties due to https://github.com/facebook/flow/issues/380
+/* eslint no-useless-computed-key: 0 */
+
 const whitespace: {[number]: boolean} = {
     [0x09]: true, // tab
     [0x0a]: true, // newline

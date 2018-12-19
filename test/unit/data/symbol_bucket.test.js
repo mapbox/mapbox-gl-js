@@ -41,7 +41,7 @@ function bucketSetup() {
     return new SymbolBucket({
         overscaling: 1,
         zoom: 0,
-        collisionBoxArray: collisionBoxArray,
+        collisionBoxArray,
         layers: [layer]
     });
 }

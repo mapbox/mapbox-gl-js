@@ -297,8 +297,8 @@ class ScrollZoomHandler {
 
         this._prevEase = {
             start: browser.now(),
-            duration: duration,
-            easing: easing
+            duration,
+            easing
         };
 
         return easing;

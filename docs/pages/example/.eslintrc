@@ -23,7 +23,8 @@
         "no-loop-func": "off",
         "no-var": "off",
         "prefer-arrow-callback": "off",
-        "prefer-template": "off"
+        "prefer-template": "off",
+        "object-shorthand": "off"
       },
       "env": {
         "es6": false,

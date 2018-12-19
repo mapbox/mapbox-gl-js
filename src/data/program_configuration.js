@@ -97,7 +97,7 @@ class ConstantBinder<T> implements Binder<T> {
     constructor(value: T, names: Array<string>, type: string) {
         this.value = value;
         this.names = names;
-        this.uniformNames = this.names.map(name =>`u_${name}`);
+        this.uniformNames = this.names.map(name => `u_${name}`);
         this.type = type;
         this.maxValue = -Infinity;
     }
@@ -144,7 +144,7 @@ class CrossFadedConstantBinder<T> implements Binder<T> {
     constructor(value: T, names: Array<string>, type: string) {
         this.value = value;
         this.names = names;
-        this.uniformNames = this.names.map(name =>`u_${name}`);
+        this.uniformNames = this.names.map(name => `u_${name}`);
         this.type = type;
         this.maxValue = -Infinity;
         this.patternPositions = {patternTo: null, patternFrom: null};
@@ -191,7 +191,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
         this.expression = expression;
         this.names = names;
         this.type = type;
-        this.uniformNames = this.names.map(name =>`a_${name}`);
+        this.uniformNames = this.names.map(name => `a_${name}`);
         this.maxValue = -Infinity;
         this.paintVertexAttributes = names.map((name) =>
             ({
@@ -291,7 +291,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, layout: Class<StructArray>) {
         this.expression = expression;
         this.names = names;
-        this.uniformNames = this.names.map(name =>`a_${name}_t`);
+        this.uniformNames = this.names.map(name => `a_${name}_t`);
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
@@ -412,7 +412,7 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
         this.expression = expression;
         this.names = names;
         this.type = type;
-        this.uniformNames = this.names.map(name =>`a_${name}_t`);
+        this.uniformNames = this.names.map(name => `a_${name}_t`);
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
         this.maxValue = -Infinity;
@@ -650,7 +650,7 @@ export default class ProgramConfiguration {
     defines(): Array<string> {
         const result = [];
         for (const property in this.binders) {
-            result.push.apply(result, this.binders[property].defines());
+            result.push(...this.binders[property].defines());
         }
         return result;
     }

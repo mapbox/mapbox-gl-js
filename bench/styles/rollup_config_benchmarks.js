@@ -3,13 +3,20 @@ import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
 import {plugins as basePlugins} from '../../build/rollup_plugins';
 
+let styles = ['mapbox://styles/mapbox/streets-v10'];
+
+if (process.env.MAPBOX_STYLES) {
+    styles = process.env.MAPBOX_STYLES
+        .split(',')
+        .map(style => style.match(/\.json$/) ? require(style) : style);
+}
+
 const plugins = () => basePlugins().concat(
     replace({
         'process.env.BENCHMARK_VERSION': JSON.stringify(process.env.BENCHMARK_VERSION),
         'process.env.MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN),
         'process.env.MapboxAccessToken': JSON.stringify(process.env.MapboxAccessToken),
-        'process.env.MAPBOX_STYLE_URL': JSON.stringify(process.env.MAPBOX_STYLE_URL),
-        'process.env.MapboxStyleURL': JSON.stringify(process.env.MapboxStyleURL),
+        'process.env.MAPBOX_STYLES': JSON.stringify(styles),
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     })
 );

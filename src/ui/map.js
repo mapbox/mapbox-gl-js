@@ -6,7 +6,8 @@ import browser from '../util/browser';
 import window from '../util/window';
 const { HTMLImageElement, HTMLElement } = window;
 import DOM from '../util/dom';
-import { getImage, ResourceType } from '../util/ajax';
+import { getImage, getJSON, ResourceType } from '../util/ajax';
+import { normalizeStyleURL } from '../util/mapbox';
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
@@ -24,12 +25,13 @@ import { RGBAImage } from '../util/image';
 import { Event, ErrorEvent } from '../util/evented';
 import { MapMouseEvent } from './events';
 import TaskQueue from '../util/task_queue';
+import webpSupported from '../util/webp_supported';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {RequestParameters} from '../util/ajax';
-import type {StyleOptions} from '../style/style';
+import type {StyleOptions, StyleSetterOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 
@@ -51,7 +53,6 @@ import type {
 } from '../style-spec/types';
 
 type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-
 /* eslint-disable no-use-before-define */
 type IControl = {
     onAdd(map: Map): HTMLElement;
@@ -360,6 +361,7 @@ class Map extends Camera {
         }
 
         this.on('move', () => this._update(false));
+        this.on('moveend', () => this._update(false));
         this.on('zoom', () => this._update(true));
 
         if (typeof window !== 'undefined') {
@@ -372,16 +374,16 @@ class Map extends Camera {
         this._hash = options.hash && (new Hash()).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
+            this.jumpTo({
+                center: options.center,
+                zoom: options.zoom,
+                bearing: options.bearing,
+                pitch: options.pitch
+            });
+
             if (options.bounds) {
                 this.resize();
                 this.fitBounds(options.bounds, { duration: 0 });
-            } else {
-                this.jumpTo({
-                    center: options.center,
-                    zoom: options.zoom,
-                    bearing: options.bearing,
-                    pitch: options.pitch
-                });
             }
         }
 
@@ -934,16 +936,15 @@ class Map extends Camera {
     }
 
     /**
-     * Updates the map's Mapbox style object with a new value.  If the given
-     * value is style JSON object, compares it against the the map's current
-     * state and perform only the changes necessary to make the map style match
-     * the desired state.
+     * Updates the map's Mapbox style object with a new value. If a style already is set and options.diff is true,
+     * this compares the style against the map's current state and performs only the changes necessary to make
+     * the map style match the desired state.
      *
      * @param style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
      * @param {Object} [options]
      * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
-     *   and adding building the given one instead of attempting a diff-based update.
+     *   and building the given one instead of attempting a diff-based update.
      * @param {string} [options.localIdeographFontFamily=null] If non-null, defines a css font-family
      *   for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables'
      *   ranges. Forces a full update.
@@ -951,20 +952,15 @@ class Map extends Camera {
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
-        const shouldTryDiff = (!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style;
-        if (shouldTryDiff && style && typeof style === 'object') {
-            try {
-                if (this.style.setState(style)) {
-                    this._update(true);
-                }
-                return this;
-            } catch (e) {
-                warnOnce(
-                    `Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`
-                );
-            }
+        if ((!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style && style) {
+            this._diffStyle(style, options);
+            return this;
+        } else {
+            return this._updateStyle(style, options);
         }
+    }
 
+    _updateStyle(style: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions) {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
@@ -986,6 +982,35 @@ class Map extends Camera {
         }
 
         return this;
+    }
+
+    _diffStyle(style: StyleSpecification | string,  options?: {diff?: boolean} & StyleOptions) {
+        if (typeof style === 'string') {
+            const url = normalizeStyleURL(style);
+            const request = this._transformRequest(url, ResourceType.Style);
+            getJSON(request, (error: ?Error, json: ?Object) => {
+                if (error) {
+                    this.fire(new ErrorEvent(error));
+                } else if (json) {
+                    this._updateDiff(json, options);
+                }
+            });
+        } else if (typeof style === 'object') {
+            this._updateDiff(style, options);
+        }
+    }
+
+    _updateDiff(style: StyleSpecification,  options?: {diff?: boolean} & StyleOptions) {
+        try {
+            if (this.style.setState(style)) {
+                this._update(true);
+            }
+        } catch (e) {
+            warnOnce(
+                `Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`
+            );
+            this._updateStyle(style, options);
+        }
     }
 
     /**
@@ -1240,6 +1265,9 @@ class Map extends Camera {
      * @param {string} layer The ID of the layer to which the filter will be applied.
      * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
      *   [filter definition](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
+     * @param {Object} [options]
+     * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
+     *
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
@@ -1247,8 +1275,8 @@ class Map extends Camera {
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
-    setFilter(layer: string, filter: ?FilterSpecification) {
-        this.style.setFilter(layer, filter);
+    setFilter(layer: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
+        this.style.setFilter(layer, filter, options);
         return this._update(true);
     }
 
@@ -1284,6 +1312,8 @@ class Map extends Camera {
      * @param {string} name The name of the paint property to set.
      * @param {*} value The value of the paint propery to set.
      *   Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @param {Object} [options]
+     * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      * @example
      * map.setPaintProperty('my-layer', 'fill-color', '#faafee');
@@ -1291,8 +1321,8 @@ class Map extends Camera {
      * @see [Adjust a layer's opacity](https://www.mapbox.com/mapbox-gl-js/example/adjust-layer-opacity/)
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    setPaintProperty(layer: string, name: string, value: any) {
-        this.style.setPaintProperty(layer, name, value);
+    setPaintProperty(layer: string, name: string, value: any, options: StyleSetterOptions = {}) {
+        this.style.setPaintProperty(layer, name, value, options);
         return this._update(true);
     }
 
@@ -1313,12 +1343,14 @@ class Map extends Camera {
      * @param {string} layer The ID of the layer to set the layout property in.
      * @param {string} name The name of the layout property to set.
      * @param {*} value The value of the layout propery. Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @param {Object} [options]
+     * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      * @example
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
      */
-    setLayoutProperty(layer: string, name: string, value: any) {
-        this.style.setLayoutProperty(layer, name, value);
+    setLayoutProperty(layer: string, name: string, value: any, options: StyleSetterOptions = {}) {
+        this.style.setLayoutProperty(layer, name, value, options);
         return this._update(true);
     }
 
@@ -1337,10 +1369,12 @@ class Map extends Camera {
      * Sets the any combination of light values.
      *
      * @param light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
+     * @param {Object} [options]
+     * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      */
-    setLight(light: LightSpecification) {
-        this.style.setLight(light);
+    setLight(light: LightSpecification, options: StyleSetterOptions = {}) {
+        this.style.setLight(light, options);
         return this._update(true);
     }
 
@@ -1507,6 +1541,8 @@ class Map extends Camera {
         }
 
         this.painter = new Painter(gl, this.transform);
+
+        webpSupported.testSupport(gl);
     }
 
     _contextLost(event: *) {
@@ -1632,6 +1668,7 @@ class Map extends Camera {
             showOverdrawInspector: this._showOverdrawInspector,
             rotating: this.isRotating(),
             zooming: this.isZooming(),
+            moving: this.isMoving(),
             fadeDuration: this._fadeDuration
         });
 
@@ -1660,6 +1697,8 @@ class Map extends Camera {
         // Style#_updateSources could have caused them to be set again.
         if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
             this.triggerRepaint();
+        } else if (!this.isMoving() && this.loaded()) {
+            this.fire(new Event('idle'));
         }
 
         return this;

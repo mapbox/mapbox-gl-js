@@ -109,3 +109,43 @@ test('TouchZoomRotateHandler does not begin a gesture if preventDefault is calle
     map.remove();
     t.end();
 });
+
+test('TouchZoomRotateHandler starts zoom immediately when rotation disabled', (t) => {
+    const map = createMap(t);
+    map.touchZoomRotate.disableRotation();
+
+    const zoomstart = t.spy();
+    const zoom      = t.spy();
+    const zoomend   = t.spy();
+
+    map.on('zoomstart', zoomstart);
+    map.on('zoom',      zoom);
+    map.on('zoomend',   zoomend);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: -5}, {clientX: 0, clientY: 5}]});
+    map._renderTaskQueue.run();
+    t.equal(zoomstart.callCount, 0);
+    t.equal(zoom.callCount, 0);
+    t.equal(zoomend.callCount, 0);
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: -5}, {clientX: 0, clientY: 6}]});
+    map._renderTaskQueue.run();
+    t.equal(zoomstart.callCount, 1);
+    t.equal(zoom.callCount, 1);
+    t.equal(zoomend.callCount, 0);
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: -5}, {clientX: 0, clientY: 5}]});
+    map._renderTaskQueue.run();
+    t.equal(zoomstart.callCount, 1);
+    t.equal(zoom.callCount, 2);
+    t.equal(zoomend.callCount, 0);
+
+    simulate.touchend(map.getCanvas(), {touches: []});
+    map._renderTaskQueue.run();
+    t.equal(zoomstart.callCount, 1);
+    t.equal(zoom.callCount, 2);
+    t.equal(zoomend.callCount, 1);
+
+    map.remove();
+    t.end();
+});

@@ -5,7 +5,7 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from 'rollup-plugin-json';
-import uglify from 'rollup-plugin-uglify';
+import { terser } from 'rollup-plugin-terser';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import { createFilter } from 'rollup-pluginutils';
 
@@ -21,8 +21,9 @@ export const plugins = () => [
     minifyStyleSpec(),
     json(),
     glsl('./src/shaders/*.glsl', production),
-    buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
     production ? unassert() : false,
+    minified ? terser() : false,
+    buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
     resolve({
         browser: true,
         preferBuiltins: false
@@ -31,8 +32,7 @@ export const plugins = () => [
         // global keyword handling causes Webpack compatibility issues, so we disabled it:
         // https://github.com/mapbox/mapbox-gl-js/pull/6956
         ignoreGlobal: true
-    }),
-    minified ? uglify() : false
+    })
 ].filter(Boolean);
 
 // Using this instead of rollup-plugin-flow due to

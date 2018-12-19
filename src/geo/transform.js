@@ -7,9 +7,11 @@ import Point from '@mapbox/point-geometry';
 import { wrap, clamp } from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import tileCover from '../util/tile_cover';
-import { CanonicalTileID, UnwrappedTileID } from '../source/tile_id';
+import { UnwrappedTileID } from '../source/tile_id';
 import EXTENT from '../data/extent';
 import { vec4, mat4, mat2 } from 'gl-matrix';
+
+import type { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
 
 /**
  * A single transform, generally used for a single tile to be
@@ -233,7 +235,7 @@ class Transform {
      * @param {boolean} options.roundZoom
      * @param {boolean} options.reparseOverscaled
      * @param {boolean} options.renderWorldCopies
-     * @returns {Array<Tile>} tiles
+     * @returns {Array<OverscaledTileID>} OverscaledTileIDs
      */
     coveringTiles(
         options: {
@@ -244,7 +246,7 @@ class Transform {
             reparseOverscaled?: boolean,
             renderWorldCopies?: boolean
         }
-    ) {
+    ): Array<OverscaledTileID> {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;
 
