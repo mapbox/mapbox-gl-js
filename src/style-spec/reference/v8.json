@@ -3785,7 +3785,9 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.50.0"
+          "js": "0.50.0",
+          "ios" : "4.7.0",
+          "macos" : "0.13.0"
         }
       },
       "expression": {
