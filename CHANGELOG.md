@@ -1,3 +1,31 @@
+## 0.52.0
+
+# Breaking changes
+* Canonicalize tile urls to `mapbox://` urls so they can be transformed with `config.API_URL` ([#7594](https://github.com/mapbox/mapbox-gl-js/pull/7594))
+
+## Features and improvements
+* Add getter and setter for `config.API_URL` ([#7594](https://github.com/mapbox/mapbox-gl-js/pull/7594))
+* Allow user to define element other than map container for full screen control ([#7548](https://github.com/mapbox/mapbox-gl-js/pull/7548))
+* Add validation option to style setters ([#7604](https://github.com/mapbox/mapbox-gl-js/pull/7604))
+* Add 'idle' event: fires when no further rendering is expected without further interaction. ([#7625](https://github.com/mapbox/mapbox-gl-js/pull/7625))
+
+## Bug fixes
+* Fire error when map.getLayoutProperty references missing layer ([#7537](https://github.com/mapbox/mapbox-gl-js/issues/7537), fixed by [#7539](https://github.com/mapbox/mapbox-gl-js/pull/7539))
+* Fix shaky sprites when zooming with scrolling ([#7558](https://github.com/mapbox/mapbox-gl-js/pull/7558))
+* Fix layout problems in attribution control ([#7608](https://github.com/mapbox/mapbox-gl-js/pull/7608)) (h/t [lucaswoj](https://github.com/lucaswoj))
+* Fixes resetting map's pitch to 0 if initial bounds is set ([#7617](https://github.com/mapbox/mapbox-gl-js/pull/7617)) (h/t [stepankuzmin](https://github.com/stepankuzmin))
+* Fix occasional failure to load images after multiple image request abortions [#7641](https://github.com/mapbox/mapbox-gl-js/pull/7641)
+* Update repo url to correct one ([#7486](https://github.com/mapbox/mapbox-gl-js/pull/7486)) (h/t [nicholas-l](https://github.com/nicholas-l))
+* Fix bug where symbols were sometimes not rendered immediately ([#7610](https://github.com/mapbox/mapbox-gl-js/pull/7610))
+* Fix bug where cameraForBounds returns incorrect CameraOptions with asymmetrical padding/offset ([#7517](https://github.com/mapbox/mapbox-gl-js/issues/7517), fixed by [#7518](https://github.com/mapbox/mapbox-gl-js/pull/7518)) (h/t [mike-marcacci](https://github.com/mike-marcacci))
+* Use diff+patch approach to map.setStyle when the parameter is a URL ([#4025](https://github.com/mapbox/mapbox-gl-js/issues/4025), fixed by [#7562](https://github.com/mapbox/mapbox-gl-js/pull/7562))
+* Begin touch zoom immediately when rotation disabled ([#7582](https://github.com/mapbox/mapbox-gl-js/pull/7582)) (h/t [msbarry](https://github.com/msbarry))
+* Fix symbol rendering under opaque fill layers ([#7612](https://github.com/mapbox/mapbox-gl-js/pull/7612))
+* Fix shaking by aligning raster sources to pixel grid only when map is idle ([7426](https://github.com/mapbox/mapbox-gl-js/pull/7426))
+* Fix raster layers in Edge 18 by disabling it's incomplete WebP support ([7687](https://github.com/mapbox/mapbox-gl-js/pull/7687))
+* Fix memory leak in hillshade layer ([7691](https://github.com/mapbox/mapbox-gl-js/pull/7691))
+* Fix disappearing custom layers ([7711](https://github.com/mapbox/mapbox-gl-js/pull/7711))
+
 ## 0.51.0
 November 7, 2018
 
