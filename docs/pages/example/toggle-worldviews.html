@@ -46,7 +46,7 @@ label {
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11',
-    center: [95.690,25.251],
+    center: [95.690, 25.251],
     zoom: 3
 });
 
@@ -61,7 +61,7 @@ var worldviews = [
     'US'
 ];
 
-map.on('load', function(){
+map.on('load', function() {
 
     worldviews.forEach(function(worldview) {
         var worldviewButton = document.createElement('button');
