@@ -135,12 +135,12 @@ class SourceFeatureState {
                 const layerStates = {};
                 for (const feature in this.deletedStates[sourceLayer]) {
 
-                    const featurePropertiesToDelete = this.deletedStates[sourceLayer][feature] !== null;
-                    if (featurePropertiesToDelete) {
+                    const deleteWholeFeatureState = this.deletedStates[sourceLayer][feature] === null;
+                    if (deleteWholeFeatureState) {
                         delete this.state[sourceLayer][feature];
                     } else {
-                        for (const key of featurePropertiesToDelete) {
-                            if (this.state[sourceLayer][feature][key]) delete this.state[sourceLayer][feature][key];
+                        for (const key of Object.keys(this.deletedStates[sourceLayer][feature])) {
+                            delete this.state[sourceLayer][feature][key];
                         }
                     }
 

@@ -1506,6 +1506,26 @@ test('Map', (t) => {
                 t.end();
             });
         });
+        t.test('other properties persist when removing specific property', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.removeFeatureState({ source: 'geojson', id: 1}, 'hover');
+
+                const fState = map.getFeatureState({ source: 'geojson', id: 1});
+                t.equal(fState.foo, true);
+
+                t.end();
+            });
+        });
         t.test('remove all state properties of all features in source', (t) => {
             const map = createMap(t, {
                 style: {
@@ -1570,7 +1590,7 @@ test('Map', (t) => {
                 map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
 
                 map.removeFeatureState({ source: 'geojson'});
-                map.removeFeatureState({ source: 'geojson',id: 1});
+                map.removeFeatureState({ source: 'geojson', id: 1});
 
                 const fState = map.getFeatureState({ source: 'geojson', id: 2});
                 t.equal(fState.hover, undefined);
