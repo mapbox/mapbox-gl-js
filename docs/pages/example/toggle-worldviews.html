@@ -1,0 +1,79 @@
+<style>
+
+label {
+    font-size: 20px;
+}
+.toggle-menu {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 400px;
+    top: 0;
+    right: 0;
+    padding: 10px;
+}
+
+.toggle-menu .toggle-menu-inner {
+    text-align: center;
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.toggle-menu-inner button {
+    color: #000;
+    display: inline-block;
+    width: 50px;
+    height: 20px;
+    border: none;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.toggle-menu-inner button:hover {
+    box-shadow:inset 0 0 0 4px pink;
+}
+</style>
+
+<div id='map'></div>
+<div class='toggle-menu top'>
+    <div class='toggle-menu-inner'>
+        <label>Toggle worldview:</label>
+        <div id='worldviews'></div>
+    </div>
+</div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    /* Note: The worldview data field is only available in styles that use the Mapbox Streets v8 tileset https://www.mapbox.com/vector-tiles/mapbox-streets-v8/ */
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [95.690, 25.251],
+    zoom: 3
+});
+
+var worldviewButtons = document.getElementById('worldviews');
+
+var worldviews = [
+    'CN',
+    'IN',
+    'US'
+];
+
+map.on('load', function() {
+
+    worldviews.forEach(function(worldview) {
+        var worldviewButton = document.createElement('button');
+        worldviewButton.innerHTML = worldview.toString();
+        worldviewButton.addEventListener('click', function() {
+            var adminLayers = ['admin-0-boundary', 'admin-1-boundary', 'admin-0-boundary-disputed',
+                'admin-1-boundary-bg', 'admin-0-boundary-bg'];
+            adminLayers.forEach(function(adminLayer) {
+                map.setFilter(adminLayer, ["match", ["get", "worldview"], ["all", worldview], true, false]);
+            });
+        });
+        worldviewButtons.appendChild(worldviewButton);
+    });
+
+});
+</script>
