@@ -46,6 +46,7 @@ label {
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
+    /* Note: The worldview data field is only available in styles that use the Mapbox Streets v8 tileset https://www.mapbox.com/vector-tiles/mapbox-streets-v8/ */
     style: 'mapbox://styles/mapbox/streets-v11',
     center: [95.690, 25.251],
     zoom: 3
@@ -66,7 +67,7 @@ map.on('load', function() {
         worldviewButton.innerHTML = worldview.toString();
         worldviewButton.addEventListener('click', function() {
             var adminLayers = ['admin-0-boundary', 'admin-1-boundary', 'admin-0-boundary-disputed',
-             'admin-1-boundary-bg', 'admin-0-boundary-bg'];
+                'admin-1-boundary-bg', 'admin-0-boundary-bg'];
             adminLayers.forEach(function(adminLayer) {
                 map.setFilter(adminLayer, ["match", ["get", "worldview"], ["all", worldview], true, false]);
             });
