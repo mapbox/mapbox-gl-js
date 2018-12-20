@@ -1533,6 +1533,52 @@ test('Map', (t) => {
                 t.end();
             });
         });
+        t.test('remove whole feature state before removing specific feature state property', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+
+                map.removeFeatureState({ source: 'geojson', id: 1});
+                map.removeFeatureState({ source: 'geojson', id: 1}, 'hover');
+
+                const fState = map.getFeatureState({ source: 'geojson', id: 1});
+                t.equal(fState.foo, undefined);
+
+                t.end();
+            });
+        });
+        t.test('remove whole source state before removing specific feature state', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
+
+                map.removeFeatureState({ source: 'geojson'});
+                map.removeFeatureState({ source: 'geojson',id: 1});
+
+                const fState = map.getFeatureState({ source: 'geojson', id: 2});
+                t.equal(fState.hover, undefined);
+
+
+                t.end();
+            });
+        });
         t.test('remove and add state', (t) => {
             const map = createMap(t, {
                 style: {
