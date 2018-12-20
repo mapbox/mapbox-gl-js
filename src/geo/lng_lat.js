@@ -76,7 +76,7 @@ class LngLat {
     /**
      * Returns a `LngLatBounds` from the coordinates extended by a given `radius`.
      *
-     * @param {number} radius Distance in meters from the coordinates to extend the bounds.
+     * @param {number} [radius=0] Distance in meters from the coordinates to extend the bounds.
      * @returns {LngLatBounds} A new `LngLatBounds` object representing the coordinates extended by the `radius`.
      * @example
      * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
