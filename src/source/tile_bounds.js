@@ -1,8 +1,7 @@
 // @flow
 
 import LngLatBounds from '../geo/lng_lat_bounds';
-
-import { clamp } from '../util/util';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 
 import type {CanonicalTileID} from './tile_id';
 
@@ -24,22 +23,15 @@ class TileBounds {
     }
 
     contains(tileID: CanonicalTileID) {
+        const worldSize = Math.pow(2, tileID.z);
         const level = {
-            minX: Math.floor(this.lngX(this.bounds.getWest(), tileID.z)),
-            minY: Math.floor(this.latY(this.bounds.getNorth(), tileID.z)),
-            maxX: Math.ceil(this.lngX(this.bounds.getEast(), tileID.z)),
-            maxY: Math.ceil(this.latY(this.bounds.getSouth(), tileID.z))
+            minX: Math.floor(mercatorXfromLng(this.bounds.getWest()) * worldSize),
+            minY: Math.floor(mercatorYfromLat(this.bounds.getNorth()) * worldSize),
+            maxX: Math.ceil(mercatorXfromLng(this.bounds.getEast()) * worldSize),
+            maxY: Math.ceil(mercatorYfromLat(this.bounds.getSouth()) * worldSize)
         };
         const hit = tileID.x >= level.minX && tileID.x < level.maxX && tileID.y >= level.minY && tileID.y < level.maxY;
         return hit;
-    }
-
-    lngX(lng: number, zoom: number) {
-        return (lng + 180) * (Math.pow(2, zoom) / 360);
-    }
-
-    latY(lat: number, zoom: number) {
-        return (90 - lat) * (Math.pow(2, zoom) / 360);
     }
 }
 

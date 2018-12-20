@@ -752,8 +752,8 @@ export default class extends React.Component {
                                             "video": {
                                                 "type": "video",
                                                 "urls": [
-                                                    "https://www.mapbox.com/drone/video/drone.mp4",
-                                                    "https://www.mapbox.com/drone/video/drone.webm"
+                                                    "https://static-assets.mapbox.com/mapbox-gl-js/drone.mp4",
+                                                    "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm"
                                                 ],
                                                 "coordinates": [
                                                     [-122.51596391201019, 37.56238816766053],
@@ -1043,7 +1043,8 @@ export default class extends React.Component {
                             </div>
 
                             <h3>Data expressions</h3>
-                            <p>A <em>data expression</em> is any expression that access feature data -- that is, any
+                            <p>
+                                A <em>data expression</em> is any expression that access feature data -- that is, any
                                 expression that uses one of the data operators:
                                 <a href="#expressions-get"><code>get</code></a>,
                                 <a href="#expressions-has"><code>has</code></a>,
@@ -1052,7 +1053,8 @@ export default class extends React.Component {
                                 <a href="#expressions-properties"><code>properties</code></a>, or
                                 <a href="#expressions-feature-state"><code>feature-state</code></a>. Data expressions allow a
                                 feature's properties or state to determine its appearance. They can be used to differentiate
-                                features within the same layer and to create data visualizations.</p>
+                                features within the same layer and to create data visualizations.
+                            </p>
 
                             <div className='col12 space-bottom'>
                                 {highlightJSON(`
@@ -1146,10 +1148,12 @@ export default class extends React.Component {
                                     ]`)}
                             </div>
 
-                            <p>That is, in layout or paint properties, <code>["zoom"]</code> may appear only as the
-                                input to an outer <a href="#expressions-interpolate"><code>interpolate</code></a> or <a
-                                    href="#expressions-step"><code>step</code></a> expression, or such an expression within
-                                a <a href="#expressions-let"><code>let</code></a> expression.</p>
+                            <p>
+                                That is, in layout or paint properties, <code>["zoom"]</code> may appear only as the
+                                input to an outer <a href="#expressions-interpolate"><code>interpolate</code></a> or
+                                <a href="#expressions-step"><code>step</code></a> expression, or such an expression within
+                                a <a href="#expressions-let"><code>let</code></a> expression.
+                            </p>
 
                             <p>There is an important difference between layout and paint properties in
                                 the timing of camera expression evaluation. Paint property camera expressions are
@@ -1195,18 +1199,20 @@ export default class extends React.Component {
                                 href="#types-number">numbers</a>.
                             </p>
 
-                            <p>When working with feature data, the type of a feature property value is typically not known
+                            <p>
+                                When working with feature data, the type of a feature property value is typically not known
                                 ahead of time by the SDK. In order to preserve type safety, when evaluating a data
                                 expression, the SDK will check that the property value is appropriate for the context.
-                                For example, if you use the expression <code>["get", "feature-color"]</code> for the <a
-                                    href="#paint-circle-circle-color"><code>circle-color</code></a> property, the SDK
+                                For example, if you use the expression <code>["get", "feature-color"]</code> for the
+                                <a href="#paint-circle-circle-color"><code>circle-color</code></a> property, the SDK
                                 will verify that the <code>feature-color</code> value of each feature is a string
                                 identifying a valid <a href="#types-color">color</a>. If this check fails, an error will
                                 be indicated in an SDK-specific way (typically a log message), and the default value for
                                 the property will be used instead.
                             </p>
 
-                            <p>In most cases, this verification will occur automatically wherever it is needed. However,
+                            <p>
+                                In most cases, this verification will occur automatically wherever it is needed. However,
                                 in certain situations, the SDK may be unable to automatically determine the expected
                                 result type of a data expression from surrounding context. For example, it is not clear
                                 whether the expression <code>["&lt;", ["get", "a"], ["get", "b"]]</code> is attempting
@@ -1216,21 +1222,22 @@ export default class extends React.Component {
                                 A type assertion checks that the feature data actually matches the expected type of the
                                 data expression. If this check fails, it produces an error and causes the whole
                                 expression to fall back to the default value for the property being defined. The
-                                assertion operators are <a
-                                    href="#expressions-types-array"><code>array</code></a>, <a
-                                    href="#expressions-types-boolean"><code>boolean</code></a>, <a
-                                    href="#expressions-types-number"><code>number</code></a>, and <a
-                                    href="#expressions-types-string"><code>string</code></a>.
+                                assertion operators are
+                                <a href="#expressions-types-array"><code>array</code></a>,
+                                <a href="#expressions-types-boolean"><code>boolean</code></a>,
+                                <a href="#expressions-types-number"><code>number</code></a>, and
+                                <a href="#expressions-types-string"><code>string</code></a>.
                             </p>
 
-                            <p>Expressions perform only one kind of implicit type conversion: a data expression used in
+                            <p>
+                                Expressions perform only one kind of implicit type conversion: a data expression used in
                                 a context where a <a href="#types-color">color</a> is expected will convert a string
                                 representation of a color to a color value. In all other cases, if you want to convert
-                                between types, you must use one of the <em>type conversion</em> expression operators: <a
-                                    href="#expressions-types-to-boolean"><code>to-boolean</code></a>, <a
-                                    href="#expressions-types-to-number"><code>to-number</code></a>, <a
-                                    href="#expressions-types-to-string"><code>to-string</code></a>, or <a
-                                    href="#expressions-types-to-color"><code>to-color</code></a>. For example, if you
+                                between types, you must use one of the <em>type conversion</em> expression operators:
+                                <a href="#expressions-types-to-boolean"><code>to-boolean</code></a>,
+                                <a href="#expressions-types-to-number"><code>to-number</code></a>,
+                                <a href="#expressions-types-to-string"><code>to-string</code></a>, or
+                                <a href="#expressions-types-to-color"><code>to-color</code></a>. For example, if you
                                 have a feature property that stores numeric values in string format, and you want to use
                                 those values as numbers rather than strings, you can use an expression such
                                 as <code>["to-number", ["get", "property-name"]]</code>.
@@ -1338,33 +1345,34 @@ export default class extends React.Component {
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
                                             <div><span className='code'><a id="function-type"
                                                 href="#function-type">type</a></span></div>
-                                            <div><em className='quiet'>Optional <a href='#types-string'>string</a>. One
-                                                of <code>"identity"</code>, <code>"exponential"</code>, <code>"interval"
-                                                </code>, or <code>"categorical"</code>.</em>
+                                            <div>
+                                                <em className='quiet'>Optional <a href='#types-string'>string</a>. One
+                                                of <code>"identity"</code>, <code>"exponential"</code>,
+                                                <code>"interval"</code>, or <code>"categorical"</code>.</em>
                                             </div>
                                             <dl>
                                                 <dt><code>"identity"</code></dt>
                                                 <dd>A function that returns its input as the output.</dd>
                                                 <dt><code>"exponential"</code></dt>
-                                                <dd>A function that generates an output by interpolating between stops just
+                                                <dd>
+                                                    A function that generates an output by interpolating between stops just
                                                     less than and just greater than the
                                                     function input. The domain (input value) must be numeric, and the
                                                     style property must support
                                                     interpolation. Style properties that support interpolation are
-                                                    marked marked with <span
-                                                        className='icon smooth-ramp quiet micro space-right indivne'
-                                                        title='continuous'/>, the
-                                                    "exponential" symbol, and <var>exponential</var> is the default
+                                                    marked marked with
+                                                    <span className='icon smooth-ramp quiet micro space-right indivne' title='continuous'/>,
+                                                    the "exponential" symbol, and <var>exponential</var> is the default
                                                     function type for these properties.
                                                 </dd>
                                                 <dt><code>"interval"</code></dt>
-                                                <dd>A function that returns the output value of the stop just less than the
+                                                <dd>
+                                                    A function that returns the output value of the stop just less than the
                                                     function input. The domain (input
                                                     value) must be numeric. Any style property may use interval
                                                     functions. For properties marked with
-                                                    <span className='icon step-ramp quiet micro space-right indivne'
-                                                        title='discrete'/>, the "interval"
-                                                    symbol, this is the default function type.
+                                                    <span className='icon step-ramp quiet micro space-right indivne' title='discrete'/>,
+                                                    the "interval" symbol, this is the default function type.
                                                 </dd>
                                                 <dt><code>"categorical"</code></dt>
                                                 <dd>A function that returns the output value of the stop equal to the function

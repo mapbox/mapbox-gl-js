@@ -13,8 +13,24 @@
     "import"
   ],
   "rules": {
+    // temporarily disabled due to https://github.com/babel/babel-eslint/issues/485
+    "no-use-before-define": "off",
+
+    // no-duplicate-imports doesn't play well with Flow
+    // https://github.com/babel/eslint-plugin-babel/issues/59
+    "no-duplicate-imports": "off",
+    "import/no-duplicates": "error",
+
+    // temporarily disabled for easier upgrading of dependencies
+    "implicit-arrow-linebreak": "off",
+    "arrow-parens": "off",
+    "arrow-body-style": "off",
+    "no-confusing-arrow": "off",
+    "no-control-regex": "off",
+    "no-invalid-this": "off",
+    "no-buffer-constructor": "off",
+
     "array-bracket-spacing": "off",
-    "block-scoped-var": "error",
     "consistent-return": "off",
     "flowtype/define-flow-type": 1,
     "flowtype/require-valid-file-annotation": [
@@ -34,7 +50,6 @@
         "property": "assign"
     }],
     "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
-    "no-var": "error",
     "no-warning-comments": "error",
     "object-curly-spacing": "off",
     "prefer-arrow-callback": "error",

@@ -3,7 +3,8 @@ import {
     getArrayBuffer,
     getJSON,
     postData,
-    getImage
+    getImage,
+    resetImageRequestQueue
 } from '../../../src/util/ajax';
 import window from '../../../src/util/window';
 import config from '../../../src/util/config';
@@ -126,6 +127,29 @@ test('ajax', (t) => {
         t.equals(window.server.requests.length, maxRequests);
 
         window.server.requests[0].respond();
+    });
+
+    t.test('getImage cancelling frees up request for maxParallelImageRequests', (t) => {
+        resetImageRequestQueue();
+
+        window.server.respondWith(request => request.respond(200, {'Content-Type': 'image/png'}, ''));
+
+        const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
+
+        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
+        const jsdomImage = window.Image;
+        window.Image = class {
+            set src(src) {
+                setTimeout(() => this.onload());
+            }
+        };
+
+        for (let i = 0; i < maxRequests + 1; i++) {
+            getImage({url: ''}, () => t.fail).cancel();
+        }
+        t.equals(window.server.requests.length, maxRequests + 1);
+        window.Image = jsdomImage;
+        t.end();
     });
 
     t.end();

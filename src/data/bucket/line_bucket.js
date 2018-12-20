@@ -137,9 +137,9 @@ class LineBucket implements Bucket {
             const geometry = loadGeometry(feature);
 
             const patternFeature: BucketFeature = {
-                sourceLayerIndex: sourceLayerIndex,
-                index: index,
-                geometry: geometry,
+                sourceLayerIndex,
+                index,
+                geometry,
                 properties: feature.properties,
                 type: feature.type,
                 patterns: {}

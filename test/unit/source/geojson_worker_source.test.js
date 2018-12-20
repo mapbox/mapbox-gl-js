@@ -149,7 +149,7 @@ test('resourceTiming', (t) => {
             measures[name].push({
                 duration: marks[end] - marks[start],
                 entryType: 'measure',
-                name: name,
+                name,
                 startTime: marks[start]
             });
             return null;

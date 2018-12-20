@@ -1,5 +1,6 @@
 // @flow
 
+import type {StyleSpecification} from '../../src/style-spec/types';
 import Benchmark from '../lib/benchmark';
 import fetchStyle from '../lib/fetch_style';
 import TileParser from '../lib/tile_parser';
@@ -12,9 +13,9 @@ export default class WorkerTransfer extends Benchmark {
     payloadTiles: Array<any>;
     payloadJSON: Array<any>;
     worker: Worker;
-    style: string;
+    style: string | StyleSpecification;
 
-    constructor(style: string) {
+    constructor(style: string | StyleSpecification) {
         super();
         this.style = style;
     }
@@ -54,7 +55,7 @@ export default class WorkerTransfer extends Benchmark {
             });
     }
 
-    sendPayload(obj: any) {
+    sendPayload(obj: any): Promise<void> {
         return new Promise((resolve) => {
             this.worker.onmessage = () => resolve();
             this.worker.postMessage(obj);

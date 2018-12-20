@@ -92,6 +92,10 @@ export class OverscaledTileID {
     }
 
     isChildOf(parent: OverscaledTileID) {
+        if (parent.wrap !== this.wrap) {
+            // We can't be a child if we're in a different world copy
+            return false;
+        }
         const zDifference = this.canonical.z - parent.canonical.z;
         // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
         return parent.overscaledZ === 0 || (

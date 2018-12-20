@@ -132,6 +132,7 @@ export class Placement {
         this.placements = {};
         this.opacities = {};
         this.stale = false;
+        this.commitTime = 0;
         this.fadeDuration = fadeDuration;
         this.retainedQueryData = {};
         this.collisionGroups = new CollisionGroups(crossSourceCollisions);
@@ -501,8 +502,7 @@ export class Placement {
     }
 
     stillRecent(now: number) {
-        return this.commitTime !== 'undefined' &&
-            this.commitTime + this.fadeDuration > now;
+        return this.commitTime + this.fadeDuration > now;
     }
 
     setStale() {

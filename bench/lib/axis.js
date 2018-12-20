@@ -41,8 +41,8 @@ class Axis extends React.Component {
         const x = orient === 'left' || orient === 'right' ? 'x' : 'y';
         const transform = orient === 'top' || orient === 'bottom' ? translateX : translateY;
 
-        const values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues;
-        const format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity) : tickFormat;
+        const values = tickValues == null ? (scale.ticks ? scale.ticks(...tickArguments) : scale.domain()) : tickValues;
+        const format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat(...tickArguments) : identity) : tickFormat;
         const spacing = Math.max(tickSizeInner, 0) + tickPadding;
         const range = scale.range();
         const range0 = +range[0] + 0.5;

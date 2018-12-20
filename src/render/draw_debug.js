@@ -194,7 +194,7 @@ function createTextVertices(text, left, baseline, scale) {
                 if (prev) {
                     strokes.push(prev.x, prev.y, x, y);
                 }
-                prev = {x: x, y: y};
+                prev = {x, y};
             }
         }
         left += glyph[0] * scale;

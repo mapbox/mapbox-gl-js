@@ -45,6 +45,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
         } else {
             painter.setCustomLayerDefaults();
 
+            context.setColorMode(painter.colorModeForRenderPass());
             context.setStencilMode(StencilMode.disabled);
 
             const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);

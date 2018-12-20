@@ -1,7 +1,7 @@
 /* eslint-disable */
 'use strict';
 
-function _interopDefault(ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var React = require('react');
 var React__default = _interopDefault(React);
@@ -461,8 +461,8 @@ var PopupMenu = function (_React$Component) {
     key: 'renderName',
     value: function renderName() {
       var _props = this.props,
-        name = _props.name,
-        shortName = _props.shortName;
+          name = _props.name,
+          shortName = _props.shortName;
 
       if (shortName) {
         return React__default.createElement(
@@ -490,8 +490,8 @@ var PopupMenu = function (_React$Component) {
       menuNameClasses += this.props.darkText ? ' shell-navigation-menu-button shell-transition shell-color-gray-dark shell-color-blue-on-hover' : ' shell-navigation-menu-button shell-link shell-link--white';
 
       var _props2 = this.props,
-        name = _props2.name,
-        children = _props2.children;
+          name = _props2.name,
+          children = _props2.children;
 
 
       return React__default.createElement(
@@ -904,6 +904,9 @@ var navigationMenuData = {
       }, {
         name: 'Careers',
         to: '/jobs/'
+      }, {
+        name: 'Diversity & Inclusion',
+        to: '/diversity-inclusion/'
       }]
     }
   },
@@ -985,6 +988,9 @@ var navigationMenuData = {
       name: 'Careers',
       to: '/careers/'
     }, {
+      name: 'Diversity & Inclusion',
+      to: '/diversity-inclusion/'
+    }, {
       name: 'Team',
       to: '/about/team/'
     }, {
@@ -1051,7 +1057,7 @@ var CompanyMenu = function (_React$Component) {
         _extends({}, this.props, { name: 'Company' }),
         React__default.createElement(
           'div',
-          { className: 'shell-w180-mm shell-py30 shell-px30' },
+          { className: 'shell-py30 shell-px30' },
           React__default.createElement(
             'ul',
             null,
@@ -2725,18 +2731,18 @@ var MetaTagger = function (_React$PureComponent) {
         'data-type': 'string',
         content: props.title
       }, {
-          class: 'swiftype',
-          name: 'excerpt',
-          'data-type': 'string',
-          content: props.description
-        }, { name: 'twitter:image:alt', content: props.imageAlt }, { property: 'og:image', content: props.imageUrl }, {
-          class: 'swiftype',
-          name: 'image',
-          'data-type': 'enum',
-          content: props.imageUrl
-        },
-        // https://developers.google.com/web/updates/2014/11/Support-for-theme-color-in-Chrome-39-for-Android
-        { name: 'theme-color', content: '#4264fb' });
+        class: 'swiftype',
+        name: 'excerpt',
+        'data-type': 'string',
+        content: props.description
+      }, { name: 'twitter:image:alt', content: props.imageAlt }, { property: 'og:image', content: props.imageUrl }, {
+        class: 'swiftype',
+        name: 'image',
+        'data-type': 'enum',
+        content: props.imageUrl
+      },
+      // https://developers.google.com/web/updates/2014/11/Support-for-theme-color-in-Chrome-39-for-Android
+      { name: 'theme-color', content: '#4264fb' });
 
       if (props.largeImage) {
         metaItems.push({ name: 'twitter:card', content: 'summary_large_image' }, { name: 'twitter:image', content: props.imageUrl });

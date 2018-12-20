@@ -101,7 +101,7 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
     map.on('data', (e) => {
         if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
             if (++times === 7) {
-                t.equal(attribution._container.innerHTML, 'Hello World<p> | </p>Another Source<p> | </p>GeoJSON Source');
+                t.equal(attribution._innerContainer.innerHTML, 'Hello World | Another Source | GeoJSON Source');
                 t.end();
             }
         }
@@ -138,7 +138,7 @@ test('AttributionControl is hidden if empty', (t) => {
     const container = map.getContainer();
 
     const checkEmptyFirst = () => {
-        t.equal(attribution._container.innerHTML, '');
+        t.equal(attribution._innerContainer.innerHTML, '');
         t.equal(container.querySelectorAll('.mapboxgl-attrib-empty').length, 1, 'includes empty class when no attribution strings are provided');
 
         map.addSource('2', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Hello World'});
@@ -146,7 +146,7 @@ test('AttributionControl is hidden if empty', (t) => {
     };
 
     const checkNotEmptyLater = () => {
-        t.equal(attribution._container.innerHTML, 'Hello World');
+        t.equal(attribution._innerContainer.innerHTML, 'Hello World');
         t.equal(container.querySelectorAll('.mapboxgl-attrib-empty').length, 0, 'removes empty class when source with attribution is added');
         t.end();
     };
@@ -171,7 +171,7 @@ test('AttributionControl shows custom attribution if customAttribution option is
     });
     map.addControl(attributionControl);
 
-    t.equal(attributionControl._container.innerHTML, '<p>Custom string</p>');
+    t.equal(attributionControl._innerContainer.innerHTML, 'Custom string');
     t.end();
 });
 
@@ -183,7 +183,7 @@ test('AttributionControl in compact mode shows custom attribution if customAttri
     });
     map.addControl(attributionControl);
 
-    t.equal(attributionControl._container.innerHTML, '<p>Custom string</p>');
+    t.equal(attributionControl._innerContainer.innerHTML, 'Custom string');
     t.end();
 });
 
@@ -196,8 +196,8 @@ test('AttributionControl shows all custom attributions if customAttribution arra
     map.addControl(attributionControl);
 
     t.equal(
-        attributionControl._container.innerHTML,
-        '<p>Custom string</p><p> | </p><p>Another custom string</p><p> | </p><p>Some very long custom string</p>'
+        attributionControl._innerContainer.innerHTML,
+        'Custom string | Another custom string | Some very long custom string'
     );
     t.end();
 });
@@ -219,7 +219,7 @@ test('AttributionControl hides attributions for sources that are not currently v
     map.on('data', (e) => {
         if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
             if (++times === 3) {
-                t.equal(attribution._container.innerHTML, 'Used');
+                t.equal(attribution._innerContainer.innerHTML, 'Used');
                 t.end();
             }
         }

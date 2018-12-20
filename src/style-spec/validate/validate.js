@@ -21,7 +21,7 @@ import validateString from './validate_string';
 import validateFormatted from './validate_formatted';
 
 const VALIDATORS = {
-    '*': function() {
+    '*'() {
         return [];
     },
     'array': validateArray,

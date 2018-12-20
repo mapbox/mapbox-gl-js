@@ -52,7 +52,7 @@ var highlightLayer = {
         ]), gl.STATIC_DRAW);
     },
 
-    render: function(gl, matrix) {
+    render: function (gl, matrix) {
         gl.useProgram(this.program);
         gl.uniformMatrix4fv(gl.getUniformLocation(this.program, "u_matrix"), false, matrix);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);

@@ -200,7 +200,7 @@ class FeatureIndex {
             if (layerResult === undefined) {
                 layerResult = result[layerID] = [];
             }
-            layerResult.push({ featureIndex: featureIndex, feature: geojsonFeature });
+            layerResult.push({ featureIndex, feature: geojsonFeature });
         }
     }
 

@@ -2,13 +2,12 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 1024,
-      "height": 512,
+      "width": 600,
+      "height": 480,
       "center": [0, 0],
       "zoom": 0,
-      "diff": 0.00075,
       "operations": [
-        ["setStyle", "local://mapbox-gl-styles/styles/bright-v9.json"],
+        ["setStyle", "local://mapbox-gl-styles/styles/basic-v9.json"],
         ["wait"]
       ]
     }

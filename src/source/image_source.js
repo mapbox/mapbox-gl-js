@@ -3,7 +3,6 @@
 import { CanonicalTileID } from './tile_id';
 import { Event, ErrorEvent, Evented } from '../util/evented';
 import { getImage, ResourceType } from '../util/ajax';
-import browser from '../util/browser';
 import EXTENT from '../data/extent';
 import { RasterBoundsArray } from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
@@ -50,7 +49,7 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
  *     [-76.5295386314392, 39.17683392507606],
  *     [-76.54520273208618, 39.17876344106642]
  * ]);
- * 
+ *
  * // update url and coordinates simultaneously
  * mySource.updateImage({
  *    url: 'https://www.mapbox.com/images/bar.png',
@@ -61,7 +60,7 @@ type Coordinates = [[number, number], [number, number], [number, number], [numbe
  *        [-76.54520273208618, 39.17876344106642]
  *    ]
  * })
- * 
+ *
  * map.removeSource('some id');  // remove
  * @see [Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  */
@@ -79,7 +78,7 @@ class ImageSource extends Evented implements Source {
     dispatcher: Dispatcher;
     map: Map;
     texture: Texture | null;
-    image: ImageData;
+    image: HTMLImageElement;
     tileID: CanonicalTileID;
     _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
@@ -114,7 +113,7 @@ class ImageSource extends Evented implements Source {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
-                this.image = browser.getImageData(image);
+                this.image = image;
                 if (newCoordinates) {
                     this.coordinates = newCoordinates;
                 }

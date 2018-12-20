@@ -52,10 +52,10 @@ class SegmentVector {
 
     static simpleSegment(vertexOffset: number, primitiveOffset: number, vertexLength: number, primitiveLength: number): SegmentVector {
         return new SegmentVector([{
-            vertexOffset: vertexOffset,
-            primitiveOffset: primitiveOffset,
-            vertexLength: vertexLength,
-            primitiveLength: primitiveLength,
+            vertexOffset,
+            primitiveOffset,
+            vertexLength,
+            primitiveLength,
             vaos: {}
         }]);
     }

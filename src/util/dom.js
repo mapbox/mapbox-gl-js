@@ -61,7 +61,7 @@ let passiveSupported = false;
 
 try {
     const options = (Object.defineProperty: any)({}, "passive", {
-        get: function() {
+        get() {
             passiveSupported = true;
         }
     });
@@ -110,7 +110,7 @@ DOM.mousePos = function (el: HTMLElement, e: any) {
 };
 
 DOM.touchPos = function (el: HTMLElement, e: any) {
-    const rect = points = [];
+    const points = [];
     const touches = (e.type === 'touchend') ? e.changedTouches : e.touches;
     for (let i = 0; i < touches.length; i++) {
         points.push(new Point(

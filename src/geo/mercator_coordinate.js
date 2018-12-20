@@ -89,12 +89,12 @@ class MercatorCoordinate {
     }
 
     /**
-     * Returns the `LatLng` for the coordinate.
+     * Returns the `LngLat` for the coordinate.
      *
      * @returns {LngLat} The `LngLat` object.
      * @example
      * var coord = new mapboxgl.MercatorCoordinate(0.5, 0.5, 0);
-     * var latLng = coord.toLatLng(); // LngLat(0, 0)
+     * var latLng = coord.toLngLat(); // LngLat(0, 0)
      */
     toLngLat() {
         return new LngLat(

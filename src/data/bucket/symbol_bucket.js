@@ -462,7 +462,7 @@ class SymbolBucket implements Bucket {
             }
         }
         return {
-            lineStartIndex: lineStartIndex,
+            lineStartIndex,
             lineLength: this.lineVertexArray.length - lineStartIndex
         };
     }

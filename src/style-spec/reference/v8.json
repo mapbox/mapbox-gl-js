@@ -973,7 +973,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.49.0",
-          "ios": "4.5.0"
+          "android": "6.6.0",
+          "ios": "4.5.0",
+          "macos": "0.12.0"
         },
         "data-driven styling": {}
       },
@@ -2566,7 +2568,10 @@
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.48.0"
+            "js": "0.48.0",
+            "android": "6.7.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
           }
         }
       },
@@ -2761,7 +2766,15 @@
       },
       "line-progress": {
         "doc": "Gets the progress along a gradient line. Can only be used in the `line-gradient` property.",
-        "group": "Heatmap"
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0",
+            "android": "6.5.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
+          }
+        }
       },
       "+": {
         "doc": "Returns the sum of the inputs.",

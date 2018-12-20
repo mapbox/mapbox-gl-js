@@ -89,6 +89,9 @@ export type StyleOptions = {
     localIdeographFontFamily?: string
 };
 
+export type StyleSetterOptions = {
+    validate?: boolean
+};
 /**
  * @private
  */
@@ -200,9 +203,7 @@ class Style extends Evented {
         });
     }
 
-    loadJSON(json: StyleSpecification, options: {
-        validate?: boolean
-    } = {}) {
+    loadJSON(json: StyleSpecification, options: StyleSetterOptions = {}) {
         this.fire(new Event('dataloading', {dataType: 'style'}));
 
         this._request = browser.frame(() => {
@@ -397,7 +398,7 @@ class Style extends Evented {
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
         this.dispatcher.broadcast('updateLayers', {
             layers: this._serializeLayers(updatedIds),
-            removedIds: removedIds
+            removedIds
         });
     }
 
@@ -481,7 +482,7 @@ class Style extends Evented {
         return this.imageManager.listImages();
     }
 
-    addSource(id: string, source: SourceSpecification, options?: {validate?: boolean}) {
+    addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         if (this.sourceCaches[id] !== undefined) {
@@ -567,7 +568,7 @@ class Style extends Evented {
      * ID `before`, or appended if `before` is omitted.
      * @param {string} [before] ID of an existing layer to insert before
      */
-    addLayer(layerObject: LayerSpecification | CustomLayerInterface, before?: string, options?: {validate?: boolean}) {
+    addLayer(layerObject: LayerSpecification | CustomLayerInterface, before?: string, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const id = layerObject.id;
@@ -598,7 +599,7 @@ class Style extends Evented {
             layer = createStyleLayer(layerObject);
             this._validateLayer(layer);
 
-            layer.setEventedParent(this, {layer: {id: id}});
+            layer.setEventedParent(this, {layer: {id}});
         }
 
         const index = before ? this._order.indexOf(before) : this._order.length;
@@ -733,7 +734,7 @@ class Style extends Evented {
         this._updateLayer(layer);
     }
 
-    setFilter(layerId: string, filter: ?FilterSpecification) {
+    setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -752,7 +753,7 @@ class Style extends Evented {
             return;
         }
 
-        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) {
+        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter, null, options)) {
             return;
         }
 
@@ -769,7 +770,7 @@ class Style extends Evented {
         return clone(this.getLayer(layer).filter);
     }
 
-    setLayoutProperty(layerId: string, name: string, value: any) {
+    setLayoutProperty(layerId: string, name: string, value: any,  options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -780,21 +781,27 @@ class Style extends Evented {
 
         if (deepEqual(layer.getLayoutProperty(name), value)) return;
 
-        layer.setLayoutProperty(name, value);
+        layer.setLayoutProperty(name, value, options);
         this._updateLayer(layer);
     }
 
     /**
      * Get a layout property's value from a given layer
-     * @param {string} layer the layer to inspect
+     * @param {string} layerId the layer to inspect
      * @param {string} name the name of the layout property
      * @returns {*} the property value
      */
-    getLayoutProperty(layer: string, name: string) {
-        return this.getLayer(layer).getLayoutProperty(name);
+    getLayoutProperty(layerId: string, name: string) {
+        const layer = this.getLayer(layerId);
+        if (!layer) {
+            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style.`)));
+            return;
+        }
+
+        return layer.getLayoutProperty(name);
     }
 
-    setPaintProperty(layerId: string, name: string, value: any) {
+    setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -805,7 +812,7 @@ class Style extends Evented {
 
         if (deepEqual(layer.getPaintProperty(name), value)) return;
 
-        const requiresRelayout = layer.setPaintProperty(name, value);
+        const requiresRelayout = layer.setPaintProperty(name, value, options);
         if (requiresRelayout) {
             this._updateLayer(layer);
         }
@@ -986,7 +993,7 @@ class Style extends Evented {
         }
 
         this.dispatcher.broadcast('loadWorkerSource', {
-            name: name,
+            name,
             url: SourceType.workerSourceURL
         }, callback);
     }
@@ -995,7 +1002,7 @@ class Style extends Evented {
         return this.light.getLight();
     }
 
-    setLight(lightOptions: LightSpecification) {
+    setLight(lightOptions: LightSpecification, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const light = this.light.getLight();
@@ -1016,19 +1023,19 @@ class Style extends Evented {
             }, this.stylesheet.transition)
         };
 
-        this.light.setLight(lightOptions);
+        this.light.setLight(lightOptions, options);
         this.light.updateTransitions(parameters);
     }
 
-    _validate(validate: ({}) => void, key: string, value: any, props: any, options?: {validate?: boolean}) {
+    _validate(validate: ({}) => void, key: string, value: any, props: any, options: StyleSetterOptions = {}) {
         if (options && options.validate === false) {
             return false;
         }
         return emitValidationErrors(this, validate.call(validateStyle, extend({
-            key: key,
+            key,
             style: this.serialize(),
-            value: value,
-            styleSpec: styleSpec
+            value,
+            styleSpec
         }, props)));
     }
 
@@ -1095,7 +1102,9 @@ class Style extends Evented {
         // to start over. When we start over, we do a full placement instead of incremental
         // to prevent starvation.
         // We need to restart placement to keep layer indices in sync.
-        const forceFullPlacement = this._layerOrderChanged;
+        // Also force full placement when fadeDuration === 0 to ensure that newly loaded
+        // tiles will fully display symbols in their first frame
+        const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0;
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
             this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions);
