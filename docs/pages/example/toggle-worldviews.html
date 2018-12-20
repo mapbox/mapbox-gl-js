@@ -65,7 +65,8 @@ map.on('load', function() {
         var worldviewButton = document.createElement('button');
         worldviewButton.innerHTML = worldview.toString();
         worldviewButton.addEventListener('click', function() {
-            var adminLayers = ['admin-0-boundary', 'admin-1-boundary', 'admin-0-boundary-disputed', 'admin-1-boundary-bg', 'admin-0-boundary-bg'];
+            var adminLayers = ['admin-0-boundary', 'admin-1-boundary', 'admin-0-boundary-disputed',
+             'admin-1-boundary-bg', 'admin-0-boundary-bg'];
             adminLayers.forEach(function(adminLayer) {
                 map.setFilter(adminLayer, ["match", ["get", "worldview"], ["all", worldview], true, false]);
             });
