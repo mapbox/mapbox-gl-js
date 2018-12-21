@@ -17,7 +17,7 @@ export function mercatorXfromLng(lng: number) {
 }
 
 export function mercatorYfromLat(lat: number) {
-    return clamp((90 - lat) / 360, -90, 90);
+    return (90 - lat) / 360;
 }
 
 export function mercatorZfromAltitude(altitude: number, lat: number) {
@@ -29,7 +29,7 @@ export function lngFromMercatorX(x: number) {
 }
 
 export function latFromMercatorY(y: number) {
-    return 90 - y * 360;
+    return clamp(90 - y * 360, -90, 90);
 }
 
 export function altitudeFromMercatorZ(z: number, y: number) {
