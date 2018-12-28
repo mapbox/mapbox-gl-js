@@ -58,7 +58,7 @@ test('hash', (t) => {
         t.equal(map.getBearing(), 0);
         t.equal(map.getPitch(), 0);
 
-        window.location.hash = '#5/1.00/0.50/30/60';
+        window.location.hash = '#map=5/1.00/0.50/30/60';
 
         hash._onHashChange();
 
