@@ -165,7 +165,7 @@
     },
     "minzoom": {
       "type": "number",
-      "default": 0,
+      "default": 1,
       "doc": "Minimum zoom level for which tiles are available, as in the TileJSON spec."
     },
     "maxzoom": {
@@ -216,7 +216,7 @@
     },
     "minzoom": {
       "type": "number",
-      "default": 0,
+      "default": 1,
       "doc": "Minimum zoom level for which tiles are available, as in the TileJSON spec."
     },
     "maxzoom": {
@@ -286,7 +286,7 @@
     },
     "minzoom": {
       "type": "number",
-      "default": 0,
+      "default": 1,
       "doc": "Minimum zoom level for which tiles are available, as in the TileJSON spec."
     },
     "maxzoom": {
@@ -569,13 +569,13 @@
     },
     "minzoom": {
       "type": "number",
-      "minimum": 0,
+      "minimum": 1,
       "maximum": 24,
       "doc": "The minimum zoom level for the layer. At zoom levels less than the minzoom, the layer will be hidden."
     },
     "maxzoom": {
       "type": "number",
-      "minimum": 0,
+      "minimum": 1,
       "maximum": 24,
       "doc": "The maximum zoom level for the layer. At zoom levels equal to or greater than the maxzoom, the layer will be hidden."
     },
@@ -2298,7 +2298,7 @@
   },
   "function_stop": {
     "type": "array",
-    "minimum": 0,
+    "minimum": 1,
     "maximum": 22,
     "value": [
       "number",

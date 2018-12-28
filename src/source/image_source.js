@@ -94,7 +94,7 @@ class ImageSource extends Evented implements Source {
         this.coordinates = options.coordinates;
 
         this.type = 'image';
-        this.minzoom = 0;
+        this.minzoom = 1;
         this.maxzoom = 22;
         this.tileSize = 512;
         this.tiles = {};

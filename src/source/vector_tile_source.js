@@ -44,7 +44,7 @@ class VectorTileSource extends Evented implements Source {
         this.dispatcher = dispatcher;
 
         this.type = 'vector';
-        this.minzoom = 0;
+        this.minzoom = 1;
         this.maxzoom = 22;
         this.scheme = 'xyz';
         this.tileSize = 512;

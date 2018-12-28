@@ -12,7 +12,7 @@ class TileBounds {
 
     constructor(bounds: [number, number, number, number], minzoom: ?number, maxzoom: ?number) {
         this.bounds = LngLatBounds.convert(this.validateBounds(bounds));
-        this.minzoom = minzoom || 0;
+        this.minzoom = minzoom || 1;
         this.maxzoom = maxzoom || 24;
     }
 
