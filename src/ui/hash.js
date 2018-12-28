@@ -78,7 +78,7 @@ class Hash {
     }
 
     _onHashChange() {
-        const loc = window.location.hash.replace('#map=','').replace('#', '').split('/');
+        const loc = window.location.hash.replace('#map=', '').replace('#', '').split('/');
         if (loc.length >= 3) {
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
