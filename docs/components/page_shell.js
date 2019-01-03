@@ -1,6 +1,6 @@
 import React from 'react';
 import Helmet from 'react-helmet';
-import ReactPageShell from '../../vendor/dotcom-page-shell/react-page-shell.js';
+import ReactPageShell from '../../vendor/docs-page-shell/react-page-shell.js';
 
 // initialize analytics
 if (typeof window !== 'undefined' && window.initializeMapboxAnalytics) {
