@@ -218,16 +218,13 @@ export class MapWheelEvent extends Event {
 /**
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent
- * @property {LngLatBounds} boxZoomBounds The bounding box of the "box zoom" interaction.
- *   This property is only provided for `boxzoomend` events.
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart'
         | 'boxzoomend'
         | 'boxzoomcancel',
     map: Map,
-    originalEvent: MouseEvent,
-    boxZoomBounds: LngLatBounds
+    originalEvent: MouseEvent
 };
 
 /**
