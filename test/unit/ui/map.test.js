@@ -1575,7 +1575,7 @@ test('Map', (t) => {
                 t.end();
             });
         });
-        t.test('remove whole source state before removing specific feature state', (t) => {
+        t.test('specific state deletion should not interfere with broader state deletion', (t) => {
             const map = createMap(t, {
                 style: {
                     "version": 8,
@@ -1589,12 +1589,24 @@ test('Map', (t) => {
                 map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
                 map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
 
-                map.removeFeatureState({ source: 'geojson'});
+
                 map.removeFeatureState({ source: 'geojson', id: 1});
+                map.removeFeatureState({ source: 'geojson', id: 1}, 'foo');
 
-                const fState = map.getFeatureState({ source: 'geojson', id: 2});
-                t.equal(fState.hover, undefined);
+                const fState1 = map.getFeatureState({ source: 'geojson', id: 1});
+                t.equal(fState1.hover, undefined);
 
+                map.removeFeatureState({ source: 'geojson'});
+                map.removeFeatureState({ source: 'geojson', id: 1}, 'foo');
+
+                const fState2 = map.getFeatureState({ source: 'geojson', id: 2});
+                t.equal(fState2.hover, undefined);
+
+                map.removeFeatureState({ source: 'geojson'});
+                map.removeFeatureState({ source: 'geojson', id: 2}, 'foo');
+
+                const fState3 = map.getFeatureState({ source: 'geojson', id: 2});
+                t.equal(fState3.hover, undefined);
 
                 t.end();
             });

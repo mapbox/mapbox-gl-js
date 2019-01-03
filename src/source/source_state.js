@@ -29,18 +29,28 @@ class SourceFeatureState {
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
         extend(this.stateChanges[sourceLayer][feature], newState);
 
-        for (const key in newState) {
-            const deletionInQueue = this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature] && this.deletedStates[sourceLayer][feature][key] === null;
-            if (deletionInQueue) {
-                delete this.deletedStates[sourceLayer][feature][key];
+        const deletingWholeSource = this.deletedStates && this.deletedStates[sourceLayer] === null;
+
+        if (deletingWholeSource) delete this.deletedStates[sourceLayer];
+        else {
+            for (const key in newState) {
+                const deletionInQueue = this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature] && this.deletedStates[sourceLayer][feature][key] === null;
+                if (deletionInQueue) delete this.deletedStates[sourceLayer][feature][key];
             }
         }
+
     }
 
     removeFeatureState(sourceLayer: string, featureId?: number, key?: string) {
-        const feature = String(featureId);
+
         this.deletedStates = this.deletedStates || {};
-        this.deletedStates[sourceLayer] = this.deletedStates[sourceLayer] || {};
+        const sourceStateDeleted = this.deletedStates[sourceLayer] === null;
+
+        if (sourceStateDeleted) return;
+
+        const feature = String(featureId);
+
+        if (this.deletedStates[sourceLayer] === undefined) this.deletedStates[sourceLayer] = {};
 
         if (key && featureId) {
             this.deletedStates[sourceLayer][feature] = this.deletedStates[sourceLayer][feature] || {};
@@ -51,36 +61,12 @@ class SourceFeatureState {
 
             if (updateInQueue) {
                 this.deletedStates[sourceLayer][feature] = {};
+                for (key in this.stateChanges[sourceLayer][feature]) this.deletedStates[sourceLayer][feature][key] = null;
 
-                for (key in this.stateChanges[sourceLayer][feature]) {
-                    this.deletedStates[sourceLayer][feature][key] = null;
-                }
             } else this.deletedStates[sourceLayer][feature] = null;
 
-        } else {
-            this.deletedStates[sourceLayer] = {};
+        } else this.deletedStates[sourceLayer] = null;
 
-            const featureStateExists = this.state[sourceLayer];
-            const updateInQueue = this.stateChanges[sourceLayer];
-
-            if (featureStateExists) {
-                for (const feature in featureStateExists) {
-                    this.deletedStates[sourceLayer][feature] = {};
-                    for (key in this.state[sourceLayer][feature]) {
-                        this.deletedStates[sourceLayer][feature][key] = null;
-                    }
-                }
-            }
-
-            if (updateInQueue) {
-                for (const feature in updateInQueue) {
-                    this.deletedStates[sourceLayer][feature] = {};
-                    for (key in this.stateChanges[sourceLayer][feature]) {
-                        this.deletedStates[sourceLayer][feature][key] = null;
-                    }
-                }
-            }
-        }
     }
 
     getState(sourceLayer: string, featureId: number) {
@@ -90,10 +76,15 @@ class SourceFeatureState {
 
         const reconciledState = extend({}, base[feature], changes[feature]);
 
-        const propsToDelete = this.deletedStates && this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][featureId];
-
-        if (propsToDelete) {
-            for (const prop in this.deletedStates[sourceLayer][featureId]) delete reconciledState[prop];
+        if (this.deletedStates) {
+            const deletingWholeSource = this.deletedStates[sourceLayer] === null;
+            if (deletingWholeSource) for (const prop in reconciledState) delete reconciledState[prop];
+            else {
+                const propsToDelete = this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][featureId];
+                if (propsToDelete) {
+                    for (const prop in this.deletedStates[sourceLayer][featureId]) delete reconciledState[prop];
+                }
+            }
         }
 
         return reconciledState;
@@ -112,7 +103,7 @@ class SourceFeatureState {
             this.state[sourceLayer]  = this.state[sourceLayer] || {};
             const layerStates = {};
             for (const feature in this.stateChanges[sourceLayer]) {
-                if (!this.state[sourceLayer][feature]) {this.state[sourceLayer][feature] = {}};
+                if (!this.state[sourceLayer][feature]) this.state[sourceLayer][feature] = {};
                 extend(this.state[sourceLayer][feature], this.stateChanges[sourceLayer][feature]);
                 layerStates[feature] = this.state[sourceLayer][feature];
             }
@@ -123,14 +114,16 @@ class SourceFeatureState {
         if (this.deletedStates && Object.keys(this.deletedStates).length > 0) {
 
             for (const sourceLayer in this.deletedStates) {
+
+
                 this.state[sourceLayer]  = this.state[sourceLayer] || {};
                 const layerStates = {};
+
                 for (const feature in this.deletedStates[sourceLayer]) {
 
                     const deleteWholeFeatureState = this.deletedStates[sourceLayer][feature] === null;
-                    if (deleteWholeFeatureState) {
-                        delete this.state[sourceLayer][feature];
-                    } else {
+                    if (deleteWholeFeatureState) delete this.state[sourceLayer][feature];
+                    else {
                         for (const key of Object.keys(this.deletedStates[sourceLayer][feature])) {
                             delete this.state[sourceLayer][feature][key];
                         }
