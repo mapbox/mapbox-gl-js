@@ -348,16 +348,16 @@ var UserMenu = function (_React$Component) {
               },
               React__default.createElement(
                 'div',
-                { className: 'shell-mt-neg12', 'data-generic-user-menu': true },
-                React__default.createElement(
-                  'a',
-                  { href: '/studio/', className: shellStyles.userNavLink },
-                  'Studio'
-                ),
+                { className: 'shell-mt-neg12' },
                 React__default.createElement(
                   'a',
                   { href: '/account/', className: shellStyles.userNavLink },
                   'Account'
+                ),
+                React__default.createElement(
+                  'a',
+                  { href: '/studio/', className: shellStyles.userNavLink },
+                  'Studio'
                 ),
                 React__default.createElement(
                   'a',
@@ -371,37 +371,8 @@ var UserMenu = function (_React$Component) {
                 ),
                 React__default.createElement(
                   'a',
-                  { href: '/account/settings', className: shellStyles.userNavLink },
-                  'Settings'
-                ),
-                React__default.createElement(
-                  'a',
-                  { href: '/help/', className: shellStyles.userNavLink },
-                  'Help'
-                )
-              ),
-              React__default.createElement(
-                'div',
-                { className: 'shell-mt-neg12', 'data-app-specific-user-menu': true },
-                React__default.createElement(
-                  'a',
-                  {
-                    'data-user-staff-specific': true,
-                    href: '/admin/',
-                    className: 'shell-color-gray-dark shell-color-blue-on-hover shell-txt-s shell-txt-bold shell-my12',
-                    style: { display: 'none' }
-                  },
-                  'Admin'
-                ),
-                React__default.createElement(
-                  'a',
-                  { href: '/account/settings/', className: shellStyles.userNavLink },
-                  'Settings'
-                ),
-                React__default.createElement(
-                  'a',
-                  { href: '/help/', className: shellStyles.userNavLink },
-                  'Help'
+                  { href: '/documentation/', className: shellStyles.userNavLink },
+                  'Documentation'
                 )
               ),
               React__default.createElement(
