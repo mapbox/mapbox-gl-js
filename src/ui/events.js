@@ -8,7 +8,6 @@ import { extend } from '../util/util';
 
 import type Map from './map';
 import type LngLat from '../geo/lng_lat';
-import type LngLatBounds from '../geo/lng_lat_bounds';
 
 /**
  * `MapMouseEvent` is the event type for mouse-related map events.
