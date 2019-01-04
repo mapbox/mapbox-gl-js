@@ -60,9 +60,9 @@ map.on('load', function() {
 
             }
         } else if (hoveredFeature) {
-            s = map.getFeatureState(hoveredFeature);
+            const s = map.getFeatureState(hoveredFeature);
             map.removeFeatureState(hoveredFeature);
-            map.setFeatureState(hoveredFeature, {visits:s.visits+1})
+            map.setFeatureState(hoveredFeature, {visits:s.visits + 1});
             hoveredFeature = null;
         }
     });
