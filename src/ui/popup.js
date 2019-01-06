@@ -84,7 +84,7 @@ export default class Popup extends Evented {
     constructor(options: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
-        bindAll(['_update', '_onClickClose'], this);
+        bindAll(['_update', '_onClickClose', 'remove'], this);
     }
 
     /**
@@ -99,6 +99,7 @@ export default class Popup extends Evented {
         if (this.options.closeOnClick) {
             this._map.on('click', this._onClickClose);
         }
+        this._map.on('remove', this.remove);
         this._update();
 
         /**
@@ -143,6 +144,7 @@ export default class Popup extends Evented {
         if (this._map) {
             this._map.off('move', this._update);
             this._map.off('click', this._onClickClose);
+            this._map.off('remove', this.remove);
             delete this._map;
         }
 
