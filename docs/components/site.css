@@ -30,3 +30,7 @@ a.dark-link:hover {
 
 div.toggle-sibling:hover { opacity: 0.7; }
 .line-height15 {line-height: 15px}
+
+.docnav nav {
+  bottom: 90px !important;
+}
