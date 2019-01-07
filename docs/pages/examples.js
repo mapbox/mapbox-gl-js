@@ -37,7 +37,7 @@ class ExamplesLandingPage extends React.PureComponent {
               description=''
               path={example.path}
               thumbnail={
-                <div className="h120 w-full" style={{ backgroundImage: `url(/mapbox-gl-js/img/${filename}.png)`, backgroundSize: "cover" }} />
+                <div className="h120 w-full" style={{ backgroundImage: `url(/mapbox-gl-js/img/${filename}.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
               }
             />
           );
@@ -53,18 +53,18 @@ class ExamplesLandingPage extends React.PureComponent {
     });
 
     const gettingStartedSection = (
-      <div className="mb-neg60">
+      <div className="">
         <div className="txt-xl mb24" id='getting-started'>
           Getting started
         </div>
         <a
-          className="color-gray-dark transition shadow-darken10-on-hover round clip inline-block w-full px12 py12 unprose"
+          className="color-gray-dark transition clip inline-block w-full unprose"
           href='/mapbox-gl-js/example/simple-map/'
         >
-          <div className="relative h240 mb12" style={{ backgroundImage: `url(/mapbox-gl-js/img/simple-map.png)`, backgroundSize: "cover" }} />
-          <div className="px6 pb6">
+          <div className="relative h240 mb12" style={{ backgroundImage: `url(/mapbox-gl-js/img/simple-map.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
+          <div className="">
             <div className="mb6 txt-m">Display a map</div>
-            <div className="txt-s opacity75">Initialize a map in an HTML element with Mapbox GL JS.</div>
+            <div className="txt-s color-gray">Initialize a map in an HTML element with Mapbox GL JS.</div>
           </div>
         </a>
       </div>
