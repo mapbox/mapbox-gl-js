@@ -156,8 +156,7 @@ export default class extends React.Component {
                             Including it with a {'<link>'} in the head of the document via the Mapbox CDN is
                             the simplest and easiest way to provide the CSS,
                             but it is also bundled in the Mapbox module, meaning that if you have a bundler
-                            that can handle CSS, you can import the CSS from
-                            <pre><code>{`mapbox-gl/dist/mapbox-gl.css`}</code></pre>.
+                            that can handle CSS, you can import the CSS from <code>{`mapbox-gl/dist/mapbox-gl.css`}</code>.
                         </p>
                         <p>
                             Note too that if the CSS isn't available by the first render, as soon as the CSS is provided,
