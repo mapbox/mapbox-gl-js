@@ -1,13 +1,11 @@
 import React from 'react';
 import { withLocation } from '@mapbox/batfish/modules/with-location';
 import Helmet from 'react-helmet';
-import ReactPageShell from '../../vendor/dotcom-page-shell/react-page-shell.js';
+import ReactPageShell from '../../vendor/docs-page-shell/react-page-shell.js';
 // dr-ui components
 import TopbarSticker from '@mapbox/dr-ui/topbar-sticker';
 import BackToTopButton from '@mapbox/dr-ui/back-to-top-button';
 import ProductMenu from '@mapbox/dr-ui/product-menu/product-menu';
-import ProductMenuDropdown from '@mapbox/dr-ui/product-menu-dropdown';
-import { ProductMenuItems } from '@mapbox/dr-ui/data/product-menu-items';
 import PageLayout from '@mapbox/dr-ui/page-layout';
 import SectionedNavigation from '@mapbox/dr-ui/sectioned-navigation';
 import NavigationAccordion from '@mapbox/dr-ui/navigation-accordion';
@@ -54,7 +52,7 @@ class PageShell extends React.Component {
                 return {
                     title: subNavItem.title,
                     path: subNavItem.path
-                } 
+                }
             });
         })[0];
         const sidebarContent = (
@@ -79,7 +77,7 @@ class PageShell extends React.Component {
     }
 
     getExampleSections(data) {
-        return ( 
+        return (
             Object.keys(data).map(topic => {
                 const subNavItems = examples
                   .filter(item => { return item.tags[0] === topic; })
@@ -139,7 +137,7 @@ class PageShell extends React.Component {
             sidebarContent: <ApiNavigation />,
             sidebarStackedOnNarrowScreens: false
         }
-    }  
+    }
 
     styleSpecNavProps() {
         slugger.reset();
@@ -168,7 +166,7 @@ class PageShell extends React.Component {
                 <SectionedNavigation sections={sections} includeCount={false} />
             </div>
         );
-        
+
         return {
             contentType: "Specification",
             sidebarContent: sidebarContent,
@@ -208,10 +206,10 @@ class PageShell extends React.Component {
 
     render() {
         const { frontMatter, location, children } = this.props;
-        
+
         let activeTab = location.pathname.split('/')[2];
         if (activeTab === 'example') activeTab = 'examples';
-        
+
         const sidebarProps = this.getSidebarProps(activeTab);
         const topbarContent = this.getTopbarContent(activeTab);
 
@@ -223,9 +221,7 @@ class PageShell extends React.Component {
                         <div className="grid grid--gut36 mr-neg36 mr0-mm">
                               <div className="col col--4-mm col--12">
                                 <div className="ml24 pt12">
-                                      <ProductMenu productName={topbarContent.productName}>
-                                            <ProductMenuDropdown categories={ProductMenuItems} />
-                                      </ProductMenu>
+                                      <ProductMenu productName={topbarContent.productName} homePage='/mapbox-gl-js/'/>
                                 </div>
                             </div>
                             <div className="col col--8-mm col--12">

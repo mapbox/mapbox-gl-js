@@ -15,7 +15,7 @@ module.exports = () => {
             require.resolve('@mapbox/dr-ui/css/docs-prose.css'),
             `${__dirname}/docs/components/site.css`,
             `${__dirname}/docs/components/prism_highlight.css`,
-            `${__dirname}/vendor/dotcom-page-shell/page-shell-styles.css`
+            `${__dirname}/vendor/docs-page-shell/page-shell-styles.css`
         ],
         applicationWrapperPath: `${__dirname}/docs/components/application-wrapper.js`,
         webpackLoaders: [
@@ -35,7 +35,7 @@ module.exports = () => {
         ],
         inlineJs: [
             {
-                filename: `${__dirname}/vendor/dotcom-page-shell/page-shell-script.js`
+                filename: `${__dirname}/vendor/docs-page-shell/page-shell-script.js`
             }
         ],
          jsxtremeMarkdownOptions: {
