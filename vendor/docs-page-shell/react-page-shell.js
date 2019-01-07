@@ -973,6 +973,7 @@ MetaTagger.defaultProps = {
   largeImage: true
 };
 
+var pageShellInitialized = false;
 var lastUrl;
 
 var ReactPageShell =
@@ -990,7 +991,12 @@ function (_React$Component) {
     key: "componentDidMount",
     value: function componentDidMount() {
       if (!window.MapboxPageShell) throw new Error('MapboxPageShell not loaded');
-      this.initialize();
+
+      if (!pageShellInitialized) {
+        this.initialize();
+      } else {
+        MapboxPageShell.initialize();
+      }
     }
   }, {
     key: "componentDidUpdate",
@@ -1008,10 +1014,18 @@ function (_React$Component) {
   }, {
     key: "initialize",
     value: function initialize() {
+      var _this = this;
+
       MapboxPageShell.initialize();
-      MapboxPageShell.loadUserMenu({
-        dark: this.props.darkHeaderText,
-        userCallback: this.props.onUser
+      MapboxPageShell.afterUserCheck(function () {
+        if (_this.props.onUser) {
+          _this.props.onUser(MapboxPageShell.getUser(), MapboxPageShell.getUserPublicAccessToken());
+        }
+
+        MapboxPageShell.loadUserMenu({
+          dark: _this.props.darkHeaderText
+        });
+        pageShellInitialized = true;
       });
     }
   }, {
