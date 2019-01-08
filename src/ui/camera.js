@@ -127,7 +127,7 @@ class Camera extends Evented {
     }
 
     /**
-     * Pans the map by the specified offest.
+     * Pans the map by the specified offset.
      *
      * @memberof Map#
      * @param offset `x` and `y` coordinates by which to pan the map.
@@ -533,7 +533,7 @@ class Camera extends Evented {
 	 * @example
      * var p0 = [220, 400];
      * var p1 = [500, 900];
-     * map.fitScreenCoordintes(p0, p1, map.getBearing(), {
+     * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      * @see [Used by BoxZoomHandler](https://www.mapbox.com/mapbox-gl-js/api/#boxzoomhandler)

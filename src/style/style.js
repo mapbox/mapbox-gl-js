@@ -837,6 +837,10 @@ class Style extends Evented {
             return;
         }
         const sourceType = sourceCache.getSource().type;
+        if (sourceType === 'geojson' && sourceLayer) {
+            this.fire(new ErrorEvent(new Error(`GeoJSON sources cannot have a sourceLayer parameter.`)));
+            return;
+        }
         if (sourceType === 'vector' && !sourceLayer) {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
@@ -849,29 +853,35 @@ class Style extends Evented {
         sourceCache.setFeatureState(sourceLayer, featureId, state);
     }
 
-    removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
+    removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
         this._checkLoaded();
-        const sourceId = feature.source;
-        const sourceLayer = feature.sourceLayer;
+        const sourceId = target.source;
+        const sourceLayer = target.sourceLayer;
         const sourceCache = this.sourceCaches[sourceId];
-        const featureId = parseInt(feature.id, 10);
+        const featureId = parseInt(target.id, 10);
 
         if (sourceCache === undefined) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
         const sourceType = sourceCache.getSource().type;
+
+        if (sourceType === 'geojson' && sourceLayer) {
+            this.fire(new ErrorEvent(new Error(`GeoJSON sources cannot have a sourceLayer parameter.`)));
+            return;
+        }
+
         if (sourceType === 'vector' && !sourceLayer) {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
         }
 
-        if (feature.id && isNaN(featureId) || featureId < 0) {
+        if (target.id && isNaN(featureId) || featureId < 0) {
             this.fire(new ErrorEvent(new Error(`The feature id parameter must be non-negative.`)));
             return;
         }
 
-        if (key && !feature.id) {
+        if (key && !target.id) {
             this.fire(new ErrorEvent(new Error(`A feature id is requred to remove its specific state property.`)));
             return;
         }

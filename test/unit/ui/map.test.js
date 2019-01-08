@@ -67,6 +67,24 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('initial bounds options in constructor options', (t) => {
+        const bounds = [[-133, 16], [-68, 50]];
+
+        const map = (fitBoundsOptions, skipCSSStub) => {
+            const container = window.document.createElement('div');
+            Object.defineProperty(container, 'offsetWidth', {value: 512});
+            Object.defineProperty(container, 'offsetHeight', {value: 512});
+            return createMap(t, { skipCSSStub, container, bounds, fitBoundsOptions });
+        };
+
+        const unpadded = map(undefined, false);
+        const padded = map({ padding: 100 }, true);
+
+        t.ok(unpadded.getZoom() > padded.getZoom());
+
+        t.end();
+    });
+
     t.test('disables handlers', (t) => {
         t.test('disables all handlers', (t) => {
             const map = createMap(t, {interactive: false});
@@ -1777,30 +1795,6 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('no render after idle event', (t) => {
-        const style = createStyle();
-        const map = createMap(t, { style });
-        map.on('idle', () => {
-            map.on('render', t.fail);
-            setTimeout(() => {
-                t.end();
-            }, 100);
-        });
-    });
-
-    t.test('no idle event during move', (t) => {
-        const style = createStyle();
-        const map = createMap(t, { style, fadeDuration: 0 });
-        map.once('idle', () => {
-            map.zoomTo(0.5, { duration: 100 });
-            t.ok(map.isMoving(), "map starts moving immediately after zoomTo");
-            map.once('idle', () => {
-                t.ok(!map.isMoving(), "map stops moving before firing idle event");
-                t.end();
-            });
-        });
-    });
-
     t.test('render stabilizes', (t) => {
         const style = createStyle();
         style.sources.mapbox = {
@@ -1826,6 +1820,30 @@ test('Map', (t) => {
                 t.notOk(map._frameId, 'no rerender scheduled');
                 t.end();
             }, 100);
+        });
+    });
+
+    t.test('no render after idle event', (t) => {
+        const style = createStyle();
+        const map = createMap(t, { style });
+        map.on('idle', () => {
+            map.on('render', t.fail);
+            setTimeout(() => {
+                t.end();
+            }, 100);
+        });
+    });
+
+    t.test('no idle event during move', (t) => {
+        const style = createStyle();
+        const map = createMap(t, { style, fadeDuration: 0 });
+        map.once('idle', () => {
+            map.zoomTo(0.5, { duration: 100 });
+            t.ok(map.isMoving(), "map starts moving immediately after zoomTo");
+            map.once('idle', () => {
+                t.ok(!map.isMoving(), "map stops moving before firing idle event");
+                t.end();
+            });
         });
     });
 

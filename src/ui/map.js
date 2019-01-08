@@ -1417,8 +1417,8 @@ class Map extends Camera {
      *
      * @param {Object} target Identifier of where to set state: can be a source, a feature, or a specific key of feature.
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {string | number} feature.id (optional) Unique id of the feature. Optional if key is not specified.
-     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
+     * @param {string | number} target.id (optional) Unique id of the feature. Optional if key is not specified.
+     * @param {string} target.source The Id of the vector source or GeoJSON source for the feature.
      * @param {string} [target.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
      *  required.*
      * @param {string} key (optional) The key in the feature state to reset.
