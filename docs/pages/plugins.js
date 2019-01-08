@@ -138,6 +138,10 @@ const plugins = {
         "mapbox-choropleth": {
             "website": "https://github.com/stevage/mapbox-choropleth",
             "description": "create a choropleth layer from a CSV source and a geometry source"
+        },
+        "mapbox-gl-utils": {
+            "website": "https://github.com/stevage/mapbox-gl-utils",
+            "description": "manage layers, sources and properties with syntactic sugar and convenience functions"
         }
     },
     "Development Tools": {
