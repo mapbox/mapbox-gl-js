@@ -596,7 +596,7 @@ class Transform {
     /*
      * The camera looks at the map from a 3D (lng, lat, altitude) location. Let's use `cameraLocation`
      * as the name for the location under the camera and on the surface of the earth (lng, lat, 0).
-     * `cameraPoint` is the projected position of the `cameraLocation`. 
+     * `cameraPoint` is the projected position of the `cameraLocation`.
      *
      * This point is useful to us because only fill-extrusions that are between `cameraPoint` and
      * the query point on the surface of the earth can extend and intersect the query.
