@@ -734,9 +734,11 @@ class SourceCache extends Evented {
      * @param pointQueryGeometry coordinates of the corners of bounding rectangle
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
      */
-    tilesIn(pointQueryGeometry: Array<Point>, maxPitchScaleFactor: number, transform: Transform) {
+    tilesIn(pointQueryGeometry: Array<Point>, maxPitchScaleFactor: number, transform: Transform, has3DLayer: boolean) {
 
-        const cameraPointQueryGeometry = transform.getCameraQueryGeometry(pointQueryGeometry);
+        const cameraPointQueryGeometry = has3DLayer ?
+            transform.getCameraQueryGeometry(pointQueryGeometry) :
+            pointQueryGeometry;
 
         const queryGeometry = pointQueryGeometry.map((p) => transform.pointCoordinate(p));
         const cameraQueryGeometry = cameraPointQueryGeometry.map((p) => transform.pointCoordinate(p));

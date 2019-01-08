@@ -16,13 +16,35 @@ function getMatrix(transform, tileID) {
     return mat4.multiply(t, t, transform.calculatePosMatrix(tileID.toUnwrapped()));
 }
 
+function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[string]: StyleLayer}, sourceID: string) {
+    if (layers) {
+        for (const layerID of layers) {
+            const layer = styleLayers[layerID];
+            if (layer && layer.source === sourceID && layer.type === 'fill-extrusion') {
+                return true;
+            }
+        }
+    } else {
+        for (const key in styleLayers) {
+            const layer = styleLayers[key];
+            if (layer.source === sourceID && layer.type === 'fill-extrusion') {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
                             queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             transform: Transform) {
+
+    let has3DLayer = queryIncludes3DLayer(params && params.layers, styleLayers, sourceCache.id);
+
     const maxPitchScaleFactor = transform.maxPitchScaleFactor();
-    const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor, transform);
+    const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor, transform, has3DLayer);
 
     tilesIn.sort(sortTilesIn);
 
