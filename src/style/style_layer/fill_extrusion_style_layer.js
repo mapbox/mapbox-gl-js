@@ -81,6 +81,11 @@ function getIntersectionDistance(projectedQueryGeometry: Array<Point>, projected
     if (projectedQueryGeometry.length === 1) {
         // For point queries calculate the z at which the point intersects the face
         // using barycentric coordinates.
+
+        // Find the barycentric coordinates of the projected point within the first
+        // triangle of the face, using only the xy plane. It doesn't matter if the
+        // point is outside the first triangle because all the triangles in the face
+        // are in the same plane.
         const a = projectedFace[0];
         const b = projectedFace[1];
         const c = projectedFace[3];
@@ -100,6 +105,7 @@ function getIntersectionDistance(projectedQueryGeometry: Array<Point>, projected
         const w = (dotABAB * dotAPAC - dotABAC * dotAPAB) / denom;
         const u = 1 - v - w;
 
+        // Use the barycentric weighting along with the original triangle z coordinates to get the point of intersection.
         return a.z * u + b.z * v + c.z * w;
 
     } else {
