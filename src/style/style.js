@@ -870,6 +870,7 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`GeoJSON sources cannot have a sourceLayer parameter.`)));
             return;
         }
+
         if (sourceType === 'vector' && !sourceLayer) {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
