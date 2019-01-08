@@ -73,7 +73,7 @@ export default class extends React.Component {
 
     render() {
         return (
-            <section className='pad4 contain'>
+            <section className='contain'>
                 <h1 className=''>Mapbox GL JS</h1>
                 <div className='pad1y quiet small'>Current version:
                     <span className='round fill-light pad0'><a href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{version}</a></span>
