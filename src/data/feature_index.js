@@ -113,7 +113,6 @@ class FeatureIndex {
 
         const bounds = getBounds(queryGeometry);
         const matching = this.grid.query(bounds.minX - queryPadding, bounds.minY - queryPadding, bounds.maxX + queryPadding, bounds.maxY + queryPadding);
-        matching.sort(topDownFeatureComparator);
 
         const cameraBounds = getBounds(args.cameraQueryGeometry);
         const matching3D = this.grid3D.query(
@@ -125,6 +124,8 @@ class FeatureIndex {
         for (const key of matching3D) {
             matching.push(key);
         }
+
+        matching.sort(topDownFeatureComparator);
 
         const result = {};
         let previousIndex;
