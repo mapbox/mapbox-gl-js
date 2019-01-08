@@ -3,7 +3,7 @@
 import StyleLayer from '../style_layer';
 
 import CircleBucket from '../../data/bucket/circle_bucket';
-import { multiPolygonIntersectsBufferedPoint } from '../../util/intersection_tests';
+import { polygonIntersectsBufferedPoint } from '../../util/intersection_tests';
 import { getMaximumPaintValue, translateDistance, translate } from '../query_utils';
 import properties from './circle_style_layer_properties';
 import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
@@ -36,7 +36,7 @@ class CircleStyleLayer extends StyleLayer {
             translateDistance(this.paint.get('circle-translate'));
     }
 
-    queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
+    queryIntersectsFeature(queryGeometry: Array<Point>,
                            feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
@@ -73,7 +73,7 @@ class CircleStyleLayer extends StyleLayer {
                     adjustedSize *= transform.cameraToCenterDistance / projectedCenter[3];
                 }
 
-                if (multiPolygonIntersectsBufferedPoint(transformedPolygon, transformedPoint, adjustedSize)) return true;
+                if (polygonIntersectsBufferedPoint(transformedPolygon, transformedPoint, adjustedSize)) return true;
             }
         }
 
@@ -86,11 +86,9 @@ function projectPoint(p: Point, posMatrix: Float32Array) {
     return new Point(point[0] / point[3], point[1] / point[3]);
 }
 
-function projectQueryGeometry(queryGeometry: Array<Array<Point>>, posMatrix: Float32Array) {
-    return queryGeometry.map((r) => {
-        return r.map((p) => {
-            return projectPoint(p, posMatrix);
-        });
+function projectQueryGeometry(queryGeometry: Array<Point>, posMatrix: Float32Array) {
+    return queryGeometry.map((p) => {
+        return projectPoint(p, posMatrix);
     });
 }
 

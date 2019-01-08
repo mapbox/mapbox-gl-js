@@ -4,7 +4,7 @@ import { isCounterClockwise } from './util';
 
 import Point from '@mapbox/point-geometry';
 
-export { multiPolygonIntersectsBufferedPoint, multiPolygonIntersectsBufferedMultiPoint, multiPolygonIntersectsMultiPolygon, multiPolygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared, polygonIntersectsBox };
+export { polygonIntersectsBufferedPoint, polygonIntersectsMultiPolygon, polygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared, polygonIntersectsBox };
 
 type Line = Array<Point>;
 type MultiLine = Array<Line>;
@@ -26,67 +26,47 @@ function polygonIntersectsPolygon(polygonA: Polygon, polygonB: Polygon) {
     return false;
 }
 
-function multiPolygonIntersectsBufferedPoint(multiPolygon: MultiPolygon, point: Point, radius: number) {
-    for (let j = 0; j < multiPolygon.length; j++) {
-        const polygon = multiPolygon[j];
-        if (polygonContainsPoint(polygon, point)) return true;
-        if (pointIntersectsBufferedLine(point, polygon, radius)) return true;
-    }
+function polygonIntersectsBufferedPoint(polygon: Polygon, point: Point, radius: number) {
+    if (polygonContainsPoint(polygon, point)) return true;
+    if (pointIntersectsBufferedLine(point, polygon, radius)) return true;
     return false;
 }
 
-function multiPolygonIntersectsBufferedMultiPoint(multiPolygon: MultiPolygon, rings: Array<Ring>, radius: number) {
-    for (let i = 0; i < rings.length; i++) {
-        const ring = rings[i];
-        for (let k = 0; k < ring.length; k++) {
-            if (multiPolygonIntersectsBufferedPoint(multiPolygon, ring[k], radius)) return true;
-        }
-    }
-    return false;
-}
+function polygonIntersectsMultiPolygon(polygon: Polygon, multiPolygon: MultiPolygon) {
 
-function multiPolygonIntersectsMultiPolygon(multiPolygonA: MultiPolygon, multiPolygonB: MultiPolygon) {
-
-    if (multiPolygonA.length === 1 && multiPolygonA[0].length === 1) {
-        return multiPolygonContainsPoint(multiPolygonB, multiPolygonA[0][0]);
+    if (polygon.length === 1) {
+        return multiPolygonContainsPoint(multiPolygon, polygon[0]);
     }
 
-    for (let m = 0; m < multiPolygonB.length; m++) {
-        const ring = multiPolygonB[m];
+    for (let m = 0; m < multiPolygon.length; m++) {
+        const ring = multiPolygon[m];
         for (let n = 0; n < ring.length; n++) {
-            if (multiPolygonContainsPoint(multiPolygonA, ring[n])) return true;
+            if (polygonContainsPoint(polygon, ring[n])) return true;
         }
     }
 
-    for (let j = 0; j < multiPolygonA.length; j++) {
-        const polygon = multiPolygonA[j];
-        for (let i = 0; i < polygon.length; i++) {
-            if (multiPolygonContainsPoint(multiPolygonB, polygon[i])) return true;
-        }
+    for (let i = 0; i < polygon.length; i++) {
+        if (multiPolygonContainsPoint(multiPolygon, polygon[i])) return true;
+    }
 
-        for (let k = 0; k < multiPolygonB.length; k++) {
-            if (lineIntersectsLine(polygon, multiPolygonB[k])) return true;
-        }
+    for (let k = 0; k < multiPolygon.length; k++) {
+        if (lineIntersectsLine(polygon, multiPolygon[k])) return true;
     }
 
     return false;
 }
 
-function multiPolygonIntersectsBufferedMultiLine(multiPolygon: MultiPolygon, multiLine: MultiLine, radius: number) {
+function polygonIntersectsBufferedMultiLine(polygon: Polygon, multiLine: MultiLine, radius: number) {
     for (let i = 0; i < multiLine.length; i++) {
         const line = multiLine[i];
 
-        for (let j = 0; j < multiPolygon.length; j++) {
-            const polygon = multiPolygon[j];
-
-            if (polygon.length >= 3) {
-                for (let k = 0; k < line.length; k++) {
-                    if (polygonContainsPoint(polygon, line[k])) return true;
-                }
+        if (polygon.length >= 3) {
+            for (let k = 0; k < line.length; k++) {
+                if (polygonContainsPoint(polygon, line[k])) return true;
             }
-
-            if (lineIntersectsBufferedLine(polygon, line, radius)) return true;
         }
+
+        if (lineIntersectsBufferedLine(polygon, line, radius)) return true;
     }
     return false;
 }

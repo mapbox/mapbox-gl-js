@@ -29,8 +29,8 @@ type QueryParameters = {
     posMatrix: Float32Array,
     transform: Transform,
     tileSize: number,
-    queryGeometry: Array<Array<Point>>,
-    cameraQueryGeometry: Array<Array<Point>>,
+    queryGeometry: Array<Point>,
+    cameraQueryGeometry: Array<Point>,
     queryPadding: number,
     params: {
         filter: FilterSpecification,
@@ -119,7 +119,7 @@ class FeatureIndex {
         const matching3D = this.grid3D.query(
                 cameraBounds.minX - queryPadding, cameraBounds.minY - queryPadding, cameraBounds.maxX + queryPadding, cameraBounds.maxY + queryPadding,
                 (bx1, by1, bx2, by2) => {
-                    return polygonIntersectsBox(args.cameraQueryGeometry[0], bx1 - queryPadding, by1 - queryPadding, bx2 + queryPadding, by2 + queryPadding);
+                    return polygonIntersectsBox(args.cameraQueryGeometry, bx1 - queryPadding, by1 - queryPadding, bx2 + queryPadding, by2 + queryPadding);
                 });
 
         for (const key of matching3D) {
@@ -256,18 +256,16 @@ register(
 
 export default FeatureIndex;
 
-function getBounds(geometry: Array<Array<Point>>) {
+function getBounds(geometry: Array<Point>) {
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
     let maxY = -Infinity;
-    for (const ring of geometry) {
-        for (const p of ring) {
-            minX = Math.min(minX, p.x);
-            minY = Math.min(minY, p.y);
-            maxX = Math.max(maxX, p.x);
-            maxY = Math.max(maxY, p.y);
-        }
+    for (const p of geometry) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
     }
     return { minX, minY, maxX, maxY };
 }

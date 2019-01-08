@@ -258,8 +258,8 @@ class Tile {
     // Symbol features are queried globally
     queryRenderedFeatures(layers: {[string]: StyleLayer},
                           sourceFeatureState: SourceFeatureState,
-                          queryGeometry: Array<Array<Point>>,
-                          cameraQueryGeometry: Array<Array<Point>>,
+                          queryGeometry: Array<Point>,
+                          cameraQueryGeometry: Array<Point>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
                           transform: Transform,

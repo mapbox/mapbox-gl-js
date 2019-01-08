@@ -786,8 +786,8 @@ class SourceCache extends Evented {
                 tileResults.push({
                     tile,
                     tileID,
-                    queryGeometry: [tileSpaceQueryGeometry],
-                    cameraQueryGeometry: [tileSpaceCameraQueryGeometry],
+                    queryGeometry: tileSpaceQueryGeometry,
+                    cameraQueryGeometry: tileSpaceCameraQueryGeometry,
                     scale
                 });
             }

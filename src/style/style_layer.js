@@ -52,7 +52,7 @@ class StyleLayer extends Evented {
     _featureFilter: FeatureFilter;
 
     +queryRadius: (bucket: Bucket) => number;
-    +queryIntersectsFeature: (queryGeometry: Array<Array<Point>>,
+    +queryIntersectsFeature: (queryGeometry: Array<Point>,
                               feature: VectorTileFeature,
                               featureState: FeatureState,
                               geometry: Array<Array<Point>>,

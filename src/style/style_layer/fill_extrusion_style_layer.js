@@ -3,7 +3,7 @@
 import StyleLayer from '../style_layer';
 
 import FillExtrusionBucket from '../../data/bucket/fill_extrusion_bucket';
-import { multiPolygonIntersectsMultiPolygon } from '../../util/intersection_tests';
+import { polygonIntersectsPolygon, polygonIntersectsMultiPolygon } from '../../util/intersection_tests';
 import { translateDistance, translate } from '../query_utils';
 import properties from './fill_extrusion_style_layer_properties';
 import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
@@ -35,7 +35,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return translateDistance(this.paint.get('fill-extrusion-translate'));
     }
 
-    queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
+    queryIntersectsFeature(queryGeometry: Array<Point>,
                            feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
@@ -76,15 +76,15 @@ function dot(a, b) {
     return a.x * b.x + a.y * b.y;
 }
 
-function getIntersectionDistance(projectedQueryGeometry: Array<Array<Point>>, projectedFace: Array<Point>) {
+function getIntersectionDistance(projectedQueryGeometry: Array<Point>, projectedFace: Array<Point>) {
 
-    if (projectedQueryGeometry.length === 1 && projectedQueryGeometry[0].length === 1) {
+    if (projectedQueryGeometry.length === 1) {
         // For point queries calculate the z at which the point intersects the face
         // using barycentric coordinates.
         const a = projectedFace[0];
         const b = projectedFace[1];
         const c = projectedFace[3];
-        const p = projectedQueryGeometry[0][0];
+        const p = projectedQueryGeometry[0];
 
         const ab = b.sub(a);
         const ac = c.sub(a);
@@ -116,10 +116,10 @@ function getIntersectionDistance(projectedQueryGeometry: Array<Array<Point>>, pr
     }
 }
 
-function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Point>, projectedQueryGeometry: Array<Array<Point>>) {
+function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Point>, projectedQueryGeometry: Array<Point>) {
     let closestDistance = Infinity;
 
-    if (multiPolygonIntersectsMultiPolygon(projectedQueryGeometry, projectedTop)) {
+    if (polygonIntersectsMultiPolygon(projectedQueryGeometry, projectedTop)) {
         closestDistance = getIntersectionDistance(projectedQueryGeometry, projectedTop[0]);
     }
 
@@ -132,7 +132,7 @@ function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Poin
             const baseA = ringBase[p];
             const baseB = ringBase[p + 1];
             const face = [topA, topB, baseB, baseA, topA];
-            if (multiPolygonIntersectsMultiPolygon(projectedQueryGeometry, [face])) {
+            if (polygonIntersectsPolygon(projectedQueryGeometry, face)) {
                 closestDistance = Math.min(closestDistance, getIntersectionDistance(projectedQueryGeometry, face));
             }
         }
@@ -197,16 +197,12 @@ function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: nu
     return [projectedBase, projectedTop];
 }
 
-function projectQueryGeometry(queryGeometry: Array<Array<Point>>, posMatrix: Float32Array, transform: Transform, z: number) {
+function projectQueryGeometry(queryGeometry: Array<Point>, posMatrix: Float32Array, transform: Transform, z: number) {
     const projectedQueryGeometry = [];
-    for (const r of queryGeometry) {
-        const queryGeometryRing = [];
-        for (const p of r) {
-            const v = [p.x, p.y, z, 1];
-            vec4.transformMat4(v, v, posMatrix);
-            queryGeometryRing.push(new Point(v[0] / v[3], v[1] / v[3]));
-        }
-        projectedQueryGeometry.push(queryGeometryRing);
+    for (const p of queryGeometry) {
+        const v = [p.x, p.y, z, 1];
+        vec4.transformMat4(v, v, posMatrix);
+        projectedQueryGeometry.push(new Point(v[0] / v[3], v[1] / v[3]));
     }
     return projectedQueryGeometry;
 }

@@ -41,7 +41,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             transform: Transform) {
 
-    let has3DLayer = queryIncludes3DLayer(params && params.layers, styleLayers, sourceCache.id);
+    const has3DLayer = queryIncludes3DLayer(params && params.layers, styleLayers, sourceCache.id);
 
     const maxPitchScaleFactor = transform.maxPitchScaleFactor();
     const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor, has3DLayer);
