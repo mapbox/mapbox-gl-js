@@ -43,7 +43,7 @@ class CircleStyleLayer extends StyleLayer {
                            zoom: number,
                            transform: Transform,
                            pixelsToTileUnits: number,
-                           posMatrix: Float32Array): boolean {
+                           pixelPosMatrix: Float32Array): boolean {
         const translatedPolygon = translate(queryGeometry,
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
@@ -57,16 +57,16 @@ class CircleStyleLayer extends StyleLayer {
         // // A circle with fixed scaling relative to the viewport gets larger in tile space as it moves into the distance
         // // A circle with fixed scaling relative to the map gets smaller in viewport space as it moves into the distance
         const alignWithMap = this.paint.get('circle-pitch-alignment') === 'map';
-        const transformedPolygon = alignWithMap ? translatedPolygon : projectQueryGeometry(translatedPolygon, posMatrix);
+        const transformedPolygon = alignWithMap ? translatedPolygon : projectQueryGeometry(translatedPolygon, pixelPosMatrix);
         const transformedSize = alignWithMap ? size * pixelsToTileUnits : size;
 
         for (const ring of geometry) {
             for (const point of ring) {
 
-                const transformedPoint = alignWithMap ? point : projectPoint(point, posMatrix);
+                const transformedPoint = alignWithMap ? point : projectPoint(point, pixelPosMatrix);
 
                 let adjustedSize = transformedSize;
-                const projectedCenter = vec4.transformMat4([], [point.x, point.y, 0, 1], posMatrix);
+                const projectedCenter = vec4.transformMat4([], [point.x, point.y, 0, 1], pixelPosMatrix);
                 if (this.paint.get('circle-pitch-scale') === 'viewport' && this.paint.get('circle-pitch-alignment') === 'map') {
                     adjustedSize *= projectedCenter[3] / transform.cameraToCenterDistance;
                 } else if (this.paint.get('circle-pitch-scale') === 'map' && this.paint.get('circle-pitch-alignment') === 'viewport') {
@@ -81,14 +81,14 @@ class CircleStyleLayer extends StyleLayer {
     }
 }
 
-function projectPoint(p: Point, posMatrix: Float32Array) {
-    const point = vec4.transformMat4([], [p.x, p.y, 0, 1], posMatrix);
+function projectPoint(p: Point, pixelPosMatrix: Float32Array) {
+    const point = vec4.transformMat4([], [p.x, p.y, 0, 1], pixelPosMatrix);
     return new Point(point[0] / point[3], point[1] / point[3]);
 }
 
-function projectQueryGeometry(queryGeometry: Array<Point>, posMatrix: Float32Array) {
+function projectQueryGeometry(queryGeometry: Array<Point>, pixelPosMatrix: Float32Array) {
     return queryGeometry.map((p) => {
-        return projectPoint(p, posMatrix);
+        return projectPoint(p, pixelPosMatrix);
     });
 }
 

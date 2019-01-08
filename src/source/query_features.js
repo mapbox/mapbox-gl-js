@@ -9,7 +9,10 @@ import type {FilterSpecification} from '../style-spec/types';
 import assert from 'assert';
 import { mat4 } from 'gl-matrix';
 
-function getMatrix(transform, tileID) {
+/*
+ * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
+ */
+function getPixelPosMatrix(transform, tileID) {
     const t = mat4.identity([]);
     mat4.translate(t, t, [1, 1, 0]);
     mat4.scale(t, t, [transform.width * 0.5, transform.height * 0.5, 1]);
@@ -61,7 +64,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                 params,
                 transform,
                 maxPitchScaleFactor,
-                getMatrix(sourceCache.transform, tileIn.tileID))
+                getPixelPosMatrix(sourceCache.transform, tileIn.tileID))
         });
     }
 

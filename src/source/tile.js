@@ -264,7 +264,7 @@ class Tile {
                           params: { filter: FilterSpecification, layers: Array<string> },
                           transform: Transform,
                           maxPitchScaleFactor: number,
-                          posMatrix: Float32Array): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          pixelPosMatrix: Float32Array): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData)
             return {};
 
@@ -273,7 +273,7 @@ class Tile {
             cameraQueryGeometry,
             scale,
             tileSize: this.tileSize,
-            posMatrix,
+            pixelPosMatrix,
             transform,
             params,
             queryPadding: this.queryPadding * maxPitchScaleFactor

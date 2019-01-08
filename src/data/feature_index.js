@@ -26,7 +26,7 @@ import { FeatureIndexArray } from './array_types';
 
 type QueryParameters = {
     scale: number,
-    posMatrix: Float32Array,
+    pixelPosMatrix: Float32Array,
     transform: Transform,
     tileSize: number,
     queryGeometry: Array<Point>,
@@ -154,7 +154,7 @@ class FeatureIndex {
                         // `feature-state` expression evaluation requires feature state to be available
                         featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', feature.id);
                     }
-                    return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.posMatrix);
+                    return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.pixelPosMatrix);
                 }
             );
         }

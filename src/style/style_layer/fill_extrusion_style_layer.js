@@ -42,7 +42,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
                            zoom: number,
                            transform: Transform,
                            pixelsToTileUnits: number,
-                           posMatrix: Float32Array): boolean | number {
+                           pixelPosMatrix: Float32Array): boolean | number {
 
         const translatedPolygon = translate(queryGeometry,
             this.paint.get('fill-extrusion-translate'),
@@ -52,9 +52,9 @@ class FillExtrusionStyleLayer extends StyleLayer {
         const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
         const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);
 
-        const projectedQueryGeometry = projectQueryGeometry(translatedPolygon, posMatrix, transform, 0);
+        const projectedQueryGeometry = projectQueryGeometry(translatedPolygon, pixelPosMatrix, transform, 0);
 
-        const projected = projectExtrusion(geometry, base, height, posMatrix);
+        const projected = projectExtrusion(geometry, base, height, pixelPosMatrix);
         const projectedBase = projected[0];
         const projectedTop = projected[1];
         return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
@@ -197,11 +197,11 @@ function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: nu
     return [projectedBase, projectedTop];
 }
 
-function projectQueryGeometry(queryGeometry: Array<Point>, posMatrix: Float32Array, transform: Transform, z: number) {
+function projectQueryGeometry(queryGeometry: Array<Point>, pixelPosMatrix: Float32Array, transform: Transform, z: number) {
     const projectedQueryGeometry = [];
     for (const p of queryGeometry) {
         const v = [p.x, p.y, z, 1];
-        vec4.transformMat4(v, v, posMatrix);
+        vec4.transformMat4(v, v, pixelPosMatrix);
         projectedQueryGeometry.push(new Point(v[0] / v[3], v[1] / v[3]));
     }
     return projectedQueryGeometry;
