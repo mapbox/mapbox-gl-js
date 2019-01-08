@@ -1244,10 +1244,8 @@ test('SourceCache#tilesIn', (t) => {
     });
 
     function round(queryGeometry) {
-        return queryGeometry.map((r) => {
-            return r.map((p) => {
-                return p.round();
-            });
+        return queryGeometry.map((p) => {
+            return p.round();
         });
     }
 
@@ -1288,12 +1286,12 @@ test('SourceCache#tilesIn', (t) => {
                 t.equal(tiles[0].tile.tileID.key, 1);
                 t.equal(tiles[0].tile.tileSize, 512);
                 t.equal(tiles[0].scale, 1);
-                t.deepEqual(round(tiles[0].queryGeometry), [[{x: 4096, y: 4050}, {x:12288, y: 8146}]]);
+                t.deepEqual(round(tiles[0].queryGeometry), [{x: 4096, y: 4050}, {x:12288, y: 8146}]);
 
                 t.equal(tiles[1].tile.tileID.key, 33);
                 t.equal(tiles[1].tile.tileSize, 512);
                 t.equal(tiles[1].scale, 1);
-                t.deepEqual(round(tiles[1].queryGeometry), [[{x: -4096, y: 4050}, {x: 4096, y: 8146}]]);
+                t.deepEqual(round(tiles[1].queryGeometry), [{x: -4096, y: 4050}, {x: 4096, y: 8146}]);
 
                 t.end();
             }
@@ -1340,12 +1338,12 @@ test('SourceCache#tilesIn', (t) => {
                 t.equal(tiles[0].tile.tileID.key, 2);
                 t.equal(tiles[0].tile.tileSize, 1024);
                 t.equal(tiles[0].scale, 1);
-                t.deepEqual(round(tiles[0].queryGeometry), [[{x: 4096, y: 4050}, {x:12288, y: 8146}]]);
+                t.deepEqual(round(tiles[0].queryGeometry), [{x: 4096, y: 4050}, {x:12288, y: 8146}]);
 
                 t.equal(tiles[1].tile.tileID.key, 34);
                 t.equal(tiles[1].tile.tileSize, 1024);
                 t.equal(tiles[1].scale, 1);
-                t.deepEqual(round(tiles[1].queryGeometry), [[{x: -4096, y: 4050}, {x: 4096, y: 8146}]]);
+                t.deepEqual(round(tiles[1].queryGeometry), [{x: -4096, y: 4050}, {x: 4096, y: 8146}]);
 
                 t.end();
             }
