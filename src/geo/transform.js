@@ -606,8 +606,8 @@ class Transform {
      */
     getCameraPoint() {
         const pitch = this._pitch;
-        const latOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
-        return this.centerPoint.add(new Point(0, latOffset));
+        const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
+        return this.centerPoint.add(new Point(0, yOffset));
     }
 
     /*
@@ -615,8 +615,10 @@ class Transform {
      * the query at the surface of the earth. Instead the feature may be closer and only intersect
      * the query because it extrudes into the air.
      *
-     * `cameraQueryGeometry` is a geometry that includes all the possible 3D features that may intersect
-     * with the query when the map is pitched.
+     * This returns a geometry that includes all of the original query as well as all possible ares of the
+     * screen where the *base* of a visible extrusion could be.
+     *  - For point queries, the line from the query point to the "camera point"
+     *  - For other geometries, the envelope of the query geometry and the "camera point"
      */
     getCameraQueryGeometry(queryGeometry: Array<Point>): Array<Point> {
         const c = this.getCameraPoint();
