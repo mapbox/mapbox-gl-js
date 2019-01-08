@@ -73,18 +73,15 @@ export default class extends React.Component {
 
     render() {
         return (
-            <section className='pad4 contain'>
+            <section className='contain'>
                 <h1 className=''>Mapbox GL JS</h1>
                 <div className='pad1y quiet small'>Current version:
                     <span className='round fill-light pad0'><a href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{version}</a></span>
                 </div>
                 <div className='prose space-bottom2'>
                     <p className='space-bottom2 pad1y'>
-                        Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from
-                        <a href='https://www.mapbox.com/help/define-vector-tiles'>vector tiles</a> and
-                        <a href={prefixUrl('/style-spec')}>Mapbox styles</a>.
-                        It is part of the Mapbox GL ecosystem, which includes
-                        <a href='https://www.mapbox.com/mobile/'>Mapbox Mobile</a>,
+                        Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from{' '}<a href='https://www.mapbox.com/help/define-vector-tiles'>vector tiles</a> and{' '}<a href={prefixUrl('/style-spec')}>Mapbox styles</a>.
+                        It is part of the Mapbox GL ecosystem, which includes{' '}<a href='https://www.mapbox.com/mobile/'>Mapbox Mobile</a>,
                         a compatible renderer written in C++ with bindings
                         for desktop and mobile platforms. To see what new features our team is working on,
                         take a look at our <a href={prefixUrl('/roadmap')}>roadmap</a>.
@@ -156,8 +153,7 @@ export default class extends React.Component {
                             Including it with a {'<link>'} in the head of the document via the Mapbox CDN is
                             the simplest and easiest way to provide the CSS,
                             but it is also bundled in the Mapbox module, meaning that if you have a bundler
-                            that can handle CSS, you can import the CSS from
-                            <pre><code>{`mapbox-gl/dist/mapbox-gl.css`}</code></pre>.
+                            that can handle CSS, you can import the CSS from <code>{`mapbox-gl/dist/mapbox-gl.css`}</code>.
                         </p>
                         <p>
                             Note too that if the CSS isn't available by the first render, as soon as the CSS is provided,
