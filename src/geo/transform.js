@@ -593,12 +593,31 @@ class Transform {
         return topPoint[3] / this.cameraToCenterDistance;
     }
 
+    /*
+     * The camera looks at the map from a 3D (lng, lat, altitude) location. Let's use `cameraLocation`
+     * as the name for the location under the camera and on the surface of the earth (lng, lat, 0).
+     * `cameraPoint` is the projected position of the `cameraLocation`. 
+     *
+     * This point is useful to us because only fill-extrusions that are between `cameraPoint` and
+     * the query point on the surface of the earth can extend and intersect the query.
+     *
+     * When the map is not pitched the `cameraPoint` is equivalent to the center of the map because
+     * the camera is right above the center of the map.
+     */
     getCameraPoint() {
         const pitch = this._pitch;
         const latOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
         return this.centerPoint.add(new Point(0, latOffset));
     }
 
+    /*
+     * When the map is pitched, some of the 3D features that intersect a query will not intersect
+     * the query at the surface of the earth. Instead the feature may be closer and only intersect
+     * the query because it extrudes into the air.
+     *
+     * `cameraQueryGeometry` is a geometry that includes all the possible 3D features that may intersect
+     * with the query when the map is pitched.
+     */
     getCameraQueryGeometry(queryGeometry: Array<Point>): Array<Point> {
         const c = this.getCameraPoint();
 
