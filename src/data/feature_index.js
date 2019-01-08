@@ -111,37 +111,13 @@ class FeatureIndex {
         const queryGeometry = args.queryGeometry;
         const queryPadding = args.queryPadding * pixelsToTileUnits;
 
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-        for (const ring of queryGeometry) {
-            for (const p of ring) {
-                minX = Math.min(minX, p.x);
-                minY = Math.min(minY, p.y);
-                maxX = Math.max(maxX, p.x);
-                maxY = Math.max(maxY, p.y);
-            }
-        }
-
-        const matching = this.grid.query(minX - queryPadding, minY - queryPadding, maxX + queryPadding, maxY + queryPadding);
+        const bounds = getBounds(queryGeometry);
+        const matching = this.grid.query(bounds.minX - queryPadding, bounds.minY - queryPadding, bounds.maxX + queryPadding, bounds.maxY + queryPadding);
         matching.sort(topDownFeatureComparator);
 
-        let cameraMinX = Infinity;
-        let cameraMinY = Infinity;
-        let cameraMaxX = -Infinity;
-        let cameraMaxY = -Infinity;
-        for (const ring of args.cameraQueryGeometry) {
-            for (const p of ring) {
-                cameraMinX = Math.min(cameraMinX, p.x);
-                cameraMinY = Math.min(cameraMinY, p.y);
-                cameraMaxX = Math.max(cameraMaxX, p.x);
-                cameraMaxY = Math.max(cameraMaxY, p.y);
-            }
-        }
-
+        const cameraBounds = getBounds(args.cameraQueryGeometry);
         const matching3D = this.grid3D.query(
-                cameraMinX - queryPadding, cameraMinY - queryPadding, cameraMaxX + queryPadding, cameraMaxY + queryPadding,
+                cameraBounds.minX - queryPadding, cameraBounds.minY - queryPadding, cameraBounds.maxX + queryPadding, cameraBounds.maxY + queryPadding,
                 (bx1, by1, bx2, by2) => {
                     return polygonIntersectsBox(args.cameraQueryGeometry[0], bx1 - queryPadding, by1 - queryPadding, bx2 + queryPadding, by2 + queryPadding);
                 });
@@ -279,6 +255,22 @@ register(
 );
 
 export default FeatureIndex;
+
+function getBounds(geometry: Array<Array<Point>>) {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const ring of geometry) {
+        for (const p of ring) {
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x);
+            maxY = Math.max(maxY, p.y);
+        }
+    }
+    return { minX, minY, maxX, maxY };
+}
 
 function topDownFeatureComparator(a, b) {
     return b - a;
