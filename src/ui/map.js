@@ -198,6 +198,7 @@ const defaultOptions = {
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
+ * @param {Object} [options.fitBoundsOptions] A [`fitBounds`](#Map#fitBounds) options object to use _only_ when fitting the initial `bounds` provided above.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered, when zoomed out.
  * @param {number} [options.maxTileCacheSize=null]  The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
  * @param {string} [options.localIdeographFontFamily=null] If specified, defines a CSS font-family
@@ -383,7 +384,7 @@ class Map extends Camera {
 
             if (options.bounds) {
                 this.resize();
-                this.fitBounds(options.bounds, { duration: 0 });
+                this.fitBounds(options.bounds, extend({}, options.fitBoundsOptions, { duration: 0 }));
             }
         }
 
@@ -1410,20 +1411,20 @@ class Map extends Camera {
 
     /**
      * Removes feature state, setting it back to the default behavior. If only
-     * source is specified, removes all feature states of that source. If
-     * feature.id is also specified, removes all keys for that feature's state.
-     * If key is also specified, removes that key from that feature's state.
+     * source is specified, removes all states of that source. If
+     * target.id is also specified, removes all keys for that feature's state.
+     * If target.key is also specified, removes that key from that feature's state.
      *
-     * @param {Object} feature Feature identifier. Feature objects returned from
-     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {Object} target Identifier of where to set state: can be a source, a feature, or a specific key of feature.
+     * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} feature.id (optional) Unique id of the feature. Optional if key is not specified.
      * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
-     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     * @param {string} [target.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
      *  required.*
      * @param {string} key (optional) The key in the feature state to reset.
     */
-    removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
-        this.style.removeFeatureState(feature, key);
+    removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
+        this.style.removeFeatureState(target, key);
         return this._update();
     }
 
