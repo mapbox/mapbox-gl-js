@@ -11,7 +11,6 @@ import geojsonvt from 'geojson-vt';
 import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
 import { createExpression } from '../style-spec/expression';
-import { isGlobalPropertyConstant, isFeatureConstant } from '../style-spec/expression/is_constant';
 
 import type {
     WorkerTileParameters,
@@ -309,31 +308,18 @@ function getSuperclusterOptions({superclusterOptions, clusterProperties}) {
     for (const key of propertyNames) {
         const [operator, initialExpression, mapExpression] = clusterProperties[key];
 
-        const parsed = createExpression(clusterProperties[key]);
-        if (parsed.result === 'error') {
-            const message = parsed.value.map(e => e.message).join('; ');
-            throw new Error(`Error parsing expression for cluster property "${key}": ${message}`);
-
-        } else if (!isGlobalPropertyConstant(parsed.value.expression, ['zoom'])) {
-            throw new Error(`Error parsing expression for cluster property "${key}": zoom expressions not supported.`);
-        }
-
         const initialExpressionParsed = createExpression(initialExpression);
         const mapExpressionParsed = createExpression(mapExpression);
-        const reduceExpressionParsed = createExpression([operator, ['accumulated'], ['get', key]]);
+        const reduceExpressionParsed = createExpression(
+            typeof operator === 'string' ? [operator, ['accumulated'], ['get', key]] : operator);
 
-        if (initialExpressionParsed.result === 'success') {
-            if (!isFeatureConstant(initialExpressionParsed.value.expression))
-                throw new Error(`Error parsing expression for cluster property "${key}": can't use feature properties in initial expression.`);
+        assert(initialExpressionParsed.result === 'success');
+        assert(mapExpressionParsed.result === 'success');
+        assert(reduceExpressionParsed.result === 'success');
 
-            initialValues[key] = initialExpressionParsed.value.evaluate(globals);
-        }
-
-        if (mapExpressionParsed.result === 'success')
-            mapExpressions[key] = mapExpressionParsed.value;
-
-        if (reduceExpressionParsed.result === 'success')
-            reduceExpressions[key] = reduceExpressionParsed.value;
+        initialValues[key] = (initialExpressionParsed.value: any).evaluate(globals);
+        mapExpressions[key] = mapExpressionParsed.value;
+        reduceExpressions[key] = reduceExpressionParsed.value;
     }
 
     superclusterOptions.initial = () => {
