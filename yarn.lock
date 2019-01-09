@@ -5528,9 +5528,10 @@ gray-matter@^3.1.1:
     kind-of "^5.0.2"
     strip-bom-string "^1.0.0"
 
-grid-index@mapbox/grid-index#b565f1b17df786ea2bc9a4e46507b003cb61775b:
-  version "1.0.0"
-  resolved "https://codeload.github.com/mapbox/grid-index/tar.gz/b565f1b17df786ea2bc9a4e46507b003cb61775b"
+grid-index@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/grid-index/-/grid-index-1.1.0.tgz#97f8221edec1026c8377b86446a7c71e79522ea7"
+  integrity sha512-HZRwumpOGUrHyxO5bqKZL0B0GlUpwtCAzZ42sgxUPniu33R1LSFH5yrIcBCHjkctCAh3mtWKcKd9J4vDDdeVHA==
 
 "growl@~> 1.10.0":
   version "1.10.5"
