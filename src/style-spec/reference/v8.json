@@ -2807,6 +2807,15 @@
           }
         }
       },
+      "accumulated": {
+        "doc": "Gets the value of a cluster property accumulated so far. Can only be used in the `clusterProperties` option of a clustered GeoJSON source.",
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.53.0"
+          }
+        }
+      },
       "+": {
         "doc": "Returns the sum of the inputs.",
         "group": "Math",
