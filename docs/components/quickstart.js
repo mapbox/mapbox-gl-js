@@ -116,7 +116,7 @@ export default class extends React.Component {
                     <div className='space-bottom1'>To get started, you need to obtain an <a
                         href='https://www.mapbox.com/help/create-api-access-token/'>access token</a> and a <a
                         href='https://www.mapbox.com/help/define-style-url/'>style URL</a>. You can choose from one of our <a
-                        href='https://www.mapbox.com/api-documentation/#styles'>professionally designed styles</a> or create
+                        href='https://www.mapbox.com/api-documentation/maps/#styles'>professionally designed styles</a> or create
                         your own using <a href="https://www.mapbox.com/studio">Mapbox Studio</a>.
                     </div>
 
