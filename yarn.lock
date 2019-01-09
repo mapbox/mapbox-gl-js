@@ -5528,10 +5528,10 @@ gray-matter@^3.1.1:
     kind-of "^5.0.2"
     strip-bom-string "^1.0.0"
 
-grid-index@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/grid-index/-/grid-index-1.0.0.tgz#ad2c5d54ce5b35437faff1d70a9aeb3d1d261110"
-  integrity sha1-rSxdVM5bNUN/r/HXCprrPR0mERA=
+grid-index@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/grid-index/-/grid-index-1.1.0.tgz#97f8221edec1026c8377b86446a7c71e79522ea7"
+  integrity sha512-HZRwumpOGUrHyxO5bqKZL0B0GlUpwtCAzZ42sgxUPniu33R1LSFH5yrIcBCHjkctCAh3mtWKcKd9J4vDDdeVHA==
 
 "growl@~> 1.10.0":
   version "1.10.5"

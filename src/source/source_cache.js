@@ -731,11 +731,23 @@ class SourceCache extends Evented {
     /**
      * Search through our current tiles and attempt to find the tiles that
      * cover the given bounds.
-     * @param queryGeometry coordinates of the corners of bounding rectangle
+     * @param pointQueryGeometry coordinates of the corners of bounding rectangle
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
      */
-    tilesIn(queryGeometry: Array<MercatorCoordinate>, maxPitchScaleFactor: number) {
+    tilesIn(pointQueryGeometry: Array<Point>, maxPitchScaleFactor: number, has3DLayer: boolean) {
+
         const tileResults = [];
+
+        const transform = this.transform;
+        if (!transform) return tileResults;
+
+        const cameraPointQueryGeometry = has3DLayer ?
+            transform.getCameraQueryGeometry(pointQueryGeometry) :
+            pointQueryGeometry;
+
+        const queryGeometry = pointQueryGeometry.map((p) => transform.pointCoordinate(p));
+        const cameraQueryGeometry = cameraPointQueryGeometry.map((p) => transform.pointCoordinate(p));
+
         const ids = this.getIds();
 
         let minX = Infinity;
@@ -743,14 +755,12 @@ class SourceCache extends Evented {
         let maxX = -Infinity;
         let maxY = -Infinity;
 
-        for (let k = 0; k < queryGeometry.length; k++) {
-            const p = queryGeometry[k];
+        for (const p of cameraQueryGeometry) {
             minX = Math.min(minX, p.x);
             minY = Math.min(minY, p.y);
             maxX = Math.max(maxX, p.x);
             maxY = Math.max(maxY, p.y);
         }
-
 
         for (let i = 0; i < ids.length; i++) {
             const tile = this._tiles[ids[i]];
@@ -759,7 +769,7 @@ class SourceCache extends Evented {
                 continue;
             }
             const tileID = tile.tileID;
-            const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
+            const scale = Math.pow(2, transform.zoom - tile.tileID.overscaledZ);
             const queryPadding = maxPitchScaleFactor * tile.queryPadding * EXTENT / tile.tileSize / scale;
 
             const tileSpaceBounds = [
@@ -770,15 +780,14 @@ class SourceCache extends Evented {
             if (tileSpaceBounds[0].x - queryPadding < EXTENT && tileSpaceBounds[0].y - queryPadding < EXTENT &&
                 tileSpaceBounds[1].x + queryPadding >= 0 && tileSpaceBounds[1].y + queryPadding >= 0) {
 
-                const tileSpaceQueryGeometry = [];
-                for (let j = 0; j < queryGeometry.length; j++) {
-                    tileSpaceQueryGeometry.push(tileID.getTilePoint(queryGeometry[j]));
-                }
+                const tileSpaceQueryGeometry: Array<Point> = queryGeometry.map((c) => tileID.getTilePoint(c));
+                const tileSpaceCameraQueryGeometry = cameraQueryGeometry.map((c) => tileID.getTilePoint(c));
 
                 tileResults.push({
                     tile,
                     tileID,
-                    queryGeometry: [tileSpaceQueryGeometry],
+                    queryGeometry: tileSpaceQueryGeometry,
+                    cameraQueryGeometry: tileSpaceCameraQueryGeometry,
                     scale
                 });
             }

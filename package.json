@@ -27,7 +27,7 @@
     "geojson-rewind": "^0.3.0",
     "geojson-vt": "^3.2.1",
     "gl-matrix": "^2.6.1",
-    "grid-index": "^1.0.0",
+    "grid-index": "^1.1.0",
     "minimist": "0.0.8",
     "murmurhash-js": "^1.0.0",
     "pbf": "^3.0.5",
