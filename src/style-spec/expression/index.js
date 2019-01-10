@@ -38,7 +38,8 @@ export type GlobalProperties = $ReadOnly<{
     zoom: number,
     heatmapDensity?: number,
     lineProgress?: number,
-    isSupportedScript?: (string) => boolean
+    isSupportedScript?: (string) => boolean,
+    accumulated?: Value
 }>;
 
 export class StyleExpression {
@@ -49,12 +50,12 @@ export class StyleExpression {
     _warningHistory: {[key: string]: boolean};
     _enumValues: ?{[string]: any};
 
-    constructor(expression: Expression, propertySpec: StylePropertySpecification) {
+    constructor(expression: Expression, propertySpec: ?StylePropertySpecification) {
         this.expression = expression;
         this._warningHistory = {};
         this._evaluator = new EvaluationContext();
-        this._defaultValue = getDefaultValue(propertySpec);
-        this._enumValues = propertySpec.type === 'enum' ? propertySpec.values : null;
+        this._defaultValue = propertySpec ? getDefaultValue(propertySpec) : null;
+        this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
     evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
@@ -105,12 +106,12 @@ export function isExpression(expression: mixed) {
  *
  * @private
  */
-export function createExpression(expression: mixed, propertySpec: StylePropertySpecification): Result<StyleExpression, Array<ParsingError>> {
-    const parser = new ParsingContext(definitions, [], getExpectedType(propertySpec));
+export function createExpression(expression: mixed, propertySpec: ?StylePropertySpecification): Result<StyleExpression, Array<ParsingError>> {
+    const parser = new ParsingContext(definitions, [], propertySpec ? getExpectedType(propertySpec) : undefined);
 
     // For string-valued properties, coerce to string at the top level rather than asserting.
     const parsed = parser.parse(expression, undefined, undefined, undefined,
-        propertySpec.type === 'string' ? {typeAnnotation: 'coerce'} : undefined);
+        propertySpec && propertySpec.type === 'string' ? {typeAnnotation: 'coerce'} : undefined);
 
     if (!parsed) {
         assert(parser.errors.length > 0);

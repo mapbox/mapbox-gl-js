@@ -373,6 +373,10 @@
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
     },
+    "clusterProperties": {
+      "type": "*",
+      "doc": "An object defining custom properties on the generated clusters if clustering is enabled, aggregating values from clustered points. Has the form `{\"property_name\": [operator, initial_expression, map_expression]}`. `operator` is any expression function that accepts at least 2 operands (e.g. `\"+\"` or `\"max\"`) — it accumulates the property value from clusters/points the cluster contains; `initial_expression` evaluates the initial value of the property before accummulating other points/clusters; `map_expression` produces the value of a single point.\n\nExample: `{\"sum\": [\"+\", 0, [\"get\", \"scalerank\"]]}`.\n\nFor more advanced use cases, in place of `operator`, you can use a custom reduce expression that references a special `[\"accumulated\"]` value, e.g.:\n`{\"sum\": [[\"+\", [\"accumulated\"], [\"get\", \"sum\"]], 0, [\"get\", \"scalerank\"]]}`"
+    },
     "lineMetrics": {
       "type": "boolean",
       "default": false,
@@ -2800,6 +2804,15 @@
             "android": "6.5.0",
             "ios": "4.6.0",
             "macos": "0.12.0"
+          }
+        }
+      },
+      "accumulated": {
+        "doc": "Gets the value of a cluster property accumulated so far. Can only be used in the `clusterProperties` option of a clustered GeoJSON source.",
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.53.0"
           }
         }
       },

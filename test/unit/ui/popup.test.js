@@ -4,7 +4,7 @@ import { createMap as globalCreateMap } from '../../util';
 import Popup from '../../../src/ui/popup';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
-import { click as simulateClick } from 'mapbox-gl-js-test/simulate_interaction';
+import { click, mouseout, mouseover, mousemove } from 'mapbox-gl-js-test/simulate_interaction';
 
 const containerWidth = 512;
 const containerHeight = 512;
@@ -36,7 +36,7 @@ test('Popup closes on map click events by default', (t) => {
         .setLngLat([0, 0])
         .addTo(map);
 
-    simulateClick(map.getCanvas());
+    click(map.getCanvas());
 
     t.ok(!popup.isOpen());
     t.end();
@@ -49,7 +49,7 @@ test('Popup does not close on map click events when the closeOnClick option is f
         .setLngLat([0, 0])
         .addTo(map);
 
-    simulateClick(map.getCanvas());
+    click(map.getCanvas());
 
     t.ok(popup.isOpen());
     t.end();
@@ -62,7 +62,7 @@ test('Popup closes on close button click events', (t) => {
         .setLngLat([0, 0])
         .addTo(map);
 
-    simulateClick(map.getContainer().querySelector('.mapboxgl-popup-close-button'));
+    click(map.getContainer().querySelector('.mapboxgl-popup-close-button'));
 
     t.ok(!popup.isOpen());
     t.end();
@@ -459,6 +459,73 @@ test('Popup adds classes from className option', (t) => {
     t.ok(popupContainer.classList.contains('classes'));
     t.end();
 });
+
+test('Cursor-tracked popup disappears on mouseout', (t) => {
+    const map = createMap(t);
+
+    const popup = new Popup()
+        .setText("Test")
+        .trackCursor()
+        .addTo(map);
+
+    t.equal(popup._trackCursor, true);
+    t.end();
+});
+
+
+test('Cursor-tracked popup is visible', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText("Test")
+        .trackCursor()
+        .addTo(map);
+
+    t.equal(popup._container.style.display, '');
+    t.end();
+});
+
+test('Cursor-tracked popup can be repositioned with setLngLat', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText("Test")
+        .trackCursor()
+        .setLngLat([0,0])
+        .addTo(map);
+
+    t.deepEqual(popup._pos, map.project([0,0]));
+    t.end();
+});
+
+test('Positioned popup can be set to track cursor', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText("Test")
+        .setLngLat([0,0])
+        .trackCursor()
+        .addTo(map);
+
+    mousemove(map.getCanvas(), {screenX:0, screenY:0})
+    t.deepEqual(popup._pos, {x:0, y:0});
+    t.end();
+});
+
+test('Cursor-tracked popup is hidden on mouseout and reappears on mouseover', (t) => {
+    const map = createMap(t);
+
+    const popup = new Popup()
+        .setText("Test")
+        .trackCursor()
+        .addTo(map);
+    
+    mouseout(map.getCanvas());
+    t.equal(popup._container.style.display, 'none');
+
+    mouseover(map.getCanvas());
+    t.equal(popup._container.style.display, '');
+
+    t.end();
+});
+
 
 test('Popup closes on Map#remove', (t) => {
     const map = createMap(t);
