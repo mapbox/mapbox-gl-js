@@ -831,6 +831,15 @@ class SourceCache extends Evented {
     }
 
     /**
+     * Resets the value of a particular state key for a feature
+     * @private
+     */
+    removeFeatureState(sourceLayer?: string, feature?: number, key?: string) {
+        sourceLayer = sourceLayer || '_geojsonTileLayer';
+        this._state.removeFeatureState(sourceLayer, feature, key);
+    }
+
+    /**
      * Get the entire state object for a feature
      * @private
      */
