@@ -121,6 +121,7 @@ export type GeoJSONSourceSpecification = {|
     "cluster"?: boolean,
     "clusterRadius"?: number,
     "clusterMaxZoom"?: number,
+    "clusterProperties"?: mixed,
     "lineMetrics"?: boolean,
     "generateId"?: boolean
 |}
