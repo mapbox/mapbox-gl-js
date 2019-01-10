@@ -283,7 +283,7 @@ var nonMobile = {
       to: '/vector-tiles/'
     }, {
       name: 'Maps APIs',
-      to: '/api-documentation/#maps'
+      to: '/api-documentation/maps/'
     }]
   },
   navigation: {
@@ -299,13 +299,13 @@ var nonMobile = {
     },
     links: [{
       name: 'Directions APIs',
-      to: '/api-documentation/#directions'
+      to: '/api-documentation/navigation/'
     }]
   },
   search: {
     links: [{
       name: 'Geocoding API',
-      to: '/api-documentation/#geocoding'
+      to: '/api-documentation/search/'
     }]
   },
   help: {
@@ -973,7 +973,6 @@ MetaTagger.defaultProps = {
   largeImage: true
 };
 
-var pageShellInitialized = false;
 var lastUrl;
 
 var ReactPageShell =
@@ -991,12 +990,7 @@ function (_React$Component) {
     key: "componentDidMount",
     value: function componentDidMount() {
       if (!window.MapboxPageShell) throw new Error('MapboxPageShell not loaded');
-
-      if (!pageShellInitialized) {
-        this.initialize();
-      } else {
-        MapboxPageShell.initialize();
-      }
+      this.initialize();
     }
   }, {
     key: "componentDidUpdate",
@@ -1025,7 +1019,6 @@ function (_React$Component) {
         MapboxPageShell.loadUserMenu({
           dark: _this.props.darkHeaderText
         });
-        pageShellInitialized = true;
       });
     }
   }, {
