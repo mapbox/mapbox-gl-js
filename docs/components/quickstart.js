@@ -17,9 +17,9 @@ class Quickstart extends React.Component {
 
     componentDidMount() {
         MapboxPageShell.afterUserCheck(() => {
-          this.setState({
-            userAccessToken: MapboxPageShell.getUserPublicAccessToken()
-          });
+            this.setState({
+                userAccessToken: MapboxPageShell.getUserPublicAccessToken()
+            });
         });
     }
 
@@ -92,20 +92,20 @@ class Quickstart extends React.Component {
                     themeToggleGroup="bg-blue py3 px3 my12"
                     themeToggle="txt-s py3 toggle--white toggle--active-blue"
                     onChange={
-                      (value) => {
-                        this.setState({ selectedMethod: value });
-                      }
+                        (value) => {
+                            this.setState({ selectedMethod: value });
+                        }
                     }
                     value={this.state.selectedMethod}
                     options={[
-                      {
-                        label: 'Mapbox CDN',
-                        value: 'cdn-select'
-                      },
-                      {
-                        label: 'Module bundler',
-                        value: 'bundler-select'
-                      }
+                        {
+                            label: 'Mapbox CDN',
+                            value: 'cdn-select'
+                        },
+                        {
+                            label: 'Module bundler',
+                            value: 'bundler-select'
+                        }
                     ]}
                 />
                 {this.renderContents(this.state.selectedMethod)}

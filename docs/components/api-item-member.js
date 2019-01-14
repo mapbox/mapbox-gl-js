@@ -20,9 +20,7 @@ class ApiItemMember extends React.Component {
         this.hashChange = this.hashChange.bind(this);
     }
 
-    href = m => {
-        return `#${m.namespace.toLowerCase()}`;
-    }
+    href = m => `#${m.namespace.toLowerCase()}`
 
     render() {
         const member = this.props;
@@ -34,7 +32,7 @@ class ApiItemMember extends React.Component {
                         className='clearfix cursor-pointer toggle-sibling pt18'
                         onClick={(e) => {
                             this.setState({disclosed: !this.state.disclosed});
-                            window.location = this.href(member)                    
+                            window.location = this.href(member);
                             e.preventDefault();
                         }}
                     >
@@ -55,7 +53,7 @@ class ApiItemMember extends React.Component {
 
     hashChange() {
         if (window.location.hash === this.href(this.props)) {
-            this.setState({disclosed: true });    
+            this.setState({disclosed: true });
         }
     }
 

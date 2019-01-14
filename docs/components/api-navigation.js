@@ -26,21 +26,18 @@ class TableOfContentsItem extends React.Component {
     render() {
         const doc = this.props;
 
-        const empty = (members) => !members || members.length === 0;
+        const empty = members => !members || members.length === 0;
         if (empty(doc.members.static) && empty(doc.members.instance) && empty(doc.members.events)) {
             return <li className="color-blue-on-hover txt-s mt6"><a href={href(doc)}>{doc.name}</a></li>;
         }
 
-        const membersList = (members, title, sigil) => {
-            return members && members.length !== 0 &&
+        const membersList = (members, title, sigil) => members && members.length !== 0 &&
                 <ul className='list-reset px6'>
                     <li className='block txt-s color-gray mb6 truncate color-blue-on-hover'>{title}</li>
-                    {members.map((m, i) =>
-                        <li key={i}>
-                            <a href={href(m)} className='block txt-s truncate pre-open color-blue-on-hover'>{sigil}{m.name}</a>
-                        </li>)}
+                    {members.map((m, i) => <li key={i}>
+                        <a href={href(m)} className='block txt-s truncate pre-open color-blue-on-hover'>{sigil}{m.name}</a>
+                    </li>)}
                 </ul>;
-        };
 
         return (
             <li>

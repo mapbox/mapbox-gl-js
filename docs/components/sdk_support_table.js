@@ -23,14 +23,13 @@ export default class SDKSupportTable extends React.Component {
                     </tr>
                 </thead>
                 <tbody>
-                    {entries(this.props).map(([key, entry], i) =>
-                        <tr key={i}>
-                            <td>{md(key)}</td>
-                            <td className='align-center'>{this.support(entry, 'js')}</td>
-                            <td className='align-center'>{this.support(entry, 'android')}</td>
-                            <td className='align-center'>{this.support(entry, 'ios')}</td>
-                            <td className='align-center'>{this.support(entry, 'macos')}</td>
-                        </tr>
+                    {entries(this.props).map(([key, entry], i) => <tr key={i}>
+                        <td>{md(key)}</td>
+                        <td className='align-center'>{this.support(entry, 'js')}</td>
+                        <td className='align-center'>{this.support(entry, 'android')}</td>
+                        <td className='align-center'>{this.support(entry, 'ios')}</td>
+                        <td className='align-center'>{this.support(entry, 'macos')}</td>
+                    </tr>
                     )}
                 </tbody>
             </table>

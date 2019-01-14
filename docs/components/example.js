@@ -110,7 +110,7 @@ ${html}
                                         code={this.displayHTML()}
                                         highlightedCode={Prism.highlight(this.displayHTML(), Prism.languages['markup'])}
                                         highlightThemeCss={highlightTheme}
-                                        onCopy={() => { analytics.track('Copied example with clipboard') }}
+                                        onCopy={() => { analytics.track('Copied example with clipboard'); }}
                                     />
                                 </div>
                             </div>

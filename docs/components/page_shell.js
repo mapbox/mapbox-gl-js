@@ -39,22 +39,14 @@ class PageShell extends React.Component {
 
     accordionNavProps() {
         const { frontMatter } = this.props;
-        const sections = overviewNavigation.map(section => {
-            return {
-                title: section.title,
-                path: `/mapbox-gl-js/overview/${section.path}`
-            }
-        });
-        const subtitles = overviewNavigation.filter(section => {
-            return section.title === frontMatter.title;
-        }).map(section => {
-            return section.subnav.map(subNavItem => {
-                return {
-                    title: subNavItem.title,
-                    path: subNavItem.path
-                }
-            });
-        })[0];
+        const sections = overviewNavigation.map(section => ({
+            title: section.title,
+            path: `/mapbox-gl-js/overview/${section.path}`
+        }));
+        const subtitles = overviewNavigation.filter(section => section.title === frontMatter.title).map(section => section.subnav.map(subNavItem => ({
+            title: subNavItem.title,
+            path: subNavItem.path
+        })))[0];
         const sidebarContent = (
             <div className='mx0-mm ml-neg24 mr-neg36 relative-mm absolute right left'>
                 <NavigationAccordion
@@ -63,7 +55,7 @@ class PageShell extends React.Component {
                         firstLevelItems: sections,
                         secondLevelItems: subtitles
                     }}
-                    onDropdownChange={value => {
+                    onDropdownChange={(value) => {
                         routeToPrefixed(value);
                     }}
                 />
@@ -71,43 +63,37 @@ class PageShell extends React.Component {
         );
         return {
             contentType: "Overview",
-            sidebarContent: sidebarContent,
+            sidebarContent,
             sidebarStackedOnNarrowScreens: true
-        }
+        };
     }
 
     getExampleSections(data) {
         return (
-            Object.keys(data).map(topic => {
+            Object.keys(data).map((topic) => {
                 const subNavItems = examples
-                  .filter(item => { return item.tags[0] === topic; })
-                  .map(item => {
-                    return {
-                      text: item.title,
-                      url: item.path,
-                      active: location.pathname === item.path
-                    };
-                  });
+                    .filter(item => item.tags[0] === topic)
+                    .map(item => ({
+                        text: item.title,
+                        url: item.path,
+                        active: location.pathname === item.path
+                    }));
                 return {
-                  title: data[topic],
-                  url: `#${topic}`,
-                  items: subNavItems
+                    title: data[topic],
+                    url: `#${topic}`,
+                    items: subNavItems
                 };
-              }).filter(topic => {
-                return topic.items.length > 0;
-              })
-        )
+            }).filter(topic => topic.items.length > 0)
+        );
     }
 
     getPluginSections(data) {
         return (
-            Object.keys(data).map(section => {
-                const subNavItems = Object.keys(data[section]).map(item => {
-                    return {
-                        text: item,
-                        url: data[section][item].website
-                    };
-                 });
+            Object.keys(data).map((section) => {
+                const subNavItems = Object.keys(data[section]).map(item => ({
+                    text: item,
+                    url: data[section][item].website
+                }));
                 return {
                     title: section,
                     url: `#${slugger.slug(section)}`,
@@ -125,10 +111,10 @@ class PageShell extends React.Component {
             </div>
         );
         return {
-            contentType: contentType,
-            sidebarContent: sidebarContent,
+            contentType,
+            sidebarContent,
             sidebarStackedOnNarrowScreens: false
-        }
+        };
     }
 
     apiNavProps() {
@@ -136,31 +122,31 @@ class PageShell extends React.Component {
             contentType: "API reference",
             sidebarContent: <ApiNavigation />,
             sidebarStackedOnNarrowScreens: false
-        }
+        };
     }
 
     styleSpecNavProps() {
         slugger.reset();
         const sections = styleSpecNavigation
-          .map(section => {
-            let subNavItems = [];
-            const sectionSlug = slugger.slug(section.title);
-            if (section.subnav) {
-                subNavItems = section.subnav.map(item => {
-                    slugger.reset();
-                    const itemSlug = slugger.slug(item.title);
-                    return {
-                        text: item.title,
-                        url: `#${sectionSlug}-${itemSlug}`
-                    };
-                 });
-            }
-            return {
-                title: section.title,
-                url: `#${sectionSlug}`,
-                items: subNavItems
-            };
-        });
+            .map((section) => {
+                let subNavItems = [];
+                const sectionSlug = slugger.slug(section.title);
+                if (section.subnav) {
+                    subNavItems = section.subnav.map((item) => {
+                        slugger.reset();
+                        const itemSlug = slugger.slug(item.title);
+                        return {
+                            text: item.title,
+                            url: `#${sectionSlug}-${itemSlug}`
+                        };
+                    });
+                }
+                return {
+                    title: section.title,
+                    url: `#${sectionSlug}`,
+                    items: subNavItems
+                };
+            });
         const sidebarContent = (
             <div className='ml36 mr12'>
                 <SectionedNavigation sections={sections} includeCount={false} />
@@ -169,9 +155,9 @@ class PageShell extends React.Component {
 
         return {
             contentType: "Specification",
-            sidebarContent: sidebarContent,
+            sidebarContent,
             sidebarStackedOnNarrowScreens: false
-        }
+        };
     }
 
     getSidebarProps(activeTab) {
@@ -186,7 +172,7 @@ class PageShell extends React.Component {
         } else if (activeTab === 'style-spec') {
             return this.styleSpecNavProps();
         } else {
-            return;
+
         }
     }
 
@@ -195,12 +181,12 @@ class PageShell extends React.Component {
             return {
                 productName: "Mapbox Style Spec",
                 topNav: ""
-            }
+            };
         } else {
             return {
                 productName: "Mapbox GL JS",
                 topNav: <TopNavTabs activeTab={activeTab} />
-            }
+            };
         }
     }
 
@@ -219,9 +205,9 @@ class PageShell extends React.Component {
                 <TopbarSticker>
                     <div className="limiter">
                         <div className="grid grid--gut36 mr-neg36 mr0-mm">
-                              <div className="col col--4-mm col--12">
+                            <div className="col col--4-mm col--12">
                                 <div className="ml24 pt12">
-                                      <ProductMenu productName={topbarContent.productName} homePage='/mapbox-gl-js/'/>
+                                    <ProductMenu productName={topbarContent.productName} homePage='/mapbox-gl-js/'/>
                                 </div>
                             </div>
                             <div className="col col--8-mm col--12">
@@ -241,9 +227,9 @@ class PageShell extends React.Component {
                         currentPath={location.pathname}
                         sidebarStackedOnNarrowScreens={sidebarProps.sidebarStackedOnNarrowScreens}
                     >
-                            <div id="docs-content" className='static-header-page prose'>
-                                {this.props.children}
-                            </div>
+                        <div id="docs-content" className='static-header-page prose'>
+                            {this.props.children}
+                        </div>
                         <div className="fixed block none-mm mx24 my24 z5 bottom right">
                             <BackToTopButton />
                         </div>

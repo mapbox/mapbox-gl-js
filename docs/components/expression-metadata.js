@@ -182,12 +182,10 @@ for (const name in CompoundExpression.definitions) {
             parameters: processParameters(definition[1])
         }];
     } else {
-        types[name] = definition.overloads.map((o) => {
-            return {
-                type: toString(definition.type),
-                parameters: processParameters(o[0])
-            };
-        });
+        types[name] = definition.overloads.map(o => ({
+            type: toString(definition.type),
+            parameters: processParameters(o[0])
+        }));
     }
 }
 
@@ -200,7 +198,7 @@ for (const name in types) {
     expressionGroups[spec.group] = expressionGroups[spec.group] || [];
     expressionGroups[spec.group].push(name);
     expressions[name] = {
-        name: name,
+        name,
         doc: spec.doc,
         type: types[name],
         sdkSupport: spec['sdk-support']
