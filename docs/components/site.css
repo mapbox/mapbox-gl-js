@@ -28,16 +28,16 @@ a.dark-link:hover {
 .toggle-target .fill-white .fill-light,
 .toggle-target .fill-white code { background: #eee; }
 
-div.toggle-sibling:hover { 
+div.toggle-sibling:hover {
   opacity: 0.7;
 }
 
-/*div.toggle-sibling::before { 
-  display: block; 
-  content: " "; 
-  margin-top: -60px; 
-  height: 60px; 
-  visibility: hidden; 
+/*div.toggle-sibling::before {
+  display: block;
+  content: " ";
+  margin-top: -60px;
+  height: 60px;
+  visibility: hidden;
   pointer-events: none;
   z-index: -1
 }*/
@@ -45,3 +45,7 @@ div.toggle-sibling:hover {
 
 
 .line-height15 {line-height: 15px}
+
+.prose h2 + div h3 {
+  padding-top: 0 !important;
+}
