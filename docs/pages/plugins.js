@@ -174,16 +174,16 @@ export default class extends React.Component {
                                         <h3 id={slug(name)}><a className="unprose color-blue-on-hover" href={`#${slug(name)}`}>{name}</a></h3>
                                         <div>{ plugin.description }</div>
                                         <div className="my12">
-                                            { plugin.website && 
-                                                <div>
-                                                    <a className="color-blue txt-s color-blue-dark-on-hover unprose" href={plugin.website}>
+                                            { plugin.website &&
+                                                <div className='mb6'>
+                                                    <a className="color-blue color-blue-dark-on-hover unprose" href={plugin.website}>
                                                         <IconText iconBefore="github">View on GitHub</IconText>
                                                     </a>
                                                 </div>
                                             }
-                                            { plugin.example && 
+                                            { plugin.example &&
                                                 <div>
-                                                    <a className="color-blue txt-s color-blue-dark-on-hover unprose" href={prefixUrl(`/example/${plugin.example}`)}>
+                                                    <a className="color-blue color-blue-dark-on-hover unprose" href={prefixUrl(`/example/${plugin.example}`)}>
                                                         <IconText iconBefore="code">View example</IconText>
                                                     </a>
                                                 </div>
