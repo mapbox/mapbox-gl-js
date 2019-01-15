@@ -35,7 +35,7 @@ class ApiItem extends React.Component {
 
         const membersList = (members, title) => !empty(members) &&
                 <div>
-                    <div className='py6 color-gray mt12 txt-l'>{title}</div>
+                    <div className='py6 mt12 txt-l'>{title}</div>
                     <div className='clearfix'>
                         {members.map((member, i) => <ApiItemMember key={i} {...member}/>)}
                     </div>
@@ -69,7 +69,7 @@ class ApiItem extends React.Component {
 
                 {!empty(section.params) && (section.kind !== 'class' || !section.constructorComment || section.constructorComment.access !== 'private') &&
                     <div>
-                        <div className='py6 color-gray mt12 txt-l'>Parameters</div>
+                        <div className='py6 mt12 txt-l'>Parameters</div>
                         <div>
                             {section.params.map((param, i) => <div key={i} className='mb0'>
                                 <div>
@@ -107,7 +107,7 @@ class ApiItem extends React.Component {
 
                 {!empty(section.properties) &&
                     <div>
-                        <div className='py6 color-gray mt12 txt-l'>Properties</div>
+                        <div className='py6 mt12 txt-l'>Properties</div>
                         <div>
                             {section.properties.map((property, i) => <div key={i} className='mb0'>
                                 <span className='txt-code txt-bold'>{property.name}</span>
@@ -127,14 +127,14 @@ class ApiItem extends React.Component {
                     </div>}
 
                 {section.returns && section.returns.map((ret, i) => <div key={i}>
-                    <div className='py6 color-gray mt12 txt-l'>Returns</div>
+                    <div className='py6 mt12 txt-l'>Returns</div>
                     <code>{this.formatType(ret.type)}</code>
                     {ret.description && <span>: {this.md(ret.description, true)}</span>}
                 </div>)}
 
                 {!empty(section.throws) &&
                     <div>
-                        <div className='py6 color-gray mt12 txt-l'>Throws</div>
+                        <div className='py6 mt12 txt-l'>Throws</div>
                         <ul>
                             {section.throws.map((throws, i) => <li key={i}>{this.formatType(throws.type)}: {this.md(throws.description, true)}</li>)}
                         </ul>
@@ -142,7 +142,7 @@ class ApiItem extends React.Component {
 
                 {!empty(section.examples) &&
                     <div>
-                        <div className='py6 color-gray mt12 txt-l'>Example</div>
+                        <div className='py6 mt12 txt-l'>Example</div>
                         {section.examples.map((example, i) => <div key={i}>
                             {example.caption && <p>{this.md(example.caption)}</p>}
                             {highlightJavascript(example.description)}
@@ -155,7 +155,7 @@ class ApiItem extends React.Component {
 
                 {!empty(section.sees) &&
                     <div>
-                        <div className='py6 color-gray mt12 txt-l'>Related</div>
+                        <div className='py6 mt12 txt-l'>Related</div>
                         <ul>{section.sees.map((see, i) => <li key={i}>{this.md(see, true)}</li>)}</ul>
                     </div>}
             </section>
