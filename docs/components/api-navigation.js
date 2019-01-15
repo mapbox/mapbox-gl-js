@@ -10,7 +10,7 @@ class TableOfContentsNote extends React.Component {
     render() {
         const doc = this.props;
         return (
-            <li className='mt24'>
+            <li className='mt24 txt-bold'>
                 <a href={href(doc)}>{doc.name}</a>
             </li>
         );
@@ -28,21 +28,21 @@ class TableOfContentsItem extends React.Component {
 
         const empty = members => !members || members.length === 0;
         if (empty(doc.members.static) && empty(doc.members.instance) && empty(doc.members.events)) {
-            return <li className="color-blue-on-hover txt-s mt6"><a href={href(doc)}>{doc.name}</a></li>;
+            return <li className="txt-s mt6"><a href={href(doc)} className='link--gray'>{doc.name}</a></li>;
         }
 
         const membersList = (members, title, sigil) => members && members.length !== 0 &&
-                <ul className='list-reset px6'>
-                    <li className='block txt-s color-gray mb6 truncate color-blue-on-hover'>{title}</li>
-                    {members.map((m, i) => <li key={i}>
-                        <a href={href(m)} className='block txt-s truncate pre-open color-blue-on-hover'>{sigil}{m.name}</a>
+                <ul className='list-reset px6 mb6'>
+                    <li className='block txt-s'>{title}</li>
+                    {members.map((m, i) => <li key={i} className='ml12'>
+                        <a href={href(m)} className='block txt-s truncate pre-open link--gray'>{sigil}{m.name}</a>
                     </li>)}
                 </ul>;
 
         return (
             <li>
                 <a href={href(doc)}
-                    className='toggle-sibling color-blue-on-hover txt-s mt6'
+                    className='toggle-sibling link--gray txt-s mt6'
                     onClick={() => this.setState({disclosed: !this.state.disclosed})}>
                     {doc.name}
                     <div className="inline-block mb-neg6"><Icon name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} /></div>
