@@ -58,7 +58,7 @@ class ApiItem extends React.Component {
                 {section.kind === 'class' &&
                     !section.interface &&
                     (!section.constructorComment || section.constructorComment.access !== 'private') &&
-                    <div className='txt-code px6 py6 txt-s round bg-gray-faint'
+                    <div className='txt-code px6 py6 txt-s round bg-gray-faint my18'
                         dangerouslySetInnerHTML={{__html: `new ${section.name}${formatters.parameters(section)}`}}/>}
 
                 {section.version && <div>Version: {section.version}</div>}
