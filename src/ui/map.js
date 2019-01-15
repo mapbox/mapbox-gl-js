@@ -1257,7 +1257,7 @@ class Map extends Camera {
      * @see [Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
     getLayer(id: string) {
-        return this.style.getLayer(id);
+        return this.style && this.style.getLayer(id);
     }
 
     /**
