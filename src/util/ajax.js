@@ -186,6 +186,10 @@ export const getArrayBuffer = function(requestParameters: RequestParameters, cal
     return makeRequest(extend(requestParameters, { type: 'arrayBuffer' }), callback);
 };
 
+export const getBlob = function(requestParameters: RequestParameters, callback: ResponseCallback<ArrayBuffer>): Cancelable {
+    return makeRequest(extend(requestParameters, { type: 'blob' }), callback);
+};
+
 export const postData = function(requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
     return makeRequest(extend(requestParameters, { method: 'POST' }), callback);
 };
@@ -204,6 +208,10 @@ export const resetImageRequestQueue = () => {
     numImageRequests = 0;
 };
 resetImageRequestQueue();
+
+function createWorker(f) {
+    return new Worker(URL.createObjectURL(new Blob([`(${f})()`])));
+}
 
 export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
     // limit concurrent image loads to help with raster sources performance on big screens
@@ -233,27 +241,32 @@ export const getImage = function(requestParameters: RequestParameters, callback:
             }
         }
     };
-
+    console.log('requestParameters', requestParameters);
     // request the image with XHR to work around caching issues
     // see https://github.com/mapbox/mapbox-gl-js/issues/1470
-    const request = getArrayBuffer(requestParameters, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
+    const request = getBlob(requestParameters, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
 
         advanceImageRequestQueue();
 
         if (err) {
             callback(err);
         } else if (data) {
-            const img: HTMLImageElement = new window.Image();
-            const URL = window.URL || window.webkitURL;
-            img.onload = () => {
-                callback(null, img);
-                URL.revokeObjectURL(img.src);
-            };
-            img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
-            const blob: Blob = new window.Blob([new Uint8Array(data)], { type: 'image/png' });
-            (img: any).cacheControl = cacheControl;
-            (img: any).expires = expires;
-            img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+            console.log('typeof data', typeof data);
+            window.createImageBitmap(data).then(bitmap => {
+              console.log('bitmap', typeof bitmap, bitmap);
+              callback(null, bitmap);
+            });
+            // const img: HTMLImageElement = new window.Image();
+            // const URL = window.URL || window.webkitURL;
+            // img.onload = () => {
+            //     callback(null, img);
+            //     URL.revokeObjectURL(img.src);
+            // };
+            // img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
+            // const blob: Blob = new window.Blob([new Uint8Array(data)], { type: 'image/png' });
+            // (img: any).cacheControl = cacheControl;
+            // (img: any).expires = expires;
+            // img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
         }
     });
 

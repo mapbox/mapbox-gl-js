@@ -113,6 +113,7 @@ class RasterTileSource extends Evented implements Source {
                 tile.state = 'errored';
                 callback(err);
             } else if (img) {
+                console.log('img', img);
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
