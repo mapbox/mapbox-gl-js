@@ -1,6 +1,5 @@
 import React from 'react';
 import { withLocation } from '@mapbox/batfish/modules/with-location';
-import Helmet from 'react-helmet';
 import ReactPageShell from '../../vendor/docs-page-shell/react-page-shell.js';
 // dr-ui components
 import TopbarSticker from '@mapbox/dr-ui/topbar-sticker';

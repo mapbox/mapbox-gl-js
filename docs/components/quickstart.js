@@ -1,7 +1,5 @@
 import React from 'react';
-import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
 import urls from './urls';
-import {version} from '../../package.json';
 import {highlightJavascript, highlightMarkup, highlightShell} from './prism_highlight';
 import Copyable from './copyable';
 import ControlToggleSet from '@mapbox/mr-ui/control-toggle-set';
@@ -115,4 +113,3 @@ class Quickstart extends React.Component {
 }
 
 export default Quickstart;
-

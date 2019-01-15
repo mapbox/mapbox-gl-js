@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TabList from '@mapbox/mr-ui/tab-list';
 import { listTabs } from '../util/list-tabs';
-import listSubfolders from '@mapbox/batfish/data/list-subfolders';
+import listSubfolders from '@mapbox/batfish/data/list-subfolders'; // eslint-disable-line import/no-unresolved
 
 class TopNavTabs extends React.Component {
     render() {

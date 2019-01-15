@@ -1,4 +1,5 @@
 import React from 'react';
+import GithubSlugger from 'github-slugger';
 import createFormatters from 'documentation/lib/output/util/formatters';
 import LinkerStack from 'documentation/lib/output/util/linker_stack';
 import docs from '../components/api.json'; // eslint-disable-line import/no-unresolved

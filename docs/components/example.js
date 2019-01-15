@@ -1,29 +1,13 @@
 import React from 'react';
-import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
 import urls from './urls';
 import md from './md';
 import PageShell from './page_shell';
 import Prism from 'prismjs';
 import supported from '@mapbox/mapbox-gl-supported';
-import {copy} from 'execcommand-copy';
-import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line import/no-unresolved
-import entries from 'object.entries';
 import Icon from '@mapbox/mr-ui/icon';
 import CodeSnippet from '@mapbox/mr-ui/code-snippet';
 
-const highlightTheme = require('raw-loader!./prism_highlight.css');
-
-const tags = {
-    "styles": "Styles",
-    "layers": "Layers",
-    "sources": "Sources",
-    "user-interaction": "User interaction",
-    "camera": "Camera",
-    "controls-and-overlays": "Controls and overlays",
-    "geocoder": "Geocoder",
-    "browser-support": "Browser support",
-    "internationalization": "Internationalization support"
-};
+const highlightTheme = require('raw-loader!./prism_highlight.css'); // eslint-disable-line import/no-commonjs
 
 export default function (html) {
     return class extends React.Component {
@@ -82,7 +66,6 @@ ${html}
 
         render() {
             const {frontMatter} = this.props;
-            const filter = this.state.filter.toLowerCase().trim();
             return (
                 <PageShell meta={frontMatter}>
                     <div className='contain'>
