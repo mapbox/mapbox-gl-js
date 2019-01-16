@@ -170,8 +170,6 @@ class PageShell extends React.Component {
             return this.sectionedNavProps(activeTab, this.getPluginSections(plugins));
         } else if (activeTab === 'style-spec') {
             return this.styleSpecNavProps();
-        } else {
-
         }
     }
 
@@ -190,7 +188,7 @@ class PageShell extends React.Component {
     }
 
     render() {
-        const { frontMatter, location, children } = this.props;
+        const { location } = this.props;
 
         let activeTab = location.pathname.split('/')[2];
         if (activeTab === 'example') activeTab = 'examples';

@@ -11,8 +11,7 @@ import CardContainer from '@mapbox/dr-ui/card-container';
 import Card from '@mapbox/dr-ui/card';
 import PageShell from '../components/page_shell';
 import { tags } from '../data/tags.js';
-import examples from '@mapbox/batfish/data/examples';
-import md from '@mapbox/batfish/modules/md'; // eslint-disable-line import/no-unresolved
+import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line import/no-unresolved
 
 const meta = {
     title: 'Mapbox GL JS Examples',

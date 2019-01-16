@@ -37,7 +37,7 @@ export function listTabs(arrayOfFolders) {
     Object.keys(tabOrder).forEach((key) => {
         let found = false;
         alltheTabs = alltheTabs.filter((item) => {
-            if (!found && item.id == key) {
+            if (!found && item.id === key) {
                 orderedTabs.push(item);
                 found = true;
                 return false;

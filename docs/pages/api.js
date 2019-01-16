@@ -1,8 +1,6 @@
 import React from 'react';
 import PageShell from '../components/page_shell';
-import {highlightJavascript} from '../components/prism_highlight.js';
 import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
-import Quickstart from '../components/quickstart';
 import {version} from '../../package.json';
 import docs from '../components/api.json'; // eslint-disable-line import/no-unresolved
 import GithubSlugger from 'github-slugger';
@@ -24,10 +22,6 @@ const linkerStack = new LinkerStack({})
 
 const formatters = createFormatters(linkerStack.link);
 
-function formatType(type) {
-    return <span dangerouslySetInnerHTML={{__html: formatters.type(type)}}/>;
-}
-
 function md(ast, inline) {
     if (inline && ast && ast.children.length && ast.children[0].type === 'paragraph') {
         ast = {
@@ -36,10 +30,6 @@ function md(ast, inline) {
         };
     }
     return <span dangerouslySetInnerHTML={{__html: formatters.markdown(ast)}}/>;
-}
-
-function href(m) {
-    return `#${m.namespace.toLowerCase()}`;
 }
 
 class Note extends React.Component {
