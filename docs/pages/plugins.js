@@ -57,10 +57,6 @@ const plugins = {
         "mapboxgl-minimap": {
             "website": "https://github.com/aesqe/mapboxgl-minimap",
             "description": "Adds a control showing a miniature overview of the current map."
-        },
-        "mapbox-gl-controls": {
-            "website": "https://github.com/bravecow/mapbox-gl-controls",
-            "description": "Alternative basic map controls."
         }
     },
     "Map Rendering Plugins": {
@@ -167,10 +163,10 @@ export default class extends React.Component {
                 <div className='contain'>
                     <div id='plugins' className='doc' data-swiftype-index='true'>
                         {entries(plugins).map(([title, plugins], i) =>
-                            <div key={i} className='space-bottom4'>
-                                <h2 className='space-bottom1' id={slug(title)}><a className="unprose color-blue-on-hover" href={`#${slug(title)}`}>{title}</a></h2>
+                            <div key={i} className=''>
+                                <h2 className={i === 0 ? 'pt0' : ''} id={slug(title)}><a className="unprose color-blue-on-hover" href={`#${slug(title)}`}>{title}</a></h2>
                                 {entries(plugins).map(([name, plugin], i) =>
-                                    <div key={i} className='space-bottom1 keyline-all pad2 fill-white'>
+                                    <div key={i} className=''>
                                         <h3 id={slug(name)}><a className="unprose color-blue-on-hover" href={`#${slug(name)}`}>{name}</a></h3>
                                         <div>{ plugin.description }</div>
                                         <div className="my12">
