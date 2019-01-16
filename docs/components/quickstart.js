@@ -1,6 +1,5 @@
 import React from 'react';
 import urls from './urls';
-import {highlightJavascript, highlightMarkup, highlightShell} from './prism_highlight';
 import Copyable from './copyable';
 import ControlToggleSet from '@mapbox/mr-ui/control-toggle-set';
 
@@ -25,26 +24,22 @@ class Quickstart extends React.Component {
         return (
             <div id='quickstart-cdn'>
                 <p>Include the JavaScript and CSS files in the <code>&lt;head&gt;</code> of your HTML file.</p>
-                <Copyable>
-                    {highlightMarkup(`
-                        <script src='${urls.js()}'></script>
-                        <link href='${urls.css()}' rel='stylesheet' />
-                    `)}
-                </Copyable>
+                <Copyable lang='markup'>{`
+<script src='${urls.js()}'></script>
+<link href='${urls.css()}' rel='stylesheet' />
+`}</Copyable>
 
                 <p>Include the following code in the <code>&lt;body&gt;</code> of your HTML file.</p>
-                <Copyable>
-                    {highlightMarkup(`
-                        <div id='map' style='width: 400px; height: 300px;'></div>
-                        <script>
-                        mapboxgl.accessToken = '${this.state.userAccessToken}';
-                        var map = new mapboxgl.Map({
-                            container: 'map',
-                            style: 'mapbox://styles/mapbox/streets-v9'
-                        });
-                        </script>
-                    `)}
-                </Copyable>
+                <Copyable lang='markup'>{`
+<div id='map' style='width: 400px; height: 300px;'></div>
+<script>
+mapboxgl.accessToken = '${this.state.userAccessToken}';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9'
+});
+</script>
+`}</Copyable>
             </div>
         );
     }
@@ -53,26 +48,26 @@ class Quickstart extends React.Component {
         return (
             <div id='quickstart-bundler'>
                 <p>Install the npm package.</p>
-                {highlightShell(`npm install --save mapbox-gl`)}
+                <Copyable lang='markup'>{`
+npm install --save mapbox-gl
+`}</Copyable>
 
                 <p>Include the CSS file in the <code>&lt;head&gt;</code> of your HTML file.</p>
-                <Copyable>
-                    {highlightMarkup(`<link href='${urls.css()}' rel='stylesheet' />`)}
-                </Copyable>
+                <Copyable lang='markup'>{`
+<link href='${urls.css()}' rel='stylesheet' />
+`}</Copyable>
 
                 <p>Include the following code in the <code>&lt;body&gt;</code> of your HTML file.</p>
-                <Copyable>
-                    {highlightJavascript(`
-                        import mapboxgl from 'mapbox-gl';
-                        // or "const mapboxgl = require('mapbox-gl');"
+                <Copyable lang='javascript'>{`
+import mapboxgl from 'mapbox-gl';
+// or "const mapboxgl = require('mapbox-gl');"
 
-                        mapboxgl.accessToken = '${this.state.userAccessToken}';
-                        const map = new mapboxgl.Map({
-                            container: '<your HTML element id>',
-                            style: 'mapbox://styles/mapbox/streets-v9'
-                        });
-                    `)}
-                </Copyable>
+mapboxgl.accessToken = '${this.state.userAccessToken}';
+const map = new mapboxgl.Map({
+    container: '<your HTML element id>',
+    style: 'mapbox://styles/mapbox/streets-v9'
+});
+`}</Copyable>
             </div>
         );
     }

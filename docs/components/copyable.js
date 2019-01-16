@@ -1,24 +1,21 @@
 import React from 'react';
-import {copy} from 'execcommand-copy';
-import CopyButton from '@mapbox/mr-ui/copy-button';
+import CodeSnippet from '@mapbox/mr-ui/code-snippet';
+import Prism from 'prismjs';
+const highlightTheme = require('raw-loader!./prism_highlight.css'); // eslint-disable-line import/no-commonjs
 
 
 export default class extends React.Component {
 
     render() {
         return (
-            <div className='mb18 relative'>
-                <a style={{position: 'absolute', right: '10px', top: '10px'}}
-                    href='#' onClick={e => this.copy(e)}><CopyButton block={true} /></a>
-                <div ref={(ref) => { this.ref = ref; }}>{this.props.children}</div>
+            <div className='mb18'>
+                <CodeSnippet
+                    code={this.props.children}
+                    onCopy={() => { analytics.track('Copied example with clipboard'); }}
+                    highlightedCode={Prism.highlight(this.props.children, Prism.languages[this.props.lang])}
+                    highlightThemeCss={highlightTheme}
+                />
             </div>
         );
-    }
-
-    copy(e) {
-        e.preventDefault();
-        copy(this.ref.innerText);
-        analytics.track('Copied example with clipboard');
-        setTimeout(() => this.setState({copied: false}), 1000);
     }
 }
