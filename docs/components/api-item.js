@@ -75,7 +75,7 @@ class ApiItem extends React.Component {
                             {section.params.map((param, i) => <div key={i} className='mb6'>
                                 <div>
                                     <span className='txt-code bg-transparent ml-neg3 txt-bold'>{param.name}</span>
-                                    <code className='color-gray-light'>({this.formatType(param.type)})</code>
+                                    <code className='color-gray'>({this.formatType(param.type)})</code>
                                     {param.default && <span>{'('}default <code>{param.default}</code>{')'}</span>}
                                     {this.md(param.description, true)}
                                 </div>
@@ -112,7 +112,7 @@ class ApiItem extends React.Component {
                         <div>
                             {section.properties.map((property, i) => <div key={i} className='mb6'>
                                 <span className='txt-code txt-bold bg-white mr3 ml-neg3'>{property.name}</span>
-                                <code className='color-gray-light'>({this.formatType(property.type)})</code>
+                                <code className='color-gray'>({this.formatType(property.type)})</code>
                                 {property.default && <span>{'('}default <code>{property.default}</code>{')'}</span>}
                                 {property.description && <span>: {this.md(property.description, true)}</span>}
                                 {property.properties &&
