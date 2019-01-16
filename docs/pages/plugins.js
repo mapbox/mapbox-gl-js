@@ -162,32 +162,30 @@ export default class extends React.Component {
                 <h1>Plugins</h1>
                 <div className='contain'>
                     <div id='plugins' className='doc' data-swiftype-index='true'>
-                        {entries(plugins).map(([title, plugins], i) =>
-                            <div key={i} className=''>
-                                <h2 className={i === 0 ? 'pt0' : ''} id={slug(title)}><a className="unprose color-blue-on-hover" href={`#${slug(title)}`}>{title}</a></h2>
-                                {entries(plugins).map(([name, plugin], i) =>
-                                    <div key={i} className=''>
-                                        <h3 id={slug(name)}><a className="unprose color-blue-on-hover" href={`#${slug(name)}`}>{name}</a></h3>
-                                        <div>{ plugin.description }</div>
-                                        <div className="my12">
-                                            { plugin.website &&
+                        {entries(plugins).map(([title, plugins], i) => <div key={i} className=''>
+                            <h2 className={i === 0 ? 'pt0' : ''} id={slug(title)}><a className="unprose color-blue-on-hover" href={`#${slug(title)}`}>{title}</a></h2>
+                            {entries(plugins).map(([name, plugin], i) => <div key={i} className=''>
+                                <h3 id={slug(name)}><a className="unprose color-blue-on-hover" href={`#${slug(name)}`}>{name}</a></h3>
+                                <div>{ plugin.description }</div>
+                                <div className="my12">
+                                    { plugin.website &&
                                                 <div className='mb6'>
                                                     <a className="color-blue color-blue-dark-on-hover unprose" href={plugin.website}>
                                                         <IconText iconBefore="github">View on GitHub</IconText>
                                                     </a>
                                                 </div>
-                                            }
-                                            { plugin.example &&
+                                    }
+                                    { plugin.example &&
                                                 <div>
                                                     <a className="color-blue color-blue-dark-on-hover unprose" href={prefixUrl(`/example/${plugin.example}`)}>
                                                         <IconText iconBefore="code">View example</IconText>
                                                     </a>
                                                 </div>
-                                            }
-                                        </div>
-                                    </div>
-                                )}
+                                    }
+                                </div>
                             </div>
+                            )}
+                        </div>
                         )}
                     </div>
                 </div>

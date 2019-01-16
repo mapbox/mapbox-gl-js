@@ -22,72 +22,70 @@ const meta = {
 
 class ExamplesLandingPage extends React.PureComponent {
 
-  render() {
-    const renderedCardContainers = Object.keys(tags).map(topic => {
-      const cardsForTopic = examples
-        .filter(example => {
-          return example.tags.indexOf(topic) > -1;
-        })
-        .map((example, index) => {
-          const filename = example.pathname.split('/')[3];
-          return (
-            <Card
-              key={index}
-              title={example.title}
-              description=''
-              path={example.path}
-              thumbnail={
-                <div className="h120 w-full" style={{ backgroundImage: `url(/mapbox-gl-js/img/${filename}.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
-              }
-            />
-          );
+    render() {
+        const renderedCardContainers = Object.keys(tags).map((topic) => {
+            const cardsForTopic = examples
+                .filter(example => example.tags.indexOf(topic) > -1)
+                .map((example, index) => {
+                    const filename = example.pathname.split('/')[3];
+                    return (
+                        <Card
+                            key={index}
+                            title={example.title}
+                            description=''
+                            path={example.path}
+                            thumbnail={
+                                <div className="h120 w-full" style={{ backgroundImage: `url(/mapbox-gl-js/img/${filename}.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
+                            }
+                        />
+                    );
+                });
+            return (
+                <CardContainer
+                    title={tags[topic]}
+                    path={`#${topic}`}
+                    fullWidthCards={false}
+                    cards={cardsForTopic}
+                />
+            );
         });
-      return (
-        <CardContainer
-          title={tags[topic]}
-          path={`#${topic}`}
-          fullWidthCards={false}
-          cards={cardsForTopic}
-        />
-      );
-    });
 
-    const gettingStartedSection = (
-      <div className="">
-        <div className="txt-xl mb24" id='getting-started'>
+        const gettingStartedSection = (
+            <div className="">
+                <div className="txt-xl mb24" id='getting-started'>
           Getting started
-        </div>
-        <a
-          className="color-gray-dark transition clip inline-block w-full unprose"
-          href='/mapbox-gl-js/example/simple-map/'
-        >
-          <div className="relative h240 mb12" style={{ backgroundImage: `url(/mapbox-gl-js/img/simple-map.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
-          <div className="">
-            <div className="mb6 txt-m">Display a map</div>
-            <div className="txt-s color-gray">Initialize a map in an HTML element with Mapbox GL JS.</div>
-          </div>
-        </a>
-      </div>
-    );
+                </div>
+                <a
+                    className="color-gray-dark transition clip inline-block w-full unprose"
+                    href='/mapbox-gl-js/example/simple-map/'
+                >
+                    <div className="relative h240 mb12" style={{ backgroundImage: `url(/mapbox-gl-js/img/simple-map.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
+                    <div className="">
+                        <div className="mb6 txt-m">Display a map</div>
+                        <div className="txt-s color-gray">Initialize a map in an HTML element with Mapbox GL JS.</div>
+                    </div>
+                </a>
+            </div>
+        );
 
-    return (
-      <PageShell meta={meta} frontMatter={this.props.frontMatter}>
-        {gettingStartedSection}
-        <ExamplesPage
-          frontMatter={meta}
-          cardContainers={renderedCardContainers}
-        />
-      </PageShell>
-    );
-  }
+        return (
+            <PageShell meta={meta} frontMatter={this.props.frontMatter}>
+                {gettingStartedSection}
+                <ExamplesPage
+                    frontMatter={meta}
+                    cardContainers={renderedCardContainers}
+                />
+            </PageShell>
+        );
+    }
 }
 
 ExamplesLandingPage.propTypes = {
     frontMatter: PropTypes.shape({
-      title: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
-      product: PropTypes.string.isRequired
+        title: PropTypes.string.isRequired,
+        description: PropTypes.string.isRequired,
+        product: PropTypes.string.isRequired
     }).isRequired
-  };
+};
 
 export default ExamplesLandingPage;

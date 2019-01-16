@@ -161,8 +161,7 @@ class Item extends React.Component {
                 {this.props.values && !Array.isArray(this.props.values) && // skips $root.version
                 <div className='mb6'>
                     <dl>
-                        {entries(this.props.values).map(([v, {doc}], i) =>
-                            [<dt key={`${i}-dt`}><code>{JSON.stringify(v)}</code>:</dt>, <dd key={`${i}-dd`} className='mb6'>{md(doc)}</dd>]
+                        {entries(this.props.values).map(([v, {doc}], i) => [<dt key={`${i}-dt`}><code>{JSON.stringify(v)}</code>:</dt>, <dd key={`${i}-dd`} className='mb6'>{md(doc)}</dd>]
                         )}
                     </dl>
                 </div>}
@@ -243,8 +242,7 @@ export default class extends React.Component {
                             `)}
                         </div>
                         <div className='px12 py12'>
-                            {entries(ref.$root).map(([name, prop], i) =>
-                                <Item key={i} id={`root-${name}`} name={name} {...prop}/>)}
+                            {entries(ref.$root).map(([name, prop], i) => <Item key={i} id={`root-${name}`} name={name} {...prop}/>)}
                         </div>
                     </div>
 
@@ -258,8 +256,7 @@ export default class extends React.Component {
                             {highlightJSON(`"light": ${JSON.stringify(ref.$root.light.example, null, 2)}`)}
                         </div>
                         <div className='px12 py12 bg-white'>
-                            {entries(ref.light).map(([name, prop], i) =>
-                                <Item key={i} id={`light-${name}`} name={name} {...prop} />)}
+                            {entries(ref.light).map(([name, prop], i) => <Item key={i} id={`light-${name}`} name={name} {...prop} />)}
                         </div>
                     </div>
 
@@ -379,8 +376,7 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <div className='mb6 clearfix'>
-                                        { entries(ref.source_geojson).map(([name, prop], i) =>
-                                            name !== '*' && name !== 'type' &&
+                                        { entries(ref.source_geojson).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                             <Item key={i} id={`sources-geojson-${name}`} name={name} {...prop}/>)}
                                     </div>
                                     <SDKSupportTable {...{
@@ -405,8 +401,7 @@ export default class extends React.Component {
                                     }}/>
                                 </div>
                                 <div className='mb6 clearfix'>
-                                    { entries(ref.source_vector).map(([name, prop], i) =>
-                                        name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_vector).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-vector-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -434,8 +429,7 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div className='mb6 clearfix'>
-                                    { entries(ref.source_raster).map(([name, prop], i) =>
-                                        name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_raster).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-raster-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -461,8 +455,7 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div className='mb6 clearfix'>
-                                    { entries(ref.source_raster_dem).map(([name, prop], i) =>
-                                        name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_raster_dem).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-raster-dem-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -507,8 +500,7 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div className='mb6 clearfix'>
-                                    { entries(ref.source_geojson).map(([name, prop], i) =>
-                                        name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_geojson).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-geojson-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -550,8 +542,7 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div className='mb6 clearfix'>
-                                    { entries(ref.source_image).map(([name, prop], i) =>
-                                        name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_image).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-image-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -592,8 +583,7 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div className='mb6 clearfix'>
-                                    { entries(ref.source_video).map(([name, prop], i) =>
-                                        name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_video).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-video-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -705,8 +695,7 @@ export default class extends React.Component {
                             {highlightJSON(`"transition": ${JSON.stringify(ref.$root.transition.example, null, 2)}`)}
                         </div>
                         <div className='px12 py12 bg-white'>
-                            { entries(ref.transition).map(([name, prop], i) =>
-                                <Item key={i} id={`transition-${name}`} name={name} {...prop}/>)}
+                            { entries(ref.transition).map(([name, prop], i) => <Item key={i} id={`transition-${name}`} name={name} {...prop}/>)}
                         </div>
                     </div>
 
@@ -727,8 +716,7 @@ export default class extends React.Component {
                             {highlightJSON(`"layers": ${JSON.stringify(ref.$root.layers.example, null, 2)}`)}
                         </div>
                         <div className='px12 py12 bg-white'>
-                            { entries(ref.layer).map(([name, prop], i) =>
-                                <Item key={i} id={`layer-${name}`} name={name} {...prop}/>)}
+                            { entries(ref.layer).map(([name, prop], i) => <Item key={i} id={`layer-${name}`} name={name} {...prop}/>)}
                         </div>
                     </div>
 
@@ -747,16 +735,13 @@ export default class extends React.Component {
                             <code>"paint"</code> object. Changes to a paint property are cheap and happen synchronously.
                         </p>
                         <div className='mb24 bg-white bg-white'>
-                            {layerTypes.map((type, i) =>
-                                <div key={i} id={`layers-${type}`} className='px12 py12'>
-                                    <h3 className='mb6'><a className='unprose color-blue-on-hover' href={`#layers-${type}`}>{type}</a></h3>
+                            {layerTypes.map((type, i) => <div key={i} id={`layers-${type}`} className='px12 py12'>
+                                <h3 className='mb6'><a className='unprose color-blue-on-hover' href={`#layers-${type}`}>{type}</a></h3>
 
-                                    { entries(ref[`layout_${type}`]).map(([name, prop], i) =>
-                                        <Item key={i} id={`layout-${type}-${name}`} name={name} kind="layout" {...prop}/>)}
+                                { entries(ref[`layout_${type}`]).map(([name, prop], i) => <Item key={i} id={`layout-${type}-${name}`} name={name} kind="layout" {...prop}/>)}
 
-                                    { entries(ref[`paint_${type}`]).map(([name, prop], i) =>
-                                        <Item key={i} id={`paint-${type}-${name}`} name={name} kind="paint" {...prop}/>)}
-                                </div>)}
+                                { entries(ref[`paint_${type}`]).map(([name, prop], i) => <Item key={i} id={`paint-${type}-${name}`} name={name} kind="paint" {...prop}/>)}
+                            </div>)}
                         </div>
                     </div>
 
@@ -873,12 +858,12 @@ export default class extends React.Component {
                         <h3 id='data-expressions'><a className="unprose color-blue-on-hover" href="#data-expressions">Data expressions</a></h3>
                         <p>A <em>data expression</em> is any expression that access feature data -- that is, any
                             expression that uses one of the data operators:
-                            <a href="#expressions-get"><code>get</code></a>,
-                            <a href="#expressions-has"><code>has</code></a>,
-                            <a href="#expressions-id"><code>id</code></a>,
-                            <a href="#expressions-geometry-type"><code>geometry-type</code></a>,
-                            <a href="#expressions-properties"><code>properties</code></a>, or
-                            <a href="#expressions-feature-state"><code>feature-state</code></a>. Data expressions allow a
+                        <a href="#expressions-get"><code>get</code></a>,
+                        <a href="#expressions-has"><code>has</code></a>,
+                        <a href="#expressions-id"><code>id</code></a>,
+                        <a href="#expressions-geometry-type"><code>geometry-type</code></a>,
+                        <a href="#expressions-properties"><code>properties</code></a>, or
+                        <a href="#expressions-feature-state"><code>feature-state</code></a>. Data expressions allow a
                             feature's properties or state to determine its appearance. They can be used to differentiate
                             features within the same layer and to create data visualizations.</p>
 
@@ -976,7 +961,7 @@ export default class extends React.Component {
 
                         <p>That is, in layout or paint properties, <code>["zoom"]</code> may appear only as the
                             input to an outer <a href="#expressions-interpolate"><code>interpolate</code></a> or <a
-                                href="#expressions-step"><code>step</code></a> expression, or such an expression within
+                            href="#expressions-step"><code>step</code></a> expression, or such an expression within
                             a <a href="#expressions-let"><code>let</code></a> expression.</p>
 
                         <p>There is an important difference between layout and paint properties in
@@ -1027,7 +1012,7 @@ export default class extends React.Component {
                             ahead of time by the SDK. In order to preserve type safety, when evaluating a data
                             expression, the SDK will check that the property value is appropriate for the context.
                             For example, if you use the expression <code>["get", "feature-color"]</code> for the <a
-                                href="#paint-circle-circle-color"><code>circle-color</code></a> property, the SDK
+                            href="#paint-circle-circle-color"><code>circle-color</code></a> property, the SDK
                             will verify that the <code>feature-color</code> value of each feature is a string
                             identifying a valid <a href="#types-color">color</a>. If this check fails, an error will
                             be indicated in an SDK-specific way (typically a log message), and the default value for
@@ -1045,20 +1030,20 @@ export default class extends React.Component {
                             data expression. If this check fails, it produces an error and causes the whole
                             expression to fall back to the default value for the property being defined. The
                             assertion operators are <a
-                                href="#expressions-types-array"><code>array</code></a>, <a
-                                href="#expressions-types-boolean"><code>boolean</code></a>, <a
-                                href="#expressions-types-number"><code>number</code></a>, and <a
-                                href="#expressions-types-string"><code>string</code></a>.
+                            href="#expressions-types-array"><code>array</code></a>, <a
+                            href="#expressions-types-boolean"><code>boolean</code></a>, <a
+                            href="#expressions-types-number"><code>number</code></a>, and <a
+                            href="#expressions-types-string"><code>string</code></a>.
                         </p>
 
                         <p>Expressions perform only one kind of implicit type conversion: a data expression used in
                             a context where a <a href="#types-color">color</a> is expected will convert a string
                             representation of a color to a color value. In all other cases, if you want to convert
                             between types, you must use one of the <em>type conversion</em> expression operators: <a
-                                href="#expressions-types-to-boolean"><code>to-boolean</code></a>, <a
-                                href="#expressions-types-to-number"><code>to-number</code></a>, <a
-                                href="#expressions-types-to-string"><code>to-string</code></a>, or <a
-                                href="#expressions-types-to-color"><code>to-color</code></a>. For example, if you
+                            href="#expressions-types-to-boolean"><code>to-boolean</code></a>, <a
+                            href="#expressions-types-to-number"><code>to-number</code></a>, <a
+                            href="#expressions-types-to-string"><code>to-string</code></a>, or <a
+                            href="#expressions-types-to-color"><code>to-color</code></a>. For example, if you
                             have a feature property that stores numeric values in string format, and you want to use
                             those values as numbers rather than strings, you can use an expression such
                             as <code>["to-number", ["get", "property-name"]]</code>.
@@ -1067,14 +1052,13 @@ export default class extends React.Component {
                         <h3 id='expression-referece'><a className='unprose color-blue-on-hover' href='#expression-referece'>Expression reference</a></h3>
 
                         <div>
-                            {groupedExpressions.map((group, i) =>
-                                <div key={i} className={`px12 py12 ${groupedExpressions.length - 1 === i ? '' : 'border-b border--gray-light'}`}>
-                                    <div className='pt60' style={{ marginTop: '-40px' }} id={`expressions-${slug(group.name)}`} />
-                                    <h4 className='pb12' style={{fontSize: '100%'}}>
-                                        <a className="unprose color-blue-on-hover" href={`#expressions-${slug(group.name)}`}>{group.name}</a>
-                                    </h4>
+                            {groupedExpressions.map((group, i) => <div key={i} className={`px12 py12 ${groupedExpressions.length - 1 === i ? '' : 'border-b border--gray-light'}`}>
+                                <div className='pt60' style={{ marginTop: '-40px' }} id={`expressions-${slug(group.name)}`} />
+                                <h4 className='pb12' style={{fontSize: '100%'}}>
+                                    <a className="unprose color-blue-on-hover" href={`#expressions-${slug(group.name)}`}>{group.name}</a>
+                                </h4>
 
-                                    {group.name === "Types" &&
+                                {group.name === "Types" &&
                                         <div>
                                             <p>The expressions in this section are provided for the purpose of
                                                testing for and converting between different data types like strings,
@@ -1089,7 +1073,7 @@ export default class extends React.Component {
                                             </p>
                                         </div>}
 
-                                    {group.name === "Decision" &&
+                                {group.name === "Decision" &&
                                         <p>
                                             The expressions in this section can be used to add conditional
                                             logic to your styles. For example, the <a
@@ -1100,22 +1084,20 @@ export default class extends React.Component {
                                             expressions.
                                         </p>}
 
-                                    {group.expressions.map(({name, doc, type, sdkSupport}, i) =>
-                                        <div>
-                                        <div className='pt60' style={{ marginTop: '-30px' }} id={`expressions-${group.name === "Types" ? "types-" : ""}${name}`} />
-                                            <div key={i} className='w-full clearfix px12 mt0'>
-                                                <span className='space-right'>
-                                                    <a className='txt-code'
-                                                        href={`#expressions-${group.name === "Types" ? "types-" : ""}${name}`}>{name}</a>
-                                                    {doc && <div>{md(doc)}</div>}
-                                                </span>
-                                                {type.map((overload, i) =>
-                                                    <div key={i}>{highlightJavascript(renderSignature(name, overload))}</div>)}
-                                                {sdkSupport && <div className='mt12 mb12'><SDKSupportTable {...sdkSupport} /></div>}
-                                            </div>
-                                        </div>
-                                    )}
+                                {group.expressions.map(({name, doc, type, sdkSupport}, i) => <div>
+                                    <div className='pt60' style={{ marginTop: '-30px' }} id={`expressions-${group.name === "Types" ? "types-" : ""}${name}`} />
+                                    <div key={i} className='w-full clearfix px12 mt0'>
+                                        <span className='space-right'>
+                                            <a className='txt-code'
+                                                href={`#expressions-${group.name === "Types" ? "types-" : ""}${name}`}>{name}</a>
+                                            {doc && <div>{md(doc)}</div>}
+                                        </span>
+                                        {type.map((overload, i) => <div key={i}>{highlightJavascript(renderSignature(name, overload))}</div>)}
+                                        {sdkSupport && <div className='mt12 mb12'><SDKSupportTable {...sdkSupport} /></div>}
+                                    </div>
                                 </div>
+                                )}
+                            </div>
                             )}
                         </div>
                     </div>
@@ -1171,7 +1153,7 @@ export default class extends React.Component {
                                             href="#function-type">type</a></span></div>
                                         <div><em className='color-gray'>Optional <a href='#types-string'>string</a>. One
                                             of <code>"identity"</code>, <code>"exponential"</code>, <code>"interval"
-                                            </code>, or <code>"categorical"</code>.</em>
+                                        </code>, or <code>"categorical"</code>.</em>
                                         </div>
                                         <dl>
                                             <dt><code>"identity"</code></dt>
@@ -1183,8 +1165,8 @@ export default class extends React.Component {
                                                 style property must support
                                                 interpolation. Style properties that support interpolation are
                                                 marked marked with <span
-                                                    className='icon smooth-ramp quiet micro space-right indivne'
-                                                    title='continuous'/>, the
+                                                className='icon smooth-ramp quiet micro space-right indivne'
+                                                title='continuous'/>, the
                                                 "exponential" symbol, and <var>exponential</var> is the default
                                                 function type for these properties.
                                             </dd>
@@ -1193,8 +1175,8 @@ export default class extends React.Component {
                                                 function input. The domain (input
                                                 value) must be numeric. Any style property may use interval
                                                 functions. For properties marked with
-                                                <span className='icon step-ramp quiet micro space-right indivne'
-                                                    title='discrete'/>, the "interval"
+                                            <span className='icon step-ramp quiet micro space-right indivne'
+                                                title='discrete'/>, the "interval"
                                                 symbol, this is the default function type.
                                             </dd>
                                             <dt><code>"categorical"</code></dt>
