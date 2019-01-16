@@ -254,13 +254,13 @@ var nonMobile = {
       title: 'Maps SDKs',
       links: [{
         name: 'for iOS',
-        to: '/ios-sdk/'
+        to: 'https://www.mapbox.com/ios-sdk/'
       }, {
         name: 'for Android',
-        to: '/android-docs/maps/overview/'
+        to: 'https://www.mapbox.com/android-docs/maps/overview/'
       }, {
         name: 'for Unity',
-        to: '/unity-sdk/'
+        to: 'https://docs.mapbox.com/unity/'
       }, {
         name: 'for React Native',
         to: 'https://github.com/mapbox/react-native-mapbox-gl'
@@ -271,19 +271,19 @@ var nonMobile = {
     },
     links: [{
       name: 'Mapbox GL JS',
-      to: '/mapbox-gl-js/'
+      to: 'https://www.mapbox.com/mapbox-gl-js/'
     }, {
       name: 'Mapbox Studio',
-      to: '/studio-manual/'
+      to: 'https://docs.mapbox.com/studio-manual/'
     }, {
       name: 'Mapbox Style Spec',
-      to: '/mapbox-gl-js/style-spec/'
+      to: 'https://www.mapbox.com/mapbox-gl-js/style-spec/'
     }, {
       name: 'Vector tiles',
-      to: '/vector-tiles/'
+      to: 'https://docs.mapbox.com/vector-tiles/'
     }, {
       name: 'Maps APIs',
-      to: '/api-documentation/maps/'
+      to: 'https://www.mapbox.com/api-documentation/maps/'
     }]
   },
   navigation: {
@@ -291,42 +291,42 @@ var nonMobile = {
       title: 'Navigation SDKs',
       links: [{
         name: 'for iOS',
-        to: '/ios-sdk/navigation/'
+        to: 'https://www.mapbox.com/ios-sdk/navigation/'
       }, {
         name: 'for Android',
-        to: '/android-docs/navigation/'
+        to: 'https://www.mapbox.com/android-docs/navigation/'
       }]
     },
     links: [{
       name: 'Directions APIs',
-      to: '/api-documentation/navigation/'
+      to: 'https://www.mapbox.com/api-documentation/navigation/'
     }]
   },
   search: {
     links: [{
       name: 'Geocoding API',
-      to: '/api-documentation/search/'
+      to: 'https://www.mapbox.com/api-documentation/search/'
     }]
   },
   help: {
     links: [{
       name: 'How Mapbox works',
-      to: '/help/how-mapbox-works/'
+      to: 'https://www.mapbox.com/help/how-mapbox-works/'
     }, {
       name: 'Tutorials',
-      to: '/help/tutorials/'
+      to: 'https://www.mapbox.com/help/tutorials/'
     }, {
       name: 'Troubleshooting',
-      to: '/help/troubleshooting/'
+      to: 'https://www.mapbox.com/help/troubleshooting/'
     }, {
       name: 'Glossary',
-      to: '/help/glossary/'
+      to: 'https://www.mapbox.com/help/glossary/'
     }, {
       name: 'Account FAQ',
-      to: '/help/account-faq/'
+      to: 'https://www.mapbox.com/help/account-faq/'
     }, {
       name: 'API playground',
-      to: '/api-playground/'
+      to: 'https://www.mapbox.com/api-playground/'
     }]
   }
 };
@@ -550,6 +550,7 @@ MobileLinkList.propTypes = {
   })).isRequired
 };
 
+var ORIGIN_DOCS_PRODUCTION = 'https://docs.mapbox.com';
 var DEFAULT_SOCIAL_IMAGE_URL = 'https://static-assets.mapbox.com/branding/social/social-1200x630.v1.png';
 var DEFAULT_SOCIAL_IMAGE_THUMBNAIL_URL = 'https://static-assets.mapbox.com/branding/social/social-120x120.v1.png';
 
@@ -602,7 +603,7 @@ function MobileNavigation() {
   }))), React.createElement("div", {
     className: "shell-border-t shell-border--gray-light shell-py24"
   }, React.createElement("a", {
-    href: "/documentation/",
+    href: ORIGIN_DOCS_PRODUCTION,
     className: "shell-color-blue"
   }, "All docs")))));
 }
@@ -651,7 +652,7 @@ function Logo(props) {
     className: logoClasses,
     style: logoStyles
   }), border, React.createElement("a", {
-    href: "/documentation/",
+    href: ORIGIN_DOCS_PRODUCTION,
     className: nameClasses,
     style: {
       marginBottom: 2
@@ -701,7 +702,7 @@ function PageHeader(props) {
   }), React.createElement(SearchMenu, {
     darkText: props.darkText
   }), React.createElement(NavigationItem, {
-    href: "/documentation/",
+    href: ORIGIN_DOCS_PRODUCTION,
     darkText: props.darkText,
     name: "all"
   }, "All docs"), React.createElement(HelpMenu, {
