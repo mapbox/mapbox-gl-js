@@ -46,8 +46,8 @@ class Note extends React.Component {
     render() {
         const note = this.props;
         return (
-            <div className='keyline-top-not py12'>
-                <section className='py12 px12 mb24 clearfix prose'>
+            <div className=''>
+                <section className='mb24 prose'>
                     <h2 id={note.namespace.toLowerCase()} className='txt-bold'>{note.name}</h2>
                     {note.description && <div className='color-gray txt-l'>{md(note.description)}</div>}
                 </section>

@@ -49,3 +49,12 @@ div.toggle-sibling:hover {
 .prose h2 + div h3 {
   padding-top: 0 !important;
 }
+
+/* override */
+#docs-content.prose h2 {
+  border-top: 0 !important;
+}
+
+.toggle-target .mb24 {
+    margin-bottom: 0 !important;
+}

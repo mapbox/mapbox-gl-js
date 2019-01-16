@@ -5,7 +5,8 @@ import GithubSlugger from 'github-slugger';
 import {highlightJavascript} from '../components/prism_highlight.js';
 import docs from '../components/api.json'; // eslint-disable-line import/no-unresolved
 import ApiItemMember from './api-item-member';
-import Icon from '@mapbox/mr-ui/icon';
+import IconText from '@mapbox/mr-ui/icon-text';
+
 
 const linkerStack = new LinkerStack({})
     .namespaceResolver(docs, (namespace) => {
@@ -35,19 +36,19 @@ class ApiItem extends React.Component {
 
         const membersList = (members, title) => !empty(members) &&
                 <div>
-                    <div className='py6 mt12 txt-l'>{title}</div>
-                    <div className='clearfix'>
+                    <div className='py6 mt12 txt-m txt-bold'>{title}</div>
+                    <div className=''>
                         {members.map((member, i) => <ApiItemMember key={i} {...member}/>)}
                     </div>
                 </div>;
 
         return (
-            <section className='px12 py12 clearfix prose mb24 bg-white contain'>
+            <section className='prose mb24'>
                 {!this.props.nested &&
-                    <div className='mb24 clearfix'>
-                        <h2 className='mb12' id={section.namespace.toLowerCase()}><a className="unprose color-blue-on-hover" href={`#${section.namespace.toLowerCase()}`}>{section.name}</a></h2>
+                    <div className='mb24'>
+                        <h3 className='mb12' id={section.namespace.toLowerCase()}><a className="unprose color-blue-on-hover" href={`#${section.namespace.toLowerCase()}`}>{section.name}</a></h3>
                         {section.context && section.context.github &&
-                            <a className='pt6 color-gray color-gray-dark-on-hover txt-s txt-bold unprose' href={section.context.github.url}><span className="inline-block mb-neg6 mr6"><Icon name="github" /></span><span>{section.context.github.path}</span></a>}
+                            <a className='pt6 link--gray txt-s unprose' href={section.context.github.url}><IconText iconBefore="github" >{section.context.github.path}</IconText></a>}
                     </div>}
 
                 {this.md(section.description)}
@@ -69,11 +70,11 @@ class ApiItem extends React.Component {
 
                 {!empty(section.params) && (section.kind !== 'class' || !section.constructorComment || section.constructorComment.access !== 'private') &&
                     <div>
-                        <div className='py6 mt12 txt-l'>Parameters</div>
+                        <div className='py6 mt12 txt-m txt-bold'>Parameters</div>
                         <div>
-                            {section.params.map((param, i) => <div key={i} className='mb0'>
+                            {section.params.map((param, i) => <div key={i} className='mb6'>
                                 <div>
-                                    <span className='txt-code txt-bold'>{param.name}</span>
+                                    <span className='txt-code bg-transparent ml-neg3 txt-bold'>{param.name}</span>
                                     <code className='color-gray-light'>({this.formatType(param.type)})</code>
                                     {param.default && <span>{'('}default <code>{param.default}</code>{')'}</span>}
                                     {this.md(param.description, true)}
@@ -93,7 +94,7 @@ class ApiItem extends React.Component {
                                             <tbody className='mt6'>
                                                 {param.properties.map((property, i) => <tr key={i}>
                                                     <td>
-                                                        <span className='txt-code txt-bold txt-break-word'>{property.name}</span><br />
+                                                        <span className='txt-code txt-bold txt-break-word bg-white ml-neg3'>{property.name}</span><br />
                                                         <code className='color-gray'>{this.formatType(property.type)}</code><br />
                                                         {property.default && <span className='color-gray'>default <code>{property.default}</code></span>}
                                                     </td>
@@ -107,10 +108,10 @@ class ApiItem extends React.Component {
 
                 {!empty(section.properties) &&
                     <div>
-                        <div className='py6 mt12 txt-l'>Properties</div>
+                        <div className='py6 mt12 txt-m txt-bold'>Properties</div>
                         <div>
-                            {section.properties.map((property, i) => <div key={i} className='mb0'>
-                                <span className='txt-code txt-bold'>{property.name}</span>
+                            {section.properties.map((property, i) => <div key={i} className='mb6'>
+                                <span className='txt-code txt-bold bg-white mr3 ml-neg3'>{property.name}</span>
                                 <code className='color-gray-light'>({this.formatType(property.type)})</code>
                                 {property.default && <span>{'('}default <code>{property.default}</code>{')'}</span>}
                                 {property.description && <span>: {this.md(property.description, true)}</span>}
@@ -127,14 +128,14 @@ class ApiItem extends React.Component {
                     </div>}
 
                 {section.returns && section.returns.map((ret, i) => <div key={i}>
-                    <div className='py6 mt12 txt-l'>Returns</div>
+                    <div className='py6 mt12 txt-m txt-bold'>Returns</div>
                     <code>{this.formatType(ret.type)}</code>
                     {ret.description && <span>: {this.md(ret.description, true)}</span>}
                 </div>)}
 
                 {!empty(section.throws) &&
                     <div>
-                        <div className='py6 mt12 txt-l'>Throws</div>
+                        <div className='py6 mt12 txt-m txt-bold'>Throws</div>
                         <ul>
                             {section.throws.map((throws, i) => <li key={i}>{this.formatType(throws.type)}: {this.md(throws.description, true)}</li>)}
                         </ul>
@@ -142,7 +143,7 @@ class ApiItem extends React.Component {
 
                 {!empty(section.examples) &&
                     <div>
-                        <div className='py6 mt12 txt-l'>Example</div>
+                        <div className='py6 mt12 txt-m txt-bold'>Example</div>
                         {section.examples.map((example, i) => <div key={i}>
                             {example.caption && <p>{this.md(example.caption)}</p>}
                             {highlightJavascript(example.description)}
@@ -155,7 +156,7 @@ class ApiItem extends React.Component {
 
                 {!empty(section.sees) &&
                     <div>
-                        <div className='py6 mt12 txt-l'>Related</div>
+                        <div className='py6 mt12 txt-m txt-bold'>Related</div>
                         <ul>{section.sees.map((see, i) => <li key={i}>{this.md(see, true)}</li>)}</ul>
                     </div>}
             </section>
