@@ -160,10 +160,10 @@ export default class extends React.Component {
         return (
             <PageShell meta={meta}>
                 <h1 className='mt24 mt0-mm'>Plugins</h1>
-                <div className='contain'>
+                <div className=''>
                     <div id='plugins' className='doc' data-swiftype-index='true'>
                         {entries(plugins).map(([title, plugins], i) => <div key={i} className=''>
-                            <h2 className={i === 0 ? 'pt0' : ''} id={slug(title)}><a className="unprose color-blue-on-hover" href={`#${slug(title)}`}>{title}</a></h2>
+                            <h2 id={slug(title)}><a className="unprose color-blue-on-hover" href={`#${slug(title)}`}>{title}</a></h2>
                             {entries(plugins).map(([name, plugin], i) => <div key={i} className=''>
                                 <h3 id={slug(name)}><a className="unprose color-blue-on-hover" href={`#${slug(name)}`}>{name}</a></h3>
                                 <div>{ plugin.description }</div>
