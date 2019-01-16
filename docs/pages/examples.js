@@ -55,7 +55,7 @@ class ExamplesLandingPage extends React.PureComponent {
           Getting started
                 </div>
                 <a
-                    className="color-gray-dark transition clip inline-block w-full unprose"
+                    className="color-gray-dark color-blue-on-hover transition clip inline-block w-full unprose"
                     href='/mapbox-gl-js/example/simple-map/'
                 >
                     <div className="relative h240 mb12" style={{ backgroundImage: `url(/mapbox-gl-js/img/simple-map.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
