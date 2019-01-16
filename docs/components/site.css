@@ -1,50 +1,6 @@
-.rcon.tight-icon:not(.big):after,
-.icon.tight-icon:not(.big):before {
-  margin-right: -5px;
-  margin-left: -5px;
-  line-height: 23px;
-}
-
-.fill-gradient { background-image: linear-gradient( to bottom right, #7474BF, #348AC7); }
-.doc pre.dark { background-color: rgba(0,0,0,0.75); }
-.doc .property p { margin-bottom:0; }
-.doc .space-right { padding-right:10px; }
-.doc .icon.inline:before { vertical-align:middle; }
-section section:last-child { border-bottom:none; }
-
-.pointer { cursor: pointer; }
-a.dark-link {
-  color: #404040 ;
-}
-a.dark-link:hover {
-  color: rgba(0,0,0,.5);
-}
-
 .fixed-table {
   table-layout:fixed;
 }
-
-.toggle-target .fill-white { background: #f8f8f8; padding: 30px 30px 0px 30px; }
-.toggle-target .fill-white .fill-light,
-.toggle-target .fill-white code { background: #eee; }
-
-div.toggle-sibling:hover {
-  opacity: 0.7;
-}
-
-/*div.toggle-sibling::before {
-  display: block;
-  content: " ";
-  margin-top: -60px;
-  height: 60px;
-  visibility: hidden;
-  pointer-events: none;
-  z-index: -1
-}*/
-
-
-
-.line-height15 {line-height: 15px}
 
 .prose h2 + div h3 {
   padding-top: 0 !important;
