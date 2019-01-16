@@ -29,7 +29,7 @@ class ApiItemMember extends React.Component {
             <div className='border-b border--gray-light' id={member.namespace.toLowerCase()}>
                 <div>
                     <div
-                        className='cursor-pointer toggle-sibling py12'
+                        className='cursor-pointer toggle-sibling py12 color-blue-on-hover'
                         onClick={(e) => {
                             this.setState({disclosed: !this.state.disclosed});
                             window.location = this.href(member);
