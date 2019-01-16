@@ -51,11 +51,10 @@ class ExamplesLandingPage extends React.PureComponent {
 
         const gettingStartedSection = (
             <div className="">
-                <div className="txt-xl mb24 mt24 mt0-mm" id='getting-started'>
-          Getting started
+                <div className='prose'>
+                    <h1 className='mt24 mt0-mm' id='getting-started'>Getting started</h1>
                 </div>
-                <a
-                    className="color-gray-dark color-blue-on-hover transition clip inline-block w-full unprose"
+                <a className="color-gray-dark color-blue-on-hover transition clip inline-block w-full unprose"
                     href='/mapbox-gl-js/example/simple-map/'
                 >
                     <div className="relative h240 mb12" style={{ backgroundImage: `url(/mapbox-gl-js/img/simple-map.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
