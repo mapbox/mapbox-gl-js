@@ -16,6 +16,7 @@ import { tags } from '../data/tags.js';
 import { overviewNavigation } from '../data/overview-navigation';
 import { styleSpecNavigation } from '../data/style-spec-navigation';
 import { plugins } from '../data/plugins';
+import { routeToPrefixed } from '@mapbox/batfish/modules/route-to';
 
 // initialize analytics
 if (typeof window !== 'undefined' && window.initializeMapboxAnalytics) {
@@ -203,7 +204,7 @@ class PageShell extends React.Component {
                     <div className="limiter">
                         <div className="grid grid--gut36 mr-neg36 mr0-mm">
                             <div className="col col--4-mm col--12">
-                                <div className="ml24 pt12">
+                                <div className="ml24-mm pt12">
                                     <ProductMenu productName={topbarContent.productName} homePage='/mapbox-gl-js/'/>
                                 </div>
                             </div>

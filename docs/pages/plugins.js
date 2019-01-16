@@ -159,7 +159,7 @@ export default class extends React.Component {
     render() {
         return (
             <PageShell meta={meta}>
-                <h1>Plugins</h1>
+                <h1 className='mt24 mt0-mm'>Plugins</h1>
                 <div className='contain'>
                     <div id='plugins' className='doc' data-swiftype-index='true'>
                         {entries(plugins).map(([title, plugins], i) => <div key={i} className=''>

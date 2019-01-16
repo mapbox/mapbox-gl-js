@@ -7,8 +7,8 @@ prependJs:
 ---
 
 {{
-<div className="mb24">
-    <OverviewHeader 
+<div className="mb24 mt60 mt0-mm pt60 pt0-mm">
+    <OverviewHeader
     features={[
         "Custom map styles",
         "Fast vector maps",
