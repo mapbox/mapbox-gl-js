@@ -48,14 +48,9 @@ export default function validateSource(options) {
         });
         if (value.cluster) {
             for (const prop in value.clusterProperties) {
-                const [operator, initialExpr, mapExpr] = value.clusterProperties[prop];
+                const [operator, mapExpr] = value.clusterProperties[prop];
                 const reduceExpr = typeof operator === 'string' ? [operator, ['accumulated'], ['get', prop]] : operator;
 
-                errors.push(...validateExpression({
-                    key: `${key}.${prop}.initial`,
-                    value: initialExpr,
-                    expressionContext: 'cluster-initial'
-                }));
                 errors.push(...validateExpression({
                     key: `${key}.${prop}.map`,
                     value: mapExpr,

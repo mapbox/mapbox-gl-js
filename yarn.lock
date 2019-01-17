@@ -11535,10 +11535,10 @@ sugarss@^2.0.0:
   dependencies:
     postcss "^7.0.2"
 
-supercluster@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/supercluster/-/supercluster-5.0.0.tgz#2a5a9b1ffbd0d6180dea10039d78b5d95fdb8f27"
-  integrity sha512-9eeD5Q3908+tqdz+wYHHzi5mLKgnqtpO5mrjUfqr67UmGuOwBtVoQ9pJJrfcVHwMwC0wEBvfNRF9PgFOZgsOpw==
+supercluster@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/supercluster/-/supercluster-6.0.0.tgz#7058b45545f8bacafb917a66ff2d4d36f74fd2ba"
+  integrity sha512-Jw0KG1zheUvNWYyl1NPb3yUURq6j6Q8rm+maY18+DDrJKmhkz0oxXoWQLf2usXVFJ0urQ8h0gh24yYV8y74WEg==
   dependencies:
     kdbush "^3.0.0"
 
