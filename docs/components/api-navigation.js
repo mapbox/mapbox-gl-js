@@ -10,8 +10,8 @@ class TableOfContentsNote extends React.Component {
     render() {
         const doc = this.props;
         return (
-            <li className='mt24 txt-bold'>
-                <a href={href(doc)}>{doc.name}</a>
+            <li className='mt24'>
+                <a className='txt-bold link link--gray' href={href(doc)}>{doc.name}</a>
             </li>
         );
     }
