@@ -20,7 +20,7 @@
       "clusterProperties": {
         "max": ["max", ["get", "scalerank"]],
         "sum": ["+", ["get", "scalerank"]],
-        "has_island": ["any", false, ["==", ["get", "featureclass"], "island"]]
+        "has_island": ["any", ["==", ["get", "featureclass"], "island"]]
       }
     }
   },
