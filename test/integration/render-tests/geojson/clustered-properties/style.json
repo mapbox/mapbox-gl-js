@@ -18,8 +18,8 @@
       "cluster": true,
       "clusterRadius": 50,
       "clusterProperties": {
-        "max": ["max", 0, ["get", "scalerank"]],
-        "sum": ["+", 0, ["get", "scalerank"]],
+        "max": ["max", ["get", "scalerank"]],
+        "sum": ["+", ["get", "scalerank"]],
         "has_island": ["any", false, ["==", ["get", "featureclass"], "island"]]
       }
     }

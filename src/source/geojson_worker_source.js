@@ -298,7 +298,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
 function getSuperclusterOptions({superclusterOptions, clusterProperties}) {
     if (!clusterProperties || !superclusterOptions) return superclusterOptions;
 
-    const initialValues = {};
     const mapExpressions = {};
     const reduceExpressions = {};
     const globals = {accumulated: null, zoom: 0};
@@ -306,29 +305,19 @@ function getSuperclusterOptions({superclusterOptions, clusterProperties}) {
     const propertyNames = Object.keys(clusterProperties);
 
     for (const key of propertyNames) {
-        const [operator, initialExpression, mapExpression] = clusterProperties[key];
+        const [operator, mapExpression] = clusterProperties[key];
 
-        const initialExpressionParsed = createExpression(initialExpression);
         const mapExpressionParsed = createExpression(mapExpression);
         const reduceExpressionParsed = createExpression(
             typeof operator === 'string' ? [operator, ['accumulated'], ['get', key]] : operator);
 
-        assert(initialExpressionParsed.result === 'success');
         assert(mapExpressionParsed.result === 'success');
         assert(reduceExpressionParsed.result === 'success');
 
-        initialValues[key] = (initialExpressionParsed.value: any).evaluate(globals);
         mapExpressions[key] = mapExpressionParsed.value;
         reduceExpressions[key] = reduceExpressionParsed.value;
     }
 
-    superclusterOptions.initial = () => {
-        const properties = {};
-        for (const key of propertyNames) {
-            properties[key] = initialValues[key];
-        }
-        return properties;
-    };
     superclusterOptions.map = (pointProperties) => {
         feature.properties = pointProperties;
         const properties = {};
