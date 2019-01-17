@@ -209,8 +209,12 @@ export const resetImageRequestQueue = () => {
 };
 resetImageRequestQueue();
 
+function stringifyFunction(f) {
+  return `(${f})()`;
+}
+
 function createWorker(f) {
-    return new Worker(URL.createObjectURL(new Blob([`(${f})()`])));
+    return new Worker(URL.createObjectURL(new Blob([stringifyFunction(f)])));
 }
 
 export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
@@ -241,34 +245,73 @@ export const getImage = function(requestParameters: RequestParameters, callback:
             }
         }
     };
-    console.log('requestParameters', requestParameters);
+
+    const worker = createWorker(() => {
+        self.addEventListener('message', e => {
+            const src = e.data;
+            self.fetch(src, { mode: 'cors' })
+                .then(response => response.blob())
+                .then(blob => self.createImageBitmap(blob))
+                .then(bitmap => {
+                    console.log('bitmap', bitmap);
+                    self.postMessage({ src, bitmap }, [bitmap]);
+                });
+        });
+    });
+
+    function loadImageWithWorker(src) {
+        return new Promise((resolve, reject) => {
+            function handler(e) {
+                console.log('e in handler', e);
+                if (e.data.src === src) {
+                    worker.removeEventListener('message', handler);
+                    if (e.data.error) {
+                        reject(e.data.error);
+                    }
+                    resolve(e.data.bitmap);
+                }
+            }
+            worker.onmessage = handler;
+            worker.onerror = (e) => {
+              console.log('error', e);
+            }
+            worker.postMessage(src);
+            console.log('worker', worker);
+        });
+    }
+    const loader = loadImageWithWorker;
+    loader(requestParameters.url).then(img => {
+      advanceImageRequestQueue();
+      console.log('img', img);
+      callback(null, img);
+    });
+    const request = new window.AbortController().abort();
+
     // request the image with XHR to work around caching issues
     // see https://github.com/mapbox/mapbox-gl-js/issues/1470
-    const request = getBlob(requestParameters, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
-
-        advanceImageRequestQueue();
-
-        if (err) {
-            callback(err);
-        } else if (data) {
-            console.log('typeof data', typeof data);
-            window.createImageBitmap(data).then(bitmap => {
-              console.log('bitmap', typeof bitmap, bitmap);
-              callback(null, bitmap);
-            });
-            // const img: HTMLImageElement = new window.Image();
-            // const URL = window.URL || window.webkitURL;
-            // img.onload = () => {
-            //     callback(null, img);
-            //     URL.revokeObjectURL(img.src);
-            // };
-            // img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
-            // const blob: Blob = new window.Blob([new Uint8Array(data)], { type: 'image/png' });
-            // (img: any).cacheControl = cacheControl;
-            // (img: any).expires = expires;
-            // img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
-        }
-    });
+    // const request = getBlob(requestParameters, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
+    //
+    //     advanceImageRequestQueue();
+    //
+    //     if (err) {
+    //         callback(err);
+    //     } else if (data) {
+    //         window.createImageBitmap(data).then(bitmap => {
+    //           callback(null, bitmap);
+    //         });
+    //         // const img: HTMLImageElement = new window.Image();
+    //         // const URL = window.URL || window.webkitURL;
+    //         // img.onload = () => {
+    //         //     callback(null, img);
+    //         //     URL.revokeObjectURL(img.src);
+    //         // };
+    //         // img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
+    //         // const blob: Blob = new window.Blob([new Uint8Array(data)], { type: 'image/png' });
+    //         // (img: any).cacheControl = cacheControl;
+    //         // (img: any).expires = expires;
+    //         // img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+    //     }
+    // });
 
     return {
         cancel: () => {
