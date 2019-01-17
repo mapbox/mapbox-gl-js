@@ -50,7 +50,7 @@ class VideoSource extends ImageSource {
     urls: Array<string>;
     video: HTMLVideoElement;
     roundZoom: boolean;
-    videoSeeked: boolean;
+    needsUpdate: boolean;
     textureDrawn: boolean;
 
     /**
@@ -61,7 +61,7 @@ class VideoSource extends ImageSource {
         this.roundZoom = true;
         this.type = 'video';
         this.options = options;
-        this.videoSeeked = false;
+        this.needsUpdate = false;
         this.textureDrawn = false;
     }
 
@@ -89,7 +89,7 @@ class VideoSource extends ImageSource {
                 // After video is seeked and ready to be shown, start repainting and set flag
                 // hasTransition() will return true to trigger a single frame repaint, then remove flag
                 this.video.addEventListener('seeked', () => {
-                    this.videoSeeked = true;
+                    this.needsUpdate = true;
                     this.map.triggerRepaint();
                 });
 
@@ -154,12 +154,12 @@ class VideoSource extends ImageSource {
         if (!this.texture) {
             this.texture = new Texture(context, this.video, gl.RGBA);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        } else if (!this.video.paused || this.videoSeeked) {
+        } else if (!this.video.paused || this.needsUpdate) {
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
 
-        if (this.videoSeeked) {
+        if (this.needsUpdate) {
             this.textureDrawn = true;
         }
 
@@ -181,9 +181,9 @@ class VideoSource extends ImageSource {
     }
 
     hasTransition() {
-        const result = this.video && (!this.video.paused || this.videoSeeked);
-        if (this.videoSeeked && this.textureDrawn) {
-            this.videoSeeked = false;
+        const result = this.video && (!this.video.paused || this.needsUpdate);
+        if (this.needsUpdate && this.textureDrawn) {
+            this.needsUpdate = false;
             this.textureDrawn = false;
         }
         return result;
