@@ -37,10 +37,23 @@
 }
 
 /* override */
+#docs-content .style-spec-section h2,
 #docs-content .api-section h2 {
   border: 0 !important;
 }
 
 .toggle-target .mb24 {
     margin-bottom: 0 !important;
+}
+
+/* style-spec styles */
+
+.style-spec-inner-section div:last-child {
+    border-bottom: 0;
+    padding-bottom: 0 !important;
+}
+
+var {
+  color: #d23c75;
+  font-style: italic;
 }

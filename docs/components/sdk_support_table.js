@@ -14,21 +14,21 @@ export default class SDKSupportTable extends React.Component {
         return (
             <table className='txt-s mb12'>
                 <thead>
-                    <tr className='bg-gray-faint'>
-                        <th>SDK Support</th>
-                        <td className='align-center'>Mapbox GL JS</td>
-                        <td className='align-center'>Android SDK</td>
-                        <td className='align-center'>iOS SDK</td>
-                        <td className='align-center'>macOS SDK</td>
+                    <tr className='bg-gray-faint' style={{borderTopLeftRadius: '4px', borderTopRightRadius: '4px'}}>
+                        <th style={{borderTopLeftRadius: '4px'}}>SDK Support</th>
+                        <td>Mapbox GL JS</td>
+                        <td>Android SDK</td>
+                        <td>iOS SDK</td>
+                        <td style={{borderTopRightRadius: '4px'}}>macOS SDK</td>
                     </tr>
                 </thead>
                 <tbody>
                     {entries(this.props).map(([key, entry], i) => <tr key={i}>
                         <td>{md(key)}</td>
-                        <td className='align-center'>{this.support(entry, 'js')}</td>
-                        <td className='align-center'>{this.support(entry, 'android')}</td>
-                        <td className='align-center'>{this.support(entry, 'ios')}</td>
-                        <td className='align-center'>{this.support(entry, 'macos')}</td>
+                        <td>{this.support(entry, 'js')}</td>
+                        <td>{this.support(entry, 'android')}</td>
+                        <td>{this.support(entry, 'ios')}</td>
+                        <td>{this.support(entry, 'macos')}</td>
                     </tr>
                     )}
                 </tbody>
