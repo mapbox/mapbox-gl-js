@@ -16,14 +16,16 @@ const tabOrder = {
     },
     'plugins': {
         title: 'Plugins'
+    },
+    'style-spec': {
+        title: 'Style Specification'
     }
 };
 
 export function listTabs(arrayOfFolders) {
     let alltheTabs = arrayOfFolders
         .filter(folder => (
-            folder.path.indexOf('404') < 0 &&
-        folder.path.indexOf('style-spec') < 0
+            folder.path.indexOf('404') < 0
         ))
         .map((tab) => {
             const tabId = tab.path.split('/')[2];

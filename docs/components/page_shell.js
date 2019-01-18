@@ -174,20 +174,6 @@ class PageShell extends React.Component {
         }
     }
 
-    getTopbarContent(activeTab) {
-        if (activeTab === 'style-spec') {
-            return {
-                productName: "Mapbox Style Spec",
-                topNav: ""
-            };
-        } else {
-            return {
-                productName: "Mapbox GL JS",
-                topNav: <TopNavTabs activeTab={activeTab} />
-            };
-        }
-    }
-
     render() {
         const { location } = this.props;
 
@@ -195,7 +181,10 @@ class PageShell extends React.Component {
         if (activeTab === 'example') activeTab = 'examples';
 
         const sidebarProps = this.getSidebarProps(activeTab);
-        const topbarContent = this.getTopbarContent(activeTab);
+        const topbarContent = {
+            productName: "Mapbox GL JS",
+            topNav: <TopNavTabs activeTab={activeTab} />
+        };
 
         return (
             <ReactPageShell darkHeaderText={true} includeFooter={true} {...this.props}>
