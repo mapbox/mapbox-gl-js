@@ -37,7 +37,7 @@ class ApiItem extends React.Component {
         const membersList = (members, title) => !empty(members) &&
                 <div>
                     <div className='py6 mt12 txt-m txt-bold'>{title}</div>
-                    <div className=''>
+                    <div className='mb18'>
                         {members.map((member, i) => <ApiItemMember key={i} {...member}/>)}
                     </div>
                 </div>;
@@ -95,8 +95,8 @@ class ApiItem extends React.Component {
                                                 {param.properties.map((property, i) => <tr key={i}>
                                                     <td>
                                                         <span className='txt-code txt-bold txt-break-word bg-white ml-neg3'>{property.name}</span><br />
-                                                        <code className='color-gray'>{this.formatType(property.type)}</code><br />
-                                                        {property.default && <span className='color-gray'>default <code>{property.default}</code></span>}
+                                                        <code className='color-gray txt-break-word'>{this.formatType(property.type)}</code><br />
+                                                        {property.default && <span className='color-gray txt-break-word'>default <code>{property.default}</code></span>}
                                                     </td>
                                                     <td><span>{this.md(property.description, true)}</span></td>
                                                 </tr>)}
