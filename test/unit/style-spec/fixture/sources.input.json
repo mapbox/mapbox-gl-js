@@ -46,9 +46,8 @@
       "data": "/test/integration/data/places.geojson",
       "cluster": true,
       "clusterProperties": {
-        "initial": ["+", ["get", "scalerank"], 0],
-        "zoom": ["+", 0, ["zoom"]],
-        "state": ["+", 0, ["feature-state", "foo"]]
+        "zoom": ["+", ["zoom"]],
+        "state": ["+", ["feature-state", "foo"]]
       }
     }
   },

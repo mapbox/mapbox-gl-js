@@ -56,12 +56,6 @@ DOM.setTransform = function(el: HTMLElement, value: string) {
     (el.style: any)[transformProp] = value;
 };
 
-const displayProp = testProp(['display']);
-
-DOM.setDisplay = function(el: HTMLElement, value: string) {
-    (el.style: any)[displayProp] = value;
-};
-
 // Feature detection for {passive: false} support in add/removeEventListener.
 let passiveSupported = false;
 
