@@ -68,10 +68,10 @@ ${html}
             const {frontMatter} = this.props;
             return (
                 <PageShell meta={frontMatter}>
-                    <div className='contain'>
-                        <div className='round doc bg-white'>
+                    <div className='relative'>
+                        <div className='round bg-white'>
                             <div className='prose'>
-                                <h1 className='pt12'><strong>{frontMatter.title}</strong></h1>
+                                <h1 className='mt0-mm'>{frontMatter.title}</h1>
                                 <div className='mb36'>{md(frontMatter.description)}</div>
 
                                 {!supported() &&
