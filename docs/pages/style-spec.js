@@ -440,7 +440,7 @@ export default class extends React.Component {
                                 <li>Advanced designers and cartographers who want to write styles by hand rather
                                     than use <a href='https://www.mapbox.com/studio'>Mapbox Studio</a></li>
                                 <li>Developers using style-related features of <a
-                                    href='https://www.mapbox.com/mapbox-gl-js/'>Mapbox GL JS</a> or the <a
+                                    href='https://docs.mapbox.com/mapbox-gl-js/'>Mapbox GL JS</a> or the <a
                                     href='https://www.mapbox.com/android-sdk/'>Mapbox Maps SDK for Android</a></li>
                                 <li>Authors of software that generates or processes Mapbox styles.</li>
                             </ul>
@@ -712,7 +712,7 @@ export default class extends React.Component {
                                         {highlightJSON(`
                                             "image": {
                                                 "type": "image",
-                                                "url": "https://www.mapbox.com/mapbox-gl-js/assets/radar.gif",
+                                                "url": "https://docs.mapbox.com/mapbox-gl-js/assets/radar.gif",
                                                 "coordinates": [
                                                     [-80.425, 46.437],
                                                     [-71.516, 46.437],
