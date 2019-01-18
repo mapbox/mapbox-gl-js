@@ -87,8 +87,8 @@ class ApiItem extends React.Component {
                                             </colgroup>
                                             <thead>
                                                 <tr className='txt-bold bg-gray-faint'>
-                                                    <td>Name</td>
-                                                    <td>Description</td>
+                                                    <td style={{borderTopLeftRadius: '4px'}}>Name</td>
+                                                    <td style={{borderTopRightRadius: '4px'}}>Description</td>
                                                 </tr>
                                             </thead>
                                             <tbody className='mt6'>
