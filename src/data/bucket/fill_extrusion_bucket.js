@@ -57,6 +57,7 @@ class FillExtrusionBucket implements Bucket {
     layers: Array<FillExtrusionStyleLayer>;
     layerIds: Array<string>;
     stateDependentLayers: Array<FillExtrusionStyleLayer>;
+    stateDependentLayerIds: Array<string>;
 
     layoutVertexArray: FillExtrusionLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -82,7 +83,7 @@ class FillExtrusionBucket implements Bucket {
         this.indexArray = new TriangleIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.segments = new SegmentVector();
-        this.stateDependentLayerIds = this.layers.filter( (l) => l.isStateDependent()).map((l) => l.id);
+        this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
 
     }
 

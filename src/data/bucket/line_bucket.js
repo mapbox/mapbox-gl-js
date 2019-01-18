@@ -99,6 +99,7 @@ class LineBucket implements Bucket {
     layers: Array<LineStyleLayer>;
     layerIds: Array<string>;
     stateDependentLayers: Array<any>;
+    stateDependentLayerIds: Array<string>;
     features: Array<BucketFeature>;
 
     layoutVertexArray: LineLayoutArray;
@@ -126,7 +127,7 @@ class LineBucket implements Bucket {
         this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.segments = new SegmentVector();
 
-        this.stateDependentLayerIds = this.layers.filter( (l) => l.isStateDependent()).map((l) => l.id);
+        this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
