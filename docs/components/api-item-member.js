@@ -26,11 +26,11 @@ class ApiItemMember extends React.Component {
     render() {
         const member = this.props;
         return (
-            <div>
-                <div className='pt60 border-b border--gray-light' style={{ marginTop: '-45px' }} id={member.namespace.toLowerCase()} />
+            <div className='border-b border--gray-light pb18'>
+                <div className='pt60' style={{ marginTop: '-45px' }} id={member.namespace.toLowerCase()} />
                 <div>
                     <div
-                        className='cursor-pointer toggle-sibling pt12 color-blue-on-hover'
+                        className='cursor-pointer toggle-sibling color-blue-on-hover'
                         onClick={(e) => {
                             this.setState({disclosed: !this.state.disclosed});
                             window.location = this.href(member);
