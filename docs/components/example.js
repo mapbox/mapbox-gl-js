@@ -75,10 +75,10 @@ ${html}
                                 <div className='mb36'>{md(frontMatter.description)}</div>
 
                                 {!supported() &&
-                                    <div id='unsupported' className='px12 py12 hidden dark'>
-                                        <div className='note error round pad1'>
+                                    <div id='unsupported' className=''>
+                                        <div className='bg-yellow-faint round px12 py12 mb24'>
                                             <div className='txt-bold mb6'><Icon name="alert" inline={true} />Mapbox GL unsupported</div>
-                                            <div className='txt-s txt-bold'>Mapbox GL requires <a href='http://caniuse.com/webgl'>WebGL support</a>. Please check that you are using a supported browser and that WebGL is <a href='http://get.webgl.org/'>enabled</a>.</div>
+                                            <div className=''>Mapbox GL requires <a href='http://caniuse.com/webgl'>WebGL support</a>. Please check that you are using a supported browser and that WebGL is <a href='http://get.webgl.org/'>enabled</a>.</div>
                                         </div>
                                     </div>}
                             </div>
