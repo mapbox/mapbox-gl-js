@@ -73,6 +73,10 @@ const types = {
         type: 'color',
         parameters: ['value', { repeat: [ 'fallback: value' ] }]
     }],
+    'to-json': [{
+        type: 'json',
+        parameters: ['string']
+    }],
     'to-number': [{
         type: 'number',
         parameters: ['value', { repeat: [ 'fallback: value' ] }]
