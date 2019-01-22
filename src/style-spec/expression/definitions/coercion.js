@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-import {BooleanType, ColorType, NumberType, StringType, ValueType} from '../types';
+import {BooleanType, ColorType, JsonType, NumberType, StringType, ValueType} from '../types';
 import {Color, toString as valueToString, validateRGBA} from '../values';
 import RuntimeError from '../runtime_error';
 import Formatted from '../types/formatted';
@@ -17,6 +17,7 @@ import type { Type } from '../types';
 const types = {
     'to-boolean': BooleanType,
     'to-color': ColorType,
+    'to-json': JsonType,
     'to-number': NumberType,
     'to-string': StringType
 };
@@ -44,7 +45,7 @@ class Coercion implements Expression {
         const name: string = (args[0]: any);
         assert(types[name], name);
 
-        if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
+        if ((name === 'to-boolean' || name === 'to-string' || name === 'to-json') && args.length !== 2)
             return context.error(`Expected one argument.`);
 
         const type = types[name];
@@ -99,6 +100,13 @@ class Coercion implements Expression {
             // There is no explicit 'to-formatted' but this coercion can be implicitly
             // created by properties that expect the 'formatted' type.
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
+        } else if (this.type.kind === 'json') {
+            const input = this.args[0].evaluate(ctx);
+            try {
+                return JSON.parse(input);
+            } catch (error) {
+                throw new RuntimeError(error || `Could not parse JSON from value '${input}'`);
+            }
         } else {
             return valueToString(this.args[0].evaluate(ctx));
         }

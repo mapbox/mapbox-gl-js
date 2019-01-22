@@ -73,6 +73,7 @@ const expressions: ExpressionRegistry = {
     'string': Assertion,
     'to-boolean': Coercion,
     'to-color': Coercion,
+    'to-json': Coercion,
     'to-number': Coercion,
     'to-string': Coercion,
     'var': Var

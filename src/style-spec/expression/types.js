@@ -37,6 +37,7 @@ export const NumberType = { kind: 'number' };
 export const StringType = { kind: 'string' };
 export const BooleanType = { kind: 'boolean' };
 export const ColorType = { kind: 'color' };
+export const JsonType = { kind: 'json' };
 export const ObjectType = { kind: 'object' };
 export const ValueType = { kind: 'value' };
 export const ErrorType = { kind: 'error' };
@@ -68,6 +69,7 @@ const valueMemberTypes = [
     StringType,
     BooleanType,
     ColorType,
+    JsonType,
     FormattedType,
     ObjectType,
     array(ValueType)
