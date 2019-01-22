@@ -5,6 +5,7 @@ export type NumberTypeT = { kind: 'number' };
 export type StringTypeT = { kind: 'string' };
 export type BooleanTypeT = { kind: 'boolean' };
 export type ColorTypeT = { kind: 'color' };
+export type JsonTypeT = { kind: 'json' };
 export type ObjectTypeT = { kind: 'object' };
 export type ValueTypeT = { kind: 'value' };
 export type ErrorTypeT = { kind: 'error' };
@@ -19,6 +20,7 @@ export type Type =
     StringTypeT |
     BooleanTypeT |
     ColorTypeT |
+    JsonTypeT |
     ObjectTypeT |
     ValueTypeT |
     ArrayType | // eslint-disable-line no-use-before-define
