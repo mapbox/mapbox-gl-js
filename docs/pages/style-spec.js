@@ -239,22 +239,22 @@ export default class extends React.Component {
                     <div>
                         <h1>{meta.title}</h1>
                         <p>A Mapbox style is a document that defines the visual appearance of a map: what data to
-                            draw, the order to draw it in, and how to style the data when drawing it. A style
-                            document is a <a href="http://www.json.org/">JSON</a> object with specific root level
-                            and nested properties. This specification defines and describes these properties.</p>
+                          draw, the order to draw it in, and how to style the data when drawing it. A style
+                          document is a <a href="http://www.json.org/">JSON</a> object with specific root level
+                          and nested properties. This specification defines and describes these properties.</p>
                         <p>The intended audience of this specification includes:</p>
                         <ul>
                             <li>Advanced designers and cartographers who want to write styles by hand rather
-                                than use <a href='https://www.mapbox.com/studio'>Mapbox Studio</a></li>
+                              than use <a href='https://www.mapbox.com/studio'>Mapbox Studio</a></li>
                             <li>Developers using style-related features of <a
-                                href='https://www.mapbox.com/mapbox-gl-js/'>Mapbox GL JS</a> or the <a
-                                href='https://www.mapbox.com/android-sdk/'>Mapbox Maps SDK for Android</a></li>
+                                href='https://docs.mapbox.com/mapbox-gl-js/'>Mapbox GL JS</a> or the <a
+                                href='https://docs.mapbox.com/android/'>Mapbox Maps SDK for Android</a></li>
                             <li>Authors of software that generates or processes Mapbox styles.</li>
                         </ul>
                         <p>Developers using the <a href='https://www.mapbox.com/ios-sdk/'>Mapbox Maps SDK for iOS</a> or <a
                             href='https://github.com/mapbox/mapbox-gl-native/tree/master/platform/macos/'>
-                            Mapbox Maps SDK for macOS</a> should consult the iOS SDK API reference for platform-appropriate
-                            documentation of style-related features.</p>
+                          Mapbox Maps SDK for macOS</a> should consult the iOS SDK API reference for platform-appropriate
+                          documentation of style-related features.</p>
                     </div>
 
                     <SectionH2 id='root' title='Root Properties'>
@@ -549,21 +549,20 @@ export default class extends React.Component {
                                     An image source. The <code>"url"</code> value contains the image location.
                                 </p>
                                 <p>
-                                    The <code>"coordinates"</code> array contains <code>[longitude, latitude]</code> pairs for the image
-                                    corners listed in clockwise order: top left, top right, bottom right, bottom left.
+                                    The <code>"coordinates"</code> array contains <code>[longitude, latitude]</code> pairs for the image corners listed in clockwise order: top left, top right, bottom right, bottom left.
                                 </p>
                                 <div className='mb6'>
                                     {highlightJSON(`
-                                        "image": {
-                                            "type": "image",
-                                            "url": "https://www.mapbox.com/mapbox-gl-js/assets/radar.gif",
-                                            "coordinates": [
-                                                [-80.425, 46.437],
-                                                [-71.516, 46.437],
-                                                [-71.516, 37.936],
-                                                [-80.425, 37.936]
-                                            ]
-                                        }`)}
+                                      "image": {
+                                          "type": "image",
+                                          "url": "https://docs.mapbox.com/mapbox-gl-js/assets/radar.gif",
+                                          "coordinates": [
+                                              [-80.425, 46.437],
+                                              [-71.516, 46.437],
+                                              [-71.516, 37.936],
+                                              [-80.425, 37.936]
+                                          ]
+                                      }`)}
                                 </div>
                                 <div className='mb6'>
                                     { entries(ref.source_image).map(([name, prop], i) => name !== '*' && name !== 'type' &&
@@ -581,29 +580,29 @@ export default class extends React.Component {
 
                             <SectionH3 id='sources-video' title='video'>
                                 <p>
-                                    A video source. The <code>"urls"</code> value is an array. For each URL in the array,
-                                    a video element <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source">source</a> will
-                                    be created, in order to support same media in multiple formats supported by different browsers.
+                                  A video source. The <code>"urls"</code> value is an array. For each URL in the array,
+                                  a video element <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source">source</a> will
+                                  be created, in order to support same media in multiple formats supported by different browsers.
                                 </p>
                                 <p>
-                                    The <code>"coordinates"</code> array contains <code>[longitude, latitude]</code> pairs for the video
-                                    corners listed in clockwise order: top left, top right, bottom right, bottom left.
+                                  The <code>"coordinates"</code> array contains <code>[longitude, latitude]</code> pairs for the video
+                                  corners listed in clockwise order: top left, top right, bottom right, bottom left.
                                 </p>
                                 <div className='mb6'>
                                     {highlightJSON(`
-                                        "video": {
-                                            "type": "video",
-                                            "urls": [
-                                                "https://www.mapbox.com/drone/video/drone.mp4",
-                                                "https://www.mapbox.com/drone/video/drone.webm"
-                                            ],
-                                            "coordinates": [
-                                                [-122.51596391201019, 37.56238816766053],
-                                                [-122.51467645168304, 37.56410183312965],
-                                                [-122.51309394836426, 37.563391708549425],
-                                                [-122.51423120498657, 37.56161849366671]
-                                            ]
-                                        }`)}
+                                      "video": {
+                                          "type": "video",
+                                          "urls": [
+                                              "https://static-assets.mapbox.com/mapbox-gl-js/drone.mp4",
+                                              "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm"
+                                          ],
+                                          "coordinates": [
+                                              [-122.51596391201019, 37.56238816766053],
+                                              [-122.51467645168304, 37.56410183312965],
+                                              [-122.51309394836426, 37.563391708549425],
+                                              [-122.51423120498657, 37.56161849366671]
+                                          ]
+                                      }`)}
                                 </div>
                                 <div className='mb6'>
                                     { entries(ref.source_video).map(([name, prop], i) => name !== '*' && name !== 'type' &&
@@ -849,15 +848,13 @@ export default class extends React.Component {
                         <SectionH3 id='data-expressions' title='Data expressions'>
                             <p>
                               A <em>data expression</em> is any expression that access feature data -- that is, any
-                            expression that uses one of the data operators:
+                              expression that uses one of the data operators:
                                 <a href="#expressions-get"><code>get</code></a>,
                                 <a href="#expressions-has"><code>has</code></a>,
                                 <a href="#expressions-id"><code>id</code></a>,
                                 <a href="#expressions-geometry-type"><code>geometry-type</code></a>,
                                 <a href="#expressions-properties"><code>properties</code></a>, or
-                                <a href="#expressions-feature-state"><code>feature-state</code></a>. Data expressions allow a
-                            feature's properties or state to determine its appearance. They can be used to differentiate
-                            features within the same layer and to create data visualizations.
+                                <a href="#expressions-feature-state"><code>feature-state</code></a>. Data expressions allow a feature's properties or state to determine its appearance. They can be used to differentiate features within the same layer and to create data visualizations.
                             </p>
                             <div className='mb6'>
                                 {highlightJSON(`
@@ -951,12 +948,14 @@ export default class extends React.Component {
                                     [ "step", ["zoom"], ... ]
                                 ]`)}
                             </div>
+
                             <p>
-                              That is, in layout or paint properties, <code>["zoom"]</code> may appear only as the
-                            input to an outer <a href="#expressions-interpolate"><code>interpolate</code></a> or <a
-                                    href="#expressions-step"><code>step</code></a> expression, or such an expression within
-                            a <a href="#expressions-let"><code>let</code></a> expression.
+                                That is, in layout or paint properties, <code>["zoom"]</code> may appear only as the
+                                input to an outer <a href="#expressions-interpolate"><code>interpolate</code></a> or
+                                <a href="#expressions-step"><code>step</code></a> expression, or such an expression within
+                                a <a href="#expressions-let"><code>let</code></a> expression.
                             </p>
+
                             <p>There is an important difference between layout and paint properties in
                             the timing of camera expression evaluation. Paint property camera expressions are
                             re-evaluated whenever the zoom level changes, even fractionally. For example, a paint
@@ -1002,44 +1001,44 @@ export default class extends React.Component {
                             </p>
                             <p>
                               When working with feature data, the type of a feature property value is typically not known
-                            ahead of time by the SDK. In order to preserve type safety, when evaluating a data
-                            expression, the SDK will check that the property value is appropriate for the context.
-                            For example, if you use the expression <code>["get", "feature-color"]</code> for the <a
-                                    href="#paint-circle-circle-color"><code>circle-color</code></a> property, the SDK
-                            will verify that the <code>feature-color</code> value of each feature is a string
-                            identifying a valid <a href="#types-color">color</a>. If this check fails, an error will
-                            be indicated in an SDK-specific way (typically a log message), and the default value for
-                            the property will be used instead.
+                              ahead of time by the SDK. In order to preserve type safety, when evaluating a data
+                              expression, the SDK will check that the property value is appropriate for the context.
+                              For example, if you use the expression <code>["get", "feature-color"]</code> for the
+                                <a href="#paint-circle-circle-color"><code>circle-color</code></a> property, the SDK
+                              will verify that the <code>feature-color</code> value of each feature is a string
+                              identifying a valid <a href="#types-color">color</a>. If this check fails, an error will
+                              be indicated in an SDK-specific way (typically a log message), and the default value for
+                              the property will be used instead.
                             </p>
                             <p>
                               In most cases, this verification will occur automatically wherever it is needed. However,
-                            in certain situations, the SDK may be unable to automatically determine the expected
-                            result type of a data expression from surrounding context. For example, it is not clear
-                            whether the expression <code>["&lt;", ["get", "a"], ["get", "b"]]</code> is attempting
-                            to compare strings or numbers. In situations like this, you can use one of
-                            the <em>type assertion</em> expression operators to indicate the expected type of a
-                            data expression: <code>["&lt;", ["number", ["get", "a"]], ["number", ["get", "b"]]]</code>.
-                            A type assertion checks that the feature data actually matches the expected type of the
-                            data expression. If this check fails, it produces an error and causes the whole
-                            expression to fall back to the default value for the property being defined. The
-                            assertion operators are <a
-                                    href="#expressions-types-array"><code>array</code></a>, <a
-                                    href="#expressions-types-boolean"><code>boolean</code></a>, <a
-                                    href="#expressions-types-number"><code>number</code></a>, and <a
-                                    href="#expressions-types-string"><code>string</code></a>.
+                              in certain situations, the SDK may be unable to automatically determine the expected
+                              result type of a data expression from surrounding context. For example, it is not clear
+                              whether the expression <code>["&lt;", ["get", "a"], ["get", "b"]]</code> is attempting
+                              to compare strings or numbers. In situations like this, you can use one of
+                              the <em>type assertion</em> expression operators to indicate the expected type of a
+                              data expression: <code>["&lt;", ["number", ["get", "a"]], ["number", ["get", "b"]]]</code>.
+                              A type assertion checks that the feature data actually matches the expected type of the
+                              data expression. If this check fails, it produces an error and causes the whole
+                              expression to fall back to the default value for the property being defined. The
+                              assertion operators are
+                                <a href="#expressions-types-array"><code>array</code></a>,
+                                <a href="#expressions-types-boolean"><code>boolean</code></a>,
+                                <a href="#expressions-types-number"><code>number</code></a>, and
+                                <a href="#expressions-types-string"><code>string</code></a>.
                             </p>
                             <p>
                               Expressions perform only one kind of implicit type conversion: a data expression used in
-                            a context where a <a href="#types-color">color</a> is expected will convert a string
-                            representation of a color to a color value. In all other cases, if you want to convert
-                            between types, you must use one of the <em>type conversion</em> expression operators: <a
-                                    href="#expressions-types-to-boolean"><code>to-boolean</code></a>, <a
-                                    href="#expressions-types-to-number"><code>to-number</code></a>, <a
-                                    href="#expressions-types-to-string"><code>to-string</code></a>, or <a
-                                    href="#expressions-types-to-color"><code>to-color</code></a>. For example, if you
-                            have a feature property that stores numeric values in string format, and you want to use
-                            those values as numbers rather than strings, you can use an expression such
-                            as <code>["to-number", ["get", "property-name"]]</code>.
+                              a context where a <a href="#types-color">color</a> is expected will convert a string
+                              representation of a color to a color value. In all other cases, if you want to convert
+                              between types, you must use one of the <em>type conversion</em> expression operators:
+                                <a href="#expressions-types-to-boolean"><code>to-boolean</code></a>,
+                                <a href="#expressions-types-to-number"><code>to-number</code></a>,
+                                <a href="#expressions-types-to-string"><code>to-string</code></a>, or
+                                <a href="#expressions-types-to-color"><code>to-color</code></a>. For example, if you
+                              have a feature property that stores numeric values in string format, and you want to use
+                              those values as numbers rather than strings, you can use an expression such
+                              as <code>["to-number", ["get", "property-name"]]</code>.
                             </p>
                         </SectionH3>
 
@@ -1098,18 +1097,18 @@ export default class extends React.Component {
                     <SectionH2 id='other' title='Other'>
                         <SectionH3 id='other-function' title='Function'>
                             <p>The value for any layout or paint property may be specified as
-                                    a <em>function</em>. Functions allow you to make the appearance of a map feature
-                                    change with the current zoom level and/or the feature's properties.</p>
+                              a <em>function</em>. Functions allow you to make the appearance of a map feature
+                              change with the current zoom level and/or the feature's properties.</p>
 
                             <InnerSection>
                                 <SectionH4 id="function-stops" title='stops'>
-                                    <div><em className='color-gray'>Required (except
-                                            for <var>identity</var> functions) <a href='#types-array'>array</a>.</em></div>
+                                    <div><em className='quiet'>Required (except
+                                      for <var>identity</var> functions) <a href='#types-array'>array</a>.</em></div>
                                     <div>Functions are defined in terms of input and output values. A set of one
-                                            input value and one output value is known as a "stop." Stop output values
-                                            must be literal values (i.e. not functions or expressions), and appropriate
-                                            for the property. For example, stop output values for a function used in
-                                            the <code>fill-color</code> property must be <a href="#types-color">colors</a>.
+                                          input value and one output value is known as a "stop." Stop output values
+                                          must be literal values (i.e. not functions or expressions), and appropriate
+                                          for the property. For example, stop output values for a function used in
+                                          the <code>fill-color</code> property must be <a href="#types-color">colors</a>.
                                     </div>
                                 </SectionH4>
 
@@ -1117,8 +1116,8 @@ export default class extends React.Component {
                                     <div><em className='color-gray'>Optional <a href='#types-string'>string</a>.</em>
                                     </div>
                                     <div>If specified, the function will take the specified feature property as
-                                            an input. See <a href="#types-function-zoom-property">Zoom Functions and
-                                                Property Functions</a> for more information.
+                                        an input. See <a href="#types-function-zoom-property">Zoom Functions and
+                                            Property Functions</a> for more information.
                                     </div>
                                 </SectionH4>
 
@@ -1126,9 +1125,9 @@ export default class extends React.Component {
                                     <div><em className='color-gray'>Optional <a href='#types-number'>number</a>.
                                             Default is {ref.function.base.default}.</em></div>
                                     <div>The exponential base of the interpolation curve. It controls the rate
-                                            at which the function output increases. Higher values make the output
-                                            increase more towards the high end of the range. With values close to 1
-                                            the output increases linearly.
+                                                at which the function output increases. Higher values make the output
+                                                increase more towards the high end of the range. With values close to 1
+                                                the output increases linearly.
                                     </div>
                                 </SectionH4>
 
@@ -1136,8 +1135,8 @@ export default class extends React.Component {
                                     <div className='mb6'>
                                         <em className='color-gray'>
                                           Optional <a href='#types-string'>string</a>. One
-                                            of <code>"identity"</code>, <code>"exponential"</code>, <code>"interval"
-                                            </code>, or <code>"categorical"</code>.
+                                          of <code>"identity"</code>, <code>"exponential"</code>,
+                                            <code>"interval"</code>, or <code>"categorical"</code>.
                                         </em>
                                     </div>
                                     <dl className='mb6'>
@@ -1146,60 +1145,58 @@ export default class extends React.Component {
                                         <dt><code>"exponential"</code></dt>
                                         <dd className='mb12'>
                                           A function that generates an output by interpolating between stops just
-                                                less than and just greater than the
-                                                function input. The domain (input value) must be numeric, and the
-                                                style property must support
-                                                interpolation. Style properties that support interpolation are
-                                                marked marked with <Icon name='smooth-ramp' inline={true}/>, the
-                                                "exponential" symbol, and <var>exponential</var> is the default
-                                                function type for these properties.
+                                          less than and just greater than the
+                                          function input. The domain (input value) must be numeric, and the
+                                          style property must support
+                                          interpolation. Style properties that support interpolation are
+                                          marked marked with <Icon name='smooth-ramp' inline={true}/>, the "exponential" symbol, and <var>exponential</var> is the default
+                                          function type for these properties.
                                         </dd>
                                         <dt><code>"interval"</code></dt>
                                         <dd className='mb12'>A function that returns the output value of the stop just less than the
-                                                function input. The domain (input
-                                                value) must be numeric. Any style property may use interval
-                                                functions. For properties marked with
-                                        <Icon name='step-ramp' inline={true}/>, the "interval"
-                                                symbol, this is the default function type.
+                                        function input. The domain (input
+                                        value) must be numeric. Any style property may use interval
+                                        functions. For properties marked with
+                                        <Icon name='step-ramp' inline={true}/>, the "interval" symbol, this is the default function type.
                                         </dd>
                                         <dt><code>"categorical"</code></dt>
                                         <dd className='mb12'>A function that returns the output value of the stop equal to the function
-                                                input.
+                                            input.
                                         </dd>
                                     </dl>
                                 </SectionH4>
                                 <SectionH4 id="function-default" title='default'>
                                     <div>A value to serve as a fallback function result when a value isn't
-                                            otherwise available. It is used in the following circumstances:
+                                      otherwise available. It is used in the following circumstances:
                                     </div>
                                     <ul>
                                         <li>In categorical functions, when the feature value does not match any
-                                                of the stop domain values.
+                                          of the stop domain values.
                                         </li>
                                         <li>In property and zoom-and-property functions, when a feature does not
-                                                contain a value for the specified property.
+                                          contain a value for the specified property.
                                         </li>
                                         <li>In identity functions, when the feature value is not valid for the
-                                                style property (for example, if the function is being used for
-                                                a <var>circle-color</var> property but the feature property value is
-                                                not a string or not a valid color).
+                                          style property (for example, if the function is being used for
+                                          a <var>circle-color</var> property but the feature property value is
+                                          not a string or not a valid color).
                                         </li>
                                         <li>In interval or exponential property and zoom-and-property functions,
-                                                when the feature value is not numeric.
+                                          when the feature value is not numeric.
                                         </li>
                                     </ul>
                                     <div>If no default is provided, the style property's default is used in
-                                            these circumstances.
+                                      these circumstances.
                                     </div>
                                 </SectionH4>
                                 <SectionH4 id="function-colorSpace" title='colorSpace'>
                                     <div><em className='color-gray'>Optional <a href='#types-string'>string</a>. One of
                                         <code>"rgb"</code>, <code>"lab"</code>, <code>"hcl"</code>.</em></div>
                                     <div className=' mb6'>The color space in which colors
-                                            interpolated. Interpolating colors in perceptual color spaces like LAB
-                                            and HCL tend to produce color ramps that look more consistent and
-                                            produce colors that can be differentiated more easily than those
-                                            interpolated in RGB space.
+                                        interpolated. Interpolating colors in perceptual color spaces like LAB
+                                        and HCL tend to produce color ramps that look more consistent and
+                                        produce colors that can be differentiated more easily than those
+                                        interpolated in RGB space.
                                     </div>
                                     <dl className="">
                                         <dt><code>"rgb"</code></dt>

@@ -6,7 +6,6 @@ import updateUI from '../benchmarks_view';
 
 mapboxgl.accessToken = accessToken;
 
-const urls = (process.env.MAPBOX_STYLE_URL || 'mapbox://styles/mapbox/streets-v10').split(',');
 const benchmarks = [];
 const filter = window.location.hash.substr(1);
 
@@ -23,9 +22,10 @@ function register(Benchmark, locations, options) {
 
     if (options) Object.assign(benchmark, options);
 
-    urls.forEach(style => {
+    process.env.MAPBOX_STYLES.forEach(style => {
+        const { name } = style;
         benchmark.versions.push({
-            name: style.replace("mapbox://styles/", ""),
+            name: name ? name : style.replace('mapbox://styles/', ''),
             bench: new Benchmark(style, locations),
             status: 'waiting',
             logs: [],

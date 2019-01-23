@@ -52,12 +52,12 @@ export default class Marker extends Evented {
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
     _positionDelta: ?number;
 
-    constructor(options?: Options) {
+    constructor(options?: Options, legacyOptions?: Options) {
         super();
         // For backward compatibility -- the constructor used to accept the element as a
         // required first argument, before it was made optional.
-        if (arguments[0] instanceof window.HTMLElement || arguments.length === 2) {
-            options = extend({element: options}, arguments[1]);
+        if (options instanceof window.HTMLElement || legacyOptions) {
+            options = extend({element: options}, legacyOptions);
         }
 
         bindAll([
@@ -221,6 +221,8 @@ export default class Marker extends Evented {
             this._map.off('moveend', this._update);
             this._map.off('mousedown', this._addDragHandler);
             this._map.off('touchstart', this._addDragHandler);
+            this._map.off('mouseup', this._onUp);
+            this._map.off('touchend', this._onUp);
             delete this._map;
         }
         DOM.remove(this._element);

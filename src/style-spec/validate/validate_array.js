@@ -38,12 +38,12 @@ export default function validateArray(options) {
     let errors = [];
     for (let i = 0; i < array.length; i++) {
         errors = errors.concat(validateArrayElement({
-            array: array,
+            array,
             arrayIndex: i,
             value: array[i],
             valueSpec: arrayElementSpec,
-            style: style,
-            styleSpec: styleSpec,
+            style,
+            styleSpec,
             key: `${key}[${i}]`
         }));
     }

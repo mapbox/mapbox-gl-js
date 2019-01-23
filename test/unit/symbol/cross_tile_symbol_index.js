@@ -10,20 +10,20 @@ function makeSymbolInstance(x, y, key) {
     return {
         anchorX: x,
         anchorY: y,
-        key: key
+        key
     };
 }
 
 function makeTile(tileID, symbolInstances) {
     const bucket = {
         symbolInstances: {
-            get: function(i) { return symbolInstances[i]; },
+            get(i) { return symbolInstances[i]; },
             length: symbolInstances.length
         },
         layerIds: ['test']
     };
     return {
-        tileID: tileID,
+        tileID,
         getBucket: () => bucket,
         latestFeatureIndex: {}
     };

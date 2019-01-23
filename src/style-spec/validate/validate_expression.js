@@ -6,7 +6,7 @@ import { createExpression, createPropertyExpression } from '../expression';
 import { deepUnbundle } from '../util/unbundle_jsonlint';
 import { isStateConstant } from '../expression/is_constant';
 
-export default function validateExpression(options: any) {
+export default function validateExpression(options: any): Array<ValidationError> {
     const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec);
     if (expression.result === 'error') {
         return expression.value.map((error) => {
@@ -23,5 +23,10 @@ export default function validateExpression(options: any) {
         (!isStateConstant((expression.value: any)._styleExpression.expression))) {
         return [new ValidationError(options.key, options.value, '"feature-state" data expressions are not supported with layout properties.')];
     }
+
+    if (options.expressionContext === 'filter' && !isStateConstant((expression.value: any).expression)) {
+        return [new ValidationError(options.key, options.value, '"feature-state" data expressions are not supported with filters.')];
+    }
+
     return [];
 }

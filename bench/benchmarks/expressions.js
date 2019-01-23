@@ -6,8 +6,9 @@ import spec from '../../src/style-spec/reference/latest';
 import convertFunction from '../../src/style-spec/function/convert';
 import { isFunction, createFunction } from '../../src/style-spec/function';
 import { createPropertyExpression } from '../../src/style-spec/expression';
-import { normalizeStyleURL } from '../../src/util/mapbox';
+import fetchStyle from '../lib/fetch_style';
 
+import type {StyleSpecification} from '../../src/style-spec/types';
 import type {StylePropertySpecification} from '../../src/style-spec/style-spec';
 import type {StylePropertyExpression} from '../../src/style-spec/expression';
 
@@ -19,21 +20,22 @@ class ExpressionBenchmark extends Benchmark {
         compiledFunction: StylePropertyExpression,
         compiledExpression: StylePropertyExpression
     }>;
-    style: string;
+    style: string | StyleSpecification;
 
-    constructor(style: string) {
+    constructor(style: string | StyleSpecification) {
         super();
         this.style = style;
     }
 
     setup() {
-        return fetch(normalizeStyleURL(this.style))
-            .then(response => response.json())
+        return fetchStyle(this.style)
             .then(json => {
                 this.data = [];
 
                 for (const layer of json.layers) {
-                    if (layer.ref) {
+                    // some older layers still use the deprecated `ref property` instead of `type`
+                    // if we don't filter out these older layers, the logic below will cause a fatal error
+                    if (!layer.type) {
                         continue;
                     }
 

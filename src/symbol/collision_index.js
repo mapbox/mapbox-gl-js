@@ -309,14 +309,14 @@ class CollisionIndex {
     insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number, collisionGroupID: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex, collisionGroupID: collisionGroupID };
+        const key = { bucketInstanceId, featureIndex, collisionGroupID };
         grid.insert(key, collisionBox[0], collisionBox[1], collisionBox[2], collisionBox[3]);
     }
 
     insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number, collisionGroupID: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex, collisionGroupID: collisionGroupID };
+        const key = { bucketInstanceId, featureIndex, collisionGroupID };
         for (let k = 0; k < collisionCircles.length; k += 4) {
             grid.insertCircle(key, collisionCircles[k], collisionCircles[k + 1], collisionCircles[k + 2]);
         }

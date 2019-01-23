@@ -266,7 +266,7 @@ test('VectorTileWorkerSource provides resource timing information (fallback meth
         measures[name].push({
             duration: marks[end] - marks[start],
             entryType: 'measure',
-            name: name,
+            name,
             startTime: marks[start]
         });
         return null;

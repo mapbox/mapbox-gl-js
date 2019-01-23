@@ -2,7 +2,6 @@
 
 import UnitBezier from '@mapbox/unitbezier';
 
-import Coordinate from '../geo/coordinate';
 import Point from '@mapbox/point-geometry';
 import window from './window';
 
@@ -205,7 +204,7 @@ export function uuid(): string {
     function b(a) {
         return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) :
         //$FlowFixMe: Flow doesn't like the implied array literal conversion here
-        ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
+            ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
     }
     return b();
 }
@@ -246,33 +245,6 @@ export function bindAll(fns: Array<string>, context: Object): void {
         if (!context[fn]) { return; }
         context[fn] = context[fn].bind(context);
     });
-}
-
-/**
- * Given a list of coordinates, get their center as a coordinate.
- *
- * @returns centerpoint
- * @private
- */
-export function getCoordinatesCenter(coords: Array<Coordinate>): Coordinate {
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-
-    for (let i = 0; i < coords.length; i++) {
-        minX = Math.min(minX, coords[i].column);
-        minY = Math.min(minY, coords[i].row);
-        maxX = Math.max(maxX, coords[i].column);
-        maxY = Math.max(maxY, coords[i].row);
-    }
-
-    const dx = maxX - minX;
-    const dy = maxY - minY;
-    const dMax = Math.max(dx, dy);
-    const zoom = Math.max(0, Math.floor(-Math.log(dMax) / Math.LN2));
-    return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
-        .zoomTo(zoom);
 }
 
 /**

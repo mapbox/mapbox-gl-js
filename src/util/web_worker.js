@@ -1,5 +1,11 @@
 // @flow
 
+// This file is intended for use in the GL-JS test suite
+// It implements a MessageBus main thread interface for use in Node environments
+// In a browser environment, this file is replaced with ./src/util/browser/web_worker.js
+// when Rollup builds the main bundle.
+// See https://github.com/mapbox/mapbox-gl-js/blob/master/package.json#L104-L108
+
 import Worker from '../source/worker';
 
 import type {WorkerSource} from '../source/worker_source';
@@ -51,7 +57,7 @@ class MessageBus implements WorkerInterface, WorkerGlobalScopeInterface {
         setImmediate(() => {
             try {
                 for (const listener of this.postListeners) {
-                    listener({data: data, target: this.target});
+                    listener({data, target: this.target});
                 }
             } catch (e) {
                 console.error(e);

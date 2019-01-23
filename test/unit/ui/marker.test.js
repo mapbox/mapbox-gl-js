@@ -11,7 +11,7 @@ function createMap(t) {
     const container = window.document.createElement('div');
     Object.defineProperty(container, 'clientWidth', {value: 512});
     Object.defineProperty(container, 'clientHeight', {value: 512});
-    return globalCreateMap(t, {container: container});
+    return globalCreateMap(t, {container});
 }
 
 test('Marker uses a default marker element with an appropriate offset', (t) => {
@@ -449,5 +449,19 @@ test('Marker with draggable:false does not move to new position in response to a
     t.equal(startPos.y, endPos.y);
 
     map.remove();
+    t.end();
+});
+
+test('Marker with draggable:true does not error if removed on mousedown', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+    simulate.mousedown(el);
+    simulate.mousemove(el, {clientX: 10, clientY: 10});
+
+    marker.remove();
+    t.ok(map.fire('mouseup'));
     t.end();
 });

@@ -145,7 +145,7 @@ class GridIndex {
         const result = [];
         const queryArgs = {
             hitTest,
-            circle: { x: x, y: y, radius: radius },
+            circle: { x, y, radius },
             seenUids: { box: {}, circle: {} }
         };
         this._forEachCell(x1, y1, x2, y2, this._queryCellCircle, result, queryArgs, predicate);

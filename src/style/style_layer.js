@@ -26,6 +26,7 @@ import type {
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type Map from '../ui/map';
+import type {StyleSetterOptions} from './style';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -115,7 +116,7 @@ class StyleLayer extends Evented {
         return this._unevaluatedLayout.getValue(name);
     }
 
-    setLayoutProperty(name: string, value: mixed, options: {validate: boolean}) {
+    setLayoutProperty(name: string, value: mixed, options: StyleSetterOptions = {}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.layout.${name}`;
             if (this._validate(validateLayoutProperty, key, name, value, options)) {
@@ -139,7 +140,7 @@ class StyleLayer extends Evented {
         }
     }
 
-    setPaintProperty(name: string, value: mixed, options: {validate: boolean}) {
+    setPaintProperty(name: string, value: mixed, options: StyleSetterOptions = {}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.paint.${name}`;
             if (this._validate(validatePaintProperty, key, name, value, options)) {
@@ -221,16 +222,16 @@ class StyleLayer extends Evented {
         });
     }
 
-    _validate(validate: Function, key: string, name: string, value: mixed, options: {validate: boolean}) {
+    _validate(validate: Function, key: string, name: string, value: mixed, options: StyleSetterOptions = {}) {
         if (options && options.validate === false) {
             return false;
         }
         return emitValidationErrors(this, validate.call(validateStyle, {
-            key: key,
+            key,
             layerType: this.type,
             objectKey: name,
-            value: value,
-            styleSpec: styleSpec,
+            value,
+            styleSpec,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true}
         }));

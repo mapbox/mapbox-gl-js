@@ -1,22 +1,22 @@
 // @flow
 
+import type {StyleSpecification} from '../../src/style-spec/types';
 import Benchmark from '../lib/benchmark';
 import createStyleLayer from '../../src/style/create_style_layer';
 import deref from '../../src/style-spec/deref';
-import { normalizeStyleURL } from '../../src/util/mapbox';
+import fetchStyle from '../lib/fetch_style';
 
 export default class StyleLayerCreate extends Benchmark {
-    style: string;
+    style: string | StyleSpecification;
     layers: Array<Object>;
 
-    constructor(style: string) {
+    constructor(style: string | StyleSpecification) {
         super();
         this.style = style;
     }
 
     setup(): Promise<void> {
-        return fetch(normalizeStyleURL(this.style))
-            .then(response => response.json())
+        return fetchStyle(this.style)
             .then(json => { this.layers = deref(json.layers); });
     }
 

@@ -46,6 +46,7 @@ for (const type of usedTypes) {
 const bytesPerElement = size;
 const usedTypeSizes = [];
 const argNames = [];
+const argNamesTyped = [];
 for (const member of members) {
     if (usedTypeSizes.indexOf(member.size) < 0) {
         usedTypeSizes.push(member.size);
@@ -53,38 +54,19 @@ for (const member of members) {
     for (let c = 0; c < member.components; c++) {
         // arguments v0, v1, v2, ... are, in order, the components of
         // member 0, then the components of member 1, etc.
-        argNames.push(`v${argNames.length}: number`);
+        const name = `v${argNames.length}`;
+        argNames.push(name);
+        argNamesTyped.push(`${name}: number`);
     }
 }
 -%>
-    emplaceBack(<%=argNames.join(', ')%>) {
+    emplaceBack(<%=argNamesTyped.join(', ')%>) {
         const i = this.length;
         this.resize(i + 1);
-<%
-for (const size of usedTypeSizes) {
--%>
-        const o<%=size.toFixed(0)%> = i * <%=(bytesPerElement / size).toFixed(0)%>;
-<%
-}
-
-let argIndex = 0;
-for (const member of members) {
-    for (let c = 0; c < member.components; c++) {
-        // The index for `member` component `c` into the appropriate type array is:
-        // this.{TYPE}[o{SIZE} + MEMBER_OFFSET + {c}] = v{X}
-        // where MEMBER_OFFSET = ROUND(member.offset / size) is the per-element
-        // offset of this member into the array
-        const index = `o${member.size.toFixed(0)} + ${(member.offset / member.size + c).toFixed(0)}`;
--%>
-        this.<%=member.view%>[<%=index%>] = v<%=argIndex++%>;
-<%
-    }
-}
--%>
-        return i;
+        return this.emplace(i, <%=argNames.join(', ')%>);
     }
 
-    emplace(i: number, <%=argNames.join(', ')%>) {
+    emplace(i: number, <%=argNamesTyped.join(', ')%>) {
 <%
 {
 for (const size of usedTypeSizes) {
@@ -92,7 +74,7 @@ for (const size of usedTypeSizes) {
         const o<%=size.toFixed(0)%> = i * <%=(bytesPerElement / size).toFixed(0)%>;
 <%
 }
-        
+
 let argIndex = 0;
 for (const member of members) {
     for (let c = 0; c < member.components; c++) {

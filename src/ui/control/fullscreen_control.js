@@ -7,26 +7,40 @@ import window from '../../util/window';
 
 import type Map from '../map';
 
+type Options = {
+    container?: HTMLElement
+};
+
 /**
  * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode.
  *
  * @implements {IControl}
+ * @param {Object} [options]
+ * @param {HTMLElement} [options.container] `container` is the [compatible DOM element](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen#Compatible_elements) which should be made full screen. By default, the map container element will be made full screen.
+ *
  * @example
- * map.addControl(new mapboxgl.FullscreenControl());
+ * map.addControl(new mapboxgl.FullscreenControl({container: document.querySelector('body')}));
  * @see [View a fullscreen map](https://www.mapbox.com/mapbox-gl-js/example/fullscreen/)
  */
 
 class FullscreenControl {
     _map: Map;
-    _mapContainer: HTMLElement;
-    _container: HTMLElement;
+    _controlContainer: HTMLElement;
     _fullscreen: boolean;
     _fullscreenchange: string;
     _fullscreenButton: HTMLElement;
     _className: string;
+    _container: HTMLElement;
 
-    constructor() {
+    constructor(options: Options) {
         this._fullscreen = false;
+        if (options && options.container) {
+            if (options.container instanceof window.HTMLElement) {
+                this._container = options.container;
+            } else {
+                warnOnce('Full screen control \'container\' must be a DOM element.');
+            }
+        }
         bindAll([
             '_onClickFullscreen',
             '_changeIcon'
@@ -45,19 +59,19 @@ class FullscreenControl {
 
     onAdd(map: Map) {
         this._map = map;
-        this._mapContainer = this._map.getContainer();
-        this._container = DOM.create('div', `${this._className} mapboxgl-ctrl-group`);
+        if (!this._container) this._container = this._map.getContainer();
+        this._controlContainer = DOM.create('div', `${this._className} mapboxgl-ctrl-group`);
         if (this._checkFullscreenSupport()) {
             this._setupUI();
         } else {
-            this._container.style.display = 'none';
+            this._controlContainer.style.display = 'none';
             warnOnce('This device does not support fullscreen mode.');
         }
-        return this._container;
+        return this._controlContainer;
     }
 
     onRemove() {
-        DOM.remove(this._container);
+        DOM.remove(this._controlContainer);
         this._map = (null: any);
         window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
@@ -72,7 +86,7 @@ class FullscreenControl {
     }
 
     _setupUI() {
-        const button = this._fullscreenButton = DOM.create('button', (`${this._className}-icon ${this._className}-fullscreen`), this._container);
+        const button = this._fullscreenButton = DOM.create('button', (`${this._className}-icon ${this._className}-fullscreen`), this._controlContainer);
         button.setAttribute("aria-label", "Toggle fullscreen");
         button.type = 'button';
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
@@ -90,7 +104,7 @@ class FullscreenControl {
             (window.document: any).webkitFullscreenElement ||
             (window.document: any).msFullscreenElement;
 
-        if ((fullscreenElement === this._mapContainer) !== this._fullscreen) {
+        if ((fullscreenElement === this._container) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
             this._fullscreenButton.classList.toggle(`${this._className}-shrink`);
             this._fullscreenButton.classList.toggle(`${this._className}-fullscreen`);
@@ -108,14 +122,14 @@ class FullscreenControl {
             } else if (window.document.webkitCancelFullScreen) {
                 (window.document: any).webkitCancelFullScreen();
             }
-        } else if (this._mapContainer.requestFullscreen) {
-            this._mapContainer.requestFullscreen();
-        } else if ((this._mapContainer: any).mozRequestFullScreen) {
-            (this._mapContainer: any).mozRequestFullScreen();
-        } else if ((this._mapContainer: any).msRequestFullscreen) {
-            (this._mapContainer: any).msRequestFullscreen();
-        } else if ((this._mapContainer: any).webkitRequestFullscreen) {
-            (this._mapContainer: any).webkitRequestFullscreen();
+        } else if (this._container.requestFullscreen) {
+            this._container.requestFullscreen();
+        } else if ((this._container: any).mozRequestFullScreen) {
+            (this._container: any).mozRequestFullScreen();
+        } else if ((this._container: any).msRequestFullscreen) {
+            (this._container: any).msRequestFullscreen();
+        } else if ((this._container: any).webkitRequestFullscreen) {
+            (this._container: any).webkitRequestFullscreen();
         }
     }
 }

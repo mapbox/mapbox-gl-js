@@ -17,6 +17,8 @@ import { overviewNavigation } from '../data/overview-navigation';
 import { styleSpecNavigation } from '../data/style-spec-navigation';
 import { plugins } from '../data/plugins';
 import { routeToPrefixed } from '@mapbox/batfish/modules/route-to';
+import Helmet from 'react-helmet';
+import {prefixUrlAbsolute} from '@mapbox/batfish/modules/prefix-url';
 
 // initialize analytics
 if (typeof window !== 'undefined' && window.initializeMapboxAnalytics) {
@@ -187,7 +189,10 @@ class PageShell extends React.Component {
         };
 
         return (
-            <ReactPageShell darkHeaderText={true} includeFooter={true} {...this.props}>
+            <ReactPageShell darkHeaderText={true} includeFooter={false} {...this.props}>
+                <Helmet>
+                    <link rel="canonical" href={prefixUrlAbsolute(this.props.meta.pathname)}/>
+                </Helmet>
                 <div className="shell-header-buffer" />
                 <TopbarSticker>
                     <div className="limiter">

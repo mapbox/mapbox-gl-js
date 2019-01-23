@@ -12,7 +12,7 @@ import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import posAttributes from '../data/pos_attributes';
 import ProgramConfiguration from '../data/program_configuration';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
-import shaders from '../shaders';
+import * as shaders from '../shaders';
 import Program from './program';
 import { programUniforms } from './program/program_uniforms';
 import Context from '../gl/context';
@@ -70,6 +70,7 @@ type PainterOptions = {
     showTileBoundaries: boolean,
     rotating: boolean,
     zooming: boolean,
+    moving: boolean,
     fadeDuration: number
 }
 
@@ -278,9 +279,8 @@ class Painter {
     }
 
     depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType): DepthMode {
-        const farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
-        const nearDepth = farDepth - 1 + this.depthRange;
-        return new DepthMode(func || this.context.gl.LEQUAL, mask, [nearDepth, farDepth]);
+        const depth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
+        return new DepthMode(func || this.context.gl.LEQUAL, mask, [depth, depth]);
     }
 
     render(style: Style, options: PainterOptions) {

@@ -8,7 +8,6 @@ import { extend } from '../util/util';
 
 import type Map from './map';
 import type LngLat from '../geo/lng_lat';
-import type LngLatBounds from '../geo/lng_lat_bounds';
 
 /**
  * `MapMouseEvent` is the event type for mouse-related map events.
@@ -218,16 +217,13 @@ export class MapWheelEvent extends Event {
 /**
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent
- * @property {LngLatBounds} boxZoomBounds The bounding box of the "box zoom" interaction.
- *   This property is only provided for `boxzoomend` events.
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart'
         | 'boxzoomend'
         | 'boxzoomcancel',
     map: Map,
-    originalEvent: MouseEvent,
-    boxZoomBounds: LngLatBounds
+    originalEvent: MouseEvent
 };
 
 /**
@@ -676,6 +672,20 @@ export type MapEvent =
      * @instance
      */
     | 'render'
+
+    /**
+     * Fired after the last frame rendered before the map enters an
+     * "idle" state:
+     *
+     * - No camera transitions are in progress
+     * - All currently requested tiles have loaded
+     * - All fade/transition animations have completed
+     *
+     * @event idle
+     * @memberof Map
+     * @instance
+     */
+    | 'idle'
 
     /**
      * Fired immediately after the map has been removed with {@link Map.event:remove}.

@@ -100,6 +100,45 @@ test('convert legacy filters to expressions', t => {
         t.end();
     });
 
+    t.test('flattens nested, single child all expressions', (t) => {
+        const filter = [
+            "all",
+            [
+                "in",
+                "$type",
+                "Polygon",
+                "LineString",
+                "Point"
+            ],
+            [
+                "all",
+                ["in", "type", "island"]
+            ]
+        ];
+
+        const expected = [
+            "all",
+            [
+                "match",
+                ["geometry-type"],
+                ["Polygon", "LineString", "Point"],
+                true,
+                false
+            ],
+            [
+                "match",
+                ["get", "type"],
+                ["island"],
+                true,
+                false
+            ]
+        ];
+
+        const converted = convertFilter(filter);
+        t.same(converted, expected);
+        t.end();
+    });
+
     t.end();
 });
 
@@ -374,7 +413,7 @@ function legacyFilterTests(t, filter) {
     });
 
     t.test('in, large_multiple', (t) => {
-        const values = Array.apply(null, {length: 2000}).map(Number.call, Number);
+        const values = Array.from({length: 2000}).map(Number.call, Number);
         values.reverse();
         const f = filter(['in', 'foo'].concat(values));
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
@@ -385,7 +424,7 @@ function legacyFilterTests(t, filter) {
     });
 
     t.test('in, large_multiple, heterogeneous', (t) => {
-        const values = Array.apply(null, {length: 2000}).map(Number.call, Number);
+        const values = Array.from({length: 2000}).map(Number.call, Number);
         values.push('a');
         values.unshift('b');
         const f = filter(['in', 'foo'].concat(values));
@@ -455,7 +494,7 @@ function legacyFilterTests(t, filter) {
     });
 
     t.test('!in, large_multiple', (t) => {
-        const f = filter(['!in', 'foo'].concat(Array.apply(null, {length: 2000}).map(Number.call, Number)));
+        const f = filter(['!in', 'foo'].concat(Array.from({length: 2000}).map(Number.call, Number)));
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 1999}}), false);

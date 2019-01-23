@@ -2,7 +2,7 @@
 
 import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
-import type Coordinate from '../geo/coordinate';
+import type MercatorCoordinate from '../geo/mercator_coordinate';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
 import type { RetainedQueryData } from '../symbol/placement';
@@ -11,7 +11,7 @@ import assert from 'assert';
 
 export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
-                            queryGeometry: Array<Coordinate>,
+                            queryGeometry: Array<MercatorCoordinate>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             transform: Transform) {
     const maxPitchScaleFactor = transform.maxPitchScaleFactor();

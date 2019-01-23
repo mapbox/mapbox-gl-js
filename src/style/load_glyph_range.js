@@ -3,6 +3,7 @@
 import { normalizeGlyphsURL } from '../util/mapbox';
 
 import { getArrayBuffer, ResourceType } from '../util/ajax';
+
 import parseGlyphPBF from './parse_glyph_pbf';
 
 import type {StyleGlyph} from './style_glyph';
@@ -23,13 +24,13 @@ export default function (fontstack: string,
             .replace('{range}', `${begin}-${end}`),
         ResourceType.Glyphs);
 
-    getArrayBuffer(request, (err, response) => {
+    getArrayBuffer(request, (err: ?Error, data: ?ArrayBuffer) => {
         if (err) {
             callback(err);
-        } else if (response) {
+        } else if (data) {
             const glyphs = {};
 
-            for (const glyph of parseGlyphPBF(response.data)) {
+            for (const glyph of parseGlyphPBF(data)) {
                 glyphs[glyph.id] = glyph;
             }
 

@@ -33,6 +33,7 @@ class ScrollZoomHandler {
     _el: HTMLElement;
     _enabled: boolean;
     _active: boolean;
+    _zooming: boolean;
     _aroundCenter: boolean;
     _around: Point;
     _aroundPoint: Point;
@@ -78,10 +79,19 @@ class ScrollZoomHandler {
         return !!this._enabled;
     }
 
+    /*
+    * Active state is turned on and off with every scroll wheel event and is set back to false before the map
+    * render is called, so _active is not a good candidate for determining if a scroll zoom animation is in
+    * progress.
+    */
     isActive() {
         return !!this._active;
     }
 
+
+    isZooming() {
+        return !!this._zooming;
+    }
     /**
      * Enables the "scroll to zoom" interaction.
      *
@@ -182,6 +192,7 @@ class ScrollZoomHandler {
         }
 
         this._active = true;
+        this._zooming = true;
         this._map.fire(new Event('movestart', {originalEvent: e}));
         this._map.fire(new Event('zoomstart', {originalEvent: e}));
         if (this._finishTimeout) {
@@ -261,6 +272,7 @@ class ScrollZoomHandler {
         if (finished) {
             this._active = false;
             this._finishTimeout = setTimeout(() => {
+                this._zooming = false;
                 this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
                 this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
                 delete this._targetZoom;
@@ -285,8 +297,8 @@ class ScrollZoomHandler {
 
         this._prevEase = {
             start: browser.now(),
-            duration: duration,
-            easing: easing
+            duration,
+            easing
         };
 
         return easing;

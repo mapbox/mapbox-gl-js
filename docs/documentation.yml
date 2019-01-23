@@ -1,6 +1,7 @@
 toc:
   - Map
   - accessToken
+  - url
   - supported
   - version
   - setRTLTextPlugin
@@ -19,6 +20,7 @@ toc:
   - LngLatBoundsLike
   - Point
   - PointLike
+  - MercatorCoordinate
   - name: User Interface
     description: |
       Controls, markers, and popups add new user interface elements to the map.

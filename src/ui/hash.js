@@ -93,7 +93,13 @@ class Hash {
 
     _updateHashUnthrottled() {
         const hash = this.getHashString();
-        window.history.replaceState(window.history.state, '', hash);
+        try {
+            window.history.replaceState(window.history.state, '', hash);
+        } catch (SecurityError) {
+            // IE11 does not allow this if the page is within an iframe created
+            // with iframe.contentWindow.document.write(...).
+            // https://github.com/mapbox/mapbox-gl-js/issues/7410
+        }
     }
 
 }

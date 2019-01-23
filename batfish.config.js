@@ -5,7 +5,7 @@ const path = require('path');
 module.exports = () => {
     const config = {
         siteBasePath: '/mapbox-gl-js',
-        siteOrigin: 'https://www.mapbox.com',
+        siteOrigin: 'https://docs.mapbox.com',
         pagesDirectory: `${__dirname}/docs/pages`,
         outputDirectory: path.join(__dirname, '_site'),
         browserslist: mapboxAssembly.browsersList,

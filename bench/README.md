@@ -21,9 +21,9 @@ By default, the benchmark page will compare the local branch against `master` an
 Start the benchmark server
 
 ```bash
-MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} MAPBOX_STYLE_URL={YOUR STYLES HERE} yarn start
+MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} MAPBOX_STYLES={YOUR STYLES HERE} yarn start
 ```
-Note: `MAPBOX_STYLE_URL` takes a comma-separated list of up to 3 Mapbox style URLs (e.g. `mapbox://styles/mapbox/streets-v10,mapbox://styles/mapbox/streets-v9`)
+Note: `MAPBOX_STYLES` takes a comma-separated list of up to 3 Mapbox styles provided as a style URL or file system path (e.g. `./path/to/style.json,mapbox://styles/mapbox/streets-v10` or `mapbox://styles/mapbox/streets-v10,mapbox://styles/mapbox/streets-v9`)
 
 To run all benchmarks, open [the benchmark page, `http://localhost:9966/bench/styles`](http://localhost:9966/bench/styles).
 
