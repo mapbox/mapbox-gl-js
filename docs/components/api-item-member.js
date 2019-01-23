@@ -33,6 +33,12 @@ class ApiItemMember extends React.Component {
                         className='cursor-pointer toggle-sibling color-blue-on-hover w-full py18'
                         onClick={(e) => {
                             this.setState({disclosed: !this.state.disclosed});
+                            if (history.pushState) {
+                                history.pushState(null, null, this.href(member));
+                            } else {
+                                location.hash = this.href(member);
+                            }
+
                             e.preventDefault();
                         }}
                     >
@@ -40,7 +46,7 @@ class ApiItemMember extends React.Component {
                         {member.kind === 'function' &&
                             <span className='color-gray txt-code mr12' dangerouslySetInnerHTML={{__html: formatters.parameters(member, true)}}/>}
                         <Icon size={30} name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} themeIcon="fr" inline={true} />
-                      </button>
+                    </button>
                 </div>
 
                 {this.state.disclosed &&
