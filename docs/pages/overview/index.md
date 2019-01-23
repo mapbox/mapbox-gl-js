@@ -4,6 +4,7 @@ description: Introduction to Mapbox Vision AR for iOS.
 prependJs:
   - "import OverviewHeader from '@mapbox/dr-ui/overview-header';"
   - "import Quickstart from '../../components/quickstart';"
+  - "import {version} from '../../../package.json';"
 ---
 
 {{
@@ -15,7 +16,7 @@ prependJs:
         "Compatible with other Mapbox tools"
     ]}
     title="Mapbox GL JS"
-    version="0.52.0"
+    version={version}
     changelogLink="https://github.com/mapbox/mapbox-gl-js/blob/master/CHANGELOG.md"
     ghLink="https://github.com/mapbox/mapbox-gl-js"
     installLink="https://www.mapbox.com/install/js/"
