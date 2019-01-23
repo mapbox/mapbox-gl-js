@@ -162,7 +162,8 @@ class PageShell extends React.Component {
         return {
             contentType: "Specification",
             sidebarContent,
-            sidebarStackedOnNarrowScreens: false
+            sidebarStackedOnNarrowScreens: false,
+            sidebarColSize: 3
         };
     }
 
