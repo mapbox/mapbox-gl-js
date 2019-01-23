@@ -28,7 +28,7 @@ class TableOfContentsItem extends React.Component {
 
         const empty = members => !members || members.length === 0;
         if (empty(doc.members.static) && empty(doc.members.instance) && empty(doc.members.events)) {
-            return <li className="txt-s mt6"><a href={href(doc)} className='link--gray'>{doc.name}</a></li>;
+            return <li className="txt-s mt6"><a href={href(doc)} className='link--gray block'>{doc.name}</a></li>;
         }
 
         const membersList = (members, title, sigil) => members && members.length !== 0 &&
@@ -42,10 +42,10 @@ class TableOfContentsItem extends React.Component {
         return (
             <li>
                 <a href={href(doc)}
-                    className='toggle-sibling link--gray txt-s mt6'
+                    className='toggle-sibling link--gray txt-s mt6 block'
                     onClick={() => this.setState({disclosed: !this.state.disclosed})}>
                     {doc.name}
-                    <div className="inline-block mb-neg6"><Icon name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} /></div>
+                    <Icon inline={true} name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} />
                 </a>
 
                 {this.state.disclosed &&
