@@ -2,6 +2,7 @@
 title: 'Mapbox GL JS Examples'
 description: 'Code examples for Mapbox GL JS.'
 product: maps
+pathname: /mapbox-gl-js/examples/
 ---*/
 
 import React from 'react';

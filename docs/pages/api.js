@@ -10,8 +10,8 @@ import ApiItem from '../components/api-item';
 
 const meta = {
     title: 'Mapbox GL JS API',
-    description: '',
-    pathname: '/api'
+    description: 'The Mapbox GL JS API documentation to render interactive maps from vector tiles and Mapbox styles.',
+    pathname: '/mapbox-gl-js/api'
 };
 
 const linkerStack = new LinkerStack({})

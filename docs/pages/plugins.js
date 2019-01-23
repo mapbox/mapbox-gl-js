@@ -8,8 +8,8 @@ import IconText from '@mapbox/mr-ui/icon-text';
 
 const meta = {
     title: 'Mapbox GL JS Plugins',
-    description: '',
-    pathname: '/plugins'
+    description: 'Extend your Mapbox GL JS map with plugins.',
+    pathname: '/mapbox-gl-js/plugins'
 };
 
 const plugins = {

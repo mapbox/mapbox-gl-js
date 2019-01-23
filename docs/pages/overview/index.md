@@ -1,10 +1,11 @@
 ---
 title: Introduction
-description: Introduction to Mapbox Vision AR for iOS.
+description: Introduction to Mapbox GL JS, a JavaScript library that uses WebGL to render interactive maps from vector tiles and Mapbox styles.
 prependJs:
   - "import OverviewHeader from '@mapbox/dr-ui/overview-header';"
   - "import Quickstart from '../../components/quickstart';"
   - "import {version} from '../../../package.json';"
+pathname: /mapbox-gl-js/overview/
 ---
 
 {{
