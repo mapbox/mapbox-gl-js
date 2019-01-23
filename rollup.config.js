@@ -27,7 +27,6 @@ const config = [{
         indent: false,
         chunkFileNames: 'shared.js'
     },
-    experimentalCodeSplitting: true,
     treeshake: production,
     plugins: plugins()
 }, {
