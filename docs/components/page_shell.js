@@ -1,6 +1,7 @@
 import React from 'react';
 import Helmet from 'react-helmet';
-import ReactPageShell from '../../vendor/dotcom-page-shell/react-page-shell.js';
+import {prefixUrlAbsolute} from '@mapbox/batfish/modules/prefix-url';
+import ReactPageShell from '../../vendor/docs-page-shell/react-page-shell.js';
 
 // initialize analytics
 if (typeof window !== 'undefined' && window.initializeMapboxAnalytics) {
@@ -25,6 +26,7 @@ class PageShell extends React.Component {
                 <Helmet>
                     <link href='https://www.mapbox.com/base/latest/base.css?v1.0' rel='stylesheet'/>
                     <link href='https://www.mapbox.com/css/docs.css' rel='stylesheet'/>
+                    <link rel="canonical" href={prefixUrlAbsolute(this.props.meta.pathname)}/>
                 </Helmet>
                 <div className="shell-header-buffer" />
                 <div className='static-header-page'>
