@@ -125,7 +125,9 @@ class PageShell extends React.Component {
         return {
             contentType: "API reference",
             sidebarContent: <ApiNavigation />,
-            sidebarStackedOnNarrowScreens: false
+            sidebarStackedOnNarrowScreens: false,
+            interactiveClass: "toggle-sibling",
+            sidebarColSize: 3
         };
     }
 
@@ -222,6 +224,8 @@ class PageShell extends React.Component {
                         sidebarContentStickyTop={60}
                         sidebarContentStickyTopNarrow={0}
                         currentPath={location.pathname}
+                        interactiveClass={sidebarProps.interactiveClass}
+                        sideBarColSize={sidebarProps.sidebarColSize || 0}
                         sidebarStackedOnNarrowScreens={sidebarProps.sidebarStackedOnNarrowScreens}
                     >
                         <div id="docs-content" className='static-header-page prose'>

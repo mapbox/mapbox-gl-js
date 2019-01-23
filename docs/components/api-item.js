@@ -80,7 +80,7 @@ class ApiItem extends React.Component {
                                     {this.md(param.description, true)}
                                 </div>
                                 {param.properties &&
-                                        <table className='mt6 mb12 fixed-table txt-s'>
+                                        <table className='mt6 mb12 fixed-table'>
                                             <colgroup>
                                                 <col width='30%' />
                                                 <col width='70%' />
