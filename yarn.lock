@@ -220,12 +220,13 @@
     webpack-merge "^4.1.2"
     worker-farm "^1.6.0"
 
-"@mapbox/flow-remove-types@^1.3.0-await.upstream.1":
-  version "1.3.0-await.upstream.1"
-  resolved "https://registry.yarnpkg.com/@mapbox/flow-remove-types/-/flow-remove-types-1.3.0-await.upstream.1.tgz#58ac26d5270ae3d2d1f95efd0a73eec6651d65c3"
-  integrity sha512-lWk2ca7N4KUFm1gHV7kEpghMydgH0gcjaQCU7bxCd1Pv1SFR2jKyylwJWUMM4FXPSJm/9fqwRDRgmSUfGH5Geg==
+"@mapbox/flow-remove-types@^1.3.0-await.upstream.2":
+  version "1.3.0-await.upstream.2"
+  resolved "https://registry.yarnpkg.com/@mapbox/flow-remove-types/-/flow-remove-types-1.3.0-await.upstream.2.tgz#bb8613e5cfd3f69d764658c5084d7f5d501097a2"
+  integrity sha512-OYVWXwkluP+9Jz2uenNSeum7U2Hp6RncPAS8iz3qnJ37kE/acae5dD1207BFqWsJ2JsBqULG8g2wB+hUQzPeYg==
   dependencies:
     babylon "^7.0.0-beta.41"
+    node-modules-regexp "^1.0.0"
     pirates "^3.0.2"
     vlq "^0.2.1"
 
@@ -4359,10 +4360,10 @@ eslint-module-utils@^2.2.0:
     debug "^2.6.8"
     pkg-dir "^1.0.0"
 
-eslint-plugin-flowtype@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-flowtype/-/eslint-plugin-flowtype-3.2.0.tgz#824364ed5940a404b91326fdb5a313a2a74760df"
-  integrity sha512-baJmzngM6UKbEkJ5OY3aGw2zjXBt5L2QKZvTsOlXX7yHKIjNRrlJx2ods8Rng6EdqPR9rVNIQNYHpTs0qfn2qA==
+eslint-plugin-flowtype@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-flowtype/-/eslint-plugin-flowtype-3.2.1.tgz#45e032aee54e695dfc41a891e92b7afedfc62c77"
+  integrity sha512-1lymqM8Cawxu5xsS8TaCrLWJYUmUdoG4hCfa7yWOhCf0qZn/CvI8FxqkhdOP6bAosBn5zeYxKe3Q/4rfKN8a+A==
   dependencies:
     lodash "^4.17.10"
 
@@ -4933,10 +4934,10 @@ flat-cache@^1.2.1:
     graceful-fs "^4.1.2"
     write "^0.2.1"
 
-flow-bin@^0.85.0:
-  version "0.85.0"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.85.0.tgz#a3ca80748a35a071d5bbb2fcd61d64d977fc53a6"
-  integrity sha512-ougBA2q6Rn9sZrjZQ9r5pTFxCotlGouySpD2yRIuq5AYwwfIT8HHhVMeSwrN5qJayjHINLJyrnsSkkPCZyfMrQ==
+flow-bin@^0.91.0:
+  version "0.91.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.91.0.tgz#f5c89729f74b2ccbd47df6fbfadbdcc89cc1e478"
+  integrity sha512-j+L+xNiUYnZZ27MjVI0y2c9474ZHOvdSQq0Tjwh56mEA7tfxYqp5Dcb6aZSwvs3tGMTjCrZow9aUlZf3OoRyDQ==
 
 flush-write-stream@^1.0.0:
   version "1.0.2"
