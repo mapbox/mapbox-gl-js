@@ -181,7 +181,9 @@ export default class Marker extends Evented {
         }
 
         this._element.classList.add('mapboxgl-marker');
-
+        this._element.addEventListener('dragstart', (e: DragEvent) => {
+            e.preventDefault();
+        });
         this._popup = null;
     }
 
