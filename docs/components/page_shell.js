@@ -1,4 +1,5 @@
 import React from 'react';
+import Helmet from 'react-helmet';
 import { withLocation } from '@mapbox/batfish/modules/with-location';
 import ReactPageShell from '../../vendor/docs-page-shell/react-page-shell.js';
 // dr-ui components
@@ -17,27 +18,28 @@ import { overviewNavigation } from '../data/overview-navigation';
 import { styleSpecNavigation } from '../data/style-spec-navigation';
 import { plugins } from '../data/plugins';
 import { routeToPrefixed } from '@mapbox/batfish/modules/route-to';
-import Helmet from 'react-helmet';
-import {prefixUrlAbsolute} from '@mapbox/batfish/modules/prefix-url';
 
-// initialize analytics
-if (typeof window !== 'undefined' && window.initializeMapboxAnalytics) {
-    const isProduction = /\.?mapbox\.com/.test(window.location.hostname);
-
-    let sentryInit = {};
-    if (isProduction) {
-        sentryInit = { sentryDsn: 'https://581913e6cd0845d785f5b551a4986b61@sentry.io/11290' };
-    } else {
-        sentryInit = false;
-    }
-    window.initializeMapboxAnalytics({
-        sentry: sentryInit
-    });
-}
 
 const slugger = new GithubSlugger();
 
 class PageShell extends React.Component {
+
+    componentDidMount() {
+    // initialize analytics
+        if (typeof window !== 'undefined' && window.initializeMapboxAnalytics) {
+            const isProduction = /\.?mapbox\.com/.test(window.location.hostname);
+
+            let sentryInit = {};
+            if (isProduction) {
+                sentryInit = { sentryDsn: 'https://581913e6cd0845d785f5b551a4986b61@sentry.io/11290' };
+            } else {
+                sentryInit = false;
+            }
+            window.initializeMapboxAnalytics({
+                sentry: sentryInit
+            });
+        }
+    }
 
     accordionNavProps() {
         const { frontMatter } = this.props;
@@ -52,7 +54,7 @@ class PageShell extends React.Component {
         const sidebarContent = (
             <div className='mx0-mm ml-neg24 mr-neg36 relative-mm absolute right left'>
                 <NavigationAccordion
-                    currentPath={location.pathname}
+                    currentPath={this.props.location.pathname}
                     contents={{
                         firstLevelItems: sections,
                         secondLevelItems: subtitles
@@ -78,7 +80,7 @@ class PageShell extends React.Component {
                     .map(item => ({
                         text: item.title,
                         url: item.path,
-                        active: location.pathname === item.path
+                        active: this.props.location.pathname === item.path
                     }));
                 return {
                     title: data[topic],
@@ -191,7 +193,10 @@ class PageShell extends React.Component {
         return (
             <ReactPageShell darkHeaderText={true} includeFooter={false} {...this.props}>
                 <Helmet>
-                    <link rel="canonical" href={prefixUrlAbsolute(this.props.meta.pathname)}/>
+                    <link
+                        rel="canonical"
+                        href={`https://docs.mapbox.com${this.props.meta.pathname}`}
+                    />
                 </Helmet>
                 <div className="shell-header-buffer" />
                 <TopbarSticker>
