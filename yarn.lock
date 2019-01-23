@@ -213,14 +213,15 @@
     webpack-merge "^4.1.2"
     worker-farm "^1.6.0"
 
-"@mapbox/dr-ui@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.1.1.tgz#fbc283f783cb07e2168b009bc9fd907f5b693149"
+"@mapbox/dr-ui@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.2.0.tgz#a82d8cc39e430ed4315209fb68cb6c97cd562cf2"
   dependencies:
     "@mapbox/mr-ui" "^0.1.0"
     classnames "^2.2.6"
     debounce "^1.2.0"
     extend "^3.0.2"
+    hastscript "^5.0.0"
     react-stickynode "^2.1.0"
     rehype-sectionize-headings "^1.0.0-rc.1"
 
@@ -5412,6 +5413,10 @@ hast-util-parse-selector@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/hast-util-parse-selector/-/hast-util-parse-selector-2.1.0.tgz#b55c0f4bb7bb2040c889c325ef87ab29c38102b4"
 
+hast-util-parse-selector@^2.2.0:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/hast-util-parse-selector/-/hast-util-parse-selector-2.2.1.tgz#4ddbae1ae12c124e3eb91b581d2556441766f0ab"
+
 hast-util-raw@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/hast-util-raw/-/hast-util-raw-2.0.2.tgz#20674cfb45428213917a54ec929e6774df0642d8"
@@ -5468,6 +5473,15 @@ hastscript@^3.0.0:
     comma-separated-tokens "^1.0.0"
     hast-util-parse-selector "^2.0.0"
     property-information "^3.0.0"
+    space-separated-tokens "^1.0.0"
+
+hastscript@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/hastscript/-/hastscript-5.0.0.tgz#fee10382c1bc4ba3f1be311521d368c047d2c43a"
+  dependencies:
+    comma-separated-tokens "^1.0.0"
+    hast-util-parse-selector "^2.2.0"
+    property-information "^5.0.1"
     space-separated-tokens "^1.0.0"
 
 hawk@~6.0.2:
@@ -8785,6 +8799,12 @@ prop-types@^15.6.0:
 property-information@^3.0.0, property-information@^3.1.0, property-information@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/property-information/-/property-information-3.2.0.tgz#fd1483c8fbac61808f5fe359e7693a1f48a58331"
+
+property-information@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/property-information/-/property-information-5.0.1.tgz#c3b09f4f5750b1634c0b24205adbf78f18bdf94f"
+  dependencies:
+    xtend "^4.0.1"
 
 protocol-buffers-schema@^2.0.2:
   version "2.2.0"
