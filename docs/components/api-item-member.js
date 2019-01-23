@@ -26,26 +26,25 @@ class ApiItemMember extends React.Component {
     render() {
         const member = this.props;
         return (
-            <div className='border-b border--gray-light pb18'>
-                <div className='pt60' style={{ marginTop: '-45px' }} id={member.namespace.toLowerCase()} />
+            <div className='border-b border--gray-light'>
+                <div className='pt60' style={{ marginTop: '-60px' }} id={member.namespace.toLowerCase()} />
                 <div>
-                    <div
-                        className='cursor-pointer toggle-sibling color-blue-on-hover'
+                    <button
+                        className='cursor-pointer toggle-sibling color-blue-on-hover w-full py18'
                         onClick={(e) => {
                             this.setState({disclosed: !this.state.disclosed});
-                            window.location = this.href(member);
                             e.preventDefault();
                         }}
                     >
                         <span className='txt-code truncate bg-white'>{member.name}</span>
                         {member.kind === 'function' &&
                             <span className='color-gray txt-code mr12' dangerouslySetInnerHTML={{__html: formatters.parameters(member, true)}}/>}
-                        <Icon name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} themeIcon="fr" inline={true} />
-                    </div>
+                        <Icon size={30} name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} themeIcon="fr" inline={true} />
+                      </button>
                 </div>
 
                 {this.state.disclosed &&
-                    <div className="toggle-target bg-gray-faint round py18 px18 my12">
+                    <div className="toggle-target bg-gray-faint round py18 px18 mb12">
                         <ApiItem nested={true} {...member}/>
                     </div>}
             </div>
