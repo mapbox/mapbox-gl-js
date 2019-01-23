@@ -743,6 +743,7 @@ class Map extends Camera {
         this._delegatedListeners = this._delegatedListeners || {};
         this._delegatedListeners[type] = this._delegatedListeners[type] || [];
         this._delegatedListeners[type].push(delegatedListener);
+        console.log('this._delegatedListeners', this._delegatedListeners);
 
         for (const event in delegatedListener.delegates) {
             this.on((event: any), delegatedListener.delegates[event]);
@@ -778,6 +779,7 @@ class Map extends Camera {
 
         if (this._delegatedListeners && this._delegatedListeners[type]) {
             const listeners = this._delegatedListeners[type];
+            console.log('listeners', listeners);
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
                 if (delegatedListener.layer === layer && delegatedListener.listener === listener) {
@@ -1243,6 +1245,13 @@ class Map extends Camera {
      * @fires error
      */
     removeLayer(id: string) {
+        // debugger;
+        for (let type in this._delegatedListeners) {
+            this._delegatedListeners[type].forEach((delegate) => {
+                console.log('type, id, listener', type, id, delegate.listener);
+                this.off(type, id, delegate.listener);
+            });
+        }
         this.style.removeLayer(id);
         return this._update(true);
     }

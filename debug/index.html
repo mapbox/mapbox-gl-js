@@ -82,6 +82,10 @@ map.on('load', function () {
           });
       }, 5000);
     });
+
+    map.on('mouseover', 'maine', function () {
+      console.log('mouseover!');
+    });
 });
 
 </script>
