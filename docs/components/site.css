@@ -42,6 +42,10 @@
   border: 0 !important;
 }
 
+#docs-content .api-section h3 {
+  padding-top: 47px;
+}
+
 .toggle-target .mb24 {
     margin-bottom: 0 !important;
 }
