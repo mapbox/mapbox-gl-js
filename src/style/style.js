@@ -682,6 +682,7 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this._layers[id];
+        console.log('layer', layer);
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${id}' does not exist in the map's style and cannot be removed.`)));
             return;
