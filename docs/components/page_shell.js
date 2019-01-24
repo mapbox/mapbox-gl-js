@@ -202,7 +202,7 @@ class PageShell extends React.Component {
                     />
                 </Helmet>
                 <div className="shell-header-buffer" />
-                <TopbarSticker>
+                <TopbarSticker unStickWidth={980}>
                     <div className="limiter">
                         <div className="grid grid--gut36 mr-neg36 mr0-mm">
                             <div className={`col col--4-mm ${sidebarProps.sidebarColSize ? `col--${sidebarProps.sidebarColSize}-ml` : ''} col--12`}>
