@@ -232,9 +232,9 @@ class PageShell extends React.Component {
                         <div className='static-header-page prose'>
                             {this.props.children}
                         </div>
-                        <div className="fixed block none-mm mx24 my24 z5 bottom right">
+                        {activeTab !== 'overview' ? <div className="fixed block mx24 my24 z5 bottom right">
                             <BackToTopButton />
-                        </div>
+                        </div> : ''}
                     </PageLayout>
                 </div>
             </ReactPageShell>
