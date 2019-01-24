@@ -235,7 +235,7 @@ export default class extends React.Component {
     render() {
         return (
             <PageShell meta={meta}>
-                <div id='docs-content' className='prose style-spec-section'>
+                <div className='style-spec-section'>
                     <div>
                         <h1>{meta.title}</h1>
                         <p>A Mapbox style is a document that defines the visual appearance of a map: what data to

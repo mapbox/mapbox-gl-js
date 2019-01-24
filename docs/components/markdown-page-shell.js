@@ -16,7 +16,7 @@ class MarkdownPageshell extends React.Component {
         }
         return (
             <PageShell meta={meta} {...this.props}>
-                <div id="docs-content" className="prose">
+                <div className="prose">
                     {this.props.children}
                 </div>
             </PageShell>

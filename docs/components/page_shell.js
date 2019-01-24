@@ -229,7 +229,7 @@ class PageShell extends React.Component {
                         sideBarColSize={sidebarProps.sidebarColSize || 0}
                         sidebarStackedOnNarrowScreens={sidebarProps.sidebarStackedOnNarrowScreens}
                     >
-                        <div id="docs-content" className='static-header-page prose'>
+                        <div className='static-header-page prose'>
                             {this.props.children}
                         </div>
                         <div className="fixed block none-mm mx24 my24 z5 bottom right">
