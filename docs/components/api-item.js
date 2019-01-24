@@ -80,28 +80,30 @@ class ApiItem extends React.Component {
                                     {this.md(param.description, true)}
                                 </div>
                                 {param.properties &&
-                                        <table className='mt6 mb12 fixed-table'>
-                                            <colgroup>
-                                                <col width='30%' />
-                                                <col width='70%' />
-                                            </colgroup>
-                                            <thead>
-                                                <tr className='txt-bold bg-gray-faint'>
-                                                    <td style={{borderTopLeftRadius: '4px'}}>Name</td>
-                                                    <td style={{borderTopRightRadius: '4px'}}>Description</td>
-                                                </tr>
-                                            </thead>
-                                            <tbody className='mt6'>
-                                                {param.properties.map((property, i) => <tr key={i}>
-                                                    <td>
-                                                        <span className='txt-code txt-bold txt-break-word bg-white ml-neg3'>{property.name}</span><br />
-                                                        <code className='color-gray txt-break-word'>{this.formatType(property.type)}</code><br />
-                                                        {property.default && <span className='color-gray txt-break-word'>default <code>{property.default}</code></span>}
-                                                    </td>
-                                                    <td><span>{this.md(property.description, true)}</span></td>
-                                                </tr>)}
-                                            </tbody>
-                                        </table>}
+                                <div className='mt6 mb12 scroll-auto'>
+                                    <table className='fixed-table'>
+                                        <colgroup>
+                                            <col width='30%' />
+                                            <col width='70%' />
+                                        </colgroup>
+                                        <thead>
+                                            <tr className='txt-bold bg-gray-faint'>
+                                                <td style={{borderTopLeftRadius: '4px'}}>Name</td>
+                                                <td style={{borderTopRightRadius: '4px'}}>Description</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody className='mt6'>
+                                            {param.properties.map((property, i) => <tr key={i}>
+                                                <td>
+                                                    <span className='txt-code txt-bold txt-break-word bg-white ml-neg3'>{property.name}</span><br />
+                                                    <code className='color-gray txt-break-word'>{this.formatType(property.type)}</code><br />
+                                                    {property.default && <span className='color-gray txt-break-word'>default <code>{property.default}</code></span>}
+                                                </td>
+                                                <td><span>{this.md(property.description, true)}</span></td>
+                                            </tr>)}
+                                        </tbody>
+                                    </table>
+                                </div>}
                             </div>)}
                         </div>
                     </div>}

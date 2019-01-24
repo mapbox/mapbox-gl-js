@@ -50,6 +50,13 @@
     margin-bottom: 0 !important;
 }
 
+/* api section styles */
+
+.api-section table code,
+.api-section table .txt-code {
+  word-wrap: break-word;
+}
+
 /* style-spec styles */
 
 .style-spec-inner-section div:last-child {
