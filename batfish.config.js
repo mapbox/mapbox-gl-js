@@ -1,3 +1,4 @@
+// @flow
 const webpack = require('webpack');
 const mapboxAssembly = require('@mapbox/mbx-assembly');
 const path = require('path');
@@ -38,10 +39,11 @@ module.exports = () => {
                 filename: `${__dirname}/vendor/docs-page-shell/page-shell-script.js`
             }
         ],
-         jsxtremeMarkdownOptions: {
+        jsxtremeMarkdownOptions: {
             wrapper: path.join(__dirname, './docs/components/markdown-page-shell.js'),
             rehypePlugins: [
                 require('@mapbox/dr-ui/plugins/add-links-to-headings'),
+                require('@mapbox/dr-ui/plugins/make-table-scroll')
             ]
         },
         dataSelectors: {
@@ -55,7 +57,7 @@ module.exports = () => {
                             description: example.frontMatter.description,
                             tags: example.frontMatter.tags,
                             pathname: example.frontMatter.pathname
-                        }
+                        };
                     });
             },
             listSubfolders: data => {

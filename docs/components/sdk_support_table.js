@@ -12,27 +12,29 @@ export default class SDKSupportTable extends React.Component {
 
     render() {
         return (
-            <table className='txt-s mb12'>
-                <thead>
-                    <tr className='bg-gray-faint' style={{borderTopLeftRadius: '4px', borderTopRightRadius: '4px'}}>
-                        <th style={{borderTopLeftRadius: '4px'}}>SDK Support</th>
-                        <td>Mapbox GL JS</td>
-                        <td>Android SDK</td>
-                        <td>iOS SDK</td>
-                        <td style={{borderTopRightRadius: '4px'}}>macOS SDK</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {entries(this.props).map(([key, entry], i) => <tr key={i}>
-                        <td>{md(key)}</td>
-                        <td>{this.support(entry, 'js')}</td>
-                        <td>{this.support(entry, 'android')}</td>
-                        <td>{this.support(entry, 'ios')}</td>
-                        <td>{this.support(entry, 'macos')}</td>
-                    </tr>
-                    )}
-                </tbody>
-            </table>
+            <div className='scroll-auto mb12'>
+                <table className='txt-s'>
+                    <thead>
+                        <tr className='bg-gray-faint' style={{borderTopLeftRadius: '4px', borderTopRightRadius: '4px'}}>
+                            <th style={{borderTopLeftRadius: '4px'}}>SDK Support</th>
+                            <td>Mapbox GL JS</td>
+                            <td>Android SDK</td>
+                            <td>iOS SDK</td>
+                            <td style={{borderTopRightRadius: '4px'}}>macOS SDK</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {entries(this.props).map(([key, entry], i) => <tr key={i}>
+                            <td>{md(key)}</td>
+                            <td>{this.support(entry, 'js')}</td>
+                            <td>{this.support(entry, 'android')}</td>
+                            <td>{this.support(entry, 'ios')}</td>
+                            <td>{this.support(entry, 'macos')}</td>
+                        </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
         );
     }
 }
