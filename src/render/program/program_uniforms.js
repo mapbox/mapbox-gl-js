@@ -1,6 +1,6 @@
 // @flow
 
-import { fillExtrusionUniforms, fillExtrusionPatternUniforms, extrusionTextureUniforms } from './fill_extrusion_program';
+import { fillExtrusionUniforms, fillExtrusionPatternUniforms } from './fill_extrusion_program';
 import { fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms } from './fill_program';
 import { circleUniforms } from './circle_program';
 import { collisionUniforms } from './collision_program';
@@ -16,7 +16,6 @@ import { backgroundUniforms, backgroundPatternUniforms } from './background_prog
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,
     fillExtrusionPattern: fillExtrusionPatternUniforms,
-    extrusionTexture: extrusionTextureUniforms,
     fill: fillUniforms,
     fillPattern: fillPatternUniforms,
     fillOutline: fillOutlineUniforms,

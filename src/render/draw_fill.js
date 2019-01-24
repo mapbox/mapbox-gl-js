@@ -29,7 +29,8 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     const colorMode = painter.colorModeForRenderPass();
 
     const pattern = layer.paint.get('fill-pattern');
-    const pass = (!pattern.constantOr((1: any)) &&
+    const pass = painter.opaquePassEnabledForLayer() &&
+        (!pattern.constantOr((1: any)) &&
         color.constantOr(Color.transparent).a === 1 &&
         opacity.constantOr(0) === 1) ? 'opaque' : 'translucent';
 
