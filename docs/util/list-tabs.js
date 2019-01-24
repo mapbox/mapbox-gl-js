@@ -2,17 +2,11 @@ const tabOrder = {
     overview: {
         title: 'Overview'
     },
-    examples: {
-        title: 'Examples'
-    },
-    'help': {
-        title: 'Help'
-    },
     api: {
         title: 'API Reference'
     },
-    reference: {
-        title: 'Reference'
+    examples: {
+        title: 'Examples'
     },
     'plugins': {
         title: 'Plugins'
