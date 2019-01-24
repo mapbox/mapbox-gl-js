@@ -1,4 +1,3 @@
-// @flow
 const webpack = require('webpack');
 const mapboxAssembly = require('@mapbox/mbx-assembly');
 const path = require('path');
