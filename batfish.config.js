@@ -4,13 +4,13 @@ const path = require('path');
 module.exports = () => {
     const config = {
         siteBasePath: '/mapbox-gl-js',
-        siteOrigin: 'https://www.mapbox.com',
+        siteOrigin: 'https://docs.mapbox.com',
         pagesDirectory: `${__dirname}/docs/pages`,
         outputDirectory: path.join(__dirname, '_site'),
         stylesheets: [
             `${__dirname}/docs/components/site.css`,
             `${__dirname}/docs/components/prism_highlight.css`,
-            `${__dirname}/vendor/dotcom-page-shell/page-shell-styles.css`
+            `${__dirname}/vendor/docs-page-shell/page-shell-styles.css`
         ],
         applicationWrapperPath: `${__dirname}/docs/components/application-wrapper.js`,
         webpackLoaders: [
@@ -30,7 +30,7 @@ module.exports = () => {
         ],
         inlineJs: [
             {
-                filename: `${__dirname}/vendor/dotcom-page-shell/page-shell-script.js`
+                filename: `${__dirname}/vendor/docs-page-shell/page-shell-script.js`
             }
         ],
         dataSelectors: {

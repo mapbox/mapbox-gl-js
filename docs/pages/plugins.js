@@ -120,7 +120,7 @@ const plugins = {
         },
         "expression-jamsession": {
             "website": "https://github.com/mapbox/expression-jamsession/",
-            "description": md`converts [Mapbox Studio formulas](https://www.mapbox.com/help/studio-manual-styles/#use-a-formula) into [expressions](https://www.mapbox.com/mapbox-gl-js/style-spec/#expressions)`
+            "description": md`converts [Mapbox Studio formulas](https://www.mapbox.com/help/studio-manual-styles/#use-a-formula) into [expressions](https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions)`
         },
         "simplespec-to-gl-style": {
             "website": "https://github.com/mapbox/simplespec-to-gl-style",
@@ -138,6 +138,10 @@ const plugins = {
         "mapbox-choropleth": {
             "website": "https://github.com/stevage/mapbox-choropleth",
             "description": "create a choropleth layer from a CSV source and a geometry source"
+        },
+        "mapbox-gl-utils": {
+            "website": "https://github.com/stevage/mapbox-gl-utils",
+            "description": "manage layers, sources and properties with syntactic sugar and convenience functions"
         }
     },
     "Development Tools": {

@@ -13,7 +13,7 @@ import type { RequestParameters } from './ajax';
 import type { Cancelable } from '../types/cancelable';
 import type {TileJSON} from '../types/tilejson';
 
-const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
+const help = 'See https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes';
 const telemEventKey = 'mapbox.eventData';
 
 type UrlObject = {|

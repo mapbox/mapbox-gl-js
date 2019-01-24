@@ -30,3 +30,14 @@ a.dark-link:hover {
 
 div.toggle-sibling:hover { opacity: 0.7; }
 .line-height15 {line-height: 15px}
+
+@media only screen and (min-width: 640px) {
+  #page-footer-legal-social {
+    margin-left: 25% !important;
+  }
+}
+
+#page-footer {
+  z-index: 1;
+  position: relative;
+}

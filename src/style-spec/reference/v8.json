@@ -2412,7 +2412,7 @@
         }
       },
       "match": {
-        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must either be a single literal value or an array of literal values (e.g. `\"a\"` or `[\"c\", \"b\"]`), and those values must be all strings or all numbers. (The values `\"1\"` and `1` cannot both be labels in the same match expression.) If the input type does not match the type of the labels, the result will be the fallback value.",
+        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must either be a single literal value or an array of literal values (e.g. `\"a\"` or `[\"c\", \"b\"]`), and those values must be all strings or all numbers. (The values `\"1\"` and `1` cannot both be labels in the same match expression.) Each label must be unique. If the input type does not match the type of the labels, the result will be the fallback value.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -3825,7 +3825,9 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.50.0"
+          "js": "0.50.0",
+          "ios" : "4.7.0",
+          "macos" : "0.13.0"
         }
       },
       "expression": {
