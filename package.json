@@ -13,7 +13,7 @@
     "node": ">=6.4.0"
   },
   "dependencies": {
-    "@mapbox/dr-ui": "0.2.0",
+    "@mapbox/dr-ui": "0.3.0",
     "@mapbox/geojson-types": "^1.0.2",
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
     "@mapbox/mapbox-gl-supported": "^1.4.0",

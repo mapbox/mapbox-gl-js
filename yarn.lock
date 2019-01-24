@@ -213,9 +213,9 @@
     webpack-merge "^4.1.2"
     worker-farm "^1.6.0"
 
-"@mapbox/dr-ui@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.2.0.tgz#a82d8cc39e430ed4315209fb68cb6c97cd562cf2"
+"@mapbox/dr-ui@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.3.0.tgz#c2b87d43214050ea9e38000d6079af74db7aecc3"
   dependencies:
     "@mapbox/mr-ui" "^0.1.0"
     classnames "^2.2.6"
