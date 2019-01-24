@@ -205,12 +205,12 @@ class PageShell extends React.Component {
                 <TopbarSticker>
                     <div className="limiter">
                         <div className="grid grid--gut36 mr-neg36 mr0-mm">
-                            <div className="col col--4-mm col--12">
+                            <div className={`col col--4-mm ${sidebarProps.sidebarColSize ? `col--${sidebarProps.sidebarColSize}-ml` : ''} col--12`}>
                                 <div className="ml24-mm pt12">
                                     <ProductMenu productName={topbarContent.productName} homePage='/mapbox-gl-js/'/>
                                 </div>
                             </div>
-                            <div className="col col--8-mm col--12">
+                            <div className={`col col--8-mm ${sidebarProps.sidebarColSize ? `col--${12 - sidebarProps.sidebarColSize}-ml` : ''} col--12`}>
                                 <div style={{ height: '50px' }}>
                                     {topbarContent.topNav}
                                 </div>
