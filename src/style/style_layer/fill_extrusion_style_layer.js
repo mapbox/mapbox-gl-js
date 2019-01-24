@@ -13,7 +13,6 @@ import Point from '@mapbox/point-geometry';
 import type { FeatureState } from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
 import type {PaintProps} from './fill_extrusion_style_layer_properties';
-import type Framebuffer from '../../gl/framebuffer';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
 
@@ -21,7 +20,6 @@ class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
-    viewportFrame: ?Framebuffer;
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);
@@ -33,6 +31,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
 
     queryRadius(): number {
         return translateDistance(this.paint.get('fill-extrusion-translate'));
+    }
+
+    is3D(): boolean {
+        return true;
     }
 
     queryIntersectsFeature(queryGeometry: Array<Point>,
@@ -58,17 +60,6 @@ class FillExtrusionStyleLayer extends StyleLayer {
         const projectedBase = projected[0];
         const projectedTop = projected[1];
         return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
-    }
-
-    hasOffscreenPass() {
-        return this.paint.get('fill-extrusion-opacity') !== 0 && this.visibility !== 'none';
-    }
-
-    resize() {
-        if (this.viewportFrame) {
-            this.viewportFrame.destroy();
-            this.viewportFrame = null;
-        }
     }
 }
 

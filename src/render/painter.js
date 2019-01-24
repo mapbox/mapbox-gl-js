@@ -61,7 +61,7 @@ import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
-import type {DepthMaskType, DepthFuncType} from '../gl/types';
+import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 
@@ -108,9 +108,12 @@ class Painter {
     lineAtlas: LineAtlas;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
-    depthRange: number;
+    depthRangeFor3D: DepthRangeType;
+    opaquePassCutoff: number;
     renderPass: RenderPass;
     currentLayer: number;
+    currentStencilSource: ?string;
+    nextStencilID: number;
     id: string;
     _showOverdrawInspector: boolean;
     cache: { [string]: Program<*> };
@@ -219,6 +222,9 @@ class Painter {
         const context = this.context;
         const gl = context.gl;
 
+        this.nextStencilID = 1;
+        this.currentStencilSource = undefined;
+
         // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
@@ -235,20 +241,28 @@ class Painter {
             this.quadTriangleIndexBuffer, this.viewportSegments);
     }
 
-    _renderTileClippingMasks(tileIDs: Array<OverscaledTileID>) {
+    _renderTileClippingMasks(layer: StyleLayer, tileIDs: Array<OverscaledTileID>) {
+        if (this.currentStencilSource === layer.source || !layer.isTileClipped() || !tileIDs || !tileIDs.length) return;
+
+        this.currentStencilSource = layer.source;
+
         const context = this.context;
         const gl = context.gl;
+
+        if (this.nextStencilID + tileIDs.length > 256) {
+            // we'll run out of fresh IDs so we need to clear and start from scratch
+            this.clearStencil();
+        }
 
         context.setColorMode(ColorMode.disabled);
         context.setDepthMode(DepthMode.disabled);
 
         const program = this.useProgram('clippingMask');
 
-        let idNext = 1;
         this._tileClippingMaskIDs = {};
 
         for (const tileID of tileIDs) {
-            const id = this._tileClippingMaskIDs[tileID.key] = idNext++;
+            const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
@@ -257,6 +271,16 @@ class Painter {
                 '$clipping', this.tileExtentBuffer,
                 this.quadTriangleIndexBuffer, this.tileExtentSegments);
         }
+    }
+
+    stencilModeFor3D(): StencilMode {
+        if (this.nextStencilID + 1 > 256) {
+            this.clearStencil();
+        }
+
+        const id = this.nextStencilID++;
+        const gl = this.context.gl;
+        return new StencilMode({ func: gl.NOTEQUAL, mask: 0xFF }, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     stencilModeForClipping(tileID: OverscaledTileID): StencilMode {
@@ -278,9 +302,21 @@ class Painter {
         }
     }
 
-    depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType): DepthMode {
+    depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType): $ReadOnly<DepthMode> {
+        if (!this.opaquePassEnabledForLayer()) return DepthMode.disabled;
         const depth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
         return new DepthMode(func || this.context.gl.LEQUAL, mask, [depth, depth]);
+    }
+
+    /*
+     * The opaque pass and 3D layers both use the depth buffer.
+     * Layers drawn above 3D layers need to be drawn using the
+     * painter's algorithm so that they appear above 3D features.
+     * This returns true for layers that can be drawn using the
+     * opaque pass.
+     */
+    opaquePassEnabledForLayer() {
+        return this.currentLayer < this.opaquePassCutoff;
     }
 
     render(style: Style, options: PainterOptions) {
@@ -323,6 +359,15 @@ class Painter {
             updateTileMasks(visibleTiles, this.context);
         }
 
+        this.opaquePassCutoff = Infinity;
+        for (let i = 0; i < layerIds.length; i++) {
+            const layerId = layerIds[i];
+            if (this.style._layers[layerId].is3D()) {
+                this.opaquePassCutoff = i;
+                break;
+            }
+        }
+
         // Offscreen pass ===============================================
         // We first do all rendering that requires rendering to a separate
         // framebuffer, and then save those for rendering back to the map
@@ -345,36 +390,29 @@ class Painter {
 
         // Clear buffers in preparation for drawing to the main framebuffer
         this.context.clear({ color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1 });
+        this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
-        this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
+        this.depthRangeFor3D = [0, 1 - ((style._order.length + 2) * this.numSublayers * this.depthEpsilon)];
 
         // Opaque pass ===============================================
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
-        let prevSourceId;
 
         for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = sourceCaches[layer.source];
             const coords = coordsAscending[layer.source];
 
-            if (layer.source !== prevSourceId && sourceCache) {
-                this.clearStencil();
-                if (sourceCache.getSource().isTileClipped) {
-                    this._renderTileClippingMasks(coords);
-                }
-            }
-
+            this._renderTileClippingMasks(layer, coords);
             this.renderLayer(this, sourceCache, layer, coords);
-            prevSourceId = layer.source;
         }
 
         // Translucent pass ===============================================
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
-        for (this.currentLayer = 0, prevSourceId = null; this.currentLayer < layerIds.length; this.currentLayer++) {
+        for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = sourceCaches[layer.source];
 
@@ -383,15 +421,8 @@ class Painter {
             // separate clipping masks
             const coords = (layer.type === 'symbol' ? coordsDescendingSymbol : coordsDescending)[layer.source];
 
-            if (layer.source !== prevSourceId && sourceCache) {
-                this.clearStencil();
-                if (sourceCache.getSource().isTileClipped) {
-                    this._renderTileClippingMasks(coordsAscending[layer.source]);
-                }
-            }
-
+            this._renderTileClippingMasks(layer, coordsAscending[layer.source]);
             this.renderLayer(this, sourceCache, layer, coords);
-            prevSourceId = layer.source;
         }
 
         if (this.options.showTileBoundaries) {

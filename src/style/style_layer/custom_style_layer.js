@@ -1,7 +1,6 @@
 // @flow
 
 import StyleLayer from '../style_layer';
-import type Framebuffer from '../../gl/framebuffer';
 import type Map from '../../ui/map';
 import assert from 'assert';
 
@@ -175,16 +174,18 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface) {
 class CustomStyleLayer extends StyleLayer {
 
     implementation: CustomLayerInterface;
-    viewportFrame: ?Framebuffer;
 
     constructor(implementation: CustomLayerInterface) {
         super(implementation, {});
         this.implementation = implementation;
     }
 
+    is3D() {
+        return this.implementation.renderingMode === '3d';
+    }
 
     hasOffscreenPass() {
-        return this.implementation.prerender !== undefined || this.implementation.renderingMode === '3d';
+        return this.implementation.prerender !== undefined;
     }
 
     recalculate() {}
@@ -193,13 +194,6 @@ class CustomStyleLayer extends StyleLayer {
 
     serialize() {
         assert(false, "Custom layers cannot be serialized");
-    }
-
-    resize() {
-        if (this.viewportFrame) {
-            this.viewportFrame.destroy();
-            this.viewportFrame = null;
-        }
     }
 
     onAdd(map: Map) {
