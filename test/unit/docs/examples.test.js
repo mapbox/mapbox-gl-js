@@ -45,9 +45,10 @@ listExamples('./docs/pages/example/').forEach((example) => {
         test(`Example: ${example}`, (t) => {
             t.ok(metadata.title, 'has title');
             t.ok(metadata.description, 'has description');
-            t.equal(metadata.description.substr(metadata.description.length - 1), '.', 'description must end with a period');
+            t.ok((metadata.description).trim().endsWith('.'), `description must end with a period`);
             t.ok(metadata.pathname, 'has pathname');
-            t.ok(metadata.pathname.startsWith('/mapbox-gl-js/'), 'pathname starts with /mapbox-gl-js/');
+            t.ok(metadata.pathname.startsWith('/mapbox-gl-js/example/'), 'pathname starts with /mapbox-gl-js/example/');
+            t.ok(metadata.pathname.endsWith('/'), 'pathname ends with /');
             t.ok(metadata.tags, 'has tags');
             metadata.tags.forEach(tag => {
                 t.notEqual(listTags.indexOf(tag), -1, `tag "${tag}" must match an item in docs/data/tags.js: ${listTags.join(', ')}`);

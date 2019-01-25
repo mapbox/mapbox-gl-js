@@ -2,7 +2,7 @@
 title: Get coordinates of the mouse pointer
 description: >-
   Showing mouse position on hover with pixel and latitude and longitude
-  coordinates
+  coordinates.
 tags:
   - user-interaction
 pathname: /mapbox-gl-js/example/mouse-position/
