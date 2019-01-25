@@ -57,10 +57,11 @@ const exported = {
     set accessToken(token: string) {
         config.ACCESS_TOKEN = token;
     },
+
     /**
      * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
      *
-     * @var {string} url
+     * @var {string} baseApiUrl
      * @example
      * mapboxgl.baseApiUrl = 'https://api.mapbox.com';
      */
@@ -72,6 +73,15 @@ const exported = {
         config.API_URL = url;
     },
 
+    /**
+     * Gets and sets the number of web workers instantiated on a page with GL JS maps.
+     * By default, it is set to half the number of CPU cores (capped at 6).
+     * Make sure to set this property before creating any map instances for it to have effect.
+     *
+     * @var {string} workerCount
+     * @example
+     * mapboxgl.workerCount = 2;
+     */
     get workerCount(): number {
         return WorkerPool.workerCount;
     },
@@ -80,6 +90,14 @@ const exported = {
         WorkerPool.workerCount = count;
     },
 
+    /**
+     * Gets and sets the maximum number of images (raster tiles, sprites, icons) to load in parallel,
+     * which affects performance in raster-heavy maps. 16 by default.
+     *
+     * @var {string} maxParallelImageRequests
+     * @example
+     * mapboxgl.maxParallelImageRequests = 10;
+     */
     get maxParallelImageRequests(): number {
         return config.MAX_PARALLEL_IMAGE_REQUESTS;
     },
