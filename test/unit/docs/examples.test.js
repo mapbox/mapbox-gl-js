@@ -42,7 +42,7 @@ listExamples('./docs/pages/example/').forEach((example) => {
     const metadata = file.metadata;
 
     if (metadata) {
-        test(`Example: ${example}`, (t) => {
+        test(`Example metatdata: ${example}`, (t) => {
             t.ok(metadata.title, 'has title');
             t.ok(metadata.description, 'has description');
             t.ok((metadata.description).trim().endsWith('.'), `description must end with a period`);
@@ -53,6 +53,12 @@ listExamples('./docs/pages/example/').forEach((example) => {
             metadata.tags.forEach(tag => {
                 t.notEqual(listTags.indexOf(tag), -1, `tag "${tag}" must match an item in docs/data/tags.js: ${listTags.join(', ')}`);
             });
+            t.end();
+        });
+
+        test(`Example image: ${example}`, (t) => {
+            const imagePath = example.replace('./docs/pages/example/', './docs/pages/img/').replace('.js', '.png');
+            t.ok(fs.existsSync(imagePath), `example must have a thumbnail image located at: ${imagePath}`);
             t.end();
         });
     }
