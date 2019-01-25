@@ -23,7 +23,7 @@ code for the example, and a `.js` file containing example boilerplate and front 
 
 * `title`: A short title for the example in **sentence case** as a **verb phrase**
 * `description`: A one sentence description of the example
-* `tags`: An array of tags for the example, which determine the sections it is listed in in the sidebar navigation
+* `tags`: An array of tags for the example, which determine the sections it is listed in in the sidebar navigation, see `docs/data/tags.js` for a list of tags
 * `pathname`: The relative path of the example, including leading `/mapbox-gl-js/example/` path
 
 In the `.html` file, write the HTML and JavaScript constituting the example.
@@ -32,6 +32,11 @@ In the `.html` file, write the HTML and JavaScript constituting the example.
 * Do **not** include an access token in the example code. The access token will be inserted automatically by the template, using the current logged in user's default public token, or a placeholder `<insert token here>` string if the user is not logged in.
 * Do **not** use custom styles from your personal account. Use only the default `mapbox` account styles.
 * When embedding literal JSON (GeoJSON or Mapbox style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
+
+Every example must have an accompanying thumbnail image:
+
+* Save a thumbnail image (1200 x 500 pixel .png, under 500 KB) in `docs/pages/img/`.
+* The file name of the image must match the example's file name.
 
 ## Running the Documentation Server Locally
 
@@ -44,13 +49,13 @@ The command will print the URL you can use to view the documentation.
 
 ## Committing and Publishing Documentation
 
-The mapbox-gl-js repository has both `master` and `mb-pages` as active branches. The **`master` branch** is used for mainline code development: the next version of mapbox-gl-js will come from the code in this branch, and it may contain documentation and examples for APIs that are not yet part of a public release. The **`mb-pages` branch** is published to https://www.mapbox.com/mapbox-gl-js/ on any push to the branch. For the purposes of documentation changes, use these two branches as follows:
+The mapbox-gl-js repository has both `master` and `publisher-production` as active branches. The **`master` branch** is used for mainline code development: the next version of mapbox-gl-js will come from the code in this branch, and it may contain documentation and examples for APIs that are not yet part of a public release. The **`publisher-production` branch** is published to https://www.mapbox.com/mapbox-gl-js/ on any push to the branch. For the purposes of documentation changes, use these two branches as follows:
 
-* If your changes are relevant to the **currently released version**, make them on `mb-pages`. Examples: correcting the API documentation for a released API, adding a new example that depends only on current APIs.
+* If your changes are relevant to the **currently released version**, make them on `publisher-production`. Examples: correcting the API documentation for a released API, adding a new example that depends only on current APIs.
 * If your changes depend on gl-js features **not in the currently released version**, make them on `master`. Examples: documenting or adding an example for a newly-added API.
 
 When releasing, the release manager will:
 
-* Merge `mb-pages` to `master`, ensuring that any accumulated changes in `mb-pages` propagate to `master`
+* Merge `publisher-production` to `master`, ensuring that any accumulated changes in `publisher-production` propagate to `master`
 * Make the release
-* Fast-forward `mb-pages` to the current `master`, ensuring that all accumulated changes are published to mapbox.com
+* Fast-forward `publisher-production` to the current `master`, ensuring that all accumulated changes are published to mapbox.com

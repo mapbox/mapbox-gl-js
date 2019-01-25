@@ -182,12 +182,10 @@ for (const name in CompoundExpression.definitions) {
             parameters: processParameters(definition[1])
         }];
     } else {
-        types[name] = definition.overloads.map((o) => {
-            return {
-                type: toString(definition.type),
-                parameters: processParameters(o[0])
-            };
-        });
+        types[name] = definition.overloads.map(o => ({
+            type: toString(definition.type),
+            parameters: processParameters(o[0])
+        }));
     }
 }
 

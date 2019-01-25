@@ -1,6 +1,6 @@
 /*---
 title: Display a non-interactive map
-description: 'Setting interactive: false to create a static map'
+description: 'Setting interactive: false to create a static map.'
 tags:
   - user-interaction
 pathname: /mapbox-gl-js/example/interactive-false/

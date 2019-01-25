@@ -66,7 +66,7 @@ function getMergeBase() {
         // base branch.
         const head = process.env['CIRCLE_SHA1'];
         for (const sha of execSync(`git rev-list --max-count=10 ${head}`).toString().trim().split('\n')) {
-            const base = execSync(`git branch -r --contains ${sha} origin/master origin/release-* origin/mb-pages`).toString().split('\n')[0].trim().replace(/^origin\//, '');
+            const base = execSync(`git branch -r --contains ${sha} origin/master origin/release-* origin/publisher-production`).toString().split('\n')[0].trim().replace(/^origin\//, '');
             if (base) {
                 return Promise.resolve(execSync(`git merge-base origin/${base} ${head}`).toString().trim());
             }
