@@ -41,7 +41,7 @@ function testSupport(gl: WebGLRenderingContext) {
         testWebpTextureUpload(gl);
     } else {
         glForTesting = gl;
-        return;
+
     }
 }
 
