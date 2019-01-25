@@ -31,19 +31,16 @@ if (window.document) {
 function testSupport(gl: WebGLRenderingContext) {
     if (webpCheckComplete || !webpImgTest) return;
 
-    if (!webpImgTest.complete) {
-        glForTesting = gl;
-        return;
-    }
-
     // HTMLImageElement.complete is set when an image is done loading it's source
     // regardless of whether the load was successful or not.
     // It's possible for an error to set HTMLImageElement.complete to true which would trigger
     // testWebpTextureUpload and mistakenly set exported.supported to true in browsers which don't support webp
     // To avoid this, we set a flag in the image's onload handler and only call testWebpTextureUpload
-    // after a successful image load event
+    // after a successful image load event.
     if (webpImgTestOnloadComplete) {
         testWebpTextureUpload(gl);
+    } else {
+        glForTesting = gl;
     }
 }
 
