@@ -217,6 +217,8 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
 @media screen {
     .mapboxgl-ctrl-attrib.mapboxgl-compact {
+        min-height: 20px;
+        padding: 0;
         margin: 10px;
         position: relative;
         background-color: #fff;
@@ -226,6 +228,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     .mapboxgl-ctrl-attrib.mapboxgl-compact:hover {
         padding: 2px 24px 2px 4px;
         visibility: visible;
+        margin-top: 6px;
     }
 
     .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact:hover,
