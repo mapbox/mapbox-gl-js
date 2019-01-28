@@ -248,22 +248,41 @@ PopupMenu.defaultProps = {
   darkText: true
 };
 
+var immutable = extend;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function extend() {
+  var target = {};
+
+  for (var i = 0; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+}
+
 var nonMobile = {
   maps: {
     sdks: {
       title: 'Maps SDKs',
       links: [{
         name: 'for iOS',
-        to: 'https://www.mapbox.com/ios-sdk/'
+        to: 'https://docs.mapbox.com/ios/maps/overview/'
       }, {
         name: 'for Android',
-        to: 'https://www.mapbox.com/android-docs/maps/overview/'
+        to: 'https://docs.mapbox.com/android/maps/overview/'
       }, {
         name: 'for Unity',
-        to: 'https://docs.mapbox.com/unity/'
+        to: 'https://docs.mapbox.com/unity/maps/overview/'
       }, {
         name: 'for React Native',
-        to: 'https://github.com/mapbox/react-native-mapbox-gl'
+        to: 'https://github.com/mapbox/react-native-mapbox-gl/'
       }, {
         name: 'for Qt',
         to: 'https://doc.qt.io/qt-5/location-plugin-mapboxgl.html'
@@ -271,19 +290,19 @@ var nonMobile = {
     },
     links: [{
       name: 'Mapbox GL JS',
-      to: 'https://www.mapbox.com/mapbox-gl-js/'
+      to: 'https://docs.mapbox.com/mapbox-gl-js/'
     }, {
       name: 'Mapbox Studio',
-      to: 'https://docs.mapbox.com/studio-manual/'
+      to: 'https://docs.mapbox.com/studio-manual/overview/'
     }, {
       name: 'Mapbox Style Spec',
-      to: 'https://www.mapbox.com/mapbox-gl-js/style-spec/'
+      to: 'https://docs.mapbox.com/mapbox-gl-js/style-spec/'
     }, {
       name: 'Vector tiles',
       to: 'https://docs.mapbox.com/vector-tiles/'
     }, {
       name: 'Maps APIs',
-      to: 'https://www.mapbox.com/api-documentation/maps/'
+      to: 'https://docs.mapbox.com/api/maps/'
     }]
   },
   navigation: {
@@ -291,56 +310,56 @@ var nonMobile = {
       title: 'Navigation SDKs',
       links: [{
         name: 'for iOS',
-        to: 'https://www.mapbox.com/ios-sdk/navigation/'
+        to: 'https://docs.mapbox.com/ios/navigation/overview/'
       }, {
         name: 'for Android',
-        to: 'https://www.mapbox.com/android-docs/navigation/'
+        to: 'https://docs.mapbox.com/android/navigation/overview/'
       }]
     },
     links: [{
       name: 'Directions APIs',
-      to: 'https://www.mapbox.com/api-documentation/navigation/'
+      to: 'https://docs.mapbox.com/api/navigation/'
     }]
   },
   search: {
     links: [{
       name: 'Geocoding API',
-      to: 'https://www.mapbox.com/api-documentation/search/'
+      to: 'https://docs.mapbox.com/api/search/'
     }]
   },
   help: {
     links: [{
       name: 'How Mapbox works',
-      to: 'https://www.mapbox.com/help/how-mapbox-works/'
+      to: 'https://docs.mapbox.com/help/how-mapbox-works/'
     }, {
       name: 'Tutorials',
-      to: 'https://www.mapbox.com/help/tutorials/'
+      to: 'https://docs.mapbox.com/help/tutorials/'
     }, {
       name: 'Troubleshooting',
-      to: 'https://www.mapbox.com/help/troubleshooting/'
+      to: 'https://docs.mapbox.com/help/troubleshooting/'
     }, {
       name: 'Glossary',
-      to: 'https://www.mapbox.com/help/glossary/'
+      to: 'https://docs.mapbox.com/help/glossary/'
     }, {
       name: 'Account FAQ',
-      to: 'https://www.mapbox.com/help/account-faq/'
+      to: 'https://docs.mapbox.com/help/account-faq/'
     }, {
       name: 'API playground',
-      to: 'https://www.mapbox.com/api-playground/'
+      to: 'https://docs.mapbox.com/api-playground/'
     }]
   }
 };
 var mobile = {
   maps: {
     links: nonMobile.maps.sdks.links.map(function (item) {
-      return Object.assign({}, item, {
+      return immutable(item, {
         name: "SDK ".concat(item.name)
       });
     }).concat(nonMobile.maps.links)
   },
   navigation: {
     links: nonMobile.navigation.sdks.links.map(function (item) {
-      return Object.assign({}, item, {
+      return immutable(item, {
         name: "SDK ".concat(item.name)
       });
     }).concat(nonMobile.navigation.links)
