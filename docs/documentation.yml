@@ -1,7 +1,9 @@
 toc:
   - Map
   - accessToken
-  - url
+  - baseApiUrl
+  - workerCount
+  - maxParallelImageRequests
   - supported
   - version
   - setRTLTextPlugin
