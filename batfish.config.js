@@ -40,7 +40,8 @@ module.exports = () => {
                     .map(({frontMatter}) => frontMatter);
             }
         },
-        devBrowserslist: false
+        devBrowserslist: false,
+        babelInclude: ['documentation']
     };
 
     // Local builds treat the `dist` directory as static assets, allowing you to test examples against the
