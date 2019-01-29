@@ -108,7 +108,7 @@ export function deserialize(input: Array<Bucket>, style: Style): {[string]: Buck
         // want to waste time serializing/copying them from the worker)
         (bucket: any).layers = layers;
         if ((bucket: any).stateDependentLayerIds) {
-            (bucket: any).stateDependentLayers = (bucket: any).stateDependentLayerIds.map((lId) => layers.find((l) => l.id === lId));
+            (bucket: any).stateDependentLayers = (bucket: any).stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
         }
         for (const layer of layers) {
             output[layer.id] = bucket;
