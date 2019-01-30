@@ -4,8 +4,8 @@ import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
 import {version} from '../../package.json';
 import docs from '../components/api.json'; // eslint-disable-line import/no-unresolved
 import GithubSlugger from 'github-slugger';
-import createFormatters from 'documentation/lib/output/util/formatters';
-import LinkerStack from 'documentation/lib/output/util/linker_stack';
+import createFormatters from 'documentation/src/output/util/formatters';
+import LinkerStack from 'documentation/src/output/util/linker_stack';
 import ApiItem from '../components/api-item';
 
 const meta = {
