@@ -11,7 +11,7 @@ import GlyphManager from '../render/glyph_manager';
 import Light from './light';
 import LineAtlas from '../render/line_atlas';
 import { pick, clone, extend, deepEqual, filterObject, mapObject } from '../util/util';
-import { getJSON, getReferrer, ResourceType } from '../util/ajax';
+import { getJSON, getReferrer, makeRequest, ResourceType } from '../util/ajax';
 import { isMapboxURL, normalizeStyleURL } from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
@@ -51,6 +51,7 @@ import type {Callback} from '../types/callback';
 import type EvaluationParameters from './evaluation_parameters';
 import type {Placement} from '../symbol/placement';
 import type {Cancelable} from '../types/cancelable';
+import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {GeoJSON} from '@mapbox/geojson-types';
 import type {
     LayerSpecification,
@@ -1212,6 +1213,10 @@ class Style extends Evented {
 
     getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {[number]: ?StyleGlyph}}>) {
         this.glyphManager.getGlyphs(params.stacks, callback);
+    }
+
+    getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+        return makeRequest(params, callback);
     }
 }
 

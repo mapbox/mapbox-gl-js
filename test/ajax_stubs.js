@@ -67,6 +67,8 @@ export const getArrayBuffer = function({ url }, callback) {
     });
 };
 
+export const makeRequest = getArrayBuffer;
+
 export const postData = function({ url, body }, callback) {
     return request.post(url, body, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
