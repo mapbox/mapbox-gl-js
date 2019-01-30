@@ -5,10 +5,6 @@ import harness from './harness';
 import pixelmatch from 'pixelmatch';
 import * as glob from 'glob';
 
-function emptyCallback(err) {
-    if (err) throw err;
-}
-
 /**
  * Run the render test suite, compute differences to expected values (making exceptions based on
  * implementation vagaries), print results to standard output, write test artifacts to the
@@ -123,7 +119,7 @@ export function run(implementation, ignores, render) {
             }
 
             if (process.env.UPDATE) {
-                fs.writeFile(expectedPath, PNG.sync.write(actualImg), emptyCallback);
+                fs.writeFileSync(expectedPath, PNG.sync.write(actualImg));
 
             } else {
                 // if we have multiple expected images, we'll compare against each one and pick the one with
@@ -149,14 +145,13 @@ export function run(implementation, ignores, render) {
                 }
 
                 const diffBuf = PNG.sync.write(minDiffImg, {filterType: 4});
+                const actualBuf = PNG.sync.write(actualImg, {filterType: 4});
 
-                fs.writeFile(diffPath, diffBuf, emptyCallback);
+                fs.writeFileSync(diffPath, diffBuf);
+                fs.writeFileSync(actualPath, actualBuf);
 
                 params.difference = minDiff;
                 params.ok = minDiff <= params.allowed;
-
-                const actualBuf = PNG.sync.write(actualImg, {filterType: 4});
-                fs.writeFile(actualPath, actualBuf, emptyCallback);
 
                 params.actual = actualBuf.toString('base64');
                 params.expected = minExpectedBuf.toString('base64');
