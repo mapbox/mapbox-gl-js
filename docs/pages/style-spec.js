@@ -5,6 +5,7 @@ import md from '../components/md';
 import PageShell from '../components/page_shell';
 import SDKSupportTable from '../components/sdk_support_table';
 import {highlightJavascript, highlightJSON} from '../components/prism_highlight';
+import entries from 'object.entries';
 import ref from '../../src/style-spec/reference/latest';
 import Icon from '@mapbox/mr-ui/icon';
 
@@ -148,7 +149,7 @@ class Item extends React.Component {
         } else if (req['!']) {
             return <span key={i}><em>Disabled by</em> <var>{req['!']}</var>. </span>;
         } else {
-            const [name, value] = Object.entries(req)[0];
+            const [name, value] = entries(req)[0];
             if (Array.isArray(value)) {
                 return <span key={i}><em>Requires</em> <var>{name}</var> to be {
                     value
@@ -211,7 +212,7 @@ class Item extends React.Component {
                 {this.props.values && !Array.isArray(this.props.values) && // skips $root.version
                 <div className='mb6'>
                     <dl>
-                        {Object.entries(this.props.values).map(([v, {doc}], i) => [<dt key={`${i}-dt`}><code>{JSON.stringify(v)}</code>:</dt>, <dd key={`${i}-dd`} className='mb12'>{md(doc)}</dd>]
+                        {entries(this.props.values).map(([v, {doc}], i) => [<dt key={`${i}-dt`}><code>{JSON.stringify(v)}</code>:</dt>, <dd key={`${i}-dd`} className='mb12'>{md(doc)}</dd>]
                         )}
                     </dl>
                 </div>}
@@ -273,7 +274,7 @@ export default class extends React.Component {
                             `)}
                         </div>
                         <InnerSection>
-                            {Object.entries(ref.$root).map(([name, prop], i) => <Item key={i} id={`root-${name}`} name={name} {...prop}/>)}
+                            {entries(ref.$root).map(([name, prop], i) => <Item key={i} id={`root-${name}`} name={name} {...prop}/>)}
                         </InnerSection>
                     </SectionH2>
 
@@ -285,7 +286,7 @@ export default class extends React.Component {
                             {highlightJSON(`"light": ${JSON.stringify(ref.$root.light.example, null, 2)}`)}
                         </div>
                         <InnerSection>
-                            {Object.entries(ref.light).map(([name, prop], i) => <Item key={i} id={`light-${name}`} name={name} {...prop} />)}
+                            {entries(ref.light).map(([name, prop], i) => <Item key={i} id={`light-${name}`} name={name} {...prop} />)}
                         </InnerSection>
                     </SectionH2>
 
@@ -401,7 +402,7 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <div className='mb6'>
-                                        { Object.entries(ref.source_geojson).map(([name, prop], i) => name !== '*' && name !== 'type' &&
+                                        { entries(ref.source_geojson).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                             <Item key={i} id={`sources-geojson-${name}`} name={name} {...prop}/>)}
                                     </div>
                                     <SDKSupportTable {...{
@@ -426,7 +427,7 @@ export default class extends React.Component {
                                     }}/>
                                 </SectionH3>
                                 <div className='mb6'>
-                                    { Object.entries(ref.source_vector).map(([name, prop], i) => name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_vector).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-vector-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -453,7 +454,7 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div className='mb6'>
-                                    { Object.entries(ref.source_raster).map(([name, prop], i) => name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_raster).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-raster-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -478,7 +479,7 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div className='mb6'>
-                                    { Object.entries(ref.source_raster_dem).map(([name, prop], i) => name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_raster_dem).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-raster-dem-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -523,7 +524,7 @@ export default class extends React.Component {
                                         }`)}
                                 </div>
                                 <div className='mb6'>
-                                    { Object.entries(ref.source_geojson).map(([name, prop], i) => name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_geojson).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-geojson-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -564,7 +565,7 @@ export default class extends React.Component {
                                       }`)}
                                 </div>
                                 <div className='mb6'>
-                                    { Object.entries(ref.source_image).map(([name, prop], i) => name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_image).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-image-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -604,7 +605,7 @@ export default class extends React.Component {
                                       }`)}
                                 </div>
                                 <div className='mb6'>
-                                    { Object.entries(ref.source_video).map(([name, prop], i) => name !== '*' && name !== 'type' &&
+                                    { entries(ref.source_video).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-video-${name}`} name={name} {...prop}/>)}
                                 </div>
                                 <SDKSupportTable {...{
@@ -710,7 +711,7 @@ export default class extends React.Component {
                             {highlightJSON(`"transition": ${JSON.stringify(ref.$root.transition.example, null, 2)}`)}
                         </div>
                         <InnerSection>
-                            { Object.entries(ref.transition).map(([name, prop], i) => <Item key={i} id={`transition-${name}`} name={name} {...prop}/>)}
+                            { entries(ref.transition).map(([name, prop], i) => <Item key={i} id={`transition-${name}`} name={name} {...prop}/>)}
                         </InnerSection>
                     </SectionH2>
 
@@ -729,7 +730,7 @@ export default class extends React.Component {
                             {highlightJSON(`"layers": ${JSON.stringify(ref.$root.layers.example, null, 2)}`)}
                         </div>
                         <InnerSection className='mb24'>
-                            { Object.entries(ref.layer).map(([name, prop], i) => <Item key={i} id={`layer-${name}`} name={name} {...prop}/>)}
+                            { entries(ref.layer).map(([name, prop], i) => <Item key={i} id={`layer-${name}`} name={name} {...prop}/>)}
                         </InnerSection>
 
                         <p>
@@ -748,8 +749,8 @@ export default class extends React.Component {
                         <InnerSection className='mt24'>
                             {layerTypes.map((type, i) => (
                                 <SectionH3 key={i} id={`layers-${type}`} title={type}>
-                                    { Object.entries(ref[`layout_${type}`]).map(([name, prop], i) => <Item key={i} id={`layout-${type}-${name}`} name={name} kind="layout" {...prop}/>)}
-                                    { Object.entries(ref[`paint_${type}`]).map(([name, prop], i) => <Item key={i} id={`paint-${type}-${name}`} name={name} kind="paint" {...prop}/>)}
+                                    { entries(ref[`layout_${type}`]).map(([name, prop], i) => <Item key={i} id={`layout-${type}-${name}`} name={name} kind="layout" {...prop}/>)}
+                                    { entries(ref[`paint_${type}`]).map(([name, prop], i) => <Item key={i} id={`paint-${type}-${name}`} name={name} kind="paint" {...prop}/>)}
                                 </SectionH3>
                             ))}
                         </InnerSection>

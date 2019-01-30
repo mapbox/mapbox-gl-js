@@ -1,4 +1,5 @@
 import React from 'react';
+import entries from 'object.entries';
 import md from './md';
 
 export default class SDKSupportTable extends React.Component {
@@ -23,7 +24,7 @@ export default class SDKSupportTable extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {Object.entries(this.props).map(([key, entry], i) => <tr key={i}>
+                        {entries(this.props).map(([key, entry], i) => <tr key={i}>
                             <td>{md(key)}</td>
                             <td>{this.support(entry, 'js')}</td>
                             <td>{this.support(entry, 'android')}</td>

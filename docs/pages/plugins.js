@@ -3,6 +3,7 @@ import slug from 'slugg';
 import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
 import md from '@mapbox/batfish/modules/md'; // eslint-disable-line import/no-unresolved
 import PageShell from '../components/page_shell';
+import entries from 'object.entries';
 import IconText from '@mapbox/mr-ui/icon-text';
 
 const meta = {
@@ -165,9 +166,9 @@ export default class extends React.Component {
                 <h1 className='mt24 mt0-mm'>Plugins</h1>
                 <div className=''>
                     <div id='plugins' className='doc' data-swiftype-index='true'>
-                        {Object.entries(plugins).map(([title, plugins], i) => <div key={i} className=''>
+                        {entries(plugins).map(([title, plugins], i) => <div key={i} className=''>
                             <h2 id={slug(title)}><a className="unprose color-blue-on-hover" href={`#${slug(title)}`}>{title}</a></h2>
-                            {Object.entries(plugins).map(([name, plugin], i) => <div key={i} className=''>
+                            {entries(plugins).map(([name, plugin], i) => <div key={i} className=''>
                                 <h3 id={slug(name)}><a className="unprose color-blue-on-hover" href={`#${slug(name)}`}>{name}</a></h3>
                                 <div>{ plugin.description }</div>
                                 <div className="my12">
