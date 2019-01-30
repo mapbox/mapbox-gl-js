@@ -148,14 +148,14 @@ export function run(implementation, ignores, render) {
                     }
                 }
 
-                const diffBuf = PNG.sync.write(minDiffImg);
+                const diffBuf = PNG.sync.write(minDiffImg, {filterType: 4});
 
                 fs.writeFile(diffPath, diffBuf, emptyCallback);
 
                 params.difference = minDiff;
                 params.ok = minDiff <= params.allowed;
 
-                const actualBuf = PNG.sync.write(actualImg);
+                const actualBuf = PNG.sync.write(actualImg, {filterType: 4});
                 fs.writeFile(actualPath, actualBuf, emptyCallback);
 
                 params.actual = actualBuf.toString('base64');
