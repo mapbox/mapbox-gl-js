@@ -681,22 +681,22 @@ class Map extends Camera {
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
      * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string} layer The ID of a style layer. Only events whose location is within a visible
+     * @param {string} layerId The ID of a style layer. Only events whose location is within a visible
      * feature in this layer will trigger the listener. The event will have a `features` property containing
      * an array of the matching features.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
      */
-    on(type: MapEvent, layer: any, listener: any) {
+    on(type: MapEvent, layerId: any, listener: any) {
         if (listener === undefined) {
-            return super.on(type, layer);
+            return super.on(type, layerId);
         }
 
         const delegatedListener = (() => {
             if (type === 'mouseenter' || type === 'mouseover') {
                 let mousein = false;
                 const mousemove = (e) => {
-                    const features = this.getLayer(layer) ? this.queryRenderedFeatures(e.point, {layers: [layer]}) : [];
+                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
                     if (!features.length) {
                         mousein = false;
                     } else if (!mousein) {
@@ -707,11 +707,11 @@ class Map extends Camera {
                 const mouseout = () => {
                     mousein = false;
                 };
-                return {layer, listener, delegates: {mousemove, mouseout}};
+                return {layer: layerId, listener, delegates: {mousemove, mouseout}};
             } else if (type === 'mouseleave' || type === 'mouseout') {
                 let mousein = false;
                 const mousemove = (e) => {
-                    const features = this.getLayer(layer) ? this.queryRenderedFeatures(e.point, {layers: [layer]}) : [];
+                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
                     if (features.length) {
                         mousein = true;
                     } else if (mousein) {
@@ -725,10 +725,10 @@ class Map extends Camera {
                         listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
                     }
                 };
-                return {layer, listener, delegates: {mousemove, mouseout}};
+                return {layer: layerId, listener, delegates: {mousemove, mouseout}};
             } else {
                 const delegate = (e) => {
-                    const features = this.getLayer(layer) ? this.queryRenderedFeatures(e.point, {layers: [layer]}) : [];
+                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
                     if (features.length) {
                         // Here we need to mutate the original event, so that preventDefault works as expected.
                         e.features = features;
@@ -736,7 +736,7 @@ class Map extends Camera {
                         delete e.features;
                     }
                 };
-                return {layer, listener, delegates: {[type]: delegate}};
+                return {layer: layerId, listener, delegates: {[type]: delegate}};
             }
         })();
 
@@ -767,20 +767,20 @@ class Map extends Camera {
      * Removes an event listener for layer-specific events previously added with `Map#on`.
      *
      * @param {string} type The event type previously used to install the listener.
-     * @param {string} layer The layer ID previously used to install the listener.
+     * @param {string} layerId The layer ID previously used to install the listener.
      * @param {Function} listener The function previously installed as a listener.
      * @returns {Map} `this`
      */
-    off(type: MapEvent, layer: any, listener: any) {
+    off(type: MapEvent, layerId: any, listener: any) {
         if (listener === undefined) {
-            return super.off(type, layer);
+            return super.off(type, layerId);
         }
 
         if (this._delegatedListeners && this._delegatedListeners[type]) {
             const listeners = this._delegatedListeners[type];
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
-                if (delegatedListener.layer === layer && delegatedListener.listener === listener) {
+                if (delegatedListener.layer === layerId && delegatedListener.listener === listener) {
                     for (const event in delegatedListener.delegates) {
                         this.off((event: any), delegatedListener.delegates[event]);
                     }
@@ -906,7 +906,7 @@ class Map extends Camera {
      * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2)
      * representing features within the specified vector tile or GeoJSON source that satisfy the query parameters.
      *
-     * @param {string} sourceID The ID of the vector tile or GeoJSON source to query.
+     * @param {string} sourceId The ID of the vector tile or GeoJSON source to query.
      * @param {Object} [parameters]
      * @param {string} [parameters.sourceLayer] The name of the vector tile layer to query. *For vector tile
      *   sources, this parameter is required.* For GeoJSON sources, it is ignored.
@@ -932,8 +932,8 @@ class Map extends Camera {
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
-    querySourceFeatures(sourceID: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>}) {
-        return this.style.querySourceFeatures(sourceID, parameters);
+    querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>}) {
+        return this.style.querySourceFeatures(sourceId, parameters);
     }
 
     /**
@@ -1209,15 +1209,15 @@ class Map extends Camera {
      *
      * @param {Object | CustomLayerInterface} layer The style layer to add, conforming to the Mapbox Style Specification's
      *   [layer definition](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
-     * @param {string} [before] The ID of an existing layer to insert the new layer before.
+     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
      * @returns {Map} `this`
      * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
      * @see [Add a vector tile source](https://www.mapbox.com/mapbox-gl-js/example/vector-source/)
      * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
      */
-    addLayer(layer: LayerSpecification | CustomLayerInterface, before?: string) {
-        this.style.addLayer(layer, before);
+    addLayer(layer: LayerSpecification | CustomLayerInterface, beforeId?: string) {
+        this.style.addLayer(layer, beforeId);
         return this._update(true);
     }
 
@@ -1263,7 +1263,7 @@ class Map extends Camera {
     /**
      * Sets the filter for the specified style layer.
      *
-     * @param {string} layer The ID of the layer to which the filter will be applied.
+     * @param {string} layerId The ID of the layer to which the filter will be applied.
      * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
      *   [filter definition](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
      * @param {Object} [options]
@@ -1276,8 +1276,8 @@ class Map extends Camera {
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
-    setFilter(layer: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
-        this.style.setFilter(layer, filter, options);
+    setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
+        this.style.setFilter(layerId, filter, options);
         return this._update(true);
     }
 
@@ -1299,17 +1299,17 @@ class Map extends Camera {
     /**
      * Returns the filter applied to the specified style layer.
      *
-     * @param {string} layer The ID of the style layer whose filter to get.
+     * @param {string} layerId The ID of the style layer whose filter to get.
      * @returns {Array} The layer's filter.
      */
-    getFilter(layer: string) {
-        return this.style.getFilter(layer);
+    getFilter(layerId: string) {
+        return this.style.getFilter(layerId);
     }
 
     /**
      * Sets the value of a paint property in the specified style layer.
      *
-     * @param {string} layer The ID of the layer to set the paint property in.
+     * @param {string} layerId The ID of the layer to set the paint property in.
      * @param {string} name The name of the paint property to set.
      * @param {*} value The value of the paint propery to set.
      *   Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
@@ -1322,26 +1322,26 @@ class Map extends Camera {
      * @see [Adjust a layer's opacity](https://www.mapbox.com/mapbox-gl-js/example/adjust-layer-opacity/)
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    setPaintProperty(layer: string, name: string, value: any, options: StyleSetterOptions = {}) {
-        this.style.setPaintProperty(layer, name, value, options);
+    setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
+        this.style.setPaintProperty(layerId, name, value, options);
         return this._update(true);
     }
 
     /**
      * Returns the value of a paint property in the specified style layer.
      *
-     * @param {string} layer The ID of the layer to get the paint property from.
+     * @param {string} layerId The ID of the layer to get the paint property from.
      * @param {string} name The name of a paint property to get.
      * @returns {*} The value of the specified paint property.
      */
-    getPaintProperty(layer: string, name: string) {
-        return this.style.getPaintProperty(layer, name);
+    getPaintProperty(layerId: string, name: string) {
+        return this.style.getPaintProperty(layerId, name);
     }
 
     /**
      * Sets the value of a layout property in the specified style layer.
      *
-     * @param {string} layer The ID of the layer to set the layout property in.
+     * @param {string} layerId The ID of the layer to set the layout property in.
      * @param {string} name The name of the layout property to set.
      * @param {*} value The value of the layout propery. Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
      * @param {Object} [options]
@@ -1350,20 +1350,20 @@ class Map extends Camera {
      * @example
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
      */
-    setLayoutProperty(layer: string, name: string, value: any, options: StyleSetterOptions = {}) {
-        this.style.setLayoutProperty(layer, name, value, options);
+    setLayoutProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
+        this.style.setLayoutProperty(layerId, name, value, options);
         return this._update(true);
     }
 
     /**
      * Returns the value of a layout property in the specified style layer.
      *
-     * @param {string} layer The ID of the layer to get the layout property from.
+     * @param {string} layerId The ID of the layer to get the layout property from.
      * @param {string} name The name of the layout property to get.
      * @returns {*} The value of the specified layout property.
      */
-    getLayoutProperty(layer: string, name: string) {
-        return this.style.getLayoutProperty(layer, name);
+    getLayoutProperty(layerId: string, name: string) {
+        return this.style.getLayoutProperty(layerId, name);
     }
 
     /**
