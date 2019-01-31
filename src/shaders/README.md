@@ -37,6 +37,6 @@ When using pragmas, the following requirements apply.
  - `initialize` pragmas must be in function scope
  - all pragma-defined variables defined and initialized in the fragment shader must also be defined and initialized in the vertex shader because `attribute`s are not accessible from the fragment shader
 
-## Util
+## Prelude
 
-The `util.glsl` file is automatically included in all shaders by the compiler.
+The `_prelude.fragment.glsl` and `_prelude.vertex.glsl` files are automatically included in all shaders by the compiler.
