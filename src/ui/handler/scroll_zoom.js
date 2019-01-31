@@ -59,10 +59,7 @@ class ScrollZoomHandler {
     /**
      * @private
      */
-    constructor(map: Map, options?: {
-        defaultZoomRate: number,
-        wheelZoomRate: number
-    }) {
+    constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();
 
@@ -70,8 +67,8 @@ class ScrollZoomHandler {
 
         // These magic numbers control the rate of zoom. Trackpad events fire at a greater
         // frequency than mouse scroll wheel, so reduce the zoom rate per wheel tick
-        this._defaultZoomRate = options.defaultZoomRate || defaultZoomRate;
-        this._wheelZoomRate = options.wheelZoomRate || wheelZoomRate;
+        this._defaultZoomRate = defaultZoomRate;
+        this._wheelZoomRate = wheelZoomRate;
 
         bindAll([
             '_onWheel',
@@ -85,7 +82,7 @@ class ScrollZoomHandler {
      * Override default zoomRate value
      * @param {number} zoomRate
      */
-    setZoomRate(zoomRate) {
+    setZoomRate(zoomRate: number) {
         this._defaultZoomRate = zoomRate;
     }
 
@@ -93,7 +90,7 @@ class ScrollZoomHandler {
      * Override default wheelZoomRate value
      * @param {number} wheelZoomRate
      */
-    setWheelZoomRate(wheelZoomRate) {
+    setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
     }
 
