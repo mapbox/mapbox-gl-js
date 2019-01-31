@@ -2,7 +2,6 @@
 
 ### ✨ Features and improvements
 * Add `clusterProperties` option for aggregated cluster properties ([#2412](https://github.com/mapbox/mapbox-gl-js/issues/2412), fixed by [#7584](https://github.com/mapbox/mapbox-gl-js/pull/7584))
-* Simplify `clusterProperties` expression ([#7784](https://github.com/mapbox/mapbox-gl-js/pull/7784))
 * Add `number-format` expression ([#7626](https://github.com/mapbox/mapbox-gl-js/pull/7626))
 * Add `symbol-sort-key` style property ([#7678](https://github.com/mapbox/mapbox-gl-js/pull/7678))
 
