@@ -18,8 +18,8 @@ import type {TaskID} from '../../util/task_queue';
 const wheelZoomDelta = 4.000244140625;
 // These magic numbers control the rate of zoom. Trackpad events fire at a greater
 // frequency than mouse scroll wheel, so reduce the zoom rate per wheel tick
-const defaultZoomRate = 1 / 100;
-const wheelZoomRate = 1 / 450;
+const defaultZoomRate = 0.3; // 1 / 100;
+const wheelZoomRate = 0.1; // 1 / 450;
 
 // upper bound on how much we scale the map in any single render frame; this
 // is used to limit zoom rate in the case of very fast scrolling
@@ -53,14 +53,25 @@ class ScrollZoomHandler {
 
     _frameId: ?TaskID;
 
+    _defaultZoomRate: number;
+    _wheelZoomRate: number;
+
     /**
      * @private
      */
-    constructor(map: Map) {
+    constructor(map: Map, options?: {
+        defaultZoomRate: number,
+        wheelZoomRate: number
+    }) {
         this._map = map;
         this._el = map.getCanvasContainer();
 
         this._delta = 0;
+
+        // These magic numbers control the rate of zoom. Trackpad events fire at a greater
+        // frequency than mouse scroll wheel, so reduce the zoom rate per wheel tick
+        this._defaultZoomRate = options.defaultZoomRate || defaultZoomRate; // 1 / 450;
+        this._wheelZoomRate = options.wheelZoomRate || wheelZoomRate; // 1 / 100;
 
         bindAll([
             '_onWheel',
@@ -68,6 +79,22 @@ class ScrollZoomHandler {
             '_onScrollFrame',
             '_onScrollFinished'
         ], this);
+    }
+
+    /**
+     * Override default zoomRate value
+     * @param {number} zoomRate
+     */
+    setZoomRate(zoomRate) {
+        this._defaultZoomRate = zoomRate;
+    }
+
+    /**
+     * Override default wheelZoomRate value
+     * @param {number} wheelZoomRate
+     */
+    setWheelZoomRate(wheelZoomRate) {
+        this._wheelZoomRate = wheelZoomRate;
     }
 
     /**
@@ -218,7 +245,7 @@ class ScrollZoomHandler {
         // accumulated delta, and update the target zoom level accordingly
         if (this._delta !== 0) {
             // For trackpad events and single mouse wheel ticks, use the default zoom rate
-            const zoomRate = (this._type === 'wheel' && Math.abs(this._delta) > wheelZoomDelta) ? wheelZoomRate : defaultZoomRate;
+            const zoomRate = (this._type === 'wheel' && Math.abs(this._delta) > wheelZoomDelta) ? this._wheelZoomRate : this._defaultZoomRate;
             // Scale by sigmoid of scroll wheel delta.
             let scale = maxScalePerFrame / (1 + Math.exp(-Math.abs(this._delta * zoomRate)));
 
