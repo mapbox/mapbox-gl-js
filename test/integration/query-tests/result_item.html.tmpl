@@ -1,17 +1,10 @@
-<tr class="<%- r.status %> <%- (hasFailedTests && /passed/.test(r.status) || /ignored/.test(r.status)) ? 'hide' : '' %>">
-    <td>
-    <% if (r.status !== 'errored') { %><img src="data:image/png;base64,<%- r.actual %>"><% } %>
-    </td>
-    <td>
-        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.id %>/style.json"><%- r.id %> <% if (!r.ok) { %>(<%=r.status%>)<% } %></a></h2>
-        <ul>
-            <% if (r.error) { %><li>error: <%- r.error.message %></li><% } %>
-            <li>diff: <strong><%- r.difference %></strong></li>
-            <li>zoom: <strong><%- r.zoom %></strong></li>
-            <li>center: <strong><%- r.center %></strong></li>
-            <li>bearing: <strong><%- r.bearing %></strong></li>
-            <li>width: <strong><%- r.width %></strong></li>
-            <li>height: <strong><%- r.height %></strong></li>
-        </ul>
-    </td>
-</tr>
+<div class="test <%- r.status %> <%- (hasFailedTests && /passed/.test(r.status) || /ignored/.test(r.status)) ? 'hide' : '' %>">
+    <h2><span class="label" style="background: <%- r.color %>"><%- r.status %></span> <%- r.id %></h2>
+    <% if (r.status !== 'errored') { %>
+        <img src="data:image/png;base64,<%- r.actual %>">
+    <% } %>
+    <% if (r.error) { %><p style="color: red"><strong>Error:</strong> <%- r.error.message %></p><% } %>
+    <% if (r.difference) { %>
+    <pre><%- r.difference.trim() %></pre>
+    <% } %>
+</div>
