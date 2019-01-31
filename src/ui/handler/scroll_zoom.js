@@ -18,8 +18,8 @@ import type {TaskID} from '../../util/task_queue';
 const wheelZoomDelta = 4.000244140625;
 // These magic numbers control the rate of zoom. Trackpad events fire at a greater
 // frequency than mouse scroll wheel, so reduce the zoom rate per wheel tick
-const defaultZoomRate = 0.3; // 1 / 100;
-const wheelZoomRate = 0.1; // 1 / 450;
+const defaultZoomRate = 1 / 100;
+const wheelZoomRate = 1 / 450;
 
 // upper bound on how much we scale the map in any single render frame; this
 // is used to limit zoom rate in the case of very fast scrolling
@@ -70,8 +70,8 @@ class ScrollZoomHandler {
 
         // These magic numbers control the rate of zoom. Trackpad events fire at a greater
         // frequency than mouse scroll wheel, so reduce the zoom rate per wheel tick
-        this._defaultZoomRate = options.defaultZoomRate || defaultZoomRate; // 1 / 450;
-        this._wheelZoomRate = options.wheelZoomRate || wheelZoomRate; // 1 / 100;
+        this._defaultZoomRate = options.defaultZoomRate || defaultZoomRate;
+        this._wheelZoomRate = options.wheelZoomRate || wheelZoomRate;
 
         bindAll([
             '_onWheel',
