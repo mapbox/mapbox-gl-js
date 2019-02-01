@@ -1048,7 +1048,7 @@ export default class extends React.Component {
                                     <SectionH4 key={i} id={`expressions-${slug(group.name)}`} title={group.name} index={i} length={groupedExpressions.length}>
                                         {group.name === "Types" &&
                                             <div>
-                                                <p>The expressions in this SectionH2 are provided for the purpose of
+                                                <p>The expressions in this section are provided for the purpose of
                                                    testing for and converting between different data types like strings,
                                                    numbers, and boolean values.</p>
                                                 <p>Often, such tests and conversions are
@@ -1063,7 +1063,7 @@ export default class extends React.Component {
 
                                         {group.name === "Decision" &&
                                             <p>
-                                                The expressions in this SectionH2 can be used to add conditional
+                                                The expressions in this section can be used to add conditional
                                                 logic to your styles. For example, the <a
                                                     href="#expressions-case"><code>'case'</code></a> expression
                                                 provides basic "if/then/else" logic, and <a
