@@ -19,6 +19,7 @@ import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
 import { getAnchorAlignment } from '../symbol/shaping';
 import ONE_EM from '../symbol/one_em';
 import { evaluateRadialOffset } from '../symbol/symbol_layout';
+import { easeCubicInOut } from '../util/util';
 
 import {
     symbolIconUniformValues,
@@ -96,8 +97,8 @@ function calculateVariableRenderShift(anchor, width, height, radialOffset, textB
     );
 }
 
-function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                               transform, labelPlaneMatrix, posMatrix, tileScale, size) {
+function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, t, variableOffsets, symbolSize,
+                               transform, labelPlaneMatrix, posMatrix, tileScale, size, animate) {
     const placedSymbols = bucket.text.placedSymbolArray;
     const dynamicLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
     dynamicLayoutVertexArray.clear();
@@ -122,6 +123,14 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
 
             const shift = calculateVariableRenderShift(
                 variableOffset.anchor, width, height, radialOffset, textBoxScale, renderTextSize);
+
+            if (animate && variableOffset.prevAnchor && variableOffset.prevAnchor !== variableOffset.anchor) {
+                const prevShift = calculateVariableRenderShift(
+                    variableOffset.prevAnchor, width, height, radialOffset, textBoxScale, renderTextSize);
+
+                shift.x = shift.x * t + prevShift.x * (1 - t);
+                shift.y = shift.y * t + prevShift.y * (1 - t);
+            }
 
             // Usual case is that we take the projected anchor and add the pixel-based shift
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent
@@ -211,8 +220,10 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
         } else if (isText && size && variablePlacement) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
-            updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                                  tr, labelPlaneMatrix, coord.posMatrix, tileScale, size);
+            const t = easeCubicInOut(painter.symbolFadeChange);
+            updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, t, variableOffsets, symbolSize,
+                                  tr, labelPlaneMatrix, coord.posMatrix, tileScale, size,
+                                  layer.layout.get('text-variable-anchor-animation'));
         }
 
         const matrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),

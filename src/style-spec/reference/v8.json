@@ -1881,6 +1881,29 @@
       },
       "property-type": "data-constant"
     },
+    "text-variable-anchor-animation": {
+      "type": "boolean",
+      "default": "true",
+      "requires": [
+        "text-variable-anchor"
+      ],
+      "doc": "Controls whether `text-variable-anchor` changes are animated or instant.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "next",
+          "android": "Not yet supported",
+          "ios": "Not yet supported",
+          "macos": "Not yet supported"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
     "text-anchor": {
       "type": "enum",
       "requires": {

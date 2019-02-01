@@ -5,7 +5,7 @@
       "height": 256,
       "width": 256,
       "fadeDuration": 100,
-      "description": "Start with space for two labels. Zoom out so that second has to switch anchors. Render after half a fade duration, but verify that label has moved the whole way.",
+      "description": "Start with space for two labels. Zoom out so that second has to switch anchors. Render in middle of animated move.",
       "operations": [
         ["wait", 100],
         ["wait", 100],
@@ -71,7 +71,6 @@
             "left",
             "right"
         ],
-        "text-variable-anchor-animation": false,
         "text-radial-offset": 0.5,
         "text-font": [
           "Open Sans Semibold",
