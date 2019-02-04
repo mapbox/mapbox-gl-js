@@ -368,64 +368,6 @@ export default class extends React.Component {
                                             "url": "mapbox://mapbox.mapbox-streets-v6"
                                         }`)}
                                 </div>
-                                <SectionH3 id='sources-geojson' title='geojson'>
-                                    <p>
-                                        A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
-                                        property, whose value can be a URL or inline GeoJSON.
-                                    </p>
-                                    <div className='mb6'>
-                                        {highlightJSON(`
-                                            "geojson-marker": {
-                                                "type": "geojson",
-                                                "data": {
-                                                    "type": "Feature",
-                                                    "geometry": {
-                                                        "type": "Point",
-                                                        "coordinates": [-77.0323, 38.9131]
-                                                    },
-                                                    "properties": {
-                                                        "title": "Mapbox DC",
-                                                        "marker-symbol": "monument"
-                                                    }
-                                                }
-                                            }`)}
-                                    </div>
-                                    <p>
-                                        This example of a GeoJSON source refers to an external GeoJSON document via its URL. The
-                                        GeoJSON document must be on the same domain or accessible using <a href='http://enable-cors.org/'>CORS</a>.
-                                    </p>
-                                    <div className='mb6'>
-                                        {highlightJSON(`
-                                            "geojson-lines": {
-                                                "type": "geojson",
-                                                "data": "./lines.geojson"
-                                            }`)}
-                                    </div>
-                                    <div className='mb6'>
-                                        { entries(ref.source_geojson).map(([name, prop], i) => name !== '*' && name !== 'type' &&
-                                            <Item key={i} id={`sources-geojson-${name}`} name={name} {...prop}/>)}
-                                    </div>
-                                    <SDKSupportTable {...{
-                                        'basic functionality': {
-                                            js: '0.10.0',
-                                            android: '2.0.1',
-                                            ios: '2.0.0',
-                                            macos: '0.1.0'
-                                        },
-                                        'clustering': {
-                                            js: '0.14.0',
-                                            android: '4.2.0',
-                                            ios: '3.4.0',
-                                            macos: '0.3.0'
-                                        },
-                                        'line distance metrics': {
-                                            js: '0.45.0',
-                                            android: '6.5.0',
-                                            ios: '4.4.0',
-                                            macos: '0.11.0'
-                                        }
-                                    }}/>
-                                </SectionH3>
                                 <div className='mb6'>
                                     { entries(ref.source_vector).map(([name, prop], i) => name !== '*' && name !== 'type' &&
                                         <Item key={i} id={`sources-vector-${name}`} name={name} {...prop}/>)}
@@ -539,10 +481,15 @@ export default class extends React.Component {
                                         android: '4.2.0',
                                         ios: '3.4.0',
                                         macos: '0.3.0'
+                                    },
+                                    'line distance metrics': {
+                                        js: '0.45.0',
+                                        android: '6.5.0',
+                                        ios: '4.4.0',
+                                        macos: '0.11.0'
                                     }
                                 }}/>
                             </SectionH3>
-
 
                             <SectionH3 id='sources-image' title='image'>
                                 <p>
