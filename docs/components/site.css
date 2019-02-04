@@ -6,6 +6,12 @@
   padding-top: 0 !important;
 }
 
+pre {
+  background-color: #f4f7fb; 
+  overflow: auto;
+  margin-bottom: 18px !important;
+}
+
 .prose pre {
   max-height: 300px;
   overflow: auto;
