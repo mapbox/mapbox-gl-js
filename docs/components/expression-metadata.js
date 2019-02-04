@@ -88,7 +88,7 @@ const types = {
     case: [{
         type: 'OutputType',
         parameters: [
-            'condition: boolean, output: OutputType', 
+            'condition: boolean, output: OutputType',
             'condition: boolean, output: OutputType',
             '...',
             'fallback: OutputType']
@@ -153,7 +153,7 @@ const types = {
         parameters: [
             'input: InputType (number or string)',
             'label: InputType | [InputType, InputType, ...], output: OutputType',
-            'label: InputType | [InputType, InputType, ...], output: OutputType', 
+            'label: InputType | [InputType, InputType, ...], output: OutputType',
             '...',
             'fallback: OutputType'
         ]
