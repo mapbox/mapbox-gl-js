@@ -6,6 +6,10 @@
   padding-top: 0 !important;
 }
 
+.examples-page.prose pre {
+  max-height: none;
+}
+
 .prose pre {
   max-height: 300px;
   overflow: auto;

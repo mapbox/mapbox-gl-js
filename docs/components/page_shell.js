@@ -229,7 +229,7 @@ class PageShell extends React.Component {
                         sideBarColSize={sidebarProps.sidebarColSize || 0}
                         sidebarStackedOnNarrowScreens={sidebarProps.sidebarStackedOnNarrowScreens}
                     >
-                        <div className='static-header-page prose'>
+                        <div className={`static-header-page ${activeTab}-page prose`}>
                             {this.props.children}
                         </div>
                         {activeTab !== 'overview' ? <div className="fixed block mx24 my24 z5 bottom right">
