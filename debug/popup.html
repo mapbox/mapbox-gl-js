@@ -26,7 +26,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-var popup = new mapboxgl.Popup({closeButton: false})
+var popup = new mapboxgl.Popup({closeButton: false, closeOnClick: false})
     .trackPointer()
     .setHTML('<h1>Hello World!</h1>')
     .addTo(map);

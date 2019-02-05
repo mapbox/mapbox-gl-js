@@ -185,7 +185,7 @@ export default class Popup extends Evented {
     }
 
     /**
-     * Sets the geographical location of the popup's anchor, and moves the popup to it. Replaces trackPointer() behavior
+     * Sets the geographical location of the popup's anchor, and moves the popup to it. Replaces trackPointer() behavior.
      *
      * @param lnglat The geographical location to set as the popup's anchor.
      * @returns {Popup} `this`
@@ -209,7 +209,7 @@ export default class Popup extends Evented {
 
     /**
      * Tracks the popup anchor to the cursor position, on screens with a pointer device (will be hidden on touchscreens). Replaces the setLngLat behavior.
-     *
+     * For most use cases, `closeOnClick` and `closeButton` should also be set to `false` here.
      * @returns {Popup} `this`
      */
     trackPointer() {
