@@ -6,10 +6,8 @@
   padding-top: 0 !important;
 }
 
-pre {
-  background-color: #f4f7fb; 
-  overflow: auto;
-  margin-bottom: 18px !important;
+.examples-page.prose pre {
+  max-height: none;
 }
 
 .prose pre {

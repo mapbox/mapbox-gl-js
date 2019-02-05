@@ -51,7 +51,7 @@ class ExamplesLandingPage extends React.PureComponent {
         });
 
         const gettingStartedSection = (
-            <div className='mb36'>
+            <div className="">
                 <div className='prose'>
                     <h1 className='mt24 mt0-mm' id='getting-started'>Getting started</h1>
                 </div>
