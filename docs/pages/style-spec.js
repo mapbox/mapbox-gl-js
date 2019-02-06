@@ -203,7 +203,7 @@ class Item extends React.Component {
                         Supports <a href='#expressions-interpolate'><Icon name='smooth-ramp' inline={true} /><code>interpolate</code></a> expressions. </em>}
 
                     {this.props.transition &&
-                    <em className='color-gray'><Icon name='opacity' inline={true} themeIcon='quiet' />Transitionable. </em>}
+                    <em className='color-gray'><Icon name='opacity' inline={true} />Transitionable. </em>}
                 </div>
 
                 {this.props.doc &&

@@ -45,7 +45,7 @@ class ApiItemMember extends React.Component {
                         <span className='txt-code truncate bg-white'>{member.name}</span>
                         {member.kind === 'function' &&
                             <span className='color-gray txt-code mr12' dangerouslySetInnerHTML={{__html: formatters.parameters(member, true)}}/>}
-                        <Icon size={30} name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`} themeIcon="fr" inline={true} />
+                        <div className='fr'><Icon size={30} name={`${this.state.disclosed ? 'caret-down' : 'caret-right'}`}  inline={true} /></div>
                     </button>
                 </div>
 
