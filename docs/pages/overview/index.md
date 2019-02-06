@@ -9,7 +9,7 @@ pathname: /mapbox-gl-js/overview/
 ---
 
 {{
-<div className="mb24 mt60 mt0-mm pt60 pt0-mm">
+<div className="mb24">
     <OverviewHeader
     features={[
         "Custom map styles",

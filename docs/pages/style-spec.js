@@ -237,7 +237,7 @@ export default class extends React.Component {
             <PageShell meta={meta}>
                 <div className='style-spec-section'>
                     <div>
-                        <h1>{meta.title}</h1>
+                        <h1 className='txt-fancy'>{meta.title}</h1>
                         <p>A Mapbox style is a document that defines the visual appearance of a map: what data to
                           draw, the order to draw it in, and how to style the data when drawing it. A style
                           document is a <a href="http://www.json.org/">JSON</a> object with specific root level
