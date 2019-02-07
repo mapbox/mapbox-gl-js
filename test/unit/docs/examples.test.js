@@ -44,6 +44,7 @@ listExamples('./docs/pages/example/').forEach((example) => {
     if (metadata) {
         test(`Example metatdata: ${example}`, (t) => {
             t.ok(metadata.title, 'has title');
+            t.notOk((metadata.title).trim().endsWith('.'), `title must not end with a period`);
             t.ok(metadata.description, 'has description');
             t.ok((metadata.description).trim().endsWith('.'), `description must end with a period`);
             t.ok(metadata.pathname, 'has pathname');
