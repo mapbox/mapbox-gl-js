@@ -1,4 +1,4 @@
-## 0.53.0-beta.1
+## 0.53.0
 
 ## Features and improvements
 * Enable `fill-extrusion` querying with ray picking ([#7499](https://github.com/mapbox/mapbox-gl-js/pull/7499))
@@ -10,6 +10,7 @@
 * Add `symbol-sort-key` style property ([#7678](https://github.com/mapbox/mapbox-gl-js/pull/7678))
 
 ## Bug fixes
+* Upgrades Earcut to fix a rare bug in rendering polygons that contain a coincident chain of holes ([#7806](https://github.com/mapbox/mapbox-gl-js/issues/7806), fixed by [#7878](https://github.com/mapbox/mapbox-gl-js/pull/7878))
 * Allow `file://` protocol in XHR requests for Cordova/Ionic/etc ([#7818](https://github.com/mapbox/mapbox-gl-js/pull/7818))
 * Correctly handle WebP images in Edge 18 ([#7687](https://github.com/mapbox/mapbox-gl-js/pull/7687))
 * Fix bug which mistakenly requested WebP images in browsers that do not support WebP (#7817) ([#7819](https://github.com/mapbox/mapbox-gl-js/pull/7819))
