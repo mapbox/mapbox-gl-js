@@ -203,7 +203,7 @@ class Item extends React.Component {
                         Supports <a href='#expressions-interpolate'><Icon name='smooth-ramp' inline={true} /><code>interpolate</code></a> expressions. </em>}
 
                     {this.props.transition &&
-                    <em className='color-gray'><Icon name='opacity' inline={true} themeIcon='quiet' />Transitionable. </em>}
+                    <em className='color-gray'><Icon name='opacity' inline={true} />Transitionable. </em>}
                 </div>
 
                 {this.props.doc &&
@@ -235,9 +235,9 @@ export default class extends React.Component {
     render() {
         return (
             <PageShell meta={meta}>
-                <div className='style-spec-section'>
+                <div className='style-spec-section prose'>
                     <div>
-                        <h1>{meta.title}</h1>
+                        <h1 className='txt-fancy'>{meta.title}</h1>
                         <p>A Mapbox style is a document that defines the visual appearance of a map: what data to
                           draw, the order to draw it in, and how to style the data when drawing it. A style
                           document is a <a href="http://www.json.org/">JSON</a> object with specific root level

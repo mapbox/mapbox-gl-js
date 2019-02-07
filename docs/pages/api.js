@@ -55,15 +55,17 @@ export default class extends React.Component {
     render() {
         return (
             <PageShell meta={meta} onUser={(_, token) => this.setState({token})}>
-                <h1 className='mt24 mt0-mm'>Mapbox GL JS</h1>
-                <div className='py6 color-gray txt-s mt-neg24 mb12'>
+                <div class="prose">
+                    <h1 className='mt24 mt0-mm txt-fancy'>Mapbox GL JS</h1>
+                    <div className='py6 color-gray txt-s mt-neg24 mb12'>
                     Current version:{' '}<span className='round bg-gray-faint py3 px6'><a href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{version}</a></span>
-                </div>
-                <p>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href="https://www.mapbox.com/help/define-vector-tiles">vector tiles</a> and <a href={prefixUrl('/style-spec')}>Mapbox styles</a>. It is part of the Mapbox GL ecosystem, which includes <a href="https://www.mapbox.com/mobile/">Mapbox Mobile</a>, a compatible renderer written in C++ with bindings for desktop and mobile platforms.</p>
-                <div className='api-section'>
-                    {docs.map((doc, i) => doc.kind === 'note' ?
-                        <Note key={i} {...doc}/> :
-                        <ApiItem key={i} {...doc}/>)}
+                    </div>
+                    <p>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href="https://www.mapbox.com/help/define-vector-tiles">vector tiles</a> and <a href={prefixUrl('/style-spec')}>Mapbox styles</a>. It is part of the Mapbox GL ecosystem, which includes <a href="https://www.mapbox.com/mobile/">Mapbox Mobile</a>, a compatible renderer written in C++ with bindings for desktop and mobile platforms.</p>
+                    <div className='api-section'>
+                        {docs.map((doc, i) => doc.kind === 'note' ?
+                            <Note key={i} {...doc}/> :
+                            <ApiItem key={i} {...doc}/>)}
+                    </div>
                 </div>
             </PageShell>
         );

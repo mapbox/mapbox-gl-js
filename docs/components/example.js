@@ -7,7 +7,7 @@ import supported from '@mapbox/mapbox-gl-supported';
 import Icon from '@mapbox/mr-ui/icon';
 import CodeSnippet from '@mapbox/mr-ui/code-snippet';
 
-const highlightTheme = require('raw-loader!./prism_highlight.css'); // eslint-disable-line import/no-commonjs
+const highlightTheme = require('raw-loader!@mapbox/dr-ui/css/prism.css'); // eslint-disable-line import/no-commonjs
 
 export default function (html) {
     return class extends React.Component {
@@ -71,7 +71,7 @@ ${html}
                     <div className='relative'>
                         <div className='round bg-white'>
                             <div className='prose'>
-                                <h1 className='mt0-mm'>{frontMatter.title}</h1>
+                                <h1 className='mt0-mm txt-fancy'>{frontMatter.title}</h1>
                                 <div className='mb36'>{md(frontMatter.description)}</div>
 
                                 {!supported() &&

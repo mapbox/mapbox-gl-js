@@ -14,7 +14,7 @@ module.exports = () => {
             require.resolve('@mapbox/mbx-assembly/dist/assembly.css'),
             require.resolve('@mapbox/dr-ui/css/docs-prose.css'),
             `${__dirname}/docs/components/site.css`,
-            `${__dirname}/docs/components/prism_highlight.css`,
+            require.resolve('@mapbox/dr-ui/css/prism.css'),
             `${__dirname}/vendor/docs-page-shell/page-shell-styles.css`
         ],
         applicationWrapperPath: `${__dirname}/docs/components/application-wrapper.js`,
