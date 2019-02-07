@@ -84,7 +84,7 @@ class PageShell extends React.Component {
                     }));
                 return {
                     title: data[topic],
-                    url: `#${topic}`,
+                    url: `/mapbox-gl-js/examples/#${topic}`,
                     items: subNavItems
                 };
             }).filter(topic => topic.items.length > 0)
