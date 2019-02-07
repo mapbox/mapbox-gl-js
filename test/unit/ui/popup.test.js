@@ -459,3 +459,16 @@ test('Popup adds classes from className option', (t) => {
     t.ok(popupContainer.classList.contains('classes'));
     t.end();
 });
+
+test('Popup closes on Map#remove', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText("Test")
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    map.remove();
+
+    t.ok(!popup.isOpen());
+    t.end();
+});

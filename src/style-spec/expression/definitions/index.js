@@ -37,6 +37,7 @@ import {
     GreaterThanOrEqual
 } from './comparison';
 import CollatorExpression from './collator';
+import NumberFormat from './number_format';
 import FormatExpression from './format';
 import Length from './length';
 
@@ -66,6 +67,7 @@ const expressions: ExpressionRegistry = {
     'literal': Literal,
     'match': Match,
     'number': Assertion,
+    'number-format': NumberFormat,
     'object': Assertion,
     'step': Step,
     'string': Assertion,
@@ -198,6 +200,11 @@ CompoundExpression.register(expressions, {
         NumberType,
         [],
         (ctx) => ctx.globals.lineProgress || 0
+    ],
+    'accumulated': [
+        ValueType,
+        [],
+        (ctx) => ctx.globals.accumulated === undefined ? null : ctx.globals.accumulated
     ],
     '+': [
         NumberType,

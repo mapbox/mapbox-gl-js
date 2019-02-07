@@ -2,20 +2,52 @@
 
 import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
-import type MercatorCoordinate from '../geo/mercator_coordinate';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
 import type { RetainedQueryData } from '../symbol/placement';
 import type {FilterSpecification} from '../style-spec/types';
 import assert from 'assert';
+import { mat4 } from 'gl-matrix';
+
+/*
+ * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
+ */
+function getPixelPosMatrix(transform, tileID) {
+    const t = mat4.identity([]);
+    mat4.translate(t, t, [1, 1, 0]);
+    mat4.scale(t, t, [transform.width * 0.5, transform.height * 0.5, 1]);
+    return mat4.multiply(t, t, transform.calculatePosMatrix(tileID.toUnwrapped()));
+}
+
+function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[string]: StyleLayer}, sourceID: string) {
+    if (layers) {
+        for (const layerID of layers) {
+            const layer = styleLayers[layerID];
+            if (layer && layer.source === sourceID && layer.type === 'fill-extrusion') {
+                return true;
+            }
+        }
+    } else {
+        for (const key in styleLayers) {
+            const layer = styleLayers[key];
+            if (layer.source === sourceID && layer.type === 'fill-extrusion') {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
-                            queryGeometry: Array<MercatorCoordinate>,
+                            queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             transform: Transform) {
+
+    const has3DLayer = queryIncludes3DLayer(params && params.layers, styleLayers, sourceCache.id);
+
     const maxPitchScaleFactor = transform.maxPitchScaleFactor();
-    const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor);
+    const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor, has3DLayer);
 
     tilesIn.sort(sortTilesIn);
 
@@ -27,11 +59,12 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                 styleLayers,
                 sourceCache._state,
                 tileIn.queryGeometry,
+                tileIn.cameraQueryGeometry,
                 tileIn.scale,
                 params,
                 transform,
                 maxPitchScaleFactor,
-                sourceCache.transform.calculatePosMatrix(tileIn.tileID.toUnwrapped()))
+                getPixelPosMatrix(sourceCache.transform, tileIn.tileID))
         });
     }
 
@@ -39,7 +72,8 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
 
     // Merge state from SourceCache into the results
     for (const layerID in result) {
-        result[layerID].forEach((feature) => {
+        result[layerID].forEach((featureWrapper) => {
+            const feature = featureWrapper.feature;
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
             feature.source = feature.layer.source;
             if (feature.layer['source-layer']) {
@@ -98,14 +132,15 @@ export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
                 }
             });
             for (const symbolFeature of layerSymbols) {
-                resultFeatures.push(symbolFeature.feature);
+                resultFeatures.push(symbolFeature);
             }
         }
     }
 
     // Merge state from SourceCache into the results
     for (const layerName in result) {
-        result[layerName].forEach((feature) => {
+        result[layerName].forEach((featureWrapper) => {
+            const feature = featureWrapper.feature;
             const layer = styleLayers[layerName];
             const sourceCache = sourceCaches[layer.source];
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
@@ -161,7 +196,7 @@ function mergeRenderedFeatureLayers(tiles) {
             for (const tileFeature of tileFeatures) {
                 if (!wrappedIDFeatures[tileFeature.featureIndex]) {
                     wrappedIDFeatures[tileFeature.featureIndex] = true;
-                    resultFeatures.push(tileFeature.feature);
+                    resultFeatures.push(tileFeature);
                 }
             }
         }

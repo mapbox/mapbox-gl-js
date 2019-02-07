@@ -152,5 +152,38 @@ test('ajax', (t) => {
         t.end();
     });
 
+    t.test('getImage requests that were once queued are still abortable', (t) => {
+        resetImageRequestQueue();
+
+        const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
+
+        const requests = [];
+        for (let i = 0; i < maxRequests; i++) {
+            requests.push(getImage({url: ''}, () => {}));
+        }
+
+        // the limit of allowed requests is reached
+        t.equals(window.server.requests.length, maxRequests);
+
+        const queuedURL = 'this-is-the-queued-request';
+        const queued = getImage({ url: queuedURL }, () => t.fail());
+
+        // the new requests is queued because the limit is reached
+        t.equals(window.server.requests.length, maxRequests);
+
+        // cancel the first request to let the queued request start
+        requests[0].cancel();
+        t.equals(window.server.requests.length, maxRequests + 1);
+
+        // abort the previously queued request and confirm that it is aborted
+        const queuedRequest = window.server.requests[window.server.requests.length - 1];
+        t.equals(queuedRequest.url, queuedURL);
+        t.equals(queuedRequest.aborted, undefined);
+        queued.cancel();
+        t.equals(queuedRequest.aborted, true);
+
+        t.end();
+    });
+
     t.end();
 });

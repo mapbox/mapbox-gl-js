@@ -20,7 +20,7 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 0,
+    zoom: 1,
     center: [0, 0],
     style: 'mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41',
     hash: true
@@ -31,7 +31,12 @@ map.on('load', () => {
         "type": "geojson",
         "data": "/test/integration/data/places.geojson",
         "cluster": true,
-        "clusterRadius": 50
+        "clusterRadius": 50,
+        "clusterProperties": {
+            "max": ["max", ["get", "scalerank"]],
+            "sum": ["+", ["get", "scalerank"]],
+            "has_island": ["any", ["==", ["get", "featureclass"], "island"]]
+        }
     });
     map.addLayer({
         "id": "cluster",
@@ -39,7 +44,7 @@ map.on('load', () => {
         "source": "geojson",
         "filter": ["==", "cluster", true],
         "paint": {
-            "circle-color": "rgba(0, 200, 0, 1)",
+            "circle-color": ["case", ["get", "has_island"], "orange", "rgba(0, 200, 0, 1)"],
             "circle-radius": 20
         }
     });
@@ -49,7 +54,7 @@ map.on('load', () => {
         "source": "geojson",
         "filter": ["==", "cluster", true],
         "layout": {
-            "text-field": "{point_count}",
+            "text-field": "{point_count} ({max})",
             "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
             "text-size": 12,
             "text-allow-overlap": true,

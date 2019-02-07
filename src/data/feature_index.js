@@ -15,6 +15,7 @@ import { OverscaledTileID } from '../source/tile_id';
 import { register } from '../util/web_worker_transfer';
 import EvaluationParameters from '../style/evaluation_parameters';
 import SourceFeatureState from '../source/source_state';
+import {polygonIntersectsBox} from '../util/intersection_tests';
 
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
@@ -25,10 +26,11 @@ import { FeatureIndexArray } from './array_types';
 
 type QueryParameters = {
     scale: number,
-    posMatrix: Float32Array,
+    pixelPosMatrix: Float32Array,
     transform: Transform,
     tileSize: number,
-    queryGeometry: Array<Array<Point>>,
+    queryGeometry: Array<Point>,
+    cameraQueryGeometry: Array<Point>,
     queryPadding: number,
     params: {
         filter: FilterSpecification,
@@ -42,6 +44,7 @@ class FeatureIndex {
     y: number;
     z: number;
     grid: Grid;
+    grid3D: Grid;
     featureIndexArray: FeatureIndexArray;
 
     rawTileData: ArrayBuffer;
@@ -58,12 +61,15 @@ class FeatureIndex {
         this.y = tileID.canonical.y;
         this.z = tileID.canonical.z;
         this.grid = grid || new Grid(EXTENT, 16, 0);
+        this.grid3D = new Grid(EXTENT, 16, 0);
         this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
     }
 
-    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number) {
+    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, is3D?: boolean) {
         const key = this.featureIndexArray.length;
         this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
+
+        const grid = is3D ? this.grid3D : this.grid;
 
         for (let r = 0; r < geometry.length; r++) {
             const ring = geometry[r];
@@ -81,7 +87,7 @@ class FeatureIndex {
                 bbox[1] < EXTENT &&
                 bbox[2] >= 0 &&
                 bbox[3] >= 0) {
-                this.grid.insert(key, bbox[0], bbox[1], bbox[2], bbox[3]);
+                grid.insert(key, bbox[0], bbox[1], bbox[2], bbox[3]);
             }
         }
     }
@@ -105,23 +111,22 @@ class FeatureIndex {
         const queryGeometry = args.queryGeometry;
         const queryPadding = args.queryPadding * pixelsToTileUnits;
 
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-        for (let i = 0; i < queryGeometry.length; i++) {
-            const ring = queryGeometry[i];
-            for (let k = 0; k < ring.length; k++) {
-                const p = ring[k];
-                minX = Math.min(minX, p.x);
-                minY = Math.min(minY, p.y);
-                maxX = Math.max(maxX, p.x);
-                maxY = Math.max(maxY, p.y);
-            }
+        const bounds = getBounds(queryGeometry);
+        const matching = this.grid.query(bounds.minX - queryPadding, bounds.minY - queryPadding, bounds.maxX + queryPadding, bounds.maxY + queryPadding);
+
+        const cameraBounds = getBounds(args.cameraQueryGeometry);
+        const matching3D = this.grid3D.query(
+                cameraBounds.minX - queryPadding, cameraBounds.minY - queryPadding, cameraBounds.maxX + queryPadding, cameraBounds.maxY + queryPadding,
+                (bx1, by1, bx2, by2) => {
+                    return polygonIntersectsBox(args.cameraQueryGeometry, bx1 - queryPadding, by1 - queryPadding, bx2 + queryPadding, by2 + queryPadding);
+                });
+
+        for (const key of matching3D) {
+            matching.push(key);
         }
 
-        const matching = this.grid.query(minX - queryPadding, minY - queryPadding, maxX + queryPadding, maxY + queryPadding);
         matching.sort(topDownFeatureComparator);
+
         const result = {};
         let previousIndex;
         for (let k = 0; k < matching.length; k++) {
@@ -150,7 +155,7 @@ class FeatureIndex {
                         // `feature-state` expression evaluation requires feature state to be available
                         featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', feature.id);
                     }
-                    return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.posMatrix);
+                    return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.pixelPosMatrix);
                 }
             );
         }
@@ -166,7 +171,7 @@ class FeatureIndex {
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
-        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer) => boolean) {
+        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer) => boolean | number) {
 
         const layerIDs = this.bucketLayerIDs[bucketIndex];
         if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs))
@@ -189,7 +194,8 @@ class FeatureIndex {
             const styleLayer = styleLayers[layerID];
             if (!styleLayer) continue;
 
-            if (intersectionTest && !intersectionTest(feature, styleLayer)) {
+            const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer);
+            if (!intersectionZ) {
                 // Only applied for non-symbol features
                 continue;
             }
@@ -200,7 +206,7 @@ class FeatureIndex {
             if (layerResult === undefined) {
                 layerResult = result[layerID] = [];
             }
-            layerResult.push({ featureIndex, feature: geojsonFeature });
+            layerResult.push({ featureIndex, feature: geojsonFeature, intersectionZ });
         }
     }
 
@@ -250,6 +256,20 @@ register(
 );
 
 export default FeatureIndex;
+
+function getBounds(geometry: Array<Point>) {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const p of geometry) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+    }
+    return { minX, minY, maxX, maxY };
+}
 
 function topDownFeatureComparator(a, b) {
     return b - a;

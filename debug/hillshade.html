@@ -92,7 +92,8 @@ map.on('load', function () {
         "tiles": [
             "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"
         ],
-        "tileSize": 256
+        "tileSize": 128,
+        "maxzoom": 15
     });
     map.addLayer({
         "id": "Terrarium data",
