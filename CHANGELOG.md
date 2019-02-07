@@ -1,4 +1,4 @@
-## 0.53.0-beta.1
+## 0.53.0
 
 ## Features and improvements
 * Enable `fill-extrusion` querying with ray picking ([#7499](https://github.com/mapbox/mapbox-gl-js/pull/7499))
