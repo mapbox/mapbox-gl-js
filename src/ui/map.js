@@ -1157,7 +1157,7 @@ class Map extends Camera {
     }
 
     /**
-     * Define wether the image has been added or not
+     * Define whether the image has been added or not
      *
      * @param id The ID of the image.
      */
@@ -1311,7 +1311,7 @@ class Map extends Camera {
      *
      * @param {string} layerId The ID of the layer to set the paint property in.
      * @param {string} name The name of the paint property to set.
-     * @param {*} value The value of the paint propery to set.
+     * @param {*} value The value of the paint property to set.
      *   Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
      * @param {Object} [options]
      * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
@@ -1343,7 +1343,7 @@ class Map extends Camera {
      *
      * @param {string} layerId The ID of the layer to set the layout property in.
      * @param {string} name The name of the layout property to set.
-     * @param {*} value The value of the layout propery. Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @param {*} value The value of the layout property. Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
      * @param {Object} [options]
      * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
