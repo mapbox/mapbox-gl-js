@@ -31,7 +31,7 @@ class PageShell extends React.Component {
 
             let sentryInit = {};
             if (isProduction) {
-                sentryInit = { sentryDsn: 'https://581913e6cd0845d785f5b551a4986b61@sentry.io/11290' };
+                sentryInit = { sentryDsn: 'https://6ba8cfeeedad4fb7acb8576f0fd6e266@sentry.io/1384508' };
             } else {
                 sentryInit = false;
             }
