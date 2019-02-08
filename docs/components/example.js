@@ -68,7 +68,7 @@ ${html}
             const {frontMatter} = this.props;
             return (
                 <PageShell meta={frontMatter}>
-                    <div className='relative'>
+                    <div className='relative prose'>
                         <div className='round bg-white'>
                             <div className='prose'>
                                 <h1 className='mt0-mm txt-fancy'>{frontMatter.title}</h1>
