@@ -13,6 +13,7 @@ type FormattedSectionExpression = {
     text: Expression,
     scale: Expression | null;
     font: Expression | null;
+    id: Expression | null;
 }
 
 export default class FormatExpression implements Expression {
@@ -56,7 +57,16 @@ export default class FormatExpression implements Expression {
                 font = context.parse(options['text-font'], 1, array(StringType));
                 if (!font) return null;
             }
-            sections.push({text, scale, font});
+
+            let id = null;
+            if (options['section']) {
+                id = context.parse(options['section'], 1, ValueType);
+                if (!id) return null;
+                if (id.type !== StringType && id.type !== NumberType) {
+                    return context.error(`Format options attribute 'section' must be 'string' or 'number'.`);
+                }
+            }
+            sections.push({text, scale, font, id});
         }
 
         return new FormatExpression(sections);
@@ -68,7 +78,8 @@ export default class FormatExpression implements Expression {
                 new FormattedSection(
                     toString(section.text.evaluate(ctx)),
                     section.scale ? section.scale.evaluate(ctx) : null,
-                    section.font ? section.font.evaluate(ctx).join(',') : null
+                    section.font ? section.font.evaluate(ctx).join(',') : null,
+                    section.id ? section.id.evaluate(ctx) : null
                 )
             )
         );
@@ -82,6 +93,9 @@ export default class FormatExpression implements Expression {
             }
             if (section.font) {
                 fn(section.font);
+            }
+            if (section.id) {
+                fn(section.id);
             }
         }
     }
@@ -102,6 +116,9 @@ export default class FormatExpression implements Expression {
             }
             if (section.font) {
                 options['text-font'] = section.font.serialize();
+            }
+            if (section.id) {
+                options['section'] = section.id.serialize();
             }
             serialized.push(options);
         }

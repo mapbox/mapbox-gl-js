@@ -15,7 +15,8 @@ function isFeatureConstant(e: Expression) {
         } else if (
             e.name === 'properties' ||
             e.name === 'geometry-type' ||
-            e.name === 'id'
+            e.name === 'id' ||
+            e.name === 'text-section'
         ) {
             return false;
         } else if (/^filter-/.test(e.name)) {

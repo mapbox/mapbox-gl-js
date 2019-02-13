@@ -1,6 +1,7 @@
 // @flow
 
 import { Color } from './values';
+import type { Value } from './values';
 
 import type { GlobalProperties, Feature, FeatureState } from './index';
 
@@ -10,6 +11,7 @@ class EvaluationContext {
     globals: GlobalProperties;
     feature: ?Feature;
     featureState: ?FeatureState;
+    formattedSectionID: ?Value;
 
     _parseColorCache: {[string]: ?Color};
 
@@ -17,6 +19,7 @@ class EvaluationContext {
         this.globals = (null: any);
         this.feature = null;
         this.featureState = null;
+        this.formattedSectionID = null;
         this._parseColorCache = {};
     }
 

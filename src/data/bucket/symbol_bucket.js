@@ -523,8 +523,7 @@ class SymbolBucket implements Bucket {
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
         const vertexStartIndex = segment.vertexLength;
 
-        for (const symbol of quads) {
-
+        const addSymbol = (symbol: SymbolQuad) => {
             const tl = symbol.tl,
                 tr = symbol.tr,
                 bl = symbol.bl,
@@ -548,6 +547,39 @@ class SymbolBucket implements Bucket {
             segment.primitiveLength += 2;
 
             this.glyphOffsetArray.emplaceBack(symbol.glyphOffset[0]);
+        };
+
+        if (feature.text && feature.text.sections) {
+            const sections = feature.text.sections;
+
+            if (feature.text.hasMultipleUniqueSections()) {
+                let currentSectionIndex;
+                const populatePaintArrayForSection = (sectionIndex?: number, lastSection: boolean) => {
+                    if (currentSectionIndex !== undefined && (currentSectionIndex !== sectionIndex || lastSection)) {
+                        arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {}, sections[currentSectionIndex].id);
+                    }
+                    currentSectionIndex = sectionIndex;
+                };
+
+                for (const symbol of quads) {
+                    populatePaintArrayForSection(symbol.sectionIndex, false);
+                    addSymbol(symbol);
+                }
+
+                // Populate paint arrays for the last section.
+                populatePaintArrayForSection(currentSectionIndex, true);
+            } else {
+                for (const symbol of quads) {
+                    addSymbol(symbol);
+                }
+                arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {}, sections[0].id);
+            }
+
+        } else {
+            for (const symbol of quads) {
+                addSymbol(symbol);
+            }
+            arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {});
         }
 
         arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
@@ -558,8 +590,6 @@ class SymbolBucket implements Bucket {
             writingMode, (false: any),
             // The crossTileID is only filled/used on the foreground for dynamic text anchors
             0);
-
-        arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {});
     }
 
     _addCollisionDebugVertex(layoutVertexArray: StructArray, collisionVertexArray: StructArray, point: Point, anchorX: number, anchorY: number, extrude: Point) {

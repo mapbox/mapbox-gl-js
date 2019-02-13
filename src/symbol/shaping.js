@@ -27,7 +27,8 @@ export type PositionedGlyph = {
     y: number,
     vertical: boolean,
     scale: number,
-    fontStack: string
+    fontStack: string,
+    sectionIndex: number
 };
 
 // A collection of positioned glyphs and some metadata
@@ -78,6 +79,10 @@ class TaggedString {
 
     getSection(index: number): { scale: number, fontStack: string } {
         return this.sections[this.sectionIndex[index]];
+    }
+
+    getSectionIndex(index: number): number {
+        return this.sectionIndex[index];
     }
 
     getCharCode(index: number): number {
@@ -457,6 +462,7 @@ function shapeLines(shaping: Shaping,
         const lineStartIndex = positionedGlyphs.length;
         for (let i = 0; i < line.length(); i++) {
             const section = line.getSection(i);
+            const sectionIndex = line.getSectionIndex(i);
             const codePoint = line.getCharCode(i);
             // We don't know the baseline, but since we're laying out
             // at 24 points, we can calculate how much it will move when
@@ -468,10 +474,10 @@ function shapeLines(shaping: Shaping,
             if (!glyph) continue;
 
             if (!charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
-                positionedGlyphs.push({glyph: codePoint, x, y: y + baselineOffset, vertical: false, scale: section.scale, fontStack: section.fontStack});
+                positionedGlyphs.push({glyph: codePoint, x, y: y + baselineOffset, vertical: false, scale: section.scale, fontStack: section.fontStack, sectionIndex});
                 x += glyph.metrics.advance * section.scale + spacing;
             } else {
-                positionedGlyphs.push({glyph: codePoint, x, y: baselineOffset, vertical: true, scale: section.scale, fontStack: section.fontStack});
+                positionedGlyphs.push({glyph: codePoint, x, y: baselineOffset, vertical: true, scale: section.scale, fontStack: section.fontStack, sectionIndex});
                 x += ONE_EM * section.scale + spacing;
             }
         }

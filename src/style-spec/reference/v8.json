@@ -2918,6 +2918,15 @@
           }
         }
       },
+      "text-section": {
+        "doc": "Gets the id of a formatted section from the format expression. Can only be used in the data driven paint properties for Symbol layer.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "latest"
+          }
+        }
+      },
       "+": {
         "doc": "Returns the sum of the inputs.",
         "group": "Math",
