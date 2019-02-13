@@ -96,11 +96,11 @@ type MapOptions = {
     transformRequest?: RequestTransformFunction
 };
 
-const defaultMinZoom = 1;
+const defaultMinZoom = 0;
 const defaultMaxZoom = 22;
 const defaultOptions = {
     center: [0, 0],
-    zoom: 1,
+    zoom: 0,
     bearing: 0,
     pitch: 0,
 
@@ -145,8 +145,8 @@ const defaultOptions = {
  * @extends Evented
  * @param {Object} options
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
- * @param {number} [options.minZoom=1] The minimum zoom level of the map (1-24).
- * @param {number} [options.maxZoom=22] The maximum zoom level of the map (1-24).
+ * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
+ * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
@@ -533,7 +533,7 @@ class Map extends Camera {
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {number | null | undefined} minZoom The minimum zoom level to set (1-24).
+     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-24).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
@@ -1284,8 +1284,8 @@ class Map extends Camera {
      * Sets the zoom extent for the specified style layer.
      *
      * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
-     * @param {number} minzoom The minimum zoom to set (1-24).
-     * @param {number} maxzoom The maximum zoom to set (1-24).
+     * @param {number} minzoom The minimum zoom to set (0-24).
+     * @param {number} maxzoom The maximum zoom to set (0-24).
      * @returns {Map} `this`
      * @example
      * map.setLayerZoomRange('my-layer', 2, 5);

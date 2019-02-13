@@ -95,7 +95,7 @@ class GeoJSONSource extends Evented implements Source {
         // parties to use GeoJSONSource to build their own source types.
         this.type = 'geojson';
 
-        this.minzoom = 1;
+        this.minzoom = 0;
         this.maxzoom = 18;
         this.tileSize = 512;
         this.isTileClipped = true;

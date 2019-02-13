@@ -54,7 +54,7 @@ class Transform {
         this.maxValidLatitude = 90; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
-        this._minZoom = minZoom || 1;
+        this._minZoom = minZoom || 0;
         this._maxZoom = maxZoom || 22;
 
         this.setMaxBounds();
