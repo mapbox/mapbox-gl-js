@@ -16,6 +16,14 @@
           "b"
         ]
       ]
+    },
+    "d",
+    {
+      "section": "d"
+    },
+    "e",
+    {
+      "section": 42
     }
   ],
   "inputs": [
@@ -37,17 +45,32 @@
           {
             "text": "a",
             "scale": null,
-            "fontStack": null
+            "fontStack": null,
+            "id":null
           },
           {
             "text": "b",
             "scale": 2,
-            "fontStack": null
+            "fontStack": null,
+            "id":null
           },
           {
             "text": "c",
             "scale": null,
-            "fontStack": "a,b"
+            "fontStack": "a,b",
+            "id":null
+          },
+          {
+            "text": "d",
+            "scale": null,
+            "fontStack": null,
+            "id": "d"
+          },
+          {
+            "text": "e",
+            "scale": null,
+            "fontStack": null,
+            "id": 42
           }
         ]
       }
@@ -69,6 +92,14 @@
             "b"
           ]
         ]
+      },
+      "d",
+      {
+        "section": "d"
+      },
+      "e",
+      {
+        "section": 42
       }
     ]
   }
