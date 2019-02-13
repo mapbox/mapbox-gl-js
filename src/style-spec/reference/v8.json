@@ -373,6 +373,10 @@
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
     },
+    "clusterProperties": {
+      "type": "*",
+      "doc": "An object defining custom properties on the generated clusters if clustering is enabled, aggregating values from clustered points. Has the form `{\"property_name\": [operator, map_expression]}`. `operator` is any expression function that accepts at least 2 operands (e.g. `\"+\"` or `\"max\"`) — it accumulates the property value from clusters/points the cluster contains; `map_expression` produces the value of a single point.\n\nExample: `{\"sum\": [\"+\", [\"get\", \"scalerank\"]]}`.\n\nFor more advanced use cases, in place of `operator`, you can use a custom reduce expression that references a special `[\"accumulated\"]` value, e.g.:\n`{\"sum\": [[\"+\", [\"accumulated\"], [\"get\", \"sum\"]], [\"get\", \"scalerank\"]]}`"
+    },
     "lineMetrics": {
       "type": "boolean",
       "default": false,
@@ -958,9 +962,27 @@
       },
       "property-type": "data-constant"
     },
+    "symbol-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key wehn they overlap. Features with a lower sort key will have priority over other features when doing placement.",
+      "sdk-support": {
+          "js": "0.53.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "symbol-z-order": {
       "type": "enum",
       "values": {
+        "auto": {
+          "doc": "If `symbol-sort-key` is set, sort based on that. Otherwise sort symbols by their position relative to the viewport."
+        },
         "viewport-y": {
           "doc": "Symbols will be sorted by their y-position relative to the viewport."
         },
@@ -968,7 +990,7 @@
           "doc": "Symbols will be rendered in the same order as the source data with no sorting applied."
         }
       },
-      "default": "viewport-y",
+      "default": "auto",
       "doc": "Controls the order in which overlapping symbols in the same layer are rendered",
       "sdk-support": {
         "basic functionality": {
@@ -2390,7 +2412,7 @@
         }
       },
       "match": {
-        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must either be a single literal value or an array of literal values (e.g. `\"a\"` or `[\"c\", \"b\"]`), and those values must be all strings or all numbers. (The values `\"1\"` and `1` cannot both be labels in the same match expression.) If the input type does not match the type of the labels, the result will be the fallback value.",
+        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must either be a single literal value or an array of literal values (e.g. `\"a\"` or `[\"c\", \"b\"]`), and those values must be all strings or all numbers. (The values `\"1\"` and `1` cannot both be labels in the same match expression.) Each label must be unique. If the input type does not match the type of the labels, the result will be the fallback value.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2572,6 +2594,15 @@
             "android": "6.7.0",
             "ios": "4.6.0",
             "macos": "0.12.0"
+          }
+        }
+      },
+      "number-format": {
+        "doc": "Converts the input number into a string representation using the providing formatting rules. If set, the `locale` argument specifies the locale to use, as a BCP 47 language tag. If set, the `currency` argument specifies an ISO 4217 code to use for currency-style formatting. If set, the `min-fraction-digits` and `max-fraction-digits` arguments specify the minimum and maximum number of fractional digits to include.",
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.54.0"
           }
         }
       },
@@ -2773,6 +2804,15 @@
             "android": "6.5.0",
             "ios": "4.6.0",
             "macos": "0.12.0"
+          }
+        }
+      },
+      "accumulated": {
+        "doc": "Gets the value of a cluster property accumulated so far. Can only be used in the `clusterProperties` option of a clustered GeoJSON source.",
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.53.0"
           }
         }
       },
@@ -3785,7 +3825,9 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.50.0"
+          "js": "0.50.0",
+          "ios" : "4.7.0",
+          "macos" : "0.13.0"
         }
       },
       "expression": {

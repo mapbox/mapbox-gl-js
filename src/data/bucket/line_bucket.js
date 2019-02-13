@@ -7,7 +7,7 @@ import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray } from '../index_array_type';
 import EXTENT from '../extent';
-import mvt from '@jingsam/vector-tile';
+import mvt from '@cgcs2000/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import { register } from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
@@ -99,6 +99,7 @@ class LineBucket implements Bucket {
     layers: Array<LineStyleLayer>;
     layerIds: Array<string>;
     stateDependentLayers: Array<any>;
+    stateDependentLayerIds: Array<string>;
     features: Array<BucketFeature>;
 
     layoutVertexArray: LineLayoutArray;
@@ -125,6 +126,8 @@ class LineBucket implements Bucket {
         this.indexArray = new TriangleIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.segments = new SegmentVector();
+
+        this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {

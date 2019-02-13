@@ -1,6 +1,6 @@
 // @flow
 
-import {getTileBBox} from '@jingsam/whoots-js';
+import {getTileBBox} from '@cgcs2000/whoots-js';
 import EXTENT from '../data/extent';
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../geo/mercator_coordinate';
@@ -37,7 +37,7 @@ export class CanonicalTileID {
             .replace('{prefix}', (this.x % 16).toString(16) + (this.y % 16).toString(16))
             .replace('{z}', String(this.z))
             .replace('{x}', String(this.x))
-            .replace('{y}', String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
+            .replace('{y}', String(scheme === 'tms' ? (this.z === 0 ? 0 : (Math.pow(2, this.z - 1) - this.y - 1)) : this.y))
             .replace('{quadkey}', quadkey)
             .replace('{bbox-epsg-4490}', bbox);
     }

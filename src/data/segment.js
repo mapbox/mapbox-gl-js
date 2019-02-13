@@ -8,6 +8,7 @@ import type VertexArrayObject from '../render/vertex_array_object';
 import type {StructArray} from '../util/struct_array';
 
 export type Segment = {
+    sortKey: number | void,
     vertexOffset: number,
     primitiveOffset: number,
     vertexLength: number,
@@ -23,16 +24,17 @@ class SegmentVector {
         this.segments = segments;
     }
 
-    prepareSegment(numVertices: number, layoutVertexArray: StructArray, indexArray: StructArray): Segment {
+    prepareSegment(numVertices: number, layoutVertexArray: StructArray, indexArray: StructArray, sortKey?: number): Segment {
         let segment: Segment = this.segments[this.segments.length - 1];
         if (numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) warnOnce(`Max vertices per segment is ${SegmentVector.MAX_VERTEX_ARRAY_LENGTH}: bucket requested ${numVertices}`);
-        if (!segment || segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
+        if (!segment || segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH || segment.sortKey !== sortKey) {
             segment = ({
                 vertexOffset: layoutVertexArray.length,
                 primitiveOffset: indexArray.length,
                 vertexLength: 0,
                 primitiveLength: 0
             }: any);
+            if (sortKey !== undefined) segment.sortKey = sortKey;
             this.segments.push(segment);
         }
         return segment;
@@ -56,7 +58,8 @@ class SegmentVector {
             primitiveOffset,
             vertexLength,
             primitiveLength,
-            vaos: {}
+            vaos: {},
+            sortKey: 0
         }]);
     }
 }

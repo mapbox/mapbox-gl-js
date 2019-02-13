@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 
-import mvt from '@jingsam/vector-tile';
+import mvt from '@cgcs2000/vector-tile';
 const toGeoJSON = mvt.VectorTileFeature.prototype.toGeoJSON;
 import EXTENT from '../data/extent';
 

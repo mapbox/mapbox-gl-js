@@ -167,7 +167,7 @@ const defaultOptions = {
  *  * `mapbox://styles/mapbox/navigation-guidance-night-v2`
  *
  * Tilesets hosted with Mapbox can be style-optimized if you append `?optimize=true` to the end of your style URL, like `mapbox://styles/mapbox/streets-v9?optimize=true`.
- * Learn more about style-optimized vector tiles in our [API documentation](https://www.mapbox.com/api-documentation/#retrieve-tiles).
+ * Learn more about style-optimized vector tiles in our [API documentation](https://www.mapbox.com/api-documentation/maps/#retrieve-tiles).
  *
  * @param {boolean} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
  *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
@@ -198,6 +198,7 @@ const defaultOptions = {
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
+ * @param {Object} [options.fitBoundsOptions] A [`fitBounds`](#Map#fitBounds) options object to use _only_ when fitting the initial `bounds` provided above.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered, when zoomed out.
  * @param {number} [options.maxTileCacheSize=null]  The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
  * @param {string} [options.localIdeographFontFamily=null] If specified, defines a CSS font-family
@@ -383,7 +384,7 @@ class Map extends Camera {
 
             if (options.bounds) {
                 this.resize();
-                this.fitBounds(options.bounds, { duration: 0 });
+                this.fitBounds(options.bounds, extend({}, options.fitBoundsOptions, { duration: 0 }));
             }
         }
 
@@ -1409,6 +1410,25 @@ class Map extends Camera {
     }
 
     /**
+     * Removes feature state, setting it back to the default behavior. If only
+     * source is specified, removes all states of that source. If
+     * target.id is also specified, removes all keys for that feature's state.
+     * If key is also specified, removes that key from that feature's state.
+     *
+     * @param {Object} target Identifier of where to set state: can be a source, a feature, or a specific key of feature.
+     * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string | number} target.id (optional) Unique id of the feature. Optional if key is not specified.
+     * @param {string} target.source The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [target.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.*
+     * @param {string} key (optional) The key in the feature state to reset.
+    */
+    removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
+        this.style.removeFeatureState(target, key);
+        return this._update();
+    }
+
+    /**
      * Gets the state of a feature.
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
@@ -1700,7 +1720,6 @@ class Map extends Camera {
         } else if (!this.isMoving() && this.loaded()) {
             this.fire(new Event('idle'));
         }
-
         return this;
     }
 
@@ -1833,8 +1852,12 @@ class Map extends Camera {
      * @memberof Map
      */
     get repaint(): boolean { return !!this._repaint; }
-    set repaint(value: boolean) { this._repaint = value; this._update(); }
-
+    set repaint(value: boolean) {
+        if (this._repaint !== value) {
+            this._repaint = value;
+            this.triggerRepaint();
+        }
+    }
     // show vertices
     get vertices(): boolean { return !!this._vertices; }
     set vertices(value: boolean) { this._vertices = value; this._update(); }

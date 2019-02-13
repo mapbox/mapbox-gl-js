@@ -2,7 +2,7 @@
 
 import { getArrayBuffer } from '../util/ajax';
 
-import vt from '@jingsam/vector-tile';
+import vt from '@cgcs2000/vector-tile';
 import Protobuf from 'pbf';
 import WorkerTile from './worker_tile';
 import { extend } from '../util/util';

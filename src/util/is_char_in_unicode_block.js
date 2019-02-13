@@ -1,6 +1,6 @@
 // @flow
 
-// The following table comes from <http://www.unicode.org/Public/10.0.0/ucd/Blocks.txt>.
+// The following table comes from <http://www.unicode.org/Public/11.0.0/ucd/Blocks.txt>.
 // Keep it synchronized with <http://www.unicode.org/Public/UCD/latest/ucd/Blocks.txt>.
 
 type UnicodeBlockLookup = {[key: string]: (char: number) => boolean};
@@ -69,6 +69,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Lepcha': (char) => char >= 0x1C00 && char <= 0x1C4F,
     // 'Ol Chiki': (char) => char >= 0x1C50 && char <= 0x1C7F,
     // 'Cyrillic Extended-C': (char) => char >= 0x1C80 && char <= 0x1C8F,
+    // 'Georgian Extended': (char) => char >= 0x1C90 && char <= 0x1CBF,
     // 'Sundanese Supplement': (char) => char >= 0x1CC0 && char <= 0x1CCF,
     // 'Vedic Extensions': (char) => char >= 0x1CD0 && char <= 0x1CFF,
     // 'Phonetic Extensions': (char) => char >= 0x1D00 && char <= 0x1D7F,
@@ -208,7 +209,10 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Psalter Pahlavi': (char) => char >= 0x10B80 && char <= 0x10BAF,
     // 'Old Turkic': (char) => char >= 0x10C00 && char <= 0x10C4F,
     // 'Old Hungarian': (char) => char >= 0x10C80 && char <= 0x10CFF,
+    // 'Hanifi Rohingya': (char) => char >= 0x10D00 && char <= 0x10D3F,
     // 'Rumi Numeral Symbols': (char) => char >= 0x10E60 && char <= 0x10E7F,
+    // 'Old Sogdian': (char) => char >= 0x10F00 && char <= 0x10F2F,
+    // 'Sogdian': (char) => char >= 0x10F30 && char <= 0x10F6F,
     // 'Brahmi': (char) => char >= 0x11000 && char <= 0x1107F,
     // 'Kaithi': (char) => char >= 0x11080 && char <= 0x110CF,
     // 'Sora Sompeng': (char) => char >= 0x110D0 && char <= 0x110FF,
@@ -227,6 +231,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Mongolian Supplement': (char) => char >= 0x11660 && char <= 0x1167F,
     // 'Takri': (char) => char >= 0x11680 && char <= 0x116CF,
     // 'Ahom': (char) => char >= 0x11700 && char <= 0x1173F,
+    // 'Dogra': (char) => char >= 0x11800 && char <= 0x1184F,
     // 'Warang Citi': (char) => char >= 0x118A0 && char <= 0x118FF,
     // 'Zanabazar Square': (char) => char >= 0x11A00 && char <= 0x11A4F,
     // 'Soyombo': (char) => char >= 0x11A50 && char <= 0x11AAF,
@@ -234,6 +239,8 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Bhaiksuki': (char) => char >= 0x11C00 && char <= 0x11C6F,
     // 'Marchen': (char) => char >= 0x11C70 && char <= 0x11CBF,
     // 'Masaram Gondi': (char) => char >= 0x11D00 && char <= 0x11D5F,
+    // 'Gunjala Gondi': (char) => char >= 0x11D60 && char <= 0x11DAF,
+    // 'Makasar': (char) => char >= 0x11EE0 && char <= 0x11EFF,
     // 'Cuneiform': (char) => char >= 0x12000 && char <= 0x123FF,
     // 'Cuneiform Numbers and Punctuation': (char) => char >= 0x12400 && char <= 0x1247F,
     // 'Early Dynastic Cuneiform': (char) => char >= 0x12480 && char <= 0x1254F,
@@ -243,6 +250,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Mro': (char) => char >= 0x16A40 && char <= 0x16A6F,
     // 'Bassa Vah': (char) => char >= 0x16AD0 && char <= 0x16AFF,
     // 'Pahawh Hmong': (char) => char >= 0x16B00 && char <= 0x16B8F,
+    // 'Medefaidrin': (char) => char >= 0x16E40 && char <= 0x16E9F,
     // 'Miao': (char) => char >= 0x16F00 && char <= 0x16F9F,
     // 'Ideographic Symbols and Punctuation': (char) => char >= 0x16FE0 && char <= 0x16FFF,
     // 'Tangut': (char) => char >= 0x17000 && char <= 0x187FF,
@@ -255,6 +263,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Byzantine Musical Symbols': (char) => char >= 0x1D000 && char <= 0x1D0FF,
     // 'Musical Symbols': (char) => char >= 0x1D100 && char <= 0x1D1FF,
     // 'Ancient Greek Musical Notation': (char) => char >= 0x1D200 && char <= 0x1D24F,
+    // 'Mayan Numerals': (char) => char >= 0x1D2E0 && char <= 0x1D2FF,
     // 'Tai Xuan Jing Symbols': (char) => char >= 0x1D300 && char <= 0x1D35F,
     // 'Counting Rod Numerals': (char) => char >= 0x1D360 && char <= 0x1D37F,
     // 'Mathematical Alphanumeric Symbols': (char) => char >= 0x1D400 && char <= 0x1D7FF,
@@ -262,6 +271,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Glagolitic Supplement': (char) => char >= 0x1E000 && char <= 0x1E02F,
     // 'Mende Kikakui': (char) => char >= 0x1E800 && char <= 0x1E8DF,
     // 'Adlam': (char) => char >= 0x1E900 && char <= 0x1E95F,
+    // 'Indic Siyaq Numbers': (char) => char >= 0x1EC70 && char <= 0x1ECBF,
     // 'Arabic Mathematical Alphabetic Symbols': (char) => char >= 0x1EE00 && char <= 0x1EEFF,
     // 'Mahjong Tiles': (char) => char >= 0x1F000 && char <= 0x1F02F,
     // 'Domino Tiles': (char) => char >= 0x1F030 && char <= 0x1F09F,
@@ -276,6 +286,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Geometric Shapes Extended': (char) => char >= 0x1F780 && char <= 0x1F7FF,
     // 'Supplemental Arrows-C': (char) => char >= 0x1F800 && char <= 0x1F8FF,
     // 'Supplemental Symbols and Pictographs': (char) => char >= 0x1F900 && char <= 0x1F9FF,
+    // 'Chess Symbols': (char) => char >= 0x1FA00 && char <= 0x1FA6F,
     // 'CJK Unified Ideographs Extension B': (char) => char >= 0x20000 && char <= 0x2A6DF,
     // 'CJK Unified Ideographs Extension C': (char) => char >= 0x2A700 && char <= 0x2B73F,
     // 'CJK Unified Ideographs Extension D': (char) => char >= 0x2B740 && char <= 0x2B81F,
