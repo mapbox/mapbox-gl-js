@@ -16,7 +16,8 @@ import type {PointLike} from '@mapbox/point-geometry';
 const defaultOptions = {
     closeButton: true,
     closeOnClick: true,
-    className: ''
+    className: '',
+    maxWidth: "240px"
 };
 
 export type Offset = number | PointLike | {[Anchor]: PointLike};
@@ -26,7 +27,8 @@ export type PopupOptions = {
     closeOnClick?: boolean,
     anchor?: Anchor,
     offset?: Offset,
-    className?: string
+    className?: string,
+    maxWidth?: string
 };
 
 /**
@@ -231,6 +233,28 @@ export default class Popup extends Evented {
         return this.setDOMContent(frag);
     }
 
+    getMaxWidth() {
+      return this._container;
+    }
+
+    setMaxWidth(maxWidth: string) { // should this be number?
+      this.options.maxWidth = maxWidth;
+      this._update();
+      return this;
+    }
+/*
+    setMaxWidth(maxWidth: string) {
+
+        var width = document.querySelector('.mapboxgl-popup');
+        width.style.()
+        while (true) {
+
+        }
+    }
+
+    getter & setter so it can change dynamically
+    test in debug pages with complex conditions & permutations
+*/
     /**
      * Sets the popup's content to the element provided as a DOM node.
      *
@@ -275,7 +299,7 @@ export default class Popup extends Evented {
             this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
-
+            this._container.style.maxWidth = this.options.maxWidth;
             if (this.options.className) {
                 this.options.className.split(' ').forEach(name =>
                     this._container.classList.add(name));
