@@ -13,6 +13,8 @@ import Card from '@mapbox/dr-ui/card';
 import PageShell from '../components/page_shell';
 import { tags } from '../data/tags.js';
 import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line import/no-unresolved
+import AppropriateImage from '../components/appropriate-image';
+
 
 const meta = {
     title: 'Mapbox GL JS Examples',
@@ -35,7 +37,11 @@ class ExamplesLandingPage extends React.PureComponent {
                             description=''
                             path={example.path}
                             thumbnail={
-                                <div className="h120 w-full" style={{ backgroundImage: `url(/mapbox-gl-js/img/${filename}.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
+                                <AppropriateImage
+                                    imageId={filename}
+                                    style={{ borderRadius: '4px' }}
+                                    background={true}
+                                />
                             }
                         />
                     );
@@ -60,7 +66,14 @@ class ExamplesLandingPage extends React.PureComponent {
                     <a className="color-gray-dark color-blue-on-hover transition clip inline-block w-full unprose"
                         href='/mapbox-gl-js/example/simple-map/'
                     >
-                        <div className="relative h240 mb6" style={{ backgroundImage: `url(/mapbox-gl-js/img/simple-map.png)`, backgroundSize: "cover", borderRadius: '4px' }} />
+                        <div className='relative h240 mb6'>
+                            <AppropriateImage
+                                imageId='simple-map'
+                                style={{ borderRadius: '4px' }}
+                                background={true}
+                            />
+
+                        </div>
                         <div className="">
                             <div className="mb3 txt-m">Display a map</div>
                             <div className="color-gray">Initialize a map in an HTML element with Mapbox GL JS.</div>

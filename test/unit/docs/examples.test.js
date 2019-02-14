@@ -58,10 +58,15 @@ listExamples('./docs/pages/example/').forEach((example) => {
         });
 
         test(`Example image: ${example}`, (t) => {
-            const imagePath = example.replace('./docs/pages/example/', './docs/pages/img/').replace('.js', '.png');
-            t.ok(fs.existsSync(imagePath), `example must have a thumbnail image located at: ${imagePath}`);
-            if (fs.existsSync(imagePath)) {
-                t.ok(fs.statSync(imagePath)["size"] < 500000, 'image must be less than 500 KB');
+            // check that they saved an image for the example
+            const imagePathSrc = example.replace('./docs/pages/example/', './docs/img/src/').replace('.js', '.png');
+            t.ok(fs.existsSync(imagePathSrc), `example must have an image located at: ${imagePathSrc}`);
+            // check that they ran docs/bin/appropriate-images.js to generate the various sizes for the example image
+            const imagePathDist = example.replace('./docs/pages/example/', './docs/img/dist/').replace('.js', '-500.png');
+            const imageId = example.replace('./docs/pages/example/', '').replace('.js', '');
+            if (fs.existsSync(imagePathSrc)) {
+                // don't fail both image tests at the same time to enforce order of operation
+                t.ok(fs.existsSync(imagePathDist), `run: "node docs/bin/appropriate-images.js ${imageId}" to generate appropriate images for ${example}`);
             }
             t.end();
         });
