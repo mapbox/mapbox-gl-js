@@ -79,6 +79,7 @@ class PageShell extends React.Component {
                     .filter(item => item.tags[0] === topic)
                     .map(item => ({
                         text: item.title,
+                        description: item.description,
                         url: item.path,
                         active: this.props.location.pathname === item.path
                     }));
@@ -91,11 +92,33 @@ class PageShell extends React.Component {
         );
     }
 
+    innerJsxText(jsx) {
+        // compliments of https://github.com/CharlesStover/react-innertext
+        if (typeof jsx === 'string') {
+            return jsx;
+        }
+        if (Array.isArray(jsx)) {
+            return jsx.reduce(
+            (previous, current) =>
+                previous + this.innerJsxText(current),
+            ''
+            );
+        }
+        if (
+            Object.prototype.hasOwnProperty.call(jsx, 'props') &&
+          Object.prototype.hasOwnProperty.call(jsx.props, 'children')
+        ) {
+            return this.innerJsxText(jsx.props.children);
+        }
+        return '';
+    }
+
     getPluginSections(data) {
         return (
             Object.keys(data).map((section) => {
                 const subNavItems = Object.keys(data[section]).map(item => ({
                     text: item,
+                    description: this.innerJsxText(data[section][item].description),
                     url: data[section][item].website
                 }));
                 return {
