@@ -55,7 +55,7 @@ export default class extends React.Component {
     render() {
         return (
             <PageShell meta={meta} onUser={(_, token) => this.setState({token})}>
-                <div class="prose">
+                <div className="prose">
                     <h1 className='mt24 mt0-mm txt-fancy'>Mapbox GL JS</h1>
                     <div className='py6 color-gray txt-s mt-neg24 mb12'>
                     Current version:{' '}<span className='round bg-gray-faint py3 px6'><a href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{version}</a></span>
