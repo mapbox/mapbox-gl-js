@@ -2,6 +2,7 @@
 
 import {
     bindAll,
+    clone,
     extend,
     deepEqual,
     warnOnce,
@@ -108,7 +109,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns The map's geographical centerpoint.
      */
-    getCenter(): LngLat { return this.transform.center; }
+    getCenter(): LngLat { return clone(this.transform.center); }
 
     /**
      * Sets the map's geographical centerpoint. Equivalent to `jumpTo({center: center})`.
