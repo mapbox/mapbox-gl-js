@@ -1,5 +1,5 @@
 /*---
-title: Extrude polygons for 3D indoor mapping.
+title: Extrude polygons for 3D indoor mapping
 description: Create a 3D indoor map with the fill-extrude-height paint property.
 tags:
   - layers

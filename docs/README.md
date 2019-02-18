@@ -23,7 +23,7 @@ code for the example, and a `.js` file containing example boilerplate and front 
 
 * `title`: A short title for the example in **sentence case** as a **verb phrase**
 * `description`: A one sentence description of the example
-* `tags`: An array of tags for the example, which determine the sections it is listed in in the sidebar navigation
+* `tags`: An array of tags for the example, which determine the sections it is listed in in the sidebar navigation, see `docs/data/tags.js` for a list of tags
 * `pathname`: The relative path of the example, including leading `/mapbox-gl-js/example/` path
 
 In the `.html` file, write the HTML and JavaScript constituting the example.
@@ -32,6 +32,11 @@ In the `.html` file, write the HTML and JavaScript constituting the example.
 * Do **not** include an access token in the example code. The access token will be inserted automatically by the template, using the current logged in user's default public token, or a placeholder `<insert token here>` string if the user is not logged in.
 * Do **not** use custom styles from your personal account. Use only the default `mapbox` account styles.
 * When embedding literal JSON (GeoJSON or Mapbox style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
+
+Every example must have an accompanying thumbnail image:
+
+* Save a thumbnail image (1200 x 500 pixel .png, under 500 KB) in `docs/pages/img/`.
+* The file name of the image must match the example's file name.
 
 ## Running the Documentation Server Locally
 
