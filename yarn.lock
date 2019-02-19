@@ -960,9 +960,10 @@
     "@mapbox/jsxtreme-markdown" "^0.9.3"
     babylon "^6.18.0"
 
-"@mapbox/batfish@^1.9.7":
-  version "1.9.7"
-  resolved "https://registry.yarnpkg.com/@mapbox/batfish/-/batfish-1.9.7.tgz#35d901b976684a1a7b49a4869925a3702cb31d8a"
+"@mapbox/batfish@1.9.8":
+  version "1.9.8"
+  resolved "https://registry.yarnpkg.com/@mapbox/batfish/-/batfish-1.9.8.tgz#8bdc549ee5dbbfefbe908233e3b1513ac0d53cec"
+  integrity sha512-d7/8gxdT7yq6QnwwQVzkSZQe4Jg0g2mxY/i5uiUXPj1pnyXIp+Tb6LMlOOkBgYYRqFhBrqQOY5aIUjRLxefKxg==
   dependencies:
     "@babel/code-frame" "^7.0.0"
     "@mapbox/babel-plugin-transform-jsxtreme-markdown" "^0.5.3"
@@ -1036,10 +1037,10 @@
     webpack-merge "^4.1.2"
     worker-farm "^1.6.0"
 
-"@mapbox/dr-ui@0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.5.0.tgz#9d066e10cf96cc719fe09dc6796b6ceab6106af5"
-  integrity sha512-XrigpT+Y5DuaX2PO865Xka6PzlJ/+j2iwv+pzjNxJ+9z+Cmrg+QEQmFVom/JpFeCqowNcCmCfeK2DtyAMgPgVA==
+"@mapbox/dr-ui@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.6.0.tgz#3b7134dc39c5bc84581a756054f9bcc3e212ef91"
+  integrity sha512-IghUwbHqtoxhASCMWoqtR1Sqf8gnziBAIxrHp4hvxLzHDtIDzipACY4DA+OsJJ3DbkUveTB+keN1AG2901lunA==
   dependencies:
     "@mapbox/mr-ui" "^0.5.0"
     classnames "^2.2.6"

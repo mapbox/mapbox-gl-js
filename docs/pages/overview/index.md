@@ -9,7 +9,6 @@ pathname: /mapbox-gl-js/overview/
 ---
 
 {{
-<div className="mb24">
     <OverviewHeader
     features={[
         "Custom map styles",
@@ -23,7 +22,6 @@ pathname: /mapbox-gl-js/overview/
     installLink="https://www.mapbox.com/install/js/"
     image={<div />}
     />
-</div>
 }}
 
 Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from [vector tiles](https://docs.mapbox.com/help/glossary/vector-tiles/) and [Mapbox styles]({{prefixUrl('/style-spec')}}). It is part of the Mapbox GL ecosystem, which includes [Mapbox Mobile](https://www.mapbox.com/mobile/), a compatible renderer written in C++ with bindings for desktop and mobile platforms.
