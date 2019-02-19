@@ -128,7 +128,7 @@
     "start-debug": "run-p build-token watch-css watch-dev start-server",
     "start-bench": "run-p build-token watch-benchmarks watch-style-benchmarks start-server",
     "build-docs": "documentation build --github --format json --config ./docs/documentation.yml --output docs/components/api.json src/index.js && npm run build-images",
-    "build-images": "node docs/bin/appropriate-images.js --all",
+    "build-images": "mkdir -p docs/img/dist && node docs/bin/build-image-config.js && node docs/bin/appropriate-images.js --all",
     "build": "run-s build-docs && batfish build # invoked by publisher when publishing docs on the publisher-production branch",
     "start-docs": "run-s build-prod-min build-css build-docs && DEPLOY_ENV=local batfish start",
     "lint": "eslint --cache --ignore-path .gitignore src test bench docs docs/pages/example/*.html debug/*.html",

@@ -33,18 +33,14 @@ In the `.html` file, write the HTML and JavaScript constituting the example.
 * Do **not** use custom styles from your personal account. Use only the default `mapbox` account styles.
 * When embedding literal JSON (GeoJSON or Mapbox style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
 
-Every example **must** have an accompanying thumbnail image:
+Every example **must** have an accompanying image:
 
-1. Save an image (1200 x 500 pixel, PNG, under 500 KB) in `docs/img/src/`. The file name of the image **must** match the example's file name.
-2. In `docs/conf/image.config.js`, add an entry for the image. Example:
-```js
-"3d-buildings": {  // file-name
-    basename: "3d-buildings.png", // file-name.png
-    sizes: [{ width: 800 }, { width: 500 }] // always these sizes for examples
-}
-```
-3. Run `node docs/bin/appropriate-images.js file-name` to generate the appropriate images for the image or `node docs/bin/appropriate-images.js --all` to generate all images. Alternatively, when you run `npm run start-docs` the site will generate the images.
-5. Run the site locally to verify that your example image is loading as expected.
+1. Save the image in `docs/img/src/`. Image requirements:
+  - The file name of the image **must** match the example's file name
+  - 1200 x 500 pixel
+  - png format
+2. Run `npm run build-images` to generate the appropriate images. Alternatively, when you run `npm run start-docs` the site will generate the images.
+3. Run the site locally to verify that your example image is loading as expected.
 
 ## Running the Documentation Server Locally
 
