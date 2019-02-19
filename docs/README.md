@@ -43,8 +43,7 @@ Every example **must** have an accompanying thumbnail image:
     sizes: [{ width: 800 }, { width: 500 }] // always these sizes for examples
 }
 ```
-3. Run `node docs/bin/appropriate-images.js file-name` to generate the appropriate images for the image or `node docs/bin/appropriate-images.js --all` to generate all images.
-4. The above script will create appropriate image sizes in `docs/img/dist`, commit the image files.
+3. Run `node docs/bin/appropriate-images.js file-name` to generate the appropriate images for the image or `node docs/bin/appropriate-images.js --all` to generate all images. Alternatively, when you run `npm run start-docs` the site will generate the images.
 5. Run the site locally to verify that your example image is loading as expected.
 
 ## Running the Documentation Server Locally
@@ -55,6 +54,8 @@ npm run start-docs
 ```
 
 The command will print the URL you can use to view the documentation.
+
+💡 If you receive an error related to `@mapbox/appropriate-images`, try `nvm use 8 && npm run start-docs`.
 
 ## Committing and Publishing Documentation
 
