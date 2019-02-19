@@ -941,6 +941,7 @@ class Style extends Evented {
     }
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>) {
+        const result = [];
         const features = [];
         const features3D = [];
         for (let l = this._order.length - 1; l >= 0; l--) {
@@ -966,10 +967,14 @@ class Style extends Evented {
         });
 
         for (const featureWrapper of features3D) {
-            features.push(featureWrapper.feature);
+            result.push(featureWrapper.feature);
         }
 
-        return features;
+        for (const feature of features) {
+            result.push(feature);
+        }
+
+        return result;
     }
 
     queryRenderedFeatures(queryGeometry: any, params: any, transform: Transform) {
