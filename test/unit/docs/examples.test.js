@@ -58,11 +58,9 @@ listExamples('./docs/pages/example/').forEach((example) => {
         });
 
         test(`Example image: ${example}`, (t) => {
-            const imagePath = example.replace('./docs/pages/example/', './docs/pages/img/').replace('.js', '.png');
-            t.ok(fs.existsSync(imagePath), `example must have a thumbnail image located at: ${imagePath}`);
-            if (fs.existsSync(imagePath)) {
-                t.ok(fs.statSync(imagePath)["size"] < 500000, 'image must be less than 500 KB');
-            }
+            // check that they saved an image for the example
+            const imagePathSrc = example.replace('./docs/pages/example/', './docs/img/src/').replace('.js', '.png');
+            t.ok(fs.existsSync(imagePathSrc), `example must have an image located at: ${imagePathSrc}`);
             t.end();
         });
     }

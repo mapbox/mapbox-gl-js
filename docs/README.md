@@ -33,10 +33,14 @@ In the `.html` file, write the HTML and JavaScript constituting the example.
 * Do **not** use custom styles from your personal account. Use only the default `mapbox` account styles.
 * When embedding literal JSON (GeoJSON or Mapbox style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
 
-Every example must have an accompanying thumbnail image:
+Every example **must** have an accompanying image:
 
-* Save a thumbnail image (1200 x 500 pixel .png, under 500 KB) in `docs/pages/img/`.
-* The file name of the image must match the example's file name.
+1. Save the image in `docs/img/src/`. Image requirements:
+  - The file name of the image **must** match the example's file name
+  - 1200 x 500 pixel
+  - png format
+2. Run `npm run build-images` to generate the appropriate images. Alternatively, when you run `npm run start-docs` the site will generate the images.
+3. Run the site locally to verify that your example image is loading as expected.
 
 ## Running the Documentation Server Locally
 
@@ -46,6 +50,8 @@ npm run start-docs
 ```
 
 The command will print the URL you can use to view the documentation.
+
+💡 If you receive an error related to `@mapbox/appropriate-images`, try `nvm use 8 && npm run start-docs`.
 
 ## Committing and Publishing Documentation
 
