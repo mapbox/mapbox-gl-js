@@ -825,8 +825,8 @@ class Map extends Camera {
      * contribution to the rendered result; for example, because the layer's opacity or color alpha component is set to
      * 0.
      *
-     * The topmost rendered feature appears first in the returned array, and subsequent features are sorted by
-     * descending z-order. Features that are rendered multiple times (due to wrapping across the antimeridian at low
+     * `fill-extrusion` features will appear first in the returned array, sorted by depth. Subsequent features are sorted by
+     * descending layer order. Features that are rendered multiple times (due to wrapping across the antimeridian at low
      * zoom levels) are returned only once (though subject to the following caveat).
      *
      * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
