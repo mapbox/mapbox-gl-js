@@ -21,7 +21,7 @@ passes its test.
 ### Usage
 
 ``` javascript
-var ff = require('mapbox-gl/dist/style-spec').featureFilter;
+var ff = require('@mapbox/mapbox-gl-style-spec').featureFilter;
 
 // will match a feature with class of street_limited,
 // AND an admin_level less than or equal to 3,
