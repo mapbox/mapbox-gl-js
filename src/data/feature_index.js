@@ -127,13 +127,19 @@ class FeatureIndex {
 
         matching.sort(topDownFeatureComparator);
 
+        const firstFeatureOnly = params.firstFeatureOnly;
         const result = {};
         let previousIndex;
+        console.log('query')
+
         for (let k = 0; k < matching.length; k++) {
+
             const index = matching[k];
 
             // don't check the same feature more than once
             if (index === previousIndex) continue;
+            console.log('lmf', result)
+
             previousIndex = index;
 
             const match = this.featureIndexArray.get(index);
@@ -146,6 +152,7 @@ class FeatureIndex {
                 filter,
                 params.layers,
                 styleLayers,
+                params.firstFeatureOnly,
                 (feature: VectorTileFeature, styleLayer: StyleLayer) => {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature);
@@ -158,6 +165,10 @@ class FeatureIndex {
                     return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.pixelPosMatrix);
                 }
             );
+
+            console.log(result)
+            if (firstFeatureOnly && Object.keys(result).length > 0) break;
+
         }
 
         return result;
@@ -171,6 +182,7 @@ class FeatureIndex {
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
+        firstFeatureOnly: boolean,
         intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer) => boolean | number) {
 
         const layerIDs = this.bucketLayerIDs[bucketIndex];
@@ -185,6 +197,7 @@ class FeatureIndex {
             return;
 
         for (let l = 0; l < layerIDs.length; l++) {
+            console.log('new layer id', l)
             const layerID = layerIDs[l];
 
             if (filterLayerIDs && filterLayerIDs.indexOf(layerID) < 0) {
@@ -207,6 +220,7 @@ class FeatureIndex {
                 layerResult = result[layerID] = [];
             }
             layerResult.push({ featureIndex, feature: geojsonFeature, intersectionZ });
+            if (firstFeatureOnly) break;
         }
     }
 
@@ -224,6 +238,7 @@ class FeatureIndex {
         const filter = featureFilter(filterSpec);
 
         for (const symbolFeatureIndex of symbolFeatureIndexes) {
+            console.log('symbol lmf')
             this.loadMatchingFeature(
                 result,
                 bucketIndex,

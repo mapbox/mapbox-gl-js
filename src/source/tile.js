@@ -261,7 +261,7 @@ class Tile {
                           queryGeometry: Array<Point>,
                           cameraQueryGeometry: Array<Point>,
                           scale: number,
-                          params: { filter: FilterSpecification, layers: Array<string> },
+                          params: { filter: FilterSpecification, layers: Array<string>, firstFeatureOnly: Boolean },
                           transform: Transform,
                           maxPitchScaleFactor: number,
                           pixelPosMatrix: Float32Array): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {

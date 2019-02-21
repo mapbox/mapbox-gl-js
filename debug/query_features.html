@@ -76,7 +76,8 @@ map.on('click', function(e) {
             [boxcoords[1][0], boxcoords[0][1]],
             boxcoords[0]
         ];
-        var results = map.queryRenderedFeatures(box, {});
+        var results = map.queryRenderedFeatures(box, {firstFeatureOnly: false});
+        console.log('FINAL', results)
         map.getSource('queried').setData({
             type: 'FeatureCollection',
             features: results

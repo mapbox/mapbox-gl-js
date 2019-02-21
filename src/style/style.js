@@ -732,7 +732,7 @@ class Style extends Evented {
         if (maxzoom != null) {
             layer.maxzoom = maxzoom;
         }
-        this._updateLayer(layer);
+        // this._updateLayer(layer);
     }
 
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
@@ -997,8 +997,12 @@ class Style extends Evented {
 
         const sourceResults = [];
 
+        console.log('HIGHERERRR')
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
+            console.log('EVEN HIGHER')
+            if (params.firstFeatureOnly && sourceResults.length>0) break;            
+
             sourceResults.push(
                 queryRenderedFeatures(
                     this.sourceCaches[id],
@@ -1012,15 +1016,17 @@ class Style extends Evented {
         if (this.placement) {
             // If a placement has run, query against its CollisionIndex
             // for symbol results, and treat it as an extra source to merge
-            sourceResults.push(
-                queryRenderedSymbols(
-                    this._layers,
-                    this.sourceCaches,
-                    queryGeometry,
-                    params,
-                    this.placement.collisionIndex,
-                    this.placement.retainedQueryData)
-            );
+            if (!params.firstFeatureOnly || !sourceResults.length>0) {
+                sourceResults.push(
+                    queryRenderedSymbols(
+                        this._layers,
+                        this.sourceCaches,
+                        queryGeometry,
+                        params,
+                        this.placement.collisionIndex,
+                        this.placement.retainedQueryData)
+                );
+            }            
         }
 
         return this._flattenAndSortRenderedFeatures(sourceResults);

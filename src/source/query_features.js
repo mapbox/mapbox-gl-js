@@ -41,7 +41,7 @@ function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[string]: St
 export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
                             queryGeometry: Array<Point>,
-                            params: { filter: FilterSpecification, layers: Array<string> },
+                            params: { filter: FilterSpecification, layers: Array<string>, firstFeatureOnly: Boolean },
                             transform: Transform) {
 
     const has3DLayer = queryIncludes3DLayer(params && params.layers, styleLayers, sourceCache.id);
@@ -50,9 +50,11 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
     const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor, has3DLayer);
 
     tilesIn.sort(sortTilesIn);
-
+    console.log('MAIN QRF')
     const renderedFeatureLayers = [];
     for (const tileIn of tilesIn) {
+        if (params.firstFeatureOnly && renderedFeatureLayers.length > 0) break;
+        console.log('qrF')
         renderedFeatureLayers.push({
             wrappedTileID: tileIn.tileID.wrapped().key,
             queryResults: tileIn.tile.queryRenderedFeatures(
@@ -66,6 +68,8 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                 maxPitchScaleFactor,
                 getPixelPosMatrix(sourceCache.transform, tileIn.tileID))
         });
+
+        console.log('qrF output', renderedFeatureLayers)
     }
 
     const result = mergeRenderedFeatureLayers(renderedFeatureLayers);
