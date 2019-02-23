@@ -29,6 +29,7 @@ test("mapbox", (t) => {
     t.beforeEach((callback) => {
         config.ACCESS_TOKEN = 'key';
         config.REQUIRE_ACCESS_TOKEN = true;
+        config.API_URL = "https://api.mapbox.com";
         callback();
     });
 
@@ -730,6 +731,13 @@ test("mapbox", (t) => {
 
             t.true(req.url.indexOf('https://events.mapbox.cn') > -1);
             config.API_URL = previousUrl;
+            t.end();
+        });
+
+        t.test('POSTs no event when API_URL unavailable', (t) => {
+            config.API_URL = null;
+            event.postMapLoadEvent(mapboxTileURLs, 1);
+            t.equal(window.server.requests.length, 0, 'no events posted');
             t.end();
         });
 
