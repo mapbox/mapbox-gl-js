@@ -19,6 +19,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
         const prerender = implementation.prerender;
         if (prerender) {
             painter.setCustomLayerDefaults();
+            context.setColorMode(painter.colorModeForRenderPass());
 
             prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
 
