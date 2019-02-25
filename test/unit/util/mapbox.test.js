@@ -416,14 +416,14 @@ test("mapbox", (t) => {
             t.end();
         });
 
-        t.test('POSTs cn event when API_URL unavailable', (t) => {
+        t.test('POSTs no event when API_URL unavailable', (t) => {
             config.API_URL = null;
             event.postTurnstileEvent(mapboxTileURLs);
             t.equal(window.server.requests.length, 0, 'no events posted');
             t.end();
         });
 
-        t.test('POSTs cn event when API_URL non-standard', (t) => {
+        t.test('POSTs no event when API_URL non-standard', (t) => {
             config.API_URL = 'https://api.example.com';
             event.postTurnstileEvent(mapboxTileURLs);
             t.equal(window.server.requests.length, 0, 'no events posted');
@@ -470,7 +470,6 @@ test("mapbox", (t) => {
 
             t.test('POSTs event when previously stored anonId is not a valid uuid', (t) => {
                 const now = +Date.now();
-                console.log('\nx\n');
                 window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, 'anonymous');
                 window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
                     lastSuccess: now
