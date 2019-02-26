@@ -942,20 +942,36 @@ class Style extends Evented {
     }
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>) {
-        const features = [];
+        // Feature order is complicated.
+        // The order between features in two 2D layers is always determined by layer order.
+        // The order between features in two 3D layers is always determined by depth.
+        // The order between a feature in a 2D layer and a 3D layer is tricky:
+        //      Most often layer order determines the feature order in this case. If
+        //      a line layer is above a extrusion layer the line feature will be rendered
+        //      above the extrusion. If the line layer is below the extrusion layer,
+        //      it will be rendered below it.
+        //
+        //      There is a weird case though.
+        //      You have layers in this order: extrusion_layer_a, line_layer, extrusion_layer_b
+        //      Each layer has a feature that overlaps the other features.
+        //      The feature in extrusion_layer_a is closer than the feature in extrusion_layer_b so it is rendered above.
+        //      The feature in line_layer is rendered above extrusion_layer_a.
+        //      This means that that the line_layer feature is above the extrusion_layer_b feature despite
+        //      it being in an earlier layer.
+
+        const isLayer3D = layerId => this._layers[layerId].type === 'fill-extrusion';
+
+        const layerIndex = {};
         const features3D = [];
         for (let l = this._order.length - 1; l >= 0; l--) {
             const layerId = this._order[l];
-            for (const sourceResult of sourceResults) {
-                const layerFeatures = sourceResult[layerId];
-                if (layerFeatures) {
-                    if (this._layers[layerId].type === 'fill-extrusion') {
+            if (isLayer3D(layerId)) {
+                layerIndex[layerId] = l;
+                for (const sourceResult of sourceResults) {
+                    const layerFeatures = sourceResult[layerId];
+                    if (layerFeatures) {
                         for (const featureWrapper of layerFeatures) {
                             features3D.push(featureWrapper);
-                        }
-                    } else {
-                        for (const featureWrapper of layerFeatures) {
-                            features.push(featureWrapper.feature);
                         }
                     }
                 }
@@ -963,11 +979,31 @@ class Style extends Evented {
         }
 
         features3D.sort((a, b) => {
-            return a.intersectionZ - b.intersectionZ;
+            return b.intersectionZ - a.intersectionZ;
         });
 
-        for (const featureWrapper of features3D) {
-            features.push(featureWrapper.feature);
+        const features = [];
+        for (let l = this._order.length - 1; l >= 0; l--) {
+            const layerId = this._order[l];
+
+            if (isLayer3D(layerId)) {
+                // add all 3D features that are in or above the current layer
+                for (let i = features3D.length - 1; i >= 0; i--) {
+                    const topmost3D = features3D[i].feature;
+                    if (layerIndex[topmost3D.layer.id] < l) break;
+                    features.push(topmost3D);
+                    features3D.pop();
+                }
+            } else {
+                for (const sourceResult of sourceResults) {
+                    const layerFeatures = sourceResult[layerId];
+                    if (layerFeatures) {
+                        for (const featureWrapper of layerFeatures) {
+                            features.push(featureWrapper.feature);
+                        }
+                    }
+                }
+            }
         }
 
         return features;
