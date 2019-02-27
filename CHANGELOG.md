@@ -1,7 +1,7 @@
 ## 0.53.1
 
 ## Bug fixes
-* Turn off telemetry for on-premise installations of GL JS ([#7945](https://github.com/mapbox/mapbox-gl-js/pull/7945))
+* Turn off telemetry for Mapbox Atlas ([#7945](https://github.com/mapbox/mapbox-gl-js/pull/7945))
 * Fix order of 3D features in query results (fix #7883) ([#7953](https://github.com/mapbox/mapbox-gl-js/pull/7953))
 * Fix RemovePaintState benchmarks ([#7930](https://github.com/mapbox/mapbox-gl-js/pull/7930))
 
