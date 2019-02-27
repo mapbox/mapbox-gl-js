@@ -797,10 +797,15 @@ class SourceCache extends Evented {
     }
 
     getVisibleCoordinates(symbolLayer?: boolean): Array<OverscaledTileID> {
-        const coords = this.getRenderableIds(symbolLayer).map((id) => this._tiles[id].tileID);
-        for (const coord of coords) {
+        const renderableIds = this.getRenderableIds(symbolLayer);
+        const coords = new Array(renderableIds.length);
+
+        for (let i = 0; i < renderableIds.length; i++) {
+            const id = renderableIds[i];
+            const coord = coords[i] = this._tiles[id].tileID;
             coord.posMatrix = this.transform.calculatePosMatrix(coord.toUnwrapped());
         }
+
         return coords;
     }
 
