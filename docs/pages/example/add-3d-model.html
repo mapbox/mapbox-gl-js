@@ -8,15 +8,19 @@ var map = window.map = new mapboxgl.Map({
     pitch: 60
 });
 
-var modelOrigin = [148.98190, -35.39847, 0];
+var modelOrigin = [148.98190, -35.39847];
+var modelAltitude = 0;
 var modelRotate = [Math.PI / 2, 0, 0];
 var modelScale = 5.41843220338983e-8;
 
 // transformation parameters to position, rotate and scale the 3D model onto the map
 var modelTransform = {
-    translateX: fromLL(modelOrigin[0], modelOrigin[1])[0]
-    translateY: fromLL(modelOrigin[0], modelOrigin[1])[1]
-    translateZ: modelOrigin[2],
+    // translateX: fromLL(modelOrigin[0], modelOrigin[1])[0]
+    // translateY: fromLL(modelOrigin[0], modelOrigin[1])[1]
+    // translateZ: modelOrigin[2],
+    translateX: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).x,
+    translateY: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).y,
+    translateZ: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).z,
     rotateX: modelRotate[0],
     rotateY: modelRotate[1],
     rotateZ: modelRotate[2],
