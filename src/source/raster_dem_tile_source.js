@@ -40,7 +40,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
+        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme, this.zoomOffset), this.url, this.tileSize);
         tile.request = getImage(this.map._transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);

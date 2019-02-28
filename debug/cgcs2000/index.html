@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
-        body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
-        #map { transform: scale(0.8); }
+        html, body, #map {
+            margin: 0;
+            height: 100%;
+        }
     </style>
 </head>
 
@@ -26,17 +27,12 @@ var style = {
             type: 'geojson',
             data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_admin_0_countries.geojson'
         },
-        points: {
-            type: 'geojson',
-            data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_geography_regions_points.geojson'
-        },
         tianditu: {
             type: 'raster',
             tiles: ['http://t0.tianditu.gov.cn/DataServer?T=vec_c&x={x}&y={y}&l={z}&tk=5476e03145570ac8182560f41a1e538b'],
             tileSize: 256
         }
     },
-    glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
     layers: [
         {
             id: 'tianditu',
@@ -47,14 +43,6 @@ var style = {
             id: 'countries',
             type: 'line',
             source: 'countries'
-        },
-        {
-            id: 'points',
-            type: 'symbol',
-            source: 'points',
-            layout: {
-                'text-field': '{name}'
-            }
         }
     ]
 };
@@ -66,12 +54,6 @@ var map = window.map = new mapboxgl.Map({
     style: style,
     hash: true
 });
-
-var popup = new mapboxgl.Popup()
-
-map.on('click', 'points', e => {
-    popup.setLngLat(e.lngLat).setText(e.features[0].properties['name']).addTo(map)
-})
 
 </script>
 </body>

@@ -53,10 +53,11 @@ class RasterTileSource extends Evented implements Source {
         this.roundZoom = true;
         this.scheme = 'xyz';
         this.tileSize = 512;
+        this.zoomOffset = 0;
         this._loaded = false;
 
         this._options = extend({}, options);
-        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        extend(this, pick(options, ['url', 'scheme', 'tileSize', 'zoomOffset']));
     }
 
     load() {
@@ -102,7 +103,7 @@ class RasterTileSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
+        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme, this.zoomOffset), this.url, this.tileSize);
         tile.request = getImage(this.map._transformRequest(url, ResourceType.Tile), (err, img) => {
             delete tile.request;
 
