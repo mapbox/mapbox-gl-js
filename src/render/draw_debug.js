@@ -40,7 +40,9 @@ function drawDebugTile(painter, sourceCache, coord) {
         debugUniformValues(posMatrix, Color.red), id,
         painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
 
-    const tileSizeKb = Math.floor(sourceCache.getTileByID(coord.key).latestRawTileData && sourceCache.getTileByID(coord.key).latestRawTileData.byteLength / 1024);
+    const tileRawData = sourceCache.getTileByID(coord.key).latestRawTileData;
+    const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
+    const tileSizeKb = Math.floor(tileByteLength / 1024);
     const vertices = createTextVertices(`${coord.toString()} ${tileSizeKb}kb`, 50, 200, 5);
     const debugTextArray = new PosArray();
     const debugTextIndices = new LineIndexArray();
