@@ -76,6 +76,7 @@ class Tile {
     workerID: number | void;
     vtLayers: {[string]: VectorTileLayer};
     mask: Mask;
+    posMatrix: Float32Array;
 
     neighboringTiles: ?Object;
     dem: ?DEMData;

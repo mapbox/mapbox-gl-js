@@ -30,7 +30,7 @@ import type SourceCache from '../source/source_cache';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type SymbolBucket, {SymbolBuffers} from '../data/bucket/symbol_bucket';
 import type Texture from '../render/texture';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 import type {UniformValues} from './uniform_binding';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program';
 import type { CrossTileID, VariableOffset } from '../symbol/placement';
@@ -51,7 +51,7 @@ type SymbolTileRenderState = {
     }
 };
 
-function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>, variableOffsets: {[CrossTileID]: VariableOffset}) {
+function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, tiles: Array<Tile>, variableOffsets: {[CrossTileID]: VariableOffset}) {
     if (painter.renderPass !== 'translucent') return;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
@@ -59,7 +59,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     const colorMode = painter.colorModeForRenderPass();
 
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
-        drawLayerSymbols(painter, sourceCache, layer, coords, false,
+        drawLayerSymbols(painter, sourceCache, layer, tiles, false,
             layer.paint.get('icon-translate'),
             layer.paint.get('icon-translate-anchor'),
             layer.layout.get('icon-rotation-alignment'),
@@ -70,7 +70,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     }
 
     if (layer.paint.get('text-opacity').constantOr(1) !== 0) {
-        drawLayerSymbols(painter, sourceCache, layer, coords, true,
+        drawLayerSymbols(painter, sourceCache, layer, tiles, true,
             layer.paint.get('text-translate'),
             layer.paint.get('text-translate-anchor'),
             layer.layout.get('text-rotation-alignment'),
@@ -81,7 +81,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     }
 
     if (sourceCache.map.showCollisionBoxes) {
-        drawCollisionDebug(painter, sourceCache, layer, coords);
+        drawCollisionDebug(painter, sourceCache, layer, tiles);
     }
 }
 
@@ -140,7 +140,7 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
     bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
 }
 
-function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
+function drawLayerSymbols(painter, sourceCache, layer, tiles, isText, translate, translateAnchor,
                           rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode, variableOffsets) {
 
     const context = painter.context;
@@ -165,8 +165,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const tileRenderState: Array<SymbolTileRenderState> = [];
 
-    for (const coord of coords) {
-        const tile = sourceCache.getTile(coord);
+    for (const tile of tiles) {
         const bucket: SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
         const buffers = isText ? bucket.text : bucket.icon;
@@ -204,18 +203,18 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         }
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
-        const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(tile.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
+        const glCoordMatrix = symbolProjection.getGlCoordMatrix(tile.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
 
         if (alongLine) {
-            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
+            symbolProjection.updateLineLabels(bucket, tile.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
         } else if (isText && size && variablePlacement) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
             updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                                  tr, labelPlaneMatrix, coord.posMatrix, tileScale, size);
+                                  tr, labelPlaneMatrix, tile.posMatrix, tileScale, size);
         }
 
-        const matrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),
+        const matrix = painter.translatePosMatrix(tile.posMatrix, tile, translate, translateAnchor),
             uLabelPlaneMatrix = (alongLine || (isText && variablePlacement)) ? identityMat4 : labelPlaneMatrix,
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
 

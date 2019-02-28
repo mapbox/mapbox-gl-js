@@ -796,12 +796,14 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    getVisibleCoordinates(symbolLayer?: boolean): Array<OverscaledTileID> {
-        const coords = this.getRenderableIds(symbolLayer).map((id) => this._tiles[id].tileID);
-        for (const coord of coords) {
-            coord.posMatrix = this.transform.calculatePosMatrix(coord.toUnwrapped());
+    getVisibleTiles(symbolLayer?: boolean): Array<Tile> {
+        const tiles = [];
+        for (const id of this.getRenderableIds(symbolLayer)) {
+            const tile = this._tiles[id];
+            tile.posMatrix = this.transform.calculatePosMatrix(tile.tileID.toUnwrapped());
+            tiles.push(tile);
         }
-        return coords;
+        return tiles;
     }
 
     hasTransition() {

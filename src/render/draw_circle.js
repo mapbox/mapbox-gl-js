@@ -9,11 +9,11 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type CircleStyleLayer from '../style/style_layer/circle_style_layer';
 import type CircleBucket from '../data/bucket/circle_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 
 export default drawCircles;
 
-function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
+function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, tiles: Array<Tile>) {
     if (painter.renderPass !== 'translucent') return;
 
     const opacity = layer.paint.get('circle-opacity');
@@ -33,10 +33,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
 
-    for (let i = 0; i < coords.length; i++) {
-        const coord = coords[i];
-
-        const tile = sourceCache.getTile(coord);
+    for (const tile of tiles) {
         const bucket: ?CircleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
@@ -44,7 +41,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const program = painter.useProgram('circle', programConfiguration);
 
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-            circleUniformValues(painter, coord, tile, layer), layer.id,
+            circleUniformValues(painter, tile, layer), layer.id,
             bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
             layer.paint, painter.transform.zoom, programConfiguration);
     }

@@ -15,11 +15,11 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type HeatmapStyleLayer from '../style/style_layer/heatmap_style_layer';
 import type HeatmapBucket from '../data/bucket/heatmap_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 
 export default drawHeatmap;
 
-function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapStyleLayer, coords: Array<OverscaledTileID>) {
+function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapStyleLayer, tiles: Array<Tile>) {
     if (layer.paint.get('heatmap-opacity') === 0) {
         return;
     }
@@ -39,15 +39,12 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         context.clear({ color: Color.transparent });
 
-        for (let i = 0; i < coords.length; i++) {
-            const coord = coords[i];
-
+        for (const tile of tiles) {
             // Skip tiles that have uncovered parents to avoid flickering; we don't need
             // to use complex tile masking here because the change between zoom levels is subtle,
             // so it's fine to simply render the parent until all its 4 children are loaded
-            if (sourceCache.hasRenderableParent(coord)) continue;
+            if (sourceCache.hasRenderableParent(tile.tileID)) continue;
 
-            const tile = sourceCache.getTile(coord);
             const bucket: ?HeatmapBucket = (tile.getBucket(layer): any);
             if (!bucket) continue;
 
@@ -56,7 +53,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const {zoom} = painter.transform;
 
             program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                heatmapUniformValues(coord.posMatrix,
+                heatmapUniformValues(tile.posMatrix,
                     tile, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,

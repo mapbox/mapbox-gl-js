@@ -14,11 +14,11 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type FillStyleLayer from '../style/style_layer/fill_style_layer';
 import type FillBucket from '../data/bucket/fill_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 
 export default drawFill;
 
-function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<OverscaledTileID>) {
+function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, tiles: Array<Tile>) {
     const color = layer.paint.get('fill-color');
     const opacity = layer.paint.get('fill-opacity');
 
@@ -38,7 +38,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     if (painter.renderPass === pass) {
         const depthMode = painter.depthModeForSublayer(
             1, painter.renderPass === 'opaque' ? DepthMode.ReadWrite : DepthMode.ReadOnly);
-        drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode, false);
+        drawFillTiles(painter, sourceCache, layer, tiles, depthMode, colorMode, false);
     }
 
     // Draw stroke
@@ -54,11 +54,11 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         // the (non-antialiased) fill.
         const depthMode = painter.depthModeForSublayer(
             layer.getPaintProperty('fill-outline-color') ? 2 : 0, DepthMode.ReadOnly);
-        drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode, true);
+        drawFillTiles(painter, sourceCache, layer, tiles, depthMode, colorMode, true);
     }
 }
 
-function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode, isOutline) {
+function drawFillTiles(painter, sourceCache, layer, tiles, depthMode, colorMode, isOutline) {
     const gl = painter.context.gl;
 
     const patternProperty = layer.paint.get('fill-pattern');
@@ -75,8 +75,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
     }
 
 
-    for (const coord of coords) {
-        const tile = sourceCache.getTile(coord);
+    for (const tile of tiles) {
         if (image && !tile.patternsLoaded()) continue;
 
 
@@ -99,7 +98,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const tileMatrix = painter.translatePosMatrix(coord.posMatrix, tile,
+        const tileMatrix = painter.translatePosMatrix(tile.posMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
         if (!isOutline) {
@@ -118,7 +117,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         }
 
         program.draw(painter.context, drawMode, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+            painter.stencilModeForClipping(tile), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, indexBuffer, segments,
             layer.paint, painter.transform.zoom, programConfiguration);
     }

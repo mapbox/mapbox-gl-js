@@ -14,9 +14,9 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 
-export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
+export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, tiles: Array<Tile>) {
     if (painter.renderPass !== 'translucent') return;
 
     const opacity = layer.paint.get('line-opacity');
@@ -52,9 +52,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         gradientTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 
-    for (const coord of coords) {
-        const tile = sourceCache.getTile(coord);
-
+    for (const tile of tiles) {
         if (image && !tile.patternsLoaded()) continue;
 
         const bucket: ?LineBucket = (tile.getBucket(layer): any);
@@ -87,7 +85,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
 
         program.draw(context, gl.TRIANGLES, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+            painter.stencilModeForClipping(tile), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
             layer.paint, painter.transform.zoom, programConfiguration);
 

@@ -52,7 +52,6 @@ const draw = {
 
 import type Transform from '../geo/transform';
 import type Tile from '../source/tile';
-import type {OverscaledTileID} from '../source/tile_id';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type {CrossFaded} from '../style/properties';
@@ -241,15 +240,15 @@ class Painter {
             this.quadTriangleIndexBuffer, this.viewportSegments);
     }
 
-    _renderTileClippingMasks(layer: StyleLayer, tileIDs: Array<OverscaledTileID>) {
-        if (this.currentStencilSource === layer.source || !layer.isTileClipped() || !tileIDs || !tileIDs.length) return;
+    _renderTileClippingMasks(layer: StyleLayer, tiles: Array<Tile>) {
+        if (this.currentStencilSource === layer.source || !layer.isTileClipped() || !tiles || !tiles.length) return;
 
         this.currentStencilSource = layer.source;
 
         const context = this.context;
         const gl = context.gl;
 
-        if (this.nextStencilID + tileIDs.length > 256) {
+        if (this.nextStencilID + tiles.length > 256) {
             // we'll run out of fresh IDs so we need to clear and start from scratch
             this.clearStencil();
         }
@@ -261,13 +260,14 @@ class Painter {
 
         this._tileClippingMaskIDs = {};
 
-        for (const tileID of tileIDs) {
+        for (const tile of tiles) {
+            const tileID = tile.tileID;
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({ func: gl.ALWAYS, mask: 0 }, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
-                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.posMatrix),
+                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tile.posMatrix),
                 '$clipping', this.tileExtentBuffer,
                 this.quadTriangleIndexBuffer, this.tileExtentSegments);
         }
@@ -283,9 +283,9 @@ class Painter {
         return new StencilMode({ func: gl.NOTEQUAL, mask: 0xFF }, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
-    stencilModeForClipping(tileID: OverscaledTileID): StencilMode {
+    stencilModeForClipping(tile: Tile): StencilMode {
         const gl = this.context.gl;
-        return new StencilMode({ func: gl.EQUAL, mask: 0xFF }, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
+        return new StencilMode({ func: gl.EQUAL, mask: 0xFF }, this._tileClippingMaskIDs[tile.tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     colorModeForRenderPass(): $ReadOnly<ColorMode> {
@@ -339,24 +339,22 @@ class Painter {
             }
         }
 
-        const coordsAscending: {[string]: Array<OverscaledTileID>} = {};
-        const coordsDescending: {[string]: Array<OverscaledTileID>} = {};
-        const coordsDescendingSymbol: {[string]: Array<OverscaledTileID>} = {};
+        const tilesAscending: {[string]: Array<Tile>} = {};
+        const tilesDescending: {[string]: Array<Tile>} = {};
+        const tilesDescendingSymbol: {[string]: Array<Tile>} = {};
 
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
-            coordsAscending[id] = sourceCache.getVisibleCoordinates();
-            coordsDescending[id] = coordsAscending[id].slice().reverse();
-            coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
+            tilesAscending[id] = sourceCache.getVisibleTiles();
+            tilesDescending[id] = tilesAscending[id].slice().reverse();
+            tilesDescendingSymbol[id] = sourceCache.getVisibleTiles(true).reverse();
         }
 
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             const source = sourceCache.getSource();
             if (source.type !== 'raster' && source.type !== 'raster-dem') continue;
-            const visibleTiles = [];
-            for (const coord of coordsAscending[id]) visibleTiles.push(sourceCache.getTile(coord));
-            updateTileMasks(visibleTiles, this.context);
+            updateTileMasks(tilesAscending[id], this.context);
         }
 
         this.opaquePassCutoff = Infinity;
@@ -379,10 +377,10 @@ class Painter {
             const layer = this.style._layers[layerId];
             if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
-            const coords = coordsDescending[layer.source];
-            if (layer.type !== 'custom' && !coords.length) continue;
+            const tiles = tilesDescending[layer.source];
+            if (layer.type !== 'custom' && !tiles.length) continue;
 
-            this.renderLayer(this, sourceCaches[layer.source], layer, coords);
+            this.renderLayer(this, sourceCaches[layer.source], layer, tiles);
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
@@ -402,10 +400,10 @@ class Painter {
         for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = sourceCaches[layer.source];
-            const coords = coordsAscending[layer.source];
+            const tiles = tilesAscending[layer.source];
 
-            this._renderTileClippingMasks(layer, coords);
-            this.renderLayer(this, sourceCache, layer, coords);
+            this._renderTileClippingMasks(layer, tiles);
+            this.renderLayer(this, sourceCache, layer, tiles);
         }
 
         // Translucent pass ===============================================
@@ -419,15 +417,15 @@ class Painter {
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
             // separate clipping masks
-            const coords = (layer.type === 'symbol' ? coordsDescendingSymbol : coordsDescending)[layer.source];
+            const tiles = (layer.type === 'symbol' ? tilesDescendingSymbol : tilesDescending)[layer.source];
 
-            this._renderTileClippingMasks(layer, coordsAscending[layer.source]);
-            this.renderLayer(this, sourceCache, layer, coords);
+            this._renderTileClippingMasks(layer, tilesAscending[layer.source]);
+            this.renderLayer(this, sourceCache, layer, tiles);
         }
 
         if (this.options.showTileBoundaries) {
             for (const id in sourceCaches) {
-                draw.debug(this, sourceCaches[id], coordsAscending[id]);
+                draw.debug(this, sourceCaches[id], tilesAscending[id]);
                 break;
             }
         }
@@ -443,12 +441,12 @@ class Painter {
         }
     }
 
-    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
+    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, tiles: Array<Tile>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if (layer.type !== 'background' && layer.type !== 'custom' && !coords.length) return;
+        if (layer.type !== 'background' && layer.type !== 'custom' && !tiles.length) return;
         this.id = layer.id;
 
-        draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets);
+        draw[layer.type](painter, sourceCache, layer, tiles, this.style.placement.variableOffsets);
     }
 
     /**

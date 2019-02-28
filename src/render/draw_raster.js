@@ -12,11 +12,11 @@ import { rasterUniformValues } from './program/raster_program';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 
 export default drawRaster;
 
-function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<OverscaledTileID>) {
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tiles: Array<Tile>) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
 
@@ -27,20 +27,19 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
-    const minTileZ = coords.length && coords[0].overscaledZ;
+    const minTileZ = tiles.length && tiles[0].tileID.overscaledZ;
     const align = !painter.options.moving;
-    for (const coord of coords) {
+    for (const tile of tiles) {
         // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
         // Use gl.LESS to prevent double drawing in areas where tiles overlap.
-        const depthMode = painter.depthModeForSublayer(coord.overscaledZ - minTileZ,
+        const depthMode = painter.depthModeForSublayer(tile.tileID.overscaledZ - minTileZ,
             layer.paint.get('raster-opacity') === 1 ? DepthMode.ReadWrite : DepthMode.ReadOnly, gl.LESS);
 
-        const tile = sourceCache.getTile(coord);
-        const posMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
+        const posMatrix = painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped(), align);
 
         tile.registerFadeDuration(layer.paint.get('raster-fade-duration'));
 
-        const parentTile = sourceCache.findLoadedParent(coord, 0),
+        const parentTile = sourceCache.findLoadedParent(tile.tileID, 0),
             fade = getFadeValues(tile, parentTile, sourceCache, layer, painter.transform);
 
         let parentScaleBy, parentTL;

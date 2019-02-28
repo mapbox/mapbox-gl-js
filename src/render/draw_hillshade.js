@@ -12,11 +12,11 @@ import {
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 
 export default drawHillshade;
 
-function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: HillshadeStyleLayer, tileIDs: Array<OverscaledTileID>) {
+function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: HillshadeStyleLayer, tiles: Array<Tile>) {
     if (painter.renderPass !== 'offscreen' && painter.renderPass !== 'translucent') return;
 
     const context = painter.context;
@@ -26,8 +26,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
 
-    for (const tileID of tileIDs) {
-        const tile = sourceCache.getTile(tileID);
+    for (const tile of tiles) {
         if (tile.needsHillshadePrepare && painter.renderPass === 'offscreen') {
             prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stencilMode, colorMode);
             continue;

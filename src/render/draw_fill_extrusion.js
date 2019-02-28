@@ -13,11 +13,11 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 import type FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 
 export default draw;
 
-function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
+function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, tiles: Array<Tile>) {
     const opacity = layer.paint.get('fill-extrusion-opacity');
     if (opacity === 0) {
         return;
@@ -28,26 +28,26 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
         if (opacity === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
             const colorMode = painter.colorModeForRenderPass();
-            drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
+            drawExtrusionTiles(painter, source, layer, tiles, depthMode, StencilMode.disabled, colorMode);
 
         } else {
             // Draw transparent buildings in two passes so that only the closest surface is drawn.
             // First draw all the extrusions into only the depth buffer. No colors are drawn.
-            drawExtrusionTiles(painter, source, layer, coords, depthMode,
+            drawExtrusionTiles(painter, source, layer, tiles, depthMode,
                 StencilMode.disabled,
                 ColorMode.disabled);
 
             // Then draw all the extrusions a second type, only coloring fragments if they have the
             // same depth value as the closest fragment in the previous pass. Use the stencil buffer
             // to prevent the second draw in cases where we have coincident polygons.
-            drawExtrusionTiles(painter, source, layer, coords, depthMode,
+            drawExtrusionTiles(painter, source, layer, tiles, depthMode,
                 painter.stencilModeFor3D(),
                 painter.colorModeForRenderPass());
         }
     }
 }
 
-function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
+function drawExtrusionTiles(painter, source, layer, tiles, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
@@ -55,8 +55,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const crossfade = layer.getCrossfadeParameters();
     const opacity = layer.paint.get('fill-extrusion-opacity');
 
-    for (const coord of coords) {
-        const tile = source.getTile(coord);
+    for (const tile of tiles) {
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
@@ -77,14 +76,14 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         }
 
         const matrix = painter.translatePosMatrix(
-            coord.posMatrix,
+            tile.posMatrix,
             tile,
             layer.paint.get('fill-extrusion-translate'),
             layer.paint.get('fill-extrusion-translate-anchor'));
 
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord, crossfade, tile) :
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, tile, crossfade) :
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity);
 
 

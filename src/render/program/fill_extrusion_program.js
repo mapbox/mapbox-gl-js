@@ -15,7 +15,6 @@ import { extend } from '../../util/util';
 
 import type Context from '../../gl/context';
 import type Painter from '../painter';
-import type {OverscaledTileID} from '../../source/tile_id';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters';
 import type Tile from '../../source/tile';
@@ -104,14 +103,13 @@ const fillExtrusionPatternUniformValues = (
     painter: Painter,
     shouldUseVerticalGradient: boolean,
     opacity: number,
-    coord: OverscaledTileID,
-    crossfade: CrossfadeParameters,
-    tile: Tile
+    tile: Tile,
+    crossfade: CrossfadeParameters
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     return extend(fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity),
         patternUniformValues(crossfade, painter, tile),
         {
-            'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
+            'u_height_factor': -Math.pow(2, tile.tileID.overscaledZ) / tile.tileSize / 8
         });
 };
 

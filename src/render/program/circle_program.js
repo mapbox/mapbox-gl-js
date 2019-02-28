@@ -10,7 +10,6 @@ import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 
 import type Context from '../../gl/context';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
-import type {OverscaledTileID} from '../../source/tile_id';
 import type Tile from '../../source/tile';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
 import type Painter from '../painter';
@@ -33,7 +32,6 @@ const circleUniforms = (context: Context, locations: UniformLocations): CircleUn
 
 const circleUniformValues = (
     painter: Painter,
-    coord: OverscaledTileID,
     tile: Tile,
     layer: CircleStyleLayer
 ): UniformValues<CircleUniformsType> => {
@@ -53,7 +51,7 @@ const circleUniformValues = (
         'u_camera_to_center_distance': transform.cameraToCenterDistance,
         'u_scale_with_map': +(layer.paint.get('circle-pitch-scale') === 'map'),
         'u_matrix': painter.translatePosMatrix(
-            coord.posMatrix,
+            tile.posMatrix,
             tile,
             layer.paint.get('circle-translate'),
             layer.paint.get('circle-translate-anchor')),

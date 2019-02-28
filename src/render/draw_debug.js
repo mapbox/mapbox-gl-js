@@ -14,21 +14,21 @@ import Color from '../style-spec/util/color';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
-import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 
 export default drawDebug;
 
-function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
-    for (let i = 0; i < coords.length; i++) {
-        drawDebugTile(painter, sourceCache, coords[i]);
+function drawDebug(painter: Painter, sourceCache: SourceCache, tiles: Array<Tile>) {
+    for (const tile of tiles) {
+        drawDebugTile(painter, sourceCache, tile);
     }
 }
 
-function drawDebugTile(painter, sourceCache, coord) {
+function drawDebugTile(painter, sourceCache, tile) {
     const context = painter.context;
     const gl = context.gl;
 
-    const posMatrix = coord.posMatrix;
+    const posMatrix = tile.posMatrix;
     const program = painter.useProgram('debug');
 
     const depthMode = DepthMode.disabled;
@@ -40,7 +40,7 @@ function drawDebugTile(painter, sourceCache, coord) {
         debugUniformValues(posMatrix, Color.red), id,
         painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
 
-    const vertices = createTextVertices(coord.toString(), 50, 200, 5);
+    const vertices = createTextVertices(tile.tileID.toString(), 50, 200, 5);
     const debugTextArray = new PosArray();
     const debugTextIndices = new LineIndexArray();
     for (let v = 0; v < vertices.length; v += 2) {
@@ -53,8 +53,8 @@ function drawDebugTile(painter, sourceCache, coord) {
 
     // Draw the halo with multiple 1px lines instead of one wider line because
     // the gl spec doesn't guarantee support for lines with width > 1.
-    const tileSize = sourceCache.getTile(coord).tileSize;
-    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.overscaledZ) * tileSize);
+    const tileSize = tile.tileSize;
+    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - tile.tileID.overscaledZ) * tileSize);
     const translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (let i = 0; i < translations.length; i++) {
         const translation = translations[i];

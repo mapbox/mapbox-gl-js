@@ -67,7 +67,6 @@ export class OverscaledTileID {
     wrap: number;
     canonical: CanonicalTileID;
     key: number;
-    posMatrix: Float32Array;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {
         assert(overscaledZ >= z);
@@ -178,4 +177,4 @@ function getQuadkey(z, x, y) {
 }
 
 register('CanonicalTileID', CanonicalTileID);
-register('OverscaledTileID', OverscaledTileID, {omit: ['posMatrix']});
+register('OverscaledTileID', OverscaledTileID);
