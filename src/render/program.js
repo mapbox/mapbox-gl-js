@@ -16,6 +16,7 @@ import type StencilMode from '../gl/stencil_mode';
 import type ColorMode from '../gl/color_mode';
 import type CullFaceMode from '../gl/cull_face_mode';
 import type {UniformBindings, UniformValues, UniformLocations} from './uniform_binding';
+import type {BinderUniform} from '../data/program_configuration';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>
@@ -27,7 +28,7 @@ class Program<Us: UniformBindings> {
     attributes: {[string]: number};
     numAttributes: number;
     fixedUniforms: Us;
-    binderUniforms: UniformBindings;
+    binderUniforms: Array<BinderUniform>;
 
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
