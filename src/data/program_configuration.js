@@ -36,8 +36,7 @@ import type {FeatureStates} from '../source/source_state';
 export type BinderUniform = {
     name: string,
     property: string,
-    binding: Uniform<any>,
-    binder: Binder<any>
+    binding: Uniform<any>
 };
 
 function packColor(color: Color): [number, number] {
@@ -670,8 +669,10 @@ export default class ProgramConfiguration {
         for (const property in this.binders) {
             const binder = this.binders[property];
             for (const name of binder.uniformNames) {
-                const binding = binder.getBinding(context, locations[name]);
-                uniforms.push({name, property, binding, binder});
+                if (locations[name]) {
+                    const binding = binder.getBinding(context, locations[name]);
+                    uniforms.push({name, property, binding});
+                }
             }
         }
         return uniforms;
@@ -680,8 +681,8 @@ export default class ProgramConfiguration {
     setUniforms<Properties: Object>(context: Context, binderUniforms: Array<BinderUniform>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguraton's binder members.
-        for (const {name, property, binding, binder} of binderUniforms) {
-            binder.setUniforms(context, binding, globals, properties.get(property), name);
+        for (const {name, property, binding} of binderUniforms) {
+            this.binders[property].setUniforms(context, binding, globals, properties.get(property), name);
         }
     }
 
