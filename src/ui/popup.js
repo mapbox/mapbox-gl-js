@@ -67,6 +67,7 @@ export type PopupOptions = {
  * var popup = new mapboxgl.Popup({offset: popupOffsets, className: 'my-class'})
  *   .setLngLat(e.lngLat)
  *   .setHTML("<h1>Hello World!</h1>")
+ *   .setMaxWidth("300px")
  *   .addTo(map);
  * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
  * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
@@ -233,6 +234,12 @@ export default class Popup extends Evented {
         return this.setDOMContent(frag);
     }
 
+    /**
+     * Sets the popup's max width.
+     *
+     * @param pixel A string representing the pixel value for the maximum width.
+     * @returns {Popup} `this`
+     */
     getMaxWidth() {
       return this._container;
     }
@@ -242,19 +249,7 @@ export default class Popup extends Evented {
       this._update();
       return this;
     }
-/*
-    setMaxWidth(maxWidth: string) {
 
-        var width = document.querySelector('.mapboxgl-popup');
-        width.style.()
-        while (true) {
-
-        }
-    }
-
-    getter & setter so it can change dynamically
-    test in debug pages with complex conditions & permutations
-*/
     /**
      * Sets the popup's content to the element provided as a DOM node.
      *
