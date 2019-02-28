@@ -241,7 +241,7 @@ export default class Popup extends Evented {
      * @returns {Popup} `this`
      */
     getMaxWidth() {
-      return this._container;
+      return this._container.style.maxWidth;
     }
 
     setMaxWidth(maxWidth: string) { // should this be number?
