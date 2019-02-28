@@ -253,6 +253,7 @@ class TelemetryEvent {
     * to TelemetryEvent#saveData
     */
     postEvent(timestamp: number, additionalPayload: {[string]: any}, callback: (err: ?Error) => void) {
+        if (!config.EVENTS_URL) return;
         const eventsUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
         eventsUrlObject.params.push(`access_token=${config.ACCESS_TOKEN || ''}`);
         const payload: Object = {
@@ -297,7 +298,8 @@ export class MapLoadEvent extends TelemetryEvent {
     postMapLoadEvent(tileUrls: Array<string>, mapId: number) {
         //Enabled only when Mapbox Access Token is set and a source uses
         // mapbox tiles.
-        if (config.ACCESS_TOKEN &&
+        if (config.EVENTS_URL &&
+            config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
             tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
             this.queueRequest({id: mapId, timestamp: Date.now()});
@@ -336,7 +338,8 @@ export class TurnstileEvent extends TelemetryEvent {
     postTurnstileEvent(tileUrls: Array<string>) {
         //Enabled only when Mapbox Access Token is set and a source uses
         // mapbox tiles.
-        if (config.ACCESS_TOKEN &&
+        if (config.EVENTS_URL &&
+            config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
             tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
             this.queueRequest(Date.now());
