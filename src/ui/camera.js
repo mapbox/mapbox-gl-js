@@ -377,8 +377,15 @@ class Camera extends Evented {
         bounds = LngLatBounds.convert(bounds);
 
         let bearingForBounds = 0;
-        if (typeof options.bearing === 'number') {
-            bearingForBounds =  options.bearing;
+        if (options && options.bearing) {
+            if (typeof options.bearing === 'number') {
+                bearingForBounds =  options.bearing;
+            } else {
+                warnOnce(
+                    "options.bearing must be a number"
+                );
+            }
+
         }
 
         return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearingForBounds, options);
