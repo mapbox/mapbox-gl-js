@@ -80,7 +80,7 @@ var customLayer = {
         this.renderer.render(this.scene, this.camera);
         this.map.triggerRepaint();
     }
-}
+};
 
 map.on('style.load', function() {
     map.addLayer(customLayer, 'waterway-label');
