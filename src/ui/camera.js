@@ -362,6 +362,7 @@ class Camera extends Evented {
      *      in the viewport. LatLngBounds represent a box that is always axis-aligned with bearing 0.
      * @param options
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+     * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
@@ -497,6 +498,7 @@ class Camera extends Evented {
      * @param bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
      * @param {Object} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
+     * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
