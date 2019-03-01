@@ -1,13 +1,16 @@
+<script src='https://unpkg.com/three@0.102.0/build/three.min.js'></script>
+<script src="https://unpkg.com/three@0.102.0/examples/js/loaders/GLTFLoader.js"></script>
 <div id='map'></div>
 <script>
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/light-v9'
+    style: 'mapbox://styles/mapbox/light-v9',
     zoom: 17.5,
-    center: [148.98190, -35.39847],
+    center: [148.9819, -35.3981],
     pitch: 60
 });
 
+// parameters to ensure the model is georeferenced correctly on the map
 var modelOrigin = [148.98190, -35.39847];
 var modelAltitude = 0;
 var modelRotate = [Math.PI / 2, 0, 0];
@@ -15,9 +18,6 @@ var modelScale = 5.41843220338983e-8;
 
 // transformation parameters to position, rotate and scale the 3D model onto the map
 var modelTransform = {
-    // translateX: fromLL(modelOrigin[0], modelOrigin[1])[0]
-    // translateY: fromLL(modelOrigin[0], modelOrigin[1])[1]
-    // translateZ: modelOrigin[2],
     translateX: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).x,
     translateY: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).y,
     translateZ: mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude).z,
@@ -25,12 +25,12 @@ var modelTransform = {
     rotateY: modelRotate[1],
     rotateZ: modelRotate[2],
     scale: modelScale
-}
+};
 
 var THREE = window.THREE;
 
-// create the custom layer per the CustomLayerInterface the 3D model
-var 3dModelCustomLayer = {
+// configuration of the custom layer for a 3D model per the CustomLayerInterface
+var customLayer = {
     id: '3d-model',
     type: 'custom',
     renderingMode: '3d',
@@ -38,7 +38,7 @@ var 3dModelCustomLayer = {
         this.camera = new THREE.Camera();
         this.scene = new THREE.Scene();
 
-        // create two THREE.JS lights
+        // create two three.js lights to illuminate the model
         var directionalLight = new THREE.DirectionalLight(0xffffff);
         directionalLight.position.set(0, -70, 100).normalize();
         this.scene.add(directionalLight);
@@ -47,13 +47,14 @@ var 3dModelCustomLayer = {
         directionalLight2.position.set(0, 70, 100).normalize();
         this.scene.add(directionalLight2);
 
-        // use THREE's GLTF loader to add the 3D model to the THREE scene
+        // use the three.js GLTF loader to add the 3D model to the three.js scene
         var loader = new THREE.GLTFLoader();
         loader.load('https://docs.mapbox.com/mapbox-gl-js/assets/34M_17/34M_17.gltf', (function (gltf) {
             this.scene.add(gltf.scene);
         }).bind(this));
         this.map = map;
 
+        // use the Mapbox GL JS map canvas for three.js
         this.renderer = new THREE.WebGLRenderer({
             canvas: map.getCanvas(),
             context: gl
@@ -62,13 +63,13 @@ var 3dModelCustomLayer = {
         this.renderer.autoClear = false;
     },
     render: function(gl, matrix) {
-        var rotationX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), transform.rotateX);
-        var rotationY = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), transform.rotateY);
-        var rotationZ = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), transform.rotateZ);
+        var rotationX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), modelTransform.rotateX);
+        var rotationY = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), modelTransform.rotateY);
+        var rotationZ = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), modelTransform.rotateZ);
 
         var m = new THREE.Matrix4().fromArray(matrix);
-        var l = new THREE.Matrix4().makeTranslation(transform.translateX, transform.translateY, transform.translateZ)
-            .scale(new THREE.Vector3(transform.scale, -transform.scale, transform.scale))
+        var l = new THREE.Matrix4().makeTranslation(modelTransform.translateX, modelTransform.translateY, modelTransform.translateZ)
+            .scale(new THREE.Vector3(modelTransform.scale, -modelTransform.scale, modelTransform.scale))
             .multiply(rotationX)
             .multiply(rotationY)
             .multiply(rotationZ);
@@ -81,20 +82,7 @@ var 3dModelCustomLayer = {
     }
 }
 
-// converts from WGS84 longitude, latitude into a web mercator unit vector
-// anchored at the top left as needed by the CustomLayerInterface
-var fromLL = function (lon,lat) {
-    // derived from https://gist.github.com/springmeyer/871897
-    var extent = 20037508.34;
-
-    var x = lon * extent / 180;
-    var y = Math.log(Math.tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180);
-    y = y * extent / 180;
-
-    return [(x + extent) / (2 * extent), 1 - ((y + extent) / (2 * extent))];
-}
-
 map.on('style.load', function() {
-    map.addLayer(3dModelCustomLayer, 'waterway-label');
+    map.addLayer(customLayer, 'waterway-label');
 });
 </script>
