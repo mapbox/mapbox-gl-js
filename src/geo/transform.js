@@ -616,7 +616,7 @@ class Transform {
      */
     getCameraPoint() {
         const pitch = this._pitch;
-        const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
+        const yOffset = Math.sin(pitch) * (this.cameraToCenterDistance || 1);
         return this.centerPoint.add(new Point(0, yOffset));
     }
 
