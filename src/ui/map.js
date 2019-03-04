@@ -75,6 +75,7 @@ type MapOptions = {
     logoPosition?: ControlPosition,
     failIfMajorPerformanceCaveat?: boolean,
     preserveDrawingBuffer?: boolean,
+    antialias?: boolean,
     refreshExpiredTiles?: boolean,
     maxBounds?: LngLatBoundsLike,
     scrollZoom?: boolean,
@@ -183,6 +184,7 @@ const defaultOptions = {
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox
  *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
+ * @param {boolean} [options.antialias] If `true`, the gl context will be created with MSAA antialiasing, which can be useful for antialiasing custom layers. this is `false` by default as a performance optimization.
  * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
  * @param {LngLatBoundsLike} [options.maxBounds] If set, the map will be constrained to the given bounds.
  * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
@@ -255,6 +257,7 @@ class Map extends Camera {
     _trackResize: boolean;
     _preserveDrawingBuffer: boolean;
     _failIfMajorPerformanceCaveat: boolean;
+    _antialias: boolean;
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
@@ -317,6 +320,7 @@ class Map extends Camera {
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
+        this._antialias = options.antialias;
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
@@ -1547,10 +1551,11 @@ class Map extends Camera {
     }
 
     _setupPainter() {
-        const attributes = extend({
+        const attributes = extend({}, isSupported.webGLContextAttributes, {
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
-            preserveDrawingBuffer: this._preserveDrawingBuffer
-        }, isSupported.webGLContextAttributes);
+            preserveDrawingBuffer: this._preserveDrawingBuffer,
+            antialias: this._antialias || false
+        });
 
         const gl = this._canvas.getContext('webgl', attributes) ||
             this._canvas.getContext('experimental-webgl', attributes);

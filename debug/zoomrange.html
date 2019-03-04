@@ -21,14 +21,32 @@ mapboxgl.accessToken = 'pk.eyJ1IjoicGV0ZXJxbGl1IiwiYSI6ImpvZmV0UEEifQ._D4bRmVcGf
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
+    zoom: 2.1,
     center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/satellite-v9',
-    hash: true
+    style: 'mapbox://styles/mapbox/empty-v9'
 });
 
 map.on('load', function() {
-    // map.setLayerZoomRange('satellite', 0, 10);
+    map.addLayer({
+        "id": "circle",
+        "type": "circle",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "Point",
+                "coordinates": [
+                    0,
+                    0
+                ]
+            }
+        },
+        "minzoom": 1,
+        "maxzoom": 2,
+        'paint': {
+            'circle-color': 'red'
+        }
+    });
+    map.setLayerZoomRange('circle', 0, 3);
 });
 </script>
 </body>

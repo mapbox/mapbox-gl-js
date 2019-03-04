@@ -8,7 +8,6 @@
   "sources": {
     "geojson": {
       "type": "geojson",
-      "buffer": 0,
       "data": {
         "type": "FeatureCollection",
         "features": [
