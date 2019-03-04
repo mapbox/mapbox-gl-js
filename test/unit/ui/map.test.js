@@ -1945,6 +1945,26 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('map fires `styleimagemissing` for missing icons', (t) => {
+        const map = createMap(t);
+
+        const id = "missing-image";
+
+        let called;
+        map.on('styleimagemissing', e => {
+            map.addImage(e.id, {width: 1, height: 1, data: new Uint8Array(4)});
+            called = e.id;
+        });
+
+        t.notok(map.hasImage(id));
+
+        map.style.imageManager.getImages([id], () => {
+            t.equals(called, id);
+            t.ok(map.hasImage(id));
+            t.end();
+        });
+    });
+
     t.end();
 });
 

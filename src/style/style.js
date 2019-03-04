@@ -136,6 +136,7 @@ class Style extends Evented {
         this.map = map;
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
+        this.imageManager.setEventedParent(this);
         this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
