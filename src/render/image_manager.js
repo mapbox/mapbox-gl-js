@@ -2,6 +2,7 @@
 
 import potpack from 'potpack';
 
+import { Event, Evented } from '../util/evented';
 import { RGBAImage } from '../util/image';
 import { ImagePosition } from './image_atlas';
 import Texture from './texture';
@@ -33,7 +34,7 @@ const padding = 1;
     data-driven support for `*-pattern`, we'll likely use per-bucket pattern atlases, and that would be a good time
     to refactor this.
 */
-class ImageManager {
+class ImageManager extends Evented {
     images: {[string]: StyleImage};
     loaded: boolean;
     requestors: Array<{ids: Array<string>, callback: Callback<{[string]: StyleImage}>}>;
@@ -44,6 +45,7 @@ class ImageManager {
     dirty: boolean;
 
     constructor() {
+        super();
         this.images = {};
         this.loaded = false;
         this.requestors = [];
@@ -115,6 +117,9 @@ class ImageManager {
         const response = {};
 
         for (const id of ids) {
+            if (!this.images[id]) {
+                this.fire(new Event('styleimagemissing', { id }));
+            }
             const image = this.images[id];
             if (image) {
                 // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
