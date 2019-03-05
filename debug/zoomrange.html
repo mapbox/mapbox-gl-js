@@ -21,12 +21,12 @@ mapboxgl.accessToken = 'pk.eyJ1IjoicGV0ZXJxbGl1IiwiYSI6ImpvZmV0UEEifQ._D4bRmVcGf
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 2.1,
-    center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/empty-v9'
+    zoom: 3,
+    style: 'mapbox://styles/mapbox/satellite-v9'
 });
 
 map.on('load', function() {
+
     map.addLayer({
         "id": "circle",
         "type": "circle",
@@ -46,7 +46,11 @@ map.on('load', function() {
             'circle-color': 'red'
         }
     });
-    map.setLayerZoomRange('circle', 0, 3);
+
+    map.on('click', function() {
+        map.setLayerZoomRange('satellite', 0, 5);
+        map.setLayerZoomRange('circle', 0, 5);
+    });
 });
 </script>
 </body>

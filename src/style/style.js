@@ -732,7 +732,7 @@ class Style extends Evented {
         if (maxzoom != null) {
             layer.maxzoom = maxzoom;
         }
-        this._updateLayer(layer);
+        if (layer.type !== 'raster') this._updateLayer(layer);
     }
 
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
