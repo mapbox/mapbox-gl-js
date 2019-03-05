@@ -102,7 +102,7 @@ class Actor {
             if (cancelable && this.callbacks[data.id] === null) {
                 // Only add the cancelable callback if the done callback wasn't already called.
                 // Otherwise we will never be able to delete it.
-                this.callbacks[data.id]  = cancelable;
+                this.callbacks[data.id] = cancelable.cancel;
             }
         } else if (typeof data.id !== 'undefined' && this.parent.getWorkerSource) {
             // data.type == sourcetype.method
