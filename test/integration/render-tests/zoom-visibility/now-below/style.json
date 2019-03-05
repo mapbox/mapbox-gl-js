@@ -19,7 +19,7 @@
         [
           "setLayerZoomRange",
           "circle",
-          0,
+          20,
           22
         ],
         [
@@ -28,7 +28,7 @@
         [
           "setLayerZoomRange",
           "raster",
-          0,
+          20,
           22
         ],
         [
@@ -62,7 +62,7 @@
       "id": "raster",
       "type": "raster",
       "source": "satellite",
-      "minzoom": 20,
+      "minzoom": 0,
       "maxzoom": 22,
       "paint": {
         "raster-fade-duration": 0
@@ -72,7 +72,7 @@
       "id": "circle",
       "type": "circle",
       "source": "geojson",
-      "minzoom": 20,
+      "minzoom": 0,
       "maxzoom": 22,
       "paint": {
         "circle-color": "red"
