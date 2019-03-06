@@ -7,6 +7,7 @@ import { RGBAImage } from '../util/image';
 import { ImagePosition } from './image_atlas';
 import Texture from './texture';
 import assert from 'assert';
+import {renderStyleImage} from '../style/style_image';
 
 import type {StyleImage} from '../style/style_image';
 import type Context from '../gl/context';
@@ -25,7 +26,7 @@ type Pattern = {
 const padding = 1;
 
 /*
-    ImageManager does two things:
+    ImageManager does three things:
 
         1. Tracks requests for icon images from tile workers and sends responses when the requests are fulfilled.
         2. Builds a texture atlas for pattern images.
@@ -36,6 +37,8 @@ const padding = 1;
 */
 class ImageManager extends Evented {
     images: {[string]: StyleImage};
+    updatedImages: {[string]: boolean};
+    callbackDispatchedThisFrame: {[string]: boolean};
     loaded: boolean;
     requestors: Array<{ids: Array<string>, callback: Callback<{[string]: StyleImage}>}>;
 
@@ -47,6 +50,8 @@ class ImageManager extends Evented {
     constructor() {
         super();
         this.images = {};
+        this.updatedImages = {};
+        this.callbackDispatchedThisFrame = {};
         this.loaded = false;
         this.requestors = [];
 
@@ -83,10 +88,25 @@ class ImageManager extends Evented {
         this.images[id] = image;
     }
 
+    updateImage(id: string, image: StyleImage) {
+        const oldImage = this.images[id];
+        assert(oldImage);
+        assert(oldImage.data.width === image.data.width);
+        assert(oldImage.data.height === image.data.height);
+        image.version = oldImage.version + 1;
+        this.images[id] = image;
+        this.updatedImages[id] = true;
+    }
+
     removeImage(id: string) {
         assert(this.images[id]);
+        const image = this.images[id];
         delete this.images[id];
         delete this.patterns[id];
+
+        if (image.userImage && image.userImage.onRemove) {
+            image.userImage.onRemove();
+        }
     }
 
     listImages(): Array<string> {
@@ -126,7 +146,9 @@ class ImageManager extends Evented {
                 response[id] = {
                     data: image.data.clone(),
                     pixelRatio: image.pixelRatio,
-                    sdf: image.sdf
+                    sdf: image.sdf,
+                    version: image.version,
+                    hasRenderCallback: Boolean(image.userImage && image.userImage.render)
                 };
             }
         }
@@ -143,23 +165,29 @@ class ImageManager extends Evented {
 
     getPattern(id: string): ?ImagePosition {
         const pattern = this.patterns[id];
-        if (pattern) {
-            return pattern.position;
-        }
 
         const image = this.getImage(id);
         if (!image) {
             return null;
         }
 
-        const w = image.data.width + padding * 2;
-        const h = image.data.height + padding * 2;
-        const bin = {w, h, x: 0, y: 0};
-        const position = new ImagePosition(bin, image);
-        this.patterns[id] = {bin, position};
+        if (pattern && pattern.position.version === image.version) {
+            return pattern.position;
+        }
+
+        if (!pattern) {
+            const w = image.data.width + padding * 2;
+            const h = image.data.height + padding * 2;
+            const bin = {w, h, x: 0, y: 0};
+            const position = new ImagePosition(bin, image);
+            this.patterns[id] = {bin, position};
+        } else {
+            pattern.position.version = image.version;
+        }
+
         this._updatePatternAtlas();
 
-        return position;
+        return this.patterns[id].position;
     }
 
     bind(context: Context) {
@@ -203,6 +231,27 @@ class ImageManager extends Evented {
         }
 
         this.dirty = true;
+    }
+
+    beginFrame() {
+        this.callbackDispatchedThisFrame = {};
+    }
+
+    dispatchRenderCallbacks(ids: Array<string>) {
+        for (const id of ids) {
+
+            // the callback for the image was already dispatched for a different frame
+            if (this.callbackDispatchedThisFrame[id]) continue;
+            this.callbackDispatchedThisFrame[id] = true;
+
+            const image = this.images[id];
+            assert(image);
+
+            const updated = renderStyleImage(image);
+            if (updated) {
+                this.updateImage(id, image);
+            }
+        }
     }
 }
 

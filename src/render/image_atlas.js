@@ -5,6 +5,8 @@ import { register } from '../util/web_worker_transfer';
 import potpack from 'potpack';
 
 import type {StyleImage} from '../style/style_image';
+import type ImageManager from './image_manager';
+import type Texture from './texture';
 
 const padding = 1;
 
@@ -19,10 +21,12 @@ type Rect = {
 export class ImagePosition {
     paddedRect: Rect;
     pixelRatio: number;
+    version: number;
 
-    constructor(paddedRect: Rect, {pixelRatio}: StyleImage) {
+    constructor(paddedRect: Rect, {pixelRatio, version}: StyleImage) {
         this.paddedRect = paddedRect;
         this.pixelRatio = pixelRatio;
+        this.version = version;
     }
 
     get tl(): [number, number] {
@@ -55,10 +59,11 @@ export default class ImageAtlas {
     image: RGBAImage;
     iconPositions: {[string]: ImagePosition};
     patternPositions: {[string]: ImagePosition};
+    haveRenderCallbacks: Array<string>;
     uploaded: ?boolean;
 
     constructor(icons: {[string]: StyleImage}, patterns: {[string]: StyleImage}) {
-        const iconPositions = {}, patternPositions = {};
+        const iconPositions = {}, patternPositions = {}, haveRenderCallbacks = [];
 
         const bins = [];
         for (const id in icons) {
@@ -71,6 +76,10 @@ export default class ImageAtlas {
             };
             bins.push(bin);
             iconPositions[id] = new ImagePosition(bin, src);
+
+            if (src.hasRenderCallback) {
+                haveRenderCallbacks.push(id);
+            }
         }
 
         for (const id in patterns) {
@@ -83,6 +92,10 @@ export default class ImageAtlas {
             };
             bins.push(bin);
             patternPositions[id] = new ImagePosition(bin, src);
+
+            if (src.hasRenderCallback) {
+                haveRenderCallbacks.push(id);
+            }
         }
 
         const {w, h} = potpack(bins);
@@ -113,7 +126,27 @@ export default class ImageAtlas {
         this.image = image;
         this.iconPositions = iconPositions;
         this.patternPositions = patternPositions;
+        this.haveRenderCallbacks = haveRenderCallbacks;
     }
+
+    patchUpdatedImages(imageManager: ImageManager, texture: Texture) {
+        imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks);
+        for (const name in imageManager.updatedImages) {
+            this.patchUpdatedImage(this.iconPositions[name], imageManager.getImage(name), texture);
+            this.patchUpdatedImage(this.patternPositions[name], imageManager.getImage(name), texture);
+        }
+    }
+
+    patchUpdatedImage(position: ?ImagePosition, image: ?StyleImage, texture: Texture) {
+        if (!position || !image) return;
+
+        if (position.version === image.version) return;
+
+        position.version = image.version;
+        const tl = position.tl;
+        texture.update(image.data, undefined, { x: tl[0], y: tl[1] });
+    }
+
 }
 
 register('ImagePosition', ImagePosition);

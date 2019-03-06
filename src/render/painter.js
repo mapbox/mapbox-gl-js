@@ -329,6 +329,8 @@ class Painter {
 
         this.symbolFadeChange = style.placement.symbolFadeChange(browser.now());
 
+        this.imageManager.beginFrame();
+
         const layerIds = this.style._order;
         const sourceCaches = this.style.sourceCaches;
 
