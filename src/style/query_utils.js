@@ -21,7 +21,7 @@ export function translateDistance(translate: [number, number]) {
     return Math.sqrt(translate[0] * translate[0] + translate[1] * translate[1]);
 }
 
-export function translate(queryGeometry: Array<Array<Point>>,
+export function translate(queryGeometry: Array<Point>,
                    translate: [number, number],
                    translateAnchor: 'viewport' | 'map',
                    bearing: number,
@@ -29,8 +29,7 @@ export function translate(queryGeometry: Array<Array<Point>>,
     if (!translate[0] && !translate[1]) {
         return queryGeometry;
     }
-
-    const pt = Point.convert(translate);
+    const pt = Point.convert(translate)._mult(pixelsToTileUnits);
 
     if (translateAnchor === "viewport") {
         pt._rotate(-bearing);
@@ -38,12 +37,8 @@ export function translate(queryGeometry: Array<Array<Point>>,
 
     const translated = [];
     for (let i = 0; i < queryGeometry.length; i++) {
-        const ring = queryGeometry[i];
-        const translatedRing = [];
-        for (let k = 0; k < ring.length; k++) {
-            translatedRing.push(ring[k].sub(pt._mult(pixelsToTileUnits)));
-        }
-        translated.push(translatedRing);
+        const point = queryGeometry[i];
+        translated.push(point.sub(pt));
     }
     return translated;
 }

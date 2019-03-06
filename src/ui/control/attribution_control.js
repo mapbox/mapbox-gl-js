@@ -103,7 +103,8 @@ class AttributionControl {
                 }
                 return acc;
             }, `?`);
-            editLink.href = `https://www.mapbox.com/feedback/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
+            editLink.href = `${config.FEEDBACK_URL}/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
+            editLink.rel = "noopener";
         }
     }
 

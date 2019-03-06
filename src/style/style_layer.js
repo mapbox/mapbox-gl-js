@@ -52,14 +52,14 @@ class StyleLayer extends Evented {
     _featureFilter: FeatureFilter;
 
     +queryRadius: (bucket: Bucket) => number;
-    +queryIntersectsFeature: (queryGeometry: Array<Array<Point>>,
+    +queryIntersectsFeature: (queryGeometry: Array<Point>,
                               feature: VectorTileFeature,
                               featureState: FeatureState,
                               geometry: Array<Array<Point>>,
                               zoom: number,
                               transform: Transform,
                               pixelsToTileUnits: number,
-                              posMatrix: Float32Array) => boolean;
+                              pixelPosMatrix: Float32Array) => boolean | number;
 
     +onAdd: ?(map: Map) => void;
     +onRemove: ?(map: Map) => void;
@@ -235,6 +235,14 @@ class StyleLayer extends Evented {
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true}
         }));
+    }
+
+    is3D() {
+        return false;
+    }
+
+    isTileClipped() {
+        return false;
     }
 
     hasOffscreenPass() {

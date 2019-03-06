@@ -1,6 +1,7 @@
 toc:
   - Map
   - accessToken
+  - url
   - supported
   - version
   - setRTLTextPlugin

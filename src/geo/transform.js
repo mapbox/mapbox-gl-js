@@ -37,6 +37,8 @@ class Transform {
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
+    glCoordMatrix: Float32Array;
+    labelPlaneMatrix: Float32Array;
     _fov: number;
     _pitch: number;
     _zoom: number;
@@ -568,11 +570,19 @@ class Transform {
         mat4.translate(alignedM, alignedM, [ dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0 ]);
         this.alignedProjMatrix = alignedM;
 
-        // matrix for conversion from location to screen coordinates
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
         mat4.translate(m, m, [1, -1, 0]);
-        this.pixelMatrix = mat4.multiply(new Float64Array(16), m, this.projMatrix);
+        this.labelPlaneMatrix = m;
+
+        m = mat4.create();
+        mat4.scale(m, m, [1, -1, 1]);
+        mat4.translate(m, m, [-1, -1, 0]);
+        mat4.scale(m, m, [2 / this.width, 2 / this.height, 1]);
+        this.glCoordMatrix = m;
+
+        // matrix for conversion from location to screen coordinates
+        this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
         // inverse matrix for conversion from screen coordinaes to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
@@ -591,6 +601,59 @@ class Transform {
         const p = [coord.x * this.worldSize, coord.y * this.worldSize, 0, 1];
         const topPoint = vec4.transformMat4(p, p, this.pixelMatrix);
         return topPoint[3] / this.cameraToCenterDistance;
+    }
+
+    /*
+     * The camera looks at the map from a 3D (lng, lat, altitude) location. Let's use `cameraLocation`
+     * as the name for the location under the camera and on the surface of the earth (lng, lat, 0).
+     * `cameraPoint` is the projected position of the `cameraLocation`.
+     *
+     * This point is useful to us because only fill-extrusions that are between `cameraPoint` and
+     * the query point on the surface of the earth can extend and intersect the query.
+     *
+     * When the map is not pitched the `cameraPoint` is equivalent to the center of the map because
+     * the camera is right above the center of the map.
+     */
+    getCameraPoint() {
+        const pitch = this._pitch;
+        const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
+        return this.centerPoint.add(new Point(0, yOffset));
+    }
+
+    /*
+     * When the map is pitched, some of the 3D features that intersect a query will not intersect
+     * the query at the surface of the earth. Instead the feature may be closer and only intersect
+     * the query because it extrudes into the air.
+     *
+     * This returns a geometry that includes all of the original query as well as all possible ares of the
+     * screen where the *base* of a visible extrusion could be.
+     *  - For point queries, the line from the query point to the "camera point"
+     *  - For other geometries, the envelope of the query geometry and the "camera point"
+     */
+    getCameraQueryGeometry(queryGeometry: Array<Point>): Array<Point> {
+        const c = this.getCameraPoint();
+
+        if (queryGeometry.length === 1) {
+            return [queryGeometry[0], c];
+        } else {
+            let minX = c.x;
+            let minY = c.y;
+            let maxX = c.x;
+            let maxY = c.y;
+            for (const p of queryGeometry) {
+                minX = Math.min(minX, p.x);
+                minY = Math.min(minY, p.y);
+                maxX = Math.max(maxX, p.x);
+                maxY = Math.max(maxY, p.y);
+            }
+            return [
+                new Point(minX, minY),
+                new Point(maxX, minY),
+                new Point(maxX, maxY),
+                new Point(minX, maxY),
+                new Point(minX, minY)
+            ];
+        }
     }
 }
 

@@ -12,5 +12,6 @@
   "render-tests/regressions/mapbox-gl-js#3682": "skip - true",
   "render-tests/runtime-styling/image-update-icon": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
   "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
-  "render-tests/mixed-zoom/z10-z11": "current behavior conflicts with https://github.com/mapbox/mapbox-gl-js/pull/6803. can be fixed when https://github.com/mapbox/api-maps/issues/1480 is done"
+  "render-tests/mixed-zoom/z10-z11": "current behavior conflicts with https://github.com/mapbox/mapbox-gl-js/pull/6803. can be fixed when https://github.com/mapbox/api-maps/issues/1480 is done",
+  "render-tests/fill-extrusion-pattern/tile-buffer": "https://github.com/mapbox/mapbox-gl-js/issues/4403"
 }

@@ -37,6 +37,7 @@ class FillBucket implements Bucket {
     layers: Array<FillStyleLayer>;
     layerIds: Array<string>;
     stateDependentLayers: Array<FillStyleLayer>;
+    stateDependentLayerIds: Array<string>;
 
     layoutVertexArray: FillLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -68,6 +69,8 @@ class FillBucket implements Bucket {
         this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.segments = new SegmentVector();
         this.segments2 = new SegmentVector();
+        this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
+
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {

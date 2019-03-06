@@ -4,6 +4,7 @@ import { bindAll } from './util';
 import { serialize, deserialize } from './web_worker_transfer';
 
 import type {Transferable} from '../types/transferable';
+import type {Cancelable} from '../types/cancelable';
 
 /**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
@@ -42,7 +43,7 @@ class Actor {
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
-    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string) {
+    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string): ?Cancelable {
         const id = callback ? `${this.mapId}:${this.callbackID++}` : null;
         if (callback) this.callbacks[id] = callback;
         const buffers: Array<Transferable> = [];
@@ -53,6 +54,16 @@ class Actor {
             id: String(id),
             data: serialize(data, buffers)
         }, buffers);
+        if (callback) {
+            return {
+                cancel: () => this.target.postMessage({
+                    targetMapId,
+                    sourceMapId: this.mapId,
+                    type: '<cancel>',
+                    id: String(id)
+                })
+            };
+        }
     }
 
     receive(message: Object) {
@@ -64,6 +75,7 @@ class Actor {
             return;
 
         const done = (err, data) => {
+            delete this.callbacks[id];
             const buffers: Array<Transferable> = [];
             this.target.postMessage({
                 sourceMapId: this.mapId,
@@ -74,7 +86,7 @@ class Actor {
             }, buffers);
         };
 
-        if (data.type === '<response>') {
+        if (data.type === '<response>' || data.type === '<cancel>') {
             callback = this.callbacks[data.id];
             delete this.callbacks[data.id];
             if (callback && data.error) {
@@ -84,7 +96,14 @@ class Actor {
             }
         } else if (typeof data.id !== 'undefined' && this.parent[data.type]) {
             // data.type == 'loadTile', 'removeTile', etc.
-            this.parent[data.type](data.sourceMapId, deserialize(data.data), done);
+            // Add a placeholder so that we can discover when the done callback was called already.
+            this.callbacks[data.id] = null;
+            const cancelable = this.parent[data.type](data.sourceMapId, deserialize(data.data), done);
+            if (cancelable && this.callbacks[data.id] === null) {
+                // Only add the cancelable callback if the done callback wasn't already called.
+                // Otherwise we will never be able to delete it.
+                this.callbacks[data.id] = cancelable.cancel;
+            }
         } else if (typeof data.id !== 'undefined' && this.parent.getWorkerSource) {
             // data.type == sourcetype.method
             const keys = data.type.split('.');

@@ -29,6 +29,7 @@ class LogoControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl');
         const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
         anchor.target = "_blank";
+        anchor.rel = "noopener";
         anchor.href = "https://www.mapbox.com/";
         anchor.setAttribute("aria-label", "Mapbox logo");
         anchor.setAttribute("rel", "noopener");

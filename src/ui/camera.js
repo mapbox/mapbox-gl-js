@@ -108,7 +108,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns The map's geographical centerpoint.
      */
-    getCenter(): LngLat { return this.transform.center; }
+    getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
 
     /**
      * Sets the map's geographical centerpoint. Equivalent to `jumpTo({center: center})`.
@@ -533,7 +533,7 @@ class Camera extends Evented {
 	 * @example
      * var p0 = [220, 400];
      * var p1 = [500, 900];
-     * map.fitScreenCoordintes(p0, p1, map.getBearing(), {
+     * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      * @see [Used by BoxZoomHandler](https://www.mapbox.com/mapbox-gl-js/api/#boxzoomhandler)
