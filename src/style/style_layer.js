@@ -39,7 +39,7 @@ class StyleLayer extends Evented {
     minzoom: ?number;
     maxzoom: ?number;
     filter: FilterSpecification | void;
-    visibility: 'visible' | 'none';
+    visibility: 'visible' | 'none' | void;
     _crossfadeParameters: CrossfadeParameters;
 
     _unevaluatedLayout: Layout<any>;
@@ -69,7 +69,6 @@ class StyleLayer extends Evented {
 
         this.id = layer.id;
         this.type = layer.type;
-        this.visibility = 'visible';
         this._featureFilter = () => true;
 
         if (layer.type === 'custom') return;
@@ -116,7 +115,7 @@ class StyleLayer extends Evented {
         return this._unevaluatedLayout.getValue(name);
     }
 
-    setLayoutProperty(name: string, value: mixed, options: StyleSetterOptions = {}) {
+    setLayoutProperty(name: string, value: any, options: StyleSetterOptions = {}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.layout.${name}`;
             if (this._validate(validateLayoutProperty, key, name, value, options)) {
@@ -125,7 +124,7 @@ class StyleLayer extends Evented {
         }
 
         if (name === 'visibility') {
-            this.visibility = value === 'none' ? value : 'visible';
+            this.visibility = value;
             return;
         }
 
@@ -173,7 +172,7 @@ class StyleLayer extends Evented {
     isHidden(zoom: number) {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;
-        return this.visibility === 'none';
+        return this.visibility !== 'none';
     }
 
     updateTransitions(parameters: TransitionParameters) {
@@ -210,7 +209,7 @@ class StyleLayer extends Evented {
             'paint': this._transitionablePaint && this._transitionablePaint.serialize()
         };
 
-        if (this.visibility === 'none') {
+        if (this.visibility) {
             output.layout = output.layout || {};
             output.layout.visibility = 'none';
         }
@@ -270,5 +269,3 @@ class StyleLayer extends Evented {
 }
 
 export default StyleLayer;
-
-
