@@ -130,6 +130,7 @@ const defaultOptions = {
     renderWorldCopies: true,
     refreshExpiredTiles: true,
     maxTileCacheSize: null,
+    localIdeographFontFamily: 'sans-serif',
     transformRequest: null,
     fadeDuration: 300,
     crossSourceCollisions: true
@@ -204,9 +205,10 @@ const defaultOptions = {
  * @param {Object} [options.fitBoundsOptions] A [`fitBounds`](#map#fitbounds) options object to use _only_ when fitting the initial `bounds` provided above.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered, when zoomed out.
  * @param {number} [options.maxTileCacheSize=null]  The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
- * @param {string} [options.localIdeographFontFamily=null] If specified, defines a CSS font-family
- *   for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
+ * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
+ *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
  *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
+ *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
  *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (see [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs))
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
  *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
@@ -951,13 +953,17 @@ class Map extends Camera {
      * @param {Object} [options]
      * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
      *   and building the given one instead of attempting a diff-based update.
-     * @param {string} [options.localIdeographFontFamily=null] If non-null, defines a css font-family
-     *   for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables'
-     *   ranges. Forces a full update.
+     * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
+     *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
+     *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
+     *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
+     *   Forces a full update.
      * @returns {Map} `this`
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
+        options = extend({}, { localIdeographFontFamily: defaultOptions.localIdeographFontFamily}, options);
+
         if ((!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style && style) {
             this._diffStyle(style, options);
             return this;
