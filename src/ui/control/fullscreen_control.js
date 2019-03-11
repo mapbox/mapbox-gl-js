@@ -94,7 +94,7 @@ class FullscreenControl {
     }
 
     _updateTitle() {
-        const title = this._isFullscreen() ? "Exit fullscreen mode" : "Enter fullscreen mode";
+        const title = this._isFullscreen() ? "Exit fullscreen" : "Enter fullscreen";
         this._fullscreenButton.setAttribute("aria-label", title);
         this._fullscreenButton.title = title;
     }
