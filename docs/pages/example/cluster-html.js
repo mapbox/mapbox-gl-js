@@ -1,6 +1,6 @@
 /*---
-title: Use clusters with HTML markers and aggregated properties
-description: Use Mapbox GL JS' built-in functions to visualize points as clusters.
+title: Display HTML clusters with custom properties
+description: An advanced example of using Mapbox GL JS clustering with HTML markers and custom property expressions.
 tags:
   - layers
 pathname: /mapbox-gl-js/example/cluster-html/

@@ -4,8 +4,8 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    zoom: 1,
-    center: [0, 0],
+    zoom: 0.3,
+    center: [0, 20],
     style: 'mapbox://styles/mapbox/light-v10'
 });
 
@@ -103,7 +103,7 @@ map.on('load', function () {
 
     // after the GeoJSON data is loaded, update markers on the screen and do so on every map move/moveend
     map.on('data', function (e) {
-        if (e.sourceId !== 'geojson' || !e.isSourceLoaded) return;
+        if (e.sourceId !== 'earthquakes' || !e.isSourceLoaded) return;
 
         map.on('move', updateMarkers);
         map.on('moveend', updateMarkers);
