@@ -31,7 +31,7 @@ class ExamplesLandingPage extends React.PureComponent {
                 .map((example, index) => {
                     const filename = example.pathname.split('/')[3];
                     // set default if thumbnail doesn't exist yet
-                    const imageId = imageConfig[filename] ? filename : 'simple-map';
+                    const imageId = imageConfig[filename] ? filename : 'placeholder';
                     return (
                         <Card
                             key={index}
