@@ -143,8 +143,8 @@ export default class ImageAtlas {
         if (position.version === image.version) return;
 
         position.version = image.version;
-        const tl = position.tl;
-        texture.update(image.data, undefined, { x: tl[0], y: tl[1] });
+        const [x, y] = position.tl;
+        texture.update(image.data, undefined, {x, y});
     }
 
 }
