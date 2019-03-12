@@ -98,6 +98,9 @@ export function renderStyleImage(image: StyleImage) {
  * If the method updates the image it must return `true` to commit the change.
  * If the method returns `false` or nothing the image is assumed to not have changed.
  *
+ * If updates are infrequent it maybe easier to use {@link Map#updateImage} to update
+ * the image instead of implementing this method.
+ *
  * @function
  * @memberof StyleImageInterface
  * @instance
