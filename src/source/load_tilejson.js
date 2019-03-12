@@ -18,7 +18,7 @@ export default function(options: any, requestTransformFn: RequestTransformFuncti
         } else if (tileJSON) {
             const result: any = pick(
                 tileJSON,
-                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds']
+                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'tileSize', 'zoomOffset']
             );
 
             if (tileJSON.vector_layers) {

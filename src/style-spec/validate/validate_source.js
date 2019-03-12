@@ -31,7 +31,7 @@ export default function validateSource(options) {
         });
         if ('url' in value) {
             for (const prop in value) {
-                if (['type', 'url', 'tileSize'].indexOf(prop) < 0) {
+                if (['type', 'url', 'tileSize', 'zoomOffset'].indexOf(prop) < 0) {
                     errors.push(new ValidationError(`${key}.${prop}`, value[prop], `a source with a "url" property may not include a "${prop}" property`));
                 }
             }
