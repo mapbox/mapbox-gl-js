@@ -35,7 +35,7 @@ In the `.html` file, write the HTML and JavaScript constituting the example.
 
 Every example **must** have an accompanying image:
 
-1. Run `npm run create-image <example-file-name> <mapbox-access-token>`. The script will take a screenshot of map in the example and save it to `docs/img/src/`. Commit this file.
+1. Run `npm run create-image <example-file-name> <mapbox-access-token>`. The script will take a screenshot of map in the example and save it to `docs/img/src/`. Commit the image.
 2. Run `npm run start-docs` to verify that your example image is loading as expected.
 
 ## Running the Documentation Server Locally
