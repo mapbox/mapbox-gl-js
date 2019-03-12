@@ -8,6 +8,7 @@ import { ImagePosition } from './image_atlas';
 import Texture from './texture';
 import assert from 'assert';
 import {renderStyleImage} from '../style/style_image';
+import { warnOnce } from '../util/util';
 
 import type {StyleImage} from '../style/style_image';
 import type Context from '../gl/context';
@@ -151,6 +152,8 @@ class ImageManager extends Evented {
                     version: image.version,
                     hasRenderCallback: Boolean(image.userImage && image.userImage.render)
                 };
+            } else {
+                warnOnce(`Image "${id}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`);
             }
         }
 
