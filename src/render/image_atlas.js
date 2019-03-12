@@ -63,40 +63,13 @@ export default class ImageAtlas {
     uploaded: ?boolean;
 
     constructor(icons: {[string]: StyleImage}, patterns: {[string]: StyleImage}) {
-        const iconPositions = {}, patternPositions = {}, haveRenderCallbacks = [];
+        const iconPositions = {}, patternPositions = {};
+        this.haveRenderCallbacks = [];
 
         const bins = [];
-        for (const id in icons) {
-            const src = icons[id];
-            const bin = {
-                x: 0,
-                y: 0,
-                w: src.data.width + 2 * padding,
-                h: src.data.height + 2 * padding,
-            };
-            bins.push(bin);
-            iconPositions[id] = new ImagePosition(bin, src);
 
-            if (src.hasRenderCallback) {
-                haveRenderCallbacks.push(id);
-            }
-        }
-
-        for (const id in patterns) {
-            const src = patterns[id];
-            const bin = {
-                x: 0,
-                y: 0,
-                w: src.data.width + 2 * padding,
-                h: src.data.height + 2 * padding,
-            };
-            bins.push(bin);
-            patternPositions[id] = new ImagePosition(bin, src);
-
-            if (src.hasRenderCallback) {
-                haveRenderCallbacks.push(id);
-            }
-        }
+        this.addImages(icons, iconPositions, bins);
+        this.addImages(patterns, patternPositions, bins);
 
         const {w, h} = potpack(bins);
         const image = new RGBAImage({width: w || 1, height: h || 1});
@@ -126,7 +99,24 @@ export default class ImageAtlas {
         this.image = image;
         this.iconPositions = iconPositions;
         this.patternPositions = patternPositions;
-        this.haveRenderCallbacks = haveRenderCallbacks;
+    }
+
+    addImages(images: {[string]: StyleImage}, positions: {[string]: ImagePosition}, bins: Array<Rect>) {
+        for (const id in images) {
+            const src = images[id];
+            const bin = {
+                x: 0,
+                y: 0,
+                w: src.data.width + 2 * padding,
+                h: src.data.height + 2 * padding,
+            };
+            bins.push(bin);
+            positions[id] = new ImagePosition(bin, src);
+
+            if (src.hasRenderCallback) {
+                this.haveRenderCallbacks.push(id);
+            }
+        }
     }
 
     patchUpdatedImages(imageManager: ImageManager, texture: Texture) {
