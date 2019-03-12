@@ -466,6 +466,10 @@ class Style extends Evented {
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
+    updateImage(id: string, image: StyleImage) {
+        this.imageManager.updateImage(id, image);
+    }
+
     getImage(id: string): ?StyleImage {
         return this.imageManager.getImage(id);
     }

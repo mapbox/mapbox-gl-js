@@ -34,6 +34,7 @@ import type {RequestParameters} from '../util/ajax';
 import type {StyleOptions, StyleSetterOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
+import type {StyleImageInterface} from '../style/style_image';
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -1145,19 +1146,71 @@ class Map extends Camera {
      * @param options.sdf Whether the image should be interpreted as an SDF image
      */
     addImage(id: string,
-             image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray},
+             image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface,
              {pixelRatio = 1, sdf = false}: {pixelRatio?: number, sdf?: boolean} = {}) {
+
+        const version = 0;
+
         if (image instanceof HTMLImageElement) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(id, { data: new RGBAImage({width, height}, data), pixelRatio, sdf });
+            this.style.addImage(id, { data: new RGBAImage({width, height}, data), pixelRatio, sdf, version });
         } else if (image.width === undefined || image.height === undefined) {
             return this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
         } else {
             const {width, height, data} = image;
-            this.style.addImage(id, { data: new RGBAImage({width, height}, new Uint8Array(data)), pixelRatio, sdf });
+            const userImage = ((image: any): StyleImageInterface);
+
+            this.style.addImage(id, {
+                data: new RGBAImage({width, height}, new Uint8Array(data)),
+                pixelRatio,
+                sdf,
+                version,
+                userImage
+            });
+
+            if (userImage.onAdd) {
+                userImage.onAdd(this, id);
+            }
         }
+    }
+
+    /**
+     * Update an existing style image. This image can be used in `icon-image`,
+     * `background-pattern`, `fill-pattern`, and `line-pattern`.
+     *
+     * @param id The ID of the image.
+     * @param image The image as an `HTMLImageElement`, `ImageData`, or object with `width`, `height`, and `data`
+     * properties with the same format as `ImageData`.
+     */
+    updateImage(id: string,
+        image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface) {
+
+        const existingImage = this.style.getImage(id);
+        if (!existingImage) {
+            return this.fire(new ErrorEvent(new Error(
+                'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
+        }
+
+        const imageData = image instanceof HTMLImageElement ? browser.getImageData(image) : image;
+        const {width, height, data} = imageData;
+
+        if (width === undefined || height === undefined) {
+            return this.fire(new ErrorEvent(new Error(
+                'Invalid arguments to map.updateImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +
+                'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
+        }
+
+        if (width !== existingImage.data.width || height !== existingImage.data.height) {
+            return this.fire(new ErrorEvent(new Error(
+                'The width and height of the updated image must be that same as the previous version of the image')));
+        }
+
+        const copy = !(image instanceof HTMLImageElement);
+        existingImage.data.replace(data, copy);
+
+        this.style.updateImage(id, existingImage);
     }
 
     /**
