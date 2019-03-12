@@ -52,6 +52,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         axonometric: options.axonometric || false,
         skew: options.skew || [0, 0],
         fadeDuration: options.fadeDuration || 0,
+        localIdeographFontFamily: options.localIdeographFontFamily || false,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions
     });
 
@@ -156,7 +157,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             map.addLayer(new customLayerImplementations[operation[1]](), operation[2]);
             map._render();
             applyOperations(map, operations.slice(1), callback);
-
+        } else if (operation[0] === 'setStyle') {
+            // Disable local ideograph generation (enabled by default) for
+            // consistent local ideograph rendering using fixtures in all runs of the test suite.
+            map.setStyle(operation[1], { localIdeographFontFamily: false });
+            applyOperations(map, operations.slice(1), callback);
         } else {
             map[operation[0]](...operation.slice(1));
             applyOperations(map, operations.slice(1), callback);
