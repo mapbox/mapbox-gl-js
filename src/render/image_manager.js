@@ -30,6 +30,7 @@ const padding = 1;
 
         1. Tracks requests for icon images from tile workers and sends responses when the requests are fulfilled.
         2. Builds a texture atlas for pattern images.
+        3. Rerenders renderable images once per frame
 
     These are disparate responsibilities and should eventually be handled by different classes. When we implement
     data-driven support for `*-pattern`, we'll likely use per-bucket pattern atlases, and that would be a good time
