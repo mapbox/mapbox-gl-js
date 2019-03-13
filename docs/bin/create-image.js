@@ -5,7 +5,7 @@ const path = require('path'); // eslint-disable-line
 const pack = require('../../package.json'); // eslint-disable-line
 
 const fileName = process.argv[2];
-const token = process.argv[3] || process.env.MapboxAccessToken;
+const token = process.argv[3] || process.env.MAPBOX_ACCESS_TOKEN;
 
 if (!token || !fileName) {
     throw new Error('\n  Usage: npm run create-image <file-name> <mapbox-access-token>\nExample: npm run create-image 3d-buildings pk000011110000111100001111\n\n');
@@ -15,7 +15,7 @@ if (!token || !fileName) {
 const fileNameFormatted = fileName.replace('.html', '').replace('.js', '');
 // get the example contents/snippet
 const snippet = require('fs').readFileSync(path.resolve(__dirname, '..', 'pages', 'example', `${fileNameFormatted}.html`), 'utf-8');
-// create an HTML page to display to example snippet
+// create an HTML page to display the example snippet
 const html = `<!DOCTYPE html>
 <html>
 <head>
