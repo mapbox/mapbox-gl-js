@@ -5,7 +5,7 @@ const path = require('path'); // eslint-disable-line
 const pack = require('../../package.json'); // eslint-disable-line
 
 const fileName = process.argv[2];
-const token = process.argv[3] || process.env.MAPBOX_ACCESS_TOKEN;
+const token = process.argv[3] || process.env.MAPBOX_ACCESS_TOKEN || process.env.MapboxAccessToken;
 
 if (!token || !fileName) {
     throw new Error('\n  Usage: npm run create-image <file-name> <mapbox-access-token>\nExample: npm run create-image 3d-buildings pk000011110000111100001111\n\n');
