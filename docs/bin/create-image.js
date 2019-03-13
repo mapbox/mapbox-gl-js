@@ -20,12 +20,11 @@ const html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset='utf-8' />
-<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v${pack.version}/mapbox-gl.js'></script>
 <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v${pack.version}/mapbox-gl.css' rel='stylesheet' />
 <style>
 body { margin:0; padding:0; }
-#map { position: absolute; top:0; bottom:0; width: 1200px; max-height: 600px; }
+#map { position: absolute; top:0; bottom:0; width: 600px; max-height: 300px; }
 </style>
 </head>
 <body>
@@ -42,6 +41,12 @@ ${snippet}
     const page = await browser.newPage();
     // set html for page and then wait until mapbox-gl-js loads
     await page.setContent(html, {waitUntil: 'networkidle2'});
+    // set viewport and double deviceScaleFactor to get a closer shot of the map
+    await page.setViewport({
+        width: 600,
+        height: 600,
+        deviceScaleFactor: 2
+    });
     // create screenshot
     await page.screenshot({
         path: `./docs/img/src/${fileNameFormatted}.png`,
@@ -49,8 +54,8 @@ ${snippet}
         clip: {
             x: 0,
             y: 0,
-            width: 1200,
-            height: 500
+            width: 600,
+            height: 250
         }
     }).then(() => console.log(`Created ./docs/img/src/${fileNameFormatted}.png`))
         .catch((err) => { console.log(err); });
