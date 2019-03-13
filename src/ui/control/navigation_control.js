@@ -63,8 +63,8 @@ class NavigationControl {
 
     _updateZoomButtons() {
         const zoom = this._map.getZoom();
-        this._zoomInButton.classList.toggle('mapboxgl-ctrl-zoom-in-disabled', zoom === this._map.getMaxZoom());
-        this._zoomOutButton.classList.toggle('mapboxgl-ctrl-zoom-out-disabled', zoom === this._map.getMinZoom());
+        this._zoomInButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMaxZoom());
+        this._zoomOutButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMinZoom());
     }
 
     _rotateCompassArrow() {
