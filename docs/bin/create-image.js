@@ -40,6 +40,7 @@ ${snippet}
 (async() => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+    // set html for page and then wait until mapbox-gl-js loads
     await page.setContent(html, {waitUntil: 'networkidle2'});
     // create screenshot
     await page.screenshot({
