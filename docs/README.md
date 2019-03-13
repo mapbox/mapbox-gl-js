@@ -38,6 +38,8 @@ Every example **must** have an accompanying image:
 1. Run `npm run create-image <example-file-name> <mapbox-access-token>`. The script will take a screenshot of map in the example and save it to `docs/img/src/`. Commit the image.
 2. Run `npm run start-docs` to verify that your example image is loading as expected.
 
+💡 If `npm run create-image` does not generate an ideal image. You can also take a screenshot of it yourself by running the site locally with `npm run start-docs` and taking a screenshot of the example map in PNG format. Resize it to 1200 x 500 pixels and save it in the `docs/img/src` folder.
+
 ## Running the Documentation Server Locally
 
 To start a documentation server locally run
