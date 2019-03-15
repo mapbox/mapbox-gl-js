@@ -1,4 +1,3 @@
-import fs from 'fs';
 import {plugins} from './build/rollup_plugins';
 import banner from './build/banner';
 
