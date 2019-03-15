@@ -252,9 +252,7 @@ export default class Popup extends Evented {
      * @returns {Popup} `this`
      */
     set maxWidth(maxWidth: string) {
-        console.log(this.options.maxWidth);
         this.options.maxWidth = maxWidth;
-        console.log(this.options.maxWidth);
         this._update();
     }
 
@@ -308,7 +306,7 @@ export default class Popup extends Evented {
             }
         }
 
-        if (this._container.style.maxWidth != this.options.maxWidth) {
+        if (this._container.style.maxWidth !== this.options.maxWidth) {
           this._container.style.maxWidth = this.options.maxWidth;
         }
 
