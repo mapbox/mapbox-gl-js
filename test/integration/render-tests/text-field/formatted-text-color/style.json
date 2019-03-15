@@ -1,0 +1,55 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Napoli",
+              "name_en": "Naples",
+              "name_color": "blue"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 0 ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": ["format",
+            ["get", "name_en"], { "font-scale": 1.5, "text-color": "#009246" },
+            "Italy", { "font-scale": 0.5, "text-color": "#ce2b37"} ,
+            "\n", {},
+            ["get", "name"], { "font-scale": 0.5, "text-color": ["get", "name_color"], "text-font": ["literal", [ "NotoCJK" ]] },
+            "Italia", {}
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 20
+      }
+    }
+  ]
+}
