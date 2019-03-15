@@ -235,19 +235,27 @@ export default class Popup extends Evented {
     }
 
     /**
-     * Sets the popup's max width.
+     * Returns the popup's max width.
      *
-     * @param pixel A string representing the pixel value for the maximum width.
-     * @returns {Popup} `this`
+     * @returns {LngLat} The max width of the popup.
      */
-    getMaxWidth() {
-      return this._container.style.maxWidth;
+    get maxWidth() {
+        return this._container.style.maxWidth;
     }
 
-    setMaxWidth(maxWidth: string) { // should this be number?
-      this.options.maxWidth = maxWidth;
-      this._update();
-      return this;
+    /**
+     * Sets the popup's max width.
+     *
+     * This is setting the CSS property maxWidth. It expects a string in "Npx" format, where N is some number.
+     *
+     * @param maxWidth A string representing the pixel value for the maximum width.
+     * @returns {Popup} `this`
+     */
+    set maxWidth(maxWidth: string) {
+        console.log(this.options.maxWidth);
+        this.options.maxWidth = maxWidth;
+        console.log(this.options.maxWidth);
+        this._update();
     }
 
     /**
@@ -294,11 +302,14 @@ export default class Popup extends Evented {
             this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
-            this._container.style.maxWidth = this.options.maxWidth;
             if (this.options.className) {
                 this.options.className.split(' ').forEach(name =>
                     this._container.classList.add(name));
             }
+        }
+
+        if (this._container.style.maxWidth != this.options.maxWidth) {
+          this._container.style.maxWidth = this.options.maxWidth;
         }
 
         if (this._map.transform.renderWorldCopies) {
