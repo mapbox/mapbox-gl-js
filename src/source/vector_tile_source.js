@@ -103,6 +103,23 @@ class VectorTileSource extends Evented implements Source {
         this.load();
     }
 
+    setData(options: VectorSourceSpecification & {collectResourceTiming: boolean}) {
+        if (this._tileJSONRequest) {
+            this._tileJSONRequest.cancel();
+        }
+
+        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        this._options = extend({ type: 'vector' }, options);
+
+        this._collectResourceTiming = options.collectResourceTiming;
+
+        if (this.tileSize !== 512) {
+            throw new Error('vector tile sources must have a tileSize of 512');
+        }
+
+        this.load();
+    }
+
     onRemove() {
         if (this._tileJSONRequest) {
             this._tileJSONRequest.cancel();
