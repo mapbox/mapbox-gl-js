@@ -1,14 +1,18 @@
 // @flow
 
+import type Color from '../../util/color';
+
 export class FormattedSection {
     text: string;
     scale: number | null;
     fontStack: string | null;
+    textColor: Color | null;
 
-    constructor(text: string, scale: number | null, fontStack: string | null) {
+    constructor(text: string, scale: number | null, fontStack: string | null, textColor: Color | null) {
         this.text = text;
         this.scale = scale;
         this.fontStack = fontStack;
+        this.textColor = textColor;
     }
 }
 
@@ -20,7 +24,7 @@ export default class Formatted {
     }
 
     static fromString(unformatted: string): Formatted {
-        return new Formatted([new FormattedSection(unformatted, null, null)]);
+        return new Formatted([new FormattedSection(unformatted, null, null, null)]);
     }
 
     toString(): string {
@@ -37,6 +41,9 @@ export default class Formatted {
             }
             if (section.scale) {
                 options["font-scale"] = section.scale;
+            }
+            if (section.textColor) {
+                options["text-color"] = ["literal", section.textColor];
             }
             serialized.push(options);
         }

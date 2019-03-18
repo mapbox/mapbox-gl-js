@@ -24,6 +24,7 @@ import type {StylePropertySpecification} from '../style-spec';
 import type {Result} from '../util/result';
 import type {InterpolationType} from './definitions/interpolate';
 import type {PropertyValueSpecification} from '../types';
+import type {FormattedSection} from './types/formatted';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -58,18 +59,20 @@ export class StyleExpression {
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
+        this._evaluator.formattedSection = formattedSection;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
+        this._evaluator.formattedSection = formattedSection || null;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
@@ -132,12 +135,12 @@ export class ZoomConstantExpression<Kind: EvaluationKind> {
         this.isStateDependent = kind !== ('constant': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
-        return this._styleExpression.evaluate(globals, feature, featureState);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluate(globals, feature, featureState, formattedSection);
     }
 }
 
@@ -159,12 +162,12 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
         }
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
-        return this._styleExpression.evaluate(globals, feature, featureState);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluate(globals, feature, featureState, formattedSection);
     }
 
     interpolationFactor(input: number, lower: number, upper: number): number {
@@ -184,7 +187,7 @@ export type ConstantExpression = {
 export type SourceExpression = {
     kind: 'source',
     isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection) => any,
 };
 
 export type CameraExpression = {
@@ -198,7 +201,7 @@ export type CameraExpression = {
 export type CompositeExpression = {
     kind: 'composite',
     isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>,
     interpolationType: ?InterpolationType
