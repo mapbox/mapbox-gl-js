@@ -8,7 +8,7 @@ export default [{
     input: 'src/index.js',
     output: {
         name: 'mapboxgl',
-        file: 'dist/mapbox-gl.csp.js',
+        file: 'dist/mapbox-gl-csp.js',
         format: 'umd',
         sourcemap: true,
         indent: false,
@@ -20,7 +20,7 @@ export default [{
     input: ['src/source/worker.js'],
     output: {
         name: 'mapboxgl',
-        file: 'dist/mapbox-gl.worker.js',
+        file: 'dist/mapbox-gl-worker.js',
         format: 'iife',
         sourcemap: true,
         indent: false,
