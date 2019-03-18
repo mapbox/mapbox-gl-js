@@ -74,8 +74,7 @@ const supportedDiffOperations = pick(diffOperations, [
     'setLight',
     'setTransition',
     'setGeoJSONSourceData'
-    // 'setGlyphs',
-    // 'setSprite',
+    // 'setGlyphs'
 ]);
 
 const ignoredDiffOperations = pick(diffOperations, [

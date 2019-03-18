@@ -79,11 +79,6 @@ const operations = {
     setPitch: 'setPitch',
 
     /*
-     * { command: 'setSprite', args: ['spriteUrl'] }
-     */
-    setSprite: 'setSprite',
-
-    /*
      * { command: 'setGlyphs', args: ['glyphsUrl'] }
      */
     setGlyphs: 'setGlyphs',
@@ -337,9 +332,6 @@ function diffStyles(before, after) {
         }
         if (!isEqual(before.pitch, after.pitch)) {
             commands.push({ command: operations.setPitch, args: [after.pitch] });
-        }
-        if (!isEqual(before.sprite, after.sprite)) {
-            commands.push({ command: operations.setSprite, args: [after.sprite] });
         }
         if (!isEqual(before.glyphs, after.glyphs)) {
             commands.push({ command: operations.setGlyphs, args: [after.glyphs] });
