@@ -150,9 +150,15 @@ export default function bindHandlers(map: Map, options: {interactive: boolean, c
         map.fire(new MapTouchEvent('touchcancel', map, e));
     }
 
-    function onClick(e: MouseEvent) {
-        const pos = DOM.mousePos(el, e);
-        if (pos.equals(startPos) || pos.dist(startPos) < options.clickTolerance) {
+    function onClick(e) {
+        if (e.isTrusted) {
+            //Actually clicked
+            var pos = DOM.mousePos(el, e);
+            if (pos.equals(startPos) || pos.dist(startPos) < options.clickTolerance) {
+                map.fire(new MapMouseEvent('click', map, e));
+            }
+        } else {
+            //Triggered by code
             map.fire(new MapMouseEvent('click', map, e));
         }
     }
