@@ -153,7 +153,7 @@ export default function bindHandlers(map: Map, options: {interactive: boolean, c
     function onClick(e) {
         if (e.isTrusted) {
             //Actually clicked
-            var pos = DOM.mousePos(el, e);
+            const pos = DOM.mousePos(el, e);
             if (pos.equals(startPos) || pos.dist(startPos) < options.clickTolerance) {
                 map.fire(new MapMouseEvent('click', map, e));
             }
