@@ -116,6 +116,8 @@ class VectorTileSource extends Evented implements Source {
             throw new Error('vector tile sources must have a tileSize of 512');
         }
 
+        const sourceCache = this.map.style.sourceCaches[this.id];
+        sourceCache.clearTiles();
         this.load();
     }
 
