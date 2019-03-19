@@ -29,7 +29,7 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/light-v9',
+    style: 'mapbox://styles/mapbox/light-v10',
     center: [16.05, 48],
     zoom: 2.9
 });
@@ -39,7 +39,7 @@ document.getElementById('buttons').addEventListener('click', function(event) {
     // Use setLayoutProperty to set the value of a layout property in a style layer.
     // The three arguments are the id of the layer, the name of the layout property,
     // and the new property value.
-    map.setLayoutProperty('country-label-lg', 'text-field', ['get', 'name_' + language]);
+    map.setLayoutProperty('country-label', 'text-field', ['get', 'name_' + language]);
 });
 
 </script>
