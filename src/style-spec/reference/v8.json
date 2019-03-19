@@ -5141,6 +5141,7 @@
       "doc": "The color with which the text will be drawn.",
       "default": "#000000",
       "transition": true,
+      "overridable": true,
       "requires": [
         "text-field"
       ],

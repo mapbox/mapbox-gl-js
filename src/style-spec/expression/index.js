@@ -152,14 +152,12 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
     _styleExpression: StyleExpression;
     interpolationType: ?InterpolationType;
 
-    constructor(kind: Kind, expression: StyleExpression, zoomCurve: Step | Interpolate) {
+    constructor(kind: Kind, expression: StyleExpression, zoomStops: Array<number>, interpolationType?: InterpolationType) {
         this.kind = kind;
-        this.zoomStops = zoomCurve.labels;
+        this.zoomStops = zoomStops;
         this._styleExpression = expression;
         this.isStateDependent = kind !== ('camera': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
-        if (zoomCurve instanceof Interpolate) {
-            this.interpolationType = zoomCurve.interpolation;
-        }
+        this.interpolationType = interpolationType;
     }
 
     evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
@@ -246,9 +244,11 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
             (new ZoomConstantExpression('source', expression.value): SourceExpression));
     }
 
+    const interpolationType = zoomCurve instanceof Interpolate ? zoomCurve.interpolation : undefined;
+
     return success(isFeatureConstant ?
-        (new ZoomDependentExpression('camera', expression.value, zoomCurve): CameraExpression) :
-        (new ZoomDependentExpression('composite', expression.value, zoomCurve): CompositeExpression));
+        (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType): CameraExpression) :
+        (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType): CompositeExpression));
 }
 
 import { isFunction, createFunction } from '../function';

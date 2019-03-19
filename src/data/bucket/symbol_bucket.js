@@ -45,7 +45,7 @@ import type {
 } from '../bucket';
 import type {CollisionBoxArray, CollisionBox, SymbolInstance} from '../array_types';
 import type { StructArray, StructArrayMember } from '../../util/struct_array';
-import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
+import SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
@@ -297,6 +297,7 @@ class SymbolBucket implements Bucket {
     symbolInstanceIndexes: Array<number>;
     writingModes: Array<number>;
     allowVerticalPlacement: boolean;
+    hasPaintOverrides: boolean;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -308,6 +309,7 @@ class SymbolBucket implements Bucket {
         this.pixelRatio = options.pixelRatio;
         this.sourceLayerIndex = options.sourceLayerIndex;
         this.hasPattern = false;
+        this.hasPaintOverrides = false;
 
         const layer = this.layers[0];
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
@@ -333,6 +335,14 @@ class SymbolBucket implements Bucket {
     }
 
     createArrays() {
+        const layout = this.layers[0].layout;
+        this.hasPaintOverrides = SymbolStyleLayer.hasPaintOverrides(layout);
+        if (this.hasPaintOverrides) {
+            for (const layer of this.layers) {
+                layer.setPaintOverrides();
+            }
+        }
+
         this.text = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property)));
         this.icon = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property)));
 
@@ -564,7 +574,7 @@ class SymbolBucket implements Bucket {
         if (feature.text && feature.text.sections) {
             const sections = feature.text.sections;
 
-            if (sections[0].textColor) {
+            if (this.hasPaintOverrides) {
                 let currentSectionIndex;
                 const populatePaintArrayForSection = (sectionIndex?: number, lastSection: boolean) => {
                     if (currentSectionIndex !== undefined && (currentSectionIndex !== sectionIndex || lastSection)) {

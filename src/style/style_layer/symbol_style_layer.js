@@ -2,18 +2,41 @@
 
 import StyleLayer from '../style_layer';
 
+import assert from 'assert';
 import SymbolBucket from '../../data/bucket/symbol_bucket';
 import resolveTokens from '../../util/resolve_tokens';
 import { isExpression } from '../../style-spec/expression';
 import assert from 'assert';
 import properties from './symbol_style_layer_properties';
-import { Transitionable, Transitioning, Layout, PossiblyEvaluated } from '../properties';
+
+import {
+    Transitionable,
+    Transitioning,
+    Layout,
+    PossiblyEvaluated,
+    PossiblyEvaluatedPropertyValue,
+    PropertyValue
+} from '../properties';
+
+import {
+    isExpression,
+    StyleExpression,
+    ZoomConstantExpression,
+    ZoomDependentExpression
+} from '../../style-spec/expression';
 
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
-import type {Feature} from '../../style-spec/expression';
 import type EvaluationParameters from '../evaluation_parameters';
 import type {LayerSpecification} from '../../style-spec/types';
+import type { Feature, SourceExpression, CompositeExpression } from '../../style-spec/expression';
+import type {Expression} from '../../style-spec/expression/expression';
+import {FormattedType} from '../../style-spec/expression/types';
+import {typeOf} from '../../style-spec/expression/values';
+import Formatted from '../../style-spec/expression/types/formatted';
+import FormatSectionOverride from '../../style-spec/expression/definitions/format_section_override';
+import FormatExpression from '../../style-spec/expression/definitions/format';
+import Literal from '../../style-spec/expression/definitions/literal';
 
 class SymbolStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -89,6 +112,83 @@ class SymbolStyleLayer extends StyleLayer {
 
     queryIntersectsFeature(): boolean {
         assert(false); // Should take a different path in FeatureIndex
+        return false;
+    }
+
+    setPaintOverrides() {
+        for (const overridable of properties.paint.overridableProperties) {
+            if (!SymbolStyleLayer.hasPaintOverride(this.layout, overridable)) {
+                continue;
+            }
+            const overriden = this.paint.get(overridable);
+            const override = new FormatSectionOverride(overriden);
+            const styleExpression = new StyleExpression(override, overriden.property.specification);
+            let expression = null;
+            if (overriden.value.kind === 'constant' || overriden.value.kind === 'source') {
+                expression = (new ZoomConstantExpression('source', styleExpression): SourceExpression);
+            } else {
+                expression = (new ZoomDependentExpression('composite',
+                                                          styleExpression,
+                                                          overriden.value.zoomStops,
+                                                          overriden.value._interpolationType): CompositeExpression);
+            }
+            this.paint._values[overridable] = new PossiblyEvaluatedPropertyValue(overriden.property,
+                                                                                 expression,
+                                                                                 overriden.parameters);
+        }
+    }
+
+    _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
+        if (!this.layout || oldValue.isDataDriven() || newValue.isDataDriven()) {
+            return false;
+        }
+        return SymbolStyleLayer.hasPaintOverride(this.layout, name);
+    }
+
+    static hasPaintOverride(layout: PossiblyEvaluated<LayoutProps>, propertyName: string): boolean {
+        const textField = layout.get('text-field');
+
+        let sections: any = [];
+        if (textField.value.kind === 'constant' && textField.value.value instanceof Formatted) {
+            sections = textField.value.value.sections;
+        } else if (textField.value.kind === 'source') {
+            const checkExpression = (expression: Expression) => {
+                if (sections.length) {
+                    return;
+                }
+
+                if (expression instanceof Literal && typeOf(expression.value) === FormattedType) {
+                    const formatted: Formatted = ((expression.value): any);
+                    sections = formatted.sections;
+                } else if (expression instanceof FormatExpression) {
+                    sections = expression.sections;
+                }
+            };
+
+            const expr: ZoomConstantExpression<'source'> = ((textField.value): any);
+            if (expr._styleExpression) {
+                checkExpression(expr._styleExpression.expression);
+                if (!sections.length) {
+                    expr._styleExpression.expression.eachChild(checkExpression);
+                }
+            }
+        }
+
+        const property = properties.paint.properties[propertyName];
+        for (const section of sections) {
+            if (property.overrides && property.overrides.hasOverride(section)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static hasPaintOverrides(layout: PossiblyEvaluated<LayoutProps>): boolean {
+        for (const overridable of properties.paint.overridableProperties) {
+            if (SymbolStyleLayer.hasPaintOverride(layout, overridable)) {
+                return true;
+            }
+        }
         return false;
     }
 }
