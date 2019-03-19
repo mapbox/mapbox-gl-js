@@ -1,0 +1,30 @@
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.0.0/mapbox-gl-geocoder.min.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.0.0/mapbox-gl-geocoder.css' type='text/css' />
+<style>
+.result{
+    font-style: italic;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: gray;
+}
+</style>
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [-79.4512, 43.6568],
+    zoom: 13
+});
+
+var geocoder = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+    render: function(item){
+        // add a custom render function that shows an icon in the dropdown menu
+        var maki = item.properties.maki || 'marker';
+        return `<span class='result'><img src='https://unpkg.com/@mapbox/maki@6.1.0/icons/${marker}-11.svg'>${item.place_name}</span>`
+    }
+});
+map.addControl(geocoder);
+
+</script>
