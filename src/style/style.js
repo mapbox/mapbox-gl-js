@@ -137,6 +137,7 @@ class Style extends Evented {
         this.imageManager = new ImageManager();
         this.imageManager.setEventedParent(this);
         this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
+        console.log('this.glyphManager', this.glyphManager);
         this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
@@ -1245,6 +1246,14 @@ class Style extends Evented {
         }
     }
 
+    setGlyphs(url: string) {
+        this.glyphManager._clearGlyphs();
+        this.glyphManager.setURL(url);
+        for (const id in this.sourceCaches) {
+            this.sourceCaches[id].reload();
+        }
+    }
+
     // Callbacks from web workers
 
     getImages(mapId: string, params: {icons: Array<string>}, callback: Callback<{[string]: StyleImage}>) {
@@ -1252,6 +1261,7 @@ class Style extends Evented {
     }
 
     getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {[number]: ?StyleGlyph}}>) {
+        console.log('this.style.getGlyphs', params, callback);
         this.glyphManager.getGlyphs(params.stacks, callback);
     }
 

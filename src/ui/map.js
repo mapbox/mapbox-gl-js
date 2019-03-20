@@ -963,13 +963,18 @@ class Map extends Camera {
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
         options = extend({}, { localIdeographFontFamily: defaultOptions.localIdeographFontFamily}, options);
-
+        console.log('style', style);
+        console.log('options', options);
         if ((options.diff !== false && !options.localIdeographFontFamily) && this.style && style) {
             this._diffStyle(style, options);
             return this;
         } else {
             return this._updateStyle(style, options);
         }
+    }
+
+    setGlyphs(url: string) {
+        this.style.setGlyphs(url);
     }
 
     _updateStyle(style: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions) {

@@ -35,10 +35,12 @@ class GlyphManager {
     }
 
     setURL(url: ?string) {
+        console.log('set url', url);
         this.url = url;
     }
 
     getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {[id: number]: ?StyleGlyph}}>) {
+        console.log('this.glyphManager.getGlyphs', glyphs, callback);
         const all = [];
 
         for (const stack in glyphs) {
@@ -77,6 +79,7 @@ class GlyphManager {
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
+                console.log('this.url', this.url);
                 GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestTransform,
                     (err, response: ?{[number]: StyleGlyph | null}) => {
                         if (response) {
@@ -116,6 +119,11 @@ class GlyphManager {
                 callback(null, result);
             }
         });
+    }
+
+    _clearGlyphs() {
+        this.entries = {};
+        this.url = null;
     }
 
     _tinySDF(entry: Entry, stack: string, id: number): ?StyleGlyph {
