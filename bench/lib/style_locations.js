@@ -1,3 +1,5 @@
+/* eslint camelcase: 0 */
+
 import styleBenchmarkLocations from '@mapbox/gazetteer/mapbox-streets/style-benchmark-locations.json';
 import MercatorCoordinate from '../../src/geo/mercator_coordinate';
 import { OverscaledTileID } from '../../src/source/tile_id';
