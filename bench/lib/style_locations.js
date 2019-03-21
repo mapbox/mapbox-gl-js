@@ -1,12 +1,10 @@
-/* eslint camelcase: 0 */
-
 import styleBenchmarkLocations from '@mapbox/gazetteer/mapbox-streets/style-benchmark-locations.json';
 import MercatorCoordinate from '../../src/geo/mercator_coordinate';
 import { OverscaledTileID } from '../../src/source/tile_id';
 
 export default styleBenchmarkLocations.features.map(feature => {
     const { coordinates } = feature.geometry;
-    const { zoom, place_name } = feature.properties;
+    const { zoom } = feature.properties;
     const { x, y } = MercatorCoordinate.fromLngLat({
         lng: coordinates[0],
         lat: coordinates[1]
@@ -17,7 +15,7 @@ export default styleBenchmarkLocations.features.map(feature => {
     const tileY = Math.floor(y * scale);
 
     return {
-        description: place_name,
+        description: feature.properties['place_name'],
         tileID: [new OverscaledTileID(zoom, 0, zoom, tileX, tileY)],
         zoom,
         center: coordinates
