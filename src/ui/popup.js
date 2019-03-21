@@ -306,7 +306,7 @@ export default class Popup extends Evented {
             }
         }
 
-        if (this._container.style.maxWidth !== this.options.maxWidth) {
+        if (this.options.maxWidth && this._container.style.maxWidth !== this.options.maxWidth) {
             this._container.style.maxWidth = this.options.maxWidth;
         }
 
