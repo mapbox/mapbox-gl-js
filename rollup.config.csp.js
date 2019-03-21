@@ -4,28 +4,21 @@ import banner from './build/banner';
 // a config for generating a special GL JS bundle with static web worker code (in a separate file)
 // https://github.com/mapbox/mapbox-gl-js/issues/6058
 
-export default [{
-    input: 'src/index.js',
+const config = (input, file, format) => ({
+    input,
     output: {
         name: 'mapboxgl',
-        file: 'dist/mapbox-gl-csp.js',
-        format: 'umd',
+        file,
+        format,
         sourcemap: true,
         indent: false,
         banner
     },
     treeshake: true,
     plugins: plugins(true, true)
-}, {
-    input: ['src/source/worker.js'],
-    output: {
-        name: 'mapboxgl',
-        file: 'dist/mapbox-gl-csp-worker.js',
-        format: 'iife',
-        sourcemap: true,
-        indent: false,
-        banner
-    },
-    treeshake: true,
-    plugins: plugins(true, true)
-}];
+});
+
+export default [
+    config('src/index.js', 'dist/mapbox-gl-csp.js', 'umd'),
+    config('src/source/worker.js', 'dist/mapbox-gl-csp-worker.js', 'iife')
+];
