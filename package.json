@@ -57,7 +57,7 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-react": "^7.11.1",
     "execcommand-copy": "^1.1.0",
-    "flow-bin": "^0.91.0",
+    "flow-bin": "^0.95.1",
     "github-slugger": "^1.1.1",
     "gl": "^4.1.1",
     "glob": "^7.0.3",
