@@ -144,14 +144,14 @@ export default class extends React.Component {
                         <pre><code>{`connect-src https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com`}</code></pre>
 
                         <p>For strict CSP environments without <code>worker-src blob: ; child-src blob:</code> enabled, there's a separate
-                            Mapbox GL JS bundle (<code>mapbox-gl-csp.js</code> and <code>mapbox-gl-worker.js</code>) which requires setting the path
+                            Mapbox GL JS bundle (<code>mapbox-gl-csp.js</code> and <code>mapbox-gl-csp-worker.js</code>) which requires setting the path
                             to the worker manually:</p>
 
                         <Copyable>
                             {highlightMarkup(`
                                 <script src='${urls.js().replace('.js', '-csp.js')}'></script>
                                 <script>
-                                mapboxgl.workerUrl = '${urls.js().replace('.js', '-worker.js')}';
+                                mapboxgl.workerUrl = '${urls.js().replace('.js', '-csp-worker.js')}';
                                 ...
                                 </script>
                             `)}

@@ -20,7 +20,7 @@ export default [{
     input: ['src/source/worker.js'],
     output: {
         name: 'mapboxgl',
-        file: 'dist/mapbox-gl-worker.js',
+        file: 'dist/mapbox-gl-csp-worker.js',
         format: 'iife',
         sourcemap: true,
         indent: false,
