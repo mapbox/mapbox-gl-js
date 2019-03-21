@@ -111,6 +111,7 @@
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
     "build-prod": "rollup -c --environment BUILD:production",
     "build-prod-min": "rollup -c --environment BUILD:production,MINIFY:true",
+    "build-csp": "rollup -c rollup.config.csp.js",
     "build-flow-types": "cp build/mapbox-gl.js.flow dist/mapbox-gl.js.flow && cp build/mapbox-gl.js.flow dist/mapbox-gl-dev.js.flow",
     "build-css": "postcss -o dist/mapbox-gl.css src/css/mapbox-gl.css",
     "build-style-spec": "cd src/style-spec && npm run build && cd ../.. && mkdir -p dist/style-spec && cp src/style-spec/dist/* dist/style-spec",
@@ -140,7 +141,7 @@
     "test-expressions": "build/run-node test/expression.test.js",
     "test-flow": "build/run-node build/generate-flow-typed-style-spec && flow .",
     "test-cov": "nyc --require=@mapbox/flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
-    "prepublishOnly": "run-s build-flow-types build-dev build-prod-min build-prod build-css build-style-spec test-build",
+    "prepublishOnly": "run-s build-flow-types build-dev build-prod-min build-prod build-csp build-css build-style-spec test-build",
     "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js"
   },
   "files": [

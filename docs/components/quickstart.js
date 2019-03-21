@@ -142,6 +142,20 @@ export default class extends React.Component {
                         <p>Requesting styles from Mapbox or other services will require additional
                             directives. For Mapbox, you can use this <code>connect-src</code> directive:</p>
                         <pre><code>{`connect-src https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com`}</code></pre>
+
+                        <p>For strict CSP environments without <code>worker-src blob: ; child-src blob:</code> enabled, there's a separate
+                            Mapbox GL JS bundle (<code>mapbox-gl-csp.js</code> and <code>mapbox-gl-csp-worker.js</code>) which requires setting the path
+                            to the worker manually:</p>
+
+                        <Copyable>
+                            {highlightMarkup(`
+                                <script src='${urls.js().replace('.js', '-csp.js')}'></script>
+                                <script>
+                                mapboxgl.workerUrl = '${urls.js().replace('.js', '-csp-worker.js')}';
+                                ...
+                                </script>
+                            `)}
+                        </Copyable>
                     </div>
                     <div>
                         <h2 className='strong' id='mapbox-css'>Mapbox CSS</h2>
