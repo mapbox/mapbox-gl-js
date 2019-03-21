@@ -1,6 +1,6 @@
 /*---
 title: Play map locations as a slideshow
-description: Autoplay the locations of boroughs in New York City
+description: Autoplay the locations of boroughs in New York City.
 tags:
   - camera
 pathname: /mapbox-gl-js/example/playback-locations/

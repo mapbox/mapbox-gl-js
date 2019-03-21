@@ -2,6 +2,7 @@
 /docs/components/api.json
 /dist/
 /docs/pages/dist/
+/docs/img/dist/
 *.js.map
 node_modules
 package-lock.json

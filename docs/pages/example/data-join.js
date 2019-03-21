@@ -1,6 +1,6 @@
 /*---
 title: Join local JSON data with vector tile geometries
-description: Style a choropleth by merging local JSON data with vector tile geometries
+description: Style a choropleth by merging local JSON data with vector tile geometries.
 tags:
   - sources
 pathname: /mapbox-gl-js/example/data-join/
