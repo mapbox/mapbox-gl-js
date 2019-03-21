@@ -4,6 +4,8 @@ description: Introduction to Mapbox GL JS, a JavaScript library that uses WebGL 
 prependJs:
   - "import OverviewHeader from '@mapbox/dr-ui/overview-header';"
   - "import Quickstart from '../../components/quickstart';"
+  - "import Copyable from '../../components/copyable';"
+  - "import urls from '../../components/urls';"
   - "import {version} from '../../../package.json';"
 pathname: /mapbox-gl-js/overview/
 ---
@@ -50,6 +52,16 @@ Requesting styles from Mapbox or other services will require additional directiv
 ```
 connect-src https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com
 ```
+
+For strict CSP environments without <code>worker-src blob: ; child-src blob:</code> enabled, there's a separate Mapbox GL JS bundle (`mapbox-gl-csp.js` and `mapbox-gl-csp-worker.js`) which requires setting the path to the worker manually:
+
+{{
+<Copyable lang="html">{`<script src='${urls.js().replace('.js', '-csp.js')}'></script>
+<script>
+mapboxgl.workerUrl = "${urls.js().replace('.js', '-csp-worker.js')}";
+...
+</script>`}</Copyable>
+}}
 
 ## Mapbox CSS
 
