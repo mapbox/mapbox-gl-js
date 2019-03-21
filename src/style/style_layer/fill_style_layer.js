@@ -39,6 +39,7 @@ class FillStyleLayer extends StyleLayer {
     }
 
     queryRadius(): number {
+        console.log('this.paint', this.paint);
         return translateDistance(this.paint.get('fill-translate'));
     }
 

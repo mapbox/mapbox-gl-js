@@ -73,8 +73,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setLayerZoomRange',
     'setLight',
     'setTransition',
-    'setGeoJSONSourceData'
-    // 'setGlyphs'
+    'setGeoJSONSourceData',
+    'setGlyphs'
 ]);
 
 const ignoredDiffOperations = pick(diffOperations, [
@@ -438,7 +438,7 @@ class Style extends Evented {
         if (changes.length === 0) {
             return false;
         }
-
+        console.log('changes', changes);
         const unimplementedOps = changes.filter(op => !(op.command in supportedDiffOperations));
         if (unimplementedOps.length > 0) {
             throw new Error(`Unimplemented: ${unimplementedOps.map(op => op.command).join(', ')}.`);
@@ -1249,6 +1249,7 @@ class Style extends Evented {
     setGlyphs(url: string) {
         this.glyphManager._clearGlyphs();
         this.glyphManager.setURL(url);
+        // only reload sources using glyphs?
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].reload();
         }
@@ -1261,7 +1262,6 @@ class Style extends Evented {
     }
 
     getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {[number]: ?StyleGlyph}}>) {
-        console.log('this.style.getGlyphs', params, callback);
         this.glyphManager.getGlyphs(params.stacks, callback);
     }
 

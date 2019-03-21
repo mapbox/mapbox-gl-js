@@ -21,7 +21,7 @@
 <script>
 // these are set in dark-v9.js and light-v9.js
 var dark = window.darkv9;
-var light = window.lightv9;
+var light = 'mapbox://styles/ryanhamley/cjsxn92np2rfb1fpueclvro50';
 
 var style = dark;
 var map = window.map = new mapboxgl.Map({
@@ -32,10 +32,19 @@ var map = window.map = new mapboxgl.Map({
     hash: style
 });
 
-setInterval(function () {
-    style = (style === dark ? light : dark);
-    map.setStyle(style);
-}, 2000);
+map.on('load', function () {
+    setTimeout(function () {
+        map.setStyle(light, {localIdeographFontFamily: false});
+        setTimeout(function () {
+            map.setStyle(dark, {localIdeographFontFamily: false});
+        }, 2000);
+    }, 2000);
+});
+
+// setInterval(function () {
+//     style = (style === dark ? light : dark);
+//     map.setStyle(style, {localIdeographFontFamily: false});
+// }, 2000);
 
 </script>
 </body>

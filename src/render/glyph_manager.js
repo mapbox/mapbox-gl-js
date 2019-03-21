@@ -35,12 +35,10 @@ class GlyphManager {
     }
 
     setURL(url: ?string) {
-        console.log('set url', url);
         this.url = url;
     }
 
     getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {[id: number]: ?StyleGlyph}}>) {
-        console.log('this.glyphManager.getGlyphs', glyphs, callback);
         const all = [];
 
         for (const stack in glyphs) {
