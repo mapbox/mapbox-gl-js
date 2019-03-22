@@ -1,7 +1,8 @@
 import fs from 'fs';
+import path from 'path';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
-import {plugins} from '../../build/rollup_plugins';
+import {plugins} from '../build/rollup_plugins';
 
 let styles = ['mapbox://styles/mapbox/streets-v10'];
 
@@ -19,25 +20,42 @@ const replaceConfig = {
     'process.env.NODE_ENV': JSON.stringify('production')
 };
 
-export default [{
-    input: [`bench/styles/benchmarks.js`, 'src/source/worker.js'],
+const allPlugins = plugins(true, true).concat(replace(replaceConfig));
+const intro = fs.readFileSync('rollup/bundle_prelude.js', 'utf8');
+
+const splitConfig = (name) => [{
+    input: [`bench/${name}/benchmarks.js`, 'src/source/worker.js'],
     output: {
-        dir: 'rollup/build/benchmarks/styles',
+        dir: `rollup/build/benchmarks/${name}`,
         format: 'amd',
         indent: false,
         sourcemap: 'inline',
         chunkFileNames: 'shared.js'
     },
-    plugins: plugins(true, true).concat(replace(replaceConfig))
+    plugins: allPlugins
 }, {
-    input: 'rollup/style_benchmarks.js',
+    input: `rollup/benchmarks_${name}.js`,
     output: {
-        file: 'bench/styles/benchmarks_generated.js',
+        file: `bench/${name}/benchmarks_generated.js`,
         format: 'umd',
         indent: false,
         sourcemap: true,
-        intro: fs.readFileSync(require.resolve('../../rollup/bundle_prelude.js'), 'utf8')
+        intro
     },
     treeshake: false,
     plugins: [sourcemaps()],
 }];
+
+const viewConfig = {
+    input: 'bench/benchmarks_view.js',
+    output: {
+        name: 'Benchmarks',
+        file: 'bench/benchmarks_view_generated.js',
+        format: 'umd',
+        indent: false,
+        sourcemap: true
+    },
+    plugins: allPlugins
+};
+
+export default splitConfig('versions').concat(splitConfig('styles')).concat(viewConfig);
