@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
 import {plugins} from '../build/rollup_plugins';
