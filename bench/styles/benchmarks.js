@@ -16,8 +16,7 @@ mapboxgl.accessToken = accessToken;
 const benchmarks = [];
 const filter = window.location.hash.substr(1);
 
-function register(Benchmark, locations, options) {
-    const name = Benchmark.name;
+function register(name, Benchmark, locations, options) {
     if (filter && name !== filter) return;
 
     const benchmark = { name, versions: [] };
@@ -38,12 +37,12 @@ function register(Benchmark, locations, options) {
     benchmarks.push(benchmark);
 }
 
-register(StyleLayerCreate);
-register(Validate);
-locations.forEach(location => register(Layout, location.tileID, {location}));
-locations.forEach(location => register(Paint, [location], {location}));
-register(QueryPoint, locations);
-register(QueryBox, locations);
+register('StyleLayerCreate', StyleLayerCreate);
+register('Validate', Validate);
+locations.forEach(location => register('Layout', Layout, location.tileID, {location}));
+locations.forEach(location => register('Paint', Paint, [location], {location}));
+register('QueryPoint', QueryPoint, locations);
+register('QueryBox', QueryBox, locations);
 
 import getWorkerPool from '../../src/util/global_worker_pool';
 
