@@ -26,21 +26,21 @@ const config = [{
     output: {
         dir: 'rollup/build/benchmarks/styles',
         format: 'amd',
+        indent: false,
         sourcemap: 'inline',
         chunkFileNames: 'chunk1.js'
     },
-    experimentalCodeSplitting: true,
-    plugins: plugins()
+    plugins: plugins(true, true)
 }, {
     input: 'rollup/style_benchmarks.js',
     output: {
         file: 'bench/styles/benchmarks_generated.js',
         format: 'umd',
+        indent: false,
         sourcemap: 'inline',
         intro: fs.readFileSync(require.resolve('../../rollup/bundle_prelude.js'), 'utf8')
     },
     treeshake: false,
-    indent: false,
     plugins: [sourcemaps()],
 }];
 
