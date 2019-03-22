@@ -1,7 +1,5 @@
 import mapboxgl from '../../src';
 import accessToken from '../lib/access_token';
-import { summaryStatistics, regression } from '../lib/statistics';
-import updateUI from '../benchmarks_view';
 import styleLocations from '../lib/style_locations';
 
 import Layout from '../benchmarks/layout';
@@ -21,10 +19,13 @@ import {FunctionCreate, FunctionEvaluate, FunctionConvert, ExpressionCreate, Exp
 import FilterCreate from '../benchmarks/filter_create';
 import FilterEvaluate from '../benchmarks/filter_evaluate';
 
-window.mapboxglBenchmarks = window.mapboxglBenchmarks || {};
+import getWorkerPool from '../../src/util/global_worker_pool';
+
+mapboxgl.accessToken = accessToken;
+
+window.mapboxglBenchmarks = window.mapboxglBenchmarks || [];
 
 const version = process.env.BENCHMARK_VERSION;
-const filter = window.location.hash.substr(1);
 
 function register(name, benchmark) {
     window.mapboxglBenchmarks[name] = window.mapboxglBenchmarks[name] || {};
@@ -67,65 +68,12 @@ register('SymbolLayout', new SymbolLayout(style, styleLocations.map(location => 
 register('FilterCreate', new FilterCreate());
 register('FilterEvaluate', new FilterEvaluate());
 
-import getWorkerPool from '../../src/util/global_worker_pool';
-
-mapboxgl.accessToken = accessToken;
-
-let promise = Promise.resolve().then(() => {
+Promise.resolve().then(() => {
     // Ensure the global worker pool is never drained. Browsers have resource limits
     // on the max number of workers that can be created per page.
     // We do this async to avoid creating workers before the worker bundle blob
     // URL has been set up, which happens after this module is executed.
     getWorkerPool().acquire(-1);
 });
-
-const benchmarks = [];
-
-window.runBenchmarks = () => {
-
-    for (const name in window.mapboxglBenchmarks) {
-        if (filter && name !== filter) continue;
-
-        const benchmark = { name, versions: [] };
-        benchmarks.push(benchmark);
-
-        for (const test in window.mapboxglBenchmarks[name]) {
-            const version = {
-                name: test,
-                status: 'waiting',
-                logs: [],
-                samples: [],
-                summary: {}
-            };
-            benchmark.versions.push(version);
-
-            promise = promise.then(() => {
-                version.status = 'running';
-                updateUI(benchmarks);
-
-                return window.mapboxglBenchmarks[name][test].run()
-                    .then(measurements => {
-                        // scale measurements down by iteration count, so that
-                        // they represent (average) time for a single iteration
-                        const samples = measurements.map(({time, iterations}) => time / iterations);
-                        version.status = 'ended';
-                        version.samples = samples;
-                        version.summary = summaryStatistics(samples);
-                        version.regression = regression(measurements);
-                        updateUI(benchmarks);
-                    })
-                    .catch(error => {
-                        version.status = 'errored';
-                        version.error = error;
-                        updateUI(benchmarks);
-                    });
-            });
-        }
-
-        promise = promise.then(() => {
-            updateUI(benchmarks, true);
-        });
-    }
-};
 
 export default mapboxgl;
