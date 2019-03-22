@@ -28,8 +28,6 @@ const filter = window.location.hash.substr(1);
 
 function register(benchmark) {
     const name = benchmark.constructor.name;
-    if (filter && name !== filter) return;
-
     window.mapboxglBenchmarks[name] = window.mapboxglBenchmarks[name] || {};
     window.mapboxglBenchmarks[name][version] = benchmark;
 }
@@ -73,6 +71,8 @@ const benchmarks = [];
 window.runBenchmarks = () => {
 
     for (const name in window.mapboxglBenchmarks) {
+        if (filter && name !== filter) continue;
+
         const benchmark = { name, versions: [] };
         benchmarks.push(benchmark);
 

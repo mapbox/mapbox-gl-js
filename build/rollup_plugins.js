@@ -17,8 +17,8 @@ export const plugins = (minified, production) => [
     minifyStyleSpec(),
     json(),
     glsl('./src/shaders/*.glsl', production),
-    minified ? terser() : false,
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
+    minified ? terser() : false,
     production ? unassert() : false,
     resolve({
         browser: true,

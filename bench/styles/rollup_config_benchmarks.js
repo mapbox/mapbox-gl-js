@@ -28,7 +28,7 @@ export default [{
         sourcemap: 'inline',
         chunkFileNames: 'shared.js'
     },
-    plugins: plugins(true, true).concat(replace(replaceConfig))
+    plugins: plugins(false, true).concat(replace(replaceConfig))
 }, {
     input: 'rollup/style_benchmarks.js',
     output: {
