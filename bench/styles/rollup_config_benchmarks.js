@@ -1,7 +1,7 @@
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
-import {plugins as basePlugins} from '../../build/rollup_plugins';
+import {plugins} from '../../build/rollup_plugins';
 
 let styles = ['mapbox://styles/mapbox/streets-v10'];
 
@@ -11,17 +11,14 @@ if (process.env.MAPBOX_STYLES) {
         .map(style => style.match(/\.json$/) ? require(style) : style);
 }
 
-const plugins = () => basePlugins(true, true).concat(
-    replace({
-        'process.env.BENCHMARK_VERSION': JSON.stringify(process.env.BENCHMARK_VERSION),
-        'process.env.MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN),
-        'process.env.MapboxAccessToken': JSON.stringify(process.env.MapboxAccessToken),
-        'process.env.MAPBOX_STYLES': JSON.stringify(styles),
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
-    })
-);
+const replaceConfig = {
+    'process.env.BENCHMARK_VERSION': JSON.stringify(process.env.BENCHMARK_VERSION),
+    'process.env.MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN),
+    'process.env.MapboxAccessToken': JSON.stringify(process.env.MapboxAccessToken),
+    'process.env.MAPBOX_STYLES': JSON.stringify(styles)
+};
 
-const config = [{
+export default [{
     input: [`bench/styles/benchmarks.js`, 'src/source/worker.js'],
     output: {
         dir: 'rollup/build/benchmarks/styles',
@@ -30,7 +27,7 @@ const config = [{
         sourcemap: 'inline',
         chunkFileNames: 'shared.js'
     },
-    plugins: plugins()
+    plugins: plugins(true, true).concat(replace(replaceConfig))
 }, {
     input: 'rollup/style_benchmarks.js',
     output: {
@@ -43,5 +40,3 @@ const config = [{
     treeshake: false,
     plugins: [sourcemaps()],
 }];
-
-export default config;

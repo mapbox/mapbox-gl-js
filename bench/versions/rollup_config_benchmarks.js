@@ -1,18 +1,15 @@
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
-import {plugins as basePlugins} from '../../build/rollup_plugins';
+import {plugins} from '../../build/rollup_plugins';
 
-const plugins = () => basePlugins(true, true).concat(
-    replace({
-        'process.env.BENCHMARK_VERSION': JSON.stringify(process.env.BENCHMARK_VERSION),
-        'process.env.MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN),
-        'process.env.MapboxAccessToken': JSON.stringify(process.env.MapboxAccessToken),
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
-    })
-);
+const replaceConfig = {
+    'process.env.BENCHMARK_VERSION': JSON.stringify(process.env.BENCHMARK_VERSION),
+    'process.env.MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN),
+    'process.env.MapboxAccessToken': JSON.stringify(process.env.MapboxAccessToken)
+};
 
-const config = [{
+export default [{
     input: [`bench/versions/benchmarks.js`, 'src/source/worker.js'],
     output: {
         dir: 'rollup/build/benchmarks/versions',
@@ -21,7 +18,7 @@ const config = [{
         sourcemap: 'inline',
         chunkFileNames: 'shared.js'
     },
-    plugins: plugins()
+    plugins: plugins(true, true).concat(replace(replaceConfig))
 }, {
     input: 'rollup/benchmarks.js',
     output: {
@@ -34,5 +31,3 @@ const config = [{
     treeshake: false,
     plugins: [sourcemaps()],
 }];
-
-export default config;
