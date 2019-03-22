@@ -40,3 +40,59 @@ test('DoubleClickZoomHandler does not zoom if preventDefault is called on the db
     map.remove();
     t.end();
 });
+
+test('DoubleClickZoomHandler zooms on double tap if touchstart events are < 300ms apart', (t) => {
+    const map = createMap(t);
+
+    const zoom = t.spy();
+    map.on('zoom', zoom);
+
+    const simulateDoubleTap = () => {
+        return new Promise(resolve => {
+            simulate.touchstart(map.getCanvas());
+            simulate.touchend(map.getCanvas());
+            setTimeout(() => {
+                simulate.touchstart(map.getCanvas());
+                simulate.touchend(map.getCanvas());
+                map._renderTaskQueue.run();
+                resolve();
+            }, 100);
+        });
+    };
+
+    simulateDoubleTap(map, 100).then(() => {
+        t.ok(zoom.called);
+
+        map.remove();
+        t.end();
+    });
+
+});
+
+test('DoubleClickZoomHandler does not zoom on double tap if touchstart events are > 300ms apart', (t) => {
+    const map = createMap(t);
+
+    const zoom = t.spy();
+    map.on('zoom', zoom);
+
+    const simulateDelayedDoubleTap = () => {
+        return new Promise(resolve => {
+            simulate.touchstart(map.getCanvas());
+            simulate.touchend(map.getCanvas());
+            setTimeout(() => {
+                simulate.touchstart(map.getCanvas());
+                simulate.touchend(map.getCanvas());
+                map._renderTaskQueue.run();
+                resolve();
+            }, 300);
+        });
+    };
+
+    simulateDelayedDoubleTap().then(() => {
+        t.equal(zoom.callCount, 0);
+
+        map.remove();
+        t.end();
+    });
+
+});
