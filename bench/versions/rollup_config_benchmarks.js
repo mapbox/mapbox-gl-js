@@ -6,7 +6,8 @@ import {plugins} from '../../build/rollup_plugins';
 const replaceConfig = {
     'process.env.BENCHMARK_VERSION': JSON.stringify(process.env.BENCHMARK_VERSION),
     'process.env.MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN),
-    'process.env.MapboxAccessToken': JSON.stringify(process.env.MapboxAccessToken)
+    'process.env.MapboxAccessToken': JSON.stringify(process.env.MapboxAccessToken),
+    'process.env.NODE_ENV': JSON.stringify('production')
 };
 
 export default [{

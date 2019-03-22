@@ -58,18 +58,19 @@ register(new FilterEvaluate());
 
 import getWorkerPool from '../../src/util/global_worker_pool';
 
-// Ensure the global worker pool is never drained. Browsers have resource limits
-// on the max number of workers that can be created per page.
-// We do this async to avoid creating workers before the worker bundle blob
-// URL has been set up, which happens after this module is executed.
-getWorkerPool().acquire(-1);
-
 mapboxgl.accessToken = accessToken;
+
+let promise = Promise.resolve().then(() => {
+    // Ensure the global worker pool is never drained. Browsers have resource limits
+    // on the max number of workers that can be created per page.
+    // We do this async to avoid creating workers before the worker bundle blob
+    // URL has been set up, which happens after this module is executed.
+    getWorkerPool().acquire(-1);
+});
 
 const benchmarks = [];
 
 window.runBenchmarks = () => {
-    let promise = Promise.resolve();
 
     for (const name in window.mapboxglBenchmarks) {
         const benchmark = { name, versions: [] };
@@ -113,3 +114,5 @@ window.runBenchmarks = () => {
         });
     }
 };
+
+export default mapboxgl;
