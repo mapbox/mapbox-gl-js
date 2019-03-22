@@ -23,7 +23,7 @@ import getWorkerPool from '../../src/util/global_worker_pool';
 
 mapboxgl.accessToken = accessToken;
 
-window.mapboxglBenchmarks = window.mapboxglBenchmarks || [];
+window.mapboxglBenchmarks = window.mapboxglBenchmarks || {};
 
 const version = process.env.BENCHMARK_VERSION;
 
