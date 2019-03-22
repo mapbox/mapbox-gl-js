@@ -9,6 +9,21 @@ function createMap(t) {
     return new Map({ container: DOM.create('div', '', window.document.body) });
 }
 
+test('DoubleClickZoomHandler zooms on dblclick event', (t) => {
+    const map = createMap(t);
+
+    const zoom = t.spy();
+    map.on('zoom', zoom);
+
+    simulate.dblclick(map.getCanvas());
+    map._renderTaskQueue.run();
+
+    t.ok(zoom.called);
+
+    map.remove();
+    t.end();
+});
+
 test('DoubleClickZoomHandler does not zoom if preventDefault is called on the dblclick event', (t) => {
     const map = createMap(t);
 
@@ -18,6 +33,7 @@ test('DoubleClickZoomHandler does not zoom if preventDefault is called on the db
     map.on('zoom', zoom);
 
     simulate.dblclick(map.getCanvas());
+    map._renderTaskQueue.run();
 
     t.equal(zoom.callCount, 0);
 
