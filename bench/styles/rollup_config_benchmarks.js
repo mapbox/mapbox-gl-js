@@ -11,7 +11,7 @@ if (process.env.MAPBOX_STYLES) {
         .map(style => style.match(/\.json$/) ? require(style) : style);
 }
 
-const plugins = () => basePlugins().concat(
+const plugins = () => basePlugins(true, true).concat(
     replace({
         'process.env.BENCHMARK_VERSION': JSON.stringify(process.env.BENCHMARK_VERSION),
         'process.env.MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN),
@@ -28,16 +28,16 @@ const config = [{
         format: 'amd',
         indent: false,
         sourcemap: 'inline',
-        chunkFileNames: 'chunk1.js'
+        chunkFileNames: 'shared.js'
     },
-    plugins: plugins(true, true)
+    plugins: plugins()
 }, {
     input: 'rollup/style_benchmarks.js',
     output: {
         file: 'bench/styles/benchmarks_generated.js',
         format: 'umd',
         indent: false,
-        sourcemap: 'inline',
+        sourcemap: true,
         intro: fs.readFileSync(require.resolve('../../rollup/bundle_prelude.js'), 'utf8')
     },
     treeshake: false,
