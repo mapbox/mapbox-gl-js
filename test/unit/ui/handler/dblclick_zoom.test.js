@@ -96,3 +96,31 @@ test('DoubleClickZoomHandler does not zoom on double tap if touchstart events ar
     });
 
 });
+
+test('DoubleClickZoomHandler does not zoom on double tap if touchstart events are in different locations', (t) => {
+    const map = createMap(t);
+
+    const zoom = t.spy();
+    map.on('zoom', zoom);
+
+    const simulateTwoDifferentTaps = () => {
+        return new Promise(resolve => {
+            simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}]});
+            simulate.touchend(map.getCanvas());
+            setTimeout(() => {
+                simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0.5, clientY: 0.5}]});
+                simulate.touchend(map.getCanvas());
+                map._renderTaskQueue.run();
+                resolve();
+            }, 100);
+        });
+    };
+
+    simulateTwoDifferentTaps().then(() => {
+        t.equal(zoom.callCount, 0);
+
+        map.remove();
+        t.end();
+    });
+
+});

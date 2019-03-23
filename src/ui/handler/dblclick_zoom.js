@@ -14,6 +14,7 @@ class DoubleClickZoomHandler {
     _enabled: boolean;
     _active: boolean;
     _tapped: ?TimeoutID;
+    _tappedPoint: ?{x: number, y: number};
 
     /**
      * @private
@@ -71,12 +72,22 @@ class DoubleClickZoomHandler {
         if (!this.isEnabled()) return;
         if (e.points.length > 1) return;
 
+        const maxDelta = 0;
+
         if (!this._tapped) {
-            this._tapped = setTimeout(() => { this._tapped = null; }, 300);
+            this._tappedPoint = e.points[0];
+            this._tapped = setTimeout(() => { this._tapped = null; this._tappedPoint = null; }, 300);
         } else {
+            const newTap = e.points[0];
+            const firstTap = this._tappedPoint;
+
             clearTimeout(this._tapped);
             this._tapped = null;
-            this._zoom(e);
+            this._tappedPoint = null;
+
+            if (firstTap && Math.abs(firstTap.x - newTap.x) <= maxDelta && Math.abs(firstTap.y - newTap.y) <= maxDelta) {
+                this._zoom(e);
+            }
         }
     }
 
