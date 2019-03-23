@@ -124,3 +124,61 @@ test('DoubleClickZoomHandler does not zoom on double tap if touchstart events ar
     });
 
 });
+
+test('DoubleClickZoomHandler zooms on the second touchend event of a double tap', (t) => {
+    const map = createMap(t);
+
+    const zoom = t.spy();
+    map.on('zoom', zoom);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0.5, clientY: 0.5}]});
+    simulate.touchend(map.getCanvas());
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0.5, clientY: 0.5}]});
+    map._renderTaskQueue.run();
+    t.notOk(zoom.called, 'should not trigger zoom before second touchend');
+
+    simulate.touchcancel(map.getCanvas());
+    simulate.touchend(map.getCanvas());
+    map._renderTaskQueue.run();
+    t.notOk(zoom.called, 'should not trigger zoom if second touch is canceled');
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0.5, clientY: 0.5}]});
+    simulate.touchend(map.getCanvas());
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0.5, clientY: 0.5}]});
+    map._renderTaskQueue.run();
+    t.notOk(zoom.called);
+
+    simulate.touchend(map.getCanvas());
+    map._renderTaskQueue.run();
+
+    t.ok(zoom.called, 'should trigger zoom after second touchend');
+    t.deepEquals(zoom.getCall(0).args[0].point, { x: 0.5, y: 0.5 }, 'should zoom to correct point');
+
+    t.end();
+});
+
+test('DoubleClickZoomHandler does not zoom on double tap if second touchend is >300ms after first touchstart', (t) => {
+    const map = createMap(t);
+
+    const zoom = t.spy();
+    map.on('zoom', zoom);
+
+    const simulateSlowSecondTap = () => {
+        return new Promise(resolve => {
+            simulate.touchstart(map.getCanvas());
+            simulate.touchend(map.getCanvas());
+            simulate.touchstart(map.getCanvas());
+            setTimeout(() => {
+                simulate.touchend(map.getCanvas());
+                map._renderTaskQueue.run();
+                resolve();
+            }, 300);
+        });
+    };
+
+    simulateSlowSecondTap().then(() => {
+        t.notOk(zoom.called);
+
+        t.end();
+    });
+});

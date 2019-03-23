@@ -81,14 +81,34 @@ class DoubleClickZoomHandler {
             const newTap = e.points[0];
             const firstTap = this._tappedPoint;
 
-            clearTimeout(this._tapped);
-            this._tapped = null;
-            this._tappedPoint = null;
-
             if (firstTap && Math.abs(firstTap.x - newTap.x) <= maxDelta && Math.abs(firstTap.y - newTap.y) <= maxDelta) {
-                this._zoom(e);
+                const onTouchEnd = () => {
+                    if (this._tapped) { // make sure we are still within the timeout window
+                        this._zoom(e); // pass this touchstart event, as touchend events have no points
+                    }
+                    this._map.off('touchend', onTouchEnd);
+                    this._resetTapped();
+                };
+
+                const onTouchCancel = () => {
+                    this._map.off('touchend', onTouchEnd);
+                    this._map.off('touchcancel', onTouchCancel);
+                    this._resetTapped();
+                };
+
+                this._map.on('touchend', onTouchEnd);
+                this._map.on('touchcancel', onTouchCancel);
+
+            } else { // touches are too far apart, don't zoom
+                this._resetTapped();
             }
         }
+    }
+
+    _resetTapped() {
+        clearTimeout(this._tapped);
+        this._tapped = null;
+        this._tappedPoint = null;
     }
 
     onDblClick(e: MapMouseEvent) {
