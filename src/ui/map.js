@@ -397,6 +397,7 @@ class Map extends Camera {
 
         this.resize();
 
+        this._localIdeographFontFamily = options.localIdeographFontFamily;
         if (options.style) this.setStyle(options.style, { localIdeographFontFamily: options.localIdeographFontFamily });
 
         if (options.attributionControl)
@@ -964,10 +965,11 @@ class Map extends Camera {
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
         options = extend({}, { localIdeographFontFamily: defaultOptions.localIdeographFontFamily}, options);
 
-        if ((options.diff !== false && !options.localIdeographFontFamily) && this.style && style) {
+        if ((options.diff !== false && options.localIdeographFontFamily === this._localIdeographFontFamily) && this.style && style) {
             this._diffStyle(style, options);
             return this;
         } else {
+            this._localIdeographFontFamily = options.localIdeographFontFamily;
             return this._updateStyle(style, options);
         }
     }
