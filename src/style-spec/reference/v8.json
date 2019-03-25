@@ -2796,7 +2796,7 @@
         }
       },
       "format": {
-        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. If set, the `text-font` argument overrides the font specified by the root layout properties. If set, the `font-scale` argument specifies a scaling factor relative to the `text-size` specified in the root layout properties.",
+        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. If set, the `text-font` argument overrides the font specified by the root layout properties. If set, the `font-scale` argument specifies a scaling factor relative to the `text-size` specified in the root layout properties. If set, the `text-color` argument overrides the color specified by the paint properties for this layer.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
