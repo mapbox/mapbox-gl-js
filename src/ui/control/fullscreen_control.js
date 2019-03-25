@@ -8,7 +8,9 @@ import window from '../../util/window';
 import type Map from '../map';
 
 type Options = {
-    container?: HTMLElement
+    container?: HTMLElement,
+    tooltipEnter?: string,
+    tooltipExit?: string
 };
 
 /**
@@ -17,6 +19,8 @@ type Options = {
  * @implements {IControl}
  * @param {Object} [options]
  * @param {HTMLElement} [options.container] `container` is the [compatible DOM element](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen#Compatible_elements) which should be made full screen. By default, the map container element will be made full screen.
+ * @param {string} [options.tooltipEnter] A string to use as a tooltip when the map is not in fullscreen mode. If not specified the default value of 'Enter fullscreen' will be used.
+ * @param {string} [options.tooltipExit] A string to use as a tooltip when the map is in fullscreen mode. If not specified the default value of 'Exit fullscreen' will be used.
  *
  * @example
  * map.addControl(new mapboxgl.FullscreenControl({container: document.querySelector('body')}));
@@ -31,6 +35,8 @@ class FullscreenControl {
     _fullscreenButton: HTMLElement;
     _className: string;
     _container: HTMLElement;
+    _tooltipEnter: string;
+    _tooltipExit: string;
 
     constructor(options: Options) {
         this._fullscreen = false;
@@ -41,6 +47,8 @@ class FullscreenControl {
                 warnOnce('Full screen control \'container\' must be a DOM element.');
             }
         }
+        this._tooltipEnter = options && options.tooltipEnter || "Enter fullscreen";
+        this._tooltipExit = options && options.tooltipExit || "Exit fullscreen";
         bindAll([
             '_onClickFullscreen',
             '_changeIcon'
@@ -94,7 +102,7 @@ class FullscreenControl {
     }
 
     _updateTitle() {
-        const title = this._isFullscreen() ? "Exit fullscreen" : "Enter fullscreen";
+        const title = this._isFullscreen() ? this._tooltipExit : this._tooltipEnter;
         this._fullscreenButton.setAttribute("aria-label", title);
         this._fullscreenButton.title = title;
     }
