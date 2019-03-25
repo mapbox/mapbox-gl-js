@@ -1,5 +1,6 @@
 [ignore]
 .*/node_modules/@mapbox/jsonlint-lines-primitives/.*
+.*/node_modules/jsonlint-lines/.*
 .*/node_modules/stylelint/.*
 .*/node_modules/unflowify/.*
 .*/node_modules/flow-coverage-report/.*
