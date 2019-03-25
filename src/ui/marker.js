@@ -79,6 +79,7 @@ export default class Marker extends Evented {
 
             // create default map marker SVG
             const svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttributeNS(null, 'display', 'block');
             svg.setAttributeNS(null, 'height', '41px');
             svg.setAttributeNS(null, 'width', '27px');
             svg.setAttributeNS(null, 'viewBox', '0 0 27 41');
