@@ -271,6 +271,7 @@ class Map extends Camera {
     _renderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
     _mapId: number;
+    _localIdeographFontFamily: string;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
