@@ -115,6 +115,14 @@ export class RGBAImage {
         resizeImage(this, size, 4);
     }
 
+    replace(data: Uint8Array | Uint8ClampedArray, copy?: boolean) {
+        if (copy) {
+            this.data.set(data);
+        } else {
+            this.data = data;
+        }
+    }
+
     clone() {
         return new RGBAImage({width: this.width, height: this.height}, new Uint8Array(this.data));
     }

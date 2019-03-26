@@ -87,10 +87,16 @@ class FullscreenControl {
 
     _setupUI() {
         const button = this._fullscreenButton = DOM.create('button', (`${this._className}-icon ${this._className}-fullscreen`), this._controlContainer);
-        button.setAttribute("aria-label", "Toggle fullscreen");
         button.type = 'button';
+        this._updateTitle();
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
         window.document.addEventListener(this._fullscreenchange, this._changeIcon);
+    }
+
+    _updateTitle() {
+        const title = this._isFullscreen() ? "Exit fullscreen" : "Enter fullscreen";
+        this._fullscreenButton.setAttribute("aria-label", title);
+        this._fullscreenButton.title = title;
     }
 
     _isFullscreen() {
@@ -108,6 +114,7 @@ class FullscreenControl {
             this._fullscreen = !this._fullscreen;
             this._fullscreenButton.classList.toggle(`${this._className}-shrink`);
             this._fullscreenButton.classList.toggle(`${this._className}-fullscreen`);
+            this._updateTitle();
         }
     }
 

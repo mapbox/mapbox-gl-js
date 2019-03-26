@@ -25,6 +25,7 @@ import type {WorkerTileResult} from './worker_source';
 import type DEMData from '../data/dem_data';
 import type {AlphaImage} from '../util/image';
 import type ImageAtlas from '../render/image_atlas';
+import type ImageManager from '../render/image_manager';
 import type Mask from '../render/tile_mask';
 import type Context from '../gl/context';
 import type IndexBuffer from '../gl/index_buffer';
@@ -251,6 +252,12 @@ class Tile {
         if (this.glyphAtlasImage) {
             this.glyphAtlasTexture = new Texture(context, this.glyphAtlasImage, gl.ALPHA);
             this.glyphAtlasImage = null;
+        }
+    }
+
+    prepare(imageManager: ImageManager) {
+        if (this.imageAtlas) {
+            this.imageAtlas.patchUpdatedImages(imageManager, this.imageAtlasTexture);
         }
     }
 

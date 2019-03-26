@@ -71,7 +71,7 @@ class ExpressionBenchmark extends Benchmark {
     }
 }
 
-class FunctionCreate extends ExpressionBenchmark {
+export class FunctionCreate extends ExpressionBenchmark {
     bench() {
         for (const {rawValue, propertySpec} of this.data) {
             createFunction(rawValue, propertySpec);
@@ -79,7 +79,7 @@ class FunctionCreate extends ExpressionBenchmark {
     }
 }
 
-class FunctionEvaluate extends ExpressionBenchmark {
+export class FunctionEvaluate extends ExpressionBenchmark {
     bench() {
         for (const {compiledFunction} of this.data) {
             compiledFunction.evaluate({zoom: 0});
@@ -87,7 +87,7 @@ class FunctionEvaluate extends ExpressionBenchmark {
     }
 }
 
-class FunctionConvert extends ExpressionBenchmark {
+export class FunctionConvert extends ExpressionBenchmark {
     bench() {
         for (const {rawValue, propertySpec} of this.data) {
             convertFunction(rawValue, propertySpec);
@@ -95,7 +95,7 @@ class FunctionConvert extends ExpressionBenchmark {
     }
 }
 
-class ExpressionCreate extends ExpressionBenchmark {
+export class ExpressionCreate extends ExpressionBenchmark {
     bench() {
         for (const {rawExpression, propertySpec} of this.data) {
             createPropertyExpression(rawExpression, propertySpec);
@@ -103,18 +103,10 @@ class ExpressionCreate extends ExpressionBenchmark {
     }
 }
 
-class ExpressionEvaluate extends ExpressionBenchmark {
+export class ExpressionEvaluate extends ExpressionBenchmark {
     bench() {
         for (const {compiledExpression} of this.data) {
             compiledExpression.evaluate({zoom: 0});
         }
     }
 }
-
-export default [
-    FunctionCreate,
-    FunctionConvert,
-    FunctionEvaluate,
-    ExpressionCreate,
-    ExpressionEvaluate
-];

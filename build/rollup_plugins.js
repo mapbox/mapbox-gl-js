@@ -9,21 +9,17 @@ import { terser } from 'rollup-plugin-terser';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import { createFilter } from 'rollup-pluginutils';
 
-const {BUILD, MINIFY} = process.env;
-const minified = MINIFY === 'true';
-const production = BUILD === 'production';
-
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
-export const plugins = () => [
+export const plugins = (minified, production) => [
     flow(),
     minifyStyleSpec(),
     json(),
     glsl('./src/shaders/*.glsl', production),
-    production ? unassert() : false,
-    minified ? terser() : false,
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
+    minified ? terser() : false,
+    production ? unassert() : false,
     resolve({
         browser: true,
         preferBuiltins: false

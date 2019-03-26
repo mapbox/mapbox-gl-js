@@ -1,9 +1,8 @@
 /rollup/build/
 /docs/components/api.json
 /dist/
-/docs/pages/dist/mapbox-gl-dev.js
-/docs/pages/dist/mapbox-gl.js
-/docs/pages/dist/mapbox-gl-unminified.js
+/docs/pages/dist/
+/docs/img/dist/
 *.js.map
 node_modules
 package-lock.json
@@ -12,12 +11,8 @@ coverage
 flow-coverage
 .DS_Store
 .nyc_output
-bench/versions/benchmarks_generated.js
-bench/versions/benchmarks_view_generated.js
-bench/styles/benchmarks_generated.js
-bench/styles/benchmarks_view_generated.js
-debug/access_token_generated.js
-debug/style_property_editor_generated.js
+*_generated.js
+*_generated.js.map
 test/integration/**/index*.html
 test/integration/**/actual.png
 test/integration/**/actual.json

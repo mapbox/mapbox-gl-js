@@ -111,6 +111,11 @@
     padding: 5px;
 }
 
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-icon-disabled {
+    opacity: 0.25;
+    border-color: #373737;
+}
+
 .mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out {
     background-image: svg-load('svg/mapboxgl-ctrl-zoom-out.svg');
 }

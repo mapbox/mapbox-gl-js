@@ -34,6 +34,7 @@ import type {RequestParameters} from '../util/ajax';
 import type {StyleOptions, StyleSetterOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
+import type {StyleImageInterface} from '../style/style_image';
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -129,6 +130,7 @@ const defaultOptions = {
     renderWorldCopies: true,
     refreshExpiredTiles: true,
     maxTileCacheSize: null,
+    localIdeographFontFamily: 'sans-serif',
     transformRequest: null,
     fadeDuration: 300,
     crossSourceCollisions: true
@@ -203,9 +205,10 @@ const defaultOptions = {
  * @param {Object} [options.fitBoundsOptions] A [`fitBounds`](#map#fitbounds) options object to use _only_ when fitting the initial `bounds` provided above.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered, when zoomed out.
  * @param {number} [options.maxTileCacheSize=null]  The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
- * @param {string} [options.localIdeographFontFamily=null] If specified, defines a CSS font-family
- *   for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
+ * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
+ *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
  *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
+ *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
  *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (see [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs))
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
  *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
@@ -268,6 +271,7 @@ class Map extends Camera {
     _renderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
     _mapId: number;
+    _localIdeographFontFamily: string;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -394,6 +398,7 @@ class Map extends Camera {
 
         this.resize();
 
+        this._localIdeographFontFamily = options.localIdeographFontFamily;
         if (options.style) this.setStyle(options.style, { localIdeographFontFamily: options.localIdeographFontFamily });
 
         if (options.attributionControl)
@@ -950,17 +955,22 @@ class Map extends Camera {
      * @param {Object} [options]
      * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
      *   and building the given one instead of attempting a diff-based update.
-     * @param {string} [options.localIdeographFontFamily=null] If non-null, defines a css font-family
-     *   for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables'
-     *   ranges. Forces a full update.
+     * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
+     *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
+     *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
+     *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
+     *   Forces a full update.
      * @returns {Map} `this`
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
-        if ((!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style && style) {
+        options = extend({}, { localIdeographFontFamily: defaultOptions.localIdeographFontFamily}, options);
+
+        if ((options.diff !== false && options.localIdeographFontFamily === this._localIdeographFontFamily) && this.style && style) {
             this._diffStyle(style, options);
             return this;
         } else {
+            this._localIdeographFontFamily = options.localIdeographFontFamily;
             return this._updateStyle(style, options);
         }
     }
@@ -1145,19 +1155,71 @@ class Map extends Camera {
      * @param options.sdf Whether the image should be interpreted as an SDF image
      */
     addImage(id: string,
-             image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray},
+             image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface,
              {pixelRatio = 1, sdf = false}: {pixelRatio?: number, sdf?: boolean} = {}) {
+
+        const version = 0;
+
         if (image instanceof HTMLImageElement) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(id, { data: new RGBAImage({width, height}, data), pixelRatio, sdf });
+            this.style.addImage(id, { data: new RGBAImage({width, height}, data), pixelRatio, sdf, version });
         } else if (image.width === undefined || image.height === undefined) {
             return this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
         } else {
             const {width, height, data} = image;
-            this.style.addImage(id, { data: new RGBAImage({width, height}, new Uint8Array(data)), pixelRatio, sdf });
+            const userImage = ((image: any): StyleImageInterface);
+
+            this.style.addImage(id, {
+                data: new RGBAImage({width, height}, new Uint8Array(data)),
+                pixelRatio,
+                sdf,
+                version,
+                userImage
+            });
+
+            if (userImage.onAdd) {
+                userImage.onAdd(this, id);
+            }
         }
+    }
+
+    /**
+     * Update an existing style image. This image can be used in `icon-image`,
+     * `background-pattern`, `fill-pattern`, and `line-pattern`.
+     *
+     * @param id The ID of the image.
+     * @param image The image as an `HTMLImageElement`, `ImageData`, or object with `width`, `height`, and `data`
+     * properties with the same format as `ImageData`.
+     */
+    updateImage(id: string,
+        image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface) {
+
+        const existingImage = this.style.getImage(id);
+        if (!existingImage) {
+            return this.fire(new ErrorEvent(new Error(
+                'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
+        }
+
+        const imageData = image instanceof HTMLImageElement ? browser.getImageData(image) : image;
+        const {width, height, data} = imageData;
+
+        if (width === undefined || height === undefined) {
+            return this.fire(new ErrorEvent(new Error(
+                'Invalid arguments to map.updateImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +
+                'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
+        }
+
+        if (width !== existingImage.data.width || height !== existingImage.data.height) {
+            return this.fire(new ErrorEvent(new Error(
+                'The width and height of the updated image must be that same as the previous version of the image')));
+        }
+
+        const copy = !(image instanceof HTMLImageElement);
+        existingImage.data.replace(data, copy);
+
+        this.style.updateImage(id, existingImage);
     }
 
     /**
