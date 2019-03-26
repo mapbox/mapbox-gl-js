@@ -1,10 +1,16 @@
 <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.0.0/mapbox-gl-geocoder.min.js'></script>
 <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.0.0/mapbox-gl-geocoder.css' type='text/css' />
 <style>
-.result{
-    font-style: italic;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    color: gray;
+.geocoder-dropdown-item{
+    padding: 5px
+}
+.geocoder-dropdown-icon{
+    margin-right: 10px;
+}
+.geocoder-dropdown-text{
+    color: darkgray;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: larger;
 }
 </style>
 <div id='map'></div>
@@ -19,11 +25,14 @@ var map = new mapboxgl.Map({
 
 var geocoder = new MapboxGeocoder({
     accessToken: mapboxgl.accessToken,
+    types: 'poi',
+    // see https://docs.mapbox.com/api/search/#geocoding-response-object for information about the schema of each response feature
     render: function(item){
-        // add a custom render function that shows an icon in the dropdown menu
+        // extract the item's maki icon or use a default
         var maki = item.properties.maki || 'marker';
-        return `<span class='result'><img src='https://unpkg.com/@mapbox/maki@6.1.0/icons/${marker}-11.svg'>${item.place_name}</span>`
-    }
+        return `<div class='geocoder-dropdown-item'><img class='geocoder-dropdown-icon' src='https://unpkg.com/@mapbox/maki@6.1.0/icons/${maki}-15.svg'><span class='geocoder-dropdown-text'>${item.text}</span></div>`
+    },
+    mapboxgl: mapboxgl
 });
 map.addControl(geocoder);
 

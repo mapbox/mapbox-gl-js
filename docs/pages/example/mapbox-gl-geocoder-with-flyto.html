@@ -7,13 +7,23 @@ var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v9',
     center: [-79.4512, 43.6568],
-    zoom: 13,
-    mapboxgl: mapboxgl
+    zoom: 13
 });
 
 var geocoder = new MapboxGeocoder({
     accessToken: mapboxgl.accessToken,
-    language: 'de-DE'
+    flyTo: {
+        bearing: 0,
+        // These options control the flight curve, making it move
+        // slowly and zoom out almost completely before starting
+        // to pan.
+        speed: 0.2, // make the flying slow
+        curve: 1, // change the speed at which it zooms out
+        
+        // This can be any easing function: it takes a number between
+        // 0 and 1 and returns another number between 0 and 1.
+        easing: function (t) { return t; }
+        }
 });
 map.addControl(geocoder);
 
