@@ -32,6 +32,7 @@ class AttributionControl {
     _editLink: ?HTMLAnchorElement;
     styleId: string;
     styleOwner: string;
+    attribString: string;
 
     constructor(options: Options = {}) {
         this.options = options;
@@ -157,8 +158,15 @@ class AttributionControl {
             }
             return true;
         });
+
+        // check if attribution string is different to minimize DOM changes
+        const attribString = attributions.join(' | ');
+        if (attribString == this.attribString) return;
+
+        this.attribString = attribString;
+        
         if (attributions.length) {
-            this._innerContainer.innerHTML = attributions.join(' | ');
+            this._innerContainer.innerHTML = attribString;
             this._container.classList.remove('mapboxgl-attrib-empty');
         } else {
             this._container.classList.add('mapboxgl-attrib-empty');
