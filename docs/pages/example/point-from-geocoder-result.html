@@ -1,5 +1,5 @@
-<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'></script>
-<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css' type='text/css' />
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.0.0/mapbox-gl-geocoder.min.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.0.0/mapbox-gl-geocoder.css' type='text/css' />
 <style>
 #geocoder-container > div {
     min-width:50%;
@@ -16,7 +16,8 @@ var map = new mapboxgl.Map({
     zoom: 13,
     marker: {
         color: 'orange'
-    }
+    },
+    mapboxgl: mapboxgl
 });
 
 var geocoder = new MapboxGeocoder({
