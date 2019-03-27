@@ -108,7 +108,7 @@ test('DoubleClickZoomHandler does not zoom on double tap if touchstart events ar
             simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}]});
             simulate.touchend(map.getCanvas());
             setTimeout(() => {
-                simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0.5, clientY: 0.5}]});
+                simulate.touchstart(map.getCanvas(), {touches: [{clientX: 30.5, clientY: 30.5}]});
                 simulate.touchend(map.getCanvas());
                 map._renderTaskQueue.run();
                 resolve();

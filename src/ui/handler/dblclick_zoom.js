@@ -72,7 +72,7 @@ class DoubleClickZoomHandler {
         if (!this.isEnabled()) return;
         if (e.points.length > 1) return;
 
-        const maxDelta = 0;
+        const maxDelta = 30;
 
         if (!this._tapped) {
             this._tappedPoint = e.points[0];
