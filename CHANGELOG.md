@@ -33,6 +33,7 @@
 - Fixed a bug where default HTML marker positioning was slightly off. [#8074](https://github.com/mapbox/mapbox-gl-js/pull/8074)
 - Fixed a bug where adding a fill extrusion layer for non-polygon layers would lead to visual artifacts. [#7685](https://github.com/mapbox/mapbox-gl-js/pull/7685)
 - Fixed intermittent Flow failures on CI. [#8061](https://github.com/mapbox/mapbox-gl-js/pull/8061)
+- Fixed a bug where calling `Map#removeFeatureState` does not remove the state from some tile zooms [#8087](https://github.com/mapbox/mapbox-gl-js/pull/8087) 
 
 ## 0.53.1
 
