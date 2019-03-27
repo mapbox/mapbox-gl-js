@@ -82,6 +82,8 @@ class DoubleClickZoomHandler {
             const firstTap = this._tappedPoint;
 
             if (firstTap && Math.abs(firstTap.x - newTap.x) <= maxDelta && Math.abs(firstTap.y - newTap.y) <= maxDelta) {
+                e.originalEvent.preventDefault(); // prevent duplicate zoom on dblclick
+
                 const onTouchEnd = () => {
                     if (this._tapped) { // make sure we are still within the timeout window
                         this._zoom(e); // pass this touchstart event, as touchend events have no points
