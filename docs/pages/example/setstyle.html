@@ -9,23 +9,21 @@
 
 <div id='map'></div>
 <div id='menu'>
-    <input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
-    <label for='basic'>basic</label>
-    <input id='streets' type='radio' name='rtoggle' value='streets'>
+    <input id='streets-v11' type='radio' name='rtoggle' value='streets' checked='checked'>
     <label for='streets'>streets</label>
-    <input id='bright' type='radio' name='rtoggle' value='bright'>
-    <label for='bright'>bright</label>
-    <input id='light' type='radio' name='rtoggle' value='light'>
+    <input id='light-v10' type='radio' name='rtoggle' value='light'>
     <label for='light'>light</label>
-    <input id='dark' type='radio' name='rtoggle' value='dark'>
+    <input id='dark-v10' type='radio' name='rtoggle' value='dark'>
     <label for='dark'>dark</label>
-    <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+    <input id='outdoors-v11' type='radio' name='rtoggle' value='outdoors'>
+    <label for='outdoors'>outdoors</label>
+    <input id='satellite-v9' type='radio' name='rtoggle' value='satellite'>
     <label for='satellite'>satellite</label>
 </div>
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/basic-v9',
+    style: 'mapbox://styles/mapbox/streets-v11',
     zoom: 13,
     center: [4.899, 52.372]
 });
@@ -35,7 +33,7 @@ var inputs = layerList.getElementsByTagName('input');
 
 function switchLayer(layer) {
     var layerId = layer.target.id;
-    map.setStyle('mapbox://styles/mapbox/' + layerId + '-v9');
+    map.setStyle('mapbox://styles/mapbox/' + layerId);
 }
 
 for (var i = 0; i < inputs.length; i++) {
