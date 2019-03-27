@@ -30,9 +30,9 @@ class AttributionControl {
     _container: HTMLElement;
     _innerContainer: HTMLElement;
     _editLink: ?HTMLAnchorElement;
+    _attribHTML: string;
     styleId: string;
     styleOwner: string;
-    attribString: string;
 
     constructor(options: Options = {}) {
         this.options = options;
@@ -160,13 +160,13 @@ class AttributionControl {
         });
 
         // check if attribution string is different to minimize DOM changes
-        const attribString = attributions.join(' | ');
-        if (attribString == this.attribString) return;
+        const attribHTML = attributions.join(' | ');
+        if (attribHTML == this._attribHTML) return;
 
-        this.attribString = attribString;
-        
+        this._attribHTML = attribHTML;
+
         if (attributions.length) {
-            this._innerContainer.innerHTML = attribString;
+            this._innerContainer.innerHTML = attribHTML;
             this._container.classList.remove('mapboxgl-attrib-empty');
         } else {
             this._container.classList.add('mapboxgl-attrib-empty');
