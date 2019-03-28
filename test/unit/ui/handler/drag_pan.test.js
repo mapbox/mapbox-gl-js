@@ -4,6 +4,7 @@ import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
+
 function createMap(t, clickTolerance) {
     t.stub(Map.prototype, '_detectMissingCSS');
     return new Map({ container: DOM.create('div', '', window.document.body), clickTolerance: clickTolerance || 0 });
@@ -737,6 +738,190 @@ test('DragPanHandler does not begin a touch drag if moved less than click tolera
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+
+test('DragPanHandler does not begin a touch drag on multi-finger touchstart event', (t) => {
+    const map = createMap(t);
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}, {clientX: 20, clientY: 20}]});
+    map._renderTaskQueue.run();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}, {clientX: 30, clientY: 30}]});
+    map._renderTaskQueue.run();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.touchend(map.getCanvas());
+    map._renderTaskQueue.run();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+
+test('DragPanHandler ends a touch-triggered drag if a second touch is started & touchZoomRotate is enabled', (t) => {
+    const map = createMap(t);
+    map.touchZoomRotate.enable();
+
+    const dragend = t.spy();
+    map.on('dragend', dragend);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    map._renderTaskQueue.run();
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}]});
+    map._renderTaskQueue.run();
+    t.ok(map.dragPan.isActive());
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}, {clientX: 30, clientY: 30}]});
+    map._renderTaskQueue.run();
+    t.notOk(map.dragPan.isActive());
+    t.equal(dragend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler does not end a touch-triggered drag if a second touch is started but touchZoomRotate is disabled', (t) => {
+    const map = createMap(t);
+    map.touchZoomRotate.disable();
+
+    const dragend = t.spy();
+    map.on('dragend', dragend);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    map._renderTaskQueue.run();
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}]});
+    map._renderTaskQueue.run();
+    t.ok(map.dragPan.isActive());
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}, {clientX: 30, clientY: 30}]});
+    map._renderTaskQueue.run();
+    t.ok(map.dragPan.isActive());
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler starts a touch-triggered drag if a multi-finger touch becomes a single-finger touch', (t) => {
+    const map = createMap(t);
+
+    const dragstart = t.spy();
+    map.on('dragstart', dragstart);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}, {clientX: 30, clientY: 30}]});
+    map._renderTaskQueue.run();
+    t.notOk(map.dragPan.isActive());
+    t.notOk(dragstart.called);
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}, {clientX: 40, clientY: 40}]});
+    map._renderTaskQueue.run();
+    t.notOk(map.dragPan.isActive());
+    t.notOk(dragstart.called);
+
+    simulate.touchend(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    map._renderTaskQueue.run();
+    t.notOk(map.dragPan.isActive());
+    t.equals(map.dragPan._state, 'pending');
+    t.notOk(dragstart.called);
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}]});
+    map._renderTaskQueue.run();
+    t.ok(map.dragPan.isActive());
+    t.equal(dragstart.callCount, 1);
+
+    map.remove();
+    t.end();
+});
+
+
+
+
+
+test('DragPanHandler stops/starts touch-triggered drag appropriately when transitioning between single- and multi-finger touch', (t) => {
+    const map = createMap(t);
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    // Single-finger touch starts drag
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    map._renderTaskQueue.run();
+    t.notOk(map.dragPan.isActive());
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}]});
+    map._renderTaskQueue.run();
+    t.ok(map.dragPan.isActive());
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 0);
+
+    // Adding a second finger stops drag (will trigger touchZoomRotate instead)
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}, {clientX: 20, clientY: 20}]});
+    map._renderTaskQueue.run();
+    t.notOk(map.dragPan.isActive());
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 1);
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}, {clientX: 30, clientY: 30}]});
+    map._renderTaskQueue.run();
+    t.notOk(map.dragPan.isActive());
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 1);
+
+    // Removing all but one finger starts another drag
+    simulate.touchend(map.getCanvas(), {touches: [{clientX: 30, clientY: 30}]});
+    map._renderTaskQueue.run();
+    t.notOk(map.dragPan.isActive());
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 1);
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}]});
+    map._renderTaskQueue.run();
+    t.ok(map.dragPan.isActive());
+    t.equal(dragstart.callCount, 2);
+    t.equal(drag.callCount, 2);
+    t.equal(dragend.callCount, 1);
+
+    // Removing last finger stops drag
+    simulate.touchend(map.getCanvas());
+    map._renderTaskQueue.run();
+    t.notOk(map.dragPan.isActive());
+    t.equal(dragstart.callCount, 2);
+    t.equal(drag.callCount, 2);
+    t.equal(dragend.callCount, 2);
 
     map.remove();
     t.end();
