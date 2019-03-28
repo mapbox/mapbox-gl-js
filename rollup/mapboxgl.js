@@ -1,3 +1,4 @@
+// @flow
 //
 // Our custom intro provides a specialized "define()" function, called by the
 // AMD modules below, that sets up the worker blob URL and then executes the

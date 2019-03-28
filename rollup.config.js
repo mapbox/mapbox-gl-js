@@ -1,3 +1,4 @@
+// @flow
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import {plugins} from './build/rollup_plugins';
