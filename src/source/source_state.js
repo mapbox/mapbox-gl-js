@@ -123,8 +123,10 @@ class SourceFeatureState {
             const layerStates = {};
 
             if (this.deletedStates[sourceLayer] === null) {
-                for (const ft in this.state[sourceLayer]) layerStates[ft] = {};
-                this.state[sourceLayer] = {};
+                for (const ft in this.state[sourceLayer]) {
+                    layerStates[ft] = {};
+                    this.state[sourceLayer][ft] = {};
+                }
             } else {
                 for (const feature in this.deletedStates[sourceLayer]) {
                     const deleteWholeFeatureState = this.deletedStates[sourceLayer][feature] === null;
