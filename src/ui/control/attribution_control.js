@@ -161,7 +161,7 @@ class AttributionControl {
 
         // check if attribution string is different to minimize DOM changes
         const attribHTML = attributions.join(' | ');
-        if (attribHTML == this._attribHTML) return;
+        if (attribHTML === this._attribHTML) return;
 
         this._attribHTML = attribHTML;
 
