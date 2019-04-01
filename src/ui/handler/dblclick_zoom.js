@@ -86,9 +86,9 @@ class DoubleClickZoomHandler {
             if (firstTap && firstTap.dist(newTap) <= maxDist) {
                 e.originalEvent.preventDefault(); // prevent duplicate zoom on dblclick
 
-                const onTouchEnd = () => {
+                const onTouchEnd = () => { // ignore the touchend event, as it has no point we can zoom to
                     if (this._tapped) { // make sure we are still within the timeout window
-                        this._zoom(e); // pass this touchstart event, as touchend events have no points
+                        this._zoom(e); // pass the original touchstart event, with the tapped point
                     }
                     this._map.off('touchcancel', onTouchCancel);
                     this._resetTapped();
