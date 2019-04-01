@@ -100,7 +100,6 @@ test('LogoControl appears in compact mode if container is less then 250 pixel wi
 });
 
 test('LogoControl has `rel` nooper and nofollow', (t) => {
-    console.log('MyTest');
     const map = createMap(t);
 
     map.on('load', () => {
