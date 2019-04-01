@@ -105,7 +105,7 @@ class AttributionControl {
                 return acc;
             }, `?`);
             editLink.href = `${config.FEEDBACK_URL}/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
-            editLink.rel = "noopener";
+            editLink.rel = "noopener nofollow";
         }
     }
 
