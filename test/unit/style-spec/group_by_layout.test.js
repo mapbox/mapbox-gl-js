@@ -10,9 +10,9 @@ t('group layers whose ref properties are identical', (t) => {
         'id': 'child',
         'type': 'line'
     };
-    t.deepEqual(group([a, b]), [[a, b]]);
-    t.equal(group([a, b])[0][0], a);
-    t.equal(group([a, b])[0][1], b);
+    t.deepEqual(group([a, b], {}), [[a, b]]);
+    t.equal(group([a, b], {})[0][0], a);
+    t.equal(group([a, b], {})[0][1], b);
     t.end();
 });
 
@@ -26,7 +26,7 @@ t('group does not group unrelated layers', (t) => {
             'id': 'child',
             'type': 'fill'
         }
-    ]), [
+    ], {}), [
         [{
             'id': 'parent',
             'type': 'line'
@@ -50,7 +50,7 @@ t('group works even for differing layout key orders', (t) => {
             'type': 'line',
             'layout': {'b': 2, 'a': 1}
         }
-    ]), [[
+    ], {}), [[
         {
             'id': 'parent',
             'type': 'line',
