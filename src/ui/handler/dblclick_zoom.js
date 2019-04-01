@@ -4,6 +4,10 @@ import { bindAll } from '../../util/util';
 
 import type Map from '../map';
 import type {MapMouseEvent, MapTouchEvent} from '../events';
+import Point from '@mapbox/point-geometry';
+
+// maximum distance between two tap Points for them to qualify as a double-tap
+const maxDist = 30;
 
 /**
  * The `DoubleClickZoomHandler` allows the user to zoom the map at a point by
@@ -14,7 +18,7 @@ class DoubleClickZoomHandler {
     _enabled: boolean;
     _active: boolean;
     _tapped: ?TimeoutID;
-    _tappedPoint: ?{x: number, y: number};
+    _tappedPoint: ?Point;
 
     /**
      * @private
@@ -72,8 +76,6 @@ class DoubleClickZoomHandler {
         if (!this.isEnabled()) return;
         if (e.points.length > 1) return;
 
-        const maxDelta = 30;
-
         if (!this._tapped) {
             this._tappedPoint = e.points[0];
             this._tapped = setTimeout(() => { this._tapped = null; this._tappedPoint = null; }, 300);
@@ -81,25 +83,24 @@ class DoubleClickZoomHandler {
             const newTap = e.points[0];
             const firstTap = this._tappedPoint;
 
-            if (firstTap && Math.abs(firstTap.x - newTap.x) <= maxDelta && Math.abs(firstTap.y - newTap.y) <= maxDelta) {
+            if (firstTap && firstTap.dist(newTap) <= maxDist) {
                 e.originalEvent.preventDefault(); // prevent duplicate zoom on dblclick
 
                 const onTouchEnd = () => {
                     if (this._tapped) { // make sure we are still within the timeout window
                         this._zoom(e); // pass this touchstart event, as touchend events have no points
                     }
-                    this._map.off('touchend', onTouchEnd);
+                    this._map.off('touchcancel', onTouchCancel);
                     this._resetTapped();
                 };
 
                 const onTouchCancel = () => {
                     this._map.off('touchend', onTouchEnd);
-                    this._map.off('touchcancel', onTouchCancel);
                     this._resetTapped();
                 };
 
-                this._map.on('touchend', onTouchEnd);
-                this._map.on('touchcancel', onTouchCancel);
+                this._map.once('touchend', onTouchEnd);
+                this._map.once('touchcancel', onTouchCancel);
 
             } else { // touches are too far apart, don't zoom
                 this._resetTapped();
