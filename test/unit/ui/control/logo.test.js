@@ -98,3 +98,17 @@ test('LogoControl appears in compact mode if container is less then 250 pixel wi
 
     t.end();
 });
+
+test('LogoControl has `rel` nooper and nofollow', (t) => {
+    console.log('MyTest');
+    const map = createMap(t);
+
+    map.on('load', () => {
+        const container = map.getContainer();
+        const logo = container.querySelector('.mapboxgl-ctrl-logo');
+
+        t.equal(logo.rel, 'noopener nofollow');
+
+        t.end();
+    });
+});
