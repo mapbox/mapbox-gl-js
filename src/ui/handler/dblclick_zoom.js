@@ -4,7 +4,7 @@ import { bindAll } from '../../util/util';
 
 import type Map from '../map';
 import type {MapMouseEvent, MapTouchEvent} from '../events';
-import Point from '@mapbox/point-geometry';
+import type Point from '@mapbox/point-geometry';
 
 // maximum distance between two tap Points for them to qualify as a double-tap
 const maxDist = 30;
