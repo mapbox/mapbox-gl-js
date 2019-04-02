@@ -8,7 +8,6 @@ import { extend } from '../util/util';
 
 import type Map from './map';
 import type LngLat from '../geo/lng_lat';
-import type LngLatBounds from '../geo/lng_lat_bounds';
 
 /**
  * `MapMouseEvent` is the event type for mouse-related map events.
@@ -218,16 +217,13 @@ export class MapWheelEvent extends Event {
 /**
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent
- * @property {LngLatBounds} boxZoomBounds The bounding box of the "box zoom" interaction.
- *   This property is only provided for `boxzoomend` events.
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart'
         | 'boxzoomend'
         | 'boxzoomcancel',
     map: Map,
-    originalEvent: MouseEvent,
-    boxZoomBounds: LngLatBounds
+    originalEvent: MouseEvent
 };
 
 /**
@@ -781,6 +777,20 @@ export type MapEvent =
      * @property {MapDataEvent} data
      */
     | 'sourcedataloading'
+
+    /**
+     * Fired when an icon or pattern needed by the style is missing. The missing image can
+     * be added with {@link Map#addImage} within this event listener callback to prevent the image from
+     * being skipped. This event can be used to dynamically generate icons and patterns.
+     *
+     * @event styleimagemissing
+     * @memberof Map
+     * @instance
+     * @property {string} id The id of the missing image.
+     *
+     * @see [Generate and add a missing icon to the map](https://mapbox.com/mapbox-gl-js/example/add-image-missing-generated/)
+     */
+    | 'styleimagemissing'
 
     /**
      * @event style.load

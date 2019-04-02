@@ -55,6 +55,10 @@ class FillStyleLayer extends StyleLayer {
             transform.angle, pixelsToTileUnits);
         return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
+
+    isTileClipped() {
+        return true;
+    }
 }
 
 export default FillStyleLayer;

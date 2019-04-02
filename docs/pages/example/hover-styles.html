@@ -2,7 +2,7 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: 'mapbox://styles/mapbox/streets-v11',
     center: [-100.486052, 37.830348],
     zoom: 2
 });
@@ -11,7 +11,7 @@ var hoveredStateId =  null;
 map.on('load', function () {
     map.addSource("states", {
         "type": "geojson",
-        "data": "https://www.mapbox.com/mapbox-gl-js/assets/us_states.geojson"
+        "data": "https://docs.mapbox.com/mapbox-gl-js/assets/us_states.geojson"
     });
 
     // The feature-state dependent fill-opacity expression will render the hover effect

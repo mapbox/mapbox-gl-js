@@ -1,6 +1,9 @@
 toc:
   - Map
   - accessToken
+  - baseApiUrl
+  - workerCount
+  - maxParallelImageRequests
   - supported
   - version
   - setRTLTextPlugin
@@ -8,6 +11,7 @@ toc:
   - CameraOptions
   - PaddingOptions
   - RequestParameters
+  - StyleImageInterface
   - CustomLayerInterface
   - name: Geography & Geometry
     description: |

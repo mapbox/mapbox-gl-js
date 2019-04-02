@@ -116,6 +116,32 @@ test('GeolocateControl geolocate fitBoundsOptions', (t) => {
     geolocation.send({latitude: 10, longitude: 20, accuracy: 1});
 });
 
+test('GeolocateControl non-zero bearing', (t) => {
+    t.plan(3);
+
+    const map = createMap(t);
+    map.setBearing(45);
+    const geolocate = new GeolocateControl({
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0,
+            maxZoom: 10
+        }
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    map.once('moveend', () => {
+        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 10, lng: 20 }, 'map centered on location');
+        t.equal(map.getBearing(), 45, 'map bearing retained');
+        t.equal(map.getZoom(), 10, 'geolocate fitBounds maxZoom');
+        t.end();
+    });
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 1});
+});
+
 test('GeolocateControl no watching map camera on geolocation', (t) => {
     t.plan(6);
 

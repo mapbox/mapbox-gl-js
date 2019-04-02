@@ -16,7 +16,8 @@ import type {PointLike} from '@mapbox/point-geometry';
 const defaultOptions = {
     closeButton: true,
     closeOnClick: true,
-    className: ''
+    className: '',
+    maxWidth: "240px"
 };
 
 export type Offset = number | PointLike | {[Anchor]: PointLike};
@@ -26,7 +27,8 @@ export type PopupOptions = {
     closeOnClick?: boolean,
     anchor?: Anchor,
     offset?: Offset,
-    className?: string
+    className?: string,
+    maxWidth?: string
 };
 
 /**
@@ -50,6 +52,7 @@ export type PopupOptions = {
  *   - an object of {@link Point}s specifing an offset for each anchor position
  *  Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container
+ * @param {string} [options.maxWidth] A string that sets the CSS property of the popup's maxWidth in pixels, eg "300px"
  * @example
  * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
  * var popupOffsets = {
@@ -65,6 +68,7 @@ export type PopupOptions = {
  * var popup = new mapboxgl.Popup({offset: popupOffsets, className: 'my-class'})
  *   .setLngLat(e.lngLat)
  *   .setHTML("<h1>Hello World!</h1>")
+ *   .setMaxWidth("300px")
  *   .addTo(map);
  * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
  * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
@@ -108,7 +112,9 @@ export default class Popup extends Evented {
             this._map.on('mouseup', (e) => { this._update(e.point); });
             this._container.classList.add('mapboxgl-popup-track-pointer');
             this._map._canvasContainer.classList.add('mapboxgl-track-pointer');
-        } else { this._map.on('move', this._update); }
+        } else {
+            this._map.on('move', this._update);
+        }
 
         /**
          * Fired when the popup is opened manually or programatically.
@@ -271,6 +277,27 @@ export default class Popup extends Evented {
     }
 
     /**
+     * Returns the popup's max width.
+     *
+     * @returns {string} The max width of the popup.
+     */
+    getMaxWidth() {
+        return this._container.style.maxWidth;
+    }
+
+    /**
+     * Sets the popup's max width. This is setting the CSS property maxWidth. It expects a string in "Npx" format, where N is some number.
+     *
+     * @param maxWidth A string representing the pixel value for the maximum width.
+     * @returns {Popup} `this`
+     */
+    setMaxWidth(maxWidth: string) {
+        this.options.maxWidth = maxWidth;
+        this._update();
+        return this;
+    }
+
+    /**
      * Sets the popup's content to the element provided as a DOM node.
      *
      * @param htmlNode A DOM node to be used as content for the popup.
@@ -308,18 +335,25 @@ export default class Popup extends Evented {
     }
 
     _update(cursor: PointLike) {
-        if (!this._map || !this._lngLat && !this._trackPointer || !this._content) { return; }
+
+        const hasPosition = this._lngLat || this._trackPointer;
+
+        if (!this._map || !hasPosition || !this._content) { return; }
 
         if (!this._container) {
             this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
-
             if (this.options.className) {
                 this.options.className.split(' ').forEach(name =>
                     this._container.classList.add(name));
             }
 
+        }
+
+
+        if (this.options.maxWidth && this._container.style.maxWidth !== this.options.maxWidth) {
+            this._container.style.maxWidth = this.options.maxWidth;
         }
 
         if (this._map.transform.renderWorldCopies && !this._trackPointer) {

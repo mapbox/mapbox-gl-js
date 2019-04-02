@@ -29,6 +29,7 @@ test("mapbox", (t) => {
     t.beforeEach((callback) => {
         config.ACCESS_TOKEN = 'key';
         config.REQUIRE_ACCESS_TOKEN = true;
+        config.API_URL = 'https://api.mapbox.com';
         callback();
     });
 
@@ -64,13 +65,11 @@ test("mapbox", (t) => {
         });
 
         t.test('handles custom API_URLs with paths', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://test.example.com/api.mapbox.com';
             t.equal(
                 mapbox.normalizeStyleURL('mapbox://styles/foo/bar'),
                 'https://test.example.com/api.mapbox.com/styles/v1/foo/bar?access_token=key'
             );
-            config.API_URL = previousUrl;
             t.end();
         });
 
@@ -118,13 +117,11 @@ test("mapbox", (t) => {
         });
 
         t.test('handles custom API_URLs with paths', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://test.example.com/api.mapbox.com';
             t.equal(
                 mapbox.normalizeSourceURL('mapbox://one.a'),
                 'https://test.example.com/api.mapbox.com/v4/one.a.json?secure&access_token=key'
             );
-            config.API_URL = previousUrl;
             t.end();
         });
 
@@ -148,13 +145,11 @@ test("mapbox", (t) => {
         });
 
         t.test('handles custom API_URLs with paths', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://test.example.com/api.mapbox.com';
             t.equal(
                 mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'),
                 'https://test.example.com/api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key'
             );
-            config.API_URL = previousUrl;
             t.end();
         });
 
@@ -216,13 +211,11 @@ test("mapbox", (t) => {
         });
 
         t.test('handles custom API_URLs with paths', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://test.example.com/api.mapbox.com';
             t.equal(
                 mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json'),
                 'https://test.example.com/api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?access_token=key'
             );
-            config.API_URL = previousUrl;
             t.end();
         });
 
@@ -412,7 +405,6 @@ test("mapbox", (t) => {
         });
 
         t.test('POSTs cn event when API_URL change to cn endpoint', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://api.mapbox.cn';
 
             event.postTurnstileEvent(mapboxTileURLs);
@@ -421,7 +413,20 @@ test("mapbox", (t) => {
             req.respond(200);
 
             t.true(req.url.indexOf('https://events.mapbox.cn') > -1);
-            config.API_URL = previousUrl;
+            t.end();
+        });
+
+        t.test('POSTs no event when API_URL unavailable', (t) => {
+            config.API_URL = null;
+            event.postTurnstileEvent(mapboxTileURLs);
+            t.equal(window.server.requests.length, 0, 'no events posted');
+            t.end();
+        });
+
+        t.test('POSTs no event when API_URL non-standard', (t) => {
+            config.API_URL = 'https://api.example.com';
+            event.postTurnstileEvent(mapboxTileURLs);
+            t.equal(window.server.requests.length, 0, 'no events posted');
             t.end();
         });
 
@@ -453,7 +458,8 @@ test("mapbox", (t) => {
                 const now = +Date.now();
                 window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, uuid());
                 window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
-                    lastSuccess: now
+                    lastSuccess: now,
+                    tokenU: 'key'
                 }));
 
                 // Post 5 seconds later
@@ -464,7 +470,6 @@ test("mapbox", (t) => {
 
             t.test('POSTs event when previously stored anonId is not a valid uuid', (t) => {
                 const now = +Date.now();
-
                 window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, 'anonymous');
                 window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
                     lastSuccess: now
@@ -719,7 +724,6 @@ test("mapbox", (t) => {
         });
 
         t.test('POSTs cn event when API_URL changes to cn endpoint', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://api.mapbox.cn';
 
             event.postMapLoadEvent(mapboxTileURLs, 1);
@@ -728,7 +732,20 @@ test("mapbox", (t) => {
             req.respond(200);
 
             t.true(req.url.indexOf('https://events.mapbox.cn') > -1);
-            config.API_URL = previousUrl;
+            t.end();
+        });
+
+        t.test('POSTs no event when API_URL unavailable', (t) => {
+            config.API_URL = null;
+            event.postMapLoadEvent(mapboxTileURLs, 1);
+            t.equal(window.server.requests.length, 0, 'no events posted');
+            t.end();
+        });
+
+        t.test('POSTs no event when API_URL is non-standard', (t) => {
+            config.API_URL = "https://api.example.com";
+            event.postMapLoadEvent(mapboxTileURLs, 1);
+            t.equal(window.server.requests.length, 0, 'no events posted');
             t.end();
         });
 

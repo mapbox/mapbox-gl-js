@@ -2,7 +2,7 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map', // container id
-    style: 'mapbox://styles/mapbox/streets-v10', // stylesheet location
+    style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
     center: [30.0222, -1.9596], // starting position [lng, lat]
     zoom: 7 // starting zoom
 });
@@ -14,7 +14,7 @@ map.on('load', function () {
         'type': 'fill',
         'source': {
             'type': 'geojson',
-            'data': 'https://www.mapbox.com/mapbox-gl-js/assets/rwanda-provinces.geojson'
+            'data': 'https://docs.mapbox.com/mapbox-gl-js/assets/rwanda-provinces.geojson'
         },
         'layout': {},
         'paint': {

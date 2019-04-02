@@ -1,7 +1,7 @@
 {
   "name": "@mapbox/mapbox-gl-style-spec",
   "description": "a specification for mapbox gl styles",
-  "version": "13.5.0",
+  "version": "13.6.0",
   "author": "Mapbox",
   "keywords": [
     "mapbox",
@@ -30,7 +30,7 @@
     "@mapbox/jsonlint-lines-primitives": "~2.0.2",
     "@mapbox/unitbezier": "^0.0.0",
     "csscolorparser": "~1.0.2",
-    "json-stringify-pretty-compact": "^1.2.0",
+    "json-stringify-pretty-compact": "^2.0.0",
     "minimist": "0.0.8",
     "rw": "^1.3.3",
     "sort-object": "^0.3.2"

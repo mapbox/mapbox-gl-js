@@ -38,8 +38,8 @@ map.on('load', function() {
         paint: {
             "circle-radius": ["case",
                 ["boolean", ["feature-state", "hover"], false],
-                ["number", ["*", ["get", "scalerank"], 2]],
-                ["number", ["*", ["get", "scalerank"], 1.5]]
+                ["number", 20],
+                ["number", 10]
             ],
             "circle-color": ["case",
                 ["boolean", ["feature-state", "hover"], false],
@@ -49,16 +49,15 @@ map.on('load', function() {
         }
     });
     let hoveredFeature;
-    map.on('mousemove', 'places', function(e) {
-        if (e.features.length) {
-            const f = e.features[0];
-            if (!f.state.hover) {
-                map.setFeatureState(f, {'hover': true});
-                if (hoveredFeature) {
-                    map.setFeatureState(hoveredFeature, {'hover': false});
-                }
-                hoveredFeature = f;
-            }
+    map.on('mousemove', function(e) {
+        var f = map.queryRenderedFeatures(e.point, {layers:['places']})[0];
+        if (f) {
+            map.setFeatureState(f, {'hover': true});
+            if (hoveredFeature && f.id !== hoveredFeature.id) map.removeFeatureState(hoveredFeature);
+            hoveredFeature = f;
+        } else if (hoveredFeature) {
+            map.removeFeatureState(hoveredFeature);
+            hoveredFeature = null;
         }
     });
 });

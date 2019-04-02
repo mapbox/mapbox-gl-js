@@ -1,8 +1,24 @@
 // @flow
 
-import { symbolLayoutAttributes, collisionVertexAttributes, collisionBoxLayout, collisionCircleLayout, dynamicLayoutAttributes } from './symbol_attributes';
+import { symbolLayoutAttributes,
+    collisionVertexAttributes,
+    collisionBoxLayout,
+    collisionCircleLayout,
+    dynamicLayoutAttributes
+} from './symbol_attributes';
 
-import { SymbolLayoutArray, SymbolDynamicLayoutArray, SymbolOpacityArray, CollisionBoxLayoutArray, CollisionCircleLayoutArray, CollisionVertexArray, PlacedSymbolArray, SymbolInstanceArray, GlyphOffsetArray, SymbolLineVertexArray } from '../array_types';
+import { SymbolLayoutArray,
+    SymbolDynamicLayoutArray,
+    SymbolOpacityArray,
+    CollisionBoxLayoutArray,
+    CollisionCircleLayoutArray,
+    CollisionVertexArray,
+    PlacedSymbolArray,
+    SymbolInstanceArray,
+    GlyphOffsetArray,
+    SymbolLineVertexArray
+} from '../array_types';
+
 import Point from '@mapbox/point-geometry';
 import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
@@ -243,6 +259,8 @@ class SymbolBucket implements Bucket {
     layers: Array<SymbolStyleLayer>;
     layerIds: Array<string>;
     stateDependentLayers: Array<SymbolStyleLayer>;
+    stateDependentLayerIds: Array<string>;
+
     index: number;
     sdfIcons: boolean;
     iconsNeedLinear: boolean;
@@ -299,6 +317,8 @@ class SymbolBucket implements Bucket {
         const zOrderByViewportY = zOrder === 'viewport-y' || (zOrder === 'auto' && !this.sortFeaturesByKey);
         this.sortFeaturesByY = zOrderByViewportY && (layout.get('text-allow-overlap') || layout.get('icon-allow-overlap') ||
             layout.get('text-ignore-placement') || layout.get('icon-ignore-placement'));
+
+        this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
 
         this.sourceID = options.sourceID;
     }
@@ -535,7 +555,9 @@ class SymbolBucket implements Bucket {
             lineStartIndex, lineLength, (labelAnchor.segment: any),
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
             lineOffset[0], lineOffset[1],
-            writingMode, (false: any));
+            writingMode, (false: any),
+            // The crossTileID is only filled/used on the foreground for dynamic text anchors
+            0);
 
         arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {});
     }
@@ -727,9 +749,19 @@ class SymbolBucket implements Bucket {
             const symbolInstance = this.symbolInstances.get(i);
             this.featureSortOrder.push(symbolInstance.featureIndex);
 
-            if (symbolInstance.horizontalPlacedTextSymbolIndex >= 0) {
-                this.addIndicesForPlacedTextSymbol(symbolInstance.horizontalPlacedTextSymbolIndex);
-            }
+            [
+                symbolInstance.rightJustifiedTextSymbolIndex,
+                symbolInstance.centerJustifiedTextSymbolIndex,
+                symbolInstance.leftJustifiedTextSymbolIndex
+            ].forEach((index, i, array) => {
+                // Only add a given index the first time it shows up,
+                // to avoid duplicate opacity entries when multiple justifications
+                // share the same glyphs.
+                if (index >= 0 && array.indexOf(index) === i) {
+                    this.addIndicesForPlacedTextSymbol(index);
+                }
+            });
+
             if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
                 this.addIndicesForPlacedTextSymbol(symbolInstance.verticalPlacedTextSymbolIndex);
             }

@@ -11,7 +11,7 @@ import GlyphManager from '../render/glyph_manager';
 import Light from './light';
 import LineAtlas from '../render/line_atlas';
 import { pick, clone, extend, deepEqual, filterObject, mapObject } from '../util/util';
-import { getJSON, getReferrer, ResourceType } from '../util/ajax';
+import { getJSON, getReferrer, makeRequest, ResourceType } from '../util/ajax';
 import { isMapboxURL, normalizeStyleURL } from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
@@ -51,6 +51,7 @@ import type {Callback} from '../types/callback';
 import type EvaluationParameters from './evaluation_parameters';
 import type {Placement} from '../symbol/placement';
 import type {Cancelable} from '../types/cancelable';
+import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {GeoJSON} from '@mapbox/geojson-types';
 import type {
     LayerSpecification,
@@ -135,6 +136,7 @@ class Style extends Evented {
         this.map = map;
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
+        this.imageManager.setEventedParent(this);
         this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
@@ -462,6 +464,10 @@ class Style extends Evented {
         }
         this.imageManager.addImage(id, image);
         this.fire(new Event('data', {dataType: 'style'}));
+    }
+
+    updateImage(id: string, image: StyleImage) {
+        this.imageManager.updateImage(id, image);
     }
 
     getImage(id: string): ?StyleImage {
@@ -837,6 +843,10 @@ class Style extends Evented {
             return;
         }
         const sourceType = sourceCache.getSource().type;
+        if (sourceType === 'geojson' && sourceLayer) {
+            this.fire(new ErrorEvent(new Error(`GeoJSON sources cannot have a sourceLayer parameter.`)));
+            return;
+        }
         if (sourceType === 'vector' && !sourceLayer) {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
@@ -847,6 +857,38 @@ class Style extends Evented {
         }
 
         sourceCache.setFeatureState(sourceLayer, featureId, state);
+    }
+
+    removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
+        this._checkLoaded();
+        const sourceId = target.source;
+        const sourceCache = this.sourceCaches[sourceId];
+
+        if (sourceCache === undefined) {
+            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
+            return;
+        }
+
+        const sourceType = sourceCache.getSource().type;
+        const sourceLayer = sourceType === 'vector' ? target.sourceLayer : undefined;
+        const featureId = parseInt(target.id, 10);
+
+        if (sourceType === 'vector' && !sourceLayer) {
+            this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
+            return;
+        }
+
+        if (target.id && isNaN(featureId) || featureId < 0) {
+            this.fire(new ErrorEvent(new Error(`The feature id parameter must be non-negative.`)));
+            return;
+        }
+
+        if (key && !target.id) {
+            this.fire(new ErrorEvent(new Error(`A feature id is requred to remove its specific state property.`)));
+            return;
+        }
+
+        sourceCache.removeFeatureState(sourceLayer, featureId, key);
     }
 
     getFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }) {
@@ -905,20 +947,36 @@ class Style extends Evented {
     }
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>) {
-        const features = [];
+        // Feature order is complicated.
+        // The order between features in two 2D layers is always determined by layer order.
+        // The order between features in two 3D layers is always determined by depth.
+        // The order between a feature in a 2D layer and a 3D layer is tricky:
+        //      Most often layer order determines the feature order in this case. If
+        //      a line layer is above a extrusion layer the line feature will be rendered
+        //      above the extrusion. If the line layer is below the extrusion layer,
+        //      it will be rendered below it.
+        //
+        //      There is a weird case though.
+        //      You have layers in this order: extrusion_layer_a, line_layer, extrusion_layer_b
+        //      Each layer has a feature that overlaps the other features.
+        //      The feature in extrusion_layer_a is closer than the feature in extrusion_layer_b so it is rendered above.
+        //      The feature in line_layer is rendered above extrusion_layer_a.
+        //      This means that that the line_layer feature is above the extrusion_layer_b feature despite
+        //      it being in an earlier layer.
+
+        const isLayer3D = layerId => this._layers[layerId].type === 'fill-extrusion';
+
+        const layerIndex = {};
         const features3D = [];
         for (let l = this._order.length - 1; l >= 0; l--) {
             const layerId = this._order[l];
-            for (const sourceResult of sourceResults) {
-                const layerFeatures = sourceResult[layerId];
-                if (layerFeatures) {
-                    if (this._layers[layerId].type === 'fill-extrusion') {
+            if (isLayer3D(layerId)) {
+                layerIndex[layerId] = l;
+                for (const sourceResult of sourceResults) {
+                    const layerFeatures = sourceResult[layerId];
+                    if (layerFeatures) {
                         for (const featureWrapper of layerFeatures) {
                             features3D.push(featureWrapper);
-                        }
-                    } else {
-                        for (const featureWrapper of layerFeatures) {
-                            features.push(featureWrapper.feature);
                         }
                     }
                 }
@@ -926,11 +984,31 @@ class Style extends Evented {
         }
 
         features3D.sort((a, b) => {
-            return a.intersectionZ - b.intersectionZ;
+            return b.intersectionZ - a.intersectionZ;
         });
 
-        for (const featureWrapper of features3D) {
-            features.push(featureWrapper.feature);
+        const features = [];
+        for (let l = this._order.length - 1; l >= 0; l--) {
+            const layerId = this._order[l];
+
+            if (isLayer3D(layerId)) {
+                // add all 3D features that are in or above the current layer
+                for (let i = features3D.length - 1; i >= 0; i--) {
+                    const topmost3D = features3D[i].feature;
+                    if (layerIndex[topmost3D.layer.id] < l) break;
+                    features.push(topmost3D);
+                    features3D.pop();
+                }
+            } else {
+                for (const sourceResult of sourceResults) {
+                    const layerFeatures = sourceResult[layerId];
+                    if (layerFeatures) {
+                        for (const featureWrapper of layerFeatures) {
+                            features.push(featureWrapper.feature);
+                        }
+                    }
+                }
+            }
         }
 
         return features;
@@ -1123,7 +1201,7 @@ class Style extends Evented {
         const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0;
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement);
             this._layerOrderChanged = false;
         }
 
@@ -1137,7 +1215,7 @@ class Style extends Evented {
             this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles);
 
             if (this.pauseablePlacement.isDone()) {
-                this.placement = this.pauseablePlacement.commit(this.placement, browser.now());
+                this.placement = this.pauseablePlacement.commit(browser.now());
                 placementCommitted = true;
             }
 
@@ -1176,6 +1254,10 @@ class Style extends Evented {
 
     getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {[number]: ?StyleGlyph}}>) {
         this.glyphManager.getGlyphs(params.stacks, callback);
+    }
+
+    getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+        return makeRequest(params, callback);
     }
 }
 

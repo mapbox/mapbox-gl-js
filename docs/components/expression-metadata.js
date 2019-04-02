@@ -87,7 +87,11 @@ const types = {
     }],
     case: [{
         type: 'OutputType',
-        parameters: [{ repeat: ['condition: boolean', 'output: OutputType'] }, 'default: OutputType']
+        parameters: [
+            'condition: boolean, output: OutputType',
+            'condition: boolean, output: OutputType',
+            '...',
+            'fallback: OutputType']
     }],
     coalesce: [{
         type: 'OutputType',
@@ -148,9 +152,10 @@ const types = {
         type: 'OutputType',
         parameters: [
             'input: InputType (number or string)',
-            'label_1: InputType | [InputType, InputType, ...], output_1: OutputType',
-            'label_n: InputType | [InputType, InputType, ...], output_n: OutputType, ...',
-            'default: OutputType'
+            'label: InputType | [InputType, InputType, ...], output: OutputType',
+            'label: InputType | [InputType, InputType, ...], output: OutputType',
+            '...',
+            'fallback: OutputType'
         ]
     }],
     var: [{
@@ -189,12 +194,10 @@ for (const name in CompoundExpression.definitions) {
             parameters: processParameters(definition[1])
         }];
     } else {
-        types[name] = definition.overloads.map((o) => {
-            return {
-                type: toString(definition.type),
-                parameters: processParameters(o[0])
-            };
-        });
+        types[name] = definition.overloads.map(o => ({
+            type: toString(definition.type),
+            parameters: processParameters(o[0])
+        }));
     }
 }
 

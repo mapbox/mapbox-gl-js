@@ -1484,6 +1484,278 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#removeFeatureState', (t) => {
+        t.test('remove specific state property', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+                map.removeFeatureState({ source: 'geojson', id: 12345}, 'hover');
+                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
+                t.equal(fState.hover, undefined);
+                t.end();
+            });
+        });
+        t.test('remove all state properties of one feature', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.removeFeatureState({ source: 'geojson', id: 1});
+
+                const fState = map.getFeatureState({ source: 'geojson', id: 1});
+                t.equal(fState.hover, undefined);
+                t.equal(fState.foo, undefined);
+
+                t.end();
+            });
+        });
+        t.test('other properties persist when removing specific property', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.removeFeatureState({ source: 'geojson', id: 1}, 'hover');
+
+                const fState = map.getFeatureState({ source: 'geojson', id: 1});
+                t.equal(fState.foo, true);
+
+                t.end();
+            });
+        });
+        t.test('remove all state properties of all features in source', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
+
+                map.removeFeatureState({ source: 'geojson'});
+
+                const fState1 = map.getFeatureState({ source: 'geojson', id: 1});
+                t.equal(fState1.hover, undefined);
+                t.equal(fState1.foo, undefined);
+
+                const fState2 = map.getFeatureState({ source: 'geojson', id: 2});
+                t.equal(fState2.hover, undefined);
+                t.equal(fState2.foo, undefined);
+
+                t.end();
+            });
+        });
+        t.test('specific state deletion should not interfere with broader state deletion', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
+
+                map.removeFeatureState({ source: 'geojson', id: 1});
+                map.removeFeatureState({ source: 'geojson', id: 1}, 'foo');
+
+                const fState1 = map.getFeatureState({ source: 'geojson', id: 1});
+                t.equal(fState1.hover, undefined);
+
+                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.removeFeatureState({ source: 'geojson'});
+                map.removeFeatureState({ source: 'geojson', id: 1}, 'foo');
+
+                const fState2 = map.getFeatureState({ source: 'geojson', id: 2});
+                t.equal(fState2.hover, undefined);
+
+                map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
+                map.removeFeatureState({ source: 'geojson'});
+                map.removeFeatureState({ source: 'geojson', id: 2}, 'foo');
+
+                const fState3 = map.getFeatureState({ source: 'geojson', id: 2});
+                t.equal(fState3.hover, undefined);
+
+                t.end();
+            });
+        });
+        t.test('add/remove and remove/add state', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+
+                map.removeFeatureState({ source: 'geojson', id: 12345});
+                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+
+                const fState1 = map.getFeatureState({ source: 'geojson', id: 12345});
+                t.equal(fState1.hover, true);
+
+                map.removeFeatureState({ source: 'geojson', id: 12345});
+
+                const fState2 = map.getFeatureState({ source: 'geojson', id: 12345});
+                t.equal(fState2.hover, undefined);
+
+                t.end();
+            });
+        });
+        t.test('throw before loaded', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            t.throws(() => {
+                map.removeFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+            }, Error, /load/i);
+
+            t.end();
+        });
+        t.test('fires an error if source not found', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /source/);
+                    t.end();
+                });
+                map.removeFeatureState({ source: 'vector', id: 12345}, {'hover': true});
+            });
+        });
+        t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /sourceLayer/);
+                    t.end();
+                });
+                map.removeFeatureState({ source: 'vector', sourceLayer: 0, id: 12345}, {'hover': true});
+            });
+        });
+        t.test('fires an error if state property is provided without a feature id', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /id/);
+                    t.end();
+                });
+                map.removeFeatureState({ source: 'vector', sourceLayer: "1"}, {'hover': true});
+            });
+        });
+        t.test('removeFeatureState fires an error if id is less than zero', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /id/);
+                    t.end();
+                });
+                map.removeFeatureState({ source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
+            });
+        });
+        t.test('fires an error if id cannot be parsed as an int', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /id/);
+                    t.end();
+                });
+                map.removeFeatureState({ source: 'vector', sourceLayer: "1", id: 'abc'}, {'hover': true});
+            });
+        });
+        t.end();
+    });
+
     t.test('error event', (t) => {
         t.test('logs errors to console when it has NO listeners', (t) => {
             const map = createMap(t);
@@ -1671,6 +1943,26 @@ test('Map', (t) => {
         t.ok(map.isMoving(), 'map is still moving after resize due to camera animation');
 
         t.end();
+    });
+
+    t.test('map fires `styleimagemissing` for missing icons', (t) => {
+        const map = createMap(t);
+
+        const id = "missing-image";
+
+        let called;
+        map.on('styleimagemissing', e => {
+            map.addImage(e.id, {width: 1, height: 1, data: new Uint8Array(4)});
+            called = e.id;
+        });
+
+        t.notok(map.hasImage(id));
+
+        map.style.imageManager.getImages([id], () => {
+            t.equals(called, id);
+            t.ok(map.hasImage(id));
+            t.end();
+        });
     });
 
     t.end();

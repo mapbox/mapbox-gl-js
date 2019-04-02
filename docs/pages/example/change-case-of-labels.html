@@ -3,7 +3,7 @@
 
 var map = new mapboxgl.Map({
     container: 'map', // container id
-    style: 'mapbox://styles/mapbox/streets-v10', // stylesheet location
+    style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
     center: [-116.231, 43.604], // starting position [lng, lat]
     zoom: 11 // starting zoom
 });
@@ -15,7 +15,7 @@ map.on('load', function() {
         // data from opendata.cityofboise.org/
         'source': {
             'type': 'geojson',
-            'data': 'https://www.mapbox.com/mapbox-gl-js/assets/boise.geojson'
+            'data': 'https://docs.mapbox.com/mapbox-gl-js/assets/boise.geojson'
 
         },
         "layout": {

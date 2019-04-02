@@ -46,6 +46,9 @@ class NavigationControl {
         this._container.addEventListener('contextmenu', (e) => e.preventDefault());
 
         if (this.options.showZoom) {
+            bindAll([
+                '_updateZoomButtons'
+            ], this);
             this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom in', () => this._map.zoomIn());
             this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom out', () => this._map.zoomOut());
         }
@@ -58,6 +61,12 @@ class NavigationControl {
         }
     }
 
+    _updateZoomButtons() {
+        const zoom = this._map.getZoom();
+        this._zoomInButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMaxZoom());
+        this._zoomOutButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMinZoom());
+    }
+
     _rotateCompassArrow() {
         const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
         this._compassArrow.style.transform = rotate;
@@ -65,6 +74,10 @@ class NavigationControl {
 
     onAdd(map: Map) {
         this._map = map;
+        if (this.options.showZoom) {
+            this._map.on('zoom', this._updateZoomButtons);
+            this._updateZoomButtons();
+        }
         if (this.options.showCompass) {
             this._map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
@@ -77,6 +90,9 @@ class NavigationControl {
 
     onRemove() {
         DOM.remove(this._container);
+        if (this.options.showZoom) {
+            this._map.off('zoom', this._updateZoomButtons);
+        }
         if (this.options.showCompass) {
             this._map.off('rotate', this._rotateCompassArrow);
             DOM.removeEventListener(this._compass, 'mousedown', this._handler.onMouseDown);

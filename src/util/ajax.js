@@ -55,7 +55,7 @@ class AJAXError extends Error {
     url: string;
     constructor(message: string, status: number, url: string) {
         if (status === 401 && isMapboxHTTPURL(url)) {
-            message += ': you may have provided an invalid Mapbox access token. See https://www.mapbox.com/api-documentation/#access-tokens';
+            message += ': you may have provided an invalid Mapbox access token. See https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes';
         }
         super(message);
         this.status = status;
@@ -71,14 +71,17 @@ class AJAXError extends Error {
     }
 }
 
+function isWorker() {
+    return typeof WorkerGlobalScope !== 'undefined' && typeof self !== 'undefined' &&
+           self instanceof WorkerGlobalScope;
+}
+
 // Ensure that we're sending the correct referrer from blob URL worker bundles.
 // For files loaded from the local file system, `location.origin` will be set
 // to the string(!) "null" (Firefox), or "file://" (Chrome, Safari, Edge, IE),
 // and we will set an empty referrer. Otherwise, we're using the document's URL.
 /* global self, WorkerGlobalScope */
-export const getReferrer = typeof WorkerGlobalScope !== 'undefined' &&
-                           typeof self !== 'undefined' &&
-                           self instanceof WorkerGlobalScope ?
+export const getReferrer = isWorker() ?
     () => self.worker && self.worker.referrer :
     () => {
         const origin = window.location.origin;
@@ -158,7 +161,24 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
     return { cancel: () => xhr.abort() };
 }
 
-const makeRequest = window.fetch && window.Request && window.AbortController ? makeFetchRequest : makeXMLHttpRequest;
+export const makeRequest = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+    // We're trying to use the Fetch API if possible. However, in some situations we can't use it:
+    // - IE11 doesn't support it at all. In this case, we dispatch the request to the main thread so
+    //   that we can get an accruate referrer header.
+    // - Safari exposes window.AbortController, but it doesn't work actually abort any requests in
+    //   some versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2)
+    // - Requests for resources with the file:// URI scheme don't work with the Fetch API either. In
+    //   this case we unconditionally use XHR on the current thread since referrers don't matter.
+    if (!/^file:/.test(requestParameters.url)) {
+        if (window.fetch && window.Request && window.AbortController && window.Request.prototype.hasOwnProperty('signal')) {
+            return makeFetchRequest(requestParameters, callback);
+        }
+        if (isWorker() && self.worker && self.worker.actor) {
+            return self.worker.actor.send('getResource', requestParameters, callback);
+        }
+    }
+    return makeXMLHttpRequest(requestParameters, callback);
+};
 
 export const getJSON = function(requestParameters: RequestParameters, callback: ResponseCallback<Object>): Cancelable {
     return makeRequest(extend(requestParameters, { type: 'json' }), callback);

@@ -1,6 +1,6 @@
 /*---
 title: Update a feature in realtime
-description: Change an existing feature on your map in realtime by updating its data
+description: Change an existing feature on your map in realtime by updating its data.
 tags:
   - sources
 pathname: /mapbox-gl-js/example/live-update-feature/

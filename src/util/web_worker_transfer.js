@@ -149,7 +149,7 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
     }
 
     if (Array.isArray(input)) {
-        const serialized = [];
+        const serialized: Array<Serialized> = [];
         for (const item of input) {
             serialized.push(serialize(item, transferables));
         }

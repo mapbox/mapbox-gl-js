@@ -1,3 +1,71 @@
+## 0.54.0-beta.1
+
+### Breaking changes
+
+- Turned `localIdeographFontFamily` map option on by default. This may change how CJK labels are rendered, but dramatically improves performance of CJK maps (because the browser no longer needs to download heavy amounts of font data from the server). Add `localIdeographyFontFamily: false` to turn this off. [#8008](https://github.com/mapbox/mapbox-gl-js/pull/8008)
+- Added `Popup` `maxWidth` option, set to `"240px"` by default. [#7906](https://github.com/mapbox/mapbox-gl-js/pull/7906)
+
+### Major features
+
+- Added support for updating and animating style images. [#7999](https://github.com/mapbox/mapbox-gl-js/pull/7999)
+- Added support for generating style images dynamically (e.g. for drawing icons based on feature properties). [#7987](https://github.com/mapbox/mapbox-gl-js/pull/7987)
+- Added antialiasing support for custom layers. [#7821](https://github.com/mapbox/mapbox-gl-js/pull/7821)
+- Added a new `mapbox-gl-csp.js` bundle for strict CSP environments where `worker-src: blob` is disallowed. [#8044](https://github.com/mapbox/mapbox-gl-js/pull/8044)
+
+### Minor features and improvements
+
+- Improved performance of fill extrusions. [#7821](https://github.com/mapbox/mapbox-gl-js/pull/7821)
+- Improved performance of symbol layers. [#7967](https://github.com/mapbox/mapbox-gl-js/pull/7967)
+- Slightly improved rendering performance in general. [#7969](https://github.com/mapbox/mapbox-gl-js/pull/7969)
+- Slightly improved performance of HTML markers. [#8018](https://github.com/mapbox/mapbox-gl-js/pull/8018)
+- Improved diffing of styles with `"visibility": "visible"`. [#8005](https://github.com/mapbox/mapbox-gl-js/pull/8005)
+- Improved zoom buttons to grey out when reaching min/max zoom. [#8023](https://github.com/mapbox/mapbox-gl-js/pull/8023)
+- Added a title to fullscreen control button. [#8012](https://github.com/mapbox/mapbox-gl-js/pull/8012)
+- Added `rel="noopener"` attributes to links that lead to external websites (such as Mapbox logo and OpenStreetMap edit link) for improved security. [#7914](https://github.com/mapbox/mapbox-gl-js/pull/7914)
+- Added tile size info when `map.showTileBoundaries` is turned on. [#7963](https://github.com/mapbox/mapbox-gl-js/pull/7963)
+- Significantly improved load times of the benchmark suite. [#8066](https://github.com/mapbox/mapbox-gl-js/pull/8066)
+
+### Bug fixes
+
+- Fixed a memory leak when calling `source.setData(url)` many times. [#8035](https://github.com/mapbox/mapbox-gl-js/pull/8035)
+- Fixed a bug where marker lost focus when dragging. [#7799](https://github.com/mapbox/mapbox-gl-js/pull/7799)
+- Fixed a bug where `map.getCenter()` returned a reference to an internal `LngLat` object instead of cloning it, leading to potential mutability bugs. [#7922](https://github.com/mapbox/mapbox-gl-js/pull/7922)
+- Fixed a bug where default HTML marker positioning was slightly off. [#8074](https://github.com/mapbox/mapbox-gl-js/pull/8074)
+- Fixed a bug where adding a fill extrusion layer for non-polygon layers would lead to visual artifacts. [#7685](https://github.com/mapbox/mapbox-gl-js/pull/7685)
+- Fixed intermittent Flow failures on CI. [#8061](https://github.com/mapbox/mapbox-gl-js/pull/8061)
+
+## 0.53.1
+
+## Bug fixes
+* Turn off telemetry for Mapbox Atlas ([#7945](https://github.com/mapbox/mapbox-gl-js/pull/7945))
+* Fix order of 3D features in query results (fix #7883) ([#7953](https://github.com/mapbox/mapbox-gl-js/pull/7953))
+* Fix RemovePaintState benchmarks ([#7930](https://github.com/mapbox/mapbox-gl-js/pull/7930))
+
+## 0.53.0
+
+## Features and improvements
+* Enable `fill-extrusion` querying with ray picking ([#7499](https://github.com/mapbox/mapbox-gl-js/pull/7499))
+* Add `clusterProperties` option for aggregated cluster properties ([#2412](https://github.com/mapbox/mapbox-gl-js/issues/2412), fixed by [#7584](https://github.com/mapbox/mapbox-gl-js/pull/7584))
+* Allow initial map bounds to be adjusted with `fitBounds` options. ([#7681](https://github.com/mapbox/mapbox-gl-js/pull/7681)) (h/t [elyobo](https://github.com/elyobo))
+* Remove popups on `Map#remove` ([#7749](https://github.com/mapbox/mapbox-gl-js/pull/7749)) (h/t [andycalder](https://github.com/andycalder))
+* Add `Map#removeFeatureState` ([#7761](https://github.com/mapbox/mapbox-gl-js/pull/7761))
+* Add `number-format` expression ([#7626](https://github.com/mapbox/mapbox-gl-js/pull/7626))
+* Add `symbol-sort-key` style property ([#7678](https://github.com/mapbox/mapbox-gl-js/pull/7678))
+
+## Bug fixes
+* Upgrades Earcut to fix a rare bug in rendering polygons that contain a coincident chain of holes ([#7806](https://github.com/mapbox/mapbox-gl-js/issues/7806), fixed by [#7878](https://github.com/mapbox/mapbox-gl-js/pull/7878))
+* Allow `file://` protocol in XHR requests for Cordova/Ionic/etc ([#7818](https://github.com/mapbox/mapbox-gl-js/pull/7818))
+* Correctly handle WebP images in Edge 18 ([#7687](https://github.com/mapbox/mapbox-gl-js/pull/7687))
+* Fix bug which mistakenly requested WebP images in browsers that do not support WebP (#7817) ([#7819](https://github.com/mapbox/mapbox-gl-js/pull/7819))
+* Fix images not being aborted when dequeued ([#7655](https://github.com/mapbox/mapbox-gl-js/pull/7655))
+* Fix DEM layer memory leak ([#7690](https://github.com/mapbox/mapbox-gl-js/issues/7690), fixed by [#7691](https://github.com/mapbox/mapbox-gl-js/pull/7691))
+* Set correct color state before rendering custom layer ([#7711](https://github.com/mapbox/mapbox-gl-js/pull/7711))
+* Set `LngLat.toBounds()` default radius to 0 ([#7722](https://github.com/mapbox/mapbox-gl-js/issues/7722), fixed by [#7723](https://github.com/mapbox/mapbox-gl-js/pull/7723)) (h/t [cherniavskii](https://github.com/cherniavskii))
+* Fix race condition in `feature-state` dependent layers ([#7523](https://github.com/mapbox/mapbox-gl-js/issues/7523), fixed by [#7790](https://github.com/mapbox/mapbox-gl-js/pull/7790))
+* Prevent `map.repaint` from mistakenly enabling continuous repaints ([#7667](https://github.com/mapbox/mapbox-gl-js/pull/7667))
+* Prevent map shaking while zooming in on raster tiles ([#7426](https://github.com/mapbox/mapbox-gl-js/pull/7426))
+* Fix query point translation for multi-point geometry ([#6833](https://github.com/mapbox/mapbox-gl-js/issues/6833), fixed by [#7581](https://github.com/mapbox/mapbox-gl-js/pull/7581))
+
 ## 0.52.0
 
 # Breaking changes
@@ -39,7 +107,7 @@ November 7, 2018
 * Add tooltips for navigation controls ([#7373](https://github.com/mapbox/mapbox-gl-js/pull/7373))
 * Show attribution only for used sources ([#7384](https://github.com/mapbox/mapbox-gl-js/pull/7384))
 * Add telemetry event to log map loads ([#7431](https://github.com/mapbox/mapbox-gl-js/pull/7431))
-* **Tighten style validation** 
+* **Tighten style validation**
     * Disallow expressions as stop values ([#7396](https://github.com/mapbox/mapbox-gl-js/pull/7396))
     * Disallow `feature-state` expressions in filters ([#7366](https://github.com/mapbox/mapbox-gl-js/pull/7366))
 

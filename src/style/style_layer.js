@@ -39,7 +39,7 @@ class StyleLayer extends Evented {
     minzoom: ?number;
     maxzoom: ?number;
     filter: FilterSpecification | void;
-    visibility: 'visible' | 'none';
+    visibility: 'visible' | 'none' | void;
     _crossfadeParameters: CrossfadeParameters;
 
     _unevaluatedLayout: Layout<any>;
@@ -69,7 +69,6 @@ class StyleLayer extends Evented {
 
         this.id = layer.id;
         this.type = layer.type;
-        this.visibility = 'visible';
         this._featureFilter = () => true;
 
         if (layer.type === 'custom') return;
@@ -116,7 +115,7 @@ class StyleLayer extends Evented {
         return this._unevaluatedLayout.getValue(name);
     }
 
-    setLayoutProperty(name: string, value: mixed, options: StyleSetterOptions = {}) {
+    setLayoutProperty(name: string, value: any, options: StyleSetterOptions = {}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.layout.${name}`;
             if (this._validate(validateLayoutProperty, key, name, value, options)) {
@@ -125,7 +124,7 @@ class StyleLayer extends Evented {
         }
 
         if (name === 'visibility') {
-            this.visibility = value === 'none' ? value : 'visible';
+            this.visibility = value;
             return;
         }
 
@@ -210,9 +209,9 @@ class StyleLayer extends Evented {
             'paint': this._transitionablePaint && this._transitionablePaint.serialize()
         };
 
-        if (this.visibility === 'none') {
+        if (this.visibility) {
             output.layout = output.layout || {};
-            output.layout.visibility = 'none';
+            output.layout.visibility = this.visibility;
         }
 
         return filterObject(output, (value, key) => {
@@ -235,6 +234,14 @@ class StyleLayer extends Evented {
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true}
         }));
+    }
+
+    is3D() {
+        return false;
+    }
+
+    isTileClipped() {
+        return false;
     }
 
     hasOffscreenPass() {
@@ -262,5 +269,3 @@ class StyleLayer extends Evented {
 }
 
 export default StyleLayer;
-
-

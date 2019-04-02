@@ -1,3 +1,10 @@
+## 13.6.0
+
+### ✨ Features and improvements
+* Add `clusterProperties` option for aggregated cluster properties ([#2412](https://github.com/mapbox/mapbox-gl-js/issues/2412), fixed by [#7584](https://github.com/mapbox/mapbox-gl-js/pull/7584))
+* Add `number-format` expression ([#7626](https://github.com/mapbox/mapbox-gl-js/pull/7626))
+* Add `symbol-sort-key` style property ([#7678](https://github.com/mapbox/mapbox-gl-js/pull/7678))
+
 ## 13.5.0
 
 ### Features and improvements
@@ -7,7 +14,7 @@
 ## 13.4.0
 
 ### ✨ Features and improvements
-* **Tighten style validation** 
+* **Tighten style validation**
     * Disallow expressions as stop values ([#7396](https://github.com/mapbox/mapbox-gl-js/pull/7396))
     * Disallow `feature-state` expressions in filters ([#7366](https://github.com/mapbox/mapbox-gl-js/pull/7366))
 

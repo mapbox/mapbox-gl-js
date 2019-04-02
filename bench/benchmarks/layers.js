@@ -15,7 +15,7 @@ function generateLayers(layer) {
     return generated;
 }
 
-class LayerBenchmark extends Benchmark {
+export class LayerBenchmark extends Benchmark {
     setup() {
         return createMap({
             zoom: 16,
@@ -37,7 +37,7 @@ class LayerBenchmark extends Benchmark {
     }
 }
 
-class LayerBackground extends LayerBenchmark {
+export class LayerBackground extends LayerBenchmark {
     constructor() {
         super();
 
@@ -50,7 +50,7 @@ class LayerBackground extends LayerBenchmark {
     }
 }
 
-class LayerCircle extends LayerBenchmark {
+export class LayerCircle extends LayerBenchmark {
     constructor() {
         super();
 
@@ -65,7 +65,7 @@ class LayerCircle extends LayerBenchmark {
     }
 }
 
-class LayerFill extends LayerBenchmark {
+export class LayerFill extends LayerBenchmark {
     constructor() {
         super();
 
@@ -84,7 +84,7 @@ class LayerFill extends LayerBenchmark {
     }
 }
 
-class LayerFillExtrusion extends LayerBenchmark {
+export class LayerFillExtrusion extends LayerBenchmark {
     constructor() {
         super();
 
@@ -102,7 +102,7 @@ class LayerFillExtrusion extends LayerBenchmark {
     }
 }
 
-class LayerHeatmap extends LayerBenchmark {
+export class LayerHeatmap extends LayerBenchmark {
     setup() {
         return fetch('/bench/data/naturalearth-land.json')
             .then(response => response.json())
@@ -144,7 +144,7 @@ class LayerHeatmap extends LayerBenchmark {
     }
 }
 
-class LayerHillshade extends LayerBenchmark {
+export class LayerHillshade extends LayerBenchmark {
     constructor() {
         super();
 
@@ -164,7 +164,7 @@ class LayerHillshade extends LayerBenchmark {
     }
 }
 
-class LayerLine extends LayerBenchmark {
+export class LayerLine extends LayerBenchmark {
     constructor() {
         super();
 
@@ -179,7 +179,7 @@ class LayerLine extends LayerBenchmark {
     }
 }
 
-class LayerRaster extends LayerBenchmark {
+export class LayerRaster extends LayerBenchmark {
     constructor() {
         super();
 
@@ -200,7 +200,7 @@ class LayerRaster extends LayerBenchmark {
     }
 }
 
-class LayerSymbol extends LayerBenchmark {
+export class LayerSymbol extends LayerBenchmark {
     constructor() {
         super();
 
@@ -218,16 +218,3 @@ class LayerSymbol extends LayerBenchmark {
         });
     }
 }
-
-
-export default [
-    LayerBackground,
-    LayerCircle,
-    LayerFill,
-    LayerFillExtrusion,
-    LayerHeatmap,
-    LayerHillshade,
-    LayerLine,
-    LayerRaster,
-    LayerSymbol
-];

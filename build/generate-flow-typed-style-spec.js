@@ -24,7 +24,7 @@ function flowType(property) {
             case 'enum':
                 return flowEnum(property.values);
             case 'array':
-                const elementType = flowType(typeof property.value === 'string' ? {type: property.value} : property.value)
+                const elementType = flowType(typeof property.value === 'string' ? {type: property.value, values: property.values} : property.value)
                 if (property.length) {
                     return `[${Array(property.length).fill(elementType).join(', ')}]`;
                 } else {

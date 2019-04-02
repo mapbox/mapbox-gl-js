@@ -4,6 +4,7 @@ uniform vec2 u_pixel_coord_lower;
 uniform float u_height_factor;
 uniform vec4 u_scale;
 uniform float u_vertical_gradient;
+uniform lowp float u_opacity;
 
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
@@ -71,4 +72,5 @@ void main() {
     }
 
     v_lighting.rgb += clamp(directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+    v_lighting *= u_opacity;
 }
