@@ -1509,7 +1509,7 @@ acorn@^3.3.0:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-3.3.0.tgz#45e37fb39e8da3f25baee3ff5369e2bb5f22017a"
   integrity sha1-ReN/s56No/JbruP/U2niu18iAXo=
 
-acorn@^4.0.0, acorn@^4.0.3, acorn@^4.0.4:
+acorn@^4.0.0, acorn@^4.0.3:
   version "4.0.13"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-4.0.13.tgz#105495ae5361d697bd195c825192e1ad7f253787"
   integrity sha1-EFSVrlNh1pe9GVyCUZLhrX8lN4c=
@@ -5635,7 +5635,7 @@ escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.3, escape-string-regexp@^
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
   integrity sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
 
-escodegen@^1.11.0, escodegen@^1.8.1:
+escodegen@^1.11.0, escodegen@^1.11.1:
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/escodegen/-/escodegen-1.11.1.tgz#c485ff8d6b4cdb89e27f4a856e91f118401ca510"
   integrity sha512-JwiqFD9KdGVVpeuRa68yU3zZnBEOcPs0nKW7wZzXky8Z7tffdYUHbe11bPCV5jYlK6DVdKLWLm0f5I/QlL0Kmw==
@@ -9740,10 +9740,10 @@ ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.1.tgz#30a5864eb3ebb0a66f2ebe6d727af06a09d86e0a"
   integrity sha512-tgp+dl5cGk28utYktBsrFqA7HKgrhgPsg6Z/EfhWI4gl1Hwq8B/GmY/0oXZ6nF8hDVesS/FpnYaD/kOWhYQvyg==
 
-multi-stage-sourcemap@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/multi-stage-sourcemap/-/multi-stage-sourcemap-0.2.1.tgz#b09fc8586eaa17f81d575c4ad02e0f7a3f6b1105"
-  integrity sha1-sJ/IWG6qF/gdV1xK0C4Pej9rEQU=
+multi-stage-sourcemap@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/multi-stage-sourcemap/-/multi-stage-sourcemap-0.3.1.tgz#35bb1e0655cb022516e9f92d738c07a2aacfeec0"
+  integrity sha512-UiTLYjqeIoVnJHyWGskwMKIhtZKK9uXUjSTWuwatarrc0d2H/6MAVFdwvEA/aKOHamIn7z4tfvxjz+FYucFpNQ==
   dependencies:
     source-map "^0.1.34"
 
@@ -12450,16 +12450,16 @@ rollup-plugin-terser@^4.0.4:
     serialize-javascript "^1.6.1"
     terser "^3.14.1"
 
-rollup-plugin-unassert@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-unassert/-/rollup-plugin-unassert-0.2.0.tgz#856a1513982a9ff9dcc7cfa6a436be8fe1b6696f"
-  integrity sha512-UikBhzlkWCx8Ine+fEhN8J5wqyD0C1pc2PUhTddN2W43xqo4XJEM/XGN2oeIOYwUEfHsjEq22QmOj2fdhflDRg==
+rollup-plugin-unassert@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-unassert/-/rollup-plugin-unassert-0.3.0.tgz#a6d5e52e6354d1a3f223077811b4040bd7cfc763"
+  integrity sha512-mdRJ8AinuNdtoS9L+CXVQcoaHLHV+eeEV5b9u76ai3yxOWp3t1oXQOuDjRmRiIjOYWYxCkSYiFQH72QoPdDfwQ==
   dependencies:
-    acorn "^4.0.4"
-    convert-source-map "^1.5.1"
-    escodegen "^1.8.1"
-    multi-stage-sourcemap "^0.2.1"
-    rollup-pluginutils "^2.0.1"
+    acorn "^6.1.1"
+    convert-source-map "^1.6.0"
+    escodegen "^1.11.1"
+    multi-stage-sourcemap "^0.3.1"
+    rollup-pluginutils "^2.5.0"
     unassert "^1.5.1"
 
 rollup-pluginutils@^2.0.1, rollup-pluginutils@^2.3.3, rollup-pluginutils@^2.4.1, rollup-pluginutils@^2.5.0:
