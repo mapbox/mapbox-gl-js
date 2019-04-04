@@ -9,7 +9,7 @@
     width: 100%;
     height: 100%;
 }
-.mapboxgl-user-location-dot::after
+
 .mapboxgl-canary {
     background-color: salmon;
 }
