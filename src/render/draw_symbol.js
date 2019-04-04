@@ -194,7 +194,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         } else {
             const iconScaled = layer.layout.get('icon-size').constantOr(0) !== 1 || bucket.iconsNeedLinear;
-            const iconTransformed = pitchWithMap || tr.pitch !== 0;
+            const iconTransformed = tr.pitch !== 0;
 
             atlasTexture = tile.imageAtlasTexture;
             atlasInterpolation = isSDF || painter.options.rotating || painter.options.zooming || iconScaled || iconTransformed ?
