@@ -466,7 +466,6 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.25);
 }
 
 .mapboxgl-user-location-dot::before {
@@ -492,6 +491,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     top: -2px;
     width: 19px;
     box-sizing: border-box;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.35);
 }
 
 @-webkit-keyframes mapboxgl-user-location-dot-pulse {
