@@ -193,6 +193,14 @@ export default class Popup extends Evented {
     }
 
     /**
+     * Returns the `Popup`'s HTML element.
+     * @returns {HTMLElement} element
+     */
+    getElement() {
+        return this._container;
+    }
+
+    /**
      * Sets the popup's content to a string of text.
      *
      * This function creates a [Text](https://developer.mozilla.org/en-US/docs/Web/API/Text) node in the DOM,
