@@ -35,6 +35,7 @@ import type {StyleOptions, StyleSetterOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface} from '../style/style_image';
+import type {AnimationFrameProvider} from '../util/browser';
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -95,7 +96,8 @@ type MapOptions = {
     pitch?: number,
     renderWorldCopies?: boolean,
     maxTileCacheSize?: number,
-    transformRequest?: RequestTransformFunction
+    transformRequest?: RequestTransformFunction,
+    animationFrameProvider?: AnimationFrameProvider
 };
 
 const defaultMinZoom = 0;
@@ -212,6 +214,7 @@ const defaultOptions = {
  *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (see [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs))
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
  *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
+ * @param {AnimationFrameProvider} [options.animationFrameProvider=null] If provided, the AnimationFrameProvider will be used to schedule map rendering frames. The provider must implement [requestAnimationFrame(callback)](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame) and [cancelAnimationFrame(handle)](https://developer.mozilla.org/en-US/docs/Web/API/Window/cancelAnimationFrame) methods.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
@@ -272,6 +275,7 @@ class Map extends Camera {
     _controls: Array<IControl>;
     _mapId: number;
     _localIdeographFontFamily: string;
+    _animationFrameProvider: ?AnimationFrameProvider
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -335,6 +339,7 @@ class Map extends Camera {
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
         this._mapId = uniqueId();
+        this._animationFrameProvider = options.animationFrameProvider;
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?
@@ -1835,7 +1840,7 @@ class Map extends Camera {
             this._frame = browser.frame(() => {
                 this._frame = null;
                 this._render();
-            });
+            }, this._animationFrameProvider);
         }
     }
 

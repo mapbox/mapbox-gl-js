@@ -7,6 +7,11 @@ const now = window.performance && window.performance.now ?
     window.performance.now.bind(window.performance) :
     Date.now.bind(Date);
 
+export type AnimationFrameProvider = {
+    requestAnimationFrame: (callback: (time: number) => void) => number,
+    cancelAnimationFrame: (number) => void
+};
+
 const raf = window.requestAnimationFrame ||
     window.mozRequestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
@@ -29,9 +34,18 @@ const exported = {
      */
     now,
 
-    frame(fn: Function): Cancelable {
-        const frame = raf(fn);
-        return { cancel: () => cancel(frame) };
+    frame(fn: Function, provider: ?AnimationFrameProvider): Cancelable {
+        const frame = provider ?
+            provider.requestAnimationFrame(fn) :
+            raf(fn);
+
+        return { cancel: () => {
+            if (provider) {
+                provider.cancelAnimationFrame(frame);
+            } else {
+                cancel(frame);
+            }
+        }};
     },
 
     getImageData(img: CanvasImageSource): ImageData {
