@@ -27,9 +27,9 @@ map.on('load', function() {
         }
     });
 
-    // Load the image to use as pattern
+    // Load an image to use as the pattern
     map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cat_silhouette.svg/64px-Cat_silhouette.svg.png', function(err, image) {
-        // Throw if something wrong happened
+        // Throw an error if something went wrong
         if (err) throw err;
 
         // Declare the image
