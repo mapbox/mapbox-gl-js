@@ -30,7 +30,7 @@ var geocoder = new MapboxGeocoder({
     render: function(item){
         // extract the item's maki icon or use a default
         var maki = item.properties.maki || 'marker';
-        return "<div class='geocoder-dropdown-item'><img class='geocoder-dropdown-icon' src='https://unpkg.com/@mapbox/maki@6.1.0/icons/" + {maki} + "-15.svg'><span class='geocoder-dropdown-text'>" + item.text + "</span></div>"
+        return "<div class='geocoder-dropdown-item'><img class='geocoder-dropdown-icon' src='https://unpkg.com/@mapbox/maki@6.1.0/icons/" + maki + "-15.svg'><span class='geocoder-dropdown-text'>" + item.text + "</span></div>"
     },
     mapboxgl: mapboxgl
 });
