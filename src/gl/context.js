@@ -115,7 +115,36 @@ class Context {
         if (this.extTextureHalfFloat) {
             gl.getExtension('OES_texture_half_float_linear');
         }
+    }
 
+    setDefault() {
+        this.unbindVAO();
+
+        this.clearColor.setDefault();
+        this.clearDepth.setDefault();
+        this.clearStencil.setDefault();
+        this.colorMask.setDefault();
+        this.depthMask.setDefault();
+        this.stencilMask.setDefault();
+        this.stencilFunc.setDefault();
+        this.stencilOp.setDefault();
+        this.stencilTest.setDefault();
+        this.depthRange.setDefault();
+        this.depthTest.setDefault();
+        this.depthFunc.setDefault();
+        this.blend.setDefault();
+        this.blendFunc.setDefault();
+        this.blendColor.setDefault();
+        this.blendEquation.setDefault();
+        this.cullFace.setDefault();
+        this.cullFaceSide.setDefault();
+        this.frontFace.setDefault();
+        this.program.setDefault();
+        this.activeTexture.setDefault();
+        this.bindFramebuffer.setDefault();
+        this.pixelStoreUnpack.setDefault();
+        this.pixelStoreUnpackPremultiplyAlpha.setDefault();
+        this.pixelStoreUnpackFlipY.setDefault();
     }
 
     setDirty() {
