@@ -3,7 +3,7 @@ import { findStopLessThanOrEqualTo } from '../../../src/style-spec/expression/st
 
 test('findStopLessThanOrEqualTo', (t) => {
     test('When the input > all stops it returns the last stop.', (t) => {
-        const index = findStopLessThanOrEqualTo([0, 1, 2, 3, 4, 5, 6, 7], 8)
+        const index = findStopLessThanOrEqualTo([0, 1, 2, 3, 4, 5, 6, 7], 8);
         t.equal(index, 7);
         t.end();
     });
