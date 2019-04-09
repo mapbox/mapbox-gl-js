@@ -11,9 +11,9 @@ export type Stops = Array<[number, Expression]>;
  * @private
  */
 export function findStopLessThanOrEqualTo(stops: Array<number>, input: number) {
-    const n = stops.length - 1;
+    const lastIndex = stops.length - 1;
     let lowerIndex = 0;
-    let upperIndex = n;
+    let upperIndex = lastIndex;
     let currentIndex = 0;
     let currentValue, nextValue;
 
@@ -22,11 +22,11 @@ export function findStopLessThanOrEqualTo(stops: Array<number>, input: number) {
         currentValue = stops[currentIndex];
         nextValue = stops[currentIndex + 1];
 
-        if (currentValue <= input && (currentIndex === n || input < nextValue)) { // Search complete
-            return currentIndex;
-        }
-
         if (currentValue <= input) {
+            if (currentIndex === lastIndex || input < nextValue) { // Search complete
+                return currentIndex;
+            }
+            
             lowerIndex = currentIndex + 1;
         } else if (currentValue > input) {
             upperIndex = currentIndex - 1;
