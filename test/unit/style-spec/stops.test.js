@@ -1,5 +1,5 @@
 import { test } from 'mapbox-gl-js-test';
-import { findStopLessThanOrEqualTo } from '../../../src/style-spec/expression/stop';
+import { findStopLessThanOrEqualTo } from '../../../src/style-spec/expression/stops';
 
 test('findStopLessThanOrEqualTo', (t) => {
     test('When the input > all stops it returns the last stop.', (t) => {
