@@ -45,19 +45,19 @@ export default groupByLayout;
  *
  * @private
  * @param {Array<Layer>} layers
- * @param {Object} cachedKeys
+ * @param {Object} [cachedKeys] - an object to keep already calculated keys.
  * @returns {Array<Array<Layer>>}
  */
 function groupByLayout(layers, cachedKeys) {
     const groups = {};
 
     for (let i = 0; i < layers.length; i++) {
-        // if the key isn't in the cache - add it
-        if (!cachedKeys[layers[i].id])
-            cachedKeys[layers[i].id] = getKey(layers[i]);
-        // get the key from the cache
-        const k = cachedKeys[layers[i].id];
 
+        const k = (cachedKeys && cachedKeys[layers[i].id] ) || getKey(layers[i]);
+        // update the cache if there is one
+        if ( cachedKeys )
+            cachedKeys[layers[i].id] = k;
+            
         let group = groups[k];
         if (!group) {
             group = groups[k] = [];
