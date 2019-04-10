@@ -158,10 +158,13 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             map._render();
             applyOperations(map, operations.slice(1), callback);
         } else if (operation[0] === 'updateFakeCanvas') {
-            updateFakeCanvas(window.document, options.addFakeCanvas.id, operation[2]);
             const canvasSource = map.getSource(operation[1]);
             canvasSource.play();
+            // update before pause should be rendered
+            updateFakeCanvas(window.document, options.addFakeCanvas.id, operation[2]);
             canvasSource.pause();
+            // update after pause should not be rendered
+            updateFakeCanvas(window.document, options.addFakeCanvas.id, operation[3]);
             map._render();
             applyOperations(map, operations.slice(1), callback);
         } else if (operation[0] === 'setStyle') {

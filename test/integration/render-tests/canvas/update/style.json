@@ -10,7 +10,7 @@
       },
       "operations": [
           ["wait"],
-          ["updateFakeCanvas", "canvas", "./image/1.png"]
+          ["updateFakeCanvas", "canvas", "./image/1.png", "./image/0.png"]
       ]
     }
   },

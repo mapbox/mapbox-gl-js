@@ -67,7 +67,6 @@ class CanvasSource extends ImageSource {
     play: () => void;
     pause: () => void;
     _playing: boolean;
-    _dirty: boolean;
 
     /**
      * @private
@@ -131,8 +130,10 @@ class CanvasSource extends ImageSource {
         };
 
         this.pause = function() {
-            this._playing = false;
-            this._dirty = true;
+            if (this._playing) {
+                this.prepare();
+                this._playing = false;
+            }
         };
 
         this._finishLoading();
@@ -201,9 +202,8 @@ class CanvasSource extends ImageSource {
 
         if (!this.texture) {
             this.texture = new Texture(context, this.canvas, gl.RGBA, { premultiply: true });
-        } else if (resize || this._playing || this._dirty) {
+        } else if (resize || this._playing) {
             this.texture.update(this.canvas, { premultiply: true });
-            this._dirty = false;
         }
 
         for (const w in this.tiles) {
