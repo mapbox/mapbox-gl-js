@@ -14,6 +14,9 @@ class MarkdownPageshell extends React.Component {
         if (!meta.pathname) {
             meta.pathname = location.pathname;
         }
+        if (frontMatter.contentType) meta.contentType = frontMatter.contentType;
+        if (frontMatter.language) meta.language = frontMatter.language;
+        if (frontMatter.level) meta.level = frontMatter.level;
         return (
             <PageShell meta={meta} {...this.props}>
                 <div className="prose">
