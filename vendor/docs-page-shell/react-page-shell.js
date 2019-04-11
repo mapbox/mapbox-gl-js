@@ -101,7 +101,8 @@ function BrowserCompatibilityWarning() {
     id: "page-shell-compatibility-warning",
     style: {
       display: 'none'
-    }
+    },
+    "data-swiftype-index": "false"
   }, React.createElement("div", {
     className: "shell-py12 shell-px24 shell-bg-pink shell-color-white shell-align-l"
   }, React.createElement("button", {
