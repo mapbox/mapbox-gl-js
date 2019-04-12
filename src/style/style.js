@@ -883,7 +883,7 @@ class Style extends Evented {
             return;
         }
 
-        if (key && typeof target.id !== 'number') {
+        if (key && (typeof target.id !== 'string' || typeof target.id !== 'number')) {
             this.fire(new ErrorEvent(new Error(`A feature id is requred to remove its specific state property.`)));
             return;
         }
