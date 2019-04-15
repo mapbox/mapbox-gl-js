@@ -4480,7 +4480,7 @@ d3-quadtree@1.0.3:
   resolved "https://registry.yarnpkg.com/d3-quadtree/-/d3-quadtree-1.0.3.tgz#ac7987e3e23fe805a990f28e1b50d38fcb822438"
   integrity sha1-rHmH4+I/6AWpkPKOG1DTj8uCJDg=
 
-d3-queue@3.0.7, d3-queue@^3.0.3, d3-queue@^3.0.7:
+d3-queue@3.0.7, d3-queue@^3.0.7:
   version "3.0.7"
   resolved "https://registry.yarnpkg.com/d3-queue/-/d3-queue-3.0.7.tgz#c93a2e54b417c0959129d7d73f6cf7d4292e7618"
   integrity sha1-yTouVLQXwJWRKdfXP2z31Ckudhg=
