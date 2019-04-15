@@ -878,12 +878,12 @@ class Style extends Evented {
             return;
         }
 
-        if (target.id && isNaN(featureId) || featureId < 0) {
+        if (target.id !== undefined && isNaN(featureId) || featureId < 0) {
             this.fire(new ErrorEvent(new Error(`The feature id parameter must be non-negative.`)));
             return;
         }
 
-        if (key && !target.id) {
+        if (key && (typeof target.id !== 'string' && typeof target.id !== 'number')) {
             this.fire(new ErrorEvent(new Error(`A feature id is requred to remove its specific state property.`)));
             return;
         }
