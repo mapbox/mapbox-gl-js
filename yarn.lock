@@ -1197,22 +1197,6 @@
   resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-supported/-/mapbox-gl-supported-1.4.0.tgz#36946b22944fe2cfa43cfafd5ef36fdb54a069e4"
   integrity sha512-ZD0Io4XK+/vU/4zpANjOtdWfVszAgnaMPsGR6LKsWh4kLIEv9qoobTVmJPPuwuM+ZI2b3BlZ6DYw1XHVmv6YTA==
 
-"@mapbox/mapbox-gl-test-suite@file:test/integration":
-  version "0.0.0"
-  dependencies:
-    "@mapbox/mvt-fixtures" "^3.2.0"
-    chalk "^2.3.0"
-    d3-queue "^3.0.3"
-    diff "^1.4.0"
-    glob "^7.0.3"
-    json-stringify-pretty-compact "^1.0.4"
-    lodash.template "^4.4.0"
-    mapbox-gl-styles "2.0.2"
-    pixelmatch "^4.0.2"
-    pngjs "^3.0.0"
-    shuffle-seed "^1.1.6"
-    st "^1.1.0"
-
 "@mapbox/mbx-assembly@^0.28.2":
   version "0.28.2"
   resolved "https://registry.yarnpkg.com/@mapbox/mbx-assembly/-/mbx-assembly-0.28.2.tgz#5b654b7b5377aa29223ea32938c11762be8ac219"
@@ -8532,11 +8516,6 @@ json-stable-stringify@~0.0.0:
   dependencies:
     jsonify "~0.0.0"
 
-json-stringify-pretty-compact@^1.0.4:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/json-stringify-pretty-compact/-/json-stringify-pretty-compact-1.2.0.tgz#0bc316b5e6831c07041fc35612487fb4e9ab98b8"
-  integrity sha512-/11Pj1OyX814QMKO7K8l85SHPTr/KsFxHp8GE2zVa0BtJgGimDjXHfM3FhC7keQdWDea7+nXf+f1de7ATZcZkQ==
-
 json-stringify-pretty-compact@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/json-stringify-pretty-compact/-/json-stringify-pretty-compact-2.0.0.tgz#e77c419f52ff00c45a31f07f4c820c2433143885"
@@ -13182,7 +13161,7 @@ ssri@^5.2.4:
   dependencies:
     safe-buffer "^5.1.1"
 
-st@^1.1.0, st@^1.2.2:
+st@^1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/st/-/st-1.2.2.tgz#b95554f41b457bf0ed1c48f2bad8fccff894b14f"
   integrity sha512-goKkumvz0BMLs6KjjPf5Fub/3T34tRVQxInUI5lqtbaKD+s4HcRlJYP2GPJ8RgAmrsnYOPGmOFEP6ho0KJ+E8g==
