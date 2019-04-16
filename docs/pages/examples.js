@@ -20,7 +20,6 @@ const meta = {
     title: 'Examples',
     description: 'Code examples for Mapbox GL JS.',
     pathname: '/examples',
-    contentType: 'example',
     lanaguage: ['JavaScript']
 };
 
