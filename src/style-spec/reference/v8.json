@@ -981,7 +981,7 @@
       "type": "enum",
       "values": {
         "auto": {
-          "doc": "If `symbol-sort-key` is set, sort based on that. Otherwise sort symbols by their position relative to the viewport."
+          "doc": "If `symbol-sort-key` is set, sort based on that. Otherwise sort symbols by their y-position relative to the viewport."
         },
         "viewport-y": {
           "doc": "Symbols will be sorted by their y-position relative to the viewport."
