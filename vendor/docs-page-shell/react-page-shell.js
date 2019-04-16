@@ -946,7 +946,7 @@ var removeMarkdown = function (md, options) {
 
 function MetaTagger(props) {
   var site = props.subsite ? props.subsite : props.site;
-  var suffixedTitle = /^Mapbox/.test(props.title) ? props.title : "".concat(props.title === site ? props.title : "".concat(props.title, " | ").concat(site), " | Mapbox");
+  var suffixedTitle = "".concat(props.title === site ? props.title : "".concat(props.title, " | ").concat(site), " | Mapbox");
   var preppedDescription = props.description.replace(/\s+/g, ' ');
   var prodUrl = 'https://www.mapbox.com';
   if (props.pathname[0] !== '/') prodUrl += '/';
