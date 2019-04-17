@@ -3354,6 +3354,15 @@
           }
         }
       },
+      "join": {
+        "doc": "Returns a string by cancatenating all the elements in the input array.",
+        "group": "String",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.55.0"
+          }
+        }
+      },
       "concat": {
         "doc": "Returns a `string` consisting of the concatenation of the inputs. Each input is converted to a string as if by `to-string`.",
         "group": "String",

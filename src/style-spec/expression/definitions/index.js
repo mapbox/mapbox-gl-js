@@ -540,6 +540,11 @@ CompoundExpression.register(expressions, {
         [StringType],
         (ctx, [s]) => s.evaluate(ctx).toLowerCase()
     ],
+    'join': [
+        StringType,
+        [StringType, array(ValueType)],
+        (ctx, [separator, a]) => a.evaluate(ctx).join(separator.evaluate(ctx))
+    ],
     'concat': [
         StringType,
         varargs(ValueType),
