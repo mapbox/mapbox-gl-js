@@ -1524,6 +1524,27 @@ test('Map', (t) => {
                 t.end();
             });
         });
+        t.test('remove properties for zero-based feature IDs.', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true, 'foo': true});
+                map.removeFeatureState({ source: 'geojson', id: 0});
+
+                const fState = map.getFeatureState({ source: 'geojson', id: 0});
+                t.equal(fState.hover, undefined);
+                t.equal(fState.foo, undefined);
+
+                t.end();
+            });
+        });
         t.test('other properties persist when removing specific property', (t) => {
             const map = createMap(t, {
                 style: {
