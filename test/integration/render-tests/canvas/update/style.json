@@ -2,8 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 512,
-      "height": 512,
+      "width": 64,
+      "height": 64,
       "addFakeCanvas": {
           "id": "fake-canvas",
           "image": "./image/0.png"
@@ -18,7 +18,7 @@
     -122.514426,
     37.562984
   ],
-  "zoom": 17,
+  "zoom": 14,
   "sources": {
     "canvas": {
       "type": "canvas",
