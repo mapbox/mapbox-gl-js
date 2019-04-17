@@ -281,9 +281,6 @@ var nonMobile = {
       }, {
         name: 'for Unity',
         to: 'https://docs.mapbox.com/unity/maps/overview/'
-      }, {
-        name: 'for Qt',
-        to: 'https://doc.qt.io/qt-5/location-plugin-mapboxgl.html'
       }]
     },
     links: [{
