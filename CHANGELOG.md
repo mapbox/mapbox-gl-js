@@ -1,4 +1,4 @@
-## 0.54.0
+## 0.54.0-beta.2
 
 ### Breaking changes
 
@@ -24,6 +24,7 @@
 - Added `rel="noopener"` attributes to links that lead to external websites (such as Mapbox logo and OpenStreetMap edit link) for improved security. [#7914](https://github.com/mapbox/mapbox-gl-js/pull/7914)
 - Added tile size info when `map.showTileBoundaries` is turned on. [#7963](https://github.com/mapbox/mapbox-gl-js/pull/7963)
 - Significantly improved load times of the benchmark suite. [#8066](https://github.com/mapbox/mapbox-gl-js/pull/8066)
+- Improved behavior of `canvasSource.pause` to be more reliable and able to render a single frame. [#8130](https://github.com/mapbox/mapbox-gl-js/pull/8130)
 
 ### Bug fixes
 
@@ -34,6 +35,7 @@
 - Fixed a bug where adding a fill extrusion layer for non-polygon layers would lead to visual artifacts. [#7685](https://github.com/mapbox/mapbox-gl-js/pull/7685)
 - Fixed intermittent Flow failures on CI. [#8061](https://github.com/mapbox/mapbox-gl-js/pull/8061)
 - Fixed a bug where calling `Map#removeFeatureState` does not remove the state from some tile zooms [#8087](https://github.com/mapbox/mapbox-gl-js/pull/8087)
+- Fixed a bug where `removeFeatureState` didn't work on features with `id` equal to `0`. [#8150](https://github.com/mapbox/mapbox-gl-js/pull/8150)
 
 ## 0.53.1
 
