@@ -124,7 +124,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 const y = point.y;
 
                 // Do not include points that are outside the tile boundaries.
-                if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
+                if (x < 0 || x >= EXTENT || y < 0 || y > EXTENT) continue;
 
                 // this geometry will be of the Point type, and we'll derive
                 // two triangles from it.
