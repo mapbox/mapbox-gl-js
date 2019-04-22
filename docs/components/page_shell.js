@@ -217,7 +217,7 @@ class PageShell extends React.Component {
         };
 
         return (
-            <ReactPageShell darkHeaderText={true} includeFooter={false} {...this.props}>
+            <ReactPageShell site="Mapbox GL JS" darkHeaderText={true} includeFooter={false} {...this.props}>
                 <Helmet>
                     <link
                         rel="canonical"

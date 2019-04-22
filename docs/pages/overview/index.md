@@ -6,6 +6,7 @@ prependJs:
   - "import Quickstart from '../../components/quickstart';"
   - "import {version} from '../../../package.json';"
 pathname: /mapbox-gl-js/overview/
+contentType: API
 ---
 
 {{

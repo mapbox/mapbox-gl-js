@@ -17,9 +17,10 @@ import AppropriateImage from '../components/appropriate-image';
 import imageConfig from '../img/dist/image.config.json'; // eslint-disable-line
 
 const meta = {
-    title: 'Mapbox GL JS Examples',
+    title: 'Examples',
     description: 'Code examples for Mapbox GL JS.',
-    pathname: '/examples'
+    pathname: '/examples',
+    lanaguage: ['JavaScript']
 };
 
 class ExamplesLandingPage extends React.PureComponent {
