@@ -53,11 +53,11 @@ function groupByLayout(layers, cachedKeys) {
 
     for (let i = 0; i < layers.length; i++) {
 
-        const k = (cachedKeys && cachedKeys[layers[i].id] ) || getKey(layers[i]);
+        const k = (cachedKeys && cachedKeys[layers[i].id]) || getKey(layers[i]);
         // update the cache if there is one
-        if ( cachedKeys )
+        if (cachedKeys)
             cachedKeys[layers[i].id] = k;
-            
+
         let group = groups[k];
         if (!group) {
             group = groups[k] = [];
