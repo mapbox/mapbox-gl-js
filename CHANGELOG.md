@@ -1,4 +1,4 @@
-## 0.54.0-beta.2
+## 0.54.0
 
 ### Breaking changes
 
