@@ -27,7 +27,8 @@ const readPost = filename => {
     }
 };
 
-const listExamples = dir => {
+
+const listExamplesJs = dir => {
     const files = fs.readdirSync(`${dir}`);
     return files.reduce((arr, file) => {
         if (path.extname(file) === '.js') {
@@ -37,7 +38,18 @@ const listExamples = dir => {
     }, []);
 };
 
-listExamples('./docs/pages/example/').forEach((example) => {
+const listExamplesHtml = dir => {
+    const files = fs.readdirSync(`${dir}`);
+    return files.reduce((arr, file) => {
+        if (path.extname(file) === '.html') {
+            arr.push(`${dir}${file}`);
+        }
+        return arr;
+    }, []);
+};
+
+// Test .js files
+listExamplesJs('./docs/pages/example/').forEach((example) => {
     const file = readPost(example);
     const metadata = file.metadata;
 
@@ -64,4 +76,13 @@ listExamples('./docs/pages/example/').forEach((example) => {
             t.end();
         });
     }
+});
+
+// Test .html files
+listExamplesHtml('./docs/pages/example/').forEach((example) => {
+    const file = readPost(example);
+    test(`Example: ${example}`, (t) => {
+        t.ok(!file.file.includes('pk.ey'), 'do not hardcode access tokens, an access token will be appended automatically');
+        t.end();
+    });
 });
