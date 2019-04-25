@@ -128,6 +128,7 @@ class FeatureIndex {
         matching.sort(topDownFeatureComparator);
 
         const result = {};
+        const layerCache = {};
         let previousIndex;
         for (let k = 0; k < matching.length; k++) {
             const index = matching[k];
@@ -156,7 +157,8 @@ class FeatureIndex {
                         featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', feature.id);
                     }
                     return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.pixelPosMatrix);
-                }
+                },
+                layerCache
             );
         }
 
@@ -171,7 +173,8 @@ class FeatureIndex {
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
-        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer) => boolean | number) {
+        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer) => boolean | number,
+        layerCache?: {[string]: any}) {
 
         const layerIDs = this.bucketLayerIDs[bucketIndex];
         if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs))
@@ -201,7 +204,15 @@ class FeatureIndex {
             }
 
             const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
-            (geojsonFeature: any).layer = styleLayer.serialize();
+            if (!layerCache) {
+                (geojsonFeature: any).layer = styleLayer.serialize();
+            } else {
+                if (!layerCache[ styleLayer.id ]) {
+                    layerCache[styleLayer.id] = styleLayer.serialize();
+                }
+                (geojsonFeature: any).layer = layerCache[styleLayer.id];
+            }
+
             let layerResult = result[layerID];
             if (layerResult === undefined) {
                 layerResult = result[layerID] = [];
@@ -219,6 +230,7 @@ class FeatureIndex {
                          filterLayerIDs: Array<string>,
                          styleLayers: {[string]: StyleLayer}) {
         const result = {};
+        const layerCache = {};
         this.loadVTLayers();
 
         const filter = featureFilter(filterSpec);
@@ -231,7 +243,9 @@ class FeatureIndex {
                 symbolFeatureIndex,
                 filter,
                 filterLayerIDs,
-                styleLayers
+                styleLayers,
+                null,
+                layerCache
             );
 
         }
