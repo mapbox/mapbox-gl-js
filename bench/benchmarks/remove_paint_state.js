@@ -68,7 +68,7 @@ class RemovePaintState extends Benchmark {
     }
 }
 
-class PropertyLevelRemove extends RemovePaintState {
+export class PropertyLevelRemove extends RemovePaintState {
     bench() {
 
         for (let i = 0; i < this.numFeatures; i += 50) {
@@ -82,7 +82,7 @@ class PropertyLevelRemove extends RemovePaintState {
     }
 }
 
-class FeatureLevelRemove extends RemovePaintState {
+export class FeatureLevelRemove extends RemovePaintState {
     bench() {
 
         for (let i = 0; i < this.numFeatures; i += 50) {
@@ -96,7 +96,7 @@ class FeatureLevelRemove extends RemovePaintState {
     }
 }
 
-class SourceLevelRemove extends RemovePaintState {
+export class SourceLevelRemove extends RemovePaintState {
     bench() {
 
         for (let i = 0; i < this.numFeatures; i += 50) {
@@ -109,9 +109,3 @@ class SourceLevelRemove extends RemovePaintState {
 
     }
 }
-
-export default [
-    PropertyLevelRemove,
-    FeatureLevelRemove,
-    SourceLevelRemove
-];

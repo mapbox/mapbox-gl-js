@@ -24,7 +24,8 @@ export default function validateArray(options) {
     }
 
     let arrayElementSpec = {
-        "type": arraySpec.value
+        "type": arraySpec.value,
+        "values": arraySpec.values
     };
 
     if (styleSpec.$version < 7) {

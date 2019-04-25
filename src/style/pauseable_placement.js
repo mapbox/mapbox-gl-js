@@ -43,9 +43,10 @@ class PauseablePlacement {
                 forceFullPlacement: boolean,
                 showCollisionBoxes: boolean,
                 fadeDuration: number,
-                crossSourceCollisions: boolean) {
+                crossSourceCollisions: boolean,
+                prevPlacement?: Placement) {
 
-        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions);
+        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions, prevPlacement);
         this._currentPlacementIndex = order.length - 1;
         this._forceFullPlacement = forceFullPlacement;
         this._showCollisionBoxes = showCollisionBoxes;
@@ -94,8 +95,8 @@ class PauseablePlacement {
         this._done = true;
     }
 
-    commit(previousPlacement: ?Placement, now: number) {
-        this.placement.commit(previousPlacement, now);
+    commit(now: number) {
+        this.placement.commit(now);
         return this.placement;
     }
 }

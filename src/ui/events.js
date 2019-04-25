@@ -779,6 +779,20 @@ export type MapEvent =
     | 'sourcedataloading'
 
     /**
+     * Fired when an icon or pattern needed by the style is missing. The missing image can
+     * be added with {@link Map#addImage} within this event listener callback to prevent the image from
+     * being skipped. This event can be used to dynamically generate icons and patterns.
+     *
+     * @event styleimagemissing
+     * @memberof Map
+     * @instance
+     * @property {string} id The id of the missing image.
+     *
+     * @see [Generate and add a missing icon to the map](https://mapbox.com/mapbox-gl-js/example/add-image-missing-generated/)
+     */
+    | 'styleimagemissing'
+
+    /**
      * @event style.load
      * @memberof Map
      * @instance

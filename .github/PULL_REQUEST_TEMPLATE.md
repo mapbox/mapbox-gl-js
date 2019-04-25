@@ -10,3 +10,4 @@
  - [ ] post benchmark scores
  - [ ] manually test the debug page
  - [ ] tagged `@mapbox/studio` and/or `@mapbox/maps-design` if this PR includes style spec changes
+ - [ ] tagged `@mapbox/gl-native` if this PR includes shader changes or needs a native port

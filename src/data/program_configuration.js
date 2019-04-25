@@ -14,7 +14,6 @@ import {
     Uniform1f,
     UniformColor,
     Uniform4f,
-    type UniformBindings,
     type UniformLocations
 } from '../render/uniform_binding';
 
@@ -33,6 +32,12 @@ import type {
 } from '../style-spec/expression';
 import type {PossiblyEvaluated} from '../style/properties';
 import type {FeatureStates} from '../source/source_state';
+
+export type BinderUniform = {
+    name: string,
+    property: string,
+    binding: Uniform<any>
+};
 
 function packColor(color: Color): [number, number] {
     return [
@@ -659,26 +664,25 @@ export default class ProgramConfiguration {
         return this._buffers;
     }
 
-    getUniforms(context: Context, locations: UniformLocations): UniformBindings {
-        const result = {};
+    getUniforms(context: Context, locations: UniformLocations): Array<BinderUniform> {
+        const uniforms = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             for (const name of binder.uniformNames) {
-                result[name] = binder.getBinding(context, locations[name]);
+                if (locations[name]) {
+                    const binding = binder.getBinding(context, locations[name]);
+                    uniforms.push({name, property, binding});
+                }
             }
         }
-        return result;
+        return uniforms;
     }
 
-    setUniforms<Properties: Object>(context: Context, uniformBindings: UniformBindings, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
+    setUniforms<Properties: Object>(context: Context, binderUniforms: Array<BinderUniform>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguraton's binder members.
-
-        for (const property in this.binders) {
-            const binder = this.binders[property];
-            for (const uniformName of binder.uniformNames) {
-                binder.setUniforms(context, uniformBindings[uniformName], globals, properties.get(property), uniformName);
-            }
+        for (const {name, property, binding} of binderUniforms) {
+            this.binders[property].setUniforms(context, binding, globals, properties.get(property), name);
         }
     }
 

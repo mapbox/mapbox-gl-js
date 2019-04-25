@@ -79,6 +79,7 @@ export default class Marker extends Evented {
 
             // create default map marker SVG
             const svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttributeNS(null, 'display', 'block');
             svg.setAttributeNS(null, 'height', '41px');
             svg.setAttributeNS(null, 'width', '27px');
             svg.setAttributeNS(null, 'viewBox', '0 0 27 41');
@@ -181,6 +182,10 @@ export default class Marker extends Evented {
         }
 
         this._element.classList.add('mapboxgl-marker');
+        this._element.addEventListener('dragstart', (e: DragEvent) => {
+            e.preventDefault();
+        });
+        applyAnchorClass(this._element, this._anchor, 'marker');
 
         this._popup = null;
     }
@@ -345,7 +350,6 @@ export default class Marker extends Evented {
         }
 
         DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px)`);
-        applyAnchorClass(this._element, this._anchor, 'marker');
     }
 
     /**

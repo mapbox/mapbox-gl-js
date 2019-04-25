@@ -169,7 +169,9 @@ class SourceCache extends Evented {
 
         this._state.coalesceChanges(this._tiles, this.map ? this.map.painter : null);
         for (const i in this._tiles) {
-            this._tiles[i].upload(context);
+            const tile = this._tiles[i];
+            tile.upload(context);
+            tile.prepare(this.map.style.imageManager);
         }
     }
 

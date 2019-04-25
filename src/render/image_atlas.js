@@ -5,6 +5,8 @@ import { register } from '../util/web_worker_transfer';
 import potpack from 'potpack';
 
 import type {StyleImage} from '../style/style_image';
+import type ImageManager from './image_manager';
+import type Texture from './texture';
 
 const padding = 1;
 
@@ -19,10 +21,12 @@ type Rect = {
 export class ImagePosition {
     paddedRect: Rect;
     pixelRatio: number;
+    version: number;
 
-    constructor(paddedRect: Rect, {pixelRatio}: StyleImage) {
+    constructor(paddedRect: Rect, {pixelRatio, version}: StyleImage) {
         this.paddedRect = paddedRect;
         this.pixelRatio = pixelRatio;
+        this.version = version;
     }
 
     get tl(): [number, number] {
@@ -55,35 +59,17 @@ export default class ImageAtlas {
     image: RGBAImage;
     iconPositions: {[string]: ImagePosition};
     patternPositions: {[string]: ImagePosition};
+    haveRenderCallbacks: Array<string>;
     uploaded: ?boolean;
 
     constructor(icons: {[string]: StyleImage}, patterns: {[string]: StyleImage}) {
         const iconPositions = {}, patternPositions = {};
+        this.haveRenderCallbacks = [];
 
         const bins = [];
-        for (const id in icons) {
-            const src = icons[id];
-            const bin = {
-                x: 0,
-                y: 0,
-                w: src.data.width + 2 * padding,
-                h: src.data.height + 2 * padding,
-            };
-            bins.push(bin);
-            iconPositions[id] = new ImagePosition(bin, src);
-        }
 
-        for (const id in patterns) {
-            const src = patterns[id];
-            const bin = {
-                x: 0,
-                y: 0,
-                w: src.data.width + 2 * padding,
-                h: src.data.height + 2 * padding,
-            };
-            bins.push(bin);
-            patternPositions[id] = new ImagePosition(bin, src);
-        }
+        this.addImages(icons, iconPositions, bins);
+        this.addImages(patterns, patternPositions, bins);
 
         const {w, h} = potpack(bins);
         const image = new RGBAImage({width: w || 1, height: h || 1});
@@ -114,6 +100,43 @@ export default class ImageAtlas {
         this.iconPositions = iconPositions;
         this.patternPositions = patternPositions;
     }
+
+    addImages(images: {[string]: StyleImage}, positions: {[string]: ImagePosition}, bins: Array<Rect>) {
+        for (const id in images) {
+            const src = images[id];
+            const bin = {
+                x: 0,
+                y: 0,
+                w: src.data.width + 2 * padding,
+                h: src.data.height + 2 * padding,
+            };
+            bins.push(bin);
+            positions[id] = new ImagePosition(bin, src);
+
+            if (src.hasRenderCallback) {
+                this.haveRenderCallbacks.push(id);
+            }
+        }
+    }
+
+    patchUpdatedImages(imageManager: ImageManager, texture: Texture) {
+        imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks);
+        for (const name in imageManager.updatedImages) {
+            this.patchUpdatedImage(this.iconPositions[name], imageManager.getImage(name), texture);
+            this.patchUpdatedImage(this.patternPositions[name], imageManager.getImage(name), texture);
+        }
+    }
+
+    patchUpdatedImage(position: ?ImagePosition, image: ?StyleImage, texture: Texture) {
+        if (!position || !image) return;
+
+        if (position.version === image.version) return;
+
+        position.version = image.version;
+        const [x, y] = position.tl;
+        texture.update(image.data, undefined, {x, y});
+    }
+
 }
 
 register('ImagePosition', ImagePosition);

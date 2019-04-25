@@ -11,6 +11,7 @@ toc:
   - CameraOptions
   - PaddingOptions
   - RequestParameters
+  - StyleImageInterface
   - CustomLayerInterface
   - name: Geography & Geometry
     description: |

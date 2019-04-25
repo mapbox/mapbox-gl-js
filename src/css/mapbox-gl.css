@@ -56,7 +56,13 @@
 .mapboxgl-ctrl-bottom-left  { bottom: 0; left: 0; }
 .mapboxgl-ctrl-bottom-right { right: 0; bottom: 0; }
 
-.mapboxgl-ctrl { clear: both; pointer-events: auto; }
+.mapboxgl-ctrl {
+    clear: both;
+    pointer-events: auto;
+
+    /* workaround for a Safari bug https://github.com/mapbox/mapbox-gl-js/issues/8185 */
+    transform: translate(0, 0);
+}
 .mapboxgl-ctrl-top-left .mapboxgl-ctrl     { margin: 10px 0 0 10px; float: left; }
 .mapboxgl-ctrl-top-right .mapboxgl-ctrl    { margin: 10px 10px 0 0; float: right; }
 .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl  { margin: 0 0 10px 10px; float: left; }
@@ -109,6 +115,11 @@
 
 .mapboxgl-ctrl-icon {
     padding: 5px;
+}
+
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-icon-disabled {
+    opacity: 0.25;
+    border-color: #373737;
 }
 
 .mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out {
@@ -217,6 +228,8 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
 @media screen {
     .mapboxgl-ctrl-attrib.mapboxgl-compact {
+        min-height: 20px;
+        padding: 0;
         margin: 10px;
         position: relative;
         background-color: #fff;
@@ -226,6 +239,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     .mapboxgl-ctrl-attrib.mapboxgl-compact:hover {
         padding: 2px 24px 2px 4px;
         visibility: visible;
+        margin-top: 6px;
     }
 
     .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact:hover,
