@@ -1,4 +1,4 @@
-## 0.54.0-beta.2
+## 0.54.0
 
 ### Breaking changes
 
@@ -28,6 +28,7 @@
 
 ### Bug fixes
 
+- Fixed a bug in Mac Safari 12+ where controls would disappear until you interact with the map. [8193](https://github.com/mapbox/mapbox-gl-js/pull/8193)
 - Fixed a memory leak when calling `source.setData(url)` many times. [#8035](https://github.com/mapbox/mapbox-gl-js/pull/8035)
 - Fixed a bug where marker lost focus when dragging. [#7799](https://github.com/mapbox/mapbox-gl-js/pull/7799)
 - Fixed a bug where `map.getCenter()` returned a reference to an internal `LngLat` object instead of cloning it, leading to potential mutability bugs. [#7922](https://github.com/mapbox/mapbox-gl-js/pull/7922)
