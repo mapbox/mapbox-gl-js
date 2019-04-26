@@ -17,6 +17,8 @@ const cancel = window.cancelAnimationFrame ||
     window.webkitCancelAnimationFrame ||
     window.msCancelAnimationFrame;
 
+let linkEl;
+
 /**
  * @private
  */
@@ -45,9 +47,9 @@ const exported = {
     },
 
     resolveURL(path: string) {
-        const a = window.document.createElement('a');
-        a.href = path;
-        return a.href;
+        if (!linkEl) linkEl = window.document.createElement('a');
+        linkEl.href = path;
+        return linkEl.href;
     },
 
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,

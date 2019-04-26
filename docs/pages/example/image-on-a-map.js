@@ -1,6 +1,6 @@
 /*---
 title: Add an image
-description: Dark vector baselayer with radar weather image overlay
+description: Dark vector baselayer with radar weather image overlay.
 tags:
   - sources
   - layers

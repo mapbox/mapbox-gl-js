@@ -136,6 +136,7 @@ class Style extends Evented {
         this.map = map;
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
+        this.imageManager.setEventedParent(this);
         this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
@@ -463,6 +464,10 @@ class Style extends Evented {
         }
         this.imageManager.addImage(id, image);
         this.fire(new Event('data', {dataType: 'style'}));
+    }
+
+    updateImage(id: string, image: StyleImage) {
+        this.imageManager.updateImage(id, image);
     }
 
     getImage(id: string): ?StyleImage {
@@ -873,12 +878,12 @@ class Style extends Evented {
             return;
         }
 
-        if (target.id && isNaN(featureId) || featureId < 0) {
+        if (target.id !== undefined && isNaN(featureId) || featureId < 0) {
             this.fire(new ErrorEvent(new Error(`The feature id parameter must be non-negative.`)));
             return;
         }
 
-        if (key && !target.id) {
+        if (key && (typeof target.id !== 'string' && typeof target.id !== 'number')) {
             this.fire(new ErrorEvent(new Error(`A feature id is requred to remove its specific state property.`)));
             return;
         }
@@ -1196,7 +1201,7 @@ class Style extends Evented {
         const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0;
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement);
             this._layerOrderChanged = false;
         }
 
@@ -1210,7 +1215,7 @@ class Style extends Evented {
             this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles);
 
             if (this.pauseablePlacement.isDone()) {
-                this.placement = this.pauseablePlacement.commit(this.placement, browser.now());
+                this.placement = this.pauseablePlacement.commit(browser.now());
                 placementCommitted = true;
             }
 

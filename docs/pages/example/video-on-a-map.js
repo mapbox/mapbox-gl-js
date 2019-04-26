@@ -1,6 +1,6 @@
 /*---
 title: Add a video
-description: Satellite raster baselayer with video on top
+description: Satellite raster baselayer with video on top.
 tags:
   - sources
   - layers

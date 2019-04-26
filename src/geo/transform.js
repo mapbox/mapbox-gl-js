@@ -37,6 +37,8 @@ class Transform {
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
+    glCoordMatrix: Float32Array;
+    labelPlaneMatrix: Float32Array;
     _fov: number;
     _pitch: number;
     _zoom: number;
@@ -568,11 +570,19 @@ class Transform {
         mat4.translate(alignedM, alignedM, [ dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0 ]);
         this.alignedProjMatrix = alignedM;
 
-        // matrix for conversion from location to screen coordinates
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
         mat4.translate(m, m, [1, -1, 0]);
-        this.pixelMatrix = mat4.multiply(new Float64Array(16), m, this.projMatrix);
+        this.labelPlaneMatrix = m;
+
+        m = mat4.create();
+        mat4.scale(m, m, [1, -1, 1]);
+        mat4.translate(m, m, [-1, -1, 0]);
+        mat4.scale(m, m, [2 / this.width, 2 / this.height, 1]);
+        this.glCoordMatrix = m;
+
+        // matrix for conversion from location to screen coordinates
+        this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
         // inverse matrix for conversion from screen coordinaes to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);

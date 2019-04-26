@@ -1524,6 +1524,27 @@ test('Map', (t) => {
                 t.end();
             });
         });
+        t.test('remove properties for zero-based feature IDs.', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true, 'foo': true});
+                map.removeFeatureState({ source: 'geojson', id: 0});
+
+                const fState = map.getFeatureState({ source: 'geojson', id: 0});
+                t.equal(fState.hover, undefined);
+                t.equal(fState.foo, undefined);
+
+                t.end();
+            });
+        });
         t.test('other properties persist when removing specific property', (t) => {
             const map = createMap(t, {
                 style: {
@@ -1943,6 +1964,26 @@ test('Map', (t) => {
         t.ok(map.isMoving(), 'map is still moving after resize due to camera animation');
 
         t.end();
+    });
+
+    t.test('map fires `styleimagemissing` for missing icons', (t) => {
+        const map = createMap(t);
+
+        const id = "missing-image";
+
+        let called;
+        map.on('styleimagemissing', e => {
+            map.addImage(e.id, {width: 1, height: 1, data: new Uint8Array(4)});
+            called = e.id;
+        });
+
+        t.notok(map.hasImage(id));
+
+        map.style.imageManager.getImages([id], () => {
+            t.equals(called, id);
+            t.ok(map.hasImage(id));
+            t.end();
+        });
     });
 
     t.end();

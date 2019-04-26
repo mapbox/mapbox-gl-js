@@ -110,6 +110,10 @@ class LineStyleLayer extends StyleLayer {
         }
         return polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);
     }
+
+    isTileClipped() {
+        return true;
+    }
 }
 
 export default LineStyleLayer;

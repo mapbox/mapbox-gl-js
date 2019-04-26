@@ -46,7 +46,7 @@ export function getIconQuads(anchor: Anchor,
                       shapedIcon: PositionedIcon,
                       layer: SymbolStyleLayer,
                       alongLine: boolean,
-                      shapedText: Shaping,
+                      shapedText: Shaping | null,
                       feature: Feature): Array<SymbolQuad> {
     const image = shapedIcon.image;
     const layout = layer.layout;
@@ -116,14 +116,13 @@ export function getIconQuads(anchor: Anchor,
  */
 export function getGlyphQuads(anchor: Anchor,
                        shaping: Shaping,
+                       textOffset: [number, number],
                        layer: SymbolStyleLayer,
                        alongLine: boolean,
                        feature: Feature,
                        positions: {[string]: {[number]: GlyphPosition}}): Array<SymbolQuad> {
 
-    const oneEm = 24;
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
-    const textOffset = layer.layout.get('text-offset').evaluate(feature, {}).map((t) => t * oneEm);
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];

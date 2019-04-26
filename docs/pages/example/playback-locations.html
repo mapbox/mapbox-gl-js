@@ -35,7 +35,7 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: 'mapbox://styles/mapbox/streets-v11',
     center: [-74.0315, 40.6989],
     maxZoom: 16,
     minZoom: 9,
@@ -144,7 +144,7 @@ map.on('load', function() {
             "fill-opacity": 0.25
         },
         "filter": ["==", "borocode", ""]
-    }, 'neighborhood_small_label'); // Place polygon under the neighborhood labels.
+    }, 'settlement-subdivision-label'); // Place polygon under the neighborhood labels.
 
     // Start the playback animation for each borough
     playback(0);
