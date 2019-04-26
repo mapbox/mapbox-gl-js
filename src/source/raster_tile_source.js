@@ -29,6 +29,7 @@ class RasterTileSource extends Evented implements Source {
     url: string;
     scheme: string;
     tileSize: number;
+    zoomOffset: number;
 
     bounds: ?[number, number, number, number];
     tileBounds: TileBounds;

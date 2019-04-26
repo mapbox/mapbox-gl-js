@@ -177,6 +177,11 @@
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
+    "zoomOffset": {
+      "type": "number",
+      "default": 0,
+      "doc": "The zoom number used in tile URLs will be offset with this value."
+    },
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."
@@ -247,6 +252,11 @@
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
+    "zoomOffset": {
+      "type": "number",
+      "default": 0,
+      "doc": "The zoom number used in tile URLs will be offset with this value."
+    },
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."
@@ -316,6 +326,11 @@
       },
       "default": "mapbox",
       "doc": "The encoding used by this source. Mapbox Terrain RGB is used by default"
+    },
+    "zoomOffset": {
+      "type": "number",
+      "default": 0,
+      "doc": "The zoom number used in tile URLs will be offset with this value."
     },
     "*": {
       "type": "*",
