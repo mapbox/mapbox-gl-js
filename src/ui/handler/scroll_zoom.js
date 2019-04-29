@@ -87,7 +87,7 @@ class ScrollZoomHandler {
 
     /**
      * Set the zoom rate of a mouse wheel
-     * @param {number} [zoomRate = 1/450]
+     * @param {number} [wheelZoomRate = 1/450]
      */
     setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
