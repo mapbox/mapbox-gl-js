@@ -16,6 +16,7 @@ import type {TaskID} from '../../util/task_queue';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
+
 // These magic numbers control the rate of zoom. Trackpad events fire at a greater
 // frequency than mouse scroll wheel, so reduce the zoom rate per wheel tick
 const defaultZoomRate = 1 / 100;
@@ -65,8 +66,6 @@ class ScrollZoomHandler {
 
         this._delta = 0;
 
-        // These magic numbers control the rate of zoom. Trackpad events fire at a greater
-        // frequency than mouse scroll wheel, so reduce the zoom rate per wheel tick
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
 
@@ -79,16 +78,16 @@ class ScrollZoomHandler {
     }
 
     /**
-     * Override default zoomRate value
-     * @param {number} zoomRate
+     * Set the zoom rate of a trackpad
+     * @param {number} [zoomRate = 1/100]
      */
     setZoomRate(zoomRate: number) {
         this._defaultZoomRate = zoomRate;
     }
 
     /**
-     * Override default wheelZoomRate value
-     * @param {number} wheelZoomRate
+     * Set the zoom rate of a mouse wheel
+     * @param {number} [zoomRate = 1/450]
      */
     setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
