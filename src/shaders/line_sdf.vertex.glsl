@@ -23,7 +23,7 @@ uniform vec2 u_patternscale_a;
 uniform float u_tex_y_a;
 uniform vec2 u_patternscale_b;
 uniform float u_tex_y_b;
-uniform vec2 u_gl_units_to_pixels;
+uniform vec2 u_units_to_pixels;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
@@ -85,7 +85,7 @@ void main() {
 
     // calculate how much the perspective view squishes or stretches the extrude
     float extrude_length_without_perspective = length(dist);
-    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_gl_units_to_pixels);
+    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
     v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
 
     v_tex_a = vec2(a_linesofar * u_patternscale_a.x / floorwidth, normal.y * u_patternscale_a.y + u_tex_y_a);
