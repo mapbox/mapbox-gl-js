@@ -1,7 +1,5 @@
 // @flow
 
-import browser from '../util/browser';
-
 import {prelude} from '../shaders';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration';
@@ -38,8 +36,7 @@ class Program<Us: UniformBindings> {
         const gl = context.gl;
         this.program = gl.createProgram();
 
-        const defines = configuration.defines().concat(
-            `#define DEVICE_PIXEL_RATIO ${browser.devicePixelRatio.toFixed(1)}`);
+        const defines = configuration.defines();
         if (showOverdrawInspector) {
             defines.push('#define OVERDRAW_INSPECTOR;');
         }

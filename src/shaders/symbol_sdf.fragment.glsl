@@ -3,6 +3,7 @@
 uniform bool u_is_halo;
 uniform sampler2D u_texture;
 uniform highp float u_gamma_scale;
+uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
 
 varying vec2 v_data0;
@@ -21,7 +22,7 @@ void main() {
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
 
-    const float EDGE_GAMMA = 0.105 / DEVICE_PIXEL_RATIO;
+    float EDGE_GAMMA = 0.105 / u_device_pixel_ratio;
 
     vec2 tex = v_data0.xy;
     float gamma_scale = v_data1.x;

@@ -16,6 +16,7 @@ attribute vec4 a_data;
 uniform mat4 u_matrix;
 uniform vec2 u_units_to_pixels;
 uniform mediump float u_ratio;
+uniform lowp float u_device_pixel_ratio;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
@@ -41,7 +42,7 @@ void main() {
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
-    const float ANTIALIASING = 1.0 / DEVICE_PIXEL_RATIO / 2.0;
+    float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
