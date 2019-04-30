@@ -6,6 +6,8 @@ uniform highp float u_camera_to_center_distance;
 
 attribute vec2 a_pos;
 
+varying vec3 v_data;
+
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
 #pragma mapbox: define lowp float blur
@@ -13,8 +15,6 @@ attribute vec2 a_pos;
 #pragma mapbox: define highp vec4 stroke_color
 #pragma mapbox: define mediump float stroke_width
 #pragma mapbox: define lowp float stroke_opacity
-
-varying vec3 v_data;
 
 void main(void) {
     #pragma mapbox: initialize highp vec4 color
