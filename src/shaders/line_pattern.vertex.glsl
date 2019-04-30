@@ -18,7 +18,7 @@ attribute vec4 a_pos_normal;
 attribute vec4 a_data;
 
 uniform mat4 u_matrix;
-uniform vec2 u_gl_units_to_pixels;
+uniform vec2 u_units_to_pixels;
 uniform mediump float u_ratio;
 
 varying vec2 v_normal;
@@ -80,7 +80,7 @@ void main() {
 
     // calculate how much the perspective view squishes or stretches the extrude
     float extrude_length_without_perspective = length(dist);
-    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_gl_units_to_pixels);
+    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
     v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
 
     v_linesofar = a_linesofar;

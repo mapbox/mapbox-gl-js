@@ -23,13 +23,13 @@ import type {CrossfadeParameters} from '../../style/evaluation_parameters';
 export type LineUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_ratio': Uniform1f,
-    'u_gl_units_to_pixels': Uniform2f
+    'u_units_to_pixels': Uniform2f
 |};
 
 export type LineGradientUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_ratio': Uniform1f,
-    'u_gl_units_to_pixels': Uniform2f,
+    'u_units_to_pixels': Uniform2f,
     'u_image': Uniform1i
 |};
 
@@ -37,7 +37,7 @@ export type LinePatternUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_texsize': Uniform2f,
     'u_ratio': Uniform1f,
-    'u_gl_units_to_pixels': Uniform2f,
+    'u_units_to_pixels': Uniform2f,
     'u_image': Uniform1i,
     'u_scale': Uniform4f,
     'u_fade': Uniform1f
@@ -46,7 +46,7 @@ export type LinePatternUniformsType = {|
 export type LineSDFUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_ratio': Uniform1f,
-    'u_gl_units_to_pixels': Uniform2f,
+    'u_units_to_pixels': Uniform2f,
     'u_patternscale_a': Uniform2f,
     'u_patternscale_b': Uniform2f,
     'u_sdfgamma': Uniform1f,
@@ -59,13 +59,13 @@ export type LineSDFUniformsType = {|
 const lineUniforms = (context: Context, locations: UniformLocations): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
-    'u_gl_units_to_pixels': new Uniform2f(context, locations.u_gl_units_to_pixels)
+    'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels)
 });
 
 const lineGradientUniforms = (context: Context, locations: UniformLocations): LineGradientUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
-    'u_gl_units_to_pixels': new Uniform2f(context, locations.u_gl_units_to_pixels),
+    'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
     'u_image': new Uniform1i(context, locations.u_image)
 });
 
@@ -74,7 +74,7 @@ const linePatternUniforms = (context: Context, locations: UniformLocations): Lin
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_image': new Uniform1i(context, locations.u_image),
-    'u_gl_units_to_pixels': new Uniform2f(context, locations.u_gl_units_to_pixels),
+    'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
     'u_scale': new Uniform4f(context, locations.u_scale),
     'u_fade': new Uniform1f(context, locations.u_fade)
 });
@@ -82,7 +82,7 @@ const linePatternUniforms = (context: Context, locations: UniformLocations): Lin
 const lineSDFUniforms = (context: Context, locations: UniformLocations): LineSDFUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
-    'u_gl_units_to_pixels': new Uniform2f(context, locations.u_gl_units_to_pixels),
+    'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
     'u_patternscale_a': new Uniform2f(context, locations.u_patternscale_a),
     'u_patternscale_b': new Uniform2f(context, locations.u_patternscale_b),
     'u_sdfgamma': new Uniform1f(context, locations.u_sdfgamma),
@@ -102,7 +102,7 @@ const lineUniformValues = (
     return {
         'u_matrix': calculateMatrix(painter, tile, layer),
         'u_ratio': 1 / pixelsToTileUnits(tile, 1, transform.zoom),
-        'u_gl_units_to_pixels': [
+        'u_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
         ]
@@ -136,7 +136,7 @@ const linePatternUniformValues = (
         // this assumes all images in the icon atlas texture have the same pixel ratio
         'u_scale': [browser.devicePixelRatio, tileZoomRatio, crossfade.fromScale, crossfade.toScale],
         'u_fade': crossfade.t,
-        'u_gl_units_to_pixels': [
+        'u_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
         ]
