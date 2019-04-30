@@ -1,13 +1,12 @@
-
-#pragma mapbox: define lowp float blur
-#pragma mapbox: define lowp float opacity
-
 uniform sampler2D u_image;
 
 varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
 varying highp float v_lineprogress;
+
+#pragma mapbox: define lowp float blur
+#pragma mapbox: define lowp float opacity
 
 void main() {
     #pragma mapbox: initialize lowp float blur
