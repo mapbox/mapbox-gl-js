@@ -2,6 +2,7 @@ uniform mat4 u_matrix;
 uniform bool u_scale_with_map;
 uniform bool u_pitch_with_map;
 uniform vec2 u_extrude_scale;
+uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
 
 attribute vec2 a_pos;
@@ -57,7 +58,7 @@ void main(void) {
     // This is a minimum blur distance that serves as a faux-antialiasing for
     // the circle. since blur is a ratio of the circle's size and the intent is
     // to keep the blur at roughly 1px, the two are inversely related.
-    lowp float antialiasblur = 1.0 / DEVICE_PIXEL_RATIO / (radius + stroke_width);
+    lowp float antialiasblur = 1.0 / u_device_pixel_ratio / (radius + stroke_width);
 
     v_data = vec3(extrude.x, extrude.y, antialiasblur);
 }

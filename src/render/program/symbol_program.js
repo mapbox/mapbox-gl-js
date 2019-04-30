@@ -7,6 +7,7 @@ import {
     UniformMatrix4f
 } from '../uniform_binding';
 import { extend } from '../../util/util';
+import browser from '../../util/browser';
 
 import type Context from '../../gl/context';
 import type Painter from '../painter';
@@ -49,6 +50,7 @@ export type SymbolSDFUniformsType = {|
     'u_texsize': Uniform2f,
     'u_texture': Uniform1i,
     'u_gamma_scale': Uniform1f,
+    'u_device_pixel_ratio': Uniform1f,
     'u_is_halo': Uniform1f
 |};
 
@@ -89,6 +91,7 @@ const symbolSDFUniforms = (context: Context, locations: UniformLocations): Symbo
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_texture': new Uniform1i(context, locations.u_texture),
     'u_gamma_scale': new Uniform1f(context, locations.u_gamma_scale),
+    'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
     'u_is_halo': new Uniform1f(context, locations.u_is_halo)
 });
 
@@ -145,6 +148,7 @@ const symbolSDFUniformValues = (
         rotateInShader, pitchWithMap, painter, matrix, labelPlaneMatrix,
         glCoordMatrix, isText, texSize), {
         'u_gamma_scale': (pitchWithMap ? Math.cos(transform._pitch) * transform.cameraToCenterDistance : 1),
+        'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo
     });
 };
