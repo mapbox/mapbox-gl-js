@@ -1,5 +1,4 @@
 #define SDF_PX 8.0
-#define EDGE_GAMMA 0.105/DEVICE_PIXEL_RATIO
 
 uniform bool u_is_halo;
 #pragma mapbox: define highp vec4 fill_color
@@ -21,6 +20,8 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
+
+    const float EDGE_GAMMA = 0.105 / DEVICE_PIXEL_RATIO;
 
     vec2 tex = v_data0.xy;
     float gamma_scale = v_data1.x;
