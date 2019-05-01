@@ -1016,7 +1016,7 @@ class Style extends Evented {
 
     queryRenderedFeatures(queryGeometry: any, params: any, transform: Transform) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter);
+            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
 
         const includedSources = {};
@@ -1067,9 +1067,9 @@ class Style extends Evented {
         return this._flattenAndSortRenderedFeatures(sourceResults);
     }
 
-    querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>}) {
+    querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter);
+            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter, null, params);
         }
         const sourceCache = this.sourceCaches[sourceID];
         return sourceCache ? querySourceFeatures(sourceCache, params) : [];
@@ -1121,7 +1121,7 @@ class Style extends Evented {
         this.light.updateTransitions(parameters);
     }
 
-    _validate(validate: ({}) => void, key: string, value: any, props: any, options: StyleSetterOptions = {}) {
+    _validate(validate: ({}) => void, key: string, value: any, props: any, options: { validate?: boolean } = {}) {
         if (options && options.validate === false) {
             return false;
         }
