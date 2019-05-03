@@ -2,7 +2,7 @@
 
 ### Breaking changes
 
-- Turned `localIdeographFontFamily` map option on by default. This may change how CJK labels are rendered, but dramatically improves performance of CJK maps (because the browser no longer needs to download heavy amounts of font data from the server). Add `localIdeographyFontFamily: false` to turn this off. [#8008](https://github.com/mapbox/mapbox-gl-js/pull/8008)
+- Turned `localIdeographFontFamily` map option on by default. This may change how CJK labels are rendered, but dramatically improves performance of CJK maps (because the browser no longer needs to download heavy amounts of font data from the server). Add `localIdeographFontFamily: false` to turn this off. [#8008](https://github.com/mapbox/mapbox-gl-js/pull/8008)
 - Added `Popup` `maxWidth` option, set to `"240px"` by default. [#7906](https://github.com/mapbox/mapbox-gl-js/pull/7906)
 
 ### Major features
