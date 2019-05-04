@@ -81,7 +81,9 @@ test('GeoJSONSource#setData', (t) => {
     t.test('respects collectResourceTiming parameter on source', (t) => {
         const source = createSource({ collectResourceTiming: true });
         source.map = {
-            _transformRequest: (data) => { return { url: data }; }
+            _requestManager: {
+                transformRequest: (url) => { return { url }; }
+            }
         };
         source.dispatcher.send = function(type, params, cb) {
             if (type === 'geojson.loadData') {
@@ -163,9 +165,11 @@ test('GeoJSONSource#update', (t) => {
 
     t.test('transforms url before making request', (t) => {
         const mapStub = {
-            _transformRequest: (url) => { return { url }; }
+            _requestManager: {
+                transformRequest: (url) => { return { url }; }
+            }
         };
-        const transformSpy = t.spy(mapStub, '_transformRequest');
+        const transformSpy = t.spy(mapStub._requestManager, 'transformRequest');
         const source = new GeoJSONSource('id', {data: 'https://example.com/data.geojson'}, mockDispatcher);
         source.onAdd(mapStub);
         t.ok(transformSpy.calledOnce);
@@ -242,7 +246,9 @@ test('GeoJSONSource#update', (t) => {
 
 test('GeoJSONSource#serialize', (t) => {
     const mapStub = {
-        _transformRequest: (url) => { return { url }; }
+        _requestManager: {
+            transformRequest: (url) => { return { url }; }
+        }
     };
     t.test('serialize source with inline data', (t) => {
         const source = new GeoJSONSource('id', {data: hawkHill}, mockDispatcher);

@@ -3,13 +3,14 @@ import VectorTileSource from '../../../src/source/vector_tile_source';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 import window from '../../../src/util/window';
 import { Evented } from '../../../src/util/evented';
+import { RequestManager } from '../../../src/util/mapbox';
 
 function createSource(options, transformCallback) {
     const source = new VectorTileSource('id', options, { send() {} }, options.eventedParent);
     source.onAdd({
         transform: { showCollisionBoxes: false },
         _getMapId: () => 1,
-        _transformRequest: transformCallback ? transformCallback : (url) => { return { url }; }
+        _requestManager: new RequestManager(transformCallback)
     });
 
     source.on('error', (e) => {
@@ -166,7 +167,7 @@ test('VectorTileSource', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
 
         const source = createSource({ url: "/source.json" });
-        const transformSpy = t.spy(source.map, '_transformRequest');
+        const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {

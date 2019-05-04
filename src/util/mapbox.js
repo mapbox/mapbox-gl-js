@@ -1,20 +1,34 @@
 // @flow
 
+/***** START WARNING - IF YOU USE THIS CODE WITH MAPBOX MAPPING APIS, REMOVAL OR
+* MODIFICATION OF THE FOLLOWING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******
+* The following code is used to access Mapbox's Mapping APIs. Removal or modification
+* of this code when used with Mapbox's Mapping APIs can result in higher fees and/or
+* termination of your account with Mapbox.
+*
+* Under the Mapbox Terms of Service, you may not use this code to access Mapbox
+* Mapping APIs other than through Mapbox SDKs.
+*
+* The Mapping APIs documentation is available at https://docs.mapbox.com/api/maps/#maps
+* and the Mapbox Terms of Service are available at https://www.mapbox.com/tos/
+******************************************************************************/
+
 import config from './config';
 
 import browser from './browser';
-import webpSupported from './webp_supported';
 import window from './window';
-import { version } from '../../package.json';
+import webpSupported from './webp_supported';
+import { createSkuToken, SKU_ID } from './sku_token';
+import { version as sdkVersion } from '../../package.json';
 import { uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend } from './util';
-import { postData } from './ajax';
+import { postData, ResourceType } from './ajax';
 
 import type { RequestParameters } from './ajax';
 import type { Cancelable } from '../types/cancelable';
-import type {TileJSON} from '../types/tilejson';
+import type { TileJSON } from '../types/tilejson';
 
-const help = 'See https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes';
-const telemEventKey = 'mapbox.eventData';
+type ResourceTypeEnum = $Keys<typeof ResourceType>;
+export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
 
 type UrlObject = {|
     protocol: string,
@@ -22,6 +36,69 @@ type UrlObject = {|
     path: string,
     params: Array<string>
 |};
+
+export class RequestManager {
+    _skuToken: string;
+    _skuTokenExpiresAt: number;
+    _transformRequestFn: ?RequestTransformFunction;
+
+    constructor(transformRequestFn?: RequestTransformFunction) {
+        this._transformRequestFn = transformRequestFn;
+        this._createSkuToken();
+    }
+
+    _createSkuToken() {
+        const skuToken = createSkuToken();
+        this._skuToken = skuToken.token;
+        this._skuTokenExpiresAt = skuToken.tokenExpiresAt;
+    }
+
+    _isSkuTokenExpired(): boolean {
+        return Date.now() > this._skuTokenExpiresAt;
+    }
+
+    transformRequest(url: string, type: ResourceTypeEnum) {
+        if (this._transformRequestFn) {
+            return this._transformRequestFn(url, type) || {url};
+        }
+
+        return {url};
+    }
+
+    normalizeStyleURL(url: string, accessToken?: string): string {
+        return normalizeStyleURL(url, accessToken);
+    }
+
+    normalizeGlyphsURL(url: string, accessToken?: string): string {
+        return normalizeGlyphsURL(url, accessToken);
+    }
+
+    normalizeSourceURL(url: string, accessToken?: string): string {
+        return normalizeSourceURL(url, accessToken);
+    }
+
+    normalizeSpriteURL(url: string, format: string, extension: string, accessToken?: string): string {
+        return normalizeSpriteURL(url, format, extension, accessToken);
+    }
+
+    normalizeTileURL(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
+        if (this._isSkuTokenExpired()) {
+            this._createSkuToken();
+        }
+
+        return normalizeTileURL(tileURL, sourceURL, tileSize, this._skuToken);
+    }
+
+    canonicalizeTileURL(url: string) {
+        return canonicalizeTileURL(url);
+    }
+
+    canonicalizeTileset(tileJSON: TileJSON, sourceURL: string) {
+        return canonicalizeTileset(tileJSON, sourceURL);
+    }
+}
+
+const help = 'See https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes';
 
 function makeAPIURL(urlObject: UrlObject, accessToken: string | null | void): string {
     const apiUrlObject = parseUrl(config.API_URL);
@@ -53,23 +130,21 @@ function isMapboxHTTPURL(url: string): boolean {
     return mapboxHTTPURLRe.test(url);
 }
 
-export { isMapboxURL, isMapboxHTTPURL };
-
-export const normalizeStyleURL = function(url: string, accessToken?: string): string {
+const normalizeStyleURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/styles/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-export const normalizeGlyphsURL = function(url: string, accessToken?: string): string {
+const normalizeGlyphsURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/fonts/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-export const normalizeSourceURL = function(url: string, accessToken?: string): string {
+const normalizeSourceURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/v4/${urlObject.authority}.json`;
@@ -79,7 +154,7 @@ export const normalizeSourceURL = function(url: string, accessToken?: string): s
     return makeAPIURL(urlObject, accessToken);
 };
 
-export const normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken?: string): string {
+const normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken?: string): string {
     const urlObject = parseUrl(url);
     if (!isMapboxURL(url)) {
         urlObject.path += `${format}${extension}`;
@@ -90,10 +165,8 @@ export const normalizeSpriteURL = function(url: string, format: string, extensio
 };
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
-// matches any file extension specified by a dot and one or more alphanumeric characters
-const extensionRe = /\.[\w]+$/;
 
-export const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
+const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number, skuToken?: string): string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
 
     const urlObject = parseUrl(tileURL);
@@ -106,10 +179,17 @@ export const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, t
     urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
     urlObject.path = `/v4${urlObject.path}`;
 
+    if (config.REQUIRE_ACCESS_TOKEN && config.ACCESS_TOKEN && skuToken) {
+        urlObject.params.push(`sku=${skuToken}`);
+    }
+
     return makeAPIURL(urlObject);
 };
 
-export const canonicalizeTileURL = function(url: string) {
+// matches any file extension specified by a dot and one or more alphanumeric characters
+const extensionRe = /\.[\w]+$/;
+
+const canonicalizeTileURL = function(url: string) {
     const version = "/v4/";
 
     const urlObject = parseUrl(url);
@@ -129,7 +209,7 @@ export const canonicalizeTileURL = function(url: string) {
     return result;
 };
 
-export const canonicalizeTileset = function(tileJSON: TileJSON, sourceURL: string) {
+const canonicalizeTileset = function(tileJSON: TileJSON, sourceURL: string) {
     if (!isMapboxURL(sourceURL)) return tileJSON.tiles || [];
     const canonical = [];
     for (const url of tileJSON.tiles) {
@@ -158,6 +238,10 @@ function formatUrl(obj: UrlObject): string {
     const params = obj.params.length ? `?${obj.params.join('&')}` : '';
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
+
+export { isMapboxURL, isMapboxHTTPURL };
+
+const telemEventKey = 'mapbox.eventData';
 
 function parseAccessToken(accessToken: ?string) {
     if (!accessToken) {
@@ -260,7 +344,8 @@ class TelemetryEvent {
             event: this.type,
             created: new Date(timestamp).toISOString(),
             sdkIdentifier: 'mapbox-gl-js',
-            sdkVersion: version,
+            sdkVersion,
+            skuId: SKU_ID,
             userId: this.anonId
         };
 
@@ -289,15 +374,19 @@ class TelemetryEvent {
 
 export class MapLoadEvent extends TelemetryEvent {
     +success: {[number]: boolean};
+    skuToken: string;
 
     constructor() {
         super('map.load');
         this.success = {};
+        this.skuToken = '';
     }
 
-    postMapLoadEvent(tileUrls: Array<string>, mapId: number) {
+    postMapLoadEvent(tileUrls: Array<string>, mapId: number, skuToken: string) {
         //Enabled only when Mapbox Access Token is set and a source uses
         // mapbox tiles.
+        this.skuToken = skuToken;
+
         if (config.EVENTS_URL &&
             config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
@@ -321,14 +410,13 @@ export class MapLoadEvent extends TelemetryEvent {
             this.anonId = uuid();
         }
 
-        this.postEvent(timestamp, {}, (err) => {
+        this.postEvent(timestamp, {skuToken: this.skuToken}, (err) => {
             if (!err) {
                 if (id) this.success[id] = true;
             }
         });
     }
 }
-
 
 export class TurnstileEvent extends TelemetryEvent {
     constructor() {
@@ -396,3 +484,6 @@ export const postTurnstileEvent = turnstileEvent_.postTurnstileEvent.bind(turnst
 
 const mapLoadEvent_ = new MapLoadEvent();
 export const postMapLoadEvent = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
+
+/***** END WARNING - REMOVAL OR MODIFICATION OF THE
+PRECEDING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******/

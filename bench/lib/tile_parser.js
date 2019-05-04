@@ -7,7 +7,7 @@ import assert from 'assert';
 import deref from '../../src/style-spec/deref';
 import Style from '../../src/style/style';
 import { Evented } from '../../src/util/evented';
-import { normalizeSourceURL, normalizeTileURL } from '../../src/util/mapbox';
+import { RequestManager } from '../../src/util/mapbox';
 import WorkerTile from '../../src/source/worker_tile';
 import StyleLayerIndex from '../../src/style/style_layer_index';
 
@@ -17,14 +17,19 @@ import type { OverscaledTileID } from '../../src/source/tile_id';
 import type { TileJSON } from '../../src/types/tilejson';
 
 class StubMap extends Evented {
-    _transformRequest(url) {
-        return {url};
+    _requestManager: RequestManager;
+
+    constructor() {
+        super();
+        this._requestManager = new RequestManager();
     }
 }
 
+const mapStub = new StubMap();
+
 function createStyle(styleJSON: StyleSpecification): Promise<Style> {
     return new Promise((resolve, reject) => {
-        const style = new Style((new StubMap(): any));
+        const style = new Style((mapStub: any));
         style.loadJSON(styleJSON);
         style
             .on('style.load', () => resolve(style))
@@ -32,8 +37,8 @@ function createStyle(styleJSON: StyleSpecification): Promise<Style> {
     });
 }
 
-function fetchTileJSON(sourceURL: string): Promise<TileJSON> {
-    return fetch(normalizeSourceURL(sourceURL))
+function fetchTileJSON(requestManager: RequestManager, sourceURL: string): Promise<TileJSON> {
+    return fetch(requestManager.normalizeSourceURL(sourceURL))
         .then(response => response.json());
 }
 
@@ -95,7 +100,7 @@ export default class TileParser {
 
         return Promise.all([
             createStyle(this.styleJSON),
-            fetchTileJSON((this.styleJSON.sources[this.sourceID]: any).url)
+            fetchTileJSON(mapStub._requestManager, (this.styleJSON.sources[this.sourceID]: any).url)
         ]).then(([style: Style, tileJSON: TileJSON]) => {
             this.style = style;
             this.tileJSON = tileJSON;
@@ -103,7 +108,7 @@ export default class TileParser {
     }
 
     fetchTile(tileID: OverscaledTileID) {
-        return fetch(normalizeTileURL(tileID.canonical.url(this.tileJSON.tiles)))
+        return fetch(this.style.map._requestManager.normalizeTileURL(tileID.canonical.url(this.tileJSON.tiles)))
             .then(response => response.arrayBuffer())
             .then(buffer => ({tileID, buffer}));
     }

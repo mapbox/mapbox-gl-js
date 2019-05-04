@@ -8,7 +8,7 @@ import { asyncAll } from '../util/util';
 import { AlphaImage } from '../util/image';
 
 import type {StyleGlyph} from '../style/style_glyph';
-import type {RequestTransformFunction} from '../ui/map';
+import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 
 type Entry = {
@@ -19,7 +19,7 @@ type Entry = {
 };
 
 class GlyphManager {
-    requestTransform: RequestTransformFunction;
+    requestManager: RequestManager;
     localIdeographFontFamily: ?string;
     entries: {[string]: Entry};
     url: ?string;
@@ -28,8 +28,8 @@ class GlyphManager {
     static loadGlyphRange: typeof loadGlyphRange;
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestTransform: RequestTransformFunction, localIdeographFontFamily: ?string) {
-        this.requestTransform = requestTransform;
+    constructor(requestManager: RequestManager, localIdeographFontFamily: ?string) {
+        this.requestManager = requestManager;
         this.localIdeographFontFamily = localIdeographFontFamily;
         this.entries = {};
     }
@@ -77,7 +77,7 @@ class GlyphManager {
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
-                GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestTransform,
+                GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestManager,
                     (err, response: ?{[number]: StyleGlyph | null}) => {
                         if (response) {
                             for (const id in response) {
