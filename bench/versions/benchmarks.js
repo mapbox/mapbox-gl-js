@@ -15,7 +15,7 @@ import Validate from '../benchmarks/style_validate';
 import StyleLayerCreate from '../benchmarks/style_layer_create';
 import QueryPoint from '../benchmarks/query_point';
 import QueryBox from '../benchmarks/query_box';
-import {FunctionCreate, FunctionEvaluate, FunctionConvert, ExpressionCreate, ExpressionEvaluate} from '../benchmarks/expressions';
+import {FunctionCreate, FunctionEvaluate, ExpressionCreate, ExpressionEvaluate} from '../benchmarks/expressions';
 import FilterCreate from '../benchmarks/filter_create';
 import FilterEvaluate from '../benchmarks/filter_evaluate';
 
@@ -45,7 +45,6 @@ register('Validate', new Validate(style));
 register('StyleLayerCreate', new StyleLayerCreate(style));
 register('FunctionCreate', new FunctionCreate(style));
 register('FunctionEvaluate', new FunctionEvaluate(style));
-register('FunctionConvert', new FunctionConvert(style));
 register('ExpressionCreate', new ExpressionCreate(style));
 register('ExpressionEvaluate', new ExpressionEvaluate(style));
 register('WorkerTransfer', new WorkerTransfer(style));

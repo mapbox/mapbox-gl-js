@@ -397,7 +397,6 @@
   },
   {"filter":["!=", ["get", "index"], 5], "layer":"contour"},
   {"filter":["==", ["get", "index"], 5], "layer":"contour"},
-  {"filter":["==", ["get", "index"], 5], "layer":"contour"},
   {"filter":["==", ["get", "class"], "river"], "layer":"waterway_label"},
   {
     "filter":[
@@ -683,7 +682,7 @@
       "all",
       ["match", ["get", "scalerank"], [3, 4, 5], true, false],
       ["==", ["get", "type"], "city"],
-      ["in", "ldir", "N", "NE", "NW", "W"]
+      ["match", ["get", "ldir"], ["N", "NE", "NW", "W"], true, false]
     ],
     "layer":"place_label"
   }
