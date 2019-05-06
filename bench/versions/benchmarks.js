@@ -1,7 +1,7 @@
 import mapboxgl from '../../src';
 import accessToken from '../lib/access_token';
-import styleLocations from '../lib/style_locations';
-
+import locationsWithTileID from '../lib/locations_with_tile_id';
+import styleBenchmarkLocations from '@mapbox/gazetteer/mapbox-streets/style-benchmark-locations.json';
 import Layout from '../benchmarks/layout';
 import LayoutDDS from '../benchmarks/layout_dds';
 import SymbolLayout from '../benchmarks/symbol_layout';
@@ -20,6 +20,8 @@ import FilterCreate from '../benchmarks/filter_create';
 import FilterEvaluate from '../benchmarks/filter_evaluate';
 
 import getWorkerPool from '../../src/util/global_worker_pool';
+
+const styleLocations = locationsWithTileID(styleBenchmarkLocations);
 
 mapboxgl.accessToken = accessToken;
 
