@@ -150,7 +150,7 @@ class DragRotateHandler {
         const moveEvent = touchEvent ? 'touchmove' : 'mousemove';
         const upEvent = touchEvent ? 'touchend' : 'mouseup';
 
-        window.document.addEventListener(moveEvent, this._onMouseMove, {capture: true});
+        window.document.addEventListener(moveEvent, this._onMouseMove, { capture: true });
         window.document.addEventListener(upEvent, this._onMouseUp);
 
         // Deactivate when the window loses focus. Otherwise if a mouseup occurs when the window
@@ -159,9 +159,9 @@ class DragRotateHandler {
 
         this._state = 'pending';
         this._inertia = [[browser.now(), this._map.getBearing()]];
-        this._startPos = this._lastPos = touchEvent
-            ? DOM.touchPos(this._el, e)[0]
-            : DOM.mousePos(this._el, e);
+        this._startPos = this._lastPos = touchEvent ?
+            DOM.touchPos(this._el, e)[0] :
+            DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
 
         e.preventDefault();
@@ -169,11 +169,11 @@ class DragRotateHandler {
 
     _onMouseMove(e: MouseEvent) {
         const touchEvent = e.type === 'touchmove';
-        const pos = touchEvent
-            ? DOM.touchPos(this._el, e)[0]
-            : DOM.mousePos(this._el, e);
+        const pos = touchEvent ?
+            DOM.touchPos(this._el, e)[0] :
+            DOM.mousePos(this._el, e);
 
-            if (this._lastPos.equals(pos)) {
+        if (this._lastPos.equals(pos)) {
             return;
         }
 
