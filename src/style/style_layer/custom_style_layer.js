@@ -97,6 +97,7 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * @instance
  * @name onRemove
  * @param {Map} map The Map this custom layer was just added to.
+ * @param {WebGLRenderingContext} gl The gl context for the map.
  */
 
 /**
@@ -152,7 +153,7 @@ export type CustomLayerInterface = {
     render: CustomRenderMethod,
     prerender: ?CustomRenderMethod,
     onAdd: ?(map: Map, gl: WebGLRenderingContext) => void,
-    onRemove: ?(map: Map) => void
+    onRemove: ?(map: Map, gl: WebGLRenderingContext) => void
 }
 
 export function validateCustomStyleLayer(layerObject: CustomLayerInterface) {
@@ -215,7 +216,7 @@ class CustomStyleLayer extends StyleLayer {
 
     onRemove(map: Map) {
         if (this.implementation.onRemove) {
-            this.implementation.onRemove(map);
+            this.implementation.onRemove(map, map.painter.context.gl);
         }
     }
 }

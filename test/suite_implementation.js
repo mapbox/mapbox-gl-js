@@ -157,6 +157,16 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             map.addLayer(new customLayerImplementations[operation[1]](), operation[2]);
             map._render();
             applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'updateFakeCanvas') {
+            const canvasSource = map.getSource(operation[1]);
+            canvasSource.play();
+            // update before pause should be rendered
+            updateFakeCanvas(window.document, options.addFakeCanvas.id, operation[2]);
+            canvasSource.pause();
+            // update after pause should not be rendered
+            updateFakeCanvas(window.document, options.addFakeCanvas.id, operation[3]);
+            map._render();
+            applyOperations(map, operations.slice(1), callback);
         } else if (operation[0] === 'setStyle') {
             // Disable local ideograph generation (enabled by default) for
             // consistent local ideograph rendering using fixtures in all runs of the test suite.
@@ -177,4 +187,10 @@ function createFakeCanvas(document, id, imagePath) {
     fakeCanvas.width = image.width;
     fakeCanvas.height = image.height;
     return fakeCanvas;
+}
+
+function updateFakeCanvas(document, id, imagePath) {
+    const fakeCanvas = document.getElementById(id);
+    const image = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', imagePath)));
+    fakeCanvas.data = image.data;
 }

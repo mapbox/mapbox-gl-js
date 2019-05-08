@@ -87,14 +87,6 @@ export class FunctionEvaluate extends ExpressionBenchmark {
     }
 }
 
-export class FunctionConvert extends ExpressionBenchmark {
-    bench() {
-        for (const {rawValue, propertySpec} of this.data) {
-            convertFunction(rawValue, propertySpec);
-        }
-    }
-}
-
 export class ExpressionCreate extends ExpressionBenchmark {
     bench() {
         for (const {rawExpression, propertySpec} of this.data) {

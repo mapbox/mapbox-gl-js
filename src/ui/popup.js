@@ -231,6 +231,7 @@ export default class Popup extends Evented {
         }
 
         return this;
+
     }
 
     /**
