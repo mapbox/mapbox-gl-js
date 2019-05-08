@@ -75,7 +75,7 @@ test('Popup closes on close button click events', (t) => {
         .addTo(map);
 
 
-    simulateClick(popup.getElement().querySelector('.mapboxgl-popup-close-button'));
+    click(map.getContainer().querySelector('.mapboxgl-popup-close-button'));
 
     t.ok(!popup.isOpen());
     t.end();
