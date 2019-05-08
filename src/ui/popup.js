@@ -241,7 +241,7 @@ export default class Popup extends Evented {
     getElement() {
         return this._container;
     }
-    
+
     /**
      * Sets the popup's content to a string of text.
      *
