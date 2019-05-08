@@ -149,8 +149,9 @@ class DragRotateHandler {
         // to prevent map move events from being fired during a drag.
         const moveEvent = touchEvent ? 'touchmove' : 'mousemove';
         const upEvent = touchEvent ? 'touchend' : 'mouseup';
+
         window.document.addEventListener(moveEvent, this._onMouseMove, {capture: true});
-        window.document.addEventListener(touchEvent, this._onMouseUp);
+        window.document.addEventListener(upEvent, this._onMouseUp);
 
         // Deactivate when the window loses focus. Otherwise if a mouseup occurs when the window
         // isn't in focus, dragging will continue even though the mouse is no longer pressed.
@@ -226,6 +227,13 @@ class DragRotateHandler {
     }
 
     _onMouseUp(e: MouseEvent) {
+        const touchEvent = e.type === 'touchend';
+
+        if (touchEvent) {
+            if (this._lastPos === this._startPos) {
+                this._el.click();
+            }
+        }
         if (DOM.mouseButton(e) !== this._eventButton) return;
         switch (this._state) {
         case 'active':
