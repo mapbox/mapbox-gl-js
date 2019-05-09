@@ -207,5 +207,3 @@ test('LngLatBounds', (t) => {
     });
     t.end();
 });
-
-// pint in gl-js for wrapped & other feedback
