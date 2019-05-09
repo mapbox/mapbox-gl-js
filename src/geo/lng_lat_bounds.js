@@ -1,8 +1,6 @@
 // @flow
 
 import LngLat from './lng_lat';
-import Point from '@mapbox/point-geometry';
-import Transform from './transform';
 
 import type {LngLatLike} from './lng_lat';
 
@@ -214,37 +212,21 @@ class LngLatBounds {
     /**
     * Check if the point is within the bounding box.
     *
-    * @returns {boolean} True is the point is within the bounding box.
+    * @returns {boolean} True if the point is within the bounding box.
     */
     contains(lnglat: LngLatLike) {
-      lnglat = lnglat instanceof LngLat ? new LngLat(lnglat.lng, lnglat.lat) : LngLat.convert(lnglat);
+        lnglat = lnglat instanceof LngLat ? new LngLat(lnglat.lng, lnglat.lat) : LngLat.convert(lnglat);
 
-      const containsLatitude = this._sw.lat <= lnglat.lat && lnglat.lat <= this._ne.lat;
-      let containsLongitude = this._sw.lng <= lnglat.lng && lnglat.lng <= this._ne.lng;
+        const containsLatitude = this._sw.lat <= lnglat.lat && lnglat.lat <= this._ne.lat;
+        let containsLongitude = this._sw.lng <= lnglat.lng && lnglat.lng <= this._ne.lng;
 
-      if (this._sw.lng > this._ne.lng) {
-        // wrapped coordinate
-        containsLongitude = this._sw.lng >= lnglat.lng && lnglat.lng >= this._ne.lng;
-      }
+        if (this._sw.lng > this._ne.lng) {
+        // wrapped coordinates
+            containsLongitude = this._sw.lng >= lnglat.lng && lnglat.lng >= this._ne.lng;
+        }
 
-      return containsLatitude && containsLongitude;
+        return containsLatitude && containsLongitude;
     }
-
-    /**
-    * Check if the polygon is within the bounding box.
-    *
-    * @returns {boolean} True is the polygon is within the bounding box.
-
-    contains(): Polygon {
-      // var corners = get all verticies of polygon
-      Polygon.forEach(function(corner){
-        return (this._sw.lng =< p.lng =< this._ne.lng && this._sw.lat =< p.lat =< this._ne.lat ||
-          this._sw.lat =< p.lat && this._ne.lat =< p.lat ||
-          this._sw.lng >= p.lng >= this._ne.lng && this._sw =< p.lat =< this._ne.lat)
-      });
-
-    }
-    */
 
     /**
      * Converts an array to a `LngLatBounds` object.
