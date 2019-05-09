@@ -25,6 +25,10 @@
     user-select: none;
 }
 
+.mapboxgl-canvas-container.mapboxgl-interactive.mapboxgl-track-pointer {
+    cursor: pointer;
+}
+
 .mapboxgl-canvas-container.mapboxgl-interactive:active,
 .mapboxgl-ctrl-group > button.mapboxgl-ctrl-compass:active {
     cursor: -webkit-grabbing;
@@ -458,6 +462,23 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
 .mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-content {
     border-bottom-right-radius: 0;
+}
+
+.mapboxgl-popup-track-pointer {
+    display: none;
+}
+
+.mapboxgl-popup-track-pointer * {
+    pointer-events: none;
+    user-select: none;
+}
+
+.mapboxgl-map:hover .mapboxgl-popup-track-pointer {
+    display: flex;
+}
+
+.mapboxgl-map:active .mapboxgl-popup-track-pointer {
+    display: none;
 }
 
 .mapboxgl-marker {
