@@ -21,6 +21,7 @@ import {Evented} from './util/evented';
 import config from './util/config';
 import {setRTLTextPlugin} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
+import {disableCache} from './util/mapbox';
 
 const exported = {
     version,
@@ -104,6 +105,11 @@ const exported = {
 
     set maxParallelImageRequests(numRequests: number) {
         config.MAX_PARALLEL_IMAGE_REQUESTS = numRequests;
+    },
+
+
+    disableCache() {
+        disableCache();
     },
 
     workerUrl: ''

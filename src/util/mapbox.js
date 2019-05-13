@@ -16,6 +16,12 @@ import type {TileJSON} from '../types/tilejson';
 const help = 'See https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes';
 const telemEventKey = 'mapbox.eventData';
 
+let cacheTiles = true;
+export const disableCache = function() {
+    console.log('disabled');
+    cacheTiles = false;
+}
+
 type UrlObject = {|
     protocol: string,
     authority: string,
@@ -125,6 +131,7 @@ export const canonicalizeTileURL = function(url: string) {
 
     // Append the query string, minus the access token parameter.
     const params = urlObject.params.filter(p => !p.match(/^access_token=/));
+    if (!cacheTiles) params.push(Math.random());
     if (params.length) result += `?${params.join('&')}`;
     return result;
 };
