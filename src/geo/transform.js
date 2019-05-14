@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat';
 import LngLatBounds from './lng_lat_bounds';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from './mercator_coordinate';
+import MercatorCoordinate, {latFromMercatorY, mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from './mercator_coordinate';
 import Point from '@mapbox/point-geometry';
 import { wrap, clamp } from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
@@ -20,6 +20,7 @@ import type { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
  */
 class Transform {
     tileSize: number;
+    tileSize2: [number, number];
     tileZoom: number;
     lngRange: ?[number, number];
     latRange: ?[number, number];
@@ -53,6 +54,7 @@ class Transform {
 
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
+        this.tileSize2 = [1024, 512];
         this.maxValidLatitude = 85.051129; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
@@ -76,6 +78,7 @@ class Transform {
     clone(): Transform {
         const clone = new Transform(this._minZoom, this._maxZoom, this._renderWorldCopies);
         clone.tileSize = this.tileSize;
+        clone.tileSize2 = this.tileSize2;
         clone.latRange = this.latRange;
         clone.width = this.width;
         clone.height = this.height;
@@ -116,6 +119,10 @@ class Transform {
 
     get worldSize(): number {
         return this.tileSize * this.scale;
+    }
+
+    get worldSize2(): [number, number] {
+        return [this.tileSize2[0] * this.scale, this.tileSize2[1] * this.scale];
     }
 
     get centerPoint(): Point {
@@ -285,12 +292,12 @@ class Transform {
     project(lnglat: LngLat) {
         const lat = clamp(lnglat.lat, -this.maxValidLatitude, this.maxValidLatitude);
         return new Point(
-                mercatorXfromLng(lnglat.lng) * this.worldSize,
-                mercatorYfromLat(lat) * this.worldSize);
+                mercatorXfromLng(lnglat.lng) * this.worldSize2[0],
+                mercatorYfromLat(lat) * this.worldSize2[1]);
     }
 
     unproject(point: Point): LngLat {
-        return new MercatorCoordinate(point.x / this.worldSize, point.y / this.worldSize).toLngLat();
+        return new MercatorCoordinate(point.x / this.worldSize2[0], point.y / this.worldSize2[1]).toLngLat();
     }
 
     get point(): Point { return this.project(this.center); }
@@ -369,8 +376,8 @@ class Transform {
         const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
         return new MercatorCoordinate(
-            interpolate(x0, x1, t) / this.worldSize,
-            interpolate(y0, y1, t) / this.worldSize);
+            interpolate(x0, x1, t) / this.worldSize2[0],
+            interpolate(y0, y1, t) / this.worldSize2[1]);
     }
 
     /**
@@ -379,7 +386,7 @@ class Transform {
      * @returns {Point} screen point
      */
     coordinatePoint(coord: MercatorCoordinate) {
-        const p = [coord.x * this.worldSize, coord.y * this.worldSize, 0, 1];
+        const p = [coord.x * this.worldSize2[0], coord.y * this.worldSize2[1], 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
         return new Point(p[0] / p[3], p[1] / p[3]);
     }
@@ -433,11 +440,20 @@ class Transform {
 
         const canonical = unwrappedTileID.canonical;
         const scale = this.worldSize / this.zoomScale(canonical.z);
+        const scaleX = this.worldSize2[0] / this.zoomScale(canonical.z);
+        //const scaleY = this.worldSize2[1] / this.zoomScale(canonical.z);
+
+        const s = this.zoomScale(canonical.z);
+        const yDiff = latFromMercatorY(canonical.y / s) - latFromMercatorY((canonical.y + 1) / s);
+        const yTranslate = 90 - latFromMercatorY((canonical.y) / s);
+        const translateY = yTranslate / 180 * this.worldSize2[1];
+        const scaleY = this.worldSize2[1] * (yDiff / 180);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
 
         const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
-        mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
+        //mat4.translate(posMatrix, posMatrix, [unwrappedX * scaleX, canonical.y * scaleY, 0]);
+        mat4.translate(posMatrix, posMatrix, [unwrappedX * scaleX, translateY, 0]);
+        mat4.scale(posMatrix, posMatrix, [scaleX / EXTENT, scaleY / EXTENT, 1]);
         mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
 
         cache[posMatrixKey] = new Float32Array(posMatrix);
@@ -463,15 +479,15 @@ class Transform {
 
         if (this.latRange) {
             const latRange = this.latRange;
-            minY = mercatorYfromLat(latRange[1]) * this.worldSize;
-            maxY = mercatorYfromLat(latRange[0]) * this.worldSize;
+            minY = mercatorYfromLat(latRange[1]) * this.worldSize2[0];
+            maxY = mercatorYfromLat(latRange[0]) * this.worldSize2[1];
             sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
         }
 
         if (this.lngRange) {
             const lngRange = this.lngRange;
-            minX = mercatorXfromLng(lngRange[0]) * this.worldSize;
-            maxX = mercatorXfromLng(lngRange[1]) * this.worldSize;
+            minX = mercatorXfromLng(lngRange[0]) * this.worldSize2[0];
+            maxX = mercatorXfromLng(lngRange[1]) * this.worldSize2[1];
             sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
         }
 
@@ -549,7 +565,7 @@ class Transform {
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
         // ([0, 0] nw, [1, 1] se) to GL coordinates.
-        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize]);
+        this.mercatorMatrix = mat4.scale([], m, [this.worldSize2[0], this.worldSize2[1], this.worldSize]);
 
         // scale vertically to meters per pixel (inverse of ground resolution):
         mat4.scale(m, m, [1, 1, mercatorZfromAltitude(1, this.center.lat) * this.worldSize, 1]);

@@ -406,7 +406,7 @@ class SymbolBucket implements Bucket {
                 icon,
                 index,
                 sourceLayerIndex,
-                geometry: loadGeometry(feature),
+                geometry: loadGeometry(feature, options.featureIndex.tileID.canonical),
                 properties: feature.properties,
                 type: vectorTileFeatureTypes[feature.type],
                 sortKey

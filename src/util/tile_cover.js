@@ -1,6 +1,6 @@
 // @flow
 
-import MercatorCoordinate from '../geo/mercator_coordinate';
+import MercatorCoordinate, {mercatorYfromLat} from '../geo/mercator_coordinate';
 import Point from '@mapbox/point-geometry';
 
 import { OverscaledTileID } from '../source/tile_id';
@@ -29,7 +29,11 @@ function tileCover(z: number, bounds: [MercatorCoordinate, MercatorCoordinate, M
         }
     }
 
-    const zoomedBounds = bounds.map((coord) => new Point(coord.x, coord.y)._mult(tiles));
+    const zoomedBounds = bounds.map((coord) => {
+        const y = mercatorYfromLat(Math.min(90, Math.max(-90, 90 - coord.y * 180)));
+        //console.log(y, coord.y, mercatorYfromLat(90), mercatorYfromLat(85), 90 - coord.y * 180);
+        return new Point(coord.x, y)._mult(tiles)
+    });
 
     // Divide the screen up in two triangles and scan each of them:
     // +---/

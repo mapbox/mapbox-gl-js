@@ -80,7 +80,7 @@ class FillBucket implements Bucket {
         for (const {feature, index, sourceLayerIndex} of features) {
             if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
 
-            const geometry = loadGeometry(feature);
+            const geometry = loadGeometry(feature, options.featureIndex.tileID.canonical);
 
             const patternFeature: BucketFeature = {
                 sourceLayerIndex,
