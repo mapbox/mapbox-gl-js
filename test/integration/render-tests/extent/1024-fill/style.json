@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "diff": 0.0008
+      "allowed": 0.0008
     }
   },
   "center": [

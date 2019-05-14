@@ -3,7 +3,7 @@
   "metadata": {
     "test": {
       "axonometric": false,
-      "diff": 0.00075
+      "allowed": 0.00075
     }
   },
   "sources": {

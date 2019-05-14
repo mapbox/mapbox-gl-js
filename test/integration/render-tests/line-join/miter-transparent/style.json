@@ -4,7 +4,7 @@
     "test": {
       "width": 112,
       "height": 64,
-      "diff": 0.00075
+      "allowed": 0.00075
     }
   },
   "sources": {
