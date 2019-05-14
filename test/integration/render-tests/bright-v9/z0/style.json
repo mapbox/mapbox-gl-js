@@ -4,9 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
-      "center": [0, 0],
-      "zoom": 0,
-      "diff": 0.00075,
+      "allowed": 0.00075,
       "operations": [
         ["setStyle", "local://mapbox-gl-styles/styles/bright-v9.json"],
         ["wait"]

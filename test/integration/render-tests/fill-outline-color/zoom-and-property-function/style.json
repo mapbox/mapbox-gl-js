@@ -4,7 +4,7 @@
     "test": {
       "width": 64,
       "height": 64,
-      "diff": 0.00075
+      "allowed": 0.00075
     }
   },
   "zoom": 0.1,
