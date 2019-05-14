@@ -68,7 +68,7 @@ class NavigationControl {
     }
 
     _rotateCompassArrow() {
-        const rotate = `rotateX(${this._map.transform._pitch * (180 / Math.PI)}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+        const rotate = `rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)`;
         this._compassArrow.style.transform = rotate;
     }
 
