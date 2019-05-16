@@ -282,6 +282,11 @@ function calculatePenalty(codePoint: number, nextCodePoint: number) {
     if (codePoint === 0x0a) {
         penalty -= 10000;
     }
+    // Prioritize zero width spaces because the are used by mapbox as a way
+    // to mark ideal break points in Japanese text.
+    if (codePoint === 0x200b) {
+        penalty -= 50;
+    }
     // Penalize open parenthesis at end of line
     if (codePoint === 0x28 || codePoint === 0xff08) {
         penalty += 50;
