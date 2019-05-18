@@ -1,6 +1,6 @@
 // @flow
 
-import { extend, bindAll, warnOnce, uniqueId } from '../util/util';
+import { extend, bezier, bindAll, warnOnce, uniqueId } from '../util/util';
 
 import browser from '../util/browser';
 import window from '../util/window';
@@ -39,7 +39,7 @@ import type {StyleImageInterface} from '../style/style_image';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
 import type DragRotateHandler from './handler/drag_rotate';
-import type DragPanHandler from './handler/drag_pan';
+import type DragPanHandler, {DragInertia} from './handler/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
@@ -85,6 +85,7 @@ type MapOptions = {
     boxZoom?: boolean,
     dragRotate?: boolean,
     dragPan?: boolean,
+    dragInertia?: $Shape<DragInertia>,
     keyboard?: boolean,
     doubleClickZoom?: boolean,
     touchZoomRotate?: boolean,
@@ -114,6 +115,12 @@ const defaultOptions = {
     boxZoom: true,
     dragRotate: true,
     dragPan: true,
+    dragInertia: {
+        linearity: 0.3,
+        easing: bezier(0, 0, 0.3, 1),
+        maxSpeed: 1400,
+        deceleration: 2500,
+    },
     keyboard: true,
     doubleClickZoom: true,
     touchZoomRotate: true,
@@ -193,6 +200,7 @@ const defaultOptions = {
  * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see {@link BoxZoomHandler}).
  * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see {@link DragRotateHandler}).
  * @param {boolean} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled (see {@link DragPanHandler}).
+ * @param {DragInertia} [options.dragInertia] If set, the drag inertia will obey the given parameters.
  * @param {boolean} [options.keyboard=true] If `true`, keyboard shortcuts are enabled (see {@link KeyboardHandler}).
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean|Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
@@ -312,6 +320,7 @@ class Map extends Camera {
 
     constructor(options: MapOptions) {
         options = extend({}, defaultOptions, options);
+        options.dragInertia = extend({}, defaultOptions.dragInertia, options.dragInertia);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
             throw new Error(`maxZoom must be greater than minZoom`);

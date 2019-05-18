@@ -1,7 +1,7 @@
 // @flow
 
 import DOM from '../../util/dom';
-import { bezier, bindAll } from '../../util/util';
+import { bindAll } from '../../util/util';
 import window from '../../util/window';
 import browser from '../../util/browser';
 import { Event } from '../../util/evented';
@@ -11,10 +11,12 @@ import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
 import type {TaskID} from '../../util/task_queue';
 
-const inertiaLinearity = 0.3,
-    inertiaEasing = bezier(0, 0, inertiaLinearity, 1),
-    inertiaMaxSpeed = 1400, // px/s
-    inertiaDeceleration = 2500; // px/s^2
+export type DragInertia = {
+    linearity: number,
+    easing: (t: number) => number,
+    maxSpeed: number,
+    deceleration: number,
+};
 
 /**
  * The `DragPanHandler` allows the user to pan the map by clicking and dragging
@@ -31,17 +33,20 @@ class DragPanHandler {
     _inertia: Array<[number, Point]>;
     _frameId: ?TaskID;
     _clickTolerance: number;
+    _dragInertia: DragInertia;
 
     /**
      * @private
      */
     constructor(map: Map, options: {
-        clickTolerance?: number
+        clickTolerance?: number,
+        dragInertia: DragInertia
     }) {
         this._map = map;
         this._el = map.getCanvasContainer();
         this._state = 'disabled';
         this._clickTolerance = options.clickTolerance || 1;
+        this._dragInertia = options.dragInertia;
 
         bindAll([
             '_onMove',
@@ -290,20 +295,22 @@ class DragPanHandler {
         }
 
         // calculate px/s velocity & adjust for increased initial animation speed when easing out
-        const velocity = flingOffset.mult(inertiaLinearity / flingDuration);
+        const {linearity, easing, maxSpeed, deceleration} = this._dragInertia;
+
+        const velocity = flingOffset.mult(linearity / flingDuration);
         let speed = velocity.mag(); // px/s
 
-        if (speed > inertiaMaxSpeed) {
-            speed = inertiaMaxSpeed;
+        if (speed > maxSpeed) {
+            speed = maxSpeed;
             velocity._unit()._mult(speed);
         }
 
-        const duration = speed / (inertiaDeceleration * inertiaLinearity),
+        const duration = speed / (deceleration * linearity),
             offset = velocity.mult(-duration / 2);
 
         this._map.panBy(offset, {
             duration: duration * 1000,
-            easing: inertiaEasing,
+            easing,
             noMoveStart: true
         }, { originalEvent: e });
     }

@@ -28,7 +28,7 @@ export function easeCubicInOut(t: number): number {
 }
 
 /**
- * Given given (x, y), (x1, y1) control points for a bezier curve,
+ * Given (x, y), (x1, y1) control points for a bezier curve,
  * return a function that interpolates along that curve.
  *
  * @param p1x control point 1 x coordinate
