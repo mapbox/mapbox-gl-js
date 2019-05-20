@@ -1,3 +1,10 @@
+## 13.7.0
+
+### ✨ Features and improvements
+* Add `text-radial-offset` style property ([#7596](https://github.com/mapbox/mapbox-gl-js/pull/7596))
+* Add `text-variable-anchor` style property ([#7596](https://github.com/mapbox/mapbox-gl-js/pull/7596))
+* Add `auto` value to `text-justify` style property ([#7596](https://github.com/mapbox/mapbox-gl-js/pull/7596))
+
 ## 13.6.0
 
 ### ✨ Features and improvements
