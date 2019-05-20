@@ -215,9 +215,12 @@ class ScrollZoomHandler {
         }
 
         this._active = true;
-        this._zooming = true;
-        this._map.fire(new Event('movestart', {originalEvent: e}));
-        this._map.fire(new Event('zoomstart', {originalEvent: e}));
+        if (!this.isZooming()) {
+            this._zooming = true;
+            this._map.fire(new Event('movestart', {originalEvent: e}));
+            this._map.fire(new Event('zoomstart', {originalEvent: e}));
+        }
+
         if (this._finishTimeout) {
             clearTimeout(this._finishTimeout);
         }
