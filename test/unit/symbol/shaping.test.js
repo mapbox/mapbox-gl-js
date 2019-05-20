@@ -59,7 +59,7 @@ test('shaping', (t) => {
     // a position is ideal for breaking.
     const expectedZeroWidthSpaceBreak = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-zero-width-space.json')));
 
-    shaped = shaping.shapeText(Formatted.fromString('A B​C D​E F​G H I J K L​M N'), glyphs, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal);
+    shaped = shaping.shapeText(Formatted.fromString('三三\u200b三三\u200b三三\u200b三三三三三三\u200b三三'), glyphs, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal);
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-zero-width-space.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(shaped, expectedZeroWidthSpaceBreak);
 

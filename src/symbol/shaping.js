@@ -276,17 +276,18 @@ function calculateBadness(lineWidth: number,
     return raggedness + Math.abs(penalty) * penalty;
 }
 
-function calculatePenalty(codePoint: number, nextCodePoint: number) {
+function calculatePenalty(codePoint: number, nextCodePoint: number, ideographicBreak: boolean) {
     let penalty = 0;
     // Force break on newline
     if (codePoint === 0x0a) {
         penalty -= 10000;
     }
-    // Prioritize zero width spaces because the are used by mapbox as a way
-    // to mark ideal break points in Japanese text.
-    if (codePoint === 0x200b) {
-        penalty -= 50;
+    // Penalize breaks between characters that allow ideographic breaking because
+    // they are less preferable than breaks at spaces (or zero width spaces).
+    if (ideographicBreak) {
+        penalty += 150;
     }
+
     // Penalize open parenthesis at end of line
     if (codePoint === 0x28 || codePoint === 0xff08) {
         penalty += 50;
@@ -371,18 +372,19 @@ function determineLineBreaks(logicalInput: TaggedString,
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
         // surrounding spaces.
-        if ((i < logicalInput.length() - 1) &&
-            (breakable[codePoint] ||
-                charAllowsIdeographicBreaking(codePoint))) {
+        if ((i < logicalInput.length() - 1)) {
+            const ideographicBreak = !breakable[codePoint] && charAllowsIdeographicBreaking(codePoint);
+            if (breakable[codePoint] || ideographicBreak) {
 
-            potentialLineBreaks.push(
-                evaluateBreak(
-                    i + 1,
-                    currentX,
-                    targetWidth,
-                    potentialLineBreaks,
-                    calculatePenalty(codePoint, logicalInput.getCharCode(i + 1)),
-                    false));
+                potentialLineBreaks.push(
+                    evaluateBreak(
+                        i + 1,
+                        currentX,
+                        targetWidth,
+                        potentialLineBreaks,
+                        calculatePenalty(codePoint, logicalInput.getCharCode(i + 1), ideographicBreak),
+                        false));
+            }
         }
     }
 
