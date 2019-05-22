@@ -432,13 +432,15 @@ class LineBucket implements Bucket {
                     const n = Math.round((approxAngle * 180 / Math.PI) / DEG_PER_TRIANGLE);
 
                     for (let m = 1; m < n; m++) {
-                        const t = m / n;
-                        // approximate spherical interpolation https://observablehq.com/@mourner/approximating-geometric-slerp
-                        const t2 = t - 0.5;
-                        const A = 1.0904 + cosAngle * (-3.2452 + cosAngle * (3.55645 - cosAngle * 1.43519));
-                        const B = 0.848013 + cosAngle * (-1.06021 + cosAngle * 0.215638);
-                        const ot = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
-                        const approxFractionalNormal = prevNormal.mult(1 - ot)._add(nextNormal.mult(ot))._unit();
+                        let t = m / n;
+                        if (t !== 0.5) {
+                            // approximate spherical interpolation https://observablehq.com/@mourner/approximating-geometric-slerp
+                            const t2 = t - 0.5;
+                            const A = 1.0904 + cosAngle * (-3.2452 + cosAngle * (3.55645 - cosAngle * 1.43519));
+                            const B = 0.848013 + cosAngle * (-1.06021 + cosAngle * 0.215638);
+                            t = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
+                        }
+                        const approxFractionalNormal = prevNormal.mult(1 - t)._add(nextNormal.mult(t))._unit();
                         this.addPieSliceVertex(currentVertex, this.distance, approxFractionalNormal, lineTurnsLeft, segment, lineDistances);
                     }
                 }
