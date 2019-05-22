@@ -111,10 +111,6 @@ class VideoSource extends ImageSource {
         
     }
 
-    getVideoElement(){
-        return this.video;
-    }
-
     /**
      * Returns the HTML `video` element.
      *

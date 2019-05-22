@@ -126,6 +126,21 @@ export type GeoJSONSourceSpecification = {|
     "generateId"?: boolean
 |}
 
+export type CSVSpecification = {|
+    "type": "geojson",
+    "data"?: mixed,
+    "maxzoom"?: number,
+    "attribution"?: string,
+    "buffer"?: number,
+    "tolerance"?: number,
+    "cluster"?: boolean,
+    "clusterRadius"?: number,
+    "clusterMaxZoom"?: number,
+    "clusterProperties"?: mixed,
+    "lineMetrics"?: boolean,
+    "generateId"?: boolean
+|}
+
 export type VideoSourceSpecification = {|
     "type": "video",
     "urls": Array<string>,
@@ -145,6 +160,7 @@ export type SourceSpecification =
     | GeoJSONSourceSpecification
     | VideoSourceSpecification
     | ImageSourceSpecification
+    | CSVSpecification
 
 export type FillLayerSpecification = {|
     "id": string,

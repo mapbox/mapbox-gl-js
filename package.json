@@ -36,7 +36,8 @@
     "rw": "^1.3.3",
     "supercluster": "^6.0.1",
     "tinyqueue": "^2.0.0",
-    "vt-pbf": "^3.1.1"
+    "vt-pbf": "^3.1.1",
+    "csv2geojson": "^5.1.1"
   },
   "devDependencies": {
     "@mapbox/appropriate-images": "^2.0.0",
