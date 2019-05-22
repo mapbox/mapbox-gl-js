@@ -4,6 +4,7 @@ import { test } from 'mapbox-gl-js-test';
 import fs from 'fs';
 import path from 'path';
 import window from '../../../src/util/window';
+import { RequestManager } from '../../../src/util/mapbox';
 import loadGlyphRange from '../../../src/style/load_glyph_range';
 
 test('loadGlyphRange', (t) => {
@@ -14,11 +15,12 @@ test('loadGlyphRange', (t) => {
     });
 
     const transform = t.stub().callsFake((url) => ({url}));
+    const manager = new RequestManager(transform);
 
     let request;
     window.XMLHttpRequest.onCreate = (req) => { request = req; };
 
-    loadGlyphRange('Arial Unicode MS', 0, 'https://localhost/fonts/v1/{fontstack}/{range}.pbf', transform, (err, result) => {
+    loadGlyphRange('Arial Unicode MS', 0, 'https://localhost/fonts/v1/{fontstack}/{range}.pbf', manager, (err, result) => {
         t.ifError(err);
         t.ok(transform.calledOnce);
         t.deepEqual(transform.getCall(0).args, ['https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf', 'Glyphs']);
