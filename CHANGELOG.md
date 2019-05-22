@@ -5,7 +5,7 @@ This release replaces the existing “map views” pricing model in favor of a �
 **By upgrading to this release, you are opting in to the new map loads pricing.**
 
 **Why is this change being made?**
-This change allows us to implement a more standardized and predictable method of billing GL JS map usage. You’ll be charged whenever your website or web application loads, not by when users pan and zoom around themap, incentivizing developers to create highly interactive map experiences. The new pricing structure also creates a significantly larger free tier to help developers get started building their applications with Mapbox tools while pay-as-you-go pricing and automatic volume discounts help your application scale with Mapbox. Session billing also aligns invoices with metrics web developers already track and makes it easier to compare usage with other mapping providers.
+This change allows us to implement a more standardized and predictable method of billing GL JS map usage. You’ll be charged whenever your website or web application loads, not by when users pan and zoom around the map, incentivizing developers to create highly interactive map experiences. The new pricing structure also creates a significantly larger free tier to help developers get started building their applications with Mapbox tools while pay-as-you-go pricing and automatic volume discounts help your application scale with Mapbox. Session billing also aligns invoices with metrics web developers already track and makes it easier to compare usage with other mapping providers.
 
 **What is changing?**
 - Add SKU token to Mapbox API requests [#8276](https://github.com/mapbox/mapbox-gl-js/pull/8276)
