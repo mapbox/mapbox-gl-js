@@ -147,8 +147,8 @@ function parseUrl(url: string): UrlObject {
         throw new Error('Unable to parse URL object');
     }
     return {
-        protocol: parts[1],
-        authority: parts[2],
+        protocol: parts[1] === 'mapbox' ? parts[1] : window.location.protocol.substring(0, window.location.protocol.length - 1),
+        authority: parts[1] === 'mapbox' ? parts[2] : window.location.host,
         path: parts[3] || '/',
         params: parts[4] ? parts[4].split('&') : []
     };
