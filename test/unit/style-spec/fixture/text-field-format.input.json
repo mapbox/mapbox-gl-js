@@ -29,8 +29,10 @@
       "type": "symbol",
       "source": "point",
       "layout": {
-        "text-field": ["format",
-          ["get", "name_en"], { "font-scale": 1.5 }
+        "text-field": [
+          "format",
+          "x",
+          { "font-scale": 1.5 }
         ],
         "text-font": [
           "Open Sans Semibold",
