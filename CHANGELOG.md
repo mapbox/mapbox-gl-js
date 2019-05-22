@@ -1,3 +1,5 @@
+## 1.0.0
+
 ### ⚠️ Breaking changes
 
 This release replaces the existing “map views” pricing model in favor of a “map load” model. Learn more in [a recent blog post about these changes](https://blog.mapbox.com/new-pricing-46b7c26166e7).
