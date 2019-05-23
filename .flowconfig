@@ -28,3 +28,4 @@ nonstrict-import
 unclear-type
 untyped-import
 untyped-type-import
+sketchy-null
