@@ -852,6 +852,8 @@ class Camera extends Evented {
      *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
      * @param {number} [options.maxDuration] The animation's maximum duration, measured in milliseconds.
      *     If duration exceeds maximum duration, it resets to 0.
+     * @param {boolean} [options.exportVideo=false] Whether or not to export a high-quality WebM-encoded video of the animation
+     *     (exporting video will slow map rendering to capture 60fps video).
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
@@ -892,7 +894,6 @@ class Camera extends Evented {
 
         this.stop();
 
-        this.captureVideo();
 
         options = extend({
             offset: [0, 0],
@@ -900,6 +901,9 @@ class Camera extends Evented {
             curve: 1.42,
             easing: defaultEasing
         }, options);
+
+        if (options.exportVideo) this.captureVideo();
+
 
         const tr = this.transform,
             startZoom = this.getZoom(),
