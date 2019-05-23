@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 
 // Flow can't perfectly type Node-style callbacks yet; it does not have a way to
 // express that if the first parameter is null, the second is not, so for the time
