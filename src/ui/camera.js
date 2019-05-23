@@ -787,13 +787,39 @@ class Camera extends Evented {
     }
 
     captureVideo() {
-        this._videoWriter = new WebMWriter({
-            quality: 0.7,    // WebM image quality from 0.0 (worst) to 1.0 (best)
-            fd: null,         // Node.js file descriptor to write to instead of buffering to memory (optional)
-            // You must supply one of:
-            frameDuration: null, // Duration of frames in milliseconds
-            frameRate: 60,     // Number of frames per second
-        });
+        if (!this._videoWriter) {
+            this._videoWriter = new WebMWriter({
+                quality: 0.7,    // WebM image quality from 0.0 (worst) to 1.0 (best)
+                fd: null,         // Node.js file descriptor to write to instead of buffering to memory (optional)
+                // You must supply one of:
+                frameDuration: null, // Duration of frames in milliseconds
+                frameRate: 60,     // Number of frames per second
+            });
+        }
+        this._videoWriter.isActive = true;
+    }
+
+    exportVideo(filename) {
+        if (this._videoWriter) {
+            const filepath = filename + '.webm';
+            this._videoWriter.complete().then(function(webMBlob) {
+                const url = window.URL.createObjectURL(webMBlob);
+                const a = window.document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filepath;
+                window.document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    window.document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+                console.log('Exported video as', filepath);
+            });
+        } else {
+            throw new Error('No captured video found to export. (Did you pass captureVideo:true in flyTo() options?)');
+        }
+        delete this._videoWriter; // any future video capture will require a new videoWriter
     }
 
     /**
@@ -822,8 +848,8 @@ class Camera extends Evented {
      *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
      * @param {number} [options.maxDuration] The animation's maximum duration, measured in milliseconds.
      *     If duration exceeds maximum duration, it resets to 0.
-     * @param {boolean} [options.exportVideo=false] Whether or not to export a high-quality WebM-encoded video of the animation
-     *     (exporting video will slow map rendering to capture 60fps video).
+     * @param {boolean} [options.captureVideo=false] Whether or not to capture 60fps WebM-encoded video of the animation
+     *     which can later be downloaded with `.exportVideo()` (if 'true', map rendering will slow to capture an image of each frame).
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
@@ -872,7 +898,7 @@ class Camera extends Evented {
             easing: defaultEasing
         }, options);
 
-        if (options.exportVideo) this.captureVideo();
+        if (options.captureVideo) this.captureVideo();
 
 
         const tr = this.transform,
@@ -1022,21 +1048,8 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     stop(): this {
-        if (this._videoWriter) {
-            this._videoWriter.complete().then(function(webMBlob) {
-                const url = window.URL.createObjectURL(webMBlob);
-                const a = window.document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'test.webm';
-                window.document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    window.document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 100);
-            });
-        }
+        if (this._videoWriter && this._videoWriter.isActive) this._videoWriter.isActive = false;
+
         if (this._easeFrameId) {
             this._cancelRenderFrame(this._easeFrameId);
             delete this._easeFrameId;

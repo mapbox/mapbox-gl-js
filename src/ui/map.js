@@ -1769,7 +1769,7 @@ class Map extends Camera {
             });
 
             this.fire(new Event('render'));
-            if (this._videoWriter) {
+            if (this._videoWriter && this._videoWriter.isActive) {
                 this._videoWriter.addFrame(this.getCanvas());
             }
         } else {
