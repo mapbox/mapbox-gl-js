@@ -794,36 +794,6 @@ class Camera extends Evented {
             frameDuration: null, // Duration of frames in milliseconds
             frameRate: 60,     // Number of frames per second
         });
-        // this._replayCanvas = DOM.create('canvas', 'replay-canvas', this._canvasContainer);
-        // this._replayCanvas.style.position = 'absolute';
-        // this._replayCanvas.width = this._canvas.width;
-        // this._replayCanvas.height = this._canvas.height;
-        // const stream = this._replayCanvas.captureStream(60);
-        // const recordedChunks = [];
-        // this._mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm'});
-        //
-        // this._mediaRecorder.onstop = () => {
-        //     const blob = new Blob(recordedChunks, {type: 'video/webm'});
-        //     const url = window.URL.createObjectURL(blob);
-        //     const a = window.document.createElement('a');
-        //     a.style.display = 'none';
-        //     a.href = url;
-        //     a.download = 'test.webm';
-        //     window.document.body.appendChild(a);
-        //     a.click();
-        //     setTimeout(() => {
-        //         window.document.body.removeChild(a);
-        //         window.URL.revokeObjectURL(url);
-        //     }, 100);
-        // };
-        //
-        // this._mediaRecorder.ondataavailable = (event) => {
-        //     if (event.data.size > 0) {
-        //         recordedChunks.push(event.data);
-        //     }
-        // };
-        //
-        // this._mediaRecorder.start();
     }
 
     /**
