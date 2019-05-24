@@ -3,7 +3,6 @@
 import { getImage, ResourceType } from '../util/ajax';
 import { extend } from '../util/util';
 import { Evented } from '../util/evented';
-import { normalizeTileURL as normalizeURL } from '../util/mapbox';
 import browser from '../util/browser';
 import { OverscaledTileID } from './tile_id';
 import RasterTileSource from './raster_tile_source';
@@ -24,7 +23,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
         this.maxzoom = 22;
-        this._options = extend({}, options);
+        this._options = extend({ type: 'raster-dem' }, options);
         this.encoding = options.encoding || "mapbox";
     }
 
@@ -40,8 +39,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme, this.zoomOffset), this.url, this.tileSize);
-        tile.request = getImage(this.map._transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
+        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme, this.zoomOffset), this.url, this.tileSize);
+        tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
         function imageLoaded(err, img) {

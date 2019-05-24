@@ -109,7 +109,7 @@ class ImageSource extends Evented implements Source {
 
         this.url = this.options.url;
 
-        getImage(this.map._transformRequest(this.url, ResourceType.Image), (err, image) => {
+        getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {

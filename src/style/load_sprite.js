@@ -3,21 +3,20 @@
 import { getJSON, getImage, ResourceType } from '../util/ajax';
 
 import browser from '../util/browser';
-import { normalizeSpriteURL } from '../util/mapbox';
 import { RGBAImage } from '../util/image';
 
 import type {StyleImage} from './style_image';
-import type {RequestTransformFunction} from '../ui/map';
+import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 
 export default function(baseURL: string,
-                          transformRequestCallback: RequestTransformFunction,
+                          requestManager: RequestManager,
                           callback: Callback<{[string]: StyleImage}>): Cancelable {
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
-    let jsonRequest = getJSON(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err: ?Error, data: ?Object) => {
+    let jsonRequest = getJSON(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err: ?Error, data: ?Object) => {
         jsonRequest = null;
         if (!error) {
             error = err;
@@ -26,7 +25,7 @@ export default function(baseURL: string,
         }
     });
 
-    let imageRequest = getImage(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage), (err, img) => {
+    let imageRequest = getImage(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage), (err, img) => {
         imageRequest = null;
         if (!error) {
             error = err;
