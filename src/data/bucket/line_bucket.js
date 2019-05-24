@@ -66,25 +66,6 @@ const LINE_DISTANCE_SCALE = 1 / 2;
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
-function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: boolean, up: boolean, dir: number, linesofar: number) {
-    layoutVertexBuffer.emplaceBack(
-        // a_pos_normal
-        // Encode round/up the least significant bits
-        (point.x << 1) + (round ? 1 : 0),
-        (point.y << 1) + (up ? 1 : 0),
-        // a_data
-        // add 128 to store a byte in an unsigned byte
-        Math.round(EXTRUDE_SCALE * extrude.x) + 128,
-        Math.round(EXTRUDE_SCALE * extrude.y) + 128,
-        // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
-        // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
-        // room for the direction value). The upper 8 bits of `linesofar` are placed in
-        // the `w` component. `linesofar` is scaled down by `LINE_DISTANCE_SCALE` so that
-        // we can store longer distances while sacrificing precision.
-        ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | (((linesofar * LINE_DISTANCE_SCALE) & 0x3F) << 2),
-        (linesofar * LINE_DISTANCE_SCALE) >> 6);
-}
-
 /**
  * @private
  */
@@ -445,8 +426,8 @@ class LineBucket implements Bucket {
                             const B = 0.848013 + cosAngle * (-1.06021 + cosAngle * 0.215638);
                             t = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
                         }
-                        const approxFractionalNormal = prevNormal.mult(1 - t)._add(nextNormal.mult(t))._unit();
-                        this.addPieSliceVertex(currentVertex, approxFractionalNormal, lineTurnsLeft, segment);
+                        const extrude = prevNormal.mult(1 - t)._add(nextNormal.mult(t))._unit()._mult(lineTurnsLeft ? -1 : 1);
+                        this.addHalfVertex(currentVertex, extrude, false, lineTurnsLeft, 0, segment);
                     }
                 }
 
@@ -529,34 +510,14 @@ class LineBucket implements Bucket {
      * @param {boolean} round whether this is a round cap
      * @private
      */
-    addCurrentVertex(currentVertex: Point, normal: Point, endLeft: number, endRight: number, segment: Segment, round: boolean = false) {
-        let extrude;
-        const layoutVertexArray = this.layoutVertexArray;
-        const indexArray = this.indexArray;
-
-        const distance = this.scaledDistance();
-
-        extrude = normal.clone();
+    addCurrentVertex(p: Point, normal: Point, endLeft: number, endRight: number, segment: Segment, round: boolean = false) {
+        let extrude = normal.clone();
         if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-        addLineVertex(layoutVertexArray, currentVertex, extrude, round, false, endLeft, distance);
-        this.e3 = segment.vertexLength++;
-        if (this.e1 >= 0 && this.e2 >= 0) {
-            indexArray.emplaceBack(this.e1, this.e2, this.e3);
-            segment.primitiveLength++;
-        }
-        this.e1 = this.e2;
-        this.e2 = this.e3;
+        this.addHalfVertex(p, extrude, round, false, endLeft, segment);
 
         extrude = normal.mult(-1);
         if (endRight) extrude._sub(normal.perp()._mult(endRight));
-        addLineVertex(layoutVertexArray, currentVertex, extrude, round, true, -endRight, distance);
-        this.e3 = segment.vertexLength++;
-        if (this.e1 >= 0 && this.e2 >= 0) {
-            indexArray.emplaceBack(this.e1, this.e2, this.e3);
-            segment.primitiveLength++;
-        }
-        this.e1 = this.e2;
-        this.e2 = this.e3;
+        this.addHalfVertex(p, extrude, round, true, -endRight, segment);
 
         // There is a maximum "distance along the line" that we can store in the buffers.
         // When we get close to the distance, reset it to zero and add the vertex again with
@@ -564,35 +525,36 @@ class LineBucket implements Bucket {
         // to `linesofar`.
         if (this.distance > MAX_LINE_DISTANCE / 2 && this.totalDistance === 0) {
             this.distance = 0;
-            this.addCurrentVertex(currentVertex, normal, endLeft, endRight, segment, round);
+            this.addCurrentVertex(p, normal, endLeft, endRight, segment, round);
         }
     }
 
-    /**
-     * Add a single new vertex and a triangle using two previous vertices.
-     * This adds a pie slice triangle near a join to simulate round joins
-     *
-     * @param currentVertex the line vertex to add buffer vertices for
-     * @param extrude the offset of the new vertex from the currentVertex
-     * @param lineTurnsLeft whether the line is turning left or right at this angle
-     * @private
-     */
-    addPieSliceVertex(currentVertex: Point,
-                      extrude: Point,
-                      lineTurnsLeft: boolean,
-                      segment: Segment) {
-        extrude = extrude.mult(lineTurnsLeft ? -1 : 1);
-        const layoutVertexArray = this.layoutVertexArray;
-        const indexArray = this.indexArray;
+    addHalfVertex({x, y}: Point, extrude: Point, round: boolean, up: boolean, dir: number, segment: Segment) {
+        const linesofar = this.scaledDistance();
 
-        addLineVertex(layoutVertexArray, currentVertex, extrude, false, lineTurnsLeft, 0, this.scaledDistance());
+        this.layoutVertexArray.emplaceBack(
+            // a_pos_normal
+            // Encode round/up the least significant bits
+            (x << 1) + (round ? 1 : 0),
+            (y << 1) + (up ? 1 : 0),
+            // a_data
+            // add 128 to store a byte in an unsigned byte
+            Math.round(EXTRUDE_SCALE * extrude.x) + 128,
+            Math.round(EXTRUDE_SCALE * extrude.y) + 128,
+            // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
+            // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
+            // room for the direction value). The upper 8 bits of `linesofar` are placed in
+            // the `w` component. `linesofar` is scaled down by `LINE_DISTANCE_SCALE` so that
+            // we can store longer distances while sacrificing precision.
+            ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | (((linesofar * LINE_DISTANCE_SCALE) & 0x3F) << 2),
+            (linesofar * LINE_DISTANCE_SCALE) >> 6);
+
         this.e3 = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
-            indexArray.emplaceBack(this.e1, this.e2, this.e3);
+            this.indexArray.emplaceBack(this.e1, this.e2, this.e3);
             segment.primitiveLength++;
         }
-
-        if (lineTurnsLeft) {
+        if (up) {
             this.e2 = this.e3;
         } else {
             this.e1 = this.e3;
