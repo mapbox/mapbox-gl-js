@@ -503,11 +503,12 @@ class LineBucket implements Bucket {
     /**
      * Add two vertices to the buffers.
      *
-     * @param {Object} currentVertex the line vertex to add buffer vertices for
-     * @param {number} distance the distance from the beginning of the line to the vertex
-     * @param {number} endLeft extrude to shift the left vertex along the line
-     * @param {number} endRight extrude to shift the left vertex along the line
-     * @param {boolean} round whether this is a round cap
+     * @param currentVertex the line vertex to add buffer vertices for
+     * @param normal vertex normal
+     * @param endLeft extrude to shift the left vertex along the line
+     * @param endRight extrude to shift the left vertex along the line
+     * @param segment the segment object to add the vertex to
+     * @param round whether this is a round cap
      * @private
      */
     addCurrentVertex(p: Point, normal: Point, endLeft: number, endRight: number, segment: Segment, round: boolean = false) {
