@@ -72,6 +72,7 @@ const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DIST
 class LineBucket implements Bucket {
     distance: number;
     totalDistance: number;
+    scaledDistance: number;
     clipStart: number;
     clipEnd: number;
 
@@ -217,6 +218,7 @@ class LineBucket implements Bucket {
 
     addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number, index: number, imagePositions: {[string]: ImagePosition}) {
         this.distance = 0;
+        this.scaledDistance = 0;
         this.totalDistance = 0;
 
         if (!!feature.properties &&
@@ -255,8 +257,6 @@ class LineBucket implements Bucket {
 
         // we could be more precise, but it would only save a negligible amount of space
         const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
-
-        this.distance = 0;
 
         const beginCap = cap,
             endCap = isPolygon ? 'butt' : cap;
@@ -337,8 +337,8 @@ class LineBucket implements Bucket {
                 const prevSegmentLength = currentVertex.dist(prevVertex);
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
-                    this.distance += newPrevVertex.dist(prevVertex);
-                    this.addCurrentVertex(newPrevVertex, prevNormal.mult(1), 0, 0, segment);
+                    this.updateDistance(prevVertex, newPrevVertex);
+                    this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment);
                     prevVertex = newPrevVertex;
                 }
             }
@@ -370,7 +370,7 @@ class LineBucket implements Bucket {
             }
 
             // Calculate how far along the line the currentVertex is
-            if (prevVertex) this.distance += currentVertex.dist(prevVertex);
+            if (prevVertex) this.updateDistance(prevVertex, currentVertex);
 
             if (currentJoin === 'miter') {
 
@@ -382,7 +382,7 @@ class LineBucket implements Bucket {
 
                 if (miterLength > 100) {
                     // Almost parallel lines
-                    joinNormal = nextNormal.clone().mult(-1);
+                    joinNormal = nextNormal.mult(-1);
 
                 } else {
                     const direction = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0 ? -1 : 1;
@@ -427,7 +427,7 @@ class LineBucket implements Bucket {
                             t = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
                         }
                         const extrude = prevNormal.mult(1 - t)._add(nextNormal.mult(t))._unit()._mult(lineTurnsLeft ? -1 : 1);
-                        this.addHalfVertex(currentVertex, extrude, false, lineTurnsLeft, 0, segment);
+                        this.addHalfVertex(currentVertex, extrude.x, extrude.y, false, lineTurnsLeft, 0, segment);
                     }
                 }
 
@@ -488,8 +488,8 @@ class LineBucket implements Bucket {
                 const nextSegmentLength = currentVertex.dist(nextVertex);
                 if (nextSegmentLength > 2 * sharpCornerOffset) {
                     const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
-                    this.distance += newCurrentVertex.dist(currentVertex);
-                    this.addCurrentVertex(newCurrentVertex, nextNormal.mult(1), 0, 0, segment);
+                    this.updateDistance(currentVertex, newCurrentVertex);
+                    this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment);
                     currentVertex = newCurrentVertex;
                 }
             }
@@ -503,7 +503,7 @@ class LineBucket implements Bucket {
     /**
      * Add two vertices to the buffers.
      *
-     * @param currentVertex the line vertex to add buffer vertices for
+     * @param p the line vertex to add buffer vertices for
      * @param normal vertex normal
      * @param endLeft extrude to shift the left vertex along the line
      * @param endRight extrude to shift the left vertex along the line
@@ -512,13 +512,14 @@ class LineBucket implements Bucket {
      * @private
      */
     addCurrentVertex(p: Point, normal: Point, endLeft: number, endRight: number, segment: Segment, round: boolean = false) {
-        let extrude = normal.clone();
-        if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-        this.addHalfVertex(p, extrude, round, false, endLeft, segment);
+        // left and right extrude vectors, perpendicularly shifted by endLeft/endRight
+        const leftX = normal.x + normal.y * endLeft;
+        const leftY = normal.y - normal.x * endLeft;
+        const rightX = -normal.x + normal.y * endRight;
+        const rightY = -normal.y - normal.x * endRight;
 
-        extrude = normal.mult(-1);
-        if (endRight) extrude._sub(normal.perp()._mult(endRight));
-        this.addHalfVertex(p, extrude, round, true, -endRight, segment);
+        this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment);
+        this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment);
 
         // There is a maximum "distance along the line" that we can store in the buffers.
         // When we get close to the distance, reset it to zero and add the vertex again with
@@ -530,8 +531,8 @@ class LineBucket implements Bucket {
         }
     }
 
-    addHalfVertex({x, y}: Point, extrude: Point, round: boolean, up: boolean, dir: number, segment: Segment) {
-        const linesofar = this.scaledDistance();
+    addHalfVertex({x, y}: Point, extrudeX: number, extrudeY: number, round: boolean, up: boolean, dir: number, segment: Segment) {
+        const linesofar = this.scaledDistance;
 
         this.layoutVertexArray.emplaceBack(
             // a_pos_normal
@@ -540,8 +541,8 @@ class LineBucket implements Bucket {
             (y << 1) + (up ? 1 : 0),
             // a_data
             // add 128 to store a byte in an unsigned byte
-            Math.round(EXTRUDE_SCALE * extrude.x) + 128,
-            Math.round(EXTRUDE_SCALE * extrude.y) + 128,
+            Math.round(EXTRUDE_SCALE * extrudeX) + 128,
+            Math.round(EXTRUDE_SCALE * extrudeY) + 128,
             // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
             // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
             // room for the direction value). The upper 8 bits of `linesofar` are placed in
@@ -562,18 +563,16 @@ class LineBucket implements Bucket {
         }
     }
 
-    /**
-     * Knowing the ratio of the full linestring covered by this tiled feature, as well
-     * as the total distance (in tile units) of this tiled feature, and the distance
-     * (in tile units) of the current vertex, we can determine the relative distance
-     * of this vertex along the full linestring feature and scale it to [0, 2^15)
-     *
-     * @private
-     */
-    scaledDistance() {
-        if (this.totalDistance === 0) return this.distance;
-        const t = this.clipStart + (this.clipEnd - this.clipStart) * this.distance / this.totalDistance;
-        return t * (MAX_LINE_DISTANCE - 1);
+    updateDistance(prev: Point, next: Point) {
+        this.distance += prev.dist(next);
+
+        // Knowing the ratio of the full linestring covered by this tiled feature, as well
+        // as the total distance (in tile units) of this tiled feature, and the distance
+        // (in tile units) of the current vertex, we can determine the relative distance
+        // of this vertex along the full linestring feature and scale it to [0, 2^15)
+        this.scaledDistance = this.totalDistance > 0 ?
+            (this.clipStart + (this.clipEnd - this.clipStart) * this.distance / this.totalDistance)  * (MAX_LINE_DISTANCE - 1) :
+            this.distance;
     }
 }
 
