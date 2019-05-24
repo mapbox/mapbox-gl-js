@@ -63,6 +63,7 @@ try {
     const options = Object.defineProperty({}, "passive", {
         get() {
             passiveSupported = true;
+            return false;
         },
         value: false
     });
