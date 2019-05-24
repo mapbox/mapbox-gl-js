@@ -8,7 +8,6 @@ import { extend } from '../util/util';
 
 import type Map from './map';
 import type LngLat from '../geo/lng_lat';
-import type LngLatBounds from '../geo/lng_lat_bounds';
 
 /**
  * `MapMouseEvent` is the event type for mouse-related map events.
@@ -26,7 +25,6 @@ export class MapMouseEvent extends Event {
         | 'mouseover'
         | 'mouseenter'
         | 'mouseleave'
-        | 'mouseover'
         | 'mouseout'
         | 'contextmenu';
 
@@ -219,16 +217,13 @@ export class MapWheelEvent extends Event {
 /**
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent
- * @property {LngLatBounds} boxZoomBounds The bounding box of the "box zoom" interaction.
- *   This property is only provided for `boxzoomend` events.
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart'
         | 'boxzoomend'
         | 'boxzoomcancel',
     map: Map,
-    originalEvent: MouseEvent,
-    boxZoomBounds: LngLatBounds
+    originalEvent: MouseEvent
 };
 
 /**
@@ -358,16 +353,6 @@ export type MapEvent =
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
      */
     | 'mouseleave'
-
-    /**
-     * Synonym for `mouseenter`.
-     *
-     * @event mouseover
-     * @memberof Map
-     * @instance
-     * @property {MapMouseEvent} data
-     */
-    | 'mouseover'
 
     /**
      * Fired when a point device (usually a mouse) leaves the map's canvas.
@@ -689,6 +674,20 @@ export type MapEvent =
     | 'render'
 
     /**
+     * Fired after the last frame rendered before the map enters an
+     * "idle" state:
+     *
+     * - No camera transitions are in progress
+     * - All currently requested tiles have loaded
+     * - All fade/transition animations have completed
+     *
+     * @event idle
+     * @memberof Map
+     * @instance
+     */
+    | 'idle'
+
+    /**
      * Fired immediately after the map has been removed with {@link Map.event:remove}.
      *
      * @event remove
@@ -778,6 +777,20 @@ export type MapEvent =
      * @property {MapDataEvent} data
      */
     | 'sourcedataloading'
+
+    /**
+     * Fired when an icon or pattern needed by the style is missing. The missing image can
+     * be added with {@link Map#addImage} within this event listener callback to prevent the image from
+     * being skipped. This event can be used to dynamically generate icons and patterns.
+     *
+     * @event styleimagemissing
+     * @memberof Map
+     * @instance
+     * @property {string} id The id of the missing image.
+     *
+     * @see [Generate and add a missing icon to the map](https://mapbox.com/mapbox-gl-js/example/add-image-missing-generated/)
+     */
+    | 'styleimagemissing'
 
     /**
      * @event style.load

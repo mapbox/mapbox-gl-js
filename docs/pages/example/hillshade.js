@@ -1,6 +1,6 @@
 /*---
 title: Add hillshading
-description: Adds raster hillshading to a map
+description: Adds raster hillshading to a map.
 tags:
   - layers
   - sources

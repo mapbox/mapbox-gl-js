@@ -20,11 +20,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         callback(new Error('Test timed out'));
     }, options.timeout || 20000);
 
-    function callback() {
+    function callback(...args) {
         if (!wasCallbackCalled) {
             clearTimeout(timeout);
             wasCallbackCalled = true;
-            _callback.apply(this, arguments);
+            _callback(...args);
         }
     }
 
@@ -43,8 +43,8 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
     config.REQUIRE_ACCESS_TOKEN = false;
 
     const map = new Map({
-        container: container,
-        style: style,
+        container,
+        style,
         classes: options.classes,
         interactive: false,
         attributionControl: false,
@@ -52,6 +52,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         axonometric: options.axonometric || false,
         skew: options.skew || [0, 0],
         fadeDuration: options.fadeDuration || 0,
+        localIdeographFontFamily: options.localIdeographFontFamily || false,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions
     });
 
@@ -156,9 +157,23 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             map.addLayer(new customLayerImplementations[operation[1]](), operation[2]);
             map._render();
             applyOperations(map, operations.slice(1), callback);
-
+        } else if (operation[0] === 'updateFakeCanvas') {
+            const canvasSource = map.getSource(operation[1]);
+            canvasSource.play();
+            // update before pause should be rendered
+            updateFakeCanvas(window.document, options.addFakeCanvas.id, operation[2]);
+            canvasSource.pause();
+            // update after pause should not be rendered
+            updateFakeCanvas(window.document, options.addFakeCanvas.id, operation[3]);
+            map._render();
+            applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'setStyle') {
+            // Disable local ideograph generation (enabled by default) for
+            // consistent local ideograph rendering using fixtures in all runs of the test suite.
+            map.setStyle(operation[1], { localIdeographFontFamily: false });
+            applyOperations(map, operations.slice(1), callback);
         } else {
-            map[operation[0]].apply(map, operation.slice(1));
+            map[operation[0]](...operation.slice(1));
             applyOperations(map, operations.slice(1), callback);
         }
     }
@@ -172,4 +187,10 @@ function createFakeCanvas(document, id, imagePath) {
     fakeCanvas.width = image.width;
     fakeCanvas.height = image.height;
     return fakeCanvas;
+}
+
+function updateFakeCanvas(document, id, imagePath) {
+    const fakeCanvas = document.getElementById(id);
+    const image = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', imagePath)));
+    fakeCanvas.data = image.data;
 }

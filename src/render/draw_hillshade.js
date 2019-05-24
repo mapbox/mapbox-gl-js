@@ -80,6 +80,7 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
     // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
     if (tile.dem && tile.dem.data) {
         const tileSize = tile.dem.dim;
+        const textureStride = tile.dem.stride;
 
         const pixelData = tile.dem.getPixels();
         context.activeTexture.set(gl.TEXTURE1);
@@ -88,7 +89,7 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
         // tiles will appear blank, because as you can see above the alpha value for these textures
         // is always 0
         context.pixelStoreUnpackPremultiplyAlpha.set(false);
-        tile.demTexture = tile.demTexture || painter.getTileTexture(tile.tileSize);
+        tile.demTexture = tile.demTexture || painter.getTileTexture(textureStride);
         if (tile.demTexture) {
             const demTexture = tile.demTexture;
             demTexture.update(pixelData, { premultiply: false });

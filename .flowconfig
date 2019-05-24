@@ -1,5 +1,6 @@
 [ignore]
 .*/node_modules/@mapbox/jsonlint-lines-primitives/.*
+.*/node_modules/jsonlint-lines/.*
 .*/node_modules/stylelint/.*
 .*/node_modules/unflowify/.*
 .*/node_modules/flow-coverage-report/.*
@@ -14,6 +15,10 @@
 .*/test/integration/render-tests/.*
 .*/test/build/downstream-flow-fixture/.*
 .*/_batfish_site/.*
+.*/_site/.*
 
 [version]
-0.77.0
+0.95.1
+
+[options]
+server.max_workers=4

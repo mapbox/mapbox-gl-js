@@ -7,7 +7,7 @@ function generateLayers(layer) {
     const generated = [];
     for (let i = 0; i < 50; i++) {
         const id = layer.id + i;
-        generated.push(Object.assign({}, layer, {id: id}));
+        generated.push(Object.assign({}, layer, {id}));
     }
     return generated;
 }
@@ -28,7 +28,7 @@ export default class PaintStates extends Benchmark {
             .then(data => {
                 this.numFeatures = data.features.length;
                 return Object.assign({}, style, {
-                    sources: {'land': {'type': 'geojson', 'data': data, 'maxzoom': 23}},
+                    sources: {'land': {'type': 'geojson', data, 'maxzoom': 23}},
                     layers: generateLayers({
                         'id': 'layer',
                         'type': 'fill',

@@ -12,5 +12,14 @@
   "render-tests/regressions/mapbox-gl-js#3682": "skip - true",
   "render-tests/runtime-styling/image-update-icon": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
   "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
-  "render-tests/mixed-zoom/z10-z11": "current behavior conflicts with https://github.com/mapbox/mapbox-gl-js/pull/6803. can be fixed when https://github.com/mapbox/api-maps/issues/1480 is done"
+  "render-tests/mixed-zoom/z10-z11": "current behavior conflicts with https://github.com/mapbox/mapbox-gl-js/pull/6803. can be fixed when https://github.com/mapbox/api-maps/issues/1480 is done",
+  "render-tests/fill-extrusion-pattern/tile-buffer": "https://github.com/mapbox/mapbox-gl-js/issues/4403",
+  "render-tests/runtime-styling/paint-property-overriden-default-to-expression": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
+  "render-tests/runtime-styling/paint-property-overriden-default-to-literal": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
+  "render-tests/runtime-styling/paint-property-overriden-expression-to-literal": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
+  "render-tests/text-field/formatted-text-color-overrides": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
+  "render-tests/text-field/formatted-text-color": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
+  "render-tests/runtime-styling/layout-property-override-paint-property-expression": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
+  "render-tests/runtime-styling/layout-property-override-paint-property-literal": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
+  "render-tests/text-field/formatted-text-color-overrides-nested-expression": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045"
 }

@@ -24,7 +24,7 @@ export default function (directory, implementation, options, run) {
             server.localizeURLs(style);
 
             style.metadata = style.metadata || {};
-            const test = style.metadata.test = Object.assign({
+            style.metadata.test = Object.assign({
                 id,
                 ignored: ignores[`${path.basename(directory)}/${id}`],
                 width: 512,
@@ -33,14 +33,6 @@ export default function (directory, implementation, options, run) {
                 recycleMap: options.recycleMap || false,
                 allowed: 0.00015
             }, style.metadata.test);
-
-            if ('diff' in test) {
-                if (typeof test.diff === 'number') {
-                    test.allowed = test.diff;
-                } else if (implementation in test.diff) {
-                    test.allowed = test.diff[implementation];
-                }
-            }
 
             return style;
         })
@@ -179,10 +171,15 @@ export default function (directory, implementation, options, run) {
         const resultsTemplate = template(fs.readFileSync(path.join(__dirname, '..', 'results.html.tmpl'), 'utf8'));
         const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
 
+        const stats = {};
+        for (const test of tests) {
+            stats[test.status] = (stats[test.status] || 0) + 1;
+        }
+
         const unsuccessful = tests.filter(test =>
             test.status === 'failed' || test.status === 'errored');
 
-        const resultsShell = resultsTemplate({ unsuccessful, tests, shuffle: options.shuffle, seed: options.seed })
+        const resultsShell = resultsTemplate({ unsuccessful, tests, stats, shuffle: options.shuffle, seed: options.seed })
             .split('<!-- results go here -->');
 
         const p = path.join(directory, options.recycleMap ? 'index-recycle-map.html' : 'index.html');

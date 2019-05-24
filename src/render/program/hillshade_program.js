@@ -11,7 +11,7 @@ import {
     UniformMatrix4f
 } from '../uniform_binding';
 import EXTENT from '../../data/extent';
-import Coordinate from '../../geo/coordinate';
+import MercatorCoordinate from '../../geo/mercator_coordinate';
 
 import type Context from '../../gl/context';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
@@ -71,9 +71,9 @@ const hillshadeUniformValues = (
     if (layer.paint.get('hillshade-illumination-anchor') === 'viewport') {
         azimuthal -= painter.transform.angle;
     }
-
+    const align = !painter.options.moving;
     return {
-        'u_matrix': painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped(), true),
+        'u_matrix': painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped(), align),
         'u_image': 0,
         'u_latrange': getTileLatRange(painter, tile.tileID),
         'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
@@ -87,7 +87,7 @@ const hillshadeUniformPrepareValues = (
     tile: {dem: ?DEMData, tileID: OverscaledTileID}, maxzoom: number
 ): UniformValues<HillshadePrepareUniformsType> => {
     assert(tile.dem);
-    const tileSize = ((tile.dem: any): DEMData).dim;
+    const stride = ((tile.dem: any): DEMData).stride;
     const matrix = mat4.create();
     // Flip rendering at y axis.
     mat4.ortho(matrix, 0, EXTENT, -EXTENT, 0, 0, 1);
@@ -96,7 +96,7 @@ const hillshadeUniformPrepareValues = (
     return {
         'u_matrix': matrix,
         'u_image': 1,
-        'u_dimension': [tileSize * 2, tileSize * 2],
+        'u_dimension': [stride, stride],
         'u_zoom': tile.tileID.overscaledZ,
         'u_maxzoom': maxzoom
     };
@@ -104,13 +104,11 @@ const hillshadeUniformPrepareValues = (
 
 function getTileLatRange(painter: Painter, tileID: OverscaledTileID) {
     // for scaling the magnitude of a points slope by its latitude
-    const coordinate0 = tileID.toCoordinate();
-    const coordinate1 = new Coordinate(
-        coordinate0.column, coordinate0.row + 1, coordinate0.zoom);
+    const tilesAtZoom = Math.pow(2, tileID.canonical.z);
+    const y = tileID.canonical.y;
     return [
-        painter.transform.coordinateLocation(coordinate0).lat,
-        painter.transform.coordinateLocation(coordinate1).lat
-    ];
+        new MercatorCoordinate(0, y / tilesAtZoom).toLngLat().lat,
+        new MercatorCoordinate(0, (y + 1) / tilesAtZoom).toLngLat().lat];
 }
 
 export {

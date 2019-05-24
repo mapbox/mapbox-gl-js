@@ -32,6 +32,7 @@ export default class Worker {
     workerSourceTypes: { [string]: Class<WorkerSource> };
     workerSources: { [string]: { [string]: { [string]: WorkerSource } } };
     demWorkerSources: { [string]: { [string]: RasterDEMTileWorkerSource } };
+    referrer: ?string;
 
     constructor(self: WorkerGlobalScopeInterface) {
         this.self = self;
@@ -63,6 +64,10 @@ export default class Worker {
             globalRTLTextPlugin['processBidirectionalText'] = rtlTextPlugin.processBidirectionalText;
             globalRTLTextPlugin['processStyledBidirectionalText'] = rtlTextPlugin.processStyledBidirectionalText;
         };
+    }
+
+    setReferrer(mapID: string, referrer: string) {
+        this.referrer = referrer;
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
@@ -196,5 +201,5 @@ export default class Worker {
 if (typeof WorkerGlobalScope !== 'undefined' &&
     typeof self !== 'undefined' &&
     self instanceof WorkerGlobalScope) {
-    new Worker(self);
+    self.worker = new Worker(self);
 }

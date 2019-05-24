@@ -150,7 +150,8 @@ class TouchZoomRotateHandler {
         // Determine 'intent' by whichever threshold is surpassed first,
         // then keep that state for the duration of this gesture.
         if (!this._gestureIntent) {
-            const scalingSignificantly = (Math.abs(1 - scale) > significantScaleThreshold),
+            // when rotation is disabled, any scale change triggers the zoom gesture to start
+            const scalingSignificantly = (this._rotationDisabled && scale !== 1) || (Math.abs(1 - scale) > significantScaleThreshold),
                 rotatingSignificantly = (Math.abs(bearing) > significantRotateThreshold);
 
             if (rotatingSignificantly) {
@@ -269,7 +270,7 @@ class TouchZoomRotateHandler {
 
         map.easeTo({
             zoom: targetScale,
-            duration: duration,
+            duration,
             easing: inertiaEasing,
             around: this._aroundCenter ? map.getCenter() : map.unproject(p),
             noMoveStart: true

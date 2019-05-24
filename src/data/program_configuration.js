@@ -14,7 +14,6 @@ import {
     Uniform1f,
     UniformColor,
     Uniform4f,
-    type UniformBindings,
     type UniformLocations
 } from '../render/uniform_binding';
 
@@ -33,6 +32,12 @@ import type {
 } from '../style-spec/expression';
 import type {PossiblyEvaluated} from '../style/properties';
 import type {FeatureStates} from '../source/source_state';
+
+export type BinderUniform = {
+    name: string,
+    property: string,
+    binding: Uniform<any>
+};
 
 function packColor(color: Color): [number, number] {
     return [
@@ -97,7 +102,7 @@ class ConstantBinder<T> implements Binder<T> {
     constructor(value: T, names: Array<string>, type: string) {
         this.value = value;
         this.names = names;
-        this.uniformNames = this.names.map(name =>`u_${name}`);
+        this.uniformNames = this.names.map(name => `u_${name}`);
         this.type = type;
         this.maxValue = -Infinity;
     }
@@ -144,7 +149,7 @@ class CrossFadedConstantBinder<T> implements Binder<T> {
     constructor(value: T, names: Array<string>, type: string) {
         this.value = value;
         this.names = names;
-        this.uniformNames = this.names.map(name =>`u_${name}`);
+        this.uniformNames = this.names.map(name => `u_${name}`);
         this.type = type;
         this.maxValue = -Infinity;
         this.patternPositions = {patternTo: null, patternFrom: null};
@@ -191,7 +196,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
         this.expression = expression;
         this.names = names;
         this.type = type;
-        this.uniformNames = this.names.map(name =>`a_${name}`);
+        this.uniformNames = this.names.map(name => `a_${name}`);
         this.maxValue = -Infinity;
         this.paintVertexAttributes = names.map((name) =>
             ({
@@ -291,7 +296,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, layout: Class<StructArray>) {
         this.expression = expression;
         this.names = names;
-        this.uniformNames = this.names.map(name =>`a_${name}_t`);
+        this.uniformNames = this.names.map(name => `a_${name}_t`);
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
@@ -412,7 +417,7 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
         this.expression = expression;
         this.names = names;
         this.type = type;
-        this.uniformNames = this.names.map(name =>`a_${name}_t`);
+        this.uniformNames = this.names.map(name => `a_${name}_t`);
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
         this.maxValue = -Infinity;
@@ -650,7 +655,7 @@ export default class ProgramConfiguration {
     defines(): Array<string> {
         const result = [];
         for (const property in this.binders) {
-            result.push.apply(result, this.binders[property].defines());
+            result.push(...this.binders[property].defines());
         }
         return result;
     }
@@ -659,26 +664,25 @@ export default class ProgramConfiguration {
         return this._buffers;
     }
 
-    getUniforms(context: Context, locations: UniformLocations): UniformBindings {
-        const result = {};
+    getUniforms(context: Context, locations: UniformLocations): Array<BinderUniform> {
+        const uniforms = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             for (const name of binder.uniformNames) {
-                result[name] = binder.getBinding(context, locations[name]);
+                if (locations[name]) {
+                    const binding = binder.getBinding(context, locations[name]);
+                    uniforms.push({name, property, binding});
+                }
             }
         }
-        return result;
+        return uniforms;
     }
 
-    setUniforms<Properties: Object>(context: Context, uniformBindings: UniformBindings, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
+    setUniforms<Properties: Object>(context: Context, binderUniforms: Array<BinderUniform>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguraton's binder members.
-
-        for (const property in this.binders) {
-            const binder = this.binders[property];
-            for (const uniformName of binder.uniformNames) {
-                binder.setUniforms(context, uniformBindings[uniformName], globals, properties.get(property), uniformName);
-            }
+        for (const {name, property, binding} of binderUniforms) {
+            this.binders[property].setUniforms(context, binding, globals, properties.get(property), name);
         }
     }
 

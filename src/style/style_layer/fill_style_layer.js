@@ -3,7 +3,7 @@
 import StyleLayer from '../style_layer';
 
 import FillBucket from '../../data/bucket/fill_bucket';
-import { multiPolygonIntersectsMultiPolygon } from '../../util/intersection_tests';
+import { polygonIntersectsMultiPolygon } from '../../util/intersection_tests';
 import { translateDistance, translate } from '../query_utils';
 import properties from './fill_style_layer_properties';
 import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
@@ -42,7 +42,7 @@ class FillStyleLayer extends StyleLayer {
         return translateDistance(this.paint.get('fill-translate'));
     }
 
-    queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
+    queryIntersectsFeature(queryGeometry: Array<Point>,
                            feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
@@ -53,7 +53,11 @@ class FillStyleLayer extends StyleLayer {
             this.paint.get('fill-translate'),
             this.paint.get('fill-translate-anchor'),
             transform.angle, pixelsToTileUnits);
-        return multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry);
+        return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
+    }
+
+    isTileClipped() {
+        return true;
     }
 }
 

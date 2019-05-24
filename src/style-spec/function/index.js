@@ -5,7 +5,9 @@ import extend from '../util/extend';
 import getType from '../util/get_type';
 import * as interpolate from '../util/interpolate';
 import Interpolate from '../expression/definitions/interpolate';
+import Formatted from '../expression/types/formatted';
 import { supportsInterpolation } from '../util/properties';
+import { findStopLessThanOrEqualTo } from '../expression/stops';
 
 export function isFunction(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -75,7 +77,7 @@ export function createFunction(parameters, propertySpec) {
             const zoom = stop[0].zoom;
             if (featureFunctions[zoom] === undefined) {
                 featureFunctions[zoom] = {
-                    zoom: zoom,
+                    zoom,
                     type: parameters.type,
                     property: parameters.property,
                     default: parameters.default,
@@ -144,7 +146,7 @@ function evaluateIntervalFunction(parameters, propertySpec, input) {
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
-    const index = findStopLessThanOrEqualTo(parameters.stops, input);
+    const index = findStopLessThanOrEqualTo(parameters.stops.map((stop) => stop[0]), input);
 
     return parameters.stops[index][1];
 }
@@ -159,7 +161,7 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
-    const index = findStopLessThanOrEqualTo(parameters.stops, input);
+    const index = findStopLessThanOrEqualTo(parameters.stops.map((stop) => stop[0]), input);
     const t = interpolationFactor(
         input, base,
         parameters.stops[index][0],
@@ -194,38 +196,12 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 function evaluateIdentityFunction(parameters, propertySpec, input) {
     if (propertySpec.type === 'color') {
         input = Color.parse(input);
+    } else if (propertySpec.type === 'formatted') {
+        input = Formatted.fromString(input.toString());
     } else if (getType(input) !== propertySpec.type && (propertySpec.type !== 'enum' || !propertySpec.values[input])) {
         input = undefined;
     }
     return coalesce(input, parameters.default, propertySpec.default);
-}
-
-/**
- * Returns the index of the last stop <= input, or 0 if it doesn't exist.
- *
- * @private
- */
-function findStopLessThanOrEqualTo(stops, input) {
-    const n = stops.length;
-    let lowerIndex = 0;
-    let upperIndex = n - 1;
-    let currentIndex = 0;
-    let currentValue, upperValue;
-
-    while (lowerIndex <= upperIndex) {
-        currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
-        currentValue = stops[currentIndex][0];
-        upperValue = stops[currentIndex + 1][0];
-        if (input === currentValue || input > currentValue && input < upperValue) { // Search complete
-            return currentIndex;
-        } else if (currentValue < input) {
-            lowerIndex = currentIndex + 1;
-        } else if (currentValue > input) {
-            upperIndex = currentIndex - 1;
-        }
-    }
-
-    return Math.max(currentIndex - 1, 0);
 }
 
 /**

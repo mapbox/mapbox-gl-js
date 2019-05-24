@@ -58,12 +58,41 @@ test('Light#getLight', (t) => {
 });
 
 test('Light#setLight', (t) => {
-    const light = new Light({});
-    light.setLight({ color: 'red', "color-transition": { duration: 3000 }});
-    light.updateTransitions({ transition: true }, {});
-    light.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+    t.test('sets light', (t) => {
+        const light = new Light({});
+        light.setLight({ color: 'red', "color-transition": { duration: 3000 }});
+        light.updateTransitions({ transition: true }, {});
+        light.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+        t.deepEqual(light.properties.get('color'), new Color(1, 0.5, 0.5, 1));
+        t.end();
+    });
 
-    t.deepEqual(light.properties.get('color'), new Color(1, 0.5, 0.5, 1));
+    t.test('validates by default', (t) => {
+        const light = new Light({});
+        const lightSpy = t.spy(light, '_validate');
+        t.stub(console, 'error');
+        light.setLight({ color: 'notacolor'});
+        light.updateTransitions({ transition: false}, {});
+        light.recalculate({zoom: 16, zoomHistory: {}, now: 10});
+        t.ok(lightSpy.calledOnce);
+        t.ok(console.error.calledOnce);
+        t.deepEqual(lightSpy.args[0][2], {});
+        t.end();
+    });
 
+
+    t.test('respects validation option', (t) => {
+        const light = new Light({});
+
+        const lightSpy = t.spy(light, '_validate');
+        light.setLight({ color: [999]}, {validate: false});
+        light.updateTransitions({ transition: false}, {});
+        light.recalculate({zoom: 16, zoomHistory: {}, now: 10});
+
+        t.ok(lightSpy.calledOnce);
+        t.deepEqual(lightSpy.args[0][2], {validate: false});
+        t.deepEqual(light.properties.get('color'), [999]);
+        t.end();
+    });
     t.end();
 });

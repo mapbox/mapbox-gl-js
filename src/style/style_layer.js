@@ -26,6 +26,7 @@ import type {
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type Map from '../ui/map';
+import type {StyleSetterOptions} from './style';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -38,7 +39,7 @@ class StyleLayer extends Evented {
     minzoom: ?number;
     maxzoom: ?number;
     filter: FilterSpecification | void;
-    visibility: 'visible' | 'none';
+    visibility: 'visible' | 'none' | void;
     _crossfadeParameters: CrossfadeParameters;
 
     _unevaluatedLayout: Layout<any>;
@@ -51,14 +52,14 @@ class StyleLayer extends Evented {
     _featureFilter: FeatureFilter;
 
     +queryRadius: (bucket: Bucket) => number;
-    +queryIntersectsFeature: (queryGeometry: Array<Array<Point>>,
+    +queryIntersectsFeature: (queryGeometry: Array<Point>,
                               feature: VectorTileFeature,
                               featureState: FeatureState,
                               geometry: Array<Array<Point>>,
                               zoom: number,
                               transform: Transform,
                               pixelsToTileUnits: number,
-                              posMatrix: Float32Array) => boolean;
+                              pixelPosMatrix: Float32Array) => boolean | number;
 
     +onAdd: ?(map: Map) => void;
     +onRemove: ?(map: Map) => void;
@@ -68,7 +69,6 @@ class StyleLayer extends Evented {
 
         this.id = layer.id;
         this.type = layer.type;
-        this.visibility = 'visible';
         this._featureFilter = () => true;
 
         if (layer.type === 'custom') return;
@@ -115,7 +115,7 @@ class StyleLayer extends Evented {
         return this._unevaluatedLayout.getValue(name);
     }
 
-    setLayoutProperty(name: string, value: mixed, options: {validate: boolean}) {
+    setLayoutProperty(name: string, value: any, options: StyleSetterOptions = {}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.layout.${name}`;
             if (this._validate(validateLayoutProperty, key, name, value, options)) {
@@ -124,7 +124,7 @@ class StyleLayer extends Evented {
         }
 
         if (name === 'visibility') {
-            this.visibility = value === 'none' ? value : 'visible';
+            this.visibility = value;
             return;
         }
 
@@ -139,7 +139,7 @@ class StyleLayer extends Evented {
         }
     }
 
-    setPaintProperty(name: string, value: mixed, options: {validate: boolean}) {
+    setPaintProperty(name: string, value: mixed, options: StyleSetterOptions = {}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.paint.${name}`;
             if (this._validate(validatePaintProperty, key, name, value, options)) {
@@ -209,9 +209,9 @@ class StyleLayer extends Evented {
             'paint': this._transitionablePaint && this._transitionablePaint.serialize()
         };
 
-        if (this.visibility === 'none') {
+        if (this.visibility) {
             output.layout = output.layout || {};
-            output.layout.visibility = 'none';
+            output.layout.visibility = this.visibility;
         }
 
         return filterObject(output, (value, key) => {
@@ -221,19 +221,27 @@ class StyleLayer extends Evented {
         });
     }
 
-    _validate(validate: Function, key: string, name: string, value: mixed, options: {validate: boolean}) {
+    _validate(validate: Function, key: string, name: string, value: mixed, options: StyleSetterOptions = {}) {
         if (options && options.validate === false) {
             return false;
         }
         return emitValidationErrors(this, validate.call(validateStyle, {
-            key: key,
+            key,
             layerType: this.type,
             objectKey: name,
-            value: value,
-            styleSpec: styleSpec,
+            value,
+            styleSpec,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true}
         }));
+    }
+
+    is3D() {
+        return false;
+    }
+
+    isTileClipped() {
+        return false;
     }
 
     hasOffscreenPass() {
@@ -261,5 +269,3 @@ class StyleLayer extends Evented {
 }
 
 export default StyleLayer;
-
-

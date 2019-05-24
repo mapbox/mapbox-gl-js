@@ -112,7 +112,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns The map's geographical centerpoint.
      */
-    getCenter(): LngLat { return this.transform.center; }
+    getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
 
     /**
      * Sets the map's geographical centerpoint. Equivalent to `jumpTo({center: center})`.
@@ -127,11 +127,11 @@ class Camera extends Evented {
      * map.setCenter([-74, 38]);
      */
     setCenter(center: LngLatLike, eventData?: Object) {
-        return this.jumpTo({center: center}, eventData);
+        return this.jumpTo({center}, eventData);
     }
 
     /**
-     * Pans the map by the specified offest.
+     * Pans the map by the specified offset.
      *
      * @memberof Map#
      * @param offset `x` and `y` coordinates by which to pan the map.
@@ -190,7 +190,7 @@ class Camera extends Evented {
      * map.setZoom(5);
      */
     setZoom(zoom: number, eventData?: Object) {
-        this.jumpTo({zoom: zoom}, eventData);
+        this.jumpTo({zoom}, eventData);
         return this;
     }
 
@@ -211,7 +211,7 @@ class Camera extends Evented {
      */
     zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
-            zoom: zoom
+            zoom
         }, options), eventData);
     }
 
@@ -280,7 +280,7 @@ class Camera extends Evented {
      * map.setBearing(90);
      */
     setBearing(bearing: number, eventData?: Object) {
-        this.jumpTo({bearing: bearing}, eventData);
+        this.jumpTo({bearing}, eventData);
         return this;
     }
 
@@ -298,7 +298,7 @@ class Camera extends Evented {
      */
     rotateTo(bearing: number, options?: AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
-            bearing: bearing
+            bearing
         }, options), eventData);
     }
 
@@ -355,7 +355,7 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     setPitch(pitch: number, eventData?: Object) {
-        this.jumpTo({pitch: pitch}, eventData);
+        this.jumpTo({pitch}, eventData);
         return this;
     }
 
@@ -369,8 +369,7 @@ class Camera extends Evented {
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
-     *      at least `center`, `zoom`, `bearing`, `offset`, `padding`, and `maxZoom`, as well as any other
-     *      `options` provided in arguments. If map is unable to fit, method will warn and return undefined.
+     *      `center`, `zoom`, and `bearing`. If map is unable to fit, method will warn and return undefined.
      * @example
      * var bbox = [[-79, 43], [-73, 45]];
      * var newCameraTransform = map.cameraForBounds(bbox, {
@@ -395,8 +394,7 @@ class Camera extends Evented {
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
-     *      at least `center`, `zoom`, `bearing`, `offset`, `padding`, and `maxZoom`, as well as any other
-     *      `options` provided in arguments. If map is unable to fit, method will warn and return undefined.
+     *      `center`, `zoom`, and `bearing`. If map is unable to fit, method will warn and return undefined.
      * @private
      * @example
      * var p0 = [-79, 43];
@@ -438,17 +436,9 @@ class Camera extends Evented {
             return;
         }
 
-        // we separate the passed padding option into two parts, the part that does not affect the map's center
-        // (lateral and vertical padding), and the part that does (paddingOffset). We add the padding offset
-        // to the options `offset` object where it can alter the map's center in the subsequent calls to
-        // `easeTo` and `flyTo`.
-        const paddingOffset = [(options.padding.left - options.padding.right) / 2, (options.padding.top - options.padding.bottom) / 2],
-            lateralPadding = Math.min(options.padding.right, options.padding.left),
-            verticalPadding = Math.min(options.padding.top, options.padding.bottom);
-        options.offset = [options.offset[0] + paddingOffset[0], options.offset[1] + paddingOffset[1]];
-
         const tr = this.transform;
-        // we want to calculate the upper right and lower left of the box defined by p0 and p1
+
+        // We want to calculate the upper right and lower left of the box defined by p0 and p1
         // in a coordinate system rotate to match the destination bearing.
         const p0world = tr.project(LngLat.convert(p0));
         const p1world = tr.project(LngLat.convert(p1));
@@ -458,10 +448,10 @@ class Camera extends Evented {
         const upperRight = new Point(Math.max(p0rotated.x, p1rotated.x), Math.max(p0rotated.y, p1rotated.y));
         const lowerLeft = new Point(Math.min(p0rotated.x, p1rotated.x), Math.min(p0rotated.y, p1rotated.y));
 
-        const offset = Point.convert(options.offset),
-            size = upperRight.sub(lowerLeft),
-            scaleX = (tr.width - lateralPadding * 2 - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - verticalPadding * 2 - Math.abs(offset.y) * 2) / size.y;
+        // Calculate zoom: consider the original bbox and padding.
+        const size = upperRight.sub(lowerLeft);
+        const scaleX = (tr.width - options.padding.left - options.padding.right) / size.x;
+        const scaleY = (tr.height - options.padding.top - options.padding.bottom) / size.y;
 
         if (scaleY < 0 || scaleX < 0) {
             warnOnce(
@@ -469,11 +459,23 @@ class Camera extends Evented {
             );
             return;
         }
-        options.center =  tr.unproject(p0world.add(p1world).div(2));
-        options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
-        options.bearing = bearing;
 
-        return options;
+        const zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+
+        // Calculate center: apply the zoom, the configured offset, as well as offset that exists as a result of padding.
+        const offset = Point.convert(options.offset);
+        const paddingOffsetX = (options.padding.left - options.padding.right) / 2;
+        const paddingOffsetY = (options.padding.top - options.padding.bottom) / 2;
+        const offsetAtInitialZoom = new Point(offset.x + paddingOffsetX, offset.y + paddingOffsetY);
+        const offsetAtFinalZoom = offsetAtInitialZoom.mult(tr.scale / tr.zoomScale(zoom));
+
+        const center =  tr.unproject(p0world.add(p1world).div(2).sub(offsetAtFinalZoom));
+
+        return {
+            center,
+            zoom,
+            bearing
+        };
     }
 
     /**
@@ -533,7 +535,7 @@ class Camera extends Evented {
 	 * @example
      * var p0 = [220, 400];
      * var p1 = [500, 900];
-     * map.fitScreenCoordintes(p0, p1, map.getBearing(), {
+     * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      * @see [Used by BoxZoomHandler](https://www.mapbox.com/mapbox-gl-js/api/#boxzoomhandler)

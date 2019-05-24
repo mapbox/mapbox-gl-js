@@ -2,7 +2,7 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: 'mapbox://styles/mapbox/streets-v11',
     center: [-122.48383155304096, 37.82882682974591],
     zoom: 16
 });
@@ -72,7 +72,7 @@ map.on('load', function() {
         },
         'paint': {
             'line-width': 3,
-            // Use a get expression (https://www.mapbox.com/mapbox-gl-js/style-spec/#expressions-get)
+            // Use a get expression (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-get)
             // to set the line-color to a feature property value.
             'line-color': ['get', 'color']
         }

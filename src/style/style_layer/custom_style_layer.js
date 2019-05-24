@@ -1,7 +1,6 @@
 // @flow
 
 import StyleLayer from '../style_layer';
-import type Framebuffer from '../../gl/framebuffer';
 import type Map from '../../ui/map';
 import assert from 'assert';
 
@@ -21,6 +20,11 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * and they should appropriately handle {@link Map.event:webglcontextlost} and
  * {@link Map.event:webglcontextrestored}.
  *
+ * The `renderingMode` property controls whether the layer is treated as a `"2d"` or `"3d"` map layer. Use:
+ * - `"renderingMode": "3d"` to use the depth buffer and share it with other layers
+ * - `"renderingMode": "2d"` to add a layer with no depth. If you need to use the depth buffer for a `"2d"` layer you must use an offscreen
+ *   framebuffer and {@link CustomLayerInterface#prerender}
+ *
  * @interface CustomLayerInterface
  * @property {string} id A unique layer id.
  * @property {string} type The layer's type. Must be `"custom"`.
@@ -33,7 +37,7 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  *         this.type = 'custom';
  *         this.renderingMode = '2d';
  *     }
- * 
+ *
  *     onAdd(map, gl) {
  *         const vertexSource = `
  *         uniform mat4 u_matrix;
@@ -41,25 +45,25 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  *             gl_Position = u_matrix * vec4(0.5, 0.5, 0.0, 1.0);
  *             gl_PointSize = 20.0;
  *         }`;
- * 
+ *
  *         const fragmentSource = `
  *         void main() {
  *             gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
  *         }`;
- * 
+ *
  *         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
  *         gl.shaderSource(vertexShader, vertexSource);
  *         gl.compileShader(vertexShader);
  *         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
  *         gl.shaderSource(fragmentShader, fragmentSource);
  *         gl.compileShader(fragmentShader);
- * 
+ *
  *         this.program = gl.createProgram();
  *         gl.attachShader(this.program, vertexShader);
  *         gl.attachShader(this.program, fragmentShader);
  *         gl.linkProgram(this.program);
  *     }
- * 
+ *
  *     render(gl, matrix) {
  *         gl.useProgram(this.program);
  *         gl.uniformMatrix4fv(gl.getUniformLocation(this.program, "u_matrix"), false, matrix);
@@ -93,11 +97,12 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * @instance
  * @name onRemove
  * @param {Map} map The Map this custom layer was just added to.
+ * @param {WebGLRenderingContext} gl The gl context for the map.
  */
 
 /**
  * Optional method called during a render frame to allow a layer to prepare resources or render into a texture.
- * 
+ *
  * The layer cannot make any assumptions about the current GL state and must bind a framebuffer before rendering.
  *
  * @function
@@ -106,10 +111,11 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * @name prerender
  * @param {WebGLRenderingContext} gl The map's gl context.
  * @param {Array<number>} matrix The map's camera matrix. It projects spherical mercator
- * coordinates to gl coordinates. The spherical mercator coordinate `[0, 0]` represents the
+ * coordinates to gl coordinates. The mercator coordinate `[0, 0]` represents the
  * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
- * lengths in mercator units would be rendered as a cube.
+ * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLatLng
+ * can be used to project a `LngLat` to a mercator coordinate.
  */
 
 /**
@@ -122,6 +128,12 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * If the layer needs to render to a texture, it should implement the `prerender` method
  * to do this and only use the `render` method for drawing directly into the main framebuffer.
  *
+ * The blend function is set to `gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)`. This expects
+ * colors to be provided in premultiplied alpha form where the `r`, `g` and `b` values are already
+ * multiplied by the `a` value. If you are unable to provide colors in premultiplied form you
+ * may want to change the blend function to
+ * `gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA)`.
+ *
  * @function
  * @memberof CustomLayerInterface
  * @instance
@@ -131,7 +143,8 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * coordinates to gl coordinates. The spherical mercator coordinate `[0, 0]` represents the
  * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
- * lengths in mercator units would be rendered as a cube.
+ * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLatLng
+ * can be used to project a `LngLat` to a mercator coordinate.
  */
 export type CustomLayerInterface = {
     id: string,
@@ -140,7 +153,7 @@ export type CustomLayerInterface = {
     render: CustomRenderMethod,
     prerender: ?CustomRenderMethod,
     onAdd: ?(map: Map, gl: WebGLRenderingContext) => void,
-    onRemove: ?(map: Map) => void
+    onRemove: ?(map: Map, gl: WebGLRenderingContext) => void
 }
 
 export function validateCustomStyleLayer(layerObject: CustomLayerInterface) {
@@ -173,16 +186,18 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface) {
 class CustomStyleLayer extends StyleLayer {
 
     implementation: CustomLayerInterface;
-    viewportFrame: ?Framebuffer;
 
     constructor(implementation: CustomLayerInterface) {
         super(implementation, {});
         this.implementation = implementation;
     }
 
+    is3D() {
+        return this.implementation.renderingMode === '3d';
+    }
 
     hasOffscreenPass() {
-        return this.implementation.prerender !== undefined || this.implementation.renderingMode === '3d';
+        return this.implementation.prerender !== undefined;
     }
 
     recalculate() {}
@@ -193,13 +208,6 @@ class CustomStyleLayer extends StyleLayer {
         assert(false, "Custom layers cannot be serialized");
     }
 
-    resize() {
-        if (this.viewportFrame) {
-            this.viewportFrame.destroy();
-            this.viewportFrame = null;
-        }
-    }
-
     onAdd(map: Map) {
         if (this.implementation.onAdd) {
             this.implementation.onAdd(map, map.painter.context.gl);
@@ -208,7 +216,7 @@ class CustomStyleLayer extends StyleLayer {
 
     onRemove(map: Map) {
         if (this.implementation.onRemove) {
-            this.implementation.onRemove(map);
+            this.implementation.onRemove(map, map.painter.context.gl);
         }
     }
 }

@@ -178,7 +178,11 @@ export default function bindHandlers(map: Map, options: {interactive: boolean, c
             contextMenuEvent = e;
         }
 
-        e.preventDefault();
+        // prevent browser context menu when necessary; we don't allow it with rotation
+        // because we can't discern rotation gesture start from contextmenu on Mac
+        if (map.dragRotate.isEnabled() || map.listens('contextmenu')) {
+            e.preventDefault();
+        }
     }
 
     function onWheel(e: WheelEvent) {

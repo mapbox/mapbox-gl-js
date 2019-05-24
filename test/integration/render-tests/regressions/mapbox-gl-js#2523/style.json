@@ -3,7 +3,7 @@
   "metadata": {
     "test": {
       "height": 256,
-      "diff": 0.003
+      "allowed": 0.003
     }
   },
   "center": [

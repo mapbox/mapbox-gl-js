@@ -37,6 +37,7 @@ class WorkerTile {
     overscaling: number;
     showCollisionBoxes: boolean;
     collectResourceTiming: boolean;
+    returnDependencies: boolean;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -56,6 +57,7 @@ class WorkerTile {
         this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.collectResourceTiming = !!params.collectResourceTiming;
+        this.returnDependencies = !!params.returnDependencies;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
@@ -71,7 +73,7 @@ class WorkerTile {
         const buckets: {[string]: Bucket} = {};
 
         const options = {
-            featureIndex: featureIndex,
+            featureIndex,
             iconDependencies: {},
             patternDependencies: {},
             glyphDependencies: {}
@@ -113,7 +115,7 @@ class WorkerTile {
                     pixelRatio: this.pixelRatio,
                     overscaling: this.overscaling,
                     collisionBoxArray: this.collisionBoxArray,
-                    sourceLayerIndex: sourceLayerIndex,
+                    sourceLayerIndex,
                     sourceID: this.source
                 });
 
@@ -196,7 +198,11 @@ class WorkerTile {
                     featureIndex,
                     collisionBoxArray: this.collisionBoxArray,
                     glyphAtlasImage: glyphAtlas.image,
-                    imageAtlas: imageAtlas
+                    imageAtlas,
+                    // Only used for benchmarking:
+                    glyphMap: this.returnDependencies ? glyphMap : null,
+                    iconMap: this.returnDependencies ? iconMap : null,
+                    glyphPositions: this.returnDependencies ? glyphAtlas.positions : null
                 });
             }
         }

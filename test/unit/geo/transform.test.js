@@ -33,13 +33,11 @@ test('transform', (t) => {
         t.equal(transform.scaleZoom(0), -Infinity);
         t.equal(transform.scaleZoom(10), 3.3219280948873626);
         t.deepEqual(transform.point, new Point(262144, 262144));
-        t.equal(transform.x, 262144);
-        t.equal(transform.y, 262144);
         t.equal(transform.height, 500);
         t.deepEqual(fixedLngLat(transform.pointLocation(new Point(250, 250))), { lng: 0, lat: 0 });
-        t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), { column: 512, row: 512, zoom: 10 });
+        t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), { x: 0.5, y: 0.5, z: 0 });
         t.deepEqual(transform.locationPoint(new LngLat(0, 0)), { x: 250, y: 250 });
-        t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), { column: 512, row: 512, zoom: 10 });
+        t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), { x: 0.5, y: 0.5, z: 0 });
         t.end();
     });
 
@@ -101,7 +99,7 @@ test('transform', (t) => {
         t.equal(transform.zoom, 5.135709286104402);
 
         transform.center = new LngLat(-50, -30);
-        t.same(transform.center, new LngLat(0, -0.006358305286099153));
+        t.same(transform.center, new LngLat(0, -0.0063583052861417855));
 
         transform.zoom = 10;
         transform.center = new LngLat(-50, -30);
@@ -220,8 +218,8 @@ test('transform', (t) => {
     t.test('clamps latitude', (t) => {
         const transform = new Transform();
 
-        t.equal(transform.latY(-90), transform.latY(-transform.maxValidLatitude));
-        t.equal(transform.latY(90), transform.latY(transform.maxValidLatitude));
+        t.deepEqual(transform.project(new LngLat(0, -90)), transform.project(new LngLat(0, -transform.maxValidLatitude)));
+        t.deepEqual(transform.project(new LngLat(0, 90)), transform.project(new LngLat(0, transform.maxValidLatitude)));
         t.end();
     });
 

@@ -16,6 +16,7 @@ import type {TaskID} from '../../util/task_queue';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
+
 // These magic numbers control the rate of zoom. Trackpad events fire at a greater
 // frequency than mouse scroll wheel, so reduce the zoom rate per wheel tick
 const defaultZoomRate = 1 / 100;
@@ -33,6 +34,7 @@ class ScrollZoomHandler {
     _el: HTMLElement;
     _enabled: boolean;
     _active: boolean;
+    _zooming: boolean;
     _aroundCenter: boolean;
     _around: Point;
     _aroundPoint: Point;
@@ -52,6 +54,9 @@ class ScrollZoomHandler {
 
     _frameId: ?TaskID;
 
+    _defaultZoomRate: number;
+    _wheelZoomRate: number;
+
     /**
      * @private
      */
@@ -61,12 +66,31 @@ class ScrollZoomHandler {
 
         this._delta = 0;
 
+        this._defaultZoomRate = defaultZoomRate;
+        this._wheelZoomRate = wheelZoomRate;
+
         bindAll([
             '_onWheel',
             '_onTimeout',
             '_onScrollFrame',
             '_onScrollFinished'
         ], this);
+    }
+
+    /**
+     * Set the zoom rate of a trackpad
+     * @param {number} [zoomRate = 1/100]
+     */
+    setZoomRate(zoomRate: number) {
+        this._defaultZoomRate = zoomRate;
+    }
+
+    /**
+     * Set the zoom rate of a mouse wheel
+     * @param {number} [wheelZoomRate = 1/450]
+     */
+    setWheelZoomRate(wheelZoomRate: number) {
+        this._wheelZoomRate = wheelZoomRate;
     }
 
     /**
@@ -78,10 +102,19 @@ class ScrollZoomHandler {
         return !!this._enabled;
     }
 
+    /*
+    * Active state is turned on and off with every scroll wheel event and is set back to false before the map
+    * render is called, so _active is not a good candidate for determining if a scroll zoom animation is in
+    * progress.
+    */
     isActive() {
         return !!this._active;
     }
 
+
+    isZooming() {
+        return !!this._zooming;
+    }
     /**
      * Enables the "scroll to zoom" interaction.
      *
@@ -182,8 +215,12 @@ class ScrollZoomHandler {
         }
 
         this._active = true;
-        this._map.fire(new Event('movestart', {originalEvent: e}));
-        this._map.fire(new Event('zoomstart', {originalEvent: e}));
+        if (!this.isZooming()) {
+            this._zooming = true;
+            this._map.fire(new Event('movestart', {originalEvent: e}));
+            this._map.fire(new Event('zoomstart', {originalEvent: e}));
+        }
+
         if (this._finishTimeout) {
             clearTimeout(this._finishTimeout);
         }
@@ -207,7 +244,7 @@ class ScrollZoomHandler {
         // accumulated delta, and update the target zoom level accordingly
         if (this._delta !== 0) {
             // For trackpad events and single mouse wheel ticks, use the default zoom rate
-            const zoomRate = (this._type === 'wheel' && Math.abs(this._delta) > wheelZoomDelta) ? wheelZoomRate : defaultZoomRate;
+            const zoomRate = (this._type === 'wheel' && Math.abs(this._delta) > wheelZoomDelta) ? this._wheelZoomRate : this._defaultZoomRate;
             // Scale by sigmoid of scroll wheel delta.
             let scale = maxScalePerFrame / (1 + Math.exp(-Math.abs(this._delta * zoomRate)));
 
@@ -261,6 +298,7 @@ class ScrollZoomHandler {
         if (finished) {
             this._active = false;
             this._finishTimeout = setTimeout(() => {
+                this._zooming = false;
                 this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
                 this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
                 delete this._targetZoom;
@@ -285,8 +323,8 @@ class ScrollZoomHandler {
 
         this._prevEase = {
             start: browser.now(),
-            duration: duration,
-            easing: easing
+            duration,
+            easing
         };
 
         return easing;

@@ -1,5 +1,3 @@
-#pragma mapbox: define highp float weight
-#pragma mapbox: define mediump float radius
 
 uniform mat4 u_matrix;
 uniform float u_extrude_scale;
@@ -9,6 +7,9 @@ uniform float u_intensity;
 attribute vec2 a_pos;
 
 varying vec2 v_extrude;
+
+#pragma mapbox: define highp float weight
+#pragma mapbox: define mediump float radius
 
 // Effective "0" in the kernel density texture to adjust the kernel size to;
 // this empirically chosen number minimizes artifacts on overlapping kernels

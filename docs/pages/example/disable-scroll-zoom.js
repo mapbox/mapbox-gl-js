@@ -2,7 +2,7 @@
 title: Disable scroll zoom
 description: Prevents scroll from zooming a map.
 tags:
-  - change-option
+  - controls-and-overlays
 pathname: /mapbox-gl-js/example/disable-scroll-zoom/
 ---*/
 import Example from '../../components/example';

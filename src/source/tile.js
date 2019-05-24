@@ -25,6 +25,7 @@ import type {WorkerTileResult} from './worker_source';
 import type DEMData from '../data/dem_data';
 import type {AlphaImage} from '../util/image';
 import type ImageAtlas from '../render/image_atlas';
+import type ImageManager from '../render/image_manager';
 import type Mask from '../render/tile_mask';
 import type Context from '../gl/context';
 import type IndexBuffer from '../gl/index_buffer';
@@ -254,26 +255,34 @@ class Tile {
         }
     }
 
+    prepare(imageManager: ImageManager) {
+        if (this.imageAtlas) {
+            this.imageAtlas.patchUpdatedImages(imageManager, this.imageAtlasTexture);
+        }
+    }
+
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
     queryRenderedFeatures(layers: {[string]: StyleLayer},
                           sourceFeatureState: SourceFeatureState,
-                          queryGeometry: Array<Array<Point>>,
+                          queryGeometry: Array<Point>,
+                          cameraQueryGeometry: Array<Point>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
                           transform: Transform,
                           maxPitchScaleFactor: number,
-                          posMatrix: Float32Array): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          pixelPosMatrix: Float32Array): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData)
             return {};
 
         return this.latestFeatureIndex.query({
-            queryGeometry: queryGeometry,
-            scale: scale,
+            queryGeometry,
+            cameraQueryGeometry,
+            scale,
             tileSize: this.tileSize,
-            posMatrix: posMatrix,
-            transform: transform,
-            params: params,
+            pixelPosMatrix,
+            transform,
+            params,
             queryPadding: this.queryPadding * maxPitchScaleFactor
         }, layers, sourceFeatureState);
     }

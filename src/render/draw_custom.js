@@ -4,7 +4,6 @@ export default drawCustom;
 
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
-import {prepareOffscreenFramebuffer, drawOffscreenTexture} from './offscreen';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -20,6 +19,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
         const prerender = implementation.prerender;
         if (prerender) {
             painter.setCustomLayerDefaults();
+            context.setColorMode(painter.colorModeForRenderPass());
 
             prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
 
@@ -27,32 +27,23 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
             painter.setBaseState();
         }
 
-        if (implementation.renderingMode === '3d') {
-            painter.setCustomLayerDefaults();
-
-            prepareOffscreenFramebuffer(painter, layer);
-            implementation.render(context.gl, painter.transform.customLayerMatrix());
-
-            context.setDirty();
-            painter.setBaseState();
-        }
-
     } else if (painter.renderPass === 'translucent') {
 
-        if (implementation.renderingMode === '3d') {
-            drawOffscreenTexture(painter, layer, 1);
+        painter.setCustomLayerDefaults();
 
-        } else {
-            painter.setCustomLayerDefaults();
+        context.setColorMode(painter.colorModeForRenderPass());
+        context.setStencilMode(StencilMode.disabled);
 
-            context.setStencilMode(StencilMode.disabled);
-            context.setDepthMode(DepthMode.disabled);
+        const depthMode = implementation.renderingMode === '3d' ?
+            new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D) :
+            painter.depthModeForSublayer(0, DepthMode.ReadOnly);
 
-            implementation.render(context.gl, painter.transform.customLayerMatrix());
+        context.setDepthMode(depthMode);
 
-            context.setDirty();
-            painter.setBaseState();
-            context.bindFramebuffer.set(null);
-        }
+        implementation.render(context.gl, painter.transform.customLayerMatrix());
+
+        context.setDirty();
+        painter.setBaseState();
+        context.bindFramebuffer.set(null);
     }
 }

@@ -118,7 +118,7 @@ class CompoundExpression implements Expression {
         assert(!signatureContext || signatureContext.errors.length > 0);
 
         if (overloads.length === 1) {
-            context.errors.push.apply(context.errors, signatureContext.errors);
+            context.errors.push(...signatureContext.errors);
         } else {
             const expected = overloads.length ? overloads : availableOverloads;
             const signatures = expected

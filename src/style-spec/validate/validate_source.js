@@ -3,6 +3,7 @@ import ValidationError from '../error/validation_error';
 import { unbundle } from '../util/unbundle_jsonlint';
 import validateObject from './validate_object';
 import validateEnum from './validate_enum';
+import validateExpression from './validate_expression';
 
 export default function validateSource(options) {
     const value = options.value;
@@ -15,19 +16,19 @@ export default function validateSource(options) {
     }
 
     const type = unbundle(value.type);
-    let errors = [];
+    let errors;
 
     switch (type) {
     case 'vector':
     case 'raster':
     case 'raster-dem':
-        errors = errors.concat(validateObject({
-            key: key,
-            value: value,
+        errors = validateObject({
+            key,
+            value,
             valueSpec: styleSpec[`source_${type.replace('-', '_')}`],
             style: options.style,
-            styleSpec: styleSpec
-        }));
+            styleSpec
+        });
         if ('url' in value) {
             for (const prop in value) {
                 if (['type', 'url', 'tileSize'].indexOf(prop) < 0) {
@@ -38,43 +39,60 @@ export default function validateSource(options) {
         return errors;
 
     case 'geojson':
-        return validateObject({
-            key: key,
-            value: value,
+        errors = validateObject({
+            key,
+            value,
             valueSpec: styleSpec.source_geojson,
-            style: style,
-            styleSpec: styleSpec
+            style,
+            styleSpec
         });
+        if (value.cluster) {
+            for (const prop in value.clusterProperties) {
+                const [operator, mapExpr] = value.clusterProperties[prop];
+                const reduceExpr = typeof operator === 'string' ? [operator, ['accumulated'], ['get', prop]] : operator;
+
+                errors.push(...validateExpression({
+                    key: `${key}.${prop}.map`,
+                    value: mapExpr,
+                    expressionContext: 'cluster-map'
+                }));
+                errors.push(...validateExpression({
+                    key: `${key}.${prop}.reduce`,
+                    value: reduceExpr,
+                    expressionContext: 'cluster-reduce'
+                }));
+            }
+        }
+        return errors;
 
     case 'video':
         return validateObject({
-            key: key,
-            value: value,
+            key,
+            value,
             valueSpec: styleSpec.source_video,
-            style: style,
-            styleSpec: styleSpec
+            style,
+            styleSpec
         });
 
     case 'image':
         return validateObject({
-            key: key,
-            value: value,
+            key,
+            value,
             valueSpec: styleSpec.source_image,
-            style: style,
-            styleSpec: styleSpec
+            style,
+            styleSpec
         });
 
     case 'canvas':
-        errors.push(new ValidationError(key, null, `Please use runtime APIs to add canvas sources, rather than including them in stylesheets.`, 'source.canvas'));
-        return errors;
+        return [new ValidationError(key, null, `Please use runtime APIs to add canvas sources, rather than including them in stylesheets.`, 'source.canvas')];
 
     default:
         return validateEnum({
             key: `${key}.type`,
             value: value.type,
             valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image']},
-            style: style,
-            styleSpec: styleSpec
+            style,
+            styleSpec
         });
     }
 }

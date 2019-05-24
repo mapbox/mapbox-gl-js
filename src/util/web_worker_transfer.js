@@ -71,7 +71,7 @@ register('Object', Object);
 
 type SerializedGrid = { buffer: ArrayBuffer };
 
-Grid.serialize = function serializeGrid(grid: Grid, transferables?: Array<Transferable>): SerializedGrid {
+Grid.serialize = function serialize(grid: Grid, transferables?: Array<Transferable>): SerializedGrid {
     const buffer = grid.toArrayBuffer();
     if (transferables) {
         transferables.push(buffer);
@@ -79,7 +79,7 @@ Grid.serialize = function serializeGrid(grid: Grid, transferables?: Array<Transf
     return {buffer};
 };
 
-Grid.deserialize = function deserializeGrid(serialized: SerializedGrid): Grid {
+Grid.deserialize = function deserialize(serialized: SerializedGrid): Grid {
     return new Grid(serialized.buffer);
 };
 register('Grid', Grid);
@@ -149,7 +149,7 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
     }
 
     if (Array.isArray(input)) {
-        const serialized = [];
+        const serialized: Array<Serialized> = [];
         for (const item of input) {
             serialized.push(serialize(item, transferables));
         }

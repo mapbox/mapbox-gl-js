@@ -16,7 +16,8 @@ import type {PointLike} from '@mapbox/point-geometry';
 const defaultOptions = {
     closeButton: true,
     closeOnClick: true,
-    className: ''
+    className: '',
+    maxWidth: "240px"
 };
 
 export type Offset = number | PointLike | {[Anchor]: PointLike};
@@ -26,7 +27,8 @@ export type PopupOptions = {
     closeOnClick?: boolean,
     anchor?: Anchor,
     offset?: Offset,
-    className?: string
+    className?: string,
+    maxWidth?: string
 };
 
 /**
@@ -50,6 +52,7 @@ export type PopupOptions = {
  *   - an object of {@link Point}s specifing an offset for each anchor position
  *  Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container
+ * @param {string} [options.maxWidth] A string that sets the CSS property of the popup's maxWidth in pixels, eg "300px"
  * @example
  * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
  * var popupOffsets = {
@@ -65,6 +68,7 @@ export type PopupOptions = {
  * var popup = new mapboxgl.Popup({offset: popupOffsets, className: 'my-class'})
  *   .setLngLat(e.lngLat)
  *   .setHTML("<h1>Hello World!</h1>")
+ *   .setMaxWidth("300px")
  *   .addTo(map);
  * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
  * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
@@ -79,12 +83,13 @@ export default class Popup extends Evented {
     _closeButton: HTMLElement;
     _tip: HTMLElement;
     _lngLat: LngLat;
+    _trackPointer: boolean;
     _pos: ?Point;
 
     constructor(options: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
-        bindAll(['_update', '_onClickClose'], this);
+        bindAll(['_update', '_onClickClose', 'remove'], this);
     }
 
     /**
@@ -95,11 +100,21 @@ export default class Popup extends Evented {
      */
     addTo(map: Map) {
         this._map = map;
-        this._map.on('move', this._update);
         if (this.options.closeOnClick) {
             this._map.on('click', this._onClickClose);
         }
+
+        this._map.on('remove', this.remove);
         this._update();
+
+        if (this._trackPointer) {
+            this._map.on('mousemove', (e) => { this._update(e.point); });
+            this._map.on('mouseup', (e) => { this._update(e.point); });
+            this._container.classList.add('mapboxgl-popup-track-pointer');
+            this._map._canvasContainer.classList.add('mapboxgl-track-pointer');
+        } else {
+            this._map.on('move', this._update);
+        }
 
         /**
          * Fired when the popup is opened manually or programatically.
@@ -143,6 +158,8 @@ export default class Popup extends Evented {
         if (this._map) {
             this._map.off('move', this._update);
             this._map.off('click', this._onClickClose);
+            this._map.off('remove', this.remove);
+            this._map.off('mousemove');
             delete this._map;
         }
 
@@ -174,7 +191,7 @@ export default class Popup extends Evented {
     }
 
     /**
-     * Sets the geographical location of the popup's anchor, and moves the popup to it.
+     * Sets the geographical location of the popup's anchor, and moves the popup to it. Replaces trackPointer() behavior.
      *
      * @param lnglat The geographical location to set as the popup's anchor.
      * @returns {Popup} `this`
@@ -182,8 +199,47 @@ export default class Popup extends Evented {
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
+
+        if (this._map) {
+            this._map.on('move', this._update);
+            this._map.off('mousemove');
+            this._container.classList.remove('mapboxgl-popup-track-pointer');
+            this._map._canvasContainer.classList.remove('mapboxgl-track-pointer');
+        }
+
+        this._trackPointer = false;
+
         this._update();
         return this;
+    }
+
+    /**
+     * Tracks the popup anchor to the cursor position, on screens with a pointer device (will be hidden on touchscreens). Replaces the setLngLat behavior.
+     * For most use cases, `closeOnClick` and `closeButton` should also be set to `false` here.
+     * @returns {Popup} `this`
+     */
+    trackPointer() {
+        this._trackPointer = true;
+        this._pos = null;
+
+        if (this._map) {
+            this._map.off('move', this._update);
+            this._map.on('mousemove', (e) => { this._update(e.point); });
+            this._map.on('drag', (e) => { this._update(e.point); });
+            this._container.classList.add('mapboxgl-popup-track-pointer');
+            this._map._canvasContainer.classList.add('mapboxgl-track-pointer');
+        }
+
+        return this;
+
+    }
+
+    /**
+     * Returns the `Popup`'s HTML element.
+     * @returns {HTMLElement} element
+     */
+    getElement() {
+        return this._container;
     }
 
     /**
@@ -230,6 +286,27 @@ export default class Popup extends Evented {
     }
 
     /**
+     * Returns the popup's max width.
+     *
+     * @returns {string} The max width of the popup.
+     */
+    getMaxWidth() {
+        return this._container.style.maxWidth;
+    }
+
+    /**
+     * Sets the popup's max width. This is setting the CSS property maxWidth. It expects a string in "Npx" format, where N is some number.
+     *
+     * @param maxWidth A string representing the pixel value for the maximum width.
+     * @returns {Popup} `this`
+     */
+    setMaxWidth(maxWidth: string) {
+        this.options.maxWidth = maxWidth;
+        this._update();
+        return this;
+    }
+
+    /**
      * Sets the popup's content to the element provided as a DOM node.
      *
      * @param htmlNode A DOM node to be used as content for the popup.
@@ -256,7 +333,6 @@ export default class Popup extends Evented {
         }
 
         this._content = DOM.create('div', 'mapboxgl-popup-content', this._container);
-
         if (this.options.closeButton) {
             this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', this._content);
             this._closeButton.type = 'button';
@@ -264,27 +340,38 @@ export default class Popup extends Evented {
             this._closeButton.innerHTML = '&#215;';
             this._closeButton.addEventListener('click', this._onClickClose);
         }
+
     }
 
-    _update() {
-        if (!this._map || !this._lngLat || !this._content) { return; }
+    _update(cursor: PointLike) {
+
+        const hasPosition = this._lngLat || this._trackPointer;
+
+        if (!this._map || !hasPosition || !this._content) { return; }
 
         if (!this._container) {
             this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
-
             if (this.options.className) {
                 this.options.className.split(' ').forEach(name =>
                     this._container.classList.add(name));
             }
+
         }
 
-        if (this._map.transform.renderWorldCopies) {
+
+        if (this.options.maxWidth && this._container.style.maxWidth !== this.options.maxWidth) {
+            this._container.style.maxWidth = this.options.maxWidth;
+        }
+
+        if (this._map.transform.renderWorldCopies && !this._trackPointer) {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
         }
 
-        const pos = this._pos = this._map.project(this._lngLat);
+        if (this._trackPointer && !cursor) return;
+
+        const pos = this._pos = this._trackPointer && cursor ? cursor : this._map.project(this._lngLat);
 
         let anchor: ?Anchor = this.options.anchor;
         const offset = normalizeOffset(this.options.offset);
@@ -316,7 +403,6 @@ export default class Popup extends Evented {
         }
 
         const offsetedPos = pos.add(offset[anchor]).round();
-
         DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
         applyAnchorClass(this._container, anchor, 'popup');
     }

@@ -1,12 +1,13 @@
 // @flow
 
-import Coordinate from '../geo/coordinate';
+import MercatorCoordinate from '../geo/mercator_coordinate';
+import Point from '@mapbox/point-geometry';
 
 import { OverscaledTileID } from '../source/tile_id';
 
 export default tileCover;
 
-function tileCover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
+function tileCover(z: number, bounds: [MercatorCoordinate, MercatorCoordinate, MercatorCoordinate, MercatorCoordinate],
     actualZ: number, renderWorldCopies: boolean | void): Array<OverscaledTileID> {
     if (renderWorldCopies === undefined) {
         renderWorldCopies = true;
@@ -28,12 +29,14 @@ function tileCover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coord
         }
     }
 
+    const zoomedBounds = bounds.map((coord) => new Point(coord.x, coord.y)._mult(tiles));
+
     // Divide the screen up in two triangles and scan each of them:
     // +---/
     // | / |
     // /---+
-    scanTriangle(bounds[0], bounds[1], bounds[2], 0, tiles, scanLine);
-    scanTriangle(bounds[2], bounds[3], bounds[0], 0, tiles, scanLine);
+    scanTriangle(zoomedBounds[0], zoomedBounds[1], zoomedBounds[2], 0, tiles, scanLine);
+    scanTriangle(zoomedBounds[2], zoomedBounds[3], zoomedBounds[0], 0, tiles, scanLine);
 
     return Object.keys(t).map((id) => {
         return t[id];
@@ -44,15 +47,15 @@ function tileCover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coord
 // Taken from polymaps src/Layer.js
 // https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
 
-function edge(a: Coordinate, b: Coordinate) {
-    if (a.row > b.row) { const t = a; a = b; b = t; }
+function edge(a: Point, b: Point) {
+    if (a.y > b.y) { const t = a; a = b; b = t; }
     return {
-        x0: a.column,
-        y0: a.row,
-        x1: b.column,
-        y1: b.row,
-        dx: b.column - a.column,
-        dy: b.row - a.row
+        x0: a.x,
+        y0: a.y,
+        x1: b.x,
+        y1: b.y,
+        dx: b.x - a.x,
+        dy: b.y - a.y
     };
 }
 
@@ -79,7 +82,7 @@ function scanSpans(e0, e1, ymin, ymax, scanLine) {
     }
 }
 
-function scanTriangle(a: Coordinate, b: Coordinate, c: Coordinate, ymin, ymax, scanLine) {
+function scanTriangle(a: Point, b: Point, c: Point, ymin, ymax, scanLine) {
     let ab = edge(a, b),
         bc = edge(b, c),
         ca = edge(c, a);

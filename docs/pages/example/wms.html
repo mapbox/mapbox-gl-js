@@ -2,7 +2,7 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/light-v9',
+    style: 'mapbox://styles/mapbox/light-v10',
     zoom: 8,
     center: [-74.5447, 40.6892]
 });
@@ -20,6 +20,6 @@ map.on('load', function() {
             'tileSize': 256
         },
         'paint': {}
-    }, 'aeroway-taxiway');
+    }, 'aeroway-line');
 });
 </script>

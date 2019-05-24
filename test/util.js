@@ -11,7 +11,7 @@ export function createMap(t, options, callback) {
     if (!options || !options.skipCSSStub) t.stub(Map.prototype, '_detectMissingCSS');
 
     const map = new Map(extend({
-        container: container,
+        container,
         interactive: false,
         attributionControl: false,
         trackResize: true,

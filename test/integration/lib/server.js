@@ -74,15 +74,15 @@ export default function () {
     }
 
     return {
-        listen: function (callback) {
+        listen(callback) {
             server.listen(2900, callback);
         },
 
-        close: function (callback) {
+        close(callback) {
             server.close(callback);
         },
 
-        localizeURLs: function (style) {
+        localizeURLs(style) {
             localizeStyleURLs(style);
             if (style.metadata && style.metadata.test && style.metadata.test.operations) {
                 style.metadata.test.operations.forEach((op) => {

@@ -121,6 +121,7 @@ export type GeoJSONSourceSpecification = {|
     "cluster"?: boolean,
     "clusterRadius"?: number,
     "clusterMaxZoom"?: number,
+    "clusterProperties"?: mixed,
     "lineMetrics"?: boolean,
     "generateId"?: boolean
 |}
@@ -212,7 +213,8 @@ export type SymbolLayerSpecification = {|
         "symbol-placement"?: PropertyValueSpecification<"point" | "line" | "line-center">,
         "symbol-spacing"?: PropertyValueSpecification<number>,
         "symbol-avoid-edges"?: PropertyValueSpecification<boolean>,
-        "symbol-z-order"?: PropertyValueSpecification<"viewport-y" | "source">,
+        "symbol-sort-key"?: DataDrivenPropertyValueSpecification<number>,
+        "symbol-z-order"?: PropertyValueSpecification<"auto" | "viewport-y" | "source">,
         "icon-allow-overlap"?: PropertyValueSpecification<boolean>,
         "icon-ignore-placement"?: PropertyValueSpecification<boolean>,
         "icon-optional"?: PropertyValueSpecification<boolean>,
@@ -235,7 +237,9 @@ export type SymbolLayerSpecification = {|
         "text-max-width"?: DataDrivenPropertyValueSpecification<number>,
         "text-line-height"?: PropertyValueSpecification<number>,
         "text-letter-spacing"?: DataDrivenPropertyValueSpecification<number>,
-        "text-justify"?: DataDrivenPropertyValueSpecification<"left" | "center" | "right">,
+        "text-justify"?: DataDrivenPropertyValueSpecification<"auto" | "left" | "center" | "right">,
+        "text-radial-offset"?: DataDrivenPropertyValueSpecification<number>,
+        "text-variable-anchor"?: PropertyValueSpecification<Array<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">>,
         "text-anchor"?: DataDrivenPropertyValueSpecification<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">,
         "text-max-angle"?: PropertyValueSpecification<number>,
         "text-rotate"?: DataDrivenPropertyValueSpecification<number>,

@@ -16,6 +16,7 @@ import Style from './style/style';
 import LngLat from './geo/lng_lat';
 import LngLatBounds from './geo/lng_lat_bounds';
 import Point from '@mapbox/point-geometry';
+import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
 import config from './util/config';
 import {setRTLTextPlugin} from './source/rtl_text_plugin';
@@ -24,7 +25,7 @@ import WorkerPool from './util/worker_pool';
 const exported = {
     version,
     supported,
-    setRTLTextPlugin: setRTLTextPlugin,
+    setRTLTextPlugin,
     Map,
     NavigationControl,
     GeolocateControl,
@@ -37,6 +38,7 @@ const exported = {
     LngLat,
     LngLatBounds,
     Point,
+    MercatorCoordinate,
     Evented,
     config,
 
@@ -48,7 +50,7 @@ const exported = {
      * mapboxgl.accessToken = myAccessToken;
      * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
      */
-    get accessToken() {
+    get accessToken(): ?string {
         return config.ACCESS_TOKEN;
     },
 
@@ -56,12 +58,52 @@ const exported = {
         config.ACCESS_TOKEN = token;
     },
 
-    get workerCount() {
+    /**
+     * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
+     *
+     * @var {string} baseApiUrl
+     * @example
+     * mapboxgl.baseApiUrl = 'https://api.mapbox.com';
+     */
+    get baseApiUrl(): ?string {
+        return config.API_URL;
+    },
+
+    set baseApiUrl(url: string) {
+        config.API_URL = url;
+    },
+
+    /**
+     * Gets and sets the number of web workers instantiated on a page with GL JS maps.
+     * By default, it is set to half the number of CPU cores (capped at 6).
+     * Make sure to set this property before creating any map instances for it to have effect.
+     *
+     * @var {string} workerCount
+     * @example
+     * mapboxgl.workerCount = 2;
+     */
+    get workerCount(): number {
         return WorkerPool.workerCount;
     },
 
     set workerCount(count: number) {
         WorkerPool.workerCount = count;
+    },
+
+    /**
+     * Gets and sets the maximum number of images (raster tiles, sprites, icons) to load in parallel,
+     * which affects performance in raster-heavy maps. 16 by default.
+     *
+     * @var {string} maxParallelImageRequests
+     * @example
+     * mapboxgl.maxParallelImageRequests = 10;
+     */
+    get maxParallelImageRequests(): number {
+        return config.MAX_PARALLEL_IMAGE_REQUESTS;
+    },
+
+    set maxParallelImageRequests(numRequests: number) {
+        config.MAX_PARALLEL_IMAGE_REQUESTS = numRequests;
     },
 
     workerUrl: ''
