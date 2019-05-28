@@ -128,12 +128,16 @@ class DragRotateHandler {
     onMouseDown(e: MouseEvent) {
         if (this._state !== 'enabled') return;
 
-        if (this._button === 'right') {
-            this._eventButton = DOM.mouseButton(e);
-            if (this._eventButton !== (e.ctrlKey ? 0 : 2)) return;
-        } else {
-            if (e.ctrlKey || DOM.mouseButton(e) !== 0) return;
-            this._eventButton = 0;
+        const touchEvent = e.type === 'touchstart';
+
+        if (!touchEvent) {
+            if (this._button === 'right') {
+                this._eventButton = DOM.mouseButton(e);
+                if (this._eventButton !== (e.ctrlKey ? 0 : 2)) return;
+            } else {
+                if (e.ctrlKey || DOM.mouseButton(e) !== 0) return;
+                this._eventButton = 0;
+            }
         }
 
         DOM.disableDrag();
@@ -143,8 +147,11 @@ class DragRotateHandler {
         // window-level event listeners give us the best shot at capturing events that
         // fall outside the map canvas element. Use `{capture: true}` for the move event
         // to prevent map move events from being fired during a drag.
-        window.document.addEventListener('mousemove', this._onMouseMove, {capture: true});
-        window.document.addEventListener('mouseup', this._onMouseUp);
+        const moveEvent = touchEvent ? 'touchmove' : 'mousemove';
+        const upEvent = touchEvent ? 'touchend' : 'mouseup';
+
+        window.document.addEventListener(moveEvent, this._onMouseMove, { capture: true });
+        window.document.addEventListener(upEvent, this._onMouseUp);
 
         // Deactivate when the window loses focus. Otherwise if a mouseup occurs when the window
         // isn't in focus, dragging will continue even though the mouse is no longer pressed.
@@ -152,14 +159,20 @@ class DragRotateHandler {
 
         this._state = 'pending';
         this._inertia = [[browser.now(), this._map.getBearing()]];
-        this._startPos = this._lastPos = DOM.mousePos(this._el, e);
+        this._startPos = this._lastPos = touchEvent ?
+            DOM.touchPos(this._el, e)[0] :
+            DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
 
         e.preventDefault();
     }
 
     _onMouseMove(e: MouseEvent) {
-        const pos = DOM.mousePos(this._el, e);
+        const touchEvent = e.type === 'touchmove';
+        const pos = touchEvent ?
+            DOM.touchPos(this._el, e)[0] :
+            DOM.mousePos(this._el, e);
+
         if (this._lastPos.equals(pos)) {
             return;
         }
@@ -214,6 +227,13 @@ class DragRotateHandler {
     }
 
     _onMouseUp(e: MouseEvent) {
+        const touchEvent = e.type === 'touchend';
+
+        if (touchEvent) {
+            if (this._lastPos === this._startPos) {
+                this._el.click();
+            }
+        }
         if (DOM.mouseButton(e) !== this._eventButton) return;
         switch (this._state) {
         case 'active':
@@ -258,6 +278,8 @@ class DragRotateHandler {
     _unbind() {
         window.document.removeEventListener('mousemove', this._onMouseMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onMouseUp);
+        window.document.removeEventListener('touchmove', this._onMouseMove, { capture: true });
+        window.document.removeEventListener('touchend', this._onMouseUp);
         window.removeEventListener('blur', this._onBlur);
         DOM.enableDrag();
     }

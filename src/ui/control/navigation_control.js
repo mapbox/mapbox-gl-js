@@ -68,7 +68,7 @@ class NavigationControl {
     }
 
     _rotateCompassArrow() {
-        const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+        const rotate = `rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)`;
         this._compassArrow.style.transform = rotate;
     }
 
@@ -80,9 +80,11 @@ class NavigationControl {
         }
         if (this.options.showCompass) {
             this._map.on('rotate', this._rotateCompassArrow);
+            this._map.on('pitch', this._rotateCompassArrow);
             this._rotateCompassArrow();
             this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
             DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
+            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown);
             this._handler.enable();
         }
         return this._container;
@@ -95,7 +97,9 @@ class NavigationControl {
         }
         if (this.options.showCompass) {
             this._map.off('rotate', this._rotateCompassArrow);
+            this._map.off('pitch', this._rotateCompassArrow);
             DOM.removeEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
+            DOM.removeEventListener(this._compass, 'touchstart', this._handler.onMouseDown);
             this._handler.disable();
             delete this._handler;
         }
