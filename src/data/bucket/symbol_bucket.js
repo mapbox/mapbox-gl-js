@@ -416,6 +416,7 @@ class SymbolBucket implements Bucket {
         // and null returned because icon-image wasn't defined is to check whether or not iconImage.parameters is an empty object
         const hasIcon = (iconImage.value.kind !== 'constant' || !!iconImage.value.value) && Object.keys(iconImage.parameters).length > 0;
         const symbolSortKey = layout.get('symbol-sort-key');
+        const symbolZOffset = layout.get('symbol-z-offset');
 
         this.features = [];
 
@@ -469,6 +470,8 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
+            const zOffset = symbolZOffset.evaluate(feature, {});
+
             const sortKey = this.sortFeaturesByKey ?
                 symbolSortKey.evaluate(feature, {}) :
                 undefined;
@@ -482,7 +485,8 @@ class SymbolBucket implements Bucket {
                 geometry: loadGeometry(feature),
                 properties: feature.properties,
                 type: vectorTileFeatureTypes[feature.type],
-                sortKey
+                sortKey,
+                zOffset
             };
             this.features.push(symbolFeature);
 

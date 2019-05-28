@@ -1049,6 +1049,21 @@
       },
       "property-type": "data-driven"
     },
+    "symbol-z-offset": {
+        "type": "number",
+        "doc": "Sets z-value (elevation) for symbol layers in meters as measured from the plane of the map",
+        "sdk-support": {
+            "js": "1.1.0"
+        },
+        "expression": {
+            "interpolated": false,
+            "parameters": [
+                "zoom",
+                "feature"
+            ]
+        },
+        "property-type": "data-driven"
+    },
     "symbol-z-order": {
       "type": "enum",
       "values": {
