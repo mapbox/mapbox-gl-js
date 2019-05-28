@@ -19,7 +19,7 @@ import imageConfig from '../img/dist/image.config.json'; // eslint-disable-line
 const meta = {
     title: 'Examples',
     description: 'Code examples for Mapbox GL JS.',
-    pathname: '/examples/',
+    pathname: '/mapbox-gl-js/examples/',
     lanaguage: ['JavaScript']
 };
 
