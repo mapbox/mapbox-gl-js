@@ -1,0 +1,49 @@
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    zoom: 1
+});
+
+map.on('load', function() {
+    // Add GeoJSON data
+    map.addSource('source', {
+        "type": "geojson",
+        "data": {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [-30, -25],
+                    [-30, 35],
+                    [30, 35],
+                    [30, -25],
+                    [-30, -25]
+                ]]
+            }
+        }
+    });
+
+    // Load an image to use as the pattern
+    map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cat_silhouette.svg/64px-Cat_silhouette.svg.png', function(err, image) {
+        // Throw an error if something went wrong
+        if (err) throw err;
+
+        // Declare the image
+        map.addImage('pattern', image);
+
+        // Use it
+        map.addLayer({
+            "id": "pattern-layer",
+            "type": "fill",
+            "source": "source",
+            "paint": {
+                "fill-pattern": "pattern"
+            }
+        });
+    });
+});
+</script>

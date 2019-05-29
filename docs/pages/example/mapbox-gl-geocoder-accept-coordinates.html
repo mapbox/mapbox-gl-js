@@ -1,5 +1,5 @@
-<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'></script>
-<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css' type='text/css' />
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.3.0/mapbox-gl-geocoder.min.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.3.0/mapbox-gl-geocoder.css' type='text/css' />
 <div id='map'></div>
 
 <script>
@@ -28,7 +28,7 @@ var coordinatesGeocoder = function (query) {
                 type: "Point",
                 coordinates: [lng, lat]
             },
-            place_name: 'Lat: ' + lat + ', Lng: ' + lng, // eslint-disable-line camelcase
+            place_name: 'Lat: ' + lat + ' Lng: ' + lng, // eslint-disable-line camelcase
             place_type: ['coordinate'], // eslint-disable-line camelcase
             properties: {},
             type: 'Feature'
@@ -62,6 +62,7 @@ map.addControl(new MapboxGeocoder({
     accessToken: mapboxgl.accessToken,
     localGeocoder: coordinatesGeocoder,
     zoom: 4,
-    placeholder: "Try: -40, 170"
+    placeholder: "Try: -40, 170",
+    mapboxgl: mapboxgl
 }));
 </script>
