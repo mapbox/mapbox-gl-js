@@ -313,6 +313,14 @@ class Camera extends Evented {
         return this;
     }
 
+    resetNorthPitch(options?: AnimationOptions, eventData?: Object) {
+        this.easeTo(extend({
+            bearing: 0,
+            pitch: 0,
+            duration: 1000
+        }, options), eventData);
+    }
+
     /**
      * Snaps the map so that north is up (0° bearing), if the current bearing is close enough to it (i.e. within the
      * `bearingSnap` threshold).
