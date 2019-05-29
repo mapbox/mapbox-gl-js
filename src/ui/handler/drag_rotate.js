@@ -231,7 +231,6 @@ class DragRotateHandler {
 
         if (touchEvent && (this._startPos === this._lastPos) && (Date.now() - this._startTime) < 300) {
             this._el.click();
-            return;
         }
 
         if (DOM.mouseButton(e) !== this._eventButton) return;
@@ -291,6 +290,7 @@ class DragRotateHandler {
         }
         delete this._lastMoveEvent;
         delete this._startPos;
+        delete this._prevPos;
         delete this._lastPos;
     }
 
