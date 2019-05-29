@@ -60,12 +60,12 @@ DOM.setTransform = function(el: HTMLElement, value: string) {
 let passiveSupported = false;
 
 try {
+    // https://github.com/facebook/flow/issues/285
+    // $FlowFixMe
     const options = Object.defineProperty({}, "passive", {
-        get() {
+        get() { // eslint-disable-line
             passiveSupported = true;
-            return false;
-        },
-        value: false
+        }
     });
     window.addEventListener("test", options, options);
     window.removeEventListener("test", options, options);
