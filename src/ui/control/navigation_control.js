@@ -83,8 +83,8 @@ class NavigationControl {
             this._map.on('pitch', this._rotateCompassArrow);
             this._rotateCompassArrow();
             this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
-            DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
-            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown);
+            DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown, { passive: false });
+            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, { passive: false });
             this._handler.enable();
         }
         return this._container;
