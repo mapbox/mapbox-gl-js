@@ -63,9 +63,7 @@ try {
     const options = Object.defineProperty({}, "passive", {
         get() {
             passiveSupported = true;
-            return false;
-        },
-        value: false
+        }
     });
     window.addEventListener("test", options, options);
     window.removeEventListener("test", options, options);
