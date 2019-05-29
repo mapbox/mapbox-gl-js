@@ -107,13 +107,12 @@ export function createFunction(parameters, propertySpec) {
             }
         };
     } else if (zoomDependent) {
-        const interpolationType = {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1};
+        const interpolationType = type === 'exponential' ?
+            {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1} : null;
         return {
             kind: 'camera',
             interpolationType,
-            interpolationFactor: type === 'exponential' ?
-                Interpolate.interpolationFactor.bind(undefined, interpolationType) :
-                () => 0,
+            interpolationFactor: Interpolate.interpolationFactor.bind(undefined, interpolationType),
             zoomStops: parameters.stops.map(s => s[0]),
             evaluate: ({zoom}) => innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType)
         };
