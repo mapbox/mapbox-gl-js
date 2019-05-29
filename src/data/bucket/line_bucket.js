@@ -252,13 +252,9 @@ class LineBucket implements Bucket {
 
         const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
 
-        const firstVertex = vertices[first];
-
         // we could be more precise, but it would only save a negligible amount of space
         const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
 
-        const beginCap = cap,
-            endCap = isPolygon ? 'butt' : cap;
         let currentVertex;
         let prevVertex = ((undefined: any): Point);
         let nextVertex = ((undefined: any): Point);
@@ -270,7 +266,7 @@ class LineBucket implements Bucket {
 
         if (isPolygon) {
             currentVertex = vertices[len - 2];
-            nextNormal = firstVertex.sub(currentVertex)._unit()._perp();
+            nextNormal = vertices[first].sub(currentVertex)._unit()._perp();
         }
 
         for (let i = first; i < len; i++) {
@@ -342,7 +338,7 @@ class LineBucket implements Bucket {
 
             // The join if a middle vertex, otherwise the cap.
             const middleVertex = prevVertex && nextVertex;
-            let currentJoin = middleVertex ? join : nextVertex ? beginCap : endCap;
+            let currentJoin = middleVertex ? join : isPolygon ? 'butt' : cap;
 
             if (middleVertex && currentJoin === 'round') {
                 if (miterLength < roundLimit) {
