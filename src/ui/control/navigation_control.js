@@ -56,7 +56,13 @@ class NavigationControl {
             bindAll([
                 '_rotateCompassArrow'
             ], this);
-            this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset bearing to north', () => this._map.resetNorth());
+            this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset bearing to north', () => {
+                if (this.options.visualizePitch) {
+                    this._map.resetNorthPitch();
+                } else {
+                    this._map.resetNorth();
+                }
+            });
             this._compassArrow = DOM.create('span', 'mapboxgl-ctrl-compass-arrow', this._compass);
         }
     }
@@ -68,7 +74,10 @@ class NavigationControl {
     }
 
     _rotateCompassArrow() {
-        const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+        const rotate = this.options.visualizePitch
+            ? `rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)`
+            : `rotate(${this._map.transform.angle}deg)`;
+
         this._compassArrow.style.transform = rotate;
     }
 
@@ -79,10 +88,14 @@ class NavigationControl {
             this._updateZoomButtons();
         }
         if (this.options.showCompass) {
+            if (this.options.visualizePitch) {
+                this._map.on('pitch', this._rotateCompassArrow);
+            }
             this._map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
             this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
-            DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
+            DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown, { passive: false });
+            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, { passive: false });
             this._handler.enable();
         }
         return this._container;
@@ -94,8 +107,12 @@ class NavigationControl {
             this._map.off('zoom', this._updateZoomButtons);
         }
         if (this.options.showCompass) {
+            if (this.options.visualizePitch) {
+                this._map.off('pitch', this._rotateCompassArrow);
+            }
             this._map.off('rotate', this._rotateCompassArrow);
             DOM.removeEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
+            DOM.removeEventListener(this._compass, 'touchstart', this._handler.onMouseDown);
             this._handler.disable();
             delete this._handler;
         }
