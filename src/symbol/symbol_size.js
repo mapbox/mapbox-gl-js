@@ -1,14 +1,12 @@
 // @flow
 
-import { normalizePropertyExpression } from '../style-spec/expression';
-
 import { number as interpolate } from '../style-spec/util/interpolate';
+import Interpolate from '../style-spec/expression/definitions/interpolate';
 import { clamp } from '../util/util';
 import EvaluationParameters from '../style/evaluation_parameters';
 
-import type {Property, PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
-import type {CameraExpression, CompositeExpression} from '../style-spec/expression/index';
-import type {PropertyValueSpecification} from '../style-spec/types';
+import type {PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
+import type {InterpolationType} from '../style-spec/expression/definitions/interpolate';
 
 const SIZE_PACK_FACTOR = 256;
 
@@ -24,11 +22,11 @@ export type SizeData = {
     layoutSize: number,
     zoomRange: {min: number, max: number},
     sizeRange: {min: number, max: number},
-    propertyValue: PropertyValueSpecification<number>
+    interpolationType: ?InterpolationType
 } | {
     functionType: 'composite',
     zoomRange: {min: number, max: number},
-    propertyValue: PropertyValueSpecification<number>
+    interpolationType: ?InterpolationType
 };
 
 // For {text,icon}-size, get the bucket-level data that will be needed by
@@ -60,6 +58,8 @@ function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEval
             max: levels[upper]
         };
 
+        const {interpolationType} = expression;
+
         // We'd like to be able to use CameraExpression or CompositeExpression in these
         // return types rather than ExpressionSpecification, but the former are not
         // transferrable across Web Worker boundaries.
@@ -67,7 +67,7 @@ function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEval
             return {
                 functionType: 'composite',
                 zoomRange,
-                propertyValue: (value.value: any)
+                interpolationType
             };
         } else {
             // for camera functions, also save off the function values
@@ -80,7 +80,7 @@ function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEval
                     min: expression.evaluate(new EvaluationParameters(zoomRange.min)),
                     max: expression.evaluate(new EvaluationParameters(zoomRange.max))
                 },
-                propertyValue: (value.value: any)
+                interpolationType
             };
         }
     }
@@ -99,7 +99,7 @@ function evaluateSizeForFeature(sizeData: SizeData,
     }
 }
 
-function evaluateSizeForZoom(sizeData: SizeData, currentZoom: number, property: Property<number, PossiblyEvaluatedPropertyValue<number>>) {
+function evaluateSizeForZoom(sizeData: SizeData, zoom: number) {
     if (sizeData.functionType === 'constant') {
         return {
             uSizeT: 0,
@@ -110,35 +110,28 @@ function evaluateSizeForZoom(sizeData: SizeData, currentZoom: number, property: 
             uSizeT: 0,
             uSize: 0
         };
-    } else if (sizeData.functionType === 'camera') {
-        const {propertyValue, zoomRange, sizeRange} = sizeData;
-        const expression = ((normalizePropertyExpression(propertyValue, property.specification): any): CameraExpression);
+    } else {
+
+        const {interpolationType, zoomRange} = sizeData;
 
         // Even though we could get the exact value of the camera function
         // at z = tr.zoom, we intentionally do not: instead, we interpolate
         // between the camera function values at a pair of zoom stops covering
         // [tileZoom, tileZoom + 1] in order to be consistent with this
         // restriction on composite functions
-        const t = clamp(
-            expression.interpolationFactor(currentZoom, zoomRange.min, zoomRange.max),
-            0,
-            1
-        );
+        const t = !interpolationType ? 0 : clamp(
+            Interpolate.interpolationFactor(interpolationType, zoom, zoomRange.min, zoomRange.max), 0, 1);
+
+        if (sizeData.functionType === 'camera') {
+            const {sizeRange} = sizeData;
+            return {
+                uSizeT: 0,
+                uSize: sizeRange.min + t * (sizeRange.max - sizeRange.min)
+            };
+        }
 
         return {
-            uSizeT: 0,
-            uSize: sizeRange.min + t * (sizeRange.max - sizeRange.min)
-        };
-    } else {
-        const {propertyValue, zoomRange} = sizeData;
-        const expression = ((normalizePropertyExpression(propertyValue, property.specification): any): CompositeExpression);
-
-        return {
-            uSizeT: clamp(
-                expression.interpolationFactor(currentZoom, zoomRange.min, zoomRange.max),
-                0,
-                1
-            ),
+            uSizeT: t,
             uSize: 0
         };
     }
