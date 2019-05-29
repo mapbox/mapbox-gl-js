@@ -78,7 +78,6 @@ class LineBucket implements Bucket {
 
     e1: number;
     e2: number;
-    e3: number;
 
     index: number;
     zoom: number;
@@ -260,17 +259,14 @@ class LineBucket implements Bucket {
 
         const beginCap = cap,
             endCap = isPolygon ? 'butt' : cap;
-        let startOfLine = true;
         let currentVertex;
         let prevVertex = ((undefined: any): Point);
         let nextVertex = ((undefined: any): Point);
         let prevNormal = ((undefined: any): Point);
         let nextNormal = ((undefined: any): Point);
-        let offsetA;
-        let offsetB;
 
-        // the last three vertices added
-        this.e1 = this.e2 = this.e3 = -1;
+        // the last two vertices added
+        this.e1 = this.e2 = -1;
 
         if (isPolygon) {
             currentVertex = vertices[len - 2];
@@ -394,16 +390,11 @@ class LineBucket implements Bucket {
 
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
                 const offset = -Math.sqrt(miterLength * miterLength - 1);
-                if (lineTurnsLeft) {
-                    offsetB = 0;
-                    offsetA = offset;
-                } else {
-                    offsetA = 0;
-                    offsetB = offset;
-                }
+                const offsetA = lineTurnsLeft ? offset : 0;
+                const offsetB = lineTurnsLeft ? 0 : offset;
 
                 // Close previous segment with a bevel
-                if (!startOfLine) {
+                if (prevVertex) {
                     this.addCurrentVertex(currentVertex, prevNormal, offsetA, offsetB, segment);
                 }
 
@@ -425,7 +416,7 @@ class LineBucket implements Bucket {
                             const B = 0.848013 + cosAngle * (-1.06021 + cosAngle * 0.215638);
                             t = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
                         }
-                        const extrude = prevNormal.mult(1 - t)._add(nextNormal.mult(t))._unit()._mult(lineTurnsLeft ? -1 : 1);
+                        const extrude = nextNormal.sub(prevNormal)._mult(t)._add(prevNormal)._unit()._mult(lineTurnsLeft ? -1 : 1);
                         this.addHalfVertex(currentVertex, extrude.x, extrude.y, false, lineTurnsLeft, 0, segment);
                     }
                 }
@@ -436,29 +427,15 @@ class LineBucket implements Bucket {
                 }
 
             } else if (currentJoin === 'butt') {
-                if (!startOfLine) {
-                    // Close previous segment with a butt
-                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, segment);
-                }
-                if (nextVertex) {
-                    // Start next segment with a butt
-                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, segment);
-                }
+                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment); // butt cap
 
             } else if (currentJoin === 'square') {
-
-                if (!startOfLine) {
-                    // Close previous segment with a square cap
-                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, segment);
-                }
-                if (nextVertex) {
-                    // Start next segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, segment);
-                }
+                const offset = prevVertex ? 1 : -1; // closing or starting square cap
+                this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
 
             } else if (currentJoin === 'round') {
 
-                if (!startOfLine) {
+                if (prevVertex) {
                     // Close previous segment with butt
                     this.addCurrentVertex(currentVertex, prevNormal, 0, 0, segment);
 
@@ -483,8 +460,6 @@ class LineBucket implements Bucket {
                     currentVertex = newCurrentVertex;
                 }
             }
-
-            startOfLine = false;
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions);
@@ -522,7 +497,8 @@ class LineBucket implements Bucket {
     }
 
     addHalfVertex({x, y}: Point, extrudeX: number, extrudeY: number, round: boolean, up: boolean, dir: number, segment: Segment) {
-        const linesofar = this.scaledDistance;
+        // scale down so that we can store longer distances while sacrificing precision.
+        const linesofar = this.scaledDistance * LINE_DISTANCE_SCALE;
 
         this.layoutVertexArray.emplaceBack(
             // a_pos_normal
@@ -536,20 +512,19 @@ class LineBucket implements Bucket {
             // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
             // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
             // room for the direction value). The upper 8 bits of `linesofar` are placed in
-            // the `w` component. `linesofar` is scaled down by `LINE_DISTANCE_SCALE` so that
-            // we can store longer distances while sacrificing precision.
-            ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | (((linesofar * LINE_DISTANCE_SCALE) & 0x3F) << 2),
-            (linesofar * LINE_DISTANCE_SCALE) >> 6);
+            // the `w` component.
+            ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | ((linesofar & 0x3F) << 2),
+            linesofar >> 6);
 
-        this.e3 = segment.vertexLength++;
+        const e = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
-            this.indexArray.emplaceBack(this.e1, this.e2, this.e3);
+            this.indexArray.emplaceBack(this.e1, this.e2, e);
             segment.primitiveLength++;
         }
         if (up) {
-            this.e2 = this.e3;
+            this.e2 = e;
         } else {
-            this.e1 = this.e3;
+            this.e1 = e;
         }
     }
 
