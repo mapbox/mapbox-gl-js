@@ -313,12 +313,23 @@ class Camera extends Evented {
         return this;
     }
 
+    /**
+     * Rotates and pitches the map so that north is up (0° bearing) and pitch is 0°, with an animated transition.
+     *
+     * @memberof Map#
+     * @param options
+     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     */
     resetNorthPitch(options?: AnimationOptions, eventData?: Object) {
         this.easeTo(extend({
             bearing: 0,
             pitch: 0,
             duration: 1000
         }, options), eventData);
+        return this;
     }
 
     /**
