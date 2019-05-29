@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 
 import window from './window';
 
