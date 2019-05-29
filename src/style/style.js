@@ -432,7 +432,7 @@ class Style extends Evented {
         nextState = clone(nextState);
         nextState.layers = deref(nextState.layers);
 
-        const changes = diffStyles(this.serialize(), nextState)
+        const changes = diffStyles(this.stylesheet, nextState)
             .filter(op => !(op.command in ignoredDiffOperations));
 
         if (changes.length === 0) {
