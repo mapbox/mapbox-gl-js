@@ -13,19 +13,21 @@ const SIZE_PACK_FACTOR = 256;
 export { getSizeData, evaluateSizeForFeature, evaluateSizeForZoom, SIZE_PACK_FACTOR };
 
 export type SizeData = {
-    functionType: 'constant',
+    kind: 'constant',
     layoutSize: number
 } | {
-    functionType: 'source'
+    kind: 'source'
 } | {
-    functionType: 'camera',
-    layoutSize: number,
-    zoomRange: {min: number, max: number},
-    sizeRange: {min: number, max: number},
+    kind: 'camera',
+    minZoom: number,
+    maxZoom: number,
+    minSize: number,
+    maxSize: number,
     interpolationType: ?InterpolationType
 } | {
-    functionType: 'composite',
-    zoomRange: {min: number, max: number},
+    kind: 'composite',
+    minZoom: number,
+    maxZoom: number,
     interpolationType: ?InterpolationType
 };
 
@@ -33,86 +35,64 @@ export type SizeData = {
 // the painter to set symbol-size-related uniforms
 function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>): SizeData {
     const {expression} = value;
-    if (expression.kind === 'constant') {
-        return {
-            functionType: 'constant',
-            layoutSize: expression.evaluate(new EvaluationParameters(tileZoom + 1))
-        };
-    } else if (expression.kind === 'source') {
-        return {
-            functionType: 'source'
-        };
-    } else {
-        // calculate covering zoom stops for zoom-dependent values
-        const levels = expression.zoomStops;
 
+    if (expression.kind === 'constant') {
+        const layoutSize = expression.evaluate(new EvaluationParameters(tileZoom + 1));
+        return {kind: 'constant', layoutSize};
+
+    } else if (expression.kind === 'source') {
+        return {kind: 'source'};
+
+    } else {
+        const {zoomStops, interpolationType} = expression;
+
+        // calculate covering zoom stops for zoom-dependent values
         let lower = 0;
-        while (lower < levels.length && levels[lower] <= tileZoom) lower++;
+        while (lower < zoomStops.length && zoomStops[lower] <= tileZoom) lower++;
         lower = Math.max(0, lower - 1);
         let upper = lower;
-        while (upper < levels.length && levels[upper] < tileZoom + 1) upper++;
-        upper = Math.min(levels.length - 1, upper);
+        while (upper < zoomStops.length && zoomStops[upper] < tileZoom + 1) upper++;
+        upper = Math.min(zoomStops.length - 1, upper);
 
-        const zoomRange = {
-            min: levels[lower],
-            max: levels[upper]
-        };
-
-        const {interpolationType} = expression;
+        const minZoom = zoomStops[lower];
+        const maxZoom = zoomStops[upper];
 
         // We'd like to be able to use CameraExpression or CompositeExpression in these
         // return types rather than ExpressionSpecification, but the former are not
         // transferrable across Web Worker boundaries.
         if (expression.kind === 'composite') {
-            return {
-                functionType: 'composite',
-                zoomRange,
-                interpolationType
-            };
-        } else {
-            // for camera functions, also save off the function values
-            // evaluated at the covering zoom levels
-            return {
-                functionType: 'camera',
-                layoutSize: expression.evaluate(new EvaluationParameters(tileZoom + 1)),
-                zoomRange,
-                sizeRange: {
-                    min: expression.evaluate(new EvaluationParameters(zoomRange.min)),
-                    max: expression.evaluate(new EvaluationParameters(zoomRange.max))
-                },
-                interpolationType
-            };
+            return {kind: 'composite', minZoom, maxZoom, interpolationType};
         }
+
+        // for camera functions, also save off the function values
+        // evaluated at the covering zoom levels
+        const minSize = expression.evaluate(new EvaluationParameters(minZoom));
+        const maxSize = expression.evaluate(new EvaluationParameters(maxZoom));
+
+        return {kind: 'camera', minZoom, maxZoom, minSize, maxSize, interpolationType};
     }
 }
 
 function evaluateSizeForFeature(sizeData: SizeData,
-                                partiallyEvaluatedSize: { uSize: number, uSizeT: number },
-                                symbol: { lowerSize: number, upperSize: number}) {
-    const part = partiallyEvaluatedSize;
-    if (sizeData.functionType === 'source') {
-        return symbol.lowerSize / SIZE_PACK_FACTOR;
-    } else if (sizeData.functionType === 'composite') {
-        return interpolate(symbol.lowerSize / SIZE_PACK_FACTOR, symbol.upperSize / SIZE_PACK_FACTOR, part.uSizeT);
-    } else {
-        return part.uSize;
+                                {uSize, uSizeT}: { uSize: number, uSizeT: number },
+                                {lowerSize, upperSize}: { lowerSize: number, upperSize: number}) {
+    if (sizeData.kind === 'source') {
+        return lowerSize / SIZE_PACK_FACTOR;
+    } else if (sizeData.kind === 'composite') {
+        return interpolate(lowerSize / SIZE_PACK_FACTOR, upperSize / SIZE_PACK_FACTOR, uSizeT);
     }
+    return uSize;
 }
 
 function evaluateSizeForZoom(sizeData: SizeData, zoom: number) {
-    if (sizeData.functionType === 'constant') {
-        return {
-            uSizeT: 0,
-            uSize: sizeData.layoutSize
-        };
-    } else if (sizeData.functionType === 'source') {
-        return {
-            uSizeT: 0,
-            uSize: 0
-        };
-    } else {
+    let uSizeT = 0;
+    let uSize = 0;
 
-        const {interpolationType, zoomRange} = sizeData;
+    if (sizeData.kind === 'constant') {
+        uSize = sizeData.layoutSize;
+
+    } else if (sizeData.kind !== 'source') {
+        const {interpolationType, minZoom, maxZoom} = sizeData;
 
         // Even though we could get the exact value of the camera function
         // at z = tr.zoom, we intentionally do not: instead, we interpolate
@@ -120,19 +100,14 @@ function evaluateSizeForZoom(sizeData: SizeData, zoom: number) {
         // [tileZoom, tileZoom + 1] in order to be consistent with this
         // restriction on composite functions
         const t = !interpolationType ? 0 : clamp(
-            Interpolate.interpolationFactor(interpolationType, zoom, zoomRange.min, zoomRange.max), 0, 1);
+            Interpolate.interpolationFactor(interpolationType, zoom, minZoom, maxZoom), 0, 1);
 
-        if (sizeData.functionType === 'camera') {
-            const {sizeRange} = sizeData;
-            return {
-                uSizeT: 0,
-                uSize: sizeRange.min + t * (sizeRange.max - sizeRange.min)
-            };
+        if (sizeData.kind === 'camera') {
+            uSize = interpolate(sizeData.minSize, sizeData.maxSize, t);
+        } else {
+            uSizeT = t;
         }
-
-        return {
-            uSizeT: t,
-            uSize: 0
-        };
     }
+
+    return {uSizeT, uSize};
 }

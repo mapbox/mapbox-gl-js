@@ -221,12 +221,12 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         let uniformValues;
         if (isSDF) {
-            uniformValues = symbolSDFUniformValues(sizeData.functionType,
+            uniformValues = symbolSDFUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
                 uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true);
 
         } else {
-            uniformValues = symbolIconUniformValues(sizeData.functionType,
+            uniformValues = symbolIconUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
                 uLabelPlaneMatrix, uglCoordMatrix, isText, texSize);
         }

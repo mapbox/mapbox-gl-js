@@ -124,19 +124,19 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
     const sizes = {};
 
-    if (bucket.textSizeData.functionType === 'composite') {
-        const {min, max} = bucket.textSizeData.zoomRange;
+    if (bucket.textSizeData.kind === 'composite') {
+        const {minZoom, maxZoom} = bucket.textSizeData;
         sizes.compositeTextSizes = [
-            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(min)),
-            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(max))
+            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(minZoom)),
+            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(maxZoom))
         ];
     }
 
-    if (bucket.iconSizeData.functionType === 'composite') {
-        const {min, max} = bucket.iconSizeData.zoomRange;
+    if (bucket.iconSizeData.kind === 'composite') {
+        const {minZoom, maxZoom} = bucket.iconSizeData;
         sizes.compositeIconSizes = [
-            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(min)),
-            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(max))
+            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(minZoom)),
+            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(maxZoom))
         ];
     }
 
@@ -411,14 +411,14 @@ function addTextVertices(bucket: SymbolBucket,
     const sizeData = bucket.textSizeData;
     let textSizeData = null;
 
-    if (sizeData.functionType === 'source') {
+    if (sizeData.kind === 'source') {
         textSizeData = [
             SIZE_PACK_FACTOR * layer.layout.get('text-size').evaluate(feature, {})
         ];
         if (textSizeData[0] > MAX_PACKED_SIZE) {
             warnOnce(`${bucket.layerIds[0]}: Value for "text-size" is >= 256. Reduce your "text-size".`);
         }
-    } else if (sizeData.functionType === 'composite') {
+    } else if (sizeData.kind === 'composite') {
         textSizeData = [
             SIZE_PACK_FACTOR * sizes.compositeTextSizes[0].evaluate(feature, {}),
             SIZE_PACK_FACTOR * sizes.compositeTextSizes[1].evaluate(feature, {})
@@ -540,14 +540,14 @@ function addSymbol(bucket: SymbolBucket,
         const sizeData = bucket.iconSizeData;
         let iconSizeData = null;
 
-        if (sizeData.functionType === 'source') {
+        if (sizeData.kind === 'source') {
             iconSizeData = [
                 SIZE_PACK_FACTOR * layer.layout.get('icon-size').evaluate(feature, {})
             ];
             if (iconSizeData[0] > MAX_PACKED_SIZE) {
                 warnOnce(`${bucket.layerIds[0]}: Value for "icon-size" is >= 256. Reduce your "icon-size".`);
             }
-        } else if (sizeData.functionType === 'composite') {
+        } else if (sizeData.kind === 'composite') {
             iconSizeData = [
                 SIZE_PACK_FACTOR * sizes.compositeIconSizes[0].evaluate(feature, {}),
                 SIZE_PACK_FACTOR * sizes.compositeIconSizes[1].evaluate(feature, {})
