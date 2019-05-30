@@ -156,9 +156,9 @@ class StyleLayer extends Evented {
             const wasDataDriven = transitionable.value.isDataDriven();
 
             this._transitionablePaint.setValue(name, value);
-            const isDataDriven = this._transitionablePaint._values[name].value.isDataDriven();
-
             this._handleSpecialPaintPropertyUpdate(name);
+
+            const isDataDriven = this._transitionablePaint._values[name].value.isDataDriven();
 
             // if a cross-faded value is changed, we need to make sure the new icons get added to each tile's iconAtlas
             // so a call to _updateLayer is necessary, and we return true from this function so it gets called in
