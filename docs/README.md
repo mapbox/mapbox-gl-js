@@ -33,7 +33,7 @@ In the `.html` file, write the HTML and JavaScript constituting the example.
 * Do **not** use custom styles from your personal account. Use only the default `mapbox` account styles.
 * When embedding literal JSON (GeoJSON or Mapbox style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
 
-Every example **must** have an accompanying image:
+Every example **must** have an accompanying image. To get an image, run the site locally and take a screenshot of the rendered map in the example:
 
 1. Run `npm run create-image <example-file-name> <mapbox-access-token>`. The script will take a screenshot of the map in the example and save it to `docs/img/src/`. Commit the image.
 2. Run `npm run start-docs` to verify that your example image is loading as expected.

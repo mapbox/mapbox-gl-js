@@ -8,6 +8,7 @@ prependJs:
   - "import urls from '../../components/urls';"
   - "import {version} from '../../../package.json';"
 pathname: /mapbox-gl-js/overview/
+contentType: API
 ---
 
 {{
