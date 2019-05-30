@@ -1,0 +1,26 @@
+<div id='map'></div>
+<script>
+var tileset = 'mapbox.streets';
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: {
+        "version": 8,
+        "sources": {
+            "raster-tiles": {
+                "type": "raster",
+                "url": "mapbox://" + tileset,
+                "tileSize": 256
+            }
+        },
+        "layers": [{
+            "id": "simple-tiles",
+            "type": "raster",
+            "source": "raster-tiles",
+            "minzoom": 0,
+            "maxzoom": 22
+        }]
+    },
+    center: [-74.50, 40], // starting position
+    zoom: 2 // starting zoom
+});
+</script>
