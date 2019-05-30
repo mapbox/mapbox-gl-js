@@ -1498,11 +1498,12 @@ test('Map', (t) => {
             });
             map.on('load', () => {
                 map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true});
+                map.removeFeatureState({ source: 'geojson', id: 0}, 'hover');
                 const fState = map.getFeatureState({ source: 'geojson', id: 0});
-                t.equal(fState.hover, true);
+                t.equal(fState.hover, undefined);
                 t.end();
             });
-        });        
+        });
         t.test('remove specific state property', (t) => {
             const map = createMap(t, {
                 style: {
