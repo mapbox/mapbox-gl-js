@@ -55,6 +55,15 @@ test('shaping', (t) => {
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-newlines-in-middle.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(shaped, expectedNewLinesInMiddle);
 
+    // Prefer zero width spaces when breaking lines. Zero width spaces are used by Mapbox data sources as a hint that
+    // a position is ideal for breaking.
+    const expectedZeroWidthSpaceBreak = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-zero-width-space.json')));
+
+    shaped = shaping.shapeText(Formatted.fromString('三三\u200b三三\u200b三三\u200b三三三三三三\u200b三三'), glyphs, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal);
+    if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-zero-width-space.json'), JSON.stringify(shaped, null, 2));
+    t.deepEqual(shaped, expectedZeroWidthSpaceBreak);
+
+
     // Null shaping.
     shaped = shaping.shapeText(Formatted.fromString(''), glyphs, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal);
     t.equal(false, shaped);

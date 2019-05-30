@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 
 import assert from 'assert';
 

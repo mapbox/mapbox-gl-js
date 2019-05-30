@@ -4,14 +4,13 @@ import { pick } from '../util/util';
 
 import { getJSON, ResourceType } from '../util/ajax';
 import browser from '../util/browser';
-import { normalizeSourceURL as normalizeURL, canonicalizeTileset } from '../util/mapbox';
 
-import type {RequestTransformFunction} from '../ui/map';
+import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 import type {TileJSON} from '../types/tilejson';
 import type {Cancelable} from '../types/cancelable';
 
-export default function(options: any, requestTransformFn: RequestTransformFunction, callback: Callback<TileJSON>): Cancelable {
+export default function(options: any, requestManager: RequestManager, callback: Callback<TileJSON>): Cancelable {
     const loaded = function(err: ?Error, tileJSON: ?Object) {
         if (err) {
             return callback(err);
@@ -28,14 +27,14 @@ export default function(options: any, requestTransformFn: RequestTransformFuncti
 
             // only canonicalize tile tileset if source is declared using a tilejson url
             if (options.url) {
-                result.tiles = canonicalizeTileset(result, options.url);
+                result.tiles = requestManager.canonicalizeTileset(result, options.url);
             }
             callback(null, result);
         }
     };
 
     if (options.url) {
-        return getJSON(requestTransformFn(normalizeURL(options.url), ResourceType.Source), loaded);
+        return getJSON(requestManager.transformRequest(requestManager.normalizeSourceURL(options.url), ResourceType.Source), loaded);
     } else {
         return browser.frame(() => loaded(null, options));
     }

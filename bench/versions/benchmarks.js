@@ -21,7 +21,7 @@ import FilterEvaluate from '../benchmarks/filter_evaluate';
 
 import getWorkerPool from '../../src/util/global_worker_pool';
 
-const styleLocations = locationsWithTileID(styleBenchmarkLocations);
+const styleLocations = locationsWithTileID(styleBenchmarkLocations.features);
 
 mapboxgl.accessToken = accessToken;
 
