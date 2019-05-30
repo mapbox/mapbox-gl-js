@@ -1,5 +1,5 @@
 import { test } from 'mapbox-gl-js-test';
-import resolveTokens from '../../../src/util/token';
+import resolveTokens from '../../../src/util/resolve_tokens';
 
 test('resolveToken', (t) => {
     t.equal('3 Fine Fields', resolveTokens({a:3, b:'Fine', c:'Fields'}, '{a} {b} {c}'));

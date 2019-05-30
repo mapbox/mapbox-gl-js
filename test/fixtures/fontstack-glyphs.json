@@ -1918,5 +1918,15 @@
       "top": -5,
       "advance": 15
     }
+  },
+  "19977": {
+    "id": 19977,
+    "metrics": {
+      "width": 18,
+      "height": 18,
+      "left": 2,
+      "top": -8,
+      "advance": 21
+    }
   }
 }

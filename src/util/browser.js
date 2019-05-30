@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 
 import window from './window';
 import type { Cancelable } from '../types/cancelable';
@@ -29,7 +29,7 @@ const exported = {
      */
     now,
 
-    frame(fn: Function): Cancelable {
+    frame(fn: () => void): Cancelable {
         const frame = raf(fn);
         return { cancel: () => cancel(frame) };
     },

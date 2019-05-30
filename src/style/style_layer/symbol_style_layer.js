@@ -3,7 +3,7 @@
 import StyleLayer from '../style_layer';
 
 import SymbolBucket from '../../data/bucket/symbol_bucket';
-import resolveTokens from '../../util/token';
+import resolveTokens from '../../util/resolve_tokens';
 import { isExpression } from '../../style-spec/expression';
 import assert from 'assert';
 import properties from './symbol_style_layer_properties';

@@ -101,7 +101,8 @@ function BrowserCompatibilityWarning() {
     id: "page-shell-compatibility-warning",
     style: {
       display: 'none'
-    }
+    },
+    "data-swiftype-index": "false"
   }, React.createElement("div", {
     className: "shell-py12 shell-px24 shell-bg-pink shell-color-white shell-align-l"
   }, React.createElement("button", {
@@ -280,9 +281,6 @@ var nonMobile = {
       }, {
         name: 'for Unity',
         to: 'https://docs.mapbox.com/unity/maps/overview/'
-      }, {
-        name: 'for Qt',
-        to: 'https://doc.qt.io/qt-5/location-plugin-mapboxgl.html'
       }]
     },
     links: [{
@@ -767,16 +765,16 @@ function FooterLegalStrip(props) {
   return React.createElement("div", {
     className: props.className
   }, React.createElement("a", {
-    className: "shell-link shell-color-darken50 shell-color-blue-on-hover shell-mr18",
+    className: "shell-link shell-color-gray shell-color-gray-dark-on-hover shell-mr18",
     href: "https://www.mapbox.com/"
   }, "\xA9 Mapbox"), React.createElement("a", {
-    className: "shell-link shell-color-darken50 shell-color-blue-on-hover shell-mr18",
+    className: "shell-link shell-color-gray shell-color-gray-dark-on-hover shell-mr18",
     href: "https://www.mapbox.com/tos/"
   }, "Terms"), React.createElement("a", {
-    className: "shell-link shell-color-darken50 shell-color-blue-on-hover shell-mr18",
+    className: "shell-link shell-color-gray shell-color-gray-dark-on-hover shell-mr18",
     href: "https://www.mapbox.com/privacy/"
   }, "Privacy"), React.createElement("a", {
-    className: "shell-link shell-color-darken50 shell-color-blue-on-hover",
+    className: "shell-link shell-color-gray shell-color-gray-dark-on-hover",
     href: "https://www.mapbox.com/platform/security/"
   }, "Security"));
 }
@@ -790,7 +788,7 @@ function FooterSocialMediaStrip(props) {
     className: props.className
   }, React.createElement("a", {
     "aria-label": "Github",
-    className: "shell-color-blue shell-color-gray-dark-on-hover",
+    className: "shell-color-blue shell-color-blue-dark-on-hover",
     href: "https://github.com/mapbox"
   }, React.createElement("svg", {
     viewBox: "0 0 1790 1790",
@@ -799,7 +797,7 @@ function FooterSocialMediaStrip(props) {
     d: "M704 1216q0 40-12.5 82t-43 76-72.5 34-72.5-34-43-76-12.5-82 12.5-82 43-76 72.5-34 72.5 34 43 76 12.5 82zm640 0q0 40-12.5 82t-43 76-72.5 34-72.5-34-43-76-12.5-82 12.5-82 43-76 72.5-34 72.5 34 43 76 12.5 82zm160 0q0-120-69-204t-187-84q-41 0-195 21-71 11-157 11t-157-11q-152-21-195-21-118 0-187 84t-69 204q0 88 32 153.5t81 103 122 60 140 29.5 149 7h168q82 0 149-7t140-29.5 122-60 81-103 32-153.5zm224-176q0 207-61 331-38 77-105.5 133t-141 86-170 47.5-171.5 22-167 4.5q-78 0-142-3t-147.5-12.5-152.5-30-137-51.5-121-81-86-115q-62-123-62-331 0-237 136-396-27-82-27-170 0-116 51-218 108 0 190 39.5t189 123.5q147-35 309-35 148 0 280 32 105-82 187-121t189-39q51 102 51 218 0 87-27 168 136 160 136 398z"
   }))), React.createElement("a", {
     "aria-label": "Twitter",
-    className: "shell-color-blue shell-color-gray-dark-on-hover ",
+    className: "shell-color-blue shell-color-blue-dark-on-hover ",
     href: "https://twitter.com/mapbox/"
   }, React.createElement("svg", {
     viewBox: "0 0 50 50",
@@ -811,7 +809,7 @@ function FooterSocialMediaStrip(props) {
     d: "M15.72,45.31c18.87,0,29.19-15.63,29.19-29.19,0-.44,0-.89,0-1.33A20.87,20.87,0,0,0,50,9.49a20.48,20.48,0,0,1-5.89,1.61,10.29,10.29,0,0,0,4.51-5.67A20.56,20.56,0,0,1,42.1,7.92a10.27,10.27,0,0,0-17.48,9.36A29.12,29.12,0,0,1,3.48,6.56,10.27,10.27,0,0,0,6.66,20.25,10.18,10.18,0,0,1,2,19v.13a10.26,10.26,0,0,0,8.23,10.06,10.24,10.24,0,0,1-4.63.18,10.27,10.27,0,0,0,9.58,7.12,20.58,20.58,0,0,1-12.74,4.4A20.88,20.88,0,0,1,0,40.71a29,29,0,0,0,15.72,4.6"
   })))), React.createElement("a", {
     "aria-label": "LinkedIn",
-    className: "shell-color-blue shell-color-gray-dark-on-hover",
+    className: "shell-color-blue shell-color-blue-dark-on-hover",
     href: "https://www.linkedin.com/company/mapbox"
   }, React.createElement("svg", {
     viewBox: "0 0 50 50",
@@ -832,7 +830,7 @@ function FooterSocialMediaStrip(props) {
     r: "5.26"
   })))), React.createElement("a", {
     "aria-label": "Facebook",
-    className: "shell-color-blue shell-color-gray-dark-on-hover",
+    className: "shell-color-blue shell-color-blue-dark-on-hover",
     href: "https://www.facebook.com/Mapbox"
   }, React.createElement("svg", {
     viewBox: "0 0 50 50",
@@ -846,7 +844,7 @@ function FooterSocialMediaStrip(props) {
     d: "M28.87,50V27.19h7.65l1.15-8.89h-8.8V12.63c0-2.57.71-4.33,4.41-4.33H38v-8A63.78,63.78,0,0,0,31.13,0C24.34,0,19.69,4.14,19.69,11.75V18.3H12v8.89h7.68V50Z"
   })))), React.createElement("a", {
     "aria-label": "Dribbble",
-    className: "shell-color-blue shell-color-gray-dark-on-hover",
+    className: "shell-color-blue shell-color-blue-dark-on-hover",
     href: "https://dribbble.com/mapbox"
   }, React.createElement("svg", {
     viewBox: "0 0 216 216",
@@ -861,7 +859,7 @@ function FooterSocialMediaStrip(props) {
     d: "M108,15.78a92.16,92.16,0,1,0,92.16,92.16A92.27,92.27,0,0,0,108,15.78ZM169,58.28a78.31,78.31,0,0,1,17.78,49c-2.6-.55-28.62-5.83-54.81-2.54-.55-1.35-1.12-2.7-1.7-4.06-1.63-3.84-3.39-7.65-5.22-11.4C154.1,77.44,167.29,60.53,169,58.28ZM108,29.34A78.41,78.41,0,0,1,160.2,49.18c-1.41,2-13.26,17.94-41.25,28.43A421.91,421.91,0,0,0,89.58,31.53,79,79,0,0,1,108,29.34ZM74.56,36.82a503.63,503.63,0,0,1,29.18,45.53A293.82,293.82,0,0,1,31,91.94,79,79,0,0,1,74.56,36.82ZM29.31,108.06c0-.8,0-1.61,0-2.41,3.44.08,41.59.57,80.9-11.2,2.25,4.41,4.4,8.89,6.38,13.36-1,.29-2.08.61-3.1.94-40.6,13.12-62.2,48.89-64,51.94A78.39,78.39,0,0,1,29.31,108.06ZM108,186.78a78.29,78.29,0,0,1-48.31-16.62c1.41-2.9,17.35-33.69,61.75-49.16l.52-.17a326.92,326.92,0,0,1,16.79,59.69A78.19,78.19,0,0,1,108,186.78Zm44-13.47a338.31,338.31,0,0,0-15.29-56.12c24.67-4,46.34,2.51,49,3.36A78.84,78.84,0,0,1,152,173.31Z"
   }))))), React.createElement("a", {
     "aria-label": "Instagram",
-    className: "shell-color-blue shell-color-gray-dark-on-hover",
+    className: "shell-color-blue shell-color-blue-dark-on-hover",
     href: "https://www.instagram.com/Mapbox"
   }, React.createElement("svg", {
     viewBox: "0 0 50 50",
@@ -891,7 +889,7 @@ function PageFooter() {
     className: "limiter"
   }, React.createElement("div", {
     id: "page-footer-legal-social",
-    className: "shell-grid shell-txt-s shell-color-darken50 shell-py12 shell-py0-ml"
+    className: "shell-grid shell-txt-s shell-color-gray shell-py12 shell-py0-ml"
   }, React.createElement(FooterLegalStrip, {
     className: "shell-col shell-col--12 shell-col--6-mm shell-my12"
   }), React.createElement(FooterSocialMediaStrip, {
@@ -899,15 +897,91 @@ function PageFooter() {
   }))));
 }
 
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x.default : x;
+}
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var titleGenerator_1 = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.titleGenerator = titleGenerator;
+
+function titleGenerator(title, subsite, site) {
+  // create array for formatted title: {title} | {subsite} | {site}
+  var titleArr = []; // do not push a title that is "Introduction"
+
+  if (title && title !== 'Introduction' && (subsite || site)) titleArr.push(title); // push subsite, if same value doesn't exist yet, strip "for (Product)" from name
+
+  if (subsite && titleArr.indexOf(subsite) === -1) titleArr.push(subsite.replace(/\sfor\s(iOS|Android|Vision|Unity)/, '')); // push site, if same value doesn't exist yet
+
+  if (site && titleArr.indexOf(site) === -1) titleArr.push(site);
+  return titleArr;
+}
+});
+
+unwrapExports(titleGenerator_1);
+var titleGenerator_2 = titleGenerator_1.titleGenerator;
+
+var removeMarkdown = function (md, options) {
+  options = options || {};
+  options.listUnicodeChar = options.hasOwnProperty('listUnicodeChar') ? options.listUnicodeChar : false;
+  options.stripListLeaders = options.hasOwnProperty('stripListLeaders') ? options.stripListLeaders : true;
+  options.gfm = options.hasOwnProperty('gfm') ? options.gfm : true;
+  options.useImgAltText = options.hasOwnProperty('useImgAltText') ? options.useImgAltText : true;
+  var output = md || ''; // Remove horizontal rules (stripListHeaders conflict with this rule, which is why it has been moved to the top)
+
+  output = output.replace(/^(-\s*?|\*\s*?|_\s*?){3,}\s*$/gm, '');
+
+  try {
+    if (options.stripListLeaders) {
+      if (options.listUnicodeChar) output = output.replace(/^([\s\t]*)([\*\-\+]|\d+\.)\s+/gm, options.listUnicodeChar + ' $1');else output = output.replace(/^([\s\t]*)([\*\-\+]|\d+\.)\s+/gm, '$1');
+    }
+
+    if (options.gfm) {
+      output = output // Header
+      .replace(/\n={2,}/g, '\n') // Fenced codeblocks
+      .replace(/~{3}.*\n/g, '') // Strikethrough
+      .replace(/~~/g, '') // Fenced codeblocks
+      .replace(/`{3}.*\n/g, '');
+    }
+
+    output = output // Remove HTML tags
+    .replace(/<[^>]*>/g, '') // Remove setext-style headers
+    .replace(/^[=\-]{2,}\s*$/g, '') // Remove footnotes?
+    .replace(/\[\^.+?\](\: .*?$)?/g, '').replace(/\s{0,2}\[.*?\]: .*?$/g, '') // Remove images
+    .replace(/\!\[(.*?)\][\[\(].*?[\]\)]/g, options.useImgAltText ? '$1' : '') // Remove inline links
+    .replace(/\[(.*?)\][\[\(].*?[\]\)]/g, '$1') // Remove blockquotes
+    .replace(/^\s{0,3}>\s?/g, '') // Remove reference-style links?
+    .replace(/^\s{1,2}\[(.*?)\]: (\S+)( ".*?")?\s*$/g, '') // Remove atx-style headers
+    .replace(/^(\n)?\s{0,}#{1,6}\s+| {0,}(\n)?\s{0,}#{0,} {0,}(\n)?\s{0,}$/gm, '$1$2$3') // Remove emphasis (repeat the line to remove double emphasis)
+    .replace(/([\*_]{1,3})(\S.*?\S{0,1})\1/g, '$2').replace(/([\*_]{1,3})(\S.*?\S{0,1})\1/g, '$2') // Remove code blocks
+    .replace(/(`{3,})(.*?)\1/gm, '$2') // Remove inline code
+    .replace(/`(.+?)`/g, '$1') // Replace two or more newlines with exactly two? Not entirely sure this belongs here...
+    .replace(/\n{2,}/g, '\n\n');
+  } catch (e) {
+    console.error(e);
+    return md;
+  }
+
+  return output;
+};
+
 function MetaTagger(props) {
-  var suffixedTitle = /^Mapbox/.test(props.title) ? props.title : "".concat(props.title, " | Mapbox");
+  var title = titleGenerator_2(props.title, props.subsite, props.site).join(' | ');
+  var suffixedTitle = "".concat(title, " | Mapbox");
   var preppedDescription = props.description.replace(/\s+/g, ' ');
   var prodUrl = 'https://www.mapbox.com';
   if (props.pathname[0] !== '/') prodUrl += '/';
   prodUrl += props.pathname;
   var metaItems = [{
     name: 'description',
-    content: preppedDescription
+    content: removeMarkdown(preppedDescription)
   }];
   metaItems.push({
     name: 'twitter:title',
@@ -917,10 +991,10 @@ function MetaTagger(props) {
     content: props.title
   }, {
     name: 'twitter:description',
-    content: preppedDescription
+    content: removeMarkdown(preppedDescription)
   }, {
     property: 'og:description',
-    content: preppedDescription
+    content: removeMarkdown(preppedDescription)
   }, {
     property: 'og:url',
     content: prodUrl
@@ -936,7 +1010,7 @@ function MetaTagger(props) {
     class: 'swiftype',
     name: 'excerpt',
     'data-type': 'string',
-    content: props.description
+    content: removeMarkdown(props.description)
   }, {
     name: 'twitter:image:alt',
     content: props.imageAlt
@@ -948,7 +1022,50 @@ function MetaTagger(props) {
     name: 'image',
     'data-type': 'enum',
     content: props.imageUrl
+  }, {
+    class: 'swiftype',
+    name: 'site',
+    'data-type': 'string',
+    content: props.site
   });
+
+  if (props.subsite) {
+    metaItems.push({
+      class: 'swiftype',
+      name: 'subsite',
+      'data-type': 'string',
+      content: props.subsite
+    });
+  }
+
+  if (props.contentType) {
+    metaItems.push({
+      class: 'swiftype',
+      name: 'contentType',
+      'data-type': 'string',
+      content: props.contentType
+    });
+  }
+
+  if (props.language) {
+    props.language.forEach(function (language) {
+      metaItems.push({
+        class: 'swiftype',
+        name: 'codeLanguage',
+        'data-type': 'string',
+        content: language
+      });
+    });
+  }
+
+  if (props.level) {
+    metaItems.push({
+      class: 'swiftype',
+      name: 'level',
+      'data-type': 'string',
+      content: props.level
+    });
+  }
 
   if (props.largeImage) {
     metaItems.push({
@@ -968,6 +1085,13 @@ function MetaTagger(props) {
     });
   }
 
+  if (props.hideFromSearchEngines) {
+    metaItems.push({
+      name: 'robots',
+      content: 'noindex, nofollow'
+    });
+  }
+
   return React.createElement(Helmet__default, {
     title: suffixedTitle,
     meta: metaItems
@@ -978,10 +1102,16 @@ MetaTagger.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   pathname: PropTypes.string.isRequired,
+  site: PropTypes.string.isRequired,
+  subsite: PropTypes.string,
+  contentType: PropTypes.string,
   imageUrl: PropTypes.string,
   imageUrlThumbnail: PropTypes.string,
   imageAlt: PropTypes.string,
-  largeImage: PropTypes.bool
+  largeImage: PropTypes.bool,
+  language: PropTypes.array,
+  level: PropTypes.number,
+  hideFromSearchEngines: PropTypes.bool
 };
 MetaTagger.defaultProps = {
   imageUrl: DEFAULT_SOCIAL_IMAGE_URL,
@@ -1055,7 +1185,10 @@ function (_React$Component) {
           minHeight: '100vh',
           overflowX: 'hidden'
         }
-      }, React.createElement(PageHelmet, null), React.createElement(MetaTagger, this.props.meta), React.createElement("div", {
+      }, React.createElement(PageHelmet, null), React.createElement(MetaTagger, _extends({}, this.props.meta, {
+        site: this.props.site,
+        subsite: this.props.subsite
+      })), React.createElement("div", {
         className: nonFooterClasses
       }, React.createElement("div", {
         className: "shell-wrapper"
@@ -1080,9 +1213,15 @@ ReactPageShell.propTypes = {
   meta: PropTypes.shape({
     title: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
-    pathname: PropTypes.string
+    contentType: PropTypes.string,
+    pathname: PropTypes.string,
+    level: PropTypes.number,
+    codeLanguage: PropTypes.array,
+    hideFromSearchEngines: PropTypes.bool
   }).isRequired,
   children: PropTypes.node.isRequired,
+  site: PropTypes.string.isRequired,
+  subsite: PropTypes.string,
   darkHeaderText: PropTypes.bool,
   nonFooterBgClass: PropTypes.string,
   onUser: PropTypes.func

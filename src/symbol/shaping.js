@@ -276,12 +276,18 @@ function calculateBadness(lineWidth: number,
     return raggedness + Math.abs(penalty) * penalty;
 }
 
-function calculatePenalty(codePoint: number, nextCodePoint: number) {
+function calculatePenalty(codePoint: number, nextCodePoint: number, penalizableIdeographicBreak: boolean) {
     let penalty = 0;
     // Force break on newline
     if (codePoint === 0x0a) {
         penalty -= 10000;
     }
+    // Penalize breaks between characters that allow ideographic breaking because
+    // they are less preferable than breaks at spaces (or zero width spaces).
+    if (penalizableIdeographicBreak) {
+        penalty += 150;
+    }
+
     // Penalize open parenthesis at end of line
     if (codePoint === 0x28 || codePoint === 0xff08) {
         penalty += 50;
@@ -353,6 +359,8 @@ function determineLineBreaks(logicalInput: TaggedString,
     const potentialLineBreaks = [];
     const targetWidth = determineAverageLineWidth(logicalInput, spacing, maxWidth, glyphMap);
 
+    const hasServerSuggestedBreakpoints = logicalInput.text.indexOf("\u200b") >= 0;
+
     let currentX = 0;
 
     for (let i = 0; i < logicalInput.length(); i++) {
@@ -366,18 +374,19 @@ function determineLineBreaks(logicalInput: TaggedString,
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
         // surrounding spaces.
-        if ((i < logicalInput.length() - 1) &&
-            (breakable[codePoint] ||
-                charAllowsIdeographicBreaking(codePoint))) {
+        if ((i < logicalInput.length() - 1)) {
+            const ideographicBreak = charAllowsIdeographicBreaking(codePoint);
+            if (breakable[codePoint] || ideographicBreak) {
 
-            potentialLineBreaks.push(
-                evaluateBreak(
-                    i + 1,
-                    currentX,
-                    targetWidth,
-                    potentialLineBreaks,
-                    calculatePenalty(codePoint, logicalInput.getCharCode(i + 1)),
-                    false));
+                potentialLineBreaks.push(
+                    evaluateBreak(
+                        i + 1,
+                        currentX,
+                        targetWidth,
+                        potentialLineBreaks,
+                        calculatePenalty(codePoint, logicalInput.getCharCode(i + 1), ideographicBreak && hasServerSuggestedBreakpoints),
+                        false));
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 
 type Config = {|
   API_URL: string,
