@@ -271,6 +271,7 @@ export const getVideo = function(urls: Array<string>, callback: Callback<HTMLVid
     const video: HTMLVideoElement = window.document.createElement('video');
     video.muted = true;
     video.onloadstart = function() {
+        console.log(video)
         callback(null, video);
     };
     for (let i = 0; i < urls.length; i++) {

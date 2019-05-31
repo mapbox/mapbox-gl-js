@@ -53,7 +53,7 @@ test('ImageSource', (t) => {
 
     t.test('constructor', (t) => {
         const source = createSource({ url : '/image.png' });
-
+        console.log(source.updateImage)
         t.equal(source.minzoom, 0);
         t.equal(source.maxzoom, 22);
         t.equal(source.tileSize, 512);
