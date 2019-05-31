@@ -4,6 +4,7 @@ import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
+import sinon from 'sinon';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
@@ -145,6 +146,94 @@ test('ScrollZoomHandler', (t) => {
         t.equal(map.getZoom(), 0);
 
         map.remove();
+        t.end();
+    });
+
+    t.test('emits one movestart event and one moveend event while zooming', (t) => {
+        const clock = sinon.useFakeTimers(now);
+        const map = createMap(t);
+
+        let startCount = 0;
+        map.on('movestart', () => {
+            startCount += 1;
+        });
+
+        let endCount = 0;
+        map.on('moveend', () => {
+            endCount += 1;
+        });
+
+        const events = [
+            [2, {type: 'trackpad', deltaY: -1}],
+            [7, {type: 'trackpad', deltaY: -2}],
+            [30, {type: 'wheel', deltaY: -5}]
+        ];
+
+        const end = now + 50;
+        let lastWheelEvent = now;
+
+        while (now++ < end) {
+            if (events.length && lastWheelEvent + events[0][0] === now) {
+                const [, event] = events.shift();
+                simulate.wheel(map.getCanvas(), event);
+                lastWheelEvent = now;
+            }
+            if (now % 20 === 0) {
+                map._renderTaskQueue.run();
+            }
+        }
+
+        clock.tick(200);
+
+        t.equal(startCount, 1);
+        t.equal(endCount, 1);
+
+        clock.restore();
+
+        t.end();
+    });
+
+    t.test('emits one zoomstart event and one zoomend event while zooming', (t) => {
+        const clock = sinon.useFakeTimers(now);
+        const map = createMap(t);
+
+        let startCount = 0;
+        map.on('zoomstart', () => {
+            startCount += 1;
+        });
+
+        let endCount = 0;
+        map.on('zoomend', () => {
+            endCount += 1;
+        });
+
+        const events = [
+            [2, {type: 'trackpad', deltaY: -1}],
+            [7, {type: 'trackpad', deltaY: -2}],
+            [30, {type: 'wheel', deltaY: -5}],
+        ];
+
+        const end = now + 50;
+        let lastWheelEvent = now;
+
+        while (now++ < end) {
+            if (events.length && lastWheelEvent + events[0][0] === now) {
+                const [, event] = events.shift();
+                simulate.wheel(map.getCanvas(), event);
+                lastWheelEvent = now;
+            }
+            if (now % 20 === 0) {
+                map._renderTaskQueue.run();
+            }
+        }
+
+        clock.tick(200);
+
+        t.equal(startCount, 1);
+        t.equal(endCount, 1);
+
+        clock.restore();
+
         t.end();
     });
 

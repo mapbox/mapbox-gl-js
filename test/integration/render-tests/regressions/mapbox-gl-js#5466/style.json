@@ -3,9 +3,7 @@
   "metadata": {
     "test": {
       "width": 512,
-      "height": 512,
-      "center": [0, 0],
-      "zoom": 1
+      "height": 512
     }
   },
   "sources": {

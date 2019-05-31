@@ -7,9 +7,9 @@ import entries from 'object.entries';
 import IconText from '@mapbox/mr-ui/icon-text';
 
 const meta = {
-    title: 'Mapbox GL JS Plugins',
+    title: 'Plugins',
     description: 'Extend your Mapbox GL JS map with plugins.',
-    pathname: '/mapbox-gl-js/plugins'
+    pathname: '/mapbox-gl-js/plugins/'
 };
 
 const plugins = {

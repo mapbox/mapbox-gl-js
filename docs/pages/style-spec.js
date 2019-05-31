@@ -10,9 +10,10 @@ import ref from '../../src/style-spec/reference/latest';
 import Icon from '@mapbox/mr-ui/icon';
 
 const meta = {
-    title: 'Mapbox Style Specification',
+    title: 'Style Specification',
     description: 'This specification defines and describes the visual appearance of a map: what data to draw, the order to draw it in, and how to style the data when drawing it.',
-    pathname: '/mapbox-gl-js/style-spec'
+    pathname: '/mapbox-gl-js/style-spec/',
+    contentType: 'specification'
 };
 
 const sourceTypes = ['vector', 'raster', 'raster-dem', 'geojson', 'image', 'video'];

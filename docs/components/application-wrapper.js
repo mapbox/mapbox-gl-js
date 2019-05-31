@@ -1,7 +1,6 @@
 import React from 'react';
 
 if (typeof window !== 'undefined') {
-    window.MapboxPageShellProduction = true;
   import(/* webpackChunkName: "assembly-js" */ '@mapbox/mbx-assembly/dist/assembly.js');
 }
 

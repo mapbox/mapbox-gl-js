@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 
 import Point from '@mapbox/point-geometry';
 
@@ -8,9 +8,9 @@ import assert from 'assert';
 const DOM = {};
 export default DOM;
 
-DOM.create = function (tagName: *, className?: string, container?: HTMLElement) {
+DOM.create = function (tagName: string, className: ?string, container?: HTMLElement) {
     const el = window.document.createElement(tagName);
-    if (className) el.className = className;
+    if (className !== undefined) el.className = className;
     if (container) container.appendChild(el);
     return el;
 };
@@ -20,12 +20,10 @@ DOM.createNS = function (namespaceURI: string, tagName: string) {
     return el;
 };
 
-const docStyle = window.document ?
-    (window.document.documentElement: any).style :
-    null;
+const docStyle = window.document.documentElement.style;
 
 function testProp(props) {
-    if (!docStyle) return null;
+    if (!docStyle) return props[0];
     for (let i = 0; i < props.length; i++) {
         if (props[i] in docStyle) {
             return props[i];
@@ -53,27 +51,31 @@ DOM.enableDrag = function () {
 const transformProp = testProp(['transform', 'WebkitTransform']);
 
 DOM.setTransform = function(el: HTMLElement, value: string) {
-    (el.style: any)[transformProp] = value;
+    // https://github.com/facebook/flow/issues/7754
+    // $FlowFixMe
+    el.style[transformProp] = value;
 };
 
 // Feature detection for {passive: false} support in add/removeEventListener.
 let passiveSupported = false;
 
 try {
-    const options = (Object.defineProperty: any)({}, "passive", {
-        get() {
+    // https://github.com/facebook/flow/issues/285
+    // $FlowFixMe
+    const options = Object.defineProperty({}, "passive", {
+        get() { // eslint-disable-line
             passiveSupported = true;
         }
     });
-    (window.addEventListener: any)("test", options, options);
-    (window.removeEventListener: any)("test", options, options);
+    window.addEventListener("test", options, options);
+    window.removeEventListener("test", options, options);
 } catch (err) {
     passiveSupported = false;
 }
 
 DOM.addEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
     if ('passive' in options && passiveSupported) {
-        target.addEventListener(type, callback, (options: any));
+        target.addEventListener(type, callback, options);
     } else {
         target.addEventListener(type, callback, options.capture);
     }
@@ -81,7 +83,7 @@ DOM.addEventListener = function(target: *, type: *, callback: *, options: {passi
 
 DOM.removeEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
     if ('passive' in options && passiveSupported) {
-        target.removeEventListener(type, callback, (options: any));
+        target.removeEventListener(type, callback, options);
     } else {
         target.removeEventListener(type, callback, options.capture);
     }
@@ -101,16 +103,16 @@ DOM.suppressClick = function() {
     }, 0);
 };
 
-DOM.mousePos = function (el: HTMLElement, e: any) {
+DOM.mousePos = function (el: HTMLElement, e: MouseEvent | window.TouchEvent | Touch) {
     const rect = el.getBoundingClientRect();
-    e = e.touches ? e.touches[0] : e;
+    const t = window.TouchEvent && (e instanceof window.TouchEvent) ? e.touches[0] : e;
     return new Point(
-        e.clientX - rect.left - el.clientLeft,
-        e.clientY - rect.top - el.clientTop
+        t.clientX - rect.left - el.clientLeft,
+        t.clientY - rect.top - el.clientTop
     );
 };
 
-DOM.touchPos = function (el: HTMLElement, e: any) {
+DOM.touchPos = function (el: HTMLElement, e: TouchEvent) {
     const rect = el.getBoundingClientRect(),
         points = [];
     const touches = (e.type === 'touchend') ? e.changedTouches : e.touches;

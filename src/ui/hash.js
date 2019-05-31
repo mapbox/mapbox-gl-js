@@ -14,7 +14,7 @@ import type Map from './map';
  */
 class Hash {
     _map: Map;
-    _updateHash: () => TimeoutID;
+    _updateHash: () => ?TimeoutID;
 
     constructor() {
         bindAll([

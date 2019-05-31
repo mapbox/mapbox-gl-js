@@ -12,7 +12,7 @@ import Light from './light';
 import LineAtlas from '../render/line_atlas';
 import { pick, clone, extend, deepEqual, filterObject, mapObject } from '../util/util';
 import { getJSON, getReferrer, makeRequest, ResourceType } from '../util/ajax';
-import { isMapboxURL, normalizeStyleURL } from '../util/mapbox';
+import { isMapboxURL } from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
 import { validateStyle, emitValidationErrors as _emitValidationErrors } from './validate_style';
@@ -137,7 +137,7 @@ class Style extends Evented {
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
         this.imageManager.setEventedParent(this);
-        this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
+        this.glyphManager = new GlyphManager(map._requestManager, options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
@@ -192,8 +192,8 @@ class Style extends Evented {
         const validate = typeof options.validate === 'boolean' ?
             options.validate : !isMapboxURL(url);
 
-        url = normalizeStyleURL(url, options.accessToken);
-        const request = this.map._transformRequest(url, ResourceType.Style);
+        url = this.map._requestManager.normalizeStyleURL(url, options.accessToken);
+        const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
 
         this._request = getJSON(request, (error: ?Error, json: ?Object) => {
             this._request = null;
@@ -227,7 +227,7 @@ class Style extends Evented {
         }
 
         if (json.sprite) {
-            this._spriteRequest = loadSprite(json.sprite, this.map._transformRequest, (err, images) => {
+            this._spriteRequest = loadSprite(json.sprite, this.map._requestManager, (err, images) => {
                 this._spriteRequest = null;
                 if (err) {
                     this.fire(new ErrorEvent(err));

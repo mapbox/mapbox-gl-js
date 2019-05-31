@@ -1,10 +1,8 @@
 /*---
 title: Set a point after Geocoder result
 description: >-
-  Listen to the
-  [`result`](https://github.com/mapbox/mapbox-gl-geocoder/blob/master/API.md#on)
-  event from [mapbox-gl-geocoder](https://github.com/mapbox/mapbox-gl-geocoder)
-  and place a point on the coordinate results.
+  Style a [Marker](https://docs.mapbox.com/mapbox-gl-js/api/#marker) used to mark the location of the [mapbox-gl-geocoder](https://github.com/mapbox/mapbox-gl-geocoder)
+  result.
 tags:
   - geocoder
 pathname: /mapbox-gl-js/example/point-from-geocoder-result/
