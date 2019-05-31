@@ -1497,10 +1497,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true});
+                map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true, 'click': true});
                 map.removeFeatureState({ source: 'geojson', id: 0}, 'hover');
                 const fState = map.getFeatureState({ source: 'geojson', id: 0});
                 t.equal(fState.hover, undefined);
+                t.equal(fState.click, true);
                 t.end();
             });
         });
