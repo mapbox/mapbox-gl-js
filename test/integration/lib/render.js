@@ -135,7 +135,7 @@ export function run(implementation, ignores, render) {
 
                     const diff = pixelmatch(
                         actualImg.data, expectedImg.data, diffImg.data,
-                        width, height, {threshold: 0.13}) / (width * height);
+                        width, height, {threshold: 0.1285}) / (width * height);
 
                     if (diff < minDiff) {
                         minDiff = diff;
