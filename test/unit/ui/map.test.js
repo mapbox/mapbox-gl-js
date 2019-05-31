@@ -1485,6 +1485,26 @@ test('Map', (t) => {
     });
 
     t.test('#removeFeatureState', (t) => {
+
+        t.test('accepts "0" id', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true, 'click': true});
+                map.removeFeatureState({ source: 'geojson', id: 0}, 'hover');
+                const fState = map.getFeatureState({ source: 'geojson', id: 0});
+                t.equal(fState.hover, undefined);
+                t.equal(fState.click, true);
+                t.end();
+            });
+        });
         t.test('remove specific state property', (t) => {
             const map = createMap(t, {
                 style: {
