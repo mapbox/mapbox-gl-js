@@ -9,9 +9,11 @@ import LinkerStack from 'documentation/src/output/util/linker_stack';
 import ApiItem from '../components/api-item';
 
 const meta = {
-    title: 'Mapbox GL JS API',
+    title: 'API Reference',
     description: 'The Mapbox GL JS API documentation to render interactive maps from vector tiles and Mapbox styles.',
-    pathname: '/mapbox-gl-js/api'
+    pathname: '/mapbox-gl-js/api/',
+    contentType: 'API',
+    lanaguage: ['JavaScript']
 };
 
 const linkerStack = new LinkerStack({})

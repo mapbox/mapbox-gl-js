@@ -66,6 +66,8 @@ ${html}
 
         render() {
             const {frontMatter} = this.props;
+            frontMatter.language = ['JavaScript'];
+            frontMatter.contentType = 'example';
             return (
                 <PageShell meta={frontMatter}>
                     <div className='relative prose'>
