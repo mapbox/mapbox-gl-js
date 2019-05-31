@@ -29,6 +29,13 @@ export default function validateSource(options) {
             style: options.style,
             styleSpec
         });
+        if ('url' in value) {
+            for (const prop in value) {
+                if (['type', 'url', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding'].indexOf(prop) < 0) {
+                    errors.push(new ValidationError(`${key}.${prop}`, value[prop], `a source with a "url" property may not include a "${prop}" property`));
+                }
+            }
+        }
         return errors;
 
     case 'geojson':
