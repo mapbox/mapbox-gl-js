@@ -100,7 +100,6 @@ jobs:
       - restore_cache:
           keys:
             - v2-yarn-{{ checksum "yarn.lock" }}
-            - v2-yarn
       - run: yarn
       - save_cache:
           key: v2-yarn-{{ checksum "yarn.lock" }}
