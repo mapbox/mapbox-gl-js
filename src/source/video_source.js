@@ -62,14 +62,15 @@ class VideoSource extends ImageSource {
     }
 
     load() {
+        
         const options = this.options;
-
         this.urls = [];
         for (const url of options.urls) {
             this.urls.push(this.map._requestManager.transformRequest(url, ResourceType.Source).url);
         }
 
         getVideo(this.urls, (err, video) => {
+            console.log(err, video)
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (video) {
@@ -89,6 +90,26 @@ class VideoSource extends ImageSource {
                 this._finishLoading();
             }
         });
+    }
+
+    pause() {
+        this.video.pause();
+    }
+
+    play() {
+        this.video.play();
+    }
+
+    seek(seconds) {
+
+        const seekableRange = this.video.seekable;
+
+        if (seconds < seekableRange.start(0) || seconds > seekableRange.end(0)) {
+            this.fire(new ErrorEvent("Playback for this video can be set only between the "+seekableRange.start(0) + " and " + seekableRange.end(0) + "-second mark."));
+        }
+
+        this.video.currentTime = seconds;
+        
     }
 
     /**
