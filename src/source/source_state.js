@@ -62,12 +62,12 @@ class SourceFeatureState {
 
         this.deletedStates[sourceLayer] = this.deletedStates[sourceLayer] || {};
 
-        if (key && featureId) {
+        if (key && featureId !== undefined && featureId >= 0) {
             if (this.deletedStates[sourceLayer][feature] !== null) {
                 this.deletedStates[sourceLayer][feature] = this.deletedStates[sourceLayer][feature] || {};
                 this.deletedStates[sourceLayer][feature][key] = null;
             }
-        } else if (featureId) {
+        } else if (featureId !== undefined && featureId >= 0) {
             const updateInQueue = this.stateChanges[sourceLayer] && this.stateChanges[sourceLayer][feature];
             if (updateInQueue) {
                 this.deletedStates[sourceLayer][feature] = {};
