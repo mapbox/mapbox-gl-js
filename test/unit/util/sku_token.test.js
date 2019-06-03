@@ -19,6 +19,12 @@ test('sku token generation', (t) => {
         t.end();
     });
 
+    t.test('token only contains base-62 characters', (t) => {
+        const regex = /^[0-9a-zA-Z]+$/;
+        t.ok(regex.exec(skuToken));
+        t.end();
+    });
+
     t.test('createSkuToken generates a unique token each time it\'s called', (t) => {
         const secondSkuToken = createSkuToken().token;
         const thirdSkuToken = createSkuToken().token;
