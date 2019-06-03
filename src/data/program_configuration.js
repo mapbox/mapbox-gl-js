@@ -89,7 +89,7 @@ interface Binder<T> {
     setUniforms(context: Context, uniform: Uniform<*>, globals: GlobalProperties,
         currentValue: PossiblyEvaluatedPropertyValue<T>, uniformName: string): void;
 
-    getBinding(context: Context, location: WebGLUniformLocation): $Subtype<Uniform<*>>;
+    getBinding(context: Context, location: WebGLUniformLocation): $Shape<Uniform<*>>;
 }
 
 class ConstantBinder<T> implements Binder<T> {
@@ -121,7 +121,7 @@ class ConstantBinder<T> implements Binder<T> {
         uniform.set(currentValue.constantOr(this.value));
     }
 
-    getBinding(context: Context, location: WebGLUniformLocation): $Subtype<Uniform<any>> {
+    getBinding(context: Context, location: WebGLUniformLocation): $Shape<Uniform<any>> {
         return (this.type === 'color') ?
             new UniformColor(context, location) :
             new Uniform1f(context, location);
@@ -176,7 +176,7 @@ class CrossFadedConstantBinder<T> implements Binder<T> {
         if (uniformName === "u_pattern_from" && pos.patternFrom) uniform.set(pos.patternFrom);
     }
 
-    getBinding(context: Context, location: WebGLUniformLocation): $Subtype<Uniform<any>> {
+    getBinding(context: Context, location: WebGLUniformLocation): $Shape<Uniform<any>> {
         return new Uniform4f(context, location);
     }
 }
@@ -525,7 +525,7 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
         uniform.set(0);
     }
 
-    getBinding(context: Context, location: WebGLUniformLocation): $Subtype<Uniform<any>> {
+    getBinding(context: Context, location: WebGLUniformLocation): $Shape<Uniform<any>> {
         return new Uniform1f(context, location);
     }
 }

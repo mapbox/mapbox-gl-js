@@ -61,6 +61,7 @@ import type {
     SourceSpecification
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
+import type {Validator} from './validate_style';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -1121,7 +1122,7 @@ class Style extends Evented {
         this.light.updateTransitions(parameters);
     }
 
-    _validate(validate: ({}) => void, key: string, value: any, props: any, options: { validate?: boolean } = {}) {
+    _validate(validate: Validator, key: string, value: any, props: any, options: { validate?: boolean } = {}) {
         if (options && options.validate === false) {
             return false;
         }
