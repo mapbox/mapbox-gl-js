@@ -181,7 +181,7 @@ class VideoSource extends ImageSource {
     serialize() {
         return {
             type: 'video',
-            urls: this.urls,
+            urls: this,
             coordinates: this.coordinates
         };
     }
