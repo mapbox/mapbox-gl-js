@@ -18,7 +18,7 @@ class LayerPlacement {
         this._seenCrossTileIDs = {};
     }
 
-    continuePlacement(tiles: Array<Tile>, placement: Placement, showCollisionBoxes: boolean, styleLayer: StyleLayer, shouldPausePlacement) {
+    continuePlacement(tiles: Array<Tile>, placement: Placement, showCollisionBoxes: boolean, styleLayer: StyleLayer, shouldPausePlacement: () => boolean) {
         while (this._currentTileIndex < tiles.length) {
             const tile = tiles[this._currentTileIndex];
             placement.placeLayerTile(styleLayer, tile, showCollisionBoxes, this._seenCrossTileIDs);

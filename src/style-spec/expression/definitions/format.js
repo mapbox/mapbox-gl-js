@@ -24,7 +24,7 @@ export default class FormatExpression implements Expression {
         this.sections = sections;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
         if (args.length < 3) {
             return context.error(`Expected at least two arguments.`);
         }

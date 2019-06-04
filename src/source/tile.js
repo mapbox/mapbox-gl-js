@@ -26,13 +26,12 @@ import type DEMData from '../data/dem_data';
 import type {AlphaImage} from '../util/image';
 import type ImageAtlas from '../render/image_atlas';
 import type ImageManager from '../render/image_manager';
-import type Mask from '../render/tile_mask';
+import type {Mask} from '../render/tile_mask';
 import type Context from '../gl/context';
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
-import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type Transform from '../geo/transform';
 import type {LayerFeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
@@ -348,7 +347,7 @@ class Tile {
 
         const maskArray = Object.keys(mask);
         for (let i = 0; i < maskArray.length; i++) {
-            const maskCoord = mask[maskArray[i]];
+            const maskCoord = mask[+maskArray[i]];
             const vertexExtent = EXTENT >> maskCoord.z;
             const tlVertex = new Point(maskCoord.x * vertexExtent, maskCoord.y * vertexExtent);
             const brVertex = new Point(tlVertex.x + vertexExtent, tlVertex.y + vertexExtent);

@@ -78,7 +78,7 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
             this.hasUntypedArgument = lhs.type.kind === 'value' || rhs.type.kind === 'value';
         }
 
-        static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
+        static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
             if (args.length !== 3 && args.length !== 4)
                 return context.error(`Expected two or three arguments.`);
 
