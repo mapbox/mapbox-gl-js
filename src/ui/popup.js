@@ -54,8 +54,8 @@ export type PopupOptions = {
  * @param {string} [options.className] Space-separated CSS class names to add to popup container
  * @param {string} [options.maxWidth='240px'] -
  *  A string that sets the CSS property of the popup's maximum width, eg `'300px'`.
- *  If you want a fluid container which sizes to the inner size, you can set this property to `'none'`.
- *  All available values can be found here: https://developer.mozilla.org/en-US/docs/Web/CSS/max-width
+ *  To ensure the popup resizes to fit its content, set this property to `'none'`.
+ *  Available values can be found here: https://developer.mozilla.org/en-US/docs/Web/CSS/max-width
  * @example
  * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
  * var popupOffsets = {
