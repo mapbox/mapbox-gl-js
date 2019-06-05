@@ -147,7 +147,7 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
     isStateDependent: boolean;
 
     _styleExpression: StyleExpression;
-    _interpolationType: ?InterpolationType;
+    interpolationType: ?InterpolationType;
 
     constructor(kind: Kind, expression: StyleExpression, zoomCurve: Step | Interpolate) {
         this.kind = kind;
@@ -155,7 +155,7 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
         this._styleExpression = expression;
         this.isStateDependent = kind !== ('camera': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
         if (zoomCurve instanceof Interpolate) {
-            this._interpolationType = zoomCurve.interpolation;
+            this.interpolationType = zoomCurve.interpolation;
         }
     }
 
@@ -168,8 +168,8 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
     }
 
     interpolationFactor(input: number, lower: number, upper: number): number {
-        if (this._interpolationType) {
-            return Interpolate.interpolationFactor(this._interpolationType, input, lower, upper);
+        if (this.interpolationType) {
+            return Interpolate.interpolationFactor(this.interpolationType, input, lower, upper);
         } else {
             return 0;
         }
@@ -191,7 +191,8 @@ export type CameraExpression = {
     kind: 'camera',
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
-    zoomStops: Array<number>
+    zoomStops: Array<number>,
+    interpolationType: ?InterpolationType
 };
 
 export type CompositeExpression = {
@@ -199,7 +200,8 @@ export type CompositeExpression = {
     isStateDependent: boolean,
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
-    zoomStops: Array<number>
+    zoomStops: Array<number>,
+    interpolationType: ?InterpolationType
 };
 
 export type StylePropertyExpression =
