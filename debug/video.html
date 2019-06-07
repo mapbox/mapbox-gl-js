@@ -41,9 +41,9 @@ var videoStyle = {
             "urls": [ "cropped.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm" ],
             "coordinates": [
                 [lng, lat],
-                [lng+9.5, lat],
-                [lng+9.5, lat-4.2],
-                [lng, lat-4.2]
+                [lng + 9.5, lat],
+                [lng + 9.5, lat - 4.2],
+                [lng, lat - 4.2]
             ]
         },
         // "water": {
@@ -61,27 +61,27 @@ var videoStyle = {
         "id": "satellite",
         "type": "raster",
         "source": "satellite"
-    }, 
+    },
     {
         "id": "video",
         "type": "raster",
         "source": "hurricane",
         'paint':{
             'raster-opacity': {
-                'stops':[[5,0], [6,1]]
+                'stops':[[5, 0], [6, 1]]
             }
         }
     },
-    // {
-    //     "id": "water",
-    //     "type": "raster",
-    //     "source": "water",
-    //     'paint':{
-    //         'raster-opacity': {
-    //             'stops':[[5,0.75], [6,1]]
-    //         }
-    //     }
-    // }
+        // {
+        //     "id": "water",
+        //     "type": "raster",
+        //     "source": "water",
+        //     'paint':{
+        //         'raster-opacity': {
+        //             'stops':[[5,0.75], [6,1]]
+        //         }
+        //     }
+        // }
 
     ]
 };
@@ -89,7 +89,7 @@ var videoStyle = {
 document.getElementById('timeslider')
     .addEventListener('change', function() {
         map.getSource('hurricane').seek(parseFloat(this.value));
-    })
+    });
 
 
 var map = new mapboxgl.Map({
@@ -98,30 +98,30 @@ var map = new mapboxgl.Map({
     zoom: 17,
     center: [-122.514426, 37.562984],
     bearing: -96,
-style: 'mapbox://styles/mapbox/satellite-streets-v9',
+    style: 'mapbox://styles/mapbox/satellite-streets-v9',
     hash: true
 });
 
 var playing = false;
 
-window.setInterval(function(){
-    if (!playing) return
+window.setInterval(function() {
+    if (!playing) return;
     var time = map.getSource('hurricane').video.currentTime;
     document.getElementById('timeslider').value = time;
-}, 500)
+}, 500);
 
-map.on('load', ()=>{
+map.on('load', () => {
 
-    map.addSource('hurricane',{
+    map.addSource('hurricane', {
         "type": "video",
         "urls": [ "cropped.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm" ],
         "coordinates": [
             [lng, lat],
-            [lng+9.5, lat],
-            [lng+9.5, lat-4.2],
-            [lng, lat-4.2]
+            [lng + 9.5, lat],
+            [lng + 9.5, lat - 4.2],
+            [lng, lat - 4.2]
         ]
-    })
+    });
 
     map.addLayer({
         "id": "video",
@@ -129,16 +129,16 @@ map.on('load', ()=>{
         "source": "hurricane",
         'paint':{
             'raster-opacity': {
-                'stops':[[5,0], [6,1]]
+                'stops':[[5, 0], [6, 1]]
             }
         }
-    }, 'waterway-label')
+    }, 'waterway-label');
 
 
-})
+});
 
-function togglePlayback(){
-    playing=!playing; 
+function togglePlayback() {
+    playing = !playing;
     if (playing) map.getSource("hurricane").play();
     else map.getSource("hurricane").pause();
 }
