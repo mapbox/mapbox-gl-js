@@ -7,6 +7,7 @@ import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
 import { ErrorEvent } from '../util/evented';
+import ValidationError from '../style-spec/error/validation_error';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -99,7 +100,7 @@ class VideoSource extends ImageSource {
         this.video.play();
     }
 
-    seek(seconds:number) {
+    seek(seconds: number) {
 
         const seekableRange = this.video.seekable;
 
