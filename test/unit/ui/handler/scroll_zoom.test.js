@@ -4,6 +4,7 @@ import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from '../../../util/simulate_interaction';
+import { equalWithPrecision } from '../../../util';
 import sinon from 'sinon';
 
 function createMap(t) {
@@ -36,7 +37,7 @@ test('ScrollZoomHandler', (t) => {
         now += 400;
         map._renderTaskQueue.run();
 
-        t.equalWithPrecision(map.getZoom() - startZoom,  0.0285, 0.001);
+        equalWithPrecision(t, map.getZoom() - startZoom,  0.0285, 0.001);
 
         map.remove();
         t.end();
@@ -88,7 +89,7 @@ test('ScrollZoomHandler', (t) => {
             }
         }
 
-        t.equalWithPrecision(map.getZoom() - startZoom,  1.944, 0.001);
+        equalWithPrecision(t, map.getZoom() - startZoom,  1.944, 0.001);
 
         map.remove();
         t.end();

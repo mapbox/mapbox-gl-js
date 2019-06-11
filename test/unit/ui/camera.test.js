@@ -4,6 +4,7 @@ import Transform from '../../../src/geo/transform';
 import TaskQueue from '../../../src/util/task_queue';
 import browser from '../../../src/util/browser';
 import {fixedLngLat, fixedNum} from '../../util/fixed';
+import { equalWithPrecision } from '../../util';
 
 test('camera', (t) => {
     function attachSimulateFrame(camera) {
@@ -1469,10 +1470,10 @@ test('camera', (t) => {
             camera._update = () => {};
 
             camera.on('moveend', () => {
-                t.equalWithPrecision(camera.getZoom(), 10, 1e-10);
+                equalWithPrecision(t, camera.getZoom(), 10, 1e-10);
                 const { lng, lat } = camera.getCenter();
-                t.equalWithPrecision(lng, 12, 1e-10);
-                t.equalWithPrecision(lat, 34, 1e-10);
+                equalWithPrecision(t, lng, 12, 1e-10);
+                equalWithPrecision(t, lat, 34, 1e-10);
 
                 t.end();
             });
@@ -1495,10 +1496,10 @@ test('camera', (t) => {
             camera._update = () => {};
 
             camera.on('moveend', () => {
-                t.equalWithPrecision(camera.getZoom(), 2, 1e-10);
+                equalWithPrecision(t, camera.getZoom(), 2, 1e-10);
                 const { lng, lat } = camera.getCenter();
-                t.equalWithPrecision(lng, 12, 1e-10);
-                t.equalWithPrecision(lat, 34, 1e-10);
+                equalWithPrecision(t, lng, 12, 1e-10);
+                equalWithPrecision(t, lat, 34, 1e-10);
 
                 t.end();
             });
@@ -1522,7 +1523,7 @@ test('camera', (t) => {
                 .on('moveend', () => {
                     endTime = new Date();
                     timeDiff = endTime - startTime;
-                    t.equalWithPrecision(timeDiff, 0, 1e+1);
+                    equalWithPrecision(t, timeDiff, 0, 1e+1);
                     t.end();
                 });
 
