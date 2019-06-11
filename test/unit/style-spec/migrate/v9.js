@@ -1,7 +1,7 @@
-import { test as t } from 'mapbox-gl-js-test';
+import { test } from '../../../util/test';
 import migrate from '../../../../src/style-spec/migrate/v9';
 
-t('deref layers', (t) => {
+test('deref layers', (t) => {
     const input = {
         version: 8,
         sources: {
@@ -39,7 +39,7 @@ t('deref layers', (t) => {
     t.end();
 });
 
-t('declass style', (t) => {
+test('declass style', (t) => {
     const input = {
         version: 8,
         sources: {

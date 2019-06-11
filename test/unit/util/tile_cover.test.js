@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import tileCover from '../../../src/util/tile_cover';
 import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
 import { OverscaledTileID } from '../../../src/source/tile_id';

@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import window from '../../../src/util/window';
 import { createMap as globalCreateMap } from '../../util';
 import Marker from '../../../src/ui/marker';
