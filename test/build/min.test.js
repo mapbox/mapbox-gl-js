@@ -1,4 +1,4 @@
-import {test} from 'mapbox-gl-js-test';
+import {test} from '../util/test';
 import fs from 'fs';
 import path from 'path';
 import reference from '../../src/style-spec/reference/latest';

@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { createMap } from '../../util';
 import simulate from '../../util/simulate_interaction';
 

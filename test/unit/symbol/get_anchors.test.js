@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Point from '@mapbox/point-geometry';
 import { getAnchors, getCenterAnchor } from '../../../src/symbol/get_anchors';
 

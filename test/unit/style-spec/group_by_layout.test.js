@@ -1,7 +1,7 @@
-import { test as t } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import group from '../../../src/style-spec/group_by_layout';
 
-t('group layers whose ref properties are identical', (t) => {
+test('group layers whose ref properties are identical', (t) => {
     const a = {
         'id': 'parent',
         'type': 'line'
@@ -16,7 +16,7 @@ t('group layers whose ref properties are identical', (t) => {
     t.end();
 });
 
-t('group does not group unrelated layers', (t) => {
+test('group does not group unrelated layers', (t) => {
     t.deepEqual(group([
         {
             'id': 'parent',
@@ -38,7 +38,7 @@ t('group does not group unrelated layers', (t) => {
     t.end();
 });
 
-t('group works even for differing layout key orders', (t) => {
+test('group works even for differing layout key orders', (t) => {
     t.deepEqual(group([
         {
             'id': 'parent',

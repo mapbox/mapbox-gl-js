@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import createFilter from '../../../src/style-spec/feature_filter';
 import convertFilter from '../../../src/style-spec/feature_filter/convert';
 

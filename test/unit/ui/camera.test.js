@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Camera from '../../../src/ui/camera';
 import Transform from '../../../src/geo/transform';
 import TaskQueue from '../../../src/util/task_queue';

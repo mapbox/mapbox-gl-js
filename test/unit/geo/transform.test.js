@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';

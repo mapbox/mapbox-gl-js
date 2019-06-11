@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import LngLat from '../../../src/geo/lng_lat';
 import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
 

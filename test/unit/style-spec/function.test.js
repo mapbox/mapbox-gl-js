@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { createFunction } from '../../../src/style-spec/function';
 import Color from '../../../src/style-spec/util/color';
 import Formatted from '../../../src/style-spec/expression/types/formatted';
