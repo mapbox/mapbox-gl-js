@@ -5,7 +5,7 @@ import Marker from '../../../src/ui/marker';
 import Popup from '../../../src/ui/popup';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
-import simulate from 'mapbox-gl-js-test/simulate_interaction';
+import simulate from '../../util/simulate_interaction';
 
 function createMap(t) {
     const container = window.document.createElement('div');

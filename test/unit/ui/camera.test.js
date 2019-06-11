@@ -3,9 +3,7 @@ import Camera from '../../../src/ui/camera';
 import Transform from '../../../src/geo/transform';
 import TaskQueue from '../../../src/util/task_queue';
 import browser from '../../../src/util/browser';
-import fixed from 'mapbox-gl-js-test/fixed';
-const fixedLngLat = fixed.LngLat;
-const fixedNum = fixed.Num;
+import {fixedLngLat, fixedNum} from '../../util/fixed';
 
 test('camera', (t) => {
     function attachSimulateFrame(camera) {

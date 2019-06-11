@@ -4,7 +4,7 @@ import { createMap as globalCreateMap } from '../../util';
 import Popup from '../../../src/ui/popup';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
-import { click, mousemove } from 'mapbox-gl-js-test/simulate_interaction';
+import simulate from '../../util/simulate_interaction';
 
 const containerWidth = 512;
 const containerHeight = 512;
@@ -48,7 +48,7 @@ test('Popup closes on map click events by default', (t) => {
         .setLngLat([0, 0])
         .addTo(map);
 
-    click(map.getCanvas());
+    simulate.click(map.getCanvas());
 
     t.ok(!popup.isOpen());
     t.end();
@@ -61,7 +61,7 @@ test('Popup does not close on map click events when the closeOnClick option is f
         .setLngLat([0, 0])
         .addTo(map);
 
-    click(map.getCanvas());
+    simulate.click(map.getCanvas());
 
     t.ok(popup.isOpen());
     t.end();
@@ -74,7 +74,7 @@ test('Popup closes on close button click events', (t) => {
         .setLngLat([0, 0])
         .addTo(map);
 
-    click(map.getContainer().querySelector('.mapboxgl-popup-close-button'));
+    simulate.click(map.getContainer().querySelector('.mapboxgl-popup-close-button'));
 
     t.ok(!popup.isOpen());
     t.end();
@@ -564,7 +564,7 @@ test('Positioned popup can be set to track pointer', (t) => {
         .trackPointer()
         .addTo(map);
 
-    mousemove(map.getCanvas(), {screenX:0, screenY:0});
+    simulate.mousemove(map.getCanvas(), {screenX:0, screenY:0});
     t.deepEqual(popup._pos, {x:0, y:0});
     t.end();
 });

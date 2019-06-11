@@ -3,7 +3,7 @@ import browser from '../../../../src/util/browser';
 import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
-import simulate from 'mapbox-gl-js-test/simulate_interaction';
+import simulate from '../../../util/simulate_interaction';
 import sinon from 'sinon';
 
 function createMap(t) {
