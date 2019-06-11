@@ -16,7 +16,7 @@ export function deepUnbundle(value) {
         return value.map(deepUnbundle);
     } else if (value instanceof Object && !isPrimitive(value)) {
         const unbundledValue = {};
-        for (let key in value) {
+        for (const key in value) {
             unbundledValue[key] = deepUnbundle(value[key]);
         }
         return unbundledValue;
