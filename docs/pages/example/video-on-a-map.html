@@ -47,11 +47,11 @@ var map = new mapboxgl.Map({
 
 var playingVideo = true;
 
-map.on("click", function(){
+map.on("click", function() {
 
     playingVideo = !playingVideo;
 
     if (playingVideo) map.getSource("video").play();
     else map.getSource("video").pause();
-})
+});
 </script>
