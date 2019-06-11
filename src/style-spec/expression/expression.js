@@ -24,6 +24,6 @@ export interface Expression {
     serialize(): SerializedExpression;
 }
 
-export type ExpressionParser = (args: Array<mixed>, context: ParsingContext) => ?Expression;
+export type ExpressionParser = (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Expression;
 export type ExpressionRegistration = Class<Expression> & { +parse: ExpressionParser };
 export type ExpressionRegistry = {[string]: ExpressionRegistration};

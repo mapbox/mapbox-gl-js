@@ -1,7 +1,7 @@
-import { test as t } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import declass from '../../../src/style-spec/declass';
 
-t('declass a style, one class', (t) => {
+test('declass a style, one class', (t) => {
     const style = {
         layers: [{
             id: 'a',
@@ -37,7 +37,7 @@ t('declass a style, one class', (t) => {
     t.end();
 });
 
-t('declass a style, missing class ==> noop', (t) => {
+test('declass a style, missing class ==> noop', (t) => {
     const style = {
         layers: [{
             id: 'a',
@@ -61,7 +61,7 @@ t('declass a style, missing class ==> noop', (t) => {
     t.end();
 });
 
-t('declass a style, multiple classes', (t) => {
+test('declass a style, multiple classes', (t) => {
     const style = {
         layers: [{
             id: 'a',
@@ -95,7 +95,7 @@ t('declass a style, multiple classes', (t) => {
     t.end();
 });
 
-t('declassing a style removes paint.CLASS definitions, whether or not they are applied', (t) => {
+test('declassing a style removes paint.CLASS definitions, whether or not they are applied', (t) => {
     const style = {
         layers: [{
             id: 'a',

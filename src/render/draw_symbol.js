@@ -9,8 +9,6 @@ import * as symbolProjection from '../symbol/projection';
 import * as symbolSize from '../symbol/symbol_size';
 import { mat4 } from 'gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
-import properties from '../style/style_layer/symbol_style_layer_properties';
-const symbolLayoutProperties = properties.layout;
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
@@ -179,7 +177,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (!program) {
             program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
-            size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom, symbolLayoutProperties.properties[isText ? 'text-size' : 'icon-size']);
+            size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
         }
 
         context.activeTexture.set(gl.TEXTURE0);
@@ -223,12 +221,12 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         let uniformValues;
         if (isSDF) {
-            uniformValues = symbolSDFUniformValues(sizeData.functionType,
+            uniformValues = symbolSDFUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
                 uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true);
 
         } else {
-            uniformValues = symbolIconUniformValues(sizeData.functionType,
+            uniformValues = symbolIconUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
                 uLabelPlaneMatrix, uglCoordMatrix, isText, texSize);
         }

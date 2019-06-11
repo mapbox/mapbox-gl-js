@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Worker from '../../../src/source/worker';
 import window from '../../../src/util/window';
 

@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
 import GlyphManager from '../../../src/render/glyph_manager';
 import fs from 'fs';

@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { extend } from '../../../src/util/util';
 import window from '../../../src/util/window';
 import Map from '../../../src/ui/map';
@@ -7,11 +7,8 @@ import LngLat from '../../../src/geo/lng_lat';
 import Tile from '../../../src/source/tile';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 import { Event, ErrorEvent } from '../../../src/util/evented';
-import simulate from 'mapbox-gl-js-test/simulate_interaction';
-
-import fixed from 'mapbox-gl-js-test/fixed';
-const fixedNum = fixed.Num;
-const fixedLngLat = fixed.LngLat;
+import simulate from '../../util/simulate_interaction';
+import {fixedLngLat, fixedNum} from '../../util/fixed';
 
 function createStyleSource() {
     return {
