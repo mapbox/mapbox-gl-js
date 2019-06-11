@@ -92,14 +92,23 @@ class VideoSource extends ImageSource {
         });
     }
 
+    /**
+     * Pauses the video.
+     */
     pause() {
         this.video.pause();
     }
 
+    /**
+     * Plays the video.
+     */
     play() {
         this.video.play();
     }
 
+    /**
+     * Sets playback to a timestamp, in seconds.
+     */
     seek(seconds: number) {
 
         const seekableRange = this.video.seekable;
