@@ -24,10 +24,6 @@
 <script src='/debug/access_token_generated.js'></script>
 <script>
 
-var lng = -83.1;
-var lat = 36.05;
-// lng = -130
-// lat = 52;
 var videoStyle = {
     "version": 8,
     "sources": {
@@ -36,111 +32,63 @@ var videoStyle = {
             "url": "mapbox://mapbox.satellite",
             "tileSize": 256
         },
-        "hurricane": {
+        "video": {
             "type": "video",
             "urls": [ "https://static-assets.mapbox.com/mapbox-gl-js/drone.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm" ],
             "coordinates": [
-                [lng, lat],
-                [lng + 9.5, lat],
-                [lng + 9.5, lat - 4.2],
-                [lng, lat - 4.2]
+                [-122.51596391201019, 37.56238816766053],
+                [-122.51467645168304, 37.56410183312965],
+                [-122.51309394836426, 37.563391708549425],
+                [-122.51423120498657, 37.56161849366671]
             ]
-        },
-        // "water": {
-        //     "type": "video",
-        //     "urls": [ "water.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm" ],
-        //     "coordinates": [
-        //         [lng-10, lat],
-        //         [lng+72, lat],
-        //         [lng+62, lat-25],
-        //         [lng+8, lat-30]
-        //     ]
-        // }
+        }
     },
     "layers": [{
+        "id": "background",
+        "type": "background",
+        "paint": {
+            "background-color": "rgb(4,7,14)"
+        }
+    }, {
         "id": "satellite",
         "type": "raster",
         "source": "satellite"
-    },
-    {
+    }, {
         "id": "video",
         "type": "raster",
-        "source": "hurricane",
-        'paint':{
-            'raster-opacity': {
-                'stops':[[5, 0], [6, 1]]
-            }
-        }
-    },
-        // {
-        //     "id": "water",
-        //     "type": "raster",
-        //     "source": "water",
-        //     'paint':{
-        //         'raster-opacity': {
-        //             'stops':[[5,0.75], [6,1]]
-        //         }
-        //     }
-        // }
-
-    ]
+        "source": "video"
+    }]
 };
-
-document.getElementById('timeslider')
-    .addEventListener('change', function() {
-        map.getSource('hurricane').seek(parseFloat(this.value));
-    });
-
-
 var map = new mapboxgl.Map({
     container: 'map',
-    minZoom: 0,
+    minZoom: 14,
     zoom: 17,
     center: [-122.514426, 37.562984],
     bearing: -96,
-    style: 'mapbox://styles/mapbox/satellite-streets-v9',
-    hash: true
+    style: videoStyle,
+    hash: false
 });
+
+document.getElementById('timeslider')
+    .addEventListener('change', function() {
+        map.getSource('video').seek(parseFloat(this.value));
+    });
+
 
 var playing = false;
 
 window.setInterval(function() {
     if (!playing) return;
-    var time = map.getSource('hurricane').video.currentTime;
+    var time = map.getSource('video').video.currentTime;
     document.getElementById('timeslider').value = time;
 }, 500);
 
-map.on('load', () => {
 
-    map.addSource('hurricane', {
-        "type": "video",
-        "urls": [ "cropped.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm" ],
-        "coordinates": [
-            [lng, lat],
-            [lng + 9.5, lat],
-            [lng + 9.5, lat - 4.2],
-            [lng, lat - 4.2]
-        ]
-    });
-
-    map.addLayer({
-        "id": "video",
-        "type": "raster",
-        "source": "hurricane",
-        'paint':{
-            'raster-opacity': {
-                'stops':[[5, 0], [6, 1]]
-            }
-        }
-    }, 'waterway-label');
-
-
-});
 
 function togglePlayback() {
     playing = !playing;
-    if (playing) map.getSource("hurricane").play();
-    else map.getSource("hurricane").pause();
+    if (playing) map.getSource("video").play();
+    else map.getSource("video").pause();
 }
 </script>
 </body>
