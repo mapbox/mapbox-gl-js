@@ -8,11 +8,11 @@
         "line": 78
     },
     {
-        "message": "layers[6].layout.text-field[1][0]: Unknown expression \"Helvetica\". If you wanted a literal array, use [\"literal\", [...]].",
-        "line": 103
+        "message": "layers[5].layout.text-field[1][0]: Unknown expression \"Helvetica\". If you wanted a literal array, use [\"literal\", [...]].",
+        "line": 90
     },
     {
-        "message": "layers[9].layout.text-field[1]: Expected array<string> but found number instead.",
-        "line": 139
+        "message": "layers[8].layout.text-field[1]: Expected array<string> but found number instead.",
+        "line": 126
     }
 ]

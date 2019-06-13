@@ -83,20 +83,7 @@
       }
     },
     {
-      "id": "font-scale option with text-size - valid",
-      "type": "symbol",
-      "source": "point",
-      "layout": {
-        "text-field": [
-          "format",
-          "some text",
-          { "font-scale": 1.5 }
-        ],
-        "text-size": 20
-      }
-    },
-    {
-      "id": "text-font option array literal - invalid",
+      "id": "text-font option array - invalid",
       "type": "symbol",
       "source": "point",
       "layout": {
@@ -108,7 +95,7 @@
       }
     },
     {
-      "id": "text-font option literal coercian - valid",
+      "id": "text-font option literal coercion - valid",
       "type": "symbol",
       "source": "point",
       "layout": {
@@ -144,16 +131,15 @@
       }
     },
     {
-      "id": "text-font option with text-font - valid",
+      "id": "text-font option array expression - valid",
       "type": "symbol",
       "source": "point",
       "layout": {
         "text-field": [
           "format",
           "some text",
-          { "text-font": ["literal", ["Helvetica"]] }
-        ],
-        "text-font": ["Times New Roman"]
+          { "text-font": ["array", "string", ["literal", ["Helvetica"]]] }
+        ]
       }
     },
     {
@@ -171,6 +157,5 @@
         ]
       }
     }
-
   ]
 }
