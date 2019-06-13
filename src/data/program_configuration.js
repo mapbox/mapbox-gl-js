@@ -296,7 +296,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, layout: Class<StructArray>) {
         this.expression = expression;
         this.names = names;
-        this.uniformNames = this.names.map(name => `a_${name}_t`);
+        this.uniformNames = this.names.map(name => `u_${name}_t`);
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
@@ -417,7 +417,7 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
         this.expression = expression;
         this.names = names;
         this.type = type;
-        this.uniformNames = this.names.map(name => `a_${name}_t`);
+        this.uniformNames = this.names.map(name => `u_${name}_t`);
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
         this.maxValue = -Infinity;

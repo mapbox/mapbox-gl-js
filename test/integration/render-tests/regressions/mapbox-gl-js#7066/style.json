@@ -4,8 +4,7 @@
     "test": {
       "pixelRatio": 10,
       "width": 24,
-      "height": 24,
-      "allowed": 0.00025
+      "height": 24 
     }
   },
   "sources": {
