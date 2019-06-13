@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { findStopLessThanOrEqualTo } from '../../../src/style-spec/expression/stops';
 
 test('findStopLessThanOrEqualTo', (t) => {

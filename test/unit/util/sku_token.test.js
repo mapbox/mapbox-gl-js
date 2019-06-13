@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { createSkuToken, SKU_ID } from '../../../src/util/sku_token';
 
 test('sku token generation', (t) => {

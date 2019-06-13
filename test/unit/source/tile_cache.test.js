@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import TileCache from '../../../src/source/tile_cache';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 

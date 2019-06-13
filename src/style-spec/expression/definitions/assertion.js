@@ -37,7 +37,7 @@ class Assertion implements Expression {
         this.args = args;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
         if (args.length < 2)
             return context.error(`Expected at least one argument.`);
 

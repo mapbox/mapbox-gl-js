@@ -1,6 +1,6 @@
-import window from '../src/util/window';
-import Map from '../src/ui/map';
-import { extend} from '../src/util/util';
+import window from '../../src/util/window';
+import Map from '../../src/ui/map';
+import {extend} from '../../src/util/util';
 
 export function createMap(t, options, callback) {
     const container = window.document.createElement('div');
@@ -27,4 +27,12 @@ export function createMap(t, options, callback) {
     });
 
     return map;
+}
+
+export function equalWithPrecision(test, expected, actual, multiplier, message, extra) {
+    message = message || `should be equal to within ${multiplier}`;
+    const expectedRounded = Math.round(expected / multiplier) * multiplier;
+    const actualRounded = Math.round(actual / multiplier) * multiplier;
+
+    return test.equal(expectedRounded, actualRounded, message, extra);
 }

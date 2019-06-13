@@ -12,7 +12,6 @@ import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
-import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
 import type {GeoJSONSourceSpecification} from '../style-spec/types';
 

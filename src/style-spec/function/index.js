@@ -93,9 +93,11 @@ export function createFunction(parameters, propertySpec) {
             featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z], propertySpec)]);
         }
 
+        const interpolationType = {name: 'linear'};
         return {
             kind: 'composite',
-            interpolationFactor: Interpolate.interpolationFactor.bind(undefined, {name: 'linear'}),
+            interpolationType,
+            interpolationFactor: Interpolate.interpolationFactor.bind(undefined, interpolationType),
             zoomStops: featureFunctionStops.map(s => s[0]),
             evaluate({zoom}, properties) {
                 return evaluateExponentialFunction({
@@ -105,11 +107,12 @@ export function createFunction(parameters, propertySpec) {
             }
         };
     } else if (zoomDependent) {
+        const interpolationType = type === 'exponential' ?
+            {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1} : null;
         return {
             kind: 'camera',
-            interpolationFactor: type === 'exponential' ?
-                Interpolate.interpolationFactor.bind(undefined, {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1}) :
-                () => 0,
+            interpolationType,
+            interpolationFactor: Interpolate.interpolationFactor.bind(undefined, interpolationType),
             zoomStops: parameters.stops.map(s => s[0]),
             evaluate: ({zoom}) => innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType)
         };

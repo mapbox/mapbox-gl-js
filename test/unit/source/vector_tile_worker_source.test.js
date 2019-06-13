@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import perf from '../../../src/util/performance';
