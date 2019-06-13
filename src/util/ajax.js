@@ -5,6 +5,7 @@ import { extend } from './util';
 import { isMapboxHTTPURL } from './mapbox';
 import config from './config';
 import assert from 'assert';
+import { cacheGet, cachePut } from './tile_request_cache';
 
 import type { Callback } from '../types/callback';
 import type { Cancelable } from '../types/cancelable';
@@ -45,7 +46,8 @@ export type RequestParameters = {
     body?: string,
     type?: 'string' | 'json' | 'arrayBuffer',
     credentials?: 'same-origin' | 'include',
-    collectResourceTiming?: boolean
+    collectResourceTiming?: boolean,
+    cacheIgnoringSearch?: boolean
 };
 
 export type ResponseCallback<T> = (error: ?Error, data: ?T, cacheControl: ?string, expires: ?string) => void;
@@ -101,25 +103,62 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         signal: controller.signal
     });
 
+    const { cacheIgnoringSearch } = requestParameters;
+
     if (requestParameters.type === 'json') {
         request.headers.set('Accept', 'application/json');
     }
 
-    window.fetch(request).then(response => {
-        if (response.ok) {
-            response[requestParameters.type || 'text']().then(result => {
-                callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
-            }).catch(err => callback(new Error(err.message)));
-        } else {
-            callback(new AJAXError(response.statusText, response.status, requestParameters.url));
+    const validateOrFetch = (err, cachedResponse, responseIsFresh) => {
+        if (err) {
+            return callback(err);
         }
-    }).catch((error) => {
-        if (error.code === 20) {
-            // silence expected AbortError
-            return;
+
+        if (cachedResponse && responseIsFresh) {
+            console.log('cached and fresh', request.url);
+            return finishRequest(cachedResponse, cachedResponse.headers);
         }
-        callback(new Error(error.message));
-    });
+
+        if (cachedResponse) {
+            // Then it isn't a simple CORS 
+            // request.headers.set('If-None-Match', cachedResponse.headers.get('ETag'));
+        }
+
+        const requestTime = Date.now();
+
+        window.fetch(request).then(response => {
+            const revalidated = response.status === 304 && cachedResponse;
+
+            if (response.ok || revalidated) {
+                const fullResponse = revalidated ? cachedResponse : response;
+                if (cacheIgnoringSearch) {
+                    cachePut(request, fullResponse, response.headers, requestTime);
+                }
+                return finishRequest(fullResponse, response.headers);
+
+            } else {
+                return callback(new AJAXError(response.statusText, response.status, requestParameters.url));
+            }
+        }).catch(error => {
+            if (error.code === 20) {
+                // silence expected AbortError
+                return;
+            }
+            callback(new Error(error.message));
+        });
+    };
+
+    const finishRequest = (response, cacheHeaders) => {
+        response[requestParameters.type || 'text']().then(result => {
+            callback(null, result, cacheHeaders.get('Cache-Control'), cacheHeaders.get('Expires'));
+        }).catch(err => callback(new Error(err.message)));
+    };
+
+    if (cacheIgnoringSearch) {
+        cacheGet(request, validateOrFetch);
+    } else {
+        validateOrFetch(null, null);
+    }
 
     return { cancel: () => controller.abort() };
 }
