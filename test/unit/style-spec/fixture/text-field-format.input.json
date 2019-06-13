@@ -9,9 +9,8 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "Napoli",
-              "name_en": "Naples",
-              "name_color": "blue"
+              "font-scale-override": 2.0,
+              "text-font-override": ["Arial"]
             },
             "geometry": {
               "type": "Point",
@@ -25,21 +24,153 @@
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
-      "id": "text",
+      "id": "no options - invalid",
       "type": "symbol",
       "source": "point",
       "layout": {
         "text-field": [
           "format",
-          "x",
+          "some text"
+        ]
+      }
+    },
+    {
+      "id": "empty options - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          {}
+        ]
+      }
+    },
+    {
+      "id": "font-scale option float literal - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
           { "font-scale": 1.5 }
-        ],
-        "text-font": [
-          "Open Sans Semibold",
-          "Arial Unicode MS Bold"
+        ]
+      }
+    },
+    {
+      "id": "font-scale option expression - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "font-scale": ["get", "font-scale-override"] }
+        ]
+      }
+    },
+    {
+      "id": "font-scale option invalid expression type - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "font-scale": ["string", 3.0] }
+        ]
+      }
+    },
+    {
+      "id": "font-scale option with text-size - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "font-scale": 1.5 }
         ],
         "text-size": 20
       }
+    },
+    {
+      "id": "text-font option array literal - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["Helvetica"] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option literal coercian - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["literal", ["Helvetica"]] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option expression - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["get", "text-font-override"] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option invalid expression type - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["number", ["get", "font-scale-override"]] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option with text-font - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["literal", ["Helvetica"]] }
+        ],
+        "text-font": ["Times New Roman"]
+      }
+    },
+    {
+      "id": "text-font option and font-scale option combined - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          {
+            "text-font": ["literal", ["Helvetica"]],
+            "font-scale": 1.5
+          }
+        ]
+      }
     }
+
   ]
 }
