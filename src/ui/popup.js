@@ -52,7 +52,10 @@ export type PopupOptions = {
  *   - an object of {@link Point}s specifing an offset for each anchor position
  *  Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container
- * @param {string} [options.maxWidth] A string that sets the CSS property of the popup's maxWidth in pixels, eg "300px"
+ * @param {string} [options.maxWidth='240px'] -
+ *  A string that sets the CSS property of the popup's maximum width, eg `'300px'`.
+ *  To ensure the popup resizes to fit its content, set this property to `'none'`.
+ *  Available values can be found here: https://developer.mozilla.org/en-US/docs/Web/CSS/max-width
  * @example
  * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
  * var popupOffsets = {
@@ -286,18 +289,19 @@ export default class Popup extends Evented {
     }
 
     /**
-     * Returns the popup's max width.
+     * Returns the popup's maximum width.
      *
-     * @returns {string} The max width of the popup.
+     * @returns {string} The maximum width of the popup.
      */
     getMaxWidth() {
         return this._container.style.maxWidth;
     }
 
     /**
-     * Sets the popup's max width. This is setting the CSS property maxWidth. It expects a string in "Npx" format, where N is some number.
+     * Sets the popup's maximum width. This is setting the CSS property `max-width`.
+     * Available values can be found here: https://developer.mozilla.org/en-US/docs/Web/CSS/max-width
      *
-     * @param maxWidth A string representing the pixel value for the maximum width.
+     * @param maxWidth A string representing the value for the maximum width.
      * @returns {Popup} `this`
      */
     setMaxWidth(maxWidth: string) {
