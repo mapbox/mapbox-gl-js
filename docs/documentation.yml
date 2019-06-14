@@ -1,7 +1,9 @@
 toc:
   - Map
   - accessToken
-  - url
+  - baseApiUrl
+  - workerCount
+  - maxParallelImageRequests
   - supported
   - version
   - setRTLTextPlugin
@@ -9,10 +11,11 @@ toc:
   - CameraOptions
   - PaddingOptions
   - RequestParameters
+  - StyleImageInterface
   - CustomLayerInterface
   - name: Geography & Geometry
     description: |
-      `LngLat` and `LngLatBounds` represent points and rectanges in geographic
+      `LngLat` and `LngLatBounds` represent points and rectangles in geographic
       coordinates. `Point` represents points in screen coordinates.
   - LngLat
   - LngLatLike

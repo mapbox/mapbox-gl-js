@@ -12,7 +12,7 @@ import Light from './light';
 import LineAtlas from '../render/line_atlas';
 import { pick, clone, extend, deepEqual, filterObject, mapObject } from '../util/util';
 import { getJSON, getReferrer, makeRequest, ResourceType } from '../util/ajax';
-import { isMapboxURL, normalizeStyleURL } from '../util/mapbox';
+import { isMapboxURL } from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
 import { validateStyle, emitValidationErrors as _emitValidationErrors } from './validate_style';
@@ -61,6 +61,7 @@ import type {
     SourceSpecification
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
+import type {Validator} from './validate_style';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -136,7 +137,8 @@ class Style extends Evented {
         this.map = map;
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
-        this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
+        this.imageManager.setEventedParent(this);
+        this.glyphManager = new GlyphManager(map._requestManager, options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
@@ -191,8 +193,8 @@ class Style extends Evented {
         const validate = typeof options.validate === 'boolean' ?
             options.validate : !isMapboxURL(url);
 
-        url = normalizeStyleURL(url, options.accessToken);
-        const request = this.map._transformRequest(url, ResourceType.Style);
+        url = this.map._requestManager.normalizeStyleURL(url, options.accessToken);
+        const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
 
         this._request = getJSON(request, (error: ?Error, json: ?Object) => {
             this._request = null;
@@ -226,7 +228,7 @@ class Style extends Evented {
         }
 
         if (json.sprite) {
-            this._spriteRequest = loadSprite(json.sprite, this.map._transformRequest, (err, images) => {
+            this._spriteRequest = loadSprite(json.sprite, this.map._requestManager, (err, images) => {
                 this._spriteRequest = null;
                 if (err) {
                     this.fire(new ErrorEvent(err));
@@ -463,6 +465,10 @@ class Style extends Evented {
         }
         this.imageManager.addImage(id, image);
         this.fire(new Event('data', {dataType: 'style'}));
+    }
+
+    updateImage(id: string, image: StyleImage) {
+        this.imageManager.updateImage(id, image);
     }
 
     getImage(id: string): ?StyleImage {
@@ -873,12 +879,12 @@ class Style extends Evented {
             return;
         }
 
-        if (target.id && isNaN(featureId) || featureId < 0) {
+        if (target.id !== undefined && isNaN(featureId) || featureId < 0) {
             this.fire(new ErrorEvent(new Error(`The feature id parameter must be non-negative.`)));
             return;
         }
 
-        if (key && !target.id) {
+        if (key && (typeof target.id !== 'string' && typeof target.id !== 'number')) {
             this.fire(new ErrorEvent(new Error(`A feature id is requred to remove its specific state property.`)));
             return;
         }
@@ -1011,7 +1017,7 @@ class Style extends Evented {
 
     queryRenderedFeatures(queryGeometry: any, params: any, transform: Transform) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter);
+            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
 
         const includedSources = {};
@@ -1062,9 +1068,9 @@ class Style extends Evented {
         return this._flattenAndSortRenderedFeatures(sourceResults);
     }
 
-    querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>}) {
+    querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
         if (params && params.filter) {
-            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter);
+            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter, null, params);
         }
         const sourceCache = this.sourceCaches[sourceID];
         return sourceCache ? querySourceFeatures(sourceCache, params) : [];
@@ -1116,7 +1122,7 @@ class Style extends Evented {
         this.light.updateTransitions(parameters);
     }
 
-    _validate(validate: ({}) => void, key: string, value: any, props: any, options: StyleSetterOptions = {}) {
+    _validate(validate: Validator, key: string, value: any, props: any, options: { validate?: boolean } = {}) {
         if (options && options.validate === false) {
             return false;
         }

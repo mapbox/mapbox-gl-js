@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import assert from 'assert';
 import ImageSource from '../../../src/source/image_source';
 import { Evented } from '../../../src/util/evented';
@@ -20,10 +20,11 @@ class StubMap extends Evented {
     constructor() {
         super();
         this.transform = new Transform();
-    }
-
-    _transformRequest(url) {
-        return { url };
+        this._requestManager = {
+            transformRequest: (url) => {
+                return { url };
+            }
+        };
     }
 }
 
@@ -72,7 +73,7 @@ test('ImageSource', (t) => {
     t.test('transforms url request', (t) => {
         const source = createSource({ url : '/image.png' });
         const map = new StubMap();
-        const spy = t.spy(map, '_transformRequest');
+        const spy = t.spy(map._requestManager, 'transformRequest');
         source.onAdd(map);
         respond();
         t.ok(spy.calledOnce);
@@ -84,7 +85,7 @@ test('ImageSource', (t) => {
     t.test('updates url from updateImage', (t) => {
         const source = createSource({ url : '/image.png' });
         const map = new StubMap();
-        const spy = t.spy(map, '_transformRequest');
+        const spy = t.spy(map._requestManager, 'transformRequest');
         source.onAdd(map);
         respond();
         t.ok(spy.calledOnce);

@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 
 import window from './window';
 import type { Cancelable } from '../types/cancelable';
@@ -17,6 +17,8 @@ const cancel = window.cancelAnimationFrame ||
     window.webkitCancelAnimationFrame ||
     window.msCancelAnimationFrame;
 
+let linkEl;
+
 /**
  * @private
  */
@@ -27,7 +29,7 @@ const exported = {
      */
     now,
 
-    frame(fn: Function): Cancelable {
+    frame(fn: () => void): Cancelable {
         const frame = raf(fn);
         return { cancel: () => cancel(frame) };
     },
@@ -45,9 +47,9 @@ const exported = {
     },
 
     resolveURL(path: string) {
-        const a = window.document.createElement('a');
-        a.href = path;
-        return a.href;
+        if (!linkEl) linkEl = window.document.createElement('a');
+        linkEl.href = path;
+        return linkEl.href;
     },
 
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,

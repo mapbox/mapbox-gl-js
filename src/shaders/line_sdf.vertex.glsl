@@ -10,20 +10,17 @@
 // long distances for long segments. Use this value to unscale the distance.
 #define LINE_DISTANCE_SCALE 2.0
 
-// the distance over which the line edge fades out.
-// Retina devices need a smaller distance to avoid aliasing.
-#define ANTIALIASING 1.0 / DEVICE_PIXEL_RATIO / 2.0
-
-attribute vec4 a_pos_normal;
+attribute vec2 a_pos_normal;
 attribute vec4 a_data;
 
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
+uniform lowp float u_device_pixel_ratio;
 uniform vec2 u_patternscale_a;
 uniform float u_tex_y_a;
 uniform vec2 u_patternscale_b;
 uniform float u_tex_y_b;
-uniform vec2 u_gl_units_to_pixels;
+uniform vec2 u_units_to_pixels;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
@@ -48,15 +45,21 @@ void main() {
     #pragma mapbox: initialize mediump float width
     #pragma mapbox: initialize lowp float floorwidth
 
+    // the distance over which the line edge fades out.
+    // Retina devices need a smaller distance to avoid aliasing.
+    float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
+
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
     float a_linesofar = (floor(a_data.z / 4.0) + a_data.w * 64.0) * LINE_DISTANCE_SCALE;
 
-    vec2 pos = a_pos_normal.xy;
+    vec2 pos = floor(a_pos_normal * 0.5);
 
     // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
-    mediump vec2 normal = a_pos_normal.zw;
+    // We store these in the least significant bit of a_pos_normal
+    mediump vec2 normal = a_pos_normal - 2.0 * pos;
+    normal.y = normal.y * 2.0 - 1.0;
     v_normal = normal;
 
     // these transformations used to be applied in the JS and native code bases.
@@ -85,7 +88,7 @@ void main() {
 
     // calculate how much the perspective view squishes or stretches the extrude
     float extrude_length_without_perspective = length(dist);
-    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_gl_units_to_pixels);
+    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
     v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
 
     v_tex_a = vec2(a_linesofar * u_patternscale_a.x / floorwidth, normal.y * u_patternscale_a.y + u_tex_y_a);

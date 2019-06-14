@@ -1,19 +1,19 @@
 #define SDF_PX 8.0
-#define EDGE_GAMMA 0.105/DEVICE_PIXEL_RATIO
 
 uniform bool u_is_halo;
+uniform sampler2D u_texture;
+uniform highp float u_gamma_scale;
+uniform lowp float u_device_pixel_ratio;
+uniform bool u_is_text;
+
+varying vec2 v_data0;
+varying vec3 v_data1;
+
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float halo_width
 #pragma mapbox: define lowp float halo_blur
-
-uniform sampler2D u_texture;
-uniform highp float u_gamma_scale;
-uniform bool u_is_text;
-
-varying vec2 v_data0;
-varying vec3 v_data1;
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -21,6 +21,8 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
+
+    float EDGE_GAMMA = 0.105 / u_device_pixel_ratio;
 
     vec2 tex = v_data0.xy;
     float gamma_scale = v_data1.x;

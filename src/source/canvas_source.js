@@ -130,7 +130,10 @@ class CanvasSource extends ImageSource {
         };
 
         this.pause = function() {
-            this._playing = false;
+            if (this._playing) {
+                this.prepare();
+                this._playing = false;
+            }
         };
 
         this._finishLoading();

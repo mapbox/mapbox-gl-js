@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 import assert from 'assert';
 
 export type TaskID = number; // can't mark opaque due to https://github.com/flowtype/flow-remove-types/pull/61

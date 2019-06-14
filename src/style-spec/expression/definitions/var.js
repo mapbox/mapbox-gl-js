@@ -16,7 +16,7 @@ class Var implements Expression {
         this.boundExpression = boundExpression;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
         if (args.length !== 2 || typeof args[1] !== 'string')
             return context.error(`'var' expression requires exactly one string literal argument.`);
 

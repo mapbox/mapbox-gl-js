@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import CollisionFeature from '../../../src/symbol/collision_feature';
 import Anchor from '../../../src/symbol/anchor';
 import Point from '@mapbox/point-geometry';

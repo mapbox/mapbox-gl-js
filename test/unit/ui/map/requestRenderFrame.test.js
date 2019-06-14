@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../../util/test';
 import { createMap } from '../../../util';
 
 test('Map#_requestRenderFrame schedules a new render frame if necessary', (t) => {

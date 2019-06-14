@@ -30,6 +30,7 @@ class AttributionControl {
     _container: HTMLElement;
     _innerContainer: HTMLElement;
     _editLink: ?HTMLAnchorElement;
+    _attribHTML: string;
     styleId: string;
     styleOwner: string;
 
@@ -104,7 +105,7 @@ class AttributionControl {
                 return acc;
             }, `?`);
             editLink.href = `${config.FEEDBACK_URL}/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
-            editLink.rel = "noopener";
+            editLink.rel = "noopener nofollow";
         }
     }
 
@@ -157,8 +158,15 @@ class AttributionControl {
             }
             return true;
         });
+
+        // check if attribution string is different to minimize DOM changes
+        const attribHTML = attributions.join(' | ');
+        if (attribHTML === this._attribHTML) return;
+
+        this._attribHTML = attribHTML;
+
         if (attributions.length) {
-            this._innerContainer.innerHTML = attributions.join(' | ');
+            this._innerContainer.innerHTML = attribHTML;
             this._container.classList.remove('mapboxgl-attrib-empty');
         } else {
             this._container.classList.add('mapboxgl-attrib-empty');

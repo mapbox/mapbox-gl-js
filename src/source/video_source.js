@@ -66,7 +66,7 @@ class VideoSource extends ImageSource {
 
         this.urls = [];
         for (const url of options.urls) {
-            this.urls.push(this.map._transformRequest(url, ResourceType.Source).url);
+            this.urls.push(this.map._requestManager.transformRequest(url, ResourceType.Source).url);
         }
 
         getVideo(this.urls, (err, video) => {

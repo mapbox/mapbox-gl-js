@@ -12,7 +12,6 @@ import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
-import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
 import type {GeoJSONSourceSpecification} from '../style-spec/types';
 
@@ -247,7 +246,7 @@ class GeoJSONSource extends Evented implements Source {
         const options = extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {
-            options.request = this.map._transformRequest(browser.resolveURL(data), ResourceType.Source);
+            options.request = this.map._requestManager.transformRequest(browser.resolveURL(data), ResourceType.Source);
             options.request.collectResourceTiming = this._collectResourceTiming;
         } else {
             options.data = JSON.stringify(data);

@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Wrapper from '../../../src/source/geojson_wrapper';
 
 test('geojsonwrapper', (t) => {

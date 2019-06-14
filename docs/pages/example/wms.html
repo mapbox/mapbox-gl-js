@@ -2,7 +2,7 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/light-v9',
+    style: 'mapbox://styles/mapbox/light-v10',
     zoom: 8,
     center: [-74.5447, 40.6892]
 });
@@ -15,11 +15,11 @@ map.on('load', function() {
         'source': {
             'type': 'raster',
             'tiles': [
-                'https://geodata.state.nj.us/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=Natural2015'
+                'https://img.nj.gov/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=Natural2015'
             ],
             'tileSize': 256
         },
         'paint': {}
-    }, 'aeroway-taxiway');
+    }, 'aeroway-line');
 });
 </script>

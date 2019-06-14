@@ -23,7 +23,7 @@ code for the example, and a `.js` file containing example boilerplate and front 
 
 * `title`: A short title for the example in **sentence case** as a **verb phrase**
 * `description`: A one sentence description of the example
-* `tags`: An array of tags for the example, which determine the sections it is listed in in the sidebar navigation
+* `tags`: An array of tags for the example, which determine the sections it is listed in in the sidebar navigation, see `docs/data/tags.js` for a list of tags
 * `pathname`: The relative path of the example, including leading `/mapbox-gl-js/example/` path
 
 In the `.html` file, write the HTML and JavaScript constituting the example.
@@ -33,6 +33,13 @@ In the `.html` file, write the HTML and JavaScript constituting the example.
 * Do **not** use custom styles from your personal account. Use only the default `mapbox` account styles.
 * When embedding literal JSON (GeoJSON or Mapbox style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
 
+Every example **must** have an accompanying image. To get an image, run the site locally and take a screenshot of the rendered map in the example:
+
+1. Run `npm run create-image <example-file-name> <mapbox-access-token>`. The script will take a screenshot of the map in the example and save it to `docs/img/src/`. Commit the image.
+2. Run `npm run start-docs` to verify that your example image is loading as expected.
+
+💡 If `npm run create-image` does not generate an ideal image. You can also take a screenshot of it yourself by running the site locally with `npm run start-docs` and taking a screenshot of the example map in PNG format. Resize it to 1200 x 500 pixels and save it in the `docs/img/src` folder.
+
 ## Running the Documentation Server Locally
 
 To start a documentation server locally run
@@ -41,6 +48,8 @@ npm run start-docs
 ```
 
 The command will print the URL you can use to view the documentation.
+
+💡 If you receive an error related to `@mapbox/appropriate-images`, try `nvm use 8 && npm run start-docs`.
 
 ## Committing and Publishing Documentation
 
