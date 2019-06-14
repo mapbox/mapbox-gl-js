@@ -15,14 +15,55 @@
 <div id='map'></div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
-<!-- <script src='/debug/access_token_generated.js'></script>
- --><script>
-mapboxgl.accessToken = 'pk.eyJ1IjoicGV0ZXJxbGl1IiwiYSI6ImpvZmV0UEEifQ._D4bRmVcGfJvo1wjuOpA1g';
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var style = {
+    "version": 8,
+    "name": "Satellite",
+    "metadata": {
+        "mapbox:autocomposite": true,
+        "mapbox:type": "default"
+    },
+    "sources": {
+        "mapbox": {
+            "type": "raster",
+            "url": "mapbox://mapbox.satellite",
+            "tileSize": 256
+        }
+    },
+    "sprite": "mapbox://sprites/mapbox/satellite-v9",
+    "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgb(4,7,14)"
+            }
+        },
+        {
+            "id": "satellite",
+            "type": "raster",
+            "source": "mapbox",
+            "source-layer": "mapbox_satellite_full",
+            "minzoom": 1,
+            "maxzoom": 2,
+        }
+    ],
+    "created": "1970-01-01T00:00:00.000Z",
+    "modified": "1970-01-01T00:00:00.000Z",
+    "owner": "mapbox",
+    "id": "satellite-v9",
+    "draft": false,
+    "visibility": "public"
+};
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 3,
-    style: 'mapbox://styles/mapbox/satellite-v9'
+    hash: true,
+    style
 });
 
 map.on('load', function() {
@@ -40,18 +81,20 @@ map.on('load', function() {
                 ]
             }
         },
-        "minzoom": 1,
+        "minzoom": 0,
         "maxzoom": 2,
         'paint': {
-            'circle-color': 'red'
+            'circle-color': 'red',
+            'circle-radius':20
         }
     });
 
     map.on('click', function() {
         map.setLayerZoomRange('satellite', 0, 5);
-        map.setLayerZoomRange('circle', 0, 5);
+        map.setLayerZoomRange('circle', 1, 22);
     });
 });
+
 </script>
 </body>
 </html>
