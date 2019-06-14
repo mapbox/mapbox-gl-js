@@ -8,14 +8,6 @@
     "line": 7
   },
   {
-    "message": "sources.no-tilejson-properties-with-url.tiles: a source with a \"url\" property may not include a \"tiles\" property",
-    "line": 12
-  },
-  {
-    "message": "sources.no-unknown-properties-with-url.foo: a source with a \"url\" property may not include a \"foo\" property",
-    "line": 17
-  },
-  {
     "message": "sources.video-missing-coordinates: missing required property \"coordinates\"",
     "line": 26
   },

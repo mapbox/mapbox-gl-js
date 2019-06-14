@@ -55,7 +55,7 @@ class RasterTileSource extends Evented implements Source {
         this.tileSize = 512;
         this._loaded = false;
 
-        this._options = extend({}, options);
+        this._options = extend({ type: 'raster' }, options);
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
 

@@ -1,6 +1,6 @@
 // @flow
 
-import { pick } from '../util/util';
+import { pick, extend } from '../util/util';
 
 import { getJSON, ResourceType } from '../util/ajax';
 import browser from '../util/browser';
@@ -16,8 +16,9 @@ export default function(options: any, requestManager: RequestManager, callback: 
             return callback(err);
         } else if (tileJSON) {
             const result: any = pick(
-                tileJSON,
-                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds']
+                // explicit source options take precedence over TileJSON
+                extend(tileJSON, options),
+                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding']
             );
 
             if (tileJSON.vector_layers) {
