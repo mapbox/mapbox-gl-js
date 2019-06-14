@@ -30,14 +30,11 @@ test('VideoSource', (t) => {
     });
 
     t.test('constructor', (t) => {
-
         t.equal(source.minzoom, 0);
         t.equal(source.maxzoom, 22);
         t.equal(source.tileSize, 512);
         t.end();
     });
-
-
 
     t.test('sets coordinates', (t) => {
 

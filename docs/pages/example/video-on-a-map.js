@@ -1,6 +1,6 @@
 /*---
 title: Add a video
-description: Satellite raster baselayer with video on top. Click on map to play and pause.
+description: Satellite raster baselayer with video on top. Click on the map to play and pause.
 tags:
   - sources
   - layers

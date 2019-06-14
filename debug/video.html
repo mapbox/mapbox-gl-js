@@ -6,11 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
-
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-
     </style>
 </head>
 
@@ -74,7 +72,6 @@ document.getElementById('timeslider')
         map.getSource('video').seek(parseFloat(this.value));
     });
 
-
 var playing = false;
 
 window.setInterval(function() {
@@ -82,8 +79,6 @@ window.setInterval(function() {
     var time = map.getSource('video').video.currentTime;
     document.getElementById('timeslider').value = time;
 }, 500);
-
-
 
 function togglePlayback() {
     playing = !playing;
