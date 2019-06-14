@@ -1,6 +1,6 @@
 /*---
 title: Add a raster tile source
-description: Using a Mapbox raster tile source in a map.
+description: Add a third-party raster source to the map.
 tags:
   - sources
 pathname: /mapbox-gl-js/example/map-tiles/
