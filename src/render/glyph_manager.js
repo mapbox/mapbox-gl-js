@@ -124,7 +124,10 @@ class GlyphManager {
             return;
         }
 
-        if (!isChar['CJK Unified Ideographs'](id) && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
+        if (!isChar['CJK Unified Ideographs'](id)
+            && !isChar['Hiragana'](id)
+            && !isChar['Katakana'](id)
+            && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
             return;
         }
 
