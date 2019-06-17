@@ -319,6 +319,18 @@ class SymbolBucket implements Bucket {
         this.sortFeaturesByY = zOrderByViewportY && (layout.get('text-allow-overlap') || layout.get('icon-allow-overlap') ||
             layout.get('text-ignore-placement') || layout.get('icon-ignore-placement'));
 
+        if (layout.get('symbol-placement') === 'point') {
+            let placementMode = layout.get('text-placement-mode') || ['horizontal'];
+            if (new Set(placementMode).size !== placementMode.length) {
+                // remove duplicates, preserving order
+                const withDuplicates = placementMode;
+                placementMode = [];
+                withDuplicates.map(m => { if (!(placementMode.includes(m))) { placementMode.push(m); }});
+            }
+            this.placementMode = placementMode;
+            console.log('[symbol_bucket.js] placementMode', this.placementMode);
+        }
+
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
 
         this.sourceID = options.sourceID;
@@ -336,10 +348,10 @@ class SymbolBucket implements Bucket {
         this.symbolInstances = new SymbolInstanceArray();
     }
 
-    calculateGlyphDependencies(text: string, stack: {[number]: boolean}, textAlongLine: boolean, doesAllowVerticalWritingMode: boolean) {
+    calculateGlyphDependencies(text: string, stack: {[number]: boolean}, textAlongLine: boolean, verticalPlacementPossible: boolean, doesAllowVerticalWritingMode: boolean) {
         for (let i = 0; i < text.length; i++) {
             stack[text.charCodeAt(i)] = true;
-            if (textAlongLine && doesAllowVerticalWritingMode) {
+            if ((textAlongLine || verticalPlacementPossible) && doesAllowVerticalWritingMode) {
                 const verticalChar = verticalizedCharacterMap[text.charAt(i)];
                 if (verticalChar) {
                     stack[verticalChar.charCodeAt(0)] = true;
@@ -423,11 +435,12 @@ class SymbolBucket implements Bucket {
             if (text) {
                 const fontStack = textFont.evaluate(feature, {}).join(',');
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
+                const verticalPlacementPossible = this.placementMode && this.placementMode.includes('vertical');
                 for (const section of text.sections) {
                     const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
                     const sectionFont = section.fontStack || fontStack;
                     const sectionStack = stacks[sectionFont] = stacks[sectionFont] || {};
-                    this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, doesAllowVerticalWritingMode);
+                    this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, verticalPlacementPossible, doesAllowVerticalWritingMode);
                 }
             }
         }
