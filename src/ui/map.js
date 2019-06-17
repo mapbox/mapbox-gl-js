@@ -91,7 +91,8 @@ type MapOptions = {
     pitch?: number,
     renderWorldCopies?: boolean,
     maxTileCacheSize?: number,
-    transformRequest?: RequestTransformFunction
+    transformRequest?: RequestTransformFunction,
+    accessToken: string
 };
 
 const defaultMinZoom = 0;
@@ -332,6 +333,9 @@ class Map extends Camera {
         this._controls = [];
         this._mapId = uniqueId();
         this._requestManager = new RequestManager(options.transformRequest);
+        this._accessToken = options.accessToken
+
+        mapboxgl.accessToken = options.accessToken || mapboxgl.accessToken;
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
