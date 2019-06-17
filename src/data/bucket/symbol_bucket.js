@@ -320,15 +320,12 @@ class SymbolBucket implements Bucket {
             layout.get('text-ignore-placement') || layout.get('icon-ignore-placement'));
 
         if (layout.get('symbol-placement') === 'point') {
-            let placementMode = layout.get('text-placement-mode') || ['horizontal'];
-            if (new Set(placementMode).size !== placementMode.length) {
+            let placements = layout.get('text-placement-mode');
+            if (placements) {
                 // remove duplicates, preserving order
-                const withDuplicates = placementMode;
-                placementMode = [];
-                withDuplicates.map(m => { if (!(placementMode.includes(m))) { placementMode.push(m); }});
-            }
-            this.placementMode = placementMode;
-            console.log('[symbol_bucket.js] placementMode', this.placementMode);
+                this.placementMode = [];
+                placements.map(m => { if (!(this.placementMode.includes(m))) { this.placementMode.push(m); }});
+            } else { this.placementMode = ['horizontal']; }
         }
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
