@@ -56,6 +56,7 @@ export type LayoutProps = {|
     "text-transform": DataDrivenProperty<"none" | "uppercase" | "lowercase">,
     "text-offset": DataDrivenProperty<[number, number]>,
     "text-allow-overlap": DataConstantProperty<boolean>,
+    "text-placement-mode": DataConstantProperty<Array<"horizontal" | "vertical">>,
     "text-ignore-placement": DataConstantProperty<boolean>,
     "text-optional": DataConstantProperty<boolean>,
 |};
@@ -99,6 +100,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "text-transform": new DataDrivenProperty(styleSpec["layout_symbol"]["text-transform"]),
     "text-offset": new DataDrivenProperty(styleSpec["layout_symbol"]["text-offset"]),
     "text-allow-overlap": new DataConstantProperty(styleSpec["layout_symbol"]["text-allow-overlap"]),
+    "text-placement-mode": new DataConstantProperty(styleSpec["layout_symbol"]["text-placement-mode"]),
     "text-ignore-placement": new DataConstantProperty(styleSpec["layout_symbol"]["text-ignore-placement"]),
     "text-optional": new DataConstantProperty(styleSpec["layout_symbol"]["text-optional"]),
 });
