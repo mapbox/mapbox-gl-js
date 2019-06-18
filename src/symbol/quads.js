@@ -120,10 +120,10 @@ export function getGlyphQuads(anchor: Anchor,
                        layer: SymbolStyleLayer,
                        alongLine: boolean,
                        feature: Feature,
-                       positions: {[string]: {[number]: GlyphPosition}}): Array<SymbolQuad> {
+                       positions: {[string]: {[number]: GlyphPosition}},
+                       allowVerticalPlacement: boolean): Array<SymbolQuad> {
 
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
-    const textAllowVertical = layer.layout.get('text-allow-vertical-placement') && !alongLine;
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
@@ -152,7 +152,7 @@ export function getGlyphQuads(anchor: Anchor,
             [0, 0] :
             [positionedGlyph.x + halfAdvance + textOffset[0], positionedGlyph.y + textOffset[1]];
 
-        const rotateVerticalGlyph = (alongLine || textAllowVertical) && positionedGlyph.vertical;
+        const rotateVerticalGlyph = (alongLine || allowVerticalPlacement) && positionedGlyph.vertical;
 
         let verticalizedLabelOffset = [0, 0];
         if (rotateVerticalGlyph) {
