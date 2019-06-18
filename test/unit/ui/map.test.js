@@ -58,12 +58,8 @@ test('Map', (t) => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});
         Object.defineProperty(container, 'offsetHeight', {value: 512});
-
-        const bounds = [[-133, 16], [-68, 50]];
-        const map = createMap(t, {accessToken:'notAToken'});
-
-        t.error()
-
+        createMap(t, {accessToken:'notAToken'});
+        t.error();
         t.end();
     });
 

@@ -55,7 +55,7 @@ const exported = {
     },
 
     set accessToken(token: string) {
-        config.ACCESS_TOKEN = Map._accessToken || token;
+        config.ACCESS_TOKEN = token;
     },
 
     /**
