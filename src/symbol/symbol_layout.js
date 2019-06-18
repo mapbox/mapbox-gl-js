@@ -148,7 +148,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const keepUpright = layout.get('text-keep-upright');
 
-
     for (const feature of bucket.features) {
         const fontstack = layout.get('text-font').evaluate(feature, {}).join(',');
         const glyphPositionMap = glyphPositions;
@@ -167,6 +166,9 @@ export function performSymbolLayout(bucket: SymbolBucket,
             const textAnchor = layout.get('text-anchor').evaluate(feature, {});
             const variableTextAnchor = layout.get('text-variable-anchor');
             const radialOffset = layout.get('text-radial-offset').evaluate(feature, {});
+
+            const placementMode = layout.get('symbol-placement') === 'point' ? layout.get('text-placement-mode') || ['horizontal'] : null ;
+            const allowVerticalPlacement = placementMode && placementMode.includes('vertical');
 
             if (!variableTextAnchor) {
                 // Layers with variable anchors use the `text-radial-offset` property and the [x, y] offset vector
@@ -187,6 +189,16 @@ export function performSymbolLayout(bucket: SymbolBucket,
             const maxWidth = layout.get('symbol-placement') === 'point' ?
                 layout.get('text-max-width').evaluate(feature, {}) * ONE_EM :
                 0;
+
+            const addVerticalShapingForPointLabelIfNeeded = () => {
+                if (allowVerticalPlacement && allowsVerticalWritingMode(text)) {
+                    // Vertical POI label placement is meant to be used for scripts that support vertical
+                    // writing mode, thus, default left justification is used. If Latin
+                    // scripts would need to be supported, this should take into account other justifications.
+                    shapedTextOrientations.vertical = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor,
+                                                                'left', spacingIfAllowed, textOffset, WritingMode.vertical);
+                }
+            };
 
             // If this layer uses text-variable-anchor, generate shapings for all justification possibilities.
             if (!textAlongLine && variableTextAnchor) {
@@ -213,14 +225,22 @@ export function performSymbolLayout(bucket: SymbolBucket,
                         }
                     }
                 }
+
+                addVerticalShapingForPointLabelIfNeeded();
             } else {
                 if (textJustify === "auto") {
                     textJustify = getAnchorJustification(textAnchor);
                 }
+
+                // Horizontal point or line label.
                 const shaping = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
                                           textOffset, WritingMode.horizontal);
                 if (shaping) shapedTextOrientations.horizontal[textJustify] = shaping;
 
+                // Vertical point label (if allowVerticalPlacement is enabled).
+                addVerticalShapingForPointLabelIfNeeded();
+
+                // Verticalized line label.
                 if (allowsVerticalWritingMode(unformattedText) && textAlongLine && keepUpright) {
                     shapedTextOrientations.vertical = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify,
                                                                 spacingIfAllowed, textOffset, WritingMode.vertical);
