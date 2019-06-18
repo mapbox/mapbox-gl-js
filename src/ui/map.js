@@ -332,10 +332,7 @@ class Map extends Camera {
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
         this._mapId = uniqueId();
-        this._requestManager = new RequestManager(options.transformRequest);
-        this._accessToken = options.accessToken
-
-        mapboxgl.accessToken = options.accessToken || mapboxgl.accessToken;
+        this._requestManager = new RequestManager(options.transformRequest, options.accessToken);
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);

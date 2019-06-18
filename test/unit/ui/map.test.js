@@ -50,6 +50,23 @@ test('Map', (t) => {
         t.end();
     });
 
+    // t.test('map-specific token', (t) => {\
+    //     t.end();
+    // });
+
+    t.test('bad map-specific token breaks map', (t) => {
+        const container = window.document.createElement('div');
+        Object.defineProperty(container, 'offsetWidth', {value: 512});
+        Object.defineProperty(container, 'offsetHeight', {value: 512});
+
+        const bounds = [[-133, 16], [-68, 50]];
+        const map = createMap(t, {accessToken:'notAToken'});
+
+        t.error()
+
+        t.end();
+    });
+
     t.test('initial bounds in constructor options', (t) => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});

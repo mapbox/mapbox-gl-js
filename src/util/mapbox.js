@@ -42,8 +42,10 @@ export class RequestManager {
     _skuTokenExpiresAt: number;
     _transformRequestFn: ?RequestTransformFunction;
 
-    constructor(transformRequestFn?: RequestTransformFunction) {
+    constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string) {
         this._transformRequestFn = transformRequestFn;
+        if (customAccessToken) config.ACCESS_TOKEN = customAccessToken;
+
         this._createSkuToken();
     }
 
