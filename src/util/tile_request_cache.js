@@ -3,8 +3,13 @@
 import { parseCacheControl } from './util';
 import window from './window';
 
+import type Dispatcher from './dispatcher';
+
 const CACHE_NAME = 'mapbox-tiles';
-const CACHE_LIMIT = 50;
+let cacheLimit = 500; // 50MB / (100KB/tile) ~= 500 tiles
+let cacheCheckThreshold = 50;
+
+const MIN_TIME_UNTIL_EXPIRY = 1000 * 60 * 7; // 7 minutes. Skip caching tiles with a short enough max age.
 
 export type ResponseOptions = {
     status: number,
@@ -12,9 +17,8 @@ export type ResponseOptions = {
     headers: window.Headers
 };
 
-export function cachePut(request, response, cacheHeaders, requestTime) {
+export function cachePut(request: Request, response: Response, requestTime: number) {
     if (!window.caches) return;
-    console.log('put');
 
     const options: ResponseOptions = {
         status: response.status,
@@ -28,20 +32,23 @@ export function cachePut(request, response, cacheHeaders, requestTime) {
         return;
     }
     if (cacheControl['max-age']) {
-        options.headers.set('Expires', new Date(requestTime + cacheControl['max-age'] * 1000).toUTCString())
-        console.log(options.headers.get('Expires'));
+        options.headers.set('Expires', new Date(requestTime + cacheControl['max-age'] * 1000).toUTCString());
     }
 
-    const clonedResponse = new window.Response(response.clone().body, options);
+    const timeUntilExpiry = new Date(options.headers.get('Expires')).getTime() - requestTime;
+    if (timeUntilExpiry < MIN_TIME_UNTIL_EXPIRY) return;
 
-    window.caches.open(CACHE_NAME)
-        .then(cache => {
-            cache.put(request, clonedResponse).then(() => {
-            });
-        });
+    const clonedResponse = new window.Response(response.body, options);
+
+    window.caches.open(CACHE_NAME).then(cache => cache.put(stripQueryParameters(request.url), clonedResponse));
 }
 
-export function cacheGet(request, callback) {
+function stripQueryParameters(url: string) {
+    const start = url.indexOf('?');
+    return start < 0 ? url : url.slice(0, start);
+}
+
+export function cacheGet(request: Request, callback: (error: ?any, response: ?Response, fresh: ?boolean) => void) {
     if (!window.caches) return callback(null);
 
     window.caches.open(CACHE_NAME)
@@ -52,8 +59,9 @@ export function cacheGet(request, callback) {
                 .then(response => {
                     const fresh = isFresh(response);
 
-                    // reinsert into cache so 
-                    if (fresh) cache.put(request, response.clone());
+                    // Reinsert into cache so that order of keys in the cache is the order of access.
+                    // This line makes the cache a LRU instead of a FIFO cache.
+                    if (fresh) cache.put(stripQueryParameters(request.url), response.clone());
 
                     callback(null, response, fresh);
                 });
@@ -70,29 +78,43 @@ function isFresh(response) {
 }
 
 
-const CACHE_CHECK_THRESHOLD = 2;
-let globalEntryCounter = 0;
+// `Infinity` triggers a cache check after the first tile is loaded
+// so that a check is run at least once on each page load.
+let globalEntryCounter = Infinity;
 
+// The cache check gets run on a worker. The reason for this is that
+// profiling sometimes shows this as taking up significant time on the
+// thread it gets called from. And sometimes it doesn't. It *may* be
+// fine to run this on the main thread but out of caution this is being
+// dispatched on a worker. This can be investigated further in the future.
 export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
     globalEntryCounter++;
-    if (globalEntryCounter > CACHE_CHECK_THRESHOLD) {
-        dispatcher.send('enforceCacheSizeLimit');
+    if (globalEntryCounter > cacheCheckThreshold) {
+        dispatcher.send('enforceCacheSizeLimit', cacheLimit);
+        globalEntryCounter = 0;
     }
 }
 
-export function enforceCacheSizeLimit() {
+// runs on worker, see above comment
+export function enforceCacheSizeLimit(limit: number) {
     window.caches.open(CACHE_NAME)
         .then(cache => {
             cache.keys().then(keys => {
-                for (let i = 0; i < keys.length - CACHE_LIMIT; i++) {
+                for (let i = 0; i < keys.length - limit; i++) {
                     cache.delete(keys[i]);
                 }
-            })
+            });
         });
 }
 
-export function clear(callback) {
-    window.caches.delete(CACHE_NAME)
-        .catch(callback)
-        .then(() => callback());
+export function clearTileCache(callback?: (err: ?Error) => void) {
+    const promise = window.caches.delete(CACHE_NAME);
+    if (callback) {
+        promise.catch(callback).then(() => callback());
+    }
+}
+
+export function setCacheLimits(limit: number, checkThreshold: number) {
+    cacheLimit = limit;
+    cacheCheckThreshold = checkThreshold;
 }

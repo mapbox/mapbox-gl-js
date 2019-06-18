@@ -25,6 +25,7 @@ import { Event, ErrorEvent } from '../util/evented';
 import { MapMouseEvent } from './events';
 import TaskQueue from '../util/task_queue';
 import webpSupported from '../util/webp_supported';
+import { setCacheLimits } from '../util/tile_request_cache';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type { RequestTransformFunction } from '../util/mapbox';
@@ -1922,6 +1923,11 @@ class Map extends Camera {
     // show vertices
     get vertices(): boolean { return !!this._vertices; }
     set vertices(value: boolean) { this._vertices = value; this._update(); }
+
+    // for cache browser tests
+    _setCacheLimits(limit: number, checkThreshold: number) {
+        setCacheLimits(limit, checkThreshold);
+    }
 }
 
 export default Map;

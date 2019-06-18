@@ -197,8 +197,8 @@ export default class Worker {
         return this.demWorkerSources[mapId][source];
     }
 
-    enforceCacheSizeLimit() {
-        enforceCacheSizeLimit();
+    enforceCacheSizeLimit(mapId: string, limit: number) {
+        enforceCacheSizeLimit(limit);
     }
 }
 

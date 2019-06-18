@@ -42,7 +42,7 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  * @private
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const request = getArrayBuffer(extend(params.request, { cacheIgnoringSearch: true }), (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
+    const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
         if (err) {
             callback(err);
         } else if (data) {

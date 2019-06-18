@@ -2,7 +2,7 @@
 
 import window from './window';
 import { extend } from './util';
-import { isMapboxHTTPURL } from './mapbox';
+import { isMapboxHTTPURL, hasCacheDefeatingSku } from './mapbox';
 import config from './config';
 import assert from 'assert';
 import { cacheGet, cachePut } from './tile_request_cache';
@@ -46,8 +46,7 @@ export type RequestParameters = {
     body?: string,
     type?: 'string' | 'json' | 'arrayBuffer',
     credentials?: 'same-origin' | 'include',
-    collectResourceTiming?: boolean,
-    cacheIgnoringSearch?: boolean
+    collectResourceTiming?: boolean
 };
 
 export type ResponseCallback<T> = (error: ?Error, data: ?T, cacheControl: ?string, expires: ?string) => void;
@@ -102,8 +101,9 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         referrer: getReferrer(),
         signal: controller.signal
     });
+    let complete = false;
 
-    const { cacheIgnoringSearch } = requestParameters;
+    const cacheIgnoringSearch = hasCacheDefeatingSku(request.url);
 
     if (requestParameters.type === 'json') {
         request.headers.set('Accept', 'application/json');
@@ -115,26 +115,20 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         }
 
         if (cachedResponse && responseIsFresh) {
-            console.log('cached and fresh', request.url);
-            return finishRequest(cachedResponse, cachedResponse.headers);
+            return finishRequest(cachedResponse);
         }
 
         if (cachedResponse) {
-            // Then it isn't a simple CORS 
-            // request.headers.set('If-None-Match', cachedResponse.headers.get('ETag'));
+            // We can't do revalidation with 'If-None-Match' because then the
+            // request doesn't have simple cors headers.
         }
 
         const requestTime = Date.now();
 
         window.fetch(request).then(response => {
-            const revalidated = response.status === 304 && cachedResponse;
-
-            if (response.ok || revalidated) {
-                const fullResponse = revalidated ? cachedResponse : response;
-                if (cacheIgnoringSearch) {
-                    cachePut(request, fullResponse, response.headers, requestTime);
-                }
-                return finishRequest(fullResponse, response.headers);
+            if (response.ok) {
+                const cacheableResponse = cacheIgnoringSearch ? response.clone() : null;
+                return finishRequest(response, cacheableResponse, requestTime);
 
             } else {
                 return callback(new AJAXError(response.statusText, response.status, requestParameters.url));
@@ -148,9 +142,22 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         });
     };
 
-    const finishRequest = (response, cacheHeaders) => {
-        response[requestParameters.type || 'text']().then(result => {
-            callback(null, result, cacheHeaders.get('Cache-Control'), cacheHeaders.get('Expires'));
+    const finishRequest = (response, cacheableResponse, requestTime) => {
+        (
+            requestParameters.type === 'arrayBuffer' ? response.arrayBuffer() :
+            requestParameters.type === 'json' ? response.json() :
+            response.text()
+        ).then(result => {
+            if (cacheableResponse && requestTime) {
+                // The response needs to be inserted into the cache after it has completely loaded.
+                // Until it is fully loaded there is a chance it will be aborted. Aborting while
+                // reading the body can cause the cache insertion to error. We could catch this error
+                // in most browsers but in Firefox it seems to sometimes crash the tab. Adding
+                // it to the cache here avoids that error.
+                cachePut(request, cacheableResponse, requestTime);
+            }
+            complete = true;
+            callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
         }).catch(err => callback(new Error(err.message)));
     };
 
@@ -160,7 +167,9 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         validateOrFetch(null, null);
     }
 
-    return { cancel: () => controller.abort() };
+    return { cancel: () => {
+        if (!complete) controller.abort();
+    }};
 }
 
 function makeXMLHttpRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
