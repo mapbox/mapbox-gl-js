@@ -191,7 +191,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 0;
 
             const addVerticalShapingForPointLabelIfNeeded = () => {
-                if (allowVerticalPlacement && allowsVerticalWritingMode(text)) {
+                if (allowVerticalPlacement && allowsVerticalWritingMode(unformattedText)) {
                     // Vertical POI label placement is meant to be used for scripts that support vertical
                     // writing mode, thus, default left justification is used. If Latin
                     // scripts would need to be supported, this should take into account other justifications.
