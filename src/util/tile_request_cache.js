@@ -12,11 +12,6 @@ export type ResponseOptions = {
     headers: window.Headers
 };
 
-let numCached = 0;
-if (window.caches) {
-    window.caches.open(CACHE_NAME).then(cache => cache.keys().then(keys => numCached = keys.length));
-}
-
 export function cachePut(request, response, cacheHeaders, requestTime) {
     if (!window.caches) return;
     console.log('put');
@@ -42,8 +37,6 @@ export function cachePut(request, response, cacheHeaders, requestTime) {
     window.caches.open(CACHE_NAME)
         .then(cache => {
             cache.put(request, clonedResponse).then(() => {
-                numCached++;
-                if (numCached > CACHE_LIMIT) trimCache();
             });
         });
 }
@@ -76,13 +69,23 @@ function isFresh(response) {
     return expires > Date.now() && !cacheControl['no-cache'];
 }
 
-function trimCache() {
+
+const CACHE_CHECK_THRESHOLD = 2;
+let globalEntryCounter = 0;
+
+export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
+    globalEntryCounter++;
+    if (globalEntryCounter > CACHE_CHECK_THRESHOLD) {
+        dispatcher.send('enforceCacheSizeLimit');
+    }
+}
+
+export function enforceCacheSizeLimit() {
     window.caches.open(CACHE_NAME)
         .then(cache => {
             cache.keys().then(keys => {
-                for (let i = 0; i < Math.min(numCached - CACHE_LIMIT, keys.length); i++) {
+                for (let i = 0; i < keys.length - CACHE_LIMIT; i++) {
                     cache.delete(keys[i]);
-                    numCached--;
                 }
             })
         });
