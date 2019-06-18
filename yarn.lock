@@ -1014,41 +1014,45 @@
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
 
-"@elastic/react-search-ui-views@0.8.0", "@elastic/react-search-ui-views@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@elastic/react-search-ui-views/-/react-search-ui-views-0.8.0.tgz#a6ee9f89fb795f9ae1d976e94c4ffd830e8c52ab"
-  integrity sha512-sB4bl3H9BpMOluKqQ+K0b8RastqCyE5dsO3oFcNbnLrqTYtVBT7txQoIZo3uZCnlDChEGJPrMX00JPRjudfFAg==
+"@elastic/react-search-ui-views@0.10.0", "@elastic/react-search-ui-views@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@elastic/react-search-ui-views/-/react-search-ui-views-0.10.0.tgz#4ae423e0a10592d11c1083ee9875b40fec040a09"
+  integrity sha512-g2BZDa1XLVSZJf6bqeMXsrufaxUQyTfzxFvVhvMUn7IumkXXsZISqu0CvGT5esDoV9m8ipaB6hgZjA28+t1D5A==
   dependencies:
     "@babel/polyfill" "^7.2.5"
     autoprefixer "^9.4.7"
+    core-js "^2.6.9"
     deep-equal "^1.0.1"
     downshift "^3.2.7"
     rc-pagination "^1.17.3"
     react-select "^2.1.1"
 
-"@elastic/react-search-ui@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@elastic/react-search-ui/-/react-search-ui-0.8.0.tgz#5342751fb247f84bba34d5623993fbd73e91ed19"
-  integrity sha512-FeQcLHk+qff5poVLNyNM+VXBj5QGuijqOjIn2xseMR6CUwNhiJ8RKNOsd97bR/3xFHK02dIoo0Fdl5S3TZ86ig==
+"@elastic/react-search-ui@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@elastic/react-search-ui/-/react-search-ui-0.10.0.tgz#c65343f44d84d9af83876d15047e5bfa7140bab9"
+  integrity sha512-YfSqLND2OqQw37OiEk3ugKptvQ0TRpTVTO2mKpwctRWs9HQMMfdTZf21PkLe8mowylWqz1VH7wCqsV87Xg5Rnw==
   dependencies:
     "@babel/polyfill" "^7.2.5"
-    "@elastic/react-search-ui-views" "0.8.0"
-    "@elastic/search-ui" "0.8.0"
+    "@elastic/react-search-ui-views" "0.10.0"
+    "@elastic/search-ui" "0.10.0"
+    core-js "^2.6.9"
     debounce-fn "^1.0.0"
 
-"@elastic/search-ui-site-search-connector@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@elastic/search-ui-site-search-connector/-/search-ui-site-search-connector-0.8.0.tgz#f8fcbb888478d01b76c5c1f68d7058104d6503a0"
-  integrity sha512-trdBegOLiREX7RMdQ8dNXYA5AKxgYThvacWXV//9E/o56h5x2e+Y33PBNuMomGkkgcivdWhlFfQySftZkewBYw==
+"@elastic/search-ui-site-search-connector@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@elastic/search-ui-site-search-connector/-/search-ui-site-search-connector-0.10.0.tgz#b3b705214a7bc690c45cdd4ed4a20608554b74fa"
+  integrity sha512-ZTxV57vhrGRdIQc3B/fjJJu9kh9JFLW3GVgNT5pn/CAg9q1TGO/+6/AMqBNWBrGWQNEY8x5qHobqbDTrea09HQ==
   dependencies:
     "@babel/polyfill" "^7.2.5"
+    core-js "^2.6.9"
 
-"@elastic/search-ui@0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@elastic/search-ui/-/search-ui-0.8.0.tgz#9d6bc3a8444ed3fcbdf62751a82c7422b7b1f707"
-  integrity sha512-Eh+kmwPRDL5Fe5iyl7fScC1pjIDZNBFFgC3WCvopaQ8bemtkAmqoR0labG79mcGhpXo79+E/W5qgUkOMsVm8mQ==
+"@elastic/search-ui@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@elastic/search-ui/-/search-ui-0.10.0.tgz#bcf86faaa12f5c16655397cf64f93056bf618a0a"
+  integrity sha512-5pMbeY/sodixMXh8aaJjUcey8FM7iV5I7gtRbXHjz9VY2mb3MdO88gHxKVYYb4PWzNQn+s2tzsaYiw2Cvgkkaw==
   dependencies:
     "@babel/polyfill" "^7.2.5"
+    core-js "^2.6.9"
     date-fns "^1.29.0"
     debounce-fn "^1.0.0"
     deep-equal "^1.0.1"
@@ -1242,14 +1246,14 @@
     webpack-merge "^4.1.2"
     worker-farm "^1.6.0"
 
-"@mapbox/dr-ui@0.15.2":
-  version "0.15.2"
-  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.15.2.tgz#70017c54b99d2666904a9e2ddd8911bf91f05f45"
-  integrity sha512-S/LqQR8/X2JsmoDv5sj88CjAHvKmIu4lR8PxV2xEHjXRA2yePF0S0wzmBL/RsUoQClQJgg8BhGUiqDDJAhWJ7w==
+"@mapbox/dr-ui@0.16.2":
+  version "0.16.2"
+  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.16.2.tgz#82e3f69bc0fa59a7a514ca8747b4845a7adcf688"
+  integrity sha512-Wsio/ieF5OZ91lrHjZ0hCpjALiMRXFj8KkMmjaI+E3voZ8bFZZPySHfJQT75NZG66OHBhH1klsJMKnZUpql38A==
   dependencies:
-    "@elastic/react-search-ui" "^0.8.0"
-    "@elastic/react-search-ui-views" "^0.8.0"
-    "@elastic/search-ui-site-search-connector" "^0.8.0"
+    "@elastic/react-search-ui" "^0.10.0"
+    "@elastic/react-search-ui-views" "^0.10.0"
+    "@elastic/search-ui-site-search-connector" "^0.10.0"
     "@mapbox/mr-ui" "^0.7.0"
     classnames "^2.2.6"
     debounce "^1.2.0"
@@ -4280,7 +4284,7 @@ core-js@^2.0.0, core-js@^2.4.0, core-js@^2.5.0:
   version "2.5.3"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.5.3.tgz#8acc38345824f16d8365b7c9b4259168e8ed603e"
 
-core-js@^2.6.5:
+core-js@^2.6.5, core-js@^2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.9.tgz#6b4b214620c834152e179323727fc19741b084f2"
   integrity sha512-HOpZf6eXmnl7la+cUdMnLvUxKNqLUzJvgIziQ0DiF3JwSImNphIqdGqzj6hIKyX04MmV0poclQ7+wjWvxQyR2A==
@@ -11670,15 +11674,15 @@ react-displace@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/react-displace/-/react-displace-2.3.0.tgz#6915f8f2f279a29a7b58442405c26edc3d441429"
 
-react-dom@16.3.3:
-  version "16.3.3"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.3.3.tgz#af4c2aef9f6a66251a46da50253c860a67ae66d9"
-  integrity sha512-ALCp7ZbSGkqRDtQoZozKVNgwXMxbxf/IGOUMC2A0yF6JHeZrS8e2cOotPT87Vf4b7PKCuUVKU4/RDEXxToA/yA==
+react-dom@16.8.0:
+  version "16.8.0"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.8.0.tgz#18f28d4be3571ed206672a267c66dd083145a9c4"
+  integrity sha512-dBzoAGYZpW9Yggp+CzBPC7q1HmWSeRc93DWrwbskmG1eHJWznZB/p0l/Sm+69leIGUS91AXPB/qB3WcPnKx8Sw==
   dependencies:
-    fbjs "^0.8.16"
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    prop-types "^15.6.0"
+    prop-types "^15.6.2"
+    scheduler "^0.13.0"
 
 react-helmet@^5.2.0:
   version "5.2.0"
@@ -11768,14 +11772,15 @@ react-transition-group@^2.2.1:
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
 
-react@^16.7.0:
-  version "16.7.0"
-  resolved "https://registry.yarnpkg.com/react/-/react-16.7.0.tgz#b674ec396b0a5715873b350446f7ea0802ab6381"
+react@^16.8.0:
+  version "16.8.6"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.8.6.tgz#ad6c3a9614fd3a4e9ef51117f54d888da01f2bbe"
+  integrity sha512-pC0uMkhLaHm11ZSJULfOBqV4tIZkx87ZLvbbQYunNixAAvjnC+snJCg0XQXn9VIsttVsbZP/H/ewzgsd5fxKXw==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.2"
-    scheduler "^0.12.0"
+    scheduler "^0.13.6"
 
 read-all-stream@^3.0.0:
   version "3.1.0"
@@ -12688,9 +12693,10 @@ saxes@^3.1.3:
   dependencies:
     xmlchars "^1.3.1"
 
-scheduler@^0.12.0:
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.12.0.tgz#8ab17699939c0aedc5a196a657743c496538647b"
+scheduler@^0.13.0, scheduler@^0.13.6:
+  version "0.13.6"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.13.6.tgz#466a4ec332467b31a91b9bf74e5347072e4cd889"
+  integrity sha512-IWnObHt413ucAYKsD9J1QShUKkbKLQQHdxRyw73sw4FN26iWr3DY/H34xGPe4nmL1DwXyWmSWmMrA9TfQbE/XQ==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"

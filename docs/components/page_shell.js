@@ -235,13 +235,13 @@ class PageShell extends React.Component {
                                     <ProductMenu productName={topbarContent.productName} homePage='/mapbox-gl-js/'/>
                                 </div>
                             </div>
-                            <div className={`col col--6-mm ${sidebarProps.sidebarColSize ? `col--${10 - sidebarProps.sidebarColSize}-ml` : ''} col--12`}>
+                            <div className={`col col--7-mm ${sidebarProps.sidebarColSize ? `col--${11 - sidebarProps.sidebarColSize}-ml` : ''} col--12`}>
                                 <div style={{ height: '50px' }}>
                                     {topbarContent.topNav}
                                 </div>
                             </div>
-                            <div className="col col--2-mm col--12">
-                                <div className="flex-parent-mm flex-parent--end-main h-full-mm wmax300 wmax-full-mm " style={{margin: '7px 0'}}>
+                            <div className="col col--1-mm col--12">
+                                <div className="flex-parent-mm flex-parent--end-main h-full-mm wmax300 wmax-full-mm" style={{margin: '7px 0'}}>
                                     <Search site={site} />
                                 </div>
                             </div>
