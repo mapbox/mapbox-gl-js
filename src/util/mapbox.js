@@ -44,7 +44,7 @@ export class RequestManager {
 
     constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string) {
         this._transformRequestFn = transformRequestFn;
-        if (customAccessToken) config.ACCESS_TOKEN = customAccessToken;
+        config.CUSTOM_ACCESS_TOKEN = customAccessToken
 
         this._createSkuToken();
     }
@@ -68,27 +68,28 @@ export class RequestManager {
     }
 
     normalizeStyleURL(url: string, accessToken?: string): string {
-        return normalizeStyleURL(url, accessToken);
+        return normalizeStyleURL(url, config.CUSTOM_ACCESS_TOKEN || accessToken);
     }
 
     normalizeGlyphsURL(url: string, accessToken?: string): string {
-        return normalizeGlyphsURL(url, accessToken);
+        return normalizeGlyphsURL(url, config.CUSTOM_ACCESS_TOKEN || accessToken);
     }
 
     normalizeSourceURL(url: string, accessToken?: string): string {
-        return normalizeSourceURL(url, accessToken);
+        return normalizeSourceURL(url, config.CUSTOM_ACCESS_TOKEN || accessToken);
     }
 
     normalizeSpriteURL(url: string, format: string, extension: string, accessToken?: string): string {
-        return normalizeSpriteURL(url, format, extension, accessToken);
+        return normalizeSpriteURL(url, format, extension, config.CUSTOM_ACCESS_TOKEN || accessToken);
     }
 
     normalizeTileURL(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
+
         if (this._isSkuTokenExpired()) {
             this._createSkuToken();
         }
 
-        return normalizeTileURL(tileURL, sourceURL, tileSize, this._skuToken);
+        return normalizeTileURL(tileURL, sourceURL, tileSize, this._skuToken, config.CUSTOM_ACCESS_TOKEN);
     }
 
     canonicalizeTileURL(url: string) {
@@ -185,7 +186,7 @@ const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize
         urlObject.params.push(`sku=${skuToken}`);
     }
 
-    return makeAPIURL(urlObject);
+    return makeAPIURL(urlObject, config.CUSTOM_ACCESS_TOKEN);
 };
 
 // matches any file extension specified by a dot and one or more alphanumeric characters
@@ -341,7 +342,7 @@ class TelemetryEvent {
     postEvent(timestamp: number, additionalPayload: {[string]: any}, callback: (err: ?Error) => void) {
         if (!config.EVENTS_URL) return;
         const eventsUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
-        eventsUrlObject.params.push(`access_token=${config.ACCESS_TOKEN || ''}`);
+        eventsUrlObject.params.push(`access_token=${config.CUSTOM_ACCESS_TOKEN || config.ACCESS_TOKEN || ''}`);
         const payload: Object = {
             event: this.type,
             created: new Date(timestamp).toISOString(),
