@@ -13,7 +13,7 @@
 
 <body>
 <div id='map'></div>
-
+<div id='hidden' style='display:none'></div>
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
 <script>
@@ -27,6 +27,7 @@
         center: [-77.01866, 38.888],
         style: 'mapbox://styles/mapbox/streets-v10',
         hash: true,
+        transformRequest: function(url){console.log(url)},
         accessToken: mapToken
     });
 

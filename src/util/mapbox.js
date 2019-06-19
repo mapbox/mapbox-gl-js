@@ -45,7 +45,7 @@ export class RequestManager {
     constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string) {
         this._transformRequestFn = transformRequestFn;
         config.CUSTOM_ACCESS_TOKEN = customAccessToken;
-
+        customToken = customAccessToken
         this._createSkuToken();
     }
 
@@ -274,6 +274,7 @@ class TelemetryEvent {
     pendingRequest: ?Cancelable;
 
     constructor(type: TelemetryEventType) {
+        console.log(customToken)
         this.type = type;
         this.anonId = null;
         this.eventData = {};
@@ -482,8 +483,8 @@ export class TurnstileEvent extends TelemetryEvent {
     }
 }
 
-const turnstileEvent_ = new TurnstileEvent();
-export const postTurnstileEvent = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
+// const turnstileEvent_ = new TurnstileEvent();
+// export const postTurnstileEvent = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
 const mapLoadEvent_ = new MapLoadEvent();
 export const postMapLoadEvent = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
