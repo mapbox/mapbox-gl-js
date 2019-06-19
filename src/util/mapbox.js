@@ -44,7 +44,7 @@ export class RequestManager {
 
     constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string) {
         this._transformRequestFn = transformRequestFn;
-        config.CUSTOM_ACCESS_TOKEN = customAccessToken
+        config.CUSTOM_ACCESS_TOKEN = customAccessToken;
 
         this._createSkuToken();
     }
