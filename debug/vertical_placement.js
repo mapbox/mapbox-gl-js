@@ -252,7 +252,7 @@ window.vertical_style = {
                 "text-padding": 1,
                 "text-rotation-alignment": "viewport",
                 "text-pitch-alignment": "viewport",
-                "text-placement-mode": ["vertical", "horizontal"],
+                "text-writing-mode": ["vertical", "horizontal"],
                 "text-radial-offset": 1,
                 "text-variable-anchor": ["top","bottom", "center"],
                 "text-field": ["format", ["concat",["get", "text"],["get", "id"]], {"text-color": ["get", "color"]}],

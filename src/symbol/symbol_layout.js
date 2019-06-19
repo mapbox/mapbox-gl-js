@@ -167,8 +167,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
             const variableTextAnchor = layout.get('text-variable-anchor');
             const radialOffset = layout.get('text-radial-offset').evaluate(feature, {});
 
-            const placementMode = layout.get('symbol-placement') === 'point' ? layout.get('text-placement-mode') || ['horizontal'] : null ;
-            const allowVerticalPlacement = placementMode && placementMode.includes('vertical');
+            const writingMode = layout.get('symbol-placement') === 'point' ? layout.get('text-writing-mode') || ['horizontal'] : null ;
+            const allowVerticalPlacement = writingMode && writingMode.includes('vertical');
 
             if (!variableTextAnchor) {
                 // Layers with variable anchors use the `text-radial-offset` property and the [x, y] offset vector

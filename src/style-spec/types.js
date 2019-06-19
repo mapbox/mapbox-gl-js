@@ -248,7 +248,7 @@ export type SymbolLayerSpecification = {|
         "text-transform"?: DataDrivenPropertyValueSpecification<"none" | "uppercase" | "lowercase">,
         "text-offset"?: DataDrivenPropertyValueSpecification<[number, number]>,
         "text-allow-overlap"?: PropertyValueSpecification<boolean>,
-        "text-placement-mode"?: PropertyValueSpecification<Array<"horizontal" | "vertical">>,
+        "text-writing-mode"?: PropertyValueSpecification<Array<"horizontal" | "vertical">>,
         "text-ignore-placement"?: PropertyValueSpecification<boolean>,
         "text-optional"?: PropertyValueSpecification<boolean>,
         "visibility"?: "visible" | "none"

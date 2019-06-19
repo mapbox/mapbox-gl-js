@@ -320,12 +320,12 @@ class SymbolBucket implements Bucket {
             layout.get('text-ignore-placement') || layout.get('icon-ignore-placement'));
 
         if (layout.get('symbol-placement') === 'point') {
-            let placements = layout.get('text-placement-mode');
-            if (placements) {
+            let writingMode = layout.get('text-writing-mode');
+            if (writingMode) {
                 // remove duplicates, preserving order
-                this.placementMode = [];
-                placements.map(m => { if (!(this.placementMode.includes(m))) { this.placementMode.push(m); }});
-            } else { this.placementMode = ['horizontal']; }
+                this.writingMode = [];
+                writingMode.map(m => { if (!(this.writingMode.includes(m))) { this.writingMode.push(m); }});
+            } else { this.writingMode = ['horizontal']; }
         }
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
@@ -432,7 +432,7 @@ class SymbolBucket implements Bucket {
             if (text) {
                 const fontStack = textFont.evaluate(feature, {}).join(',');
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
-                const allowVerticalPlacement = this.placementMode && this.placementMode.includes('vertical');
+                const allowVerticalPlacement = this.writingMode && this.writingMode.includes('vertical');
                 for (const section of text.sections) {
                     const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
                     const sectionFont = section.fontStack || fontStack;
