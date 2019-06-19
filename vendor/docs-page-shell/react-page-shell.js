@@ -897,6 +897,37 @@ function PageFooter() {
   }))));
 }
 
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x.default : x;
+}
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var titleGenerator_1 = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.titleGenerator = titleGenerator;
+
+function titleGenerator(title, subsite, site) {
+  // create array for formatted title: {title} | {subsite} | {site}
+  var titleArr = []; // do not push a title that is "Introduction"
+
+  if (title && title !== 'Introduction' && (subsite || site)) titleArr.push(title); // push subsite, if same value doesn't exist yet, strip "for (Product)" from name
+
+  if (subsite && titleArr.indexOf(subsite) === -1) titleArr.push(subsite.replace(/\sfor\s(iOS|Android|Vision|Unity)/, '')); // push site, if same value doesn't exist yet
+
+  if (site && titleArr.indexOf(site) === -1) titleArr.push(site);
+  return titleArr;
+}
+});
+
+unwrapExports(titleGenerator_1);
+var titleGenerator_2 = titleGenerator_1.titleGenerator;
+
 var removeMarkdown = function (md, options) {
   options = options || {};
   options.listUnicodeChar = options.hasOwnProperty('listUnicodeChar') ? options.listUnicodeChar : false;
@@ -942,8 +973,8 @@ var removeMarkdown = function (md, options) {
 };
 
 function MetaTagger(props) {
-  var site = props.subsite ? props.subsite : props.site;
-  var suffixedTitle = "".concat(props.title === site ? props.title : "".concat(props.title, " | ").concat(site), " | Mapbox");
+  var title = titleGenerator_2(props.title, props.subsite, props.site).join(' | ');
+  var suffixedTitle = "".concat(title, " | Mapbox");
   var preppedDescription = props.description.replace(/\s+/g, ' ');
   var prodUrl = 'https://www.mapbox.com';
   if (props.pathname[0] !== '/') prodUrl += '/';

@@ -5,6 +5,7 @@ import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
 import { extend } from '../../../src/util/util';
+import { RequestManager } from '../../../src/util/mapbox';
 import { Event, Evented } from '../../../src/util/evented';
 import window from '../../../src/util/window';
 import {
@@ -47,10 +48,7 @@ class StubMap extends Evented {
     constructor() {
         super();
         this.transform = new Transform();
-    }
-
-    _transformRequest(url) {
-        return { url };
+        this._requestManager = new RequestManager();
     }
 
     _getMapId() {
@@ -125,7 +123,7 @@ test('Style#loadURL', (t) => {
 
     t.test('transforms style URL before request', (t) => {
         const map = new StubMap();
-        const spy = t.spy(map, '_transformRequest');
+        const spy = t.spy(map._requestManager, 'transformRequest');
 
         const style = new Style(map);
         style.loadURL('style.json');
@@ -324,7 +322,7 @@ test('Style#loadJSON', (t) => {
         window.useFakeXMLHttpRequest();
 
         const map = new StubMap();
-        const transformSpy = t.spy(map, '_transformRequest');
+        const transformSpy = t.spy(map._requestManager, 'transformRequest');
         const style = new Style(map);
 
         style.on('style.load', () => {
