@@ -269,33 +269,39 @@ const expectedRasterURL = 'https://api.mapbox.com/v4/mapbox.satellite/1/0/0' + r
 let rasterTileExpiry;
 
 function testFirstRaster(done) {
-    cache.matchAll(expectedRasterURL, { ignoreSearch: true }).catch(catchError).then(matches => {
-        log(matches.length === 1, 'Caches raster tile.');
-        const match = matches[0];
-        rasterTileExpiry = match && match.headers.get('Expires');
-        done();
+    caches.open(CACHE_NAME).catch(catchError).then(cache => {
+        cache.matchAll(expectedRasterURL, { ignoreSearch: true }).catch(catchError).then(matches => {
+            const match = matches[0];
+            rasterTileExpiry = match && match.headers.get('Expires');
+            log(matches.length === 1, 'Caches raster tile.' + matches.length + ' ' + rasterTileExpiry);
+            done();
+        });
     });
 }
 
 function testSecondRaster(done) {
-    cache.matchAll(expectedRasterURL, { ignoreSearch: true }).catch(catchError).then(matches => {
-        // check that the tile in the cache after the second map load is the same as after the
-        // first one. No new tile was loaded or cached.
-        const match = matches[0];
-        const newExpiry = match && match.headers.get('Expires');
-        log(matches.length === 1 && rasterTileExpiry === newExpiry, 'Reuses cached raster tile without refetching.');
-        done();
+    caches.open(CACHE_NAME).catch(catchError).then(cache => {
+        cache.matchAll(expectedRasterURL, { ignoreSearch: true }).catch(catchError).then(matches => {
+            // check that the tile in the cache after the second map load is the same as after the
+            // first one. No new tile was loaded or cached.
+            const match = matches[0];
+            const newExpiry = match && match.headers.get('Expires');
+            log(matches.length === 1 && rasterTileExpiry === newExpiry, 'Reuses cached raster tile without refetching.'  + matches.length + ' ' + newExpiry);
+            done();
+        });
     });
 }
 
 function testThirdRaster(done) {
-    cache.matchAll(expectedRasterURL, { ignoreSearch: true }).catch(catchError).then(matches => {
-        // check that the tile in the cache after the second map load is the same as after the
-        // first one. No new tile was loaded or cached.
-        const match = matches[0];
-        const newExpiry = match && match.headers.get('Expires');
-        log(matches.length === 1 && rasterTileExpiry !== newExpiry, 'Replaces expired raster tile with new version.');
-        done();
+    caches.open(CACHE_NAME).catch(catchError).then(cache => {
+        cache.matchAll(expectedRasterURL, { ignoreSearch: true }).catch(catchError).then(matches => {
+            // check that the tile in the cache after the second map load is the same as after the
+            // first one. No new tile was loaded or cached.
+            const match = matches[0];
+            const newExpiry = match && match.headers.get('Expires');
+            log(matches.length === 1 && rasterTileExpiry !== newExpiry, 'Replaces expired raster tile with new version.' + matches.length + ' ' + newExpiry);
+            done();
+        });
     });
 }
 
