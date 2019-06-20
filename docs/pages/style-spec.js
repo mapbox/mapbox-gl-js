@@ -252,10 +252,7 @@ export default class extends React.Component {
                                 href='https://docs.mapbox.com/android/'>Mapbox Maps SDK for Android</a></li>
                             <li>Authors of software that generates or processes Mapbox styles.</li>
                         </ul>
-                        <p>Developers using the <a href='https://www.mapbox.com/ios-sdk/'>Mapbox Maps SDK for iOS</a> or <a
-                            href='https://github.com/mapbox/mapbox-gl-native/tree/master/platform/macos/'>
-                          Mapbox Maps SDK for macOS</a> should consult the iOS SDK API reference for platform-appropriate
-                          documentation of style-related features.</p>
+                        <p>For platform-appropriate documentation of style-related features, developers using the Mapbox Maps SDK for iOS should consult the <a href='https://docs.mapbox.com/ios/maps/overview/'>iOS SDK API reference</a>, and developers using the Mapbox Maps SDK for macOS should consult the <a href='https://mapbox.github.io/mapbox-gl-native/macos/'>macOS SDK API reference</a>.</p>
                     </div>
 
                     <SectionH2 id='root' title='Root Properties'>
