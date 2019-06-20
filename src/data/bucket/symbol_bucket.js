@@ -26,6 +26,7 @@ import { TriangleIndexArray, LineIndexArray } from '../index_array_type';
 import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
 import {allowsVerticalWritingMode} from '../../util/script_detection';
+import { WritingMode } from '../../symbol/shaping';
 import loadGeometry from '../load_geometry';
 import mvt from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
@@ -320,12 +321,12 @@ class SymbolBucket implements Bucket {
             layout.get('text-ignore-placement') || layout.get('icon-ignore-placement'));
 
         if (layout.get('symbol-placement') === 'point') {
-            let writingMode = layout.get('text-writing-mode');
-            if (writingMode) {
+            let writingModes = layout.get('text-writing-mode');
+            if (writingModes) {
                 // remove duplicates, preserving order
-                this.writingMode = [];
-                writingMode.map(m => { if (!(this.writingMode.includes(m))) { this.writingMode.push(m); }});
-            } else { this.writingMode = ['horizontal']; }
+                this.writingModes = [];
+                writingModes.map(m => { if (!(this.writingModes.includes(m))) { this.writingModes.push(m); }});
+            } else { this.writingModes = ['horizontal']; }
         }
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
@@ -432,12 +433,12 @@ class SymbolBucket implements Bucket {
             if (text) {
                 const fontStack = textFont.evaluate(feature, {}).join(',');
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
-                const allowVerticalPlacement = this.writingMode && this.writingMode.includes('vertical');
+                this.allowVerticalPlacement = this.writingModes && this.writingModes.includes('vertical');
                 for (const section of text.sections) {
                     const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
                     const sectionFont = section.fontStack || fontStack;
                     const sectionStack = stacks[sectionFont] = stacks[sectionFont] || {};
-                    this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, allowVerticalPlacement, doesAllowVerticalWritingMode);
+                    this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
                 }
             }
         }
