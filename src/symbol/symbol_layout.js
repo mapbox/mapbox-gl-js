@@ -507,7 +507,7 @@ function addSymbol(bucket: SymbolBucket,
                    sizes: Sizes) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
-    let textCollisionFeature, iconCollisionFeature;
+    let textCollisionFeature, iconCollisionFeature, verticalTextCollisionFeature;
 
     let numIconVertices = 0;
     let numHorizontalGlyphVertices = 0;
@@ -515,6 +515,13 @@ function addSymbol(bucket: SymbolBucket,
     const placedTextSymbolIndices = {};
     let key = murmur3('');
     const radialTextOffset = (layer.layout.get('text-radial-offset').evaluate(feature, {}) || 0) * ONE_EM;
+
+    if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
+        const textRotation = layer.layout.get('text-rotate').evaluate(feature, {});
+        const verticalTextRotation = textRotation + 90.0;
+        const verticalShaping = shapedTextOrientations.vertical
+        verticalTextCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
+    }
 
     for (const justification: any in shapedTextOrientations.horizontal) {
         const shaping = shapedTextOrientations.horizontal[justification];
