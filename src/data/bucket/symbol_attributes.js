@@ -71,6 +71,7 @@ export const placement = createLayout([
     { type: 'Float32', name: 'lineOffsetX' },
     { type: 'Float32', name: 'lineOffsetY' },
     { type: 'Uint8', name: 'writingMode' },
+    { type: 'Uint8', name: 'placedOrientation' },
     { type: 'Uint8', name: 'hidden' },
     { type: 'Uint32', name: 'crossTileID'}
 ]);
