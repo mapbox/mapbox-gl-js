@@ -61,7 +61,11 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
 
                     // Reinsert into cache so that order of keys in the cache is the order of access.
                     // This line makes the cache a LRU instead of a FIFO cache.
-                    if (fresh) cache.put(stripQueryParameters(request.url), response.clone());
+                    const strippedURL = stripQueryParameters(request.url);
+                    cache.delete(strippedURL);
+                    if (fresh) {
+                        cache.put(strippedURL, response.clone());
+                    }
 
                     callback(null, response, fresh);
                 });

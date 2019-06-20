@@ -221,6 +221,7 @@ function testThirdView(done) {
 
     // wait 1 second to give the map a chance to evict from the cache
     setTimeout(() => {
+        caches.open(CACHE_NAME).catch(catchError).then(cache => {
         cache.keys().catch(catchError).then(keys => {
 
             // some tiles were evicted!
@@ -249,6 +250,7 @@ function testThirdView(done) {
 
             done();
         });
+        });
     }, 1000);
 }
 
@@ -264,13 +266,12 @@ function initializeRaster(done) {
 }
 
 
-const ratio = window.devicePixelRatio >= 2 ? '@2x' : '';
-const expectedRasterURL = 'https://api.mapbox.com/v4/mapbox.satellite/1/0/0' + ratio + '.webp';
+const expectedRasterURL = 'https://api.mapbox.com/v4/mapbox.satellite/1/0/0';
 let rasterTileExpiry;
 
 function testFirstRaster(done) {
     caches.open(CACHE_NAME).catch(catchError).then(cache => {
-        cache.matchAll(expectedRasterURL, { ignoreSearch: true }).catch(catchError).then(matches => {
+        fuzzyMatchAll(cache, expectedRasterURL, matches => {
             const match = matches[0];
             rasterTileExpiry = match && match.headers.get('Expires');
             log(matches.length === 1, 'Caches raster tile.' + matches.length + ' ' + rasterTileExpiry);
@@ -281,7 +282,7 @@ function testFirstRaster(done) {
 
 function testSecondRaster(done) {
     caches.open(CACHE_NAME).catch(catchError).then(cache => {
-        cache.matchAll(expectedRasterURL, { ignoreSearch: true }).catch(catchError).then(matches => {
+        fuzzyMatchAll(cache, expectedRasterURL, matches => {
             // check that the tile in the cache after the second map load is the same as after the
             // first one. No new tile was loaded or cached.
             const match = matches[0];
@@ -294,7 +295,7 @@ function testSecondRaster(done) {
 
 function testThirdRaster(done) {
     caches.open(CACHE_NAME).catch(catchError).then(cache => {
-        cache.matchAll(expectedRasterURL, { ignoreSearch: true }).catch(catchError).then(matches => {
+        fuzzyMatchAll(cache, expectedRasterURL, matches => {
             // check that the tile in the cache after the second map load is the same as after the
             // first one. No new tile was loaded or cached.
             const match = matches[0];
@@ -302,6 +303,17 @@ function testThirdRaster(done) {
             log(matches.length === 1 && rasterTileExpiry !== newExpiry, 'Replaces expired raster tile with new version.' + matches.length + ' ' + newExpiry);
             done();
         });
+    });
+}
+
+function fuzzyMatchAll(cache, url, callback) {
+    cache.keys().catch(catchError).then(keys => {
+        for (const key of keys) {
+            if (key.url.indexOf(url) >= 0) {
+                return cache.matchAll(key.url).catch(catchError).then(callback);
+            }
+        }
+        return callback([]);
     });
 }
 
