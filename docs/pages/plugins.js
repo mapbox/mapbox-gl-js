@@ -12,7 +12,7 @@ const meta = {
     pathname: '/mapbox-gl-js/plugins/'
 };
 
-const plugins = {
+export const plugins = {
     "User Interface Plugins": {
         "mapbox-gl-accessibility": {
             "website": "https://github.com/mapbox/mapbox-gl-accessibility/",
