@@ -70,7 +70,7 @@ const exported = {
     },
 
     set baseApiUrl(url: string) {
-        console.log('setting')
+        console.log('setting');
         config.API_URL = url;
     },
 

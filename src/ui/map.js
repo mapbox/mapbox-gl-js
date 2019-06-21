@@ -334,7 +334,7 @@ class Map extends Camera {
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
         this._mapId = uniqueId();
-        console.log('new')
+
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken);
 
         if (typeof options.container === 'string') {

@@ -18,6 +18,9 @@
 <script src='/debug/access_token_generated.js'></script>
 <script>
 
+    // 1) first map should work with its valid local accessToken, despite the bad global mapboxgl token 
+    // 2) first map should keep working properly, despite the bad token in the second map
+
     var mapToken = mapboxgl.accessToken;
     mapboxgl.accessToken = 'notAToken';
 
@@ -27,8 +30,16 @@
         center: [-77.01866, 38.888],
         style: 'mapbox://styles/mapbox/streets-v10',
         hash: true,
-        transformRequest: function(url){console.log(url)},
         accessToken: mapToken
+    });
+
+    var map2 = new mapboxgl.Map({
+        container: 'hidden',
+        zoom: 12.5,
+        center: [-77.01866, 38.888],
+        style: 'mapbox://styles/mapbox/dark-v10',
+        hash: true,
+        accessToken: 'anotherBadToken'
     });
 
 </script>
