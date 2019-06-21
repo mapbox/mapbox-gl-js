@@ -8,6 +8,7 @@ import { postTurnstileEvent, postMapLoadEvent } from '../util/mapbox';
 import TileBounds from './tile_bounds';
 import { ResourceType } from '../util/ajax';
 import browser from '../util/browser';
+import { cacheEntryPossiblyAdded } from '../util/tile_request_cache';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -142,6 +143,8 @@ class VectorTileSource extends Evented implements Source {
 
             if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);
+
+            cacheEntryPossiblyAdded(this.dispatcher);
 
             callback(null);
 

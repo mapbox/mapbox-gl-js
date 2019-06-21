@@ -130,6 +130,10 @@ function isMapboxHTTPURL(url: string): boolean {
     return mapboxHTTPURLRe.test(url);
 }
 
+function hasCacheDefeatingSku(url: string) {
+    return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
+}
+
 const normalizeStyleURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
@@ -239,7 +243,7 @@ function formatUrl(obj: UrlObject): string {
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
 
-export { isMapboxURL, isMapboxHTTPURL };
+export { isMapboxURL, isMapboxHTTPURL, hasCacheDefeatingSku };
 
 const telemEventKey = 'mapbox.eventData';
 
