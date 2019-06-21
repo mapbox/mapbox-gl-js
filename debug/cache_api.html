@@ -222,34 +222,34 @@ function testThirdView(done) {
     // wait 1 second to give the map a chance to evict from the cache
     setTimeout(() => {
         caches.open(CACHE_NAME).catch(catchError).then(cache => {
-        cache.keys().catch(catchError).then(keys => {
+            cache.keys().catch(catchError).then(keys => {
 
-            // some tiles were evicted!
-            log(keys.length === 6, "Enforces cache size limit: keys.length = 6");
+                // some tiles were evicted!
+                log(keys.length === 6, "Enforces cache size limit: keys.length = 6");
 
-            // check that the cache entries are ordered in order of most least use
+                // check that the cache entries are ordered in order of most least use
 
-            [13, 13, 12, 12, 12, 12].forEach((z, i) => {
-                const correctZoom = keys[i].url.indexOf('/' + z + '/') > 0;
-                log(correctZoom, 'Maintains LRU order: cache entry ' + i + ' has correct zoom level (' + z + ')');
+                [13, 13, 12, 12, 12, 12].forEach((z, i) => {
+                    const correctZoom = keys[i].url.indexOf('/' + z + '/') > 0;
+                    log(correctZoom, 'Maintains LRU order: cache entry ' + i + ' has correct zoom level (' + z + ')');
+                });
+
+                // all the most recent tiles are in the cache
+                const expected = [
+                    "mapbox.mapbox-streets-v7/12/1171/1566.vector.pbf",
+                    "mapbox.mapbox-streets-v7/12/1171/1567.vector.pbf",
+                    "mapbox.mapbox-streets-v7/12/1172/1566.vector.pbf",
+                    "mapbox.mapbox-streets-v7/12/1172/1567.vector.pbf",
+                ];
+
+                for (const expect of expected) {
+                    log(matchURL(keys, expect), "Evicts correct tiles: still has " + expect);
+                }
+
+                checkNotCached(keys);
+
+                done();
             });
-
-            // all the most recent tiles are in the cache
-            const expected = [
-                "mapbox.mapbox-streets-v7/12/1171/1566.vector.pbf",
-                "mapbox.mapbox-streets-v7/12/1171/1567.vector.pbf",
-                "mapbox.mapbox-streets-v7/12/1172/1566.vector.pbf",
-                "mapbox.mapbox-streets-v7/12/1172/1567.vector.pbf",
-            ];
-
-            for (const expect of expected) {
-                log(matchURL(keys, expect), "Evicts correct tiles: still has " + expect);
-            }
-
-            checkNotCached(keys);
-
-            done();
-        });
         });
     }, 1000);
 }
