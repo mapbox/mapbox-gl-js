@@ -553,6 +553,9 @@ function addSymbol(bucket: SymbolBucket,
     const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
     const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
 
+    const verticalTextBoxStartIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
+    const verticalTextBoxEndIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
+
     if (shapedIcon) {
         const iconQuads = getIconQuads(anchor, shapedIcon, layer,
                             iconAlongLine, getDefaultHorizontalShaping(shapedTextOrientations.horizontal),
@@ -612,6 +615,8 @@ function addSymbol(bucket: SymbolBucket,
         key,
         textBoxStartIndex,
         textBoxEndIndex,
+        verticalTextBoxStartIndex,
+        verticalTextBoxEndIndex,
         iconBoxStartIndex,
         iconBoxEndIndex,
         featureIndex,

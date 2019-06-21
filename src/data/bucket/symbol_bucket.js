@@ -66,6 +66,7 @@ export type SingleCollisionBox = {
 
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;
+    verticalTextBox?: SingleCollisionBox;
     iconBox?: SingleCollisionBox;
     textCircles?: Array<number>;
     textFeatureIndex?: number;
@@ -643,13 +644,14 @@ class SymbolBucket implements Bucket {
         for (let i = 0; i < this.symbolInstances.length; i++) {
             const symbolInstance = this.symbolInstances.get(i);
             this.addDebugCollisionBoxes(symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance);
+            this.addDebugCollisionBoxes(symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance);
             this.addDebugCollisionBoxes(symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance);
         }
     }
 
     // These flat arrays are meant to be quicker to iterate over than the source
     // CollisionBoxArray
-    _deserializeCollisionBoxesForSymbol(collisionBoxArray: CollisionBoxArray, textStartIndex: number, textEndIndex: number, iconStartIndex: number, iconEndIndex: number): CollisionArrays {
+    _deserializeCollisionBoxesForSymbol(collisionBoxArray: CollisionBoxArray, textStartIndex: number, textEndIndex: number, verticalTextStartIndex: number, verticalTextEndIndex: number, iconStartIndex: number, iconEndIndex: number): CollisionArrays {
         const collisionArrays = {};
         for (let k = textStartIndex; k < textEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
@@ -664,6 +666,14 @@ class SymbolBucket implements Bucket {
                 }
                 const used = 1; // May be updated at collision detection time
                 collisionArrays.textCircles.push(box.anchorPointX, box.anchorPointY, box.radius, box.signedDistanceFromAnchor, used);
+            }
+        }
+        for (let k = verticalTextStartIndex; k < verticalTextEndIndex; k++) {
+            const box: CollisionBox = (collisionBoxArray.get(k): any);
+            if (box.radius === 0) {
+                collisionArrays.verticalTextBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
+                collisionArrays.textFeatureIndex = box.featureIndex;
+                break; // Only one box allowed per instance
             }
         }
         for (let k = iconStartIndex; k < iconEndIndex; k++) {
@@ -686,6 +696,8 @@ class SymbolBucket implements Bucket {
                 collisionBoxArray,
                 symbolInstance.textBoxStartIndex,
                 symbolInstance.textBoxEndIndex,
+                symbolInstance.verticalTextBoxStartIndex,
+                symbolInstance.verticalTextBoxEndIndex,
                 symbolInstance.iconBoxStartIndex,
                 symbolInstance.iconBoxEndIndex
             ));

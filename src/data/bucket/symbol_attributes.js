@@ -86,6 +86,8 @@ export const symbolInstance = createLayout([
     { type: 'Uint16', name: 'key' },
     { type: 'Uint16', name: 'textBoxStartIndex' },
     { type: 'Uint16', name: 'textBoxEndIndex' },
+    { type: 'Uint16', name: 'verticalTextBoxStartIndex' },
+    { type: 'Uint16', name: 'verticalTextBoxEndIndex' },
     { type: 'Uint16', name: 'iconBoxStartIndex' },
     { type: 'Uint16', name: 'iconBoxEndIndex' },
     { type: 'Uint16', name: 'featureIndex' },
