@@ -21,6 +21,7 @@ import {Evented} from './util/evented';
 import config from './util/config';
 import {setRTLTextPlugin} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
+import {clearTileCache} from './util/tile_request_cache';
 
 const exported = {
     version,
@@ -104,6 +105,18 @@ const exported = {
 
     set maxParallelImageRequests(numRequests: number) {
         config.MAX_PARALLEL_IMAGE_REQUESTS = numRequests;
+    },
+
+    /**
+     * Clears browser storage used by this library. Using this method flushes the tile
+     * cache that is managed by this library. Tiles may still be cached by the browser
+     * in some cases.
+     *
+     * @function clearStorage
+     * @param {Function} callback Called with an error argument if there is an error.
+     */
+    clearStorage(callback?: (err: ?Error) => void) {
+        clearTileCache(callback);
     },
 
     workerUrl: ''
