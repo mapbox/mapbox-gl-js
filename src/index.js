@@ -111,6 +111,9 @@ const exported = {
      * Clears browser storage used by this library. Using this method flushes the tile
      * cache that is managed by this library. Tiles may still be cached by the browser
      * in some cases.
+     *
+     * @function clearStorage
+     * @param {Function} callback Called with an error argument if there is an error.
      */
     clearStorage(callback?: (err: ?Error) => void) {
         clearTileCache(callback);
