@@ -325,8 +325,8 @@ class SymbolBucket implements Bucket {
             if (writingModes) {
                 // remove duplicates, preserving order
                 this.writingModes = [];
-                writingModes.map(m => { if (!(this.writingModes.includes(m))) { this.writingModes.push(m); }});
-            } else { this.writingModes = ['horizontal']; }
+                writingModes.map(m => { if (!(this.writingModes.includes(WritingMode[m]))) { this.writingModes.push(WritingMode[m]); }});
+            } else { this.writingModes = [WritingMode.horizontal]; }
         }
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
@@ -433,7 +433,7 @@ class SymbolBucket implements Bucket {
             if (text) {
                 const fontStack = textFont.evaluate(feature, {}).join(',');
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
-                this.allowVerticalPlacement = this.writingModes && this.writingModes.includes('vertical');
+                this.allowVerticalPlacement = this.writingModes && this.writingModes.includes(WritingMode.vertical);
                 for (const section of text.sections) {
                     const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
                     const sectionFont = section.fontStack || fontStack;

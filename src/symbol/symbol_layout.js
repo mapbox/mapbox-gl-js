@@ -167,8 +167,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
             const variableTextAnchor = layout.get('text-variable-anchor');
             const radialOffset = layout.get('text-radial-offset').evaluate(feature, {});
 
-            const writingMode = layout.get('symbol-placement') === 'point' ? layout.get('text-writing-mode') || ['horizontal'] : null ;
-            const allowVerticalPlacement = writingMode && writingMode.includes('vertical');
 
             if (!variableTextAnchor) {
                 // Layers with variable anchors use the `text-radial-offset` property and the [x, y] offset vector
@@ -191,7 +189,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 0;
 
             const addVerticalShapingForPointLabelIfNeeded = () => {
-                if (allowVerticalPlacement && allowsVerticalWritingMode(unformattedText)) {
+                if (bucket.allowVerticalPlacement && allowsVerticalWritingMode(unformattedText)) {
                     // Vertical POI label placement is meant to be used for scripts that support vertical
                     // writing mode, thus, default left justification is used. If Latin
                     // scripts would need to be supported, this should take into account other justifications.
