@@ -72,7 +72,6 @@ class VectorTileSource extends Evented implements Source {
             } else if (tileJSON) {
                 extend(this, tileJSON);
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
-
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
                 postMapLoadEvent(tileJSON.tiles, this.map._getMapId(), this.map._requestManager._skuToken, this.map._requestManager._customAccessToken);
 

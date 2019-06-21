@@ -41,6 +41,7 @@ export class RequestManager {
     _skuToken: string;
     _skuTokenExpiresAt: number;
     _transformRequestFn: ?RequestTransformFunction;
+    _customAccessToken: ?string;
 
     constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string) {
         this._transformRequestFn = transformRequestFn;
@@ -167,7 +168,7 @@ const normalizeSpriteURL = function(url: string, format: string, extension: stri
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
 
-const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number, skuToken?: string, customAccessToken?: string): string {
+const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number, skuToken?: string, customAccessToken?: ?string): string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
 
     const urlObject = parseUrl(tileURL);
@@ -270,6 +271,7 @@ class TelemetryEvent {
     queue: Array<any>;
     type: TelemetryEventType;
     pendingRequest: ?Cancelable;
+    _customAccessToken: ?string;
 
     constructor(type: TelemetryEventType) {
         this.type = type;
@@ -330,14 +332,14 @@ class TelemetryEvent {
 
     }
 
-    processRequests() {}
+    processRequests(customAccessToken?: ?string) {}
 
     /*
     * If any event data should be persisted after the POST request, the callback should modify eventData`
     * to the values that should be saved. For this reason, the callback should be invoked prior to the call
     * to TelemetryEvent#saveData
     */
-    postEvent(timestamp: number, additionalPayload: {[string]: any}, callback: (err: ?Error) => void, customAccessToken: string) {
+    postEvent(timestamp: number, additionalPayload: {[string]: any}, callback: (err: ?Error) => void, customAccessToken?: ?string) {
         if (!config.EVENTS_URL) return;
         const eventsUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
         eventsUrlObject.params.push(`access_token=${customAccessToken || config.ACCESS_TOKEN || ''}`);
@@ -368,7 +370,7 @@ class TelemetryEvent {
         });
     }
 
-    queueRequest(event: number | {id: number, timestamp: number}, customAccessToken: string) {
+    queueRequest(event: number | {id: number, timestamp: number}, customAccessToken?: ?string) {
         this.queue.push(event);
         this.processRequests(customAccessToken);
     }
@@ -397,7 +399,7 @@ export class MapLoadEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken) {
+    processRequests(customAccessToken?: ?string) {
         if (this.pendingRequest || this.queue.length === 0) return;
         const {id, timestamp} = this.queue.shift();
 
@@ -421,7 +423,7 @@ export class MapLoadEvent extends TelemetryEvent {
 }
 
 export class TurnstileEvent extends TelemetryEvent {
-    constructor(customAccessToken: string) {
+    constructor(customAccessToken?: ?string) {
         super('appUserTurnstile');
         this._customAccessToken = customAccessToken;
     }
