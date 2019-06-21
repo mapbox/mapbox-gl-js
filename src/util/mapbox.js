@@ -180,7 +180,7 @@ const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize
     urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
     urlObject.path = `/v4${urlObject.path}`;
 
-    if (config.REQUIRE_ACCESS_TOKEN && RequestManager._customAccessToken ||  config.ACCESS_TOKEN && skuToken) {
+    if (config.REQUIRE_ACCESS_TOKEN && config.ACCESS_TOKEN && skuToken) {
         urlObject.params.push(`sku=${skuToken}`);
     }
 
@@ -280,12 +280,12 @@ class TelemetryEvent {
     }
 
     getStorageKey(domain: ?string) {
-        const tokenData = parseAccessToken(RequestManager._customAccessToken || config.ACCESS_TOKEN);
+        const tokenData = parseAccessToken(config.ACCESS_TOKEN);
         let u = '';
         if (tokenData && tokenData['u']) {
             u = b64EncodeUnicode(tokenData['u']);
         } else {
-            u = RequestManager._customAccessToken || config.ACCESS_TOKEN || '';
+            u = config.ACCESS_TOKEN || '';
         }
         return domain ?
             `${telemEventKey}.${domain}:${u}` :
@@ -421,23 +421,24 @@ export class MapLoadEvent extends TelemetryEvent {
 }
 
 export class TurnstileEvent extends TelemetryEvent {
-    constructor() {
+    constructor(customAccessToken: string) {
         super('appUserTurnstile');
+        this._customAccessToken = customAccessToken;
     }
 
-    postTurnstileEvent(tileUrls: Array<string>, customAccessToken: string) {
+    postTurnstileEvent(tileUrls: Array<string>) {
         //Enabled only when Mapbox Access Token is set and a source uses
         // mapbox tiles.
         if (config.EVENTS_URL &&
             config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
             tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
-            this.queueRequest(Date.now(), customAccessToken);
+            this.queueRequest(Date.now(), this._customAccessToken);
         }
     }
 
 
-    processRequests(customAccessToken) {
+    processRequests() {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -447,8 +448,8 @@ export class TurnstileEvent extends TelemetryEvent {
             this.fetchEventData();
         }
 
-        const tokenData = parseAccessToken(RequestManager._customAccessToken || config.ACCESS_TOKEN);
-        const tokenU = tokenData ? tokenData['u'] : RequestManager._customAccessToken || config.ACCESS_TOKEN;
+        const tokenData = parseAccessToken(config.ACCESS_TOKEN);
+        const tokenU = tokenData ? tokenData['u'] : config.ACCESS_TOKEN;
         //Reset event data cache if the access token owner changed.
         let dueForEvent = tokenU !== this.eventData.tokenU;
 
@@ -477,7 +478,7 @@ export class TurnstileEvent extends TelemetryEvent {
                 this.eventData.lastSuccess = nextUpdate;
                 this.eventData.tokenU = tokenU;
             }
-        }, customAccessToken);
+        }, this._customAccessToken);
     }
 }
 

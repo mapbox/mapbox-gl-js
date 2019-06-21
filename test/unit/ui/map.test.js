@@ -50,10 +50,6 @@ test('Map', (t) => {
         t.end();
     });
 
-    // t.test('map-specific token', (t) => {\
-    //     t.end();
-    // });
-
     t.test('bad map-specific token breaks map', (t) => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});
