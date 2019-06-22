@@ -428,9 +428,8 @@ class Painter {
         }
 
         if (this.options.showTileBoundaries) {
-            for (const id in sourceCaches) {
-                draw.debug(this, sourceCaches[id], coordsAscending[id]);
-                break;
+            if (Object.keys(sourceCaches).length) {
+                draw.debug(this, sourceCaches, coordsAscending[Object.keys(sourceCaches)[0]]);
             }
         }
 

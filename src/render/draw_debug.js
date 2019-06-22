@@ -18,13 +18,13 @@ import type {OverscaledTileID} from '../source/tile_id';
 
 export default drawDebug;
 
-function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
+function drawDebug(painter: Painter, sourceCaches: Array<SourceCache>, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {
-        drawDebugTile(painter, sourceCache, coords[i]);
+        drawDebugTile(painter, sourceCaches, coords[i]);
     }
 }
 
-function drawDebugTile(painter, sourceCache, coord) {
+function drawDebugTile(painter, sourceCaches, coord) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -40,9 +40,15 @@ function drawDebugTile(painter, sourceCache, coord) {
         debugUniformValues(posMatrix, Color.red), id,
         painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
 
-    const tileRawData = sourceCache.getTileByID(coord.key).latestRawTileData;
-    const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
-    const tileSizeKb = Math.floor(tileByteLength / 1024);
+    const tileByteLengthSum = Object.values(sourceCaches).map((sourceCache) => {
+        const tileRawData = sourceCache.getTileByID(coord.key).latestRawTileData;
+        const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
+
+        return tileByteLength;
+    }).reduce((acc, cur) => {
+        return acc + cur;
+    })
+    const tileSizeKb = Math.floor(tileByteLengthSum / 1024);
     const vertices = createTextVertices(`${coord.toString()} ${tileSizeKb}kb`, 50, 200, 5);
     const debugTextArray = new PosArray();
     const debugTextIndices = new LineIndexArray();
@@ -56,7 +62,7 @@ function drawDebugTile(painter, sourceCache, coord) {
 
     // Draw the halo with multiple 1px lines instead of one wider line because
     // the gl spec doesn't guarantee support for lines with width > 1.
-    const tileSize = sourceCache.getTile(coord).tileSize;
+    const tileSize = Object.values(sourceCaches)[0].getTile(coord).tileSize;
     const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.overscaledZ) * tileSize);
     const translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (let i = 0; i < translations.length; i++) {
