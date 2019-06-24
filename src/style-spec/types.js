@@ -156,6 +156,7 @@ export type FillLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
+        "fill-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
