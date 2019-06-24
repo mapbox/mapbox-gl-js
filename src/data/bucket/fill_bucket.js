@@ -38,6 +38,7 @@ class FillBucket implements Bucket {
     layerIds: Array<string>;
     stateDependentLayers: Array<FillStyleLayer>;
     stateDependentLayerIds: Array<string>;
+    patternFeatures: Array<BucketFeature>;
 
     layoutVertexArray: FillLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -49,11 +50,11 @@ class FillBucket implements Bucket {
     indexBuffer2: IndexBuffer;
 
     hasPattern: boolean;
+    sortFeaturesByKey: boolean;
     programConfigurations: ProgramConfigurationSet<FillStyleLayer>;
     segments: SegmentVector;
     segments2: SegmentVector;
     uploaded: boolean;
-    features: Array<BucketFeature>;
 
     constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
@@ -62,6 +63,10 @@ class FillBucket implements Bucket {
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
         this.hasPattern = false;
+        this.patternFeatures = [];
+
+        const sortKey = this.layers[0].layout.get('fill-sort-key');
+        this.sortFeaturesByKey = sortKey.constantOr(1) !== undefined;
 
         this.layoutVertexArray = new FillLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -74,33 +79,54 @@ class FillBucket implements Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
-        this.features = [];
         this.hasPattern = hasPattern('fill', this.layers, options);
+        const fillSortKey = this.layers[0].layout.get('fill-sort-key');
 
+        const bucketFeatures = [];
         for (const {feature, index, sourceLayerIndex} of features) {
             if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
 
             const geometry = loadGeometry(feature);
+            const sortKey = this.sortFeaturesByKey ?
+                fillSortKey.evaluate(feature, {}) :
+                undefined;
 
-            const patternFeature: BucketFeature = {
+            const bucketFeature: BucketFeature = {
                 sourceLayerIndex,
                 index,
                 geometry,
                 properties: feature.properties,
                 type: feature.type,
-                patterns: {}
+                patterns: {},
+                sortKey
             };
 
             if (typeof feature.id !== 'undefined') {
-                patternFeature.id = feature.id;
+                bucketFeature.id = feature.id;
             }
 
+            bucketFeatures.push(bucketFeature);
+        }
+
+        if (this.sortFeaturesByKey) {
+            bucketFeatures.sort((a, b) => {
+                // a.sortKey is always a number when sortFeaturesByKey is true
+                return ((a.sortKey: any): number) - ((b.sortKey: any): number);
+            });
+        }
+
+        for (const bucketFeature of bucketFeatures) {
             if (this.hasPattern) {
-                this.features.push(addPatternDependencies('fill', this.layers, patternFeature, this.zoom, options));
+                const patternFeature = addPatternDependencies('fill', this.layers, bucketFeature, this.zoom, options);
+                // pattern features are added only once the pattern is loaded into the image atlas
+                // so are stored during populate until later updated with positions by tile worker in addFeatures
+                this.patternFeatures.push(patternFeature);
             } else {
-                this.addFeature(patternFeature, geometry, index, {});
+                this.addFeature(bucketFeature, bucketFeature.geometry, bucketFeature.index, {});
             }
 
+            const {geometry, index, sourceLayerIndex} = bucketFeature;
+            const feature = features[index].feature;
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
@@ -111,9 +137,8 @@ class FillBucket implements Bucket {
     }
 
     addFeatures(options: PopulateParameters, imagePositions: {[string]: ImagePosition}) {
-        for (const feature of this.features) {
-            const {geometry} = feature;
-            this.addFeature(feature, geometry, feature.index, imagePositions);
+        for (const feature of this.patternFeatures) {
+            this.addFeature(feature, feature.geometry, feature.index, imagePositions);
         }
     }
 
@@ -202,6 +227,6 @@ class FillBucket implements Bucket {
     }
 }
 
-register('FillBucket', FillBucket, {omit: ['layers', 'features']});
+register('FillBucket', FillBucket, {omit: ['layers', 'patternFeatures']});
 
 export default FillBucket;
