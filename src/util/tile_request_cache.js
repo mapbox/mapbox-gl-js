@@ -101,6 +101,7 @@ export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
 
 // runs on worker, see above comment
 export function enforceCacheSizeLimit(limit: number) {
+    if (!window.caches) return;
     window.caches.open(CACHE_NAME)
         .then(cache => {
             cache.keys().then(keys => {
