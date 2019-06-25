@@ -101,7 +101,9 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
     dynamicLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
-        const variableOffset = (!symbol.hidden && symbol.crossTileID) ? variableOffsets[symbol.crossTileID] : null;
+        const skipOrientation = bucket.allowVerticalPlacement && !symbol.placedOrientation;
+        // console.warn('updateVariableAnchors:', 'hidden', symbol.hidden, 'crossTileID', symbol.crossTileID, 'skipOrientation', skipOrientation);
+        const variableOffset = (!symbol.hidden && symbol.crossTileID && !skipOrientation) ? variableOffsets[symbol.crossTileID] : null;
         if (!variableOffset) {
             // These symbols are from a justification that is not being used, or a label that wasn't placed
             // so we don't need to do the extra math to figure out what incremental shift to apply.
@@ -130,8 +132,9 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
                     shift.rotate(-transform.angle) :
                     shift);
 
+            const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
             for (let g = 0; g < symbol.numGlyphs; g++) {
-                addDynamicAttributes(dynamicLayoutVertexArray, shiftedAnchor, 0);
+                addDynamicAttributes(dynamicLayoutVertexArray, shiftedAnchor, angle);
             }
         }
     }
