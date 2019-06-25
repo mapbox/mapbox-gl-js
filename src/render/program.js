@@ -51,6 +51,7 @@ class Program<Us: UniformBindings> {
         }
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
+        console.log('compiling fragment shader');
         assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
         gl.attachShader(this.program, fragmentShader);
 
@@ -61,6 +62,7 @@ class Program<Us: UniformBindings> {
         }
         gl.shaderSource(vertexShader, vertexSource);
         gl.compileShader(vertexShader);
+        console.log('compiling vertex shader');
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
         gl.attachShader(this.program, vertexShader);
 
@@ -74,6 +76,7 @@ class Program<Us: UniformBindings> {
         }
 
         gl.linkProgram(this.program);
+        console.log('compiling program');
         assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program): any));
 
         this.numAttributes = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);

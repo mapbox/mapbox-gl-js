@@ -9,7 +9,7 @@ export const symbolLayoutAttributes = createLayout([
 ], 4);
 
 export const dynamicLayoutAttributes = createLayout([
-    {name: 'a_projected_pos', components: 3, type: 'Float32'}
+    { name: 'a_projected_pos', components: 4, type: 'Float32' }
 ], 4);
 
 export const placementOpacityAttributes = createLayout([

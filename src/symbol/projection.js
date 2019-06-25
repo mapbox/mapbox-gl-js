@@ -78,7 +78,8 @@ function getLabelPlaneMatrix(posMatrix: mat4,
             mat4.rotateZ(m, m, transform.angle);
         }
     } else {
-        mat4.multiply(m, transform.labelPlaneMatrix, posMatrix);
+        mat4.scale(m, transform.labelPlaneMatrix, [1, 1, 0]);
+        mat4.multiply(m, m, posMatrix);
     }
     return m;
 }
