@@ -17,6 +17,26 @@ export type ResponseOptions = {
     headers: window.Headers
 };
 
+
+let responseConstructorSupportsReadableStream;
+function prepareBody(response: Response, callback) {
+    if (responseConstructorSupportsReadableStream === undefined) {
+        try {
+            new Response(new ReadableStream()); // eslint-disable-line no-undef
+            responseConstructorSupportsReadableStream = true;
+        } catch (e) {
+            // Edge
+            responseConstructorSupportsReadableStream = false;
+        }
+    }
+
+    if (responseConstructorSupportsReadableStream) {
+        callback(response.body);
+    } else {
+        response.blob().then(callback);
+    }
+}
+
 export function cachePut(request: Request, response: Response, requestTime: number) {
     if (!window.caches) return;
 
@@ -38,9 +58,11 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     const timeUntilExpiry = new Date(options.headers.get('Expires')).getTime() - requestTime;
     if (timeUntilExpiry < MIN_TIME_UNTIL_EXPIRY) return;
 
-    const clonedResponse = new window.Response(response.body, options);
+    prepareBody(response, body => {
+        const clonedResponse = new window.Response(body, options);
 
-    window.caches.open(CACHE_NAME).then(cache => cache.put(stripQueryParameters(request.url), clonedResponse));
+        window.caches.open(CACHE_NAME).then(cache => cache.put(stripQueryParameters(request.url), clonedResponse));
+    });
 }
 
 function stripQueryParameters(url: string) {
