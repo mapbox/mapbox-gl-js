@@ -783,7 +783,8 @@ class SymbolBucket implements Bucket {
             [
                 symbolInstance.rightJustifiedTextSymbolIndex,
                 symbolInstance.centerJustifiedTextSymbolIndex,
-                symbolInstance.leftJustifiedTextSymbolIndex
+                symbolInstance.leftJustifiedTextSymbolIndex,
+                symbolInstance.verticalPlacedTextSymbolIndex
             ].forEach((index, i, array) => {
                 // Only add a given index the first time it shows up,
                 // to avoid duplicate opacity entries when multiple justifications
@@ -792,10 +793,6 @@ class SymbolBucket implements Bucket {
                     this.addIndicesForPlacedTextSymbol(index);
                 }
             });
-
-            if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
-                this.addIndicesForPlacedTextSymbol(symbolInstance.verticalPlacedTextSymbolIndex);
-            }
 
             const placedIcon = this.icon.placedSymbolArray.get(i);
             if (placedIcon.numGlyphs) {
