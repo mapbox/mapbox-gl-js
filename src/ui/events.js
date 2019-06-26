@@ -4,7 +4,7 @@ import { Event } from '../util/evented';
 
 import DOM from '../util/dom';
 import Point from '@mapbox/point-geometry';
-import { extend } from '../util/util';
+import { extend, cssTransformPoint } from '../util/util';
 
 import type Map from './map';
 import type LngLat from '../geo/lng_lat';
@@ -77,8 +77,9 @@ export class MapMouseEvent extends Event {
      */
     constructor(type: string, map: Map, originalEvent: MouseEvent, data: Object = {}) {
         const point = DOM.mousePos(map.getCanvasContainer(), originalEvent);
-        const lngLat = map.unproject(point);
-        super(type, extend({ point, lngLat, originalEvent }, data));
+        const transformedPoint = cssTransformPoint(point, map._cssTransforms);
+        const lngLat = map.unproject(transformedPoint);
+        super(type, extend({ transformedPoint, lngLat, originalEvent }, data));
         this._defaultPrevented = false;
         this.target = map;
     }
@@ -156,8 +157,9 @@ export class MapTouchEvent extends Event {
      */
     constructor(type: string, map: Map, originalEvent: TouchEvent) {
         const points = DOM.touchPos(map.getCanvasContainer(), originalEvent);
-        const lngLats = points.map((t) => map.unproject(t));
-        const point = points.reduce((prev, curr, i, arr) => {
+        const transformedPoints = points.map(p => cssTransformPoint(p, map._cssTransforms));
+        const lngLats = transformedPoints.map((t) => map.unproject(t));
+        const point = transformedPoints.reduce((prev, curr, i, arr) => {
             return prev.add(curr.div(arr.length));
         }, new Point(0, 0));
         const lngLat = map.unproject(point);

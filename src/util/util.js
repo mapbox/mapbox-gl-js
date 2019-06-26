@@ -467,3 +467,24 @@ export function b64DecodeUnicode(str: string) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); //eslint-disable-line
     }).join(''));
 }
+
+
+export type CssTransforms = {
+    scale?: string | number;
+}
+
+/**
+ * Takes a Mapbox Point and an object of CSS transforms from the Mapbox
+ * constructor options and returns a new Point with those transforms applied.
+ * @param {Point} pos
+ * @param {Object} cssTransforms
+ * @param {string|number} cssTransforms.scale
+ */
+export function cssTransformPoint(pos: Point, cssTransforms: ?CssTransforms): Point {
+    // Eventually we can apply css rotations, etc. For now
+    // only scale is supported
+    const scale = (cssTransforms && cssTransforms.scale) ? cssTransforms.scale : 1;
+    let posCloned = pos.clone();
+    if (scale !== 1) posCloned = pos.div(scale);
+    return posCloned;
+}

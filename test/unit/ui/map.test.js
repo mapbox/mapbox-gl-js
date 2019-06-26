@@ -2003,6 +2003,14 @@ test('Map', (t) => {
         });
     });
 
+    t.test('should accept and apply new cssTransforms when setCssTransforms is called', (t) => {
+        const map = createMap(t);
+        t.deepEqual(map._cssTransforms, { scale: 1 });
+        map.setCssTransforms({ scale: 2 });
+        t.deepEqual(map._cssTransforms, { scale: 2 });
+        t.end();
+    });
+
     t.end();
 });
 

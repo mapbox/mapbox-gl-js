@@ -1,7 +1,7 @@
 // @flow
 
 import DOM from '../../util/dom';
-import { bezier, bindAll } from '../../util/util';
+import { bezier, bindAll, cssTransformPoint } from '../../util/util';
 import window from '../../util/window';
 import browser from '../../util/browser';
 import { Event } from '../../util/evented';
@@ -9,7 +9,7 @@ import assert from 'assert';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
-import type {TaskID} from '../../util/task_queue';
+import type { TaskID } from '../../util/task_queue';
 
 const inertiaLinearity = 0.3,
     inertiaEasing = bezier(0, 0, inertiaLinearity, 1),
@@ -93,20 +93,20 @@ class DragPanHandler {
         if (!this.isEnabled()) return;
         this._el.classList.remove('mapboxgl-touch-drag-pan');
         switch (this._state) {
-        case 'active':
-            this._state = 'disabled';
-            this._unbind();
-            this._deactivate();
-            this._fireEvent('dragend');
-            this._fireEvent('moveend');
-            break;
-        case 'pending':
-            this._state = 'disabled';
-            this._unbind();
-            break;
-        default:
-            this._state = 'disabled';
-            break;
+            case 'active':
+                this._state = 'disabled';
+                this._unbind();
+                this._deactivate();
+                this._fireEvent('dragend');
+                this._fireEvent('moveend');
+                break;
+            case 'pending':
+                this._state = 'disabled';
+                this._unbind();
+                break;
+            default:
+                this._state = 'disabled';
+                break;
         }
     }
 
@@ -119,7 +119,7 @@ class DragPanHandler {
         // window-level event listeners give us the best shot at capturing events that
         // fall outside the map canvas element. Use `{capture: true}` for the move event
         // to prevent map move events from being fired during a drag.
-        DOM.addEventListener(window.document, 'mousemove', this._onMove, {capture: true});
+        DOM.addEventListener(window.document, 'mousemove', this._onMove, { capture: true });
         DOM.addEventListener(window.document, 'mouseup', this._onMouseUp);
 
         this._start(e);
@@ -134,7 +134,7 @@ class DragPanHandler {
         // window-level event listeners give us the best shot at capturing events that
         // fall outside the map canvas element. Use `{capture: true}` for the move event
         // to prevent map move events from being fired during a drag.
-        DOM.addEventListener(window.document, 'touchmove', this._onMove, {capture: true, passive: false});
+        DOM.addEventListener(window.document, 'touchmove', this._onMove, { capture: true, passive: false });
         DOM.addEventListener(window.document, 'touchend', this._onTouchEnd);
 
         this._start(e);
@@ -146,7 +146,9 @@ class DragPanHandler {
         window.addEventListener('blur', this._onBlur);
 
         this._state = 'pending';
-        this._startPos = this._mouseDownPos = this._prevPos = this._lastPos = DOM.mousePos(this._el, e);
+        const pos = DOM.mousePos(this._el, e);
+        const transformedPos = cssTransformPoint(pos, this._map._cssTransforms);
+        this._startPos = this._mouseDownPos = this._prevPos = this._lastPos = transformedPos;
         this._inertia = [[browser.now(), this._startPos]];
     }
 
@@ -154,12 +156,13 @@ class DragPanHandler {
         e.preventDefault();
 
         const pos = DOM.mousePos(this._el, e);
-        if (this._lastPos.equals(pos) || (this._state === 'pending' && pos.dist(this._mouseDownPos) < this._clickTolerance)) {
+        const transformedPos = cssTransformPoint(pos, this._map._cssTransforms);
+        if (this._lastPos.equals(transformedPos) || (this._state === 'pending' && transformedPos.dist(this._mouseDownPos) < this._clickTolerance)) {
             return;
         }
 
         this._lastMoveEvent = e;
-        this._lastPos = pos;
+        this._lastPos = transformedPos;
         this._drainInertiaBuffer();
         this._inertia.push([browser.now(), this._lastPos]);
 
@@ -197,64 +200,64 @@ class DragPanHandler {
     _onMouseUp(e: MouseEvent) {
         if (DOM.mouseButton(e) !== 0) return;
         switch (this._state) {
-        case 'active':
-            this._state = 'enabled';
-            DOM.suppressClick();
-            this._unbind();
-            this._deactivate();
-            this._inertialPan(e);
-            break;
-        case 'pending':
-            this._state = 'enabled';
-            this._unbind();
-            break;
-        default:
-            assert(false);
-            break;
+            case 'active':
+                this._state = 'enabled';
+                DOM.suppressClick();
+                this._unbind();
+                this._deactivate();
+                this._inertialPan(e);
+                break;
+            case 'pending':
+                this._state = 'enabled';
+                this._unbind();
+                break;
+            default:
+                assert(false);
+                break;
         }
     }
 
     _onTouchEnd(e: TouchEvent) {
         switch (this._state) {
-        case 'active':
-            this._state = 'enabled';
-            this._unbind();
-            this._deactivate();
-            this._inertialPan(e);
-            break;
-        case 'pending':
-            this._state = 'enabled';
-            this._unbind();
-            break;
-        default:
-            assert(false);
-            break;
+            case 'active':
+                this._state = 'enabled';
+                this._unbind();
+                this._deactivate();
+                this._inertialPan(e);
+                break;
+            case 'pending':
+                this._state = 'enabled';
+                this._unbind();
+                break;
+            default:
+                assert(false);
+                break;
         }
     }
 
     _onBlur(e: FocusEvent) {
         switch (this._state) {
-        case 'active':
-            this._state = 'enabled';
-            this._unbind();
-            this._deactivate();
-            this._fireEvent('dragend', e);
-            this._fireEvent('moveend', e);
-            break;
-        case 'pending':
-            this._state = 'enabled';
-            this._unbind();
-            break;
-        default:
-            assert(false);
-            break;
+            case 'active':
+                this._state = 'enabled';
+                this._unbind();
+                this._deactivate();
+                this._fireEvent('dragend', e);
+                this._fireEvent('moveend', e);
+                break;
+            case 'pending':
+                this._state = 'enabled';
+                this._unbind();
+                break;
+            default:
+                assert(false);
+                break;
         }
     }
 
     _unbind() {
-        DOM.removeEventListener(window.document, 'touchmove', this._onMove, {capture: true, passive: false});
+        DOM.removeEventListener(window.document, 'touchmove', this._onMove, { capture: true, passive: false });
         DOM.removeEventListener(window.document, 'touchend', this._onTouchEnd);
-        DOM.removeEventListener(window.document, 'mousemove', this._onMove, {capture: true});
+        DOM.removeEventListener(window.document, 'mousemove', this._onMove, { capture: true });
         DOM.removeEventListener(window.document, 'mouseup', this._onMouseUp);
         DOM.removeEventListener(window, 'blur', this._onBlur);
     }

@@ -2,7 +2,7 @@
 
 import { test } from '../../util/test';
 
-import { easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid } from '../../../src/util/util';
+import { easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, cssTransformPoint } from '../../../src/util/util';
 import Point from '@mapbox/point-geometry';
 
 test('util', (t) => {
@@ -296,6 +296,26 @@ test('util', (t) => {
         t.false(validateUuid(uuid().substr(0, 10)));
         t.false(validateUuid('foobar'));
         t.false(validateUuid(null));
+        t.end();
+    });
+
+    t.test('cssTransformPoint', (t) => {
+        t.deepEqual(cssTransformPoint(new Point(10, 10)), {
+            x: 10,
+            y: 10,
+        });
+        t.deepEqual(cssTransformPoint(new Point(10, 10), { scale: 1 }), {
+            x: 10,
+            y: 10,
+        });
+        t.deepEqual(cssTransformPoint(new Point(10, 10), { scale: 0.5 }), {
+            x: 20,
+            y: 20,
+        });
+        t.deepEqual(cssTransformPoint(new Point(10, 10), { scale: '0.25' }), {
+            x: 40,
+            y: 40,
+        });
         t.end();
     });
 

@@ -45,6 +45,7 @@ import type DoubleClickZoomHandler from './handler/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
+import type {CssTransforms} from '../util/util';
 import type {
     LayerSpecification,
     FilterSpecification,
@@ -92,7 +93,8 @@ type MapOptions = {
     pitch?: number,
     renderWorldCopies?: boolean,
     maxTileCacheSize?: number,
-    transformRequest?: RequestTransformFunction
+    transformRequest?: RequestTransformFunction,
+    cssTransforms?: CssTransforms,
 };
 
 const defaultMinZoom = 0;
@@ -130,7 +132,11 @@ const defaultOptions = {
     localIdeographFontFamily: 'sans-serif',
     transformRequest: null,
     fadeDuration: 300,
-    crossSourceCollisions: true
+    crossSourceCollisions: true,
+
+    cssTransforms: {
+        scale: 1
+    }
 };
 
 /**
@@ -211,6 +217,7 @@ const defaultOptions = {
  *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
+ * @param {Object} [options.cssTransforms] If provided will transform event hander Points appropriately.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @example
  * var map = new mapboxgl.Map({
@@ -269,6 +276,7 @@ class Map extends Camera {
     _mapId: number;
     _localIdeographFontFamily: string;
     _requestManager: RequestManager;
+    _cssTransforms: ?CssTransforms;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -333,6 +341,7 @@ class Map extends Camera {
         this._controls = [];
         this._mapId = uniqueId();
         this._requestManager = new RequestManager(options.transformRequest);
+        this._cssTransforms = options.cssTransforms;
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
@@ -938,6 +947,17 @@ class Map extends Camera {
      */
     querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
         return this.style.querySourceFeatures(sourceId, parameters);
+    }
+
+    /**
+     * Updates the CSS transforms applied to the map when calculating Point
+     * locations
+     *
+     * @param {Object} cssTransforms object of CSS transform properties
+     * @param {string|number} cssTransforms.scale the CSS scale
+     */
+    setCssTransforms(cssTransforms: CssTransforms) {
+        this._cssTransforms = cssTransforms;
     }
 
     /**
