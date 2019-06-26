@@ -39,7 +39,8 @@ export type Shaping = {
     right: number,
     writingMode: 1 | 2,
     lineCount: number,
-    text: string
+    text: string,
+    yOffset: number,
 };
 
 export type SymbolAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -199,7 +200,8 @@ function shapeText(text: Formatted,
         left: translate[0],
         right: translate[0],
         writingMode,
-        lineCount: lines.length
+        lineCount: lines.length,
+        yOffset: -17 // the y offset *should* be part of the font metadata
     };
 
     shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, textJustify, writingMode, spacing);
@@ -440,11 +442,9 @@ function shapeLines(shaping: Shaping,
                     textJustify: TextJustify,
                     writingMode: 1 | 2,
                     spacing: number) {
-    // the y offset *should* be part of the font metadata
-    const yOffset = -17;
 
     let x = 0;
-    let y = yOffset;
+    let y = shaping.yOffset;
 
     let maxLineLength = 0;
     const positionedGlyphs = shaping.positionedGlyphs;
@@ -480,7 +480,7 @@ function shapeLines(shaping: Shaping,
                 positionedGlyphs.push({glyph: codePoint, x, y: y + baselineOffset, vertical: false, scale: section.scale, fontStack: section.fontStack});
                 x += glyph.metrics.advance * section.scale + spacing;
             } else {
-                positionedGlyphs.push({glyph: codePoint, x, y: baselineOffset, vertical: true, scale: section.scale, fontStack: section.fontStack});
+                positionedGlyphs.push({glyph: codePoint, x, y: y + baselineOffset, vertical: true, scale: section.scale, fontStack: section.fontStack});
                 x += ONE_EM * section.scale + spacing;
             }
         }
@@ -501,7 +501,7 @@ function shapeLines(shaping: Shaping,
     align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lines.length);
 
     // Calculate the bounding box
-    const height = y - yOffset;
+    const height = y - shaping.yOffset;
 
     shaping.top += -verticalAlign * height;
     shaping.bottom = shaping.top + height;
