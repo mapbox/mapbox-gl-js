@@ -130,11 +130,11 @@ function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex, isSDF: b
     );
 }
 
-function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, angle: number) {
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, z: number, angle: number) {
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, z, angle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, z, angle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, z, angle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, z, angle);
 }
 
 function containsRTLText(formattedText: Formatted): boolean {
@@ -632,7 +632,7 @@ class SymbolBucket implements Bucket {
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, symbol.isSDF, pixelOffsetTL.x, pixelOffsetBR.y, mfsx, mfsy);
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, symbol.isSDF, pixelOffsetBR.x, pixelOffsetBR.y, mfsx, mfsy);
 
-            addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, angle);
+            addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, feature.zOffset, 0);
 
             indexArray.emplaceBack(index, index + 1, index + 2);
             indexArray.emplaceBack(index + 1, index + 2, index + 3);
