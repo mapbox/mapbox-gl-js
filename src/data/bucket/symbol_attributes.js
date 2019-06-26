@@ -71,6 +71,7 @@ export const placement = createLayout([
     { type: 'Float32', name: 'lineOffsetX' },
     { type: 'Float32', name: 'lineOffsetY' },
     { type: 'Uint8', name: 'writingMode' },
+    { type: 'Uint8', name: 'placedOrientation' },
     { type: 'Uint8', name: 'hidden' },
     { type: 'Uint32', name: 'crossTileID'}
 ]);
@@ -85,6 +86,8 @@ export const symbolInstance = createLayout([
     { type: 'Uint16', name: 'key' },
     { type: 'Uint16', name: 'textBoxStartIndex' },
     { type: 'Uint16', name: 'textBoxEndIndex' },
+    { type: 'Uint16', name: 'verticalTextBoxStartIndex' },
+    { type: 'Uint16', name: 'verticalTextBoxEndIndex' },
     { type: 'Uint16', name: 'iconBoxStartIndex' },
     { type: 'Uint16', name: 'iconBoxEndIndex' },
     { type: 'Uint16', name: 'featureIndex' },
