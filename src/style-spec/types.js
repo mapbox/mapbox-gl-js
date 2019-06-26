@@ -244,6 +244,7 @@ export type SymbolLayerSpecification = {|
         "text-variable-anchor"?: PropertyValueSpecification<Array<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">>,
         "text-anchor"?: DataDrivenPropertyValueSpecification<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">,
         "text-max-angle"?: PropertyValueSpecification<number>,
+        "text-writing-mode"?: PropertyValueSpecification<Array<"horizontal" | "vertical">>,
         "text-rotate"?: DataDrivenPropertyValueSpecification<number>,
         "text-padding"?: PropertyValueSpecification<number>,
         "text-keep-upright"?: PropertyValueSpecification<boolean>,
