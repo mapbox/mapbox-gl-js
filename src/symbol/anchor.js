@@ -17,7 +17,7 @@ class Anchor extends Point {
     }
 
     clone() {
-        return new Anchor(this.x, this.y, this.angle, this.segment);
+        return new Anchor(this.x, this.y, this.z, this.angle, this.segment);
     }
 }
 

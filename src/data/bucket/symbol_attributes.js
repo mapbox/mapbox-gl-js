@@ -23,8 +23,9 @@ export const collisionVertexAttributes = createLayout([
 
 export const collisionBox = createLayout([
     // the box is centered around the anchor point
-    {type: 'Int16', name: 'anchorPointX'},
-    {type: 'Int16', name: 'anchorPointY'},
+    { type: 'Int16', name: 'anchorPointX' },
+    { type: 'Int16', name: 'anchorPointY' },
+    { type: 'Int16', name: 'anchorPointZ' },
 
     // distances to the edges from the anchor
     {type: 'Int16', name: 'x1'},
