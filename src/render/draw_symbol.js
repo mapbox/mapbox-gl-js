@@ -102,7 +102,6 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
         const skipOrientation = bucket.allowVerticalPlacement && !symbol.placedOrientation;
-        // console.warn('updateVariableAnchors:', 'hidden', symbol.hidden, 'crossTileID', symbol.crossTileID, 'skipOrientation', skipOrientation);
         const variableOffset = (!symbol.hidden && symbol.crossTileID && !skipOrientation) ? variableOffsets[symbol.crossTileID] : null;
         if (!variableOffset) {
             // These symbols are from a justification that is not being used, or a label that wasn't placed
@@ -147,7 +146,6 @@ function updateVerticalLabels(bucket) {
     dynamicLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
-        // console.log('[draw symbol]', 'placedSymbols index', s, 'hidden', symbol.hidden, 'writingMode', symbol.writingMode, 'placedOrientation', symbol.placedOrientation);
         const shouldHide = symbol.hidden || !symbol.placedOrientation;
         if (shouldHide) {
             // These symbols are from an orientation that is not being used, or a label that wasn't placed
