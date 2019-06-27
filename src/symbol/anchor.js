@@ -8,8 +8,9 @@ class Anchor extends Point {
     angle: any;
     segment: number | void;
 
-    constructor(x: number, y: number, angle: number, segment?: number) {
+    constructor(x: number, y: number, z: number, angle: number, segment?: number) {
         super(x, y);
+        this.z = z;
         this.angle = angle;
         if (segment !== undefined) {
             this.segment = segment;

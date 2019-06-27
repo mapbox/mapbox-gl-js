@@ -453,17 +453,17 @@ function addFeature(bucket: SymbolBucket,
         for (const polygon of classifyRings(feature.geometry, 0)) {
             // 16 here represents 2 pixels
             const poi = findPoleOfInaccessibility(polygon, 16);
-            addSymbolAtAnchor(polygon[0], new Anchor(poi.x, poi.y, 0));
+            addSymbolAtAnchor(polygon[0], new Anchor(poi.x, poi.y, 0, 0));
         }
     } else if (feature.type === 'LineString') {
         // https://github.com/mapbox/mapbox-gl-js/issues/3808
         for (const line of feature.geometry) {
-            addSymbolAtAnchor(line, new Anchor(line[0].x, line[0].y, 0));
+            addSymbolAtAnchor(line, new Anchor(line[0].x, line[0].y, 0, 0));
         }
     } else if (feature.type === 'Point') {
         for (const points of feature.geometry) {
             for (const point of points) {
-                addSymbolAtAnchor([point], new Anchor(point.x, point.y, 0));
+                addSymbolAtAnchor([point], new Anchor(point.x, point.y, feature.zOffset, 0));
             }
         }
     }

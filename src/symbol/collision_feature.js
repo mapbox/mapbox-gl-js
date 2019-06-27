@@ -91,7 +91,7 @@ class CollisionFeature {
                 y1 = Math.min(tl.y, tr.y, bl.y, br.y);
                 y2 = Math.max(tl.y, tr.y, bl.y, br.y);
             }
-            collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, featureIndex, sourceLayerIndex, bucketIndex,
+            collisionBoxArray.emplaceBack(anchor.x, anchor.y, anchor.z, x1, y1, x2, y2, featureIndex, sourceLayerIndex, bucketIndex,
                 0, 0);
         }
 
@@ -206,7 +206,7 @@ class CollisionFeature {
                 0 :
                 (boxDistanceToAnchor - firstBoxOffset) * 0.8;
 
-            collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
+            collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y, anchor.z,
                 -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2,
                 featureIndex, sourceLayerIndex, bucketIndex,
                 boxSize / 2, paddedAnchorDistance);
