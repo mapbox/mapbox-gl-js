@@ -26,6 +26,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - collect-stats:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
       - test-flow:
           requires:
             - prepare
@@ -150,6 +156,14 @@ jobs:
       - attach_workspace:
           at: .
       - run: node build/check-bundle-size.js "dist/mapbox-gl.js" "GL JS - Minified"
+
+  collect-stats:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: apt-get update -yq && apt-get install -yq libxcomposite1 libxtst6 libnss3 libcups2 libxss1 libasound2 libatk1.0-0 libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3-0
+      - run: node bench/gl-stats.js
 
   test-flow:
     <<: *defaults
