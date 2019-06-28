@@ -60,7 +60,7 @@ function drawDebugTile(painter, sourceCache, coord) {
     // the gl spec doesn't guarantee support for lines with width > 1.
     const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.overscaledZ) * tileSize * scaleRatio);
 
-    const haloWidth = 2;
+    const haloWidth = 1;
     const translations = [];
     for (let x = -haloWidth; x <= haloWidth; x++) {
         for (let y = -haloWidth; y <= haloWidth; y++) {
