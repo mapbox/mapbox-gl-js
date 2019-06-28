@@ -185,7 +185,7 @@ const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize
     urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
     urlObject.path = `/v4${urlObject.path}`;
 
-    if (config.REQUIRE_ACCESS_TOKEN && config.ACCESS_TOKEN && skuToken) {
+    if (config.REQUIRE_ACCESS_TOKEN && (config.ACCESS_TOKEN || customAccessToken) && skuToken) {
         urlObject.params.push(`sku=${skuToken}`);
     }
 
