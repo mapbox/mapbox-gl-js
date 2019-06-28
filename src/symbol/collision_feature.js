@@ -154,7 +154,6 @@ class CollisionFeature {
                     break;
                 }
             } else {
-                console.log('line[index]', line, index, line[index]);
                 anchorDistance -= line[index].dist(p);
                 p = line[index];
             }
