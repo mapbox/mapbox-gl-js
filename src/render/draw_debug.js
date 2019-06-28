@@ -44,7 +44,7 @@ function drawDebugTile(painter, sourceCache, coord) {
     const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
     const tileSizeKb = Math.floor(tileByteLength / 1024);
     const tileSize = sourceCache.getTile(coord).tileSize;
-    const scaleRatio = 512 / tileSize;
+    const scaleRatio = (512 / Math.min(tileSize, 512))
     const vertices = createTextVertices(`${coord.toString()} ${tileSizeKb}kb`, 50, 200 * scaleRatio, 5 * scaleRatio);
     const debugTextArray = new PosArray();
     const debugTextIndices = new LineIndexArray();
@@ -58,7 +58,7 @@ function drawDebugTile(painter, sourceCache, coord) {
 
     // Draw the halo with multiple 1px lines instead of one wider line because
     // the gl spec doesn't guarantee support for lines with width > 1.
-    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.overscaledZ) * tileSize);
+    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.overscaledZ) * tileSize * scaleRatio);
 
     const haloWidth = 1;
     const translations = [];
