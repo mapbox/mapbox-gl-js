@@ -336,7 +336,7 @@ class TelemetryEvent {
 
     }
 
-    processRequests(customAccessToken?: ?string) {}
+    processRequests(_: ?string) {}
 
     /*
     * If any event data should be persisted after the POST request, the callback should modify eventData`
