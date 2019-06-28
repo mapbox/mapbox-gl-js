@@ -1,0 +1,147 @@
+// @flow
+
+import { parseCacheControl } from './util';
+import window from './window';
+
+import type Dispatcher from './dispatcher';
+
+const CACHE_NAME = 'mapbox-tiles';
+let cacheLimit = 500; // 50MB / (100KB/tile) ~= 500 tiles
+let cacheCheckThreshold = 50;
+
+const MIN_TIME_UNTIL_EXPIRY = 1000 * 60 * 7; // 7 minutes. Skip caching tiles with a short enough max age.
+
+export type ResponseOptions = {
+    status: number,
+    statusText: string,
+    headers: window.Headers
+};
+
+
+let responseConstructorSupportsReadableStream;
+function prepareBody(response: Response, callback) {
+    if (responseConstructorSupportsReadableStream === undefined) {
+        try {
+            new Response(new ReadableStream()); // eslint-disable-line no-undef
+            responseConstructorSupportsReadableStream = true;
+        } catch (e) {
+            // Edge
+            responseConstructorSupportsReadableStream = false;
+        }
+    }
+
+    if (responseConstructorSupportsReadableStream) {
+        callback(response.body);
+    } else {
+        response.blob().then(callback);
+    }
+}
+
+export function cachePut(request: Request, response: Response, requestTime: number) {
+    if (!window.caches) return;
+
+    const options: ResponseOptions = {
+        status: response.status,
+        statusText: response.statusText,
+        headers: new window.Headers()
+    };
+    response.headers.forEach((v, k) => options.headers.set(k, v));
+
+    const cacheControl = parseCacheControl(response.headers.get('Cache-Control') || '');
+    if (cacheControl['no-store']) {
+        return;
+    }
+    if (cacheControl['max-age']) {
+        options.headers.set('Expires', new Date(requestTime + cacheControl['max-age'] * 1000).toUTCString());
+    }
+
+    const timeUntilExpiry = new Date(options.headers.get('Expires')).getTime() - requestTime;
+    if (timeUntilExpiry < MIN_TIME_UNTIL_EXPIRY) return;
+
+    prepareBody(response, body => {
+        const clonedResponse = new window.Response(body, options);
+
+        window.caches.open(CACHE_NAME).then(cache => cache.put(stripQueryParameters(request.url), clonedResponse));
+    });
+}
+
+function stripQueryParameters(url: string) {
+    const start = url.indexOf('?');
+    return start < 0 ? url : url.slice(0, start);
+}
+
+export function cacheGet(request: Request, callback: (error: ?any, response: ?Response, fresh: ?boolean) => void) {
+    if (!window.caches) return callback(null);
+
+    window.caches.open(CACHE_NAME)
+        .catch(callback)
+        .then(cache => {
+            cache.match(request, { ignoreSearch: true })
+                .catch(callback)
+                .then(response => {
+                    const fresh = isFresh(response);
+
+                    // Reinsert into cache so that order of keys in the cache is the order of access.
+                    // This line makes the cache a LRU instead of a FIFO cache.
+                    const strippedURL = stripQueryParameters(request.url);
+                    cache.delete(strippedURL);
+                    if (fresh) {
+                        cache.put(strippedURL, response.clone());
+                    }
+
+                    callback(null, response, fresh);
+                });
+        });
+}
+
+
+
+function isFresh(response) {
+    if (!response) return false;
+    const expires = new Date(response.headers.get('Expires'));
+    const cacheControl = parseCacheControl(response.headers.get('Cache-Control') || '');
+    return expires > Date.now() && !cacheControl['no-cache'];
+}
+
+
+// `Infinity` triggers a cache check after the first tile is loaded
+// so that a check is run at least once on each page load.
+let globalEntryCounter = Infinity;
+
+// The cache check gets run on a worker. The reason for this is that
+// profiling sometimes shows this as taking up significant time on the
+// thread it gets called from. And sometimes it doesn't. It *may* be
+// fine to run this on the main thread but out of caution this is being
+// dispatched on a worker. This can be investigated further in the future.
+export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
+    globalEntryCounter++;
+    if (globalEntryCounter > cacheCheckThreshold) {
+        dispatcher.send('enforceCacheSizeLimit', cacheLimit);
+        globalEntryCounter = 0;
+    }
+}
+
+// runs on worker, see above comment
+export function enforceCacheSizeLimit(limit: number) {
+    if (!window.caches) return;
+    window.caches.open(CACHE_NAME)
+        .then(cache => {
+            cache.keys().then(keys => {
+                for (let i = 0; i < keys.length - limit; i++) {
+                    cache.delete(keys[i]);
+                }
+            });
+        });
+}
+
+export function clearTileCache(callback?: (err: ?Error) => void) {
+    const promise = window.caches.delete(CACHE_NAME);
+    if (callback) {
+        promise.catch(callback).then(() => callback());
+    }
+}
+
+export function setCacheLimits(limit: number, checkThreshold: number) {
+    cacheLimit = limit;
+    cacheCheckThreshold = checkThreshold;
+}

@@ -25,6 +25,7 @@ import { Event, ErrorEvent } from '../util/evented';
 import { MapMouseEvent } from './events';
 import TaskQueue from '../util/task_queue';
 import webpSupported from '../util/webp_supported';
+import { setCacheLimits } from '../util/tile_request_cache';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type { RequestTransformFunction } from '../util/mapbox';
@@ -204,7 +205,7 @@ const defaultOptions = {
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered, when zoomed out.
  * @param {number} [options.maxTileCacheSize=null]  The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
  * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
- *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
+ *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana' and 'Hangul Syllables' ranges.
  *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
  *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
  *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (see [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs))
@@ -955,7 +956,7 @@ class Map extends Camera {
      * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
      *   and building the given one instead of attempting a diff-based update.
      * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
-     *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
+     *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana' and 'Hangul Syllables' ranges.
      *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
      *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
      *   Forces a full update.
@@ -1927,6 +1928,11 @@ class Map extends Camera {
     // show vertices
     get vertices(): boolean { return !!this._vertices; }
     set vertices(value: boolean) { this._vertices = value; this._update(); }
+
+    // for cache browser tests
+    _setCacheLimits(limit: number, checkThreshold: number) {
+        setCacheLimits(limit, checkThreshold);
+    }
 }
 
 export default Map;

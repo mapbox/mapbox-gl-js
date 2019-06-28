@@ -132,6 +132,10 @@ function isMapboxHTTPURL(url: string): boolean {
     return mapboxHTTPURLRe.test(url);
 }
 
+function hasCacheDefeatingSku(url: string) {
+    return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
+}
+
 const normalizeStyleURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
@@ -181,7 +185,7 @@ const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize
     urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
     urlObject.path = `/v4${urlObject.path}`;
 
-    if (config.REQUIRE_ACCESS_TOKEN && config.ACCESS_TOKEN && skuToken) {
+    if (config.REQUIRE_ACCESS_TOKEN && (config.ACCESS_TOKEN || customAccessToken) && skuToken) {
         urlObject.params.push(`sku=${skuToken}`);
     }
 
@@ -241,7 +245,7 @@ function formatUrl(obj: UrlObject): string {
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
 
-export { isMapboxURL, isMapboxHTTPURL };
+export { isMapboxURL, isMapboxHTTPURL, hasCacheDefeatingSku };
 
 const telemEventKey = 'mapbox.eventData';
 
