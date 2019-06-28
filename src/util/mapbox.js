@@ -370,13 +370,13 @@ class TelemetryEvent {
             this.pendingRequest = null;
             callback(error);
             this.saveEventData();
-            this.processRequests(customAccessToken);
+            this.processRequests();
         });
     }
 
     queueRequest(event: number | {id: number, timestamp: number}, customAccessToken?: ?string) {
         this.queue.push(event);
-        this.processRequests(customAccessToken);
+        this.processRequests();
     }
 }
 
