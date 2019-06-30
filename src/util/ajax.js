@@ -111,7 +111,11 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
     const validateOrFetch = (err, cachedResponse, responseIsFresh) => {
         if (err) {
-            return callback(err);
+            // Do fetch in case of cache error.
+            // HTTP pages in Edge trigger a security error that can be ignored.
+            if (err.message !== 'SecurityError') {
+                console.warn(err);
+            }
         }
 
         if (cachedResponse && responseIsFresh) {
