@@ -1,7 +1,7 @@
 // @flow
 
 import window from './window';
-import { extend } from './util';
+import { extend, warnOnce } from './util';
 import { isMapboxHTTPURL, hasCacheDefeatingSku } from './mapbox';
 import config from './config';
 import assert from 'assert';
@@ -111,7 +111,11 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
     const validateOrFetch = (err, cachedResponse, responseIsFresh) => {
         if (err) {
-            return callback(err);
+            // Do fetch in case of cache error.
+            // HTTP pages in Edge trigger a security error that can be ignored.
+            if (err.message !== 'SecurityError') {
+                warnOnce(err);
+            }
         }
 
         if (cachedResponse && responseIsFresh) {
