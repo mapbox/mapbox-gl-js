@@ -1815,6 +1815,7 @@
         }
       },
       "requires": [
+        "text-field",
         {
           "!" : "text-offset"
         }
@@ -1861,6 +1862,7 @@
         }
       },
       "requires": [
+        "text-field",
         {
           "!": "text-anchor"
         },
@@ -1898,9 +1900,6 @@
     },
     "text-anchor": {
       "type": "enum",
-      "requires": {
-        "!": "text-variable-anchor"
-      },
       "values": {
         "center": {
           "doc": "The center of the text is placed closest to the anchor."
@@ -1933,7 +1932,10 @@
       "default": "center",
       "doc": "Part of the text placed closest to the anchor.",
       "requires": [
-        "text-field"
+        "text-field",
+        {
+          "!": "text-variable-anchor"
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -2135,6 +2137,9 @@
         "text-field",
         {
             "!": "text-radial-offset"
+        },
+        {
+            "!": "text-variable-anchor"
         }
       ],
       "sdk-support": {
