@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Hash from '../../../src/ui/hash';
 import window from '../../../src/util/window';
 import { createMap as globalCreateMap } from '../../util';

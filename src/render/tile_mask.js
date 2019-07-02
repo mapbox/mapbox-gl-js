@@ -5,7 +5,7 @@ import { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
 import type Tile from './../source/tile';
 import type Context from '../gl/context';
 
-type Mask = {
+export type Mask = {
     [number]: CanonicalTileID
 };
 

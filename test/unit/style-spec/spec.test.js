@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 
 /* eslint-disable import/namespace */
 import * as spec from '../../../src/style-spec/style-spec';

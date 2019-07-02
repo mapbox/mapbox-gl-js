@@ -113,7 +113,7 @@ uniform ${precision} ${type} u_${name};
             if (operation === 'define') {
                 return `
 #ifndef HAS_UNIFORM_u_${name}
-uniform lowp float a_${name}_t;
+uniform lowp float u_${name}_t;
 attribute ${precision} ${attrType} a_${name};
 varying ${precision} ${type} ${name};
 #else
@@ -133,7 +133,7 @@ uniform ${precision} ${type} u_${name};
                 } else {
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${name} = unpack_mix_${unpackType}(a_${name}, a_${name}_t);
+    ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif
@@ -144,7 +144,7 @@ uniform ${precision} ${type} u_${name};
             if (operation === 'define') {
                 return `
 #ifndef HAS_UNIFORM_u_${name}
-uniform lowp float a_${name}_t;
+uniform lowp float u_${name}_t;
 attribute ${precision} ${attrType} a_${name};
 #else
 uniform ${precision} ${type} u_${name};
@@ -163,7 +163,7 @@ uniform ${precision} ${type} u_${name};
                 } else /* */{
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, a_${name}_t);
+    ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif

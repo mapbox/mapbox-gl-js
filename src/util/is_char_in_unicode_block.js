@@ -1,6 +1,6 @@
 // @flow
 
-// The following table comes from <http://www.unicode.org/Public/11.0.0/ucd/Blocks.txt>.
+// The following table comes from <http://www.unicode.org/Public/12.0.0/ucd/Blocks.txt>.
 // Keep it synchronized with <http://www.unicode.org/Public/UCD/latest/ucd/Blocks.txt>.
 
 type UnicodeBlockLookup = {[key: string]: (char: number) => boolean};
@@ -213,6 +213,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Rumi Numeral Symbols': (char) => char >= 0x10E60 && char <= 0x10E7F,
     // 'Old Sogdian': (char) => char >= 0x10F00 && char <= 0x10F2F,
     // 'Sogdian': (char) => char >= 0x10F30 && char <= 0x10F6F,
+    // 'Elymaic': (char) => char >= 0x10FE0 && char <= 0x10FFF,
     // 'Brahmi': (char) => char >= 0x11000 && char <= 0x1107F,
     // 'Kaithi': (char) => char >= 0x11080 && char <= 0x110CF,
     // 'Sora Sompeng': (char) => char >= 0x110D0 && char <= 0x110FF,
@@ -233,6 +234,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Ahom': (char) => char >= 0x11700 && char <= 0x1173F,
     // 'Dogra': (char) => char >= 0x11800 && char <= 0x1184F,
     // 'Warang Citi': (char) => char >= 0x118A0 && char <= 0x118FF,
+    // 'Nandinagari': (char) => char >= 0x119A0 && char <= 0x119FF,
     // 'Zanabazar Square': (char) => char >= 0x11A00 && char <= 0x11A4F,
     // 'Soyombo': (char) => char >= 0x11A50 && char <= 0x11AAF,
     // 'Pau Cin Hau': (char) => char >= 0x11AC0 && char <= 0x11AFF,
@@ -241,10 +243,12 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Masaram Gondi': (char) => char >= 0x11D00 && char <= 0x11D5F,
     // 'Gunjala Gondi': (char) => char >= 0x11D60 && char <= 0x11DAF,
     // 'Makasar': (char) => char >= 0x11EE0 && char <= 0x11EFF,
+    // 'Tamil Supplement': (char) => char >= 0x11FC0 && char <= 0x11FFF,
     // 'Cuneiform': (char) => char >= 0x12000 && char <= 0x123FF,
     // 'Cuneiform Numbers and Punctuation': (char) => char >= 0x12400 && char <= 0x1247F,
     // 'Early Dynastic Cuneiform': (char) => char >= 0x12480 && char <= 0x1254F,
     // 'Egyptian Hieroglyphs': (char) => char >= 0x13000 && char <= 0x1342F,
+    // 'Egyptian Hieroglyph Format Controls': (char) => char >= 0x13430 && char <= 0x1343F,
     // 'Anatolian Hieroglyphs': (char) => char >= 0x14400 && char <= 0x1467F,
     // 'Bamum Supplement': (char) => char >= 0x16800 && char <= 0x16A3F,
     // 'Mro': (char) => char >= 0x16A40 && char <= 0x16A6F,
@@ -257,6 +261,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Tangut Components': (char) => char >= 0x18800 && char <= 0x18AFF,
     // 'Kana Supplement': (char) => char >= 0x1B000 && char <= 0x1B0FF,
     // 'Kana Extended-A': (char) => char >= 0x1B100 && char <= 0x1B12F,
+    // 'Small Kana Extension': (char) => char >= 0x1B130 && char <= 0x1B16F,
     // 'Nushu': (char) => char >= 0x1B170 && char <= 0x1B2FF,
     // 'Duployan': (char) => char >= 0x1BC00 && char <= 0x1BC9F,
     // 'Shorthand Format Controls': (char) => char >= 0x1BCA0 && char <= 0x1BCAF,
@@ -269,9 +274,12 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Mathematical Alphanumeric Symbols': (char) => char >= 0x1D400 && char <= 0x1D7FF,
     // 'Sutton SignWriting': (char) => char >= 0x1D800 && char <= 0x1DAAF,
     // 'Glagolitic Supplement': (char) => char >= 0x1E000 && char <= 0x1E02F,
+    // 'Nyiakeng Puachue Hmong': (char) => char >= 0x1E100 && char <= 0x1E14F,
+    // 'Wancho': (char) => char >= 0x1E2C0 && char <= 0x1E2FF,
     // 'Mende Kikakui': (char) => char >= 0x1E800 && char <= 0x1E8DF,
     // 'Adlam': (char) => char >= 0x1E900 && char <= 0x1E95F,
     // 'Indic Siyaq Numbers': (char) => char >= 0x1EC70 && char <= 0x1ECBF,
+    // 'Ottoman Siyaq Numbers': (char) => char >= 0x1ED00 && char <= 0x1ED4F,
     // 'Arabic Mathematical Alphabetic Symbols': (char) => char >= 0x1EE00 && char <= 0x1EEFF,
     // 'Mahjong Tiles': (char) => char >= 0x1F000 && char <= 0x1F02F,
     // 'Domino Tiles': (char) => char >= 0x1F030 && char <= 0x1F09F,
@@ -287,6 +295,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Supplemental Arrows-C': (char) => char >= 0x1F800 && char <= 0x1F8FF,
     // 'Supplemental Symbols and Pictographs': (char) => char >= 0x1F900 && char <= 0x1F9FF,
     // 'Chess Symbols': (char) => char >= 0x1FA00 && char <= 0x1FA6F,
+    // 'Symbols and Pictographs Extended-A': (char) => char >= 0x1FA70 && char <= 0x1FAFF,
     // 'CJK Unified Ideographs Extension B': (char) => char >= 0x20000 && char <= 0x2A6DF,
     // 'CJK Unified Ideographs Extension C': (char) => char >= 0x2A700 && char <= 0x2B73F,
     // 'CJK Unified Ideographs Extension D': (char) => char >= 0x2B740 && char <= 0x2B81F,

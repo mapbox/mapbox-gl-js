@@ -1,9 +1,9 @@
 uniform sampler2D u_texture;
 
-#pragma mapbox: define lowp float opacity
-
 varying vec2 v_tex;
 varying float v_fade_opacity;
+
+#pragma mapbox: define lowp float opacity
 
 void main() {
     #pragma mapbox: initialize lowp float opacity

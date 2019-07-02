@@ -4,7 +4,7 @@
     "test": {
       "axonometric": true,
       "height": 256,
-      "diff": 0.0005
+      "allowed": 0.0005
     }
   },
   "sources": {

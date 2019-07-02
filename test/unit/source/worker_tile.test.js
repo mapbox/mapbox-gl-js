@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import WorkerTile from '../../../src/source/worker_tile';
 import Wrapper from '../../../src/source/geojson_wrapper';
 import { OverscaledTileID } from '../../../src/source/tile_id';

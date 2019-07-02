@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../../util/test';
 import window from '../../../../src/util/window';
 import { createMap } from '../../../util';
 import GeolocateControl from '../../../../src/ui/control/geolocate_control';

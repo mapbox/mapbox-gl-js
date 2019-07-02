@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import assert from 'assert';
 import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
@@ -2042,6 +2042,30 @@ test('Style#query*Features', (t) => {
     t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
         t.deepEqual(style.queryRenderedFeatures([{x: 0, y: 0}], {filter: 7}, transform), []);
         t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
+        t.end();
+    });
+
+    t.test('querySourceFeatures not raise validation errors if validation was disabled', (t) => {
+        let errors = 0;
+        t.stub(style, 'fire').callsFake((event) => {
+            if (event.error) {
+                console.log(event.error.message);
+                errors++;
+            }
+        });
+        style.queryRenderedFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
+        t.equals(errors, 0);
+        t.end();
+    });
+
+
+    t.test('querySourceFeatures not raise validation errors if validation was disabled', (t) => {
+        let errors = 0;
+        t.stub(style, 'fire').callsFake((event) => {
+            if (event.error) errors++;
+        });
+        style.querySourceFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
+        t.equals(errors, 0);
         t.end();
     });
 

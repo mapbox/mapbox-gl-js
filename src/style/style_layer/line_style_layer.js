@@ -108,6 +108,7 @@ class LineStyleLayer extends StyleLayer {
         if (lineOffset) {
             geometry = offsetLine(geometry, lineOffset * pixelsToTileUnits);
         }
+
         return polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);
     }
 

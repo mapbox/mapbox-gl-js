@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import VectorTileSource from '../../../src/source/vector_tile_source';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 import window from '../../../src/util/window';
@@ -194,7 +194,7 @@ test('VectorTileSource', (t) => {
         const events = [];
         source.dispatcher.send = function(type, params, cb) {
             events.push(type);
-            setTimeout(cb, 0);
+            if (cb) setTimeout(cb, 0);
             return 1;
         };
 
@@ -212,7 +212,7 @@ test('VectorTileSource', (t) => {
                 source.loadTile(tile, () => {});
                 t.equal(tile.state, 'loading');
                 source.loadTile(tile, () => {
-                    t.same(events, ['loadTile', 'tileLoaded', 'reloadTile', 'tileLoaded']);
+                    t.same(events, ['loadTile', 'tileLoaded', 'enforceCacheSizeLimit', 'reloadTile', 'tileLoaded']);
                     t.end();
                 });
             }
@@ -282,6 +282,10 @@ test('VectorTileSource', (t) => {
             t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
             setTimeout(cb, 0);
             t.end();
+
+            // do nothing for cache size check dispatch
+            source.dispatcher.send = function() {};
+
             return 1;
         };
 

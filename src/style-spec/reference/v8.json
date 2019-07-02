@@ -981,7 +981,7 @@
       "type": "enum",
       "values": {
         "auto": {
-          "doc": "If `symbol-sort-key` is set, sort based on that. Otherwise sort symbols by their position relative to the viewport."
+          "doc": "If `symbol-sort-key` is set, sort based on that. Otherwise sort symbols by their y-position relative to the viewport."
         },
         "viewport-y": {
           "doc": "Symbols will be sorted by their y-position relative to the viewport."
@@ -1780,10 +1780,10 @@
           "macos": "0.6.0"
         },
         "auto": {
-          "js": "next",
-          "android": "Not yet supported",
-          "ios": "Not yet supported",
-          "macos": "Not yet supported"
+          "js": "0.54.0",
+          "android": "7.4.0",
+          "ios": "4.10.0",
+          "macos": "0.14.0"
         }
       },
       "expression": {
@@ -1800,6 +1800,20 @@
       "units": "ems",
       "default": 0,
       "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which doesn't support the two-dimensional `text-offset`.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.54.0",
+          "android": "7.4.0",
+          "ios": "4.10.0",
+          "macos": "0.14.0"
+        },
+        "data-driven styling": {
+          "js": "0.54.0",
+          "android": "7.4.0",
+          "ios": "4.10.0",
+          "macos": "0.14.0"
+        }
+      },
       "requires": [
         {
           "!" : "text-offset"
@@ -1862,10 +1876,10 @@
       "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the render will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` instead of the two-dimensional `text-offset`.",
       "sdk-support": {
         "basic functionality": {
-          "js": "next",
-          "android": "Not yet supported",
-          "ios": "Not yet supported",
-          "macos": "Not yet supported"
+          "js": "0.54.0",
+          "android": "7.4.0",
+          "ios": "4.10.0",
+          "macos": "0.14.0"
         },
         "data-driven styling": {
           "js": "Not yet supported",

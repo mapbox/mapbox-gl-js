@@ -20,5 +20,6 @@
   "render-tests/text-field/formatted-text-color-overrides": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
   "render-tests/text-field/formatted-text-color": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
   "render-tests/runtime-styling/layout-property-override-paint-property-expression": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
-  "render-tests/runtime-styling/layout-property-override-paint-property-literal": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045"
+  "render-tests/runtime-styling/layout-property-override-paint-property-literal": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045",
+  "render-tests/text-field/formatted-text-color-overrides-nested-expression": "skip - https://github.com/mapbox/mapbox-gl-js/issues/8045"
 }
