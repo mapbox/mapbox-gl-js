@@ -26,6 +26,7 @@ class DragPanHandler {
     _state: 'disabled' | 'enabled' | 'pending' | 'active';
     _startPos: Point;
     _mouseDownPos: Point;
+    _prevPos: Point;
     _lastPos: Point;
     _lastMoveEvent: MouseEvent | TouchEvent | void;
     _inertia: Array<[number, Point]>;
@@ -145,7 +146,7 @@ class DragPanHandler {
         window.addEventListener('blur', this._onBlur);
 
         this._state = 'pending';
-        this._startPos = this._mouseDownPos = this._lastPos = DOM.mousePos(this._el, e);
+        this._startPos = this._mouseDownPos = this._prevPos = this._lastPos = DOM.mousePos(this._el, e);
         this._inertia = [[browser.now(), this._startPos]];
     }
 
@@ -185,11 +186,11 @@ class DragPanHandler {
         const e = this._lastMoveEvent;
         if (!e) return;
         const tr = this._map.transform;
-        tr.setLocationAtPoint(tr.pointLocation(this._startPos), this._lastPos);
+        tr.setLocationAtPoint(tr.pointLocation(this._prevPos), this._lastPos);
         this._fireEvent('drag', e);
         this._fireEvent('move', e);
 
-        this._startPos = this._lastPos;
+        this._prevPos = this._lastPos;
         delete this._lastMoveEvent;
     }
 
@@ -265,6 +266,7 @@ class DragPanHandler {
         }
         delete this._lastMoveEvent;
         delete this._startPos;
+        delete this._prevPos;
         delete this._mouseDownPos;
         delete this._lastPos;
     }
