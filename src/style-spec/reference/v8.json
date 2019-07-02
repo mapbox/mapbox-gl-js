@@ -1815,10 +1815,7 @@
         }
       },
       "requires": [
-        "text-field",
-        {
-          "!" : "text-offset"
-        }
+        "text-field"
       ],
       "property-type": "data-driven",
       "expression": {
@@ -1863,12 +1860,6 @@
       },
       "requires": [
         "text-field",
-        {
-          "!": "text-anchor"
-        },
-        {
-          "!": "text-offset"
-        },
         {
             "symbol-placement": [
                 "point"
