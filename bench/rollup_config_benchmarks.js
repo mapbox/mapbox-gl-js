@@ -57,7 +57,12 @@ const viewConfig = {
         indent: false,
         sourcemap: true
     },
-    plugins: [buble({transforms: {dangerousForOf: true}, objectAssign: true}), resolve(), commonjs()]
+    plugins: [
+        buble({transforms: {dangerousForOf: true}, objectAssign: true}),
+        resolve({browser: true, preferBuiltins: false}),
+        commonjs(),
+        replace(replaceConfig)
+    ]
 };
 
 export default splitConfig('versions').concat(splitConfig('styles')).concat(viewConfig);
