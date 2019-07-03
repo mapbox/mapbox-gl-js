@@ -1,17 +1,10 @@
-'use strict';
 
-module.exports = {
-    Num: fixedNum,
-    LngLat: fixedLngLat,
-    Coord: fixedCoord
-};
-
-function fixedNum(n, precision) {
+export function fixedNum(n, precision) {
     if (precision === undefined) precision = 10;
     return parseFloat(n.toFixed(precision), 10);
 }
 
-function fixedLngLat(l, precision) {
+export function fixedLngLat(l, precision) {
     if (precision === undefined) precision = 9;
     return {
         lng: fixedNum(l.lng, precision),
@@ -19,7 +12,7 @@ function fixedLngLat(l, precision) {
     };
 }
 
-function fixedCoord(coord, precision) {
+export function fixedCoord(coord, precision) {
     if (precision === undefined) precision = 10;
     return {
         x: fixedNum(coord.x, precision),

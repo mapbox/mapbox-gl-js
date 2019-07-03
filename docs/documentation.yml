@@ -7,6 +7,7 @@ toc:
   - supported
   - version
   - setRTLTextPlugin
+  - clearStorage
   - AnimationOptions
   - CameraOptions
   - PaddingOptions
@@ -15,7 +16,7 @@ toc:
   - CustomLayerInterface
   - name: Geography & Geometry
     description: |
-      `LngLat` and `LngLatBounds` represent points and rectanges in geographic
+      `LngLat` and `LngLatBounds` represent points and rectangles in geographic
       coordinates. `Point` represents points in screen coordinates.
   - LngLat
   - LngLatLike

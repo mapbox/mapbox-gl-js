@@ -1,10 +1,10 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import window from '../../../src/util/window';
 import { createMap as globalCreateMap } from '../../util';
 import Popup from '../../../src/ui/popup';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
-import { click as simulateClick } from 'mapbox-gl-js-test/simulate_interaction';
+import simulate from '../../util/simulate_interaction';
 
 const containerWidth = 512;
 const containerHeight = 512;
@@ -17,10 +17,22 @@ function createMap(t, options) {
     return globalCreateMap(t, { container });
 }
 
+test('Popup#getElement returns a .mapboxgl-popup element', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.ok(popup.isOpen());
+    t.ok(popup.getElement().classList.contains('mapboxgl-popup'));
+    t.end();
+});
+
 test('Popup#addTo adds a .mapboxgl-popup element', (t) => {
     const map = createMap(t);
     const popup = new Popup()
-        .setText("Test")
+        .setText('Test')
         .setLngLat([0, 0])
         .addTo(map);
 
@@ -32,11 +44,11 @@ test('Popup#addTo adds a .mapboxgl-popup element', (t) => {
 test('Popup closes on map click events by default', (t) => {
     const map = createMap(t);
     const popup = new Popup()
-        .setText("Test")
+        .setText('Test')
         .setLngLat([0, 0])
         .addTo(map);
 
-    simulateClick(map.getCanvas());
+    simulate.click(map.getCanvas());
 
     t.ok(!popup.isOpen());
     t.end();
@@ -45,11 +57,11 @@ test('Popup closes on map click events by default', (t) => {
 test('Popup does not close on map click events when the closeOnClick option is false', (t) => {
     const map = createMap(t);
     const popup = new Popup({closeOnClick: false})
-        .setText("Test")
+        .setText('Test')
         .setLngLat([0, 0])
         .addTo(map);
 
-    simulateClick(map.getCanvas());
+    simulate.click(map.getCanvas());
 
     t.ok(popup.isOpen());
     t.end();
@@ -58,11 +70,11 @@ test('Popup does not close on map click events when the closeOnClick option is f
 test('Popup closes on close button click events', (t) => {
     const map = createMap(t);
     const popup = new Popup()
-        .setText("Test")
+        .setText('Test')
         .setLngLat([0, 0])
         .addTo(map);
 
-    simulateClick(map.getContainer().querySelector('.mapboxgl-popup-close-button'));
+    simulate.click(map.getContainer().querySelector('.mapboxgl-popup-close-button'));
 
     t.ok(!popup.isOpen());
     t.end();
@@ -71,12 +83,12 @@ test('Popup closes on close button click events', (t) => {
 test('Popup has no close button if closeButton option is false', (t) => {
     const map = createMap(t);
 
-    new Popup({closeButton: false})
-        .setText("Test")
+    const popup = new Popup({closeButton: false})
+        .setText('Test')
         .setLngLat([0, 0])
         .addTo(map);
 
-    t.equal(map.getContainer().querySelectorAll('.mapboxgl-popup-close-button').length, 0);
+    t.equal(popup.getElement().querySelectorAll('.mapboxgl-popup-close-button').length, 0);
     t.end();
 });
 
@@ -85,7 +97,7 @@ test('Popup fires close event when removed', (t) => {
     const onClose = t.spy();
 
     new Popup()
-        .setText("Test")
+        .setText('Test')
         .setLngLat([0, 0])
         .on('close', onClose)
         .addTo(map)
@@ -101,7 +113,7 @@ test('Popup fires open event when added', (t) => {
     const onOpen = t.spy();
 
     new Popup()
-        .setText("Test")
+        .setText('Test')
         .setLngLat([0, 0])
         .on('open', onOpen)
         .addTo(map);
@@ -113,24 +125,24 @@ test('Popup fires open event when added', (t) => {
 test('Popup content can be set via setText', (t) => {
     const map = createMap(t);
 
-    new Popup({closeButton: false})
+    const popup = new Popup({closeButton: false})
         .setLngLat([0, 0])
         .addTo(map)
-        .setText("Test");
+        .setText('Test');
 
-    t.equal(map.getContainer().querySelector('.mapboxgl-popup').textContent, "Test");
+    t.equal(popup.getElement().textContent, 'Test');
     t.end();
 });
 
 test('Popup content can be set via setHTML', (t) => {
     const map = createMap(t);
 
-    new Popup({closeButton: false})
+    const popup = new Popup({closeButton: false})
         .setLngLat([0, 0])
         .addTo(map)
         .setHTML("<span>Test</span>");
 
-    t.equal(map.getContainer().querySelector('.mapboxgl-popup-content').innerHTML, "<span>Test</span>");
+    t.equal(popup.getElement().querySelector('.mapboxgl-popup-content').innerHTML, "<span>Test</span>");
     t.end();
 });
 
@@ -142,19 +154,19 @@ test('Popup width maximum defaults to 240px', (t) => {
         .addTo(map)
         .setHTML("<span>Test</span>");
 
-    t.equal(popup.getMaxWidth(), "240px");
+    t.equal(popup.getMaxWidth(), '240px');
     t.end();
 });
 
 test('Popup width maximum can be set via using maxWidth option', (t) => {
     const map = createMap(t);
 
-    const popup = new Popup({closeButton: false, maxWidth: "5px"})
+    const popup = new Popup({closeButton: false, maxWidth: '5px'})
         .setLngLat([0, 0])
         .addTo(map)
         .setHTML("<span>Test</span>");
 
-    t.equal(popup.getMaxWidth(), "5px");
+    t.equal(popup.getMaxWidth(), '5px');
     t.end();
 });
 
@@ -164,10 +176,10 @@ test('Popup width maximum can be set via maxWidth', (t) => {
     const popup = new Popup({closeButton: false})
         .setLngLat([0, 0])
         .setHTML("<span>Test</span>")
-        .setMaxWidth("5px")
+        .setMaxWidth('5px')
         .addTo(map);
 
-    t.equal(popup.getMaxWidth(), "5px");
+    t.equal(popup.getMaxWidth(), '5px');
     t.end();
 });
 
@@ -175,24 +187,24 @@ test('Popup content can be set via setDOMContent', (t) => {
     const map = createMap(t);
     const content = window.document.createElement('span');
 
-    new Popup({closeButton: false})
+    const popup = new Popup({closeButton: false})
         .setLngLat([0, 0])
         .addTo(map)
         .setDOMContent(content);
 
-    t.equal(map.getContainer().querySelector('.mapboxgl-popup-content').firstChild, content);
+    t.equal(popup.getElement().querySelector('.mapboxgl-popup-content').firstChild, content);
     t.end();
 });
 
 test('Popup#setText protects against XSS', (t) => {
     const map = createMap(t);
 
-    new Popup({closeButton: false})
+    const popup = new Popup({closeButton: false})
         .setLngLat([0, 0])
         .addTo(map)
         .setText("<script>alert('XSS')</script>");
 
-    t.equal(map.getContainer().querySelector('.mapboxgl-popup').textContent, "<script>alert('XSS')</script>");
+    t.equal(popup.getElement().textContent, "<script>alert('XSS')</script>");
     t.end();
 });
 
@@ -203,14 +215,14 @@ test('Popup content setters overwrite previous content', (t) => {
         .setLngLat([0, 0])
         .addTo(map);
 
-    popup.setText("Test 1");
-    t.equal(map.getContainer().querySelector('.mapboxgl-popup').textContent, "Test 1");
+    popup.setText('Test 1');
+    t.equal(popup.getElement().textContent, 'Test 1');
 
-    popup.setHTML("Test 2");
-    t.equal(map.getContainer().querySelector('.mapboxgl-popup').textContent, "Test 2");
+    popup.setHTML('Test 2');
+    t.equal(popup.getElement().textContent, 'Test 2');
 
-    popup.setDOMContent(window.document.createTextNode("Test 3"));
-    t.equal(map.getContainer().querySelector('.mapboxgl-popup').textContent, "Test 3");
+    popup.setDOMContent(window.document.createTextNode('Test 3'));
+    t.equal(popup.getElement().textContent, 'Test 3');
 
     t.end();
 });
@@ -332,7 +344,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
         .setText('Test')
         .addTo(map);
 
-    t.ok(popup._container.classList.contains('mapboxgl-popup-anchor-top-left'));
+    t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-top-left'));
     t.end();
 });
 
@@ -358,13 +370,13 @@ test('Popup anchors as specified by the anchor option', (t) => {
             .setText('Test')
             .addTo(map);
 
-        Object.defineProperty(popup._container, 'offsetWidth', {value: 100});
-        Object.defineProperty(popup._container, 'offsetHeight', {value: 100});
+        Object.defineProperty(popup.getElement(), 'offsetWidth', {value: 100});
+        Object.defineProperty(popup.getElement(), 'offsetHeight', {value: 100});
 
         t.stub(map, 'project').returns(point);
         popup.setLngLat([0, 0]);
 
-        t.ok(popup._container.classList.contains(`mapboxgl-popup-anchor-${anchor}`));
+        t.ok(popup.getElement().classList.contains(`mapboxgl-popup-anchor-${anchor}`));
         t.end();
     });
 
@@ -377,7 +389,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
             .setText('Test')
             .addTo(map);
 
-        t.equal(popup._container.style.transform, transform);
+        t.equal(popup.getElement().style.transform, transform);
         t.end();
     });
 });
@@ -394,13 +406,13 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
         .setText('Test')
         .addTo(map);
 
-    Object.defineProperty(popup._container, 'offsetWidth', {value: containerWidth / 2});
-    Object.defineProperty(popup._container, 'offsetHeight', {value: containerHeight / 2});
+    Object.defineProperty(popup.getElement(), 'offsetWidth', {value: containerWidth / 2});
+    Object.defineProperty(popup.getElement(), 'offsetHeight', {value: containerHeight / 2});
 
     t.stub(map, 'project').returns(point);
     popup.setLngLat([0, 0]);
 
-    t.ok(popup._container.classList.contains('mapboxgl-popup-anchor-top'));
+    t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-top'));
     t.end();
 });
 
@@ -413,7 +425,7 @@ test('Popup is offset via a PointLike offset option', (t) => {
         .setText('Test')
         .addTo(map);
 
-    t.equal(popup._container.style.transform, 'translate(0,0) translate(5px,10px)');
+    t.equal(popup.getElement().style.transform, 'translate(0,0) translate(5px,10px)');
     t.end();
 });
 
@@ -426,7 +438,7 @@ test('Popup is offset via an object offset option', (t) => {
         .setText('Test')
         .addTo(map);
 
-    t.equal(popup._container.style.transform, 'translate(0,0) translate(5px,10px)');
+    t.equal(popup.getElement().style.transform, 'translate(0,0) translate(5px,10px)');
     t.end();
 });
 
@@ -439,7 +451,7 @@ test('Popup is offset via an incomplete object offset option', (t) => {
         .setText('Test')
         .addTo(map);
 
-    t.equal(popup._container.style.transform, 'translate(-100%,0) translate(0px,0px)');
+    t.equal(popup.getElement().style.transform, 'translate(-100%,0) translate(0px,0px)');
     t.end();
 });
 
@@ -447,7 +459,7 @@ test('Popup can be removed and added again (#1477)', (t) => {
     const map = createMap(t);
 
     new Popup()
-        .setText("Test")
+        .setText('Test')
         .setLngLat([0, 0])
         .addTo(map)
         .remove()
@@ -460,13 +472,13 @@ test('Popup can be removed and added again (#1477)', (t) => {
 test('Popup#addTo is idempotent (#1811)', (t) => {
     const map = createMap(t);
 
-    new Popup({closeButton: false})
-        .setText("Test")
+    const popup = new Popup({closeButton: false})
+        .setText('Test')
         .setLngLat([0, 0])
         .addTo(map)
         .addTo(map);
 
-    t.equal(map.getContainer().querySelector('.mapboxgl-popup-content').textContent, "Test");
+    t.equal(popup.getElement().querySelector('.mapboxgl-popup-content').textContent, 'Test');
     t.end();
 });
 
@@ -474,7 +486,7 @@ test('Popup#remove is idempotent (#2395)', (t) => {
     const map = createMap(t);
 
     new Popup({closeButton: false})
-        .setText("Test")
+        .setText('Test')
         .setLngLat([0, 0])
         .addTo(map)
         .remove()
@@ -486,21 +498,81 @@ test('Popup#remove is idempotent (#2395)', (t) => {
 
 test('Popup adds classes from className option', (t) => {
     const map = createMap(t);
-    new Popup({className: 'some classes'})
+    const popup = new Popup({className: 'some classes'})
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    const popupContainer = popup.getElement();
+    t.ok(popupContainer.classList.contains('some'));
+    t.ok(popupContainer.classList.contains('classes'));
+    t.end();
+});
+
+test('Cursor-tracked popup disappears on mouseout', (t) => {
+    const map = createMap(t);
+
+    const popup = new Popup()
+        .setText("Test")
+        .trackPointer()
+        .addTo(map);
+
+    t.equal(popup._trackPointer, true);
+    t.end();
+});
+
+
+test('Pointer-tracked popup is tagged with right class', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText("Test")
+        .trackPointer()
+        .addTo(map);
+
+    t.equal(popup._container.classList.value.includes('mapboxgl-popup-track-pointer'), true);
+    t.end();
+});
+
+test('Pointer-tracked popup can be repositioned with setLngLat', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText("Test")
+        .trackPointer()
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.deepEqual(popup._pos, map.project([0, 0]));
+    t.end();
+});
+
+test('Positioned popup lacks pointer-tracking class', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
         .setText("Test")
         .setLngLat([0, 0])
         .addTo(map);
 
-    const popupContainer = map.getContainer().querySelector('.mapboxgl-popup');
-    t.ok(popupContainer.classList.contains('some'));
-    t.ok(popupContainer.classList.contains('classes'));
+    t.equal(popup._container.classList.value.includes('mapboxgl-popup-track-pointer'), false);
+    t.end();
+});
+
+test('Positioned popup can be set to track pointer', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText("Test")
+        .setLngLat([0, 0])
+        .trackPointer()
+        .addTo(map);
+
+    simulate.mousemove(map.getCanvas(), {screenX:0, screenY:0});
+    t.deepEqual(popup._pos, {x:0, y:0});
     t.end();
 });
 
 test('Popup closes on Map#remove', (t) => {
     const map = createMap(t);
     const popup = new Popup()
-        .setText("Test")
+        .setText('Test')
         .setLngLat([0, 0])
         .addTo(map);
 

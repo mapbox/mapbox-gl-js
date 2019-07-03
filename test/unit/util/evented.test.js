@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { Event, Evented } from '../../../src/util/evented';
 
 test('Evented', (t) => {

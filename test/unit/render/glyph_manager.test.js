@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
 import GlyphManager from '../../../src/render/glyph_manager';
 import fs from 'fs';
@@ -57,6 +57,44 @@ test('GlyphManager generates CJK PBF locally', (t) => {
     manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, (err, glyphs) => {
         t.ifError(err);
         t.equal(glyphs['Arial Unicode MS'][0x5e73].metrics.advance, 24);
+        t.end();
+    });
+});
+
+test('GlyphManager generates Katakana PBF locally', (t) => {
+    t.stub(GlyphManager, 'TinySDF').value(class {
+        // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
+        draw() {
+            return new Uint8ClampedArray(900);
+        }
+    });
+
+    const manager = new GlyphManager((url) => ({url}), 'sans-serif');
+    manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+
+    // Katakana letter te
+    manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, (err, glyphs) => {
+        t.ifError(err);
+        t.equal(glyphs['Arial Unicode MS'][0x30c6].metrics.advance, 24);
+        t.end();
+    });
+});
+
+test('GlyphManager generates Hiragana PBF locally', (t) => {
+    t.stub(GlyphManager, 'TinySDF').value(class {
+        // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
+        draw() {
+            return new Uint8ClampedArray(900);
+        }
+    });
+
+    const manager = new GlyphManager((url) => ({url}), 'sans-serif');
+    manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+
+    //Hiragana letter te
+    manager.getGlyphs({'Arial Unicode MS': [0x3066]}, (err, glyphs) => {
+        t.ifError(err);
+        t.equal(glyphs['Arial Unicode MS'][0x3066].metrics.advance, 24);
         t.end();
     });
 });

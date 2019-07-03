@@ -434,7 +434,9 @@ class Painter {
             }
         }
 
-        this.setCustomLayerDefaults();
+        // Set defaults for most GL values so that anyone using the state after the render
+        // encounters more expected values.
+        this.context.setDefault();
     }
 
     setupOffscreenDepthRenderbuffer(): void {

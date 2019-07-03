@@ -1,5 +1,5 @@
-<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'></script>
-<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css' type='text/css' />
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.3.0/mapbox-gl-geocoder.min.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.3.0/mapbox-gl-geocoder.css' type='text/css' />
 <style>
 #geocoder-container > div {
     min-width:50%;
@@ -17,36 +17,13 @@ var map = new mapboxgl.Map({
 });
 
 var geocoder = new MapboxGeocoder({
-    accessToken: mapboxgl.accessToken
+    accessToken: mapboxgl.accessToken,
+    marker: {
+        color: 'orange'
+    },
+    mapboxgl: mapboxgl
 });
 
 map.addControl(geocoder);
 
-// After the map style has loaded on the page, add a source layer and default
-// styling for a single point.
-map.on('load', function() {
-    map.addSource('single-point', {
-        "type": "geojson",
-        "data": {
-            "type": "FeatureCollection",
-            "features": []
-        }
-    });
-
-    map.addLayer({
-        "id": "point",
-        "source": "single-point",
-        "type": "circle",
-        "paint": {
-            "circle-radius": 10,
-            "circle-color": "#007cbf"
-        }
-    });
-
-    // Listen for the `result` event from the MapboxGeocoder that is triggered when a user
-    // makes a selection and add a symbol that matches the result.
-    geocoder.on('result', function(ev) {
-        map.getSource('single-point').setData(ev.result.geometry);
-    });
-});
 </script>

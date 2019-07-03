@@ -14,12 +14,13 @@ import PageShell from '../components/page_shell';
 import { tags } from '../data/tags.js';
 import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line import/no-unresolved
 import AppropriateImage from '../components/appropriate-image';
-
+import imageConfig from '../img/dist/image.config.json'; // eslint-disable-line
 
 const meta = {
-    title: 'Mapbox GL JS Examples',
+    title: 'Examples',
     description: 'Code examples for Mapbox GL JS.',
-    pathname: '/examples'
+    pathname: '/mapbox-gl-js/examples/',
+    lanaguage: ['JavaScript']
 };
 
 class ExamplesLandingPage extends React.PureComponent {
@@ -30,6 +31,8 @@ class ExamplesLandingPage extends React.PureComponent {
                 .filter(example => example.tags.indexOf(topic) > -1)
                 .map((example, index) => {
                     const filename = example.pathname.split('/')[3];
+                    // set default if thumbnail doesn't exist yet
+                    const imageId = imageConfig[filename] ? filename : 'placeholder';
                     return (
                         <Card
                             key={index}
@@ -38,7 +41,7 @@ class ExamplesLandingPage extends React.PureComponent {
                             path={example.path}
                             thumbnail={
                                 <AppropriateImage
-                                    imageId={filename}
+                                    imageId={imageId}
                                     style={{ borderRadius: '4px' }}
                                     background={true}
                                 />

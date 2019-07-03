@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import assert from 'assert';
 import ImageSource from '../../../src/source/image_source';
 import { Evented } from '../../../src/util/evented';

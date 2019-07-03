@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import * as mapbox from '../../../src/util/mapbox';
 import config from '../../../src/util/config';
 import window from '../../../src/util/window';
@@ -6,6 +6,7 @@ import webpSupported from '../../../src/util/webp_supported';
 import { uuid } from '../../../src/util/util';
 import { SKU_ID } from '../../../src/util/sku_token';
 import { version } from '../../../package.json';
+import { equalWithPrecision } from '../../util';
 
 const mapboxTileURLs = [
     'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf',
@@ -532,7 +533,7 @@ test("mapbox", (t) => {
                 const req = window.server.requests[0];
                 req.respond(200);
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.equal(reqBody.created, new Date(now).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), now, 100);
                 t.equal(reqBody.skuId, SKU_ID);
 
                 t.end();
@@ -553,7 +554,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), firstEvent, 100);
 
                 t.end();
             });
@@ -573,7 +574,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), firstEvent, 100);
 
                 t.end();
             });
@@ -627,7 +628,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), firstEvent, 100);
 
                 t.end();
             });
@@ -647,7 +648,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), firstEvent, 100);
 
                 t.end();
             });
@@ -690,7 +691,7 @@ test("mapbox", (t) => {
                 t.equal(reqBody.sdkVersion, version);
                 t.equal(reqBody.skuId, SKU_ID);
                 t.ok(reqBody.userId);
-                t.equal(reqBody.created, new Date(tomorrow).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), tomorrow, 100);
 
                 t.end();
             });
@@ -711,12 +712,12 @@ test("mapbox", (t) => {
                 const reqToday = window.server.requests[0];
                 reqToday.respond(200);
                 let reqBody = JSON.parse(reqToday.requestBody)[0];
-                t.equal(reqBody.created, new Date(today).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), today, 100);
 
                 const reqTomorrow = window.server.requests[1];
                 reqTomorrow.respond(200);
                 reqBody = JSON.parse(reqTomorrow.requestBody)[0];
-                t.equal(reqBody.created, new Date(tomorrow).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), tomorrow, 100);
 
                 t.end();
             });
@@ -852,7 +853,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), firstEvent, 100);
 
                 t.end();
             });
@@ -872,7 +873,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), firstEvent, 100);
 
                 t.end();
             });
@@ -942,7 +943,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.equal(reqBody.created, new Date(now).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), now, 100);
 
                 t.end();
             });
@@ -981,7 +982,7 @@ test("mapbox", (t) => {
                 t.equal(reqBody.event, 'map.load');
                 t.equal(reqBody.sdkVersion, version);
                 t.ok(reqBody.userId);
-                t.equal(reqBody.created, new Date(now).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), now, 100);
 
                 t.end();
             });
@@ -995,17 +996,17 @@ test("mapbox", (t) => {
                 const reqOne = window.server.requests[0];
                 reqOne.respond(200);
                 let reqBody = JSON.parse(reqOne.requestBody)[0];
-                t.equal(reqBody.created, new Date(now).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), now, 100);
 
                 const reqTwo = window.server.requests[1];
                 reqTwo.respond(200);
                 reqBody = JSON.parse(reqTwo.requestBody)[0];
-                t.equal(reqBody.created, new Date(now).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), now, 100);
 
                 const reqThree = window.server.requests[2];
                 reqThree.respond(200);
                 reqBody = JSON.parse(reqThree.requestBody)[0];
-                t.equal(reqBody.created, new Date(now).toISOString());
+                equalWithPrecision(t, new Date(reqBody.created).valueOf(), now, 100);
 
                 t.end();
             });

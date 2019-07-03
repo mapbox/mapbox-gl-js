@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 
 import FeatureMap from '../../../src/data/feature_position_map';
 import { serialize, deserialize } from '../../../src/util/web_worker_transfer';

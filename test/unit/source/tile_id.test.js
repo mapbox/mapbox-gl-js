@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { CanonicalTileID, OverscaledTileID } from '../../../src/source/tile_id';
 
 test('CanonicalTileID', (t) => {

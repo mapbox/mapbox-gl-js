@@ -66,10 +66,9 @@ const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DIST
 function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: boolean, up: boolean, dir: number, linesofar: number) {
     layoutVertexBuffer.emplaceBack(
         // a_pos_normal
-        point.x,
-        point.y,
-        round ? 1 : 0,
-        up ? 1 : -1,
+        // Encode round/up the least significant bits
+        (point.x << 1) + (round ? 1 : 0),
+        (point.y << 1) + (up ? 1 : 0),
         // a_data
         // add 128 to store a byte in an unsigned byte
         Math.round(EXTRUDE_SCALE * extrude.x) + 128,

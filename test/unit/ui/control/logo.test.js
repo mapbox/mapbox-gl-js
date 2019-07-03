@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../../util/test';
 import { createMap as globalCreateMap } from '../../../util';
 import VectorTileSource from '../../../../src/source/vector_tile_source';
 
@@ -98,4 +98,17 @@ test('LogoControl appears in compact mode if container is less then 250 pixel wi
     t.equal(container.querySelectorAll('.mapboxgl-ctrl-logo.mapboxgl-compact').length, 1);
 
     t.end();
+});
+
+test('LogoControl has `rel` nooper and nofollow', (t) => {
+    const map = createMap(t);
+
+    map.on('load', () => {
+        const container = map.getContainer();
+        const logo = container.querySelector('.mapboxgl-ctrl-logo');
+
+        t.equal(logo.rel, 'noopener nofollow');
+
+        t.end();
+    });
 });

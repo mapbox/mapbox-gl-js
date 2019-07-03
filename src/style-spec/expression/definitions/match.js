@@ -31,7 +31,7 @@ class Match implements Expression {
         this.otherwise = otherwise;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
         if (args.length < 5)
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         if (args.length % 2 !== 1)
