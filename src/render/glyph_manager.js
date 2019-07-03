@@ -123,8 +123,12 @@ class GlyphManager {
         if (!family) {
             return;
         }
-
-        if (!isChar['CJK Unified Ideographs'](id) && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
+        /* eslint-disable new-cap */
+        if (!isChar['CJK Unified Ideographs'](id) &&
+            !isChar['Hangul Syllables'](id) &&
+            !isChar['Hiragana'](id) &&
+            !isChar['Katakana'](id)
+        ) { /* eslint-enable new-cap */
             return;
         }
 
