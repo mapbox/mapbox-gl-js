@@ -1,9 +1,5 @@
 {
   "version": 8,
-  "center": [
-    13.418056,
-    52.499167
-  ],
   "metadata": {
     "test": {
       "width": 64,
@@ -11,7 +7,7 @@
       "operations": [
         [
           "setZoom",
-          16
+          0.9
         ],
         [
           "wait"
@@ -20,16 +16,7 @@
           "setLayerZoomRange",
           "circle",
           0,
-          22
-        ],
-        [
-          "wait"
-        ],
-        [
-          "setLayerZoomRange",
-          "raster",
-          0,
-          22
+          2
         ],
         [
           "wait"
@@ -38,45 +25,24 @@
     }
   },
   "sources": {
-    "satellite": {
-      "type": "raster",
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}.satellite.png"
-      ],
-      "maxzoom": 17,
-      "tileSize": 256
-    },
     "geojson": {
       "type": "geojson",
       "data": {
         "type": "Point",
         "coordinates": [
-          13.418056,
-          52.499167
+          0,
+          0
         ]
       }
     }
   },
   "layers": [
     {
-      "id": "raster",
-      "type": "raster",
-      "source": "satellite",
-      "minzoom": 20,
-      "maxzoom": 22,
-      "paint": {
-        "raster-fade-duration": 0
-      }
-    },
-    {
       "id": "circle",
       "type": "circle",
       "source": "geojson",
-      "minzoom": 20,
-      "maxzoom": 22,
-      "paint": {
-        "circle-color": "red"
-      }
+      "minzoom": 1,
+      "maxzoom": 2
     }
   ]
 }
