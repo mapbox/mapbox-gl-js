@@ -80,6 +80,8 @@ type MapOptions = {
     scrollZoom?: boolean,
     minZoom?: ?number,
     maxZoom?: ?number,
+    minPitch?: ?number,
+    maxPitch?: ?number,
     boxZoom?: boolean,
     dragRotate?: boolean,
     dragPan?: boolean,
@@ -99,6 +101,10 @@ type MapOptions = {
 
 const defaultMinZoom = 0;
 const defaultMaxZoom = 22;
+
+const defaultMinPitch = 0;
+const defaultMaxPitch = 60;
+
 const defaultOptions = {
     center: [0, 0],
     zoom: 0,
@@ -107,6 +113,9 @@ const defaultOptions = {
 
     minZoom: defaultMinZoom,
     maxZoom: defaultMaxZoom,
+
+    minPitch: defaultMinPitch,
+    maxPitch: defaultMaxPitch,
 
     interactive: true,
     scrollZoom: true,
@@ -150,6 +159,8 @@ const defaultOptions = {
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
  * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
+ * @param {number} [options.minPitch=0] The minimum pitch of the map (0-90).
+ * @param {number} [options.maxPitch=60] The maximum pitch of the map (0-90).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
@@ -326,10 +337,14 @@ class Map extends Camera {
         options = extend({}, defaultOptions, options);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
-            throw new Error(`maxZoom must be greater than minZoom`);
+            throw new Error(`maxZoom must be greater than or equal to minZoom`);
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.renderWorldCopies);
+        if (options.minPitch != null && options.maxPitch != null && options.minPitch > options.maxPitch) {
+            throw new Error(`maxPitch must be greater than or equal to minPitch`);
+        }
+
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
         this._interactive = options.interactive;
@@ -646,6 +661,68 @@ class Map extends Camera {
      * var maxZoom = map.getMaxZoom();
      */
     getMaxZoom() { return this.transform.maxZoom; }
+
+    /**
+     * Sets or clears the map's minimum pitch.
+     * If the map's current pitch is lower than the new minimum,
+     * the map will ease to the new minimum.
+     *
+     * @param {number | null | undefined} minPitch The minimum pitch to set (0-90).
+     *   If `null` or `undefined` is provided, the function removes the current minimum pitch (i.e. sets it to 0).
+     * @returns {Map} `this`
+     */
+    setMinPitch(minPitch?: ?number) {
+
+        minPitch = minPitch === null || minPitch === undefined ? defaultMinPitch : minPitch;
+
+        if (minPitch >= defaultMinPitch && minPitch <= this.transform.maxPitch) {
+            this.transform.minPitch = minPitch;
+            this._update();
+
+            if (this.getPitch() < minPitch) this.setPitch(minPitch);
+
+            return this;
+
+        } else throw new Error(`minPitch must be between ${defaultMinPitch} and the current maxPitch, inclusive`);
+    }
+
+    /**
+     * Returns the map's minimum allowable pitch.
+     *
+     * @returns {number} minPitch
+     */
+    getMinPitch() { return this.transform.minPitch; }
+
+    /**
+     * Sets or clears the map's maximum pitch.
+     * If the map's current pitch is higher than the new maximum,
+     * the map will zoom to the new maximum.
+     *
+     * @param {number | null | undefined} maxPitch The maximum pitch to set.
+     *   If `null` or `undefined` is provided, the function removes the current maximum pitch (sets it to 60).
+     * @returns {Map} `this`
+     */
+    setMaxPitch(maxPitch?: ?number) {
+
+        maxPitch = maxPitch === null || maxPitch === undefined ? defaultMaxPitch : maxPitch;
+
+        if (maxPitch >= this.transform.minPitch) {
+            this.transform.maxPitch = maxPitch;
+            this._update();
+
+            if (this.getPitch() > maxPitch) this.setPitch(maxPitch);
+
+            return this;
+
+        } else throw new Error(`maxPitch must be greater than the current minPitch`);
+    }
+
+    /**
+     * Returns the map's maximum allowable pitch.
+     *
+     * @returns {number} maxPitch
+     */
+    getMaxPitch() { return this.transform.maxPitch; }
 
     /**
      * Returns the state of `renderWorldCopies`. If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
