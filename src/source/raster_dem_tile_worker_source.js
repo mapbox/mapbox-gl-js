@@ -9,7 +9,6 @@ import type {
     TileParameters
 } from './worker_source';
 
-
 class RasterDEMTileWorkerSource {
     actor: Actor;
     loaded: {[string]: DEMData};

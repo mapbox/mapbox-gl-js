@@ -82,7 +82,6 @@ function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: 
         (linesofar * LINE_DISTANCE_SCALE) >> 6);
 }
 
-
 /**
  * @private
  */
@@ -464,7 +463,6 @@ class LineBucket implements Bucket {
                     // The segment is done. Unset vertices to disconnect segments.
                     this.e1 = this.e2 = -1;
                 }
-
 
                 // Start next segment with a butt
                 if (nextVertex) {

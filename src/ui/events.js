@@ -166,7 +166,6 @@ export class MapTouchEvent extends Event {
     }
 }
 
-
 /**
  * `MapWheelEvent` is the event type for the `wheel` map event.
  * @extends {Object}

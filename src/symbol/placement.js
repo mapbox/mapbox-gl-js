@@ -117,7 +117,6 @@ class CollisionGroups {
     }
 }
 
-
 function calculateVariableLayoutOffset(anchor: TextAnchor, width: number, height: number, radialOffset: number, textBoxScale: number): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
@@ -632,7 +631,6 @@ export class Placement {
                 bucket.icon.placedSymbolArray.get(s).hidden =
                     (opacityState.icon.isHidden(): any);
             }
-
 
             if (bucket.hasCollisionBoxData() || bucket.hasCollisionCircleData()) {
                 const collisionArrays = bucket.collisionArrays[s];

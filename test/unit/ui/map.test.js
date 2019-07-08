@@ -533,7 +533,6 @@ test('Map', (t) => {
             t.end();
         });
 
-
         t.test('listen to window resize event', (t) => {
             window.addEventListener = function(type) {
                 if (type === 'resize') {
@@ -889,7 +888,6 @@ test('Map', (t) => {
         t.end();
 
     });
-
 
     t.test('#removeControl', (t) => {
         const map = createMap(t);

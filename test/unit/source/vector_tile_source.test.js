@@ -17,7 +17,6 @@ function createSource(options, transformCallback) {
         throw e.error;
     });
 
-
     return source;
 }
 

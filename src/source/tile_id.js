@@ -167,7 +167,6 @@ function calculateKey(wrap: number, z: number, x: number, y: number) {
     return ((dim * dim * wrap + dim * y + x) * 32) + z;
 }
 
-
 function getQuadkey(z, x, y) {
     let quadkey = '', mask;
     for (let i = z; i > 0; i--) {

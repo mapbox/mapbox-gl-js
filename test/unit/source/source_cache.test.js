@@ -371,7 +371,6 @@ test('SourceCache / Source lifecycle', (t) => {
             t.end();
         });
 
-
         sourceCache.onAdd();
     });
 
@@ -520,7 +519,6 @@ test('SourceCache#update', (t) => {
         sourceCache.onAdd();
     });
 
-
     t.test('retains parent tiles for pending children', (t) => {
         const transform = new Transform();
         transform._test = 'retains';
@@ -658,12 +656,10 @@ test('SourceCache#update', (t) => {
         sourceCache.onAdd();
     });
 
-
     t.test('retains children for fading when tile.fadeEndTime is not set', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 1;
-
 
         const sourceCache = createSourceCache({
             loadTile(tile, callback) {
@@ -688,7 +684,6 @@ test('SourceCache#update', (t) => {
         });
         sourceCache.onAdd();
     });
-
 
     t.test('retains children when tile.fadeEndTime is in the future', (t) => {
         const transform = new Transform();
@@ -736,7 +731,6 @@ test('SourceCache#update', (t) => {
         sourceCache.onAdd();
     });
 
-
     t.test('retains overscaled loaded children', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
@@ -744,7 +738,6 @@ test('SourceCache#update', (t) => {
 
         // use slightly offset center so that sort order is better defined
         transform.center = new LngLat(-0.001, 0.001);
-
 
         const sourceCache = createSourceCache({
             reparseOverscaled: true,
@@ -941,7 +934,6 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         t.end();
     });
 
-
     t.test('use parent tile when ideal tile is not loaded', (t) => {
         const sourceCache = createSourceCache({
             loadTile(tile, callback) {
@@ -987,7 +979,6 @@ test('SourceCache#_updateRetainedTiles', (t) => {
 
         addTileSpy.restore();
         getTileSpy.restore();
-
 
         t.end();
     });
@@ -1367,7 +1358,6 @@ test('SourceCache#tilesIn', (t) => {
                 transform.zoom = 2.0;
                 sourceCache.update(transform);
 
-
                 t.end();
             }
         });
@@ -1438,7 +1428,6 @@ test('SourceCache#getIds (ascending order by zoom level)', (t) => {
     t.end();
     sourceCache.onAdd();
 });
-
 
 test('SourceCache#findLoadedParent', (t) => {
 

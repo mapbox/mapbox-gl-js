@@ -30,7 +30,6 @@ test('ClearColor', ValueTest.bind(ValueTest, ClearColor, {
     setValue: new Color(1, 1, 0, 1)
 }));
 
-
 test('ClearDepth', ValueTest.bind(ValueTest, ClearDepth, {
     setValue: 0.5
 }));

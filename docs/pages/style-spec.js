@@ -432,7 +432,6 @@ export default class extends React.Component {
                                 }}/>
                             </SectionH3>
 
-
                             <SectionH3 id='sources-geojson' title='geojson'>
                                 <p>
                                     A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
@@ -791,7 +790,6 @@ export default class extends React.Component {
                         <div className='mb6'>
                             {highlightJSON(`[expression_name, argument_0, argument_1, ...]`)}
                         </div>
-
 
                         <SectionH3 id='data-expressions' title='Data expressions'>
                             <p>
@@ -1158,7 +1156,6 @@ export default class extends React.Component {
                                     </dl>
                                 </SectionH4>
 
-
                                 <div className="">
                                     <SDKSupportTable {...{
                                         'basic functionality': {
@@ -1281,7 +1278,6 @@ export default class extends React.Component {
 
                     <SectionH2 id='other-filter' title='Other filter'>
                         <p>In previous versions of the style specification, <a href="#layer-filter">filters</a> were defined using the deprecated syntax documented below. Though filters defined with this syntax will continue to work, we recommend using the more flexible <a href="#expressions">expression</a> syntax instead. Expression syntax and the deprecated syntax below cannot be mixed in a single filter definition.</p>
-
 
                         <InnerSection>
                             <SectionH4 title='Existential Filters' id='existential-filters'>

@@ -80,7 +80,6 @@ test('Light#setLight', (t) => {
         t.end();
     });
 
-
     t.test('respects validation option', (t) => {
         const light = new Light({});
 

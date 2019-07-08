@@ -212,7 +212,6 @@ test('Evented', (t) => {
             t.end();
         });
 
-
         t.test('eventedParent data function is evaluated on every fire', (t) => {
             const eventedSource = new Evented();
             const eventedParent = new Evented();
