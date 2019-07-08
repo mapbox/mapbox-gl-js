@@ -64,7 +64,7 @@
     "eslint-plugin-react": "^7.12.4",
     "flow-bin": "^0.100.0",
     "github-slugger": "1.2.1",
-    "gl": "~4.1.1",
+    "gl": "~4.3.3",
     "glob": "^7.1.4",
     "is-builtin-module": "^3.0.0",
     "jsdom": "^13.0.0",
