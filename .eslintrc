@@ -70,6 +70,9 @@
       "FunctionExpression": {
         "parameters": "off"
       }
+    }],
+    "no-multiple-empty-lines": [ "error", { 
+        "max": 1
     }]
   },
   "globals": {

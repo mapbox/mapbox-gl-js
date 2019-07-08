@@ -74,11 +74,9 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         drawMode = gl.LINES;
     }
 
-
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         if (image && !tile.patternsLoaded()) continue;
-
 
         const bucket: ?FillBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;

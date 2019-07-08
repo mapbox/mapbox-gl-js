@@ -17,7 +17,6 @@ export type ResponseOptions = {
     headers: window.Headers
 };
 
-
 let responseConstructorSupportsReadableStream;
 function prepareBody(response: Response, callback) {
     if (responseConstructorSupportsReadableStream === undefined) {
@@ -97,15 +96,12 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
         });
 }
 
-
-
 function isFresh(response) {
     if (!response) return false;
     const expires = new Date(response.headers.get('Expires'));
     const cacheControl = parseCacheControl(response.headers.get('Cache-Control') || '');
     return expires > Date.now() && !cacheControl['no-cache'];
 }
-
 
 // `Infinity` triggers a cache check after the first tile is loaded
 // so that a check is run at least once on each page load.

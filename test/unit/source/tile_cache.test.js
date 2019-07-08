@@ -65,7 +65,6 @@ test('TileCache - expiry', (t) => {
         t.end();
     });
 
-
     cache.add(idB, tileB, 0);
     cache.getAndRemove(idB);
     // removing clears the expiry timeout

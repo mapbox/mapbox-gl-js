@@ -412,7 +412,6 @@ export class TurnstileEvent extends TelemetryEvent {
         }
     }
 
-
     processRequests(customAccessToken?: ?string) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;

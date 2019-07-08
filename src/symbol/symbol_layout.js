@@ -148,7 +148,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const keepUpright = layout.get('text-keep-upright');
 
-
     for (const feature of bucket.features) {
         const fontstack = layout.get('text-font').evaluate(feature, {}).join(',');
         const glyphPositionMap = glyphPositions;
@@ -457,7 +456,6 @@ function getDefaultHorizontalShaping(horizontalShaping: {[TextJustify]: Shaping}
     }
     return null;
 }
-
 
 /**
  * Add a single label & icon placement.

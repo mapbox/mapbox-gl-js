@@ -168,7 +168,6 @@ class WorkerTile {
             patternMap = {};
         }
 
-
         maybePrepare.call(this);
 
         function maybePrepare() {

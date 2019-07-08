@@ -2058,7 +2058,6 @@ test('Style#query*Features', (t) => {
         t.end();
     });
 
-
     t.test('querySourceFeatures not raise validation errors if validation was disabled', (t) => {
         let errors = 0;
         t.stub(style, 'fire').callsFake((event) => {

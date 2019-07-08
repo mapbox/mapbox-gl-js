@@ -441,7 +441,6 @@ test('exponential function', (t) => {
         t.end();
     });
 
-
     t.test('zoom-and-property function, no default', (t) => {
         // This can happen for fill-outline-color, where the spec has no default.
 
@@ -731,7 +730,6 @@ test('categorical function', (t) => {
 
         t.end();
     });
-
 
     t.test('string spec default', (t) => {
         const f = createFunction({

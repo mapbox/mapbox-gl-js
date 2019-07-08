@@ -19,7 +19,6 @@ import { styleSpecNavigation } from '../data/style-spec-navigation';
 import { plugins } from '../data/plugins';
 import { routeToPrefixed } from '@mapbox/batfish/modules/route-to';
 
-
 const slugger = new GithubSlugger();
 
 class PageShell extends React.Component {

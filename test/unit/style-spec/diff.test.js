@@ -19,7 +19,6 @@ test('diff', (t) => {
         { command: 'setStyle', args: [{ version: 8, layers: [{ id: 'a' }] }] }
     ], 'version change');
 
-
     t.deepEqual(diffStyles({
         layers: [{ id: 'a' }]
     }, {

@@ -18,7 +18,6 @@ test('querySourceFeatures', (t) => {
         tags: { oneway: true }
     }];
 
-
     t.test('geojson tile', (t) => {
         const tile = new Tile(new OverscaledTileID(3, 0, 2, 1, 2));
         let result;

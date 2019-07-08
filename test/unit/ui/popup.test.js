@@ -107,7 +107,6 @@ test('Popup fires close event when removed', (t) => {
     t.end();
 });
 
-
 test('Popup fires open event when added', (t) => {
     const map = createMap(t);
     const onOpen = t.spy();
@@ -520,7 +519,6 @@ test('Cursor-tracked popup disappears on mouseout', (t) => {
     t.equal(popup._trackPointer, true);
     t.end();
 });
-
 
 test('Pointer-tracked popup is tagged with right class', (t) => {
     const map = createMap(t);

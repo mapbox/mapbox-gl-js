@@ -7,7 +7,6 @@ import docs from '../components/api.json'; // eslint-disable-line import/no-unre
 import ApiItemMember from './api-item-member';
 import IconText from '@mapbox/mr-ui/icon-text';
 
-
 const linkerStack = new LinkerStack({})
     .namespaceResolver(docs, (namespace) => {
         const slugger = new GithubSlugger();

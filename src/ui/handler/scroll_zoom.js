@@ -111,7 +111,6 @@ class ScrollZoomHandler {
         return !!this._active;
     }
 
-
     isZooming() {
         return !!this._zooming;
     }

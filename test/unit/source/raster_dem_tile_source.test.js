@@ -19,7 +19,6 @@ function createSource(options, transformCallback) {
     return source;
 }
 
-
 test('RasterTileSource', (t) => {
     t.beforeEach((callback) => {
         window.useFakeXMLHttpRequest();

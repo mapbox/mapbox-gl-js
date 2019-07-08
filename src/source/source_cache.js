@@ -644,7 +644,6 @@ class SourceCache extends Evented {
         if (tile)
             return tile;
 
-
         tile = this._cache.getAndRemove(tileID);
         if (tile) {
             this._setTileReloadTimer(tileID.key, tile);

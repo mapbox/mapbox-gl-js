@@ -51,6 +51,5 @@ test('VertexBuffer', (t) => {
         t.end();
     });
 
-
     t.end();
 });

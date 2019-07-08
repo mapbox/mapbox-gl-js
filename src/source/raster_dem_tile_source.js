@@ -15,7 +15,6 @@ import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {RasterDEMSourceSpecification} from '../style-spec/types';
 
-
 class RasterDEMTileSource extends RasterTileSource implements Source {
     encoding: "mapbox" | "terrarium";
 
@@ -86,7 +85,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         }
     }
 
-
     _getNeighboringTiles(tileID: OverscaledTileID) {
         const canonical = tileID.canonical;
         const dim = Math.pow(2, canonical.z);
@@ -116,7 +114,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
         return neighboringTiles;
     }
-
 
     unloadTile(tile: Tile) {
         if (tile.demTexture) this.map.painter.saveTileTexture(tile.demTexture);
