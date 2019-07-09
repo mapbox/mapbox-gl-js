@@ -324,14 +324,7 @@ class SymbolBucket implements Bucket {
             layout.get('text-ignore-placement') || layout.get('icon-ignore-placement'));
 
         if (layout.get('symbol-placement') === 'point') {
-            const writingModes = layout.get('text-writing-mode');
-            if (writingModes) {
-                // remove duplicates, preserving order
-                this.writingModes = [];
-                for (const m of writingModes) {
-                    if (!(this.writingModes.includes(WritingMode[m]))) this.writingModes.push(WritingMode[m]);
-                }
-            } else { this.writingModes = [WritingMode.horizontal]; }
+            this.writingModes = layout.get('text-writing-mode').map(wm => WritingMode[wm]);
         }
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
