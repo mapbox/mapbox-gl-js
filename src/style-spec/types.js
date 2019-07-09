@@ -282,6 +282,7 @@ export type CircleLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
+        "circle-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
