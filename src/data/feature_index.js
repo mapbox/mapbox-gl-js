@@ -10,7 +10,7 @@ import DictionaryCoder from '../util/dictionary_coder';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import GeoJSONFeature from '../util/vectortile_to_geojson';
-import {arraysIntersect} from '../util/util';
+import {arraysIntersect, deriveIntegerId} from '../util/util';
 import {OverscaledTileID} from '../source/tile_id';
 import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from '../style/evaluation_parameters';
@@ -46,6 +46,7 @@ class FeatureIndex {
     grid: Grid;
     grid3D: Grid;
     featureIndexArray: FeatureIndexArray;
+    deriveIntegerId: ?string;
 
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
@@ -53,16 +54,15 @@ class FeatureIndex {
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
 
-    constructor(tileID: OverscaledTileID,
-                grid?: Grid,
-                featureIndexArray?: FeatureIndexArray) {
+    constructor(tileID: OverscaledTileID, deriveIntegerId?: ?string) {
         this.tileID = tileID;
         this.x = tileID.canonical.x;
         this.y = tileID.canonical.y;
         this.z = tileID.canonical.z;
-        this.grid = grid || new Grid(EXTENT, 16, 0);
+        this.grid = new Grid(EXTENT, 16, 0);
         this.grid3D = new Grid(EXTENT, 16, 0);
-        this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
+        this.featureIndexArray = new FeatureIndexArray();
+        this.deriveIntegerId = deriveIntegerId;
     }
 
     insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, is3D?: boolean) {
@@ -198,6 +198,13 @@ class FeatureIndex {
             if (!intersectionZ) {
                 // Only applied for non-symbol features
                 continue;
+            }
+
+            if (this.deriveIntegerId) {
+                const value = feature.properties[this.deriveIntegerId];
+                if (value !== undefined) {
+                    feature.id = deriveIntegerId(value);
+                }
             }
 
             const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);

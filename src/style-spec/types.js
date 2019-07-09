@@ -86,7 +86,8 @@ export type VectorSourceSpecification = {
     "scheme"?: "xyz" | "tms",
     "minzoom"?: number,
     "maxzoom"?: number,
-    "attribution"?: string
+    "attribution"?: string,
+    "deriveIntegerId"?: string
 }
 
 export type RasterSourceSpecification = {
