@@ -10,6 +10,7 @@ import LineBucket from '../data/bucket/line_bucket';
 import FillBucket from '../data/bucket/fill_bucket';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
 import {warnOnce, mapObject, values, deriveIntegerId} from '../util/util';
+import deriveIntegerId from '../util/derive_integer_id';
 import assert from 'assert';
 import ImageAtlas from '../render/image_atlas';
 import GlyphAtlas from '../render/glyph_atlas';
@@ -99,10 +100,7 @@ class WorkerTile {
             for (let index = 0; index < sourceLayer.length; index++) {
                 const feature = sourceLayer.feature(index);
                 if (this.deriveIntegerId) {
-                    const value = feature.properties[this.deriveIntegerId];
-                    if (value !== undefined) {
-                        feature.id = deriveIntegerId(value);
-                    }
+                    deriveIntegerId(feature, this.deriveIntegerId);
                 }
                 features.push({feature, index, sourceLayerIndex});
             }
