@@ -9,7 +9,7 @@ import SymbolBucket from '../data/bucket/symbol_bucket';
 import LineBucket from '../data/bucket/line_bucket';
 import FillBucket from '../data/bucket/fill_bucket';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
-import { warnOnce, mapObject, values } from '../util/util';
+import { warnOnce, mapObject, values, deriveIntegerId } from '../util/util';
 import assert from 'assert';
 import ImageAtlas from '../render/image_atlas';
 import GlyphAtlas from '../render/glyph_atlas';
@@ -34,6 +34,7 @@ class WorkerTile {
     pixelRatio: number;
     tileSize: number;
     source: string;
+    deriveIntegerId: ?string;
     overscaling: number;
     showCollisionBoxes: boolean;
     collectResourceTiming: boolean;
@@ -54,6 +55,7 @@ class WorkerTile {
         this.pixelRatio = params.pixelRatio;
         this.tileSize = params.tileSize;
         this.source = params.source;
+        this.deriveIntegerId = params.deriveIntegerId;
         this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.collectResourceTiming = !!params.collectResourceTiming;
@@ -67,7 +69,7 @@ class WorkerTile {
         this.collisionBoxArray = new CollisionBoxArray();
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
-        const featureIndex = new FeatureIndex(this.tileID);
+        const featureIndex = new FeatureIndex(this.tileID, this.deriveIntegerId);
         featureIndex.bucketLayerIDs = [];
 
         const buckets: {[string]: Bucket} = {};
@@ -95,6 +97,12 @@ class WorkerTile {
             const features = [];
             for (let index = 0; index < sourceLayer.length; index++) {
                 const feature = sourceLayer.feature(index);
+                if (this.deriveIntegerId) {
+                    const value = feature.properties[this.deriveIntegerId];
+                    if (value !== undefined) {
+                        feature.id = deriveIntegerId(value);
+                    }
+                }
                 features.push({ feature, index, sourceLayerIndex });
             }
 

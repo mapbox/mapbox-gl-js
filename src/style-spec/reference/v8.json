@@ -177,6 +177,10 @@
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
+    "deriveIntegerId": {
+      "type": "string",
+      "doc": "The name of the feature property to use for generating unique integer feature ids. Useful in combination with `feature-state` expression."
+    },
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."

@@ -27,6 +27,7 @@ class VectorTileSource extends Evented implements Source {
     url: string;
     scheme: string;
     tileSize: number;
+    deriveIntegerId: ?string;
 
     _options: VectorSourceSpecification;
     _collectResourceTiming: boolean;
@@ -52,7 +53,7 @@ class VectorTileSource extends Evented implements Source {
         this.reparseOverscaled = true;
         this.isTileClipped = true;
 
-        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        extend(this, pick(options, ['url', 'scheme', 'tileSize', 'deriveIntegerId']));
         this._options = extend({ type: 'vector' }, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
@@ -118,6 +119,7 @@ class VectorTileSource extends Evented implements Source {
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
+            deriveIntegerId: this.deriveIntegerId
         };
         params.request.collectResourceTiming = this._collectResourceTiming;
 

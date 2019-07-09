@@ -24,6 +24,7 @@ export type WorkerTileParameters = TileParameters & {
     maxZoom: number,
     tileSize: number,
     pixelRatio: number,
+    deriveIntegerId?: string,
     showCollisionBoxes: boolean,
     collectResourceTiming?: boolean,
     returnDependencies?: boolean
