@@ -10,7 +10,8 @@ import DictionaryCoder from '../util/dictionary_coder';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import GeoJSONFeature from '../util/vectortile_to_geojson';
-import { arraysIntersect, deriveIntegerId } from '../util/util';
+import { arraysIntersect } from '../util/util';
+import deriveIntegerId from '../util/derive_integer_id';
 import { OverscaledTileID } from '../source/tile_id';
 import { register } from '../util/web_worker_transfer';
 import EvaluationParameters from '../style/evaluation_parameters';
@@ -201,10 +202,7 @@ class FeatureIndex {
             }
 
             if (this.deriveIntegerId) {
-                const value = feature.properties[this.deriveIntegerId];
-                if (value !== undefined) {
-                    feature.id = deriveIntegerId(value);
-                }
+                deriveIntegerId(feature, this.deriveIntegerId);
             }
 
             const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);

@@ -2,7 +2,6 @@
 
 import UnitBezier from '@mapbox/unitbezier';
 import Point from '@mapbox/point-geometry';
-import murmur3 from 'murmurhash-js';
 import window from './window';
 
 import type {Callback} from '../types/callback';
@@ -466,11 +465,4 @@ export function b64DecodeUnicode(str: string) {
     return decodeURIComponent(window.atob(str).split('').map((c) => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); //eslint-disable-line
     }).join(''));
-}
-
-export function deriveIntegerId(value: mixed) {
-    if (typeof value === 'number' && value % 1 === 0) {
-        return value;
-    }
-    return murmur3(String(value));
 }
