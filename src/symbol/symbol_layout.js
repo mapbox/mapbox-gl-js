@@ -167,7 +167,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
             const variableTextAnchor = layout.get('text-variable-anchor');
             const radialOffset = layout.get('text-radial-offset').evaluate(feature, {});
 
-
             if (!variableTextAnchor) {
                 // Layers with variable anchors use the `text-radial-offset` property and the [x, y] offset vector
                 // is calculated at placement time instead of layout time

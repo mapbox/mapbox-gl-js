@@ -171,8 +171,6 @@ export function getGlyphQuads(anchor: Anchor,
         const bl  = new Point(x1, y2);
         const br = new Point(x2, y2);
 
-
-
         if (rotateVerticalGlyph) {
             // Vertical-supporting glyphs are laid out in 24x24 point boxes (1 square em)
             // In horizontal orientation, the y values for glyphs are below the midline
