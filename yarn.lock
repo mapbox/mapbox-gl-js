@@ -1246,22 +1246,24 @@
     webpack-merge "^4.1.2"
     worker-farm "^1.6.0"
 
-"@mapbox/dr-ui@0.16.2":
-  version "0.16.2"
-  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.16.2.tgz#82e3f69bc0fa59a7a514ca8747b4845a7adcf688"
-  integrity sha512-Wsio/ieF5OZ91lrHjZ0hCpjALiMRXFj8KkMmjaI+E3voZ8bFZZPySHfJQT75NZG66OHBhH1klsJMKnZUpql38A==
+"@mapbox/dr-ui@0.18.0":
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.18.0.tgz#c897a9c9ee3ee9590d2d71de5e2c7709806a91fe"
+  integrity sha512-aviienzwqSqgLsqA9vS8Jwdg6XtK1vS8GLrtI4jtyC+VTM2GGSmjyfmYehLXHAhogndFRQGsQZPcmoJy9kxm7w==
   dependencies:
     "@elastic/react-search-ui" "^0.10.0"
     "@elastic/react-search-ui-views" "^0.10.0"
     "@elastic/search-ui-site-search-connector" "^0.10.0"
     "@mapbox/mr-ui" "^0.7.0"
     classnames "^2.2.6"
+    compare-versions "^3.4.0"
     debounce "^1.2.0"
     downshift "^3.2.7"
     hastscript "^5.0.0"
     react-html-parser "^2.0.2"
     react-stickynode "^2.1.1"
     rehype-sectionize-headings "^1.0.0-rc.1"
+    uuid "^3.3.2"
 
 "@mapbox/flow-remove-types@^1.3.0-await.upstream.2":
   version "1.3.0-await.upstream.2"
@@ -1396,7 +1398,29 @@
     postcss-custom-media "^6.0.0"
     postcss-custom-properties "^7.0.0"
 
-"@mapbox/mr-ui@0.7.1", "@mapbox/mr-ui@^0.7.0":
+"@mapbox/mr-ui@0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@mapbox/mr-ui/-/mr-ui-0.7.2.tgz#32ce7f7777890a8efd91f6593ac458ff9ee30c73"
+  integrity sha512-gBUaM3Tr3ORirkNuuDt64FCTHOtVAT/tmEfxMOWvOmdEAH6YzOOm2ZzD+w1A88NhXsI/QAqWxx3d7xuIIOLelA==
+  dependencies:
+    "@mapbox/query-selector-contains-node" "^1.0.0"
+    classnames "^2.2.6"
+    clipboard "^2.0.0"
+    debounce "^1.1.0"
+    focus-trap "^3.0.0"
+    hoverintent "^2.0.0"
+    os-key "^1.0.0"
+    prefix "^1.0.0"
+    react-aria-modal "^4.0.0"
+    react-datepicker "^0.60.2"
+    react-displace "^2.3.0"
+    react-submittable "^2.0.0"
+    select "^1.1.2"
+    shallow-equal "^1.0.0"
+    tabbable "^3.1.1"
+    xtend "^4.0.0"
+
+"@mapbox/mr-ui@^0.7.0":
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/@mapbox/mr-ui/-/mr-ui-0.7.1.tgz#832974fc2984a0af8678992d64ab11edeec18d44"
   integrity sha512-ii3jiWjq4pCzXN9u+HxjyhLVR06lGt3bA9iMcxK5JwuWk+/qgDwUTZKsfKMij/MHyVKoucLxTk/DxxC8O1rPIA==
@@ -4128,6 +4152,11 @@ commondir@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/commondir/-/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
 
+compare-versions@^3.4.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/compare-versions/-/compare-versions-3.5.0.tgz#85fc22a1ae9612ff730d77fb092295acd056d311"
+  integrity sha512-hX+4kt2Rcwu+x1U0SsEFCn1quURjEjPEGH/cPBlpME/IidGimAdwfMU+B+xDr7et/KTR7VH2+ZqWGerv4NGs2w==
+
 component-bind@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/component-bind/-/component-bind-1.0.0.tgz#00c608ab7dcd93897c0009651b1d3a8e1e73bbd1"
@@ -6604,11 +6633,26 @@ focus-trap-react@^4.0.0:
   dependencies:
     focus-trap "^3.0.0"
 
+focus-trap-react@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/focus-trap-react/-/focus-trap-react-6.0.0.tgz#3f5a9f68447dd374d22388fb4c50018be83e74a5"
+  integrity sha512-mvEYxmP75PMx0vOqoIAmJHO/qUEvdTAdz6gLlEZyxxODnuKQdnKea2RWTYxghAPrV+ibiIq2o/GTSgQycnAjcw==
+  dependencies:
+    focus-trap "^4.0.2"
+
 focus-trap@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/focus-trap/-/focus-trap-3.0.0.tgz#4d2ee044ae66bf7eb6ebc6c93bd7a1039481d7dc"
   dependencies:
     tabbable "^3.1.0"
+    xtend "^4.0.1"
+
+focus-trap@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/focus-trap/-/focus-trap-4.0.2.tgz#4ee2b96547c9ea0e4252a2d4b2cca68944194663"
+  integrity sha512-HtLjfAK7Hp2qbBtLS6wEznID1mPT+48ZnP2nkHzgjpL4kroYHg0CdqJ5cTXk+UO5znAxF5fRUkhdyfgrhh8Lzw==
+  dependencies:
+    tabbable "^3.1.2"
     xtend "^4.0.1"
 
 follow-redirects@^1.2.5:
@@ -11667,6 +11711,15 @@ react-aria-modal@^3.0.0:
     no-scroll "^2.1.1"
     react-displace "^2.3.0"
 
+react-aria-modal@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/react-aria-modal/-/react-aria-modal-4.0.0.tgz#b195e9ad6bd360b628c1853381ab4e7466d2328c"
+  integrity sha512-crdEAIHc5xXi6YqZeUgRDJN1uromSehU1XSEegVPU8/okmf1tEDwnzb6ULl+PJy4aS6sb6fUiWEdMNTLAX2HBA==
+  dependencies:
+    focus-trap-react "^6.0.0"
+    no-scroll "^2.1.1"
+    react-displace "^2.3.0"
+
 react-attr-converter@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/react-attr-converter/-/react-attr-converter-0.3.1.tgz#4a2abf6d907b7ddae4d862dfec80e489ce41ad6e"
@@ -13830,7 +13883,7 @@ syntax-error@^1.1.1:
   dependencies:
     acorn-node "^1.2.0"
 
-tabbable@^3.1.0, tabbable@^3.1.1:
+tabbable@^3.1.0, tabbable@^3.1.1, tabbable@^3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/tabbable/-/tabbable-3.1.2.tgz#f2d16cccd01f400e38635c7181adfe0ad965a4a2"
 

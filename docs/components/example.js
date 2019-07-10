@@ -6,6 +6,8 @@ import Prism from 'prismjs';
 import supported from '@mapbox/mapbox-gl-supported';
 import Icon from '@mapbox/mr-ui/icon';
 import CodeSnippet from '@mapbox/mr-ui/code-snippet';
+import Feedback from '@mapbox/dr-ui/feedback';
+import constants from '../constants';
 
 const highlightTheme = require('raw-loader!@mapbox/dr-ui/css/prism.css'); // eslint-disable-line import/no-commonjs
 
@@ -15,7 +17,8 @@ export default function (html) {
             super(props);
             this.state = {
                 filter: '',
-                token: undefined
+                token: undefined,
+                userName: undefined
             };
         }
 
@@ -101,6 +104,15 @@ ${html}
                             </div>
                         </div>
                     </div>
+                    <div className="mt18">
+                        <Feedback
+                            site="Mapbox GL JS"
+                            type="example"
+                            location={this.props.location}
+                            userName={this.state.userName}
+                            webhook={constants.FORWARD_EVENT_WEBHOOK}
+                        />
+                    </div>
                 </PageShell>
             );
         }
@@ -113,7 +125,9 @@ ${html}
             doc.close();
 
             MapboxPageShell.afterUserCheck(() => {
-                this.setState({token: MapboxPageShell.getUserPublicAccessToken()});
+                this.setState({token: MapboxPageShell.getUserPublicAccessToken(), userName: MapboxPageShell.getUser() ?
+                    MapboxPageShell.getUser().id :
+                    undefined});
             });
         }
 

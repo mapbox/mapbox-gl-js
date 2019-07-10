@@ -1,0 +1,6 @@
+{
+  "FORWARD_EVENT_WEBHOOK": {
+    "staging": "https://fbtme2z025.execute-api.us-east-1.amazonaws.com/hookshot/webhook",
+    "production": "https://2n40g6lyc9.execute-api.us-east-1.amazonaws.com/hookshot/webhook"
+  }
+}
