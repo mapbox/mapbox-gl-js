@@ -75,7 +75,6 @@
 
 .mapboxgl-ctrl-group {
     border-radius: 4px;
-    overflow: hidden;
     background: #fff;
 }
 
@@ -90,7 +89,6 @@
     height: 30px;
     display: block;
     padding: 0;
-    outline: none;
     border: 0;
     box-sizing: border-box;
     background-color: transparent;
