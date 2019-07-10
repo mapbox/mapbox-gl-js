@@ -237,7 +237,7 @@ export class Placement {
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
                            radialTextOffset: number, textBoxScale: number, rotateWithMap: boolean,
                            pitchWithMap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroup: CollisionGroup,
-                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number) {
+                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ box: Array<number>, offscreen: boolean }  {
 
         const shift = calculateVariableLayoutOffset(anchor, width, height, radialTextOffset, textBoxScale);
 
@@ -420,7 +420,7 @@ export class Placement {
                         const height = collisionTextBox.y2 - collisionTextBox.y1;
                         const textBoxScale = symbolInstance.textBoxScale;
 
-                        let placedBox = { box: null, offscreen: null };
+                        let placedBox: ?{ box: Array<number>, offscreen: boolean }  = { box: [], offscreen: false };
 
                         for (const anchor of anchors) {
                             placedBox = this.attemptAnchorPlacement(
