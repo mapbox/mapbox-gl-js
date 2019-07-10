@@ -123,7 +123,7 @@ export class RequestManager {
             urlObject.params.push(`sku=${this._skuToken}`);
         }
 
-        return this._makeAPIURL(urlObject);
+        return this._makeAPIURL(urlObject, this._customAccessToken);
     }
 
     canonicalizeTileURL(url: string) {
