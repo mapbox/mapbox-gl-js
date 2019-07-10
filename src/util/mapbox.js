@@ -41,9 +41,11 @@ export class RequestManager {
     _skuToken: string;
     _skuTokenExpiresAt: number;
     _transformRequestFn: ?RequestTransformFunction;
+    _customAccessToken: ?string;
 
-    constructor(transformRequestFn?: RequestTransformFunction) {
+    constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string) {
         this._transformRequestFn = transformRequestFn;
+        this._customAccessToken = customAccessToken;
         this._createSkuToken();
     }
 
@@ -66,19 +68,19 @@ export class RequestManager {
     }
 
     normalizeStyleURL(url: string, accessToken?: string): string {
-        return normalizeStyleURL(url, accessToken);
+        return normalizeStyleURL(url, this._customAccessToken || accessToken);
     }
 
     normalizeGlyphsURL(url: string, accessToken?: string): string {
-        return normalizeGlyphsURL(url, accessToken);
+        return normalizeGlyphsURL(url, this._customAccessToken || accessToken);
     }
 
     normalizeSourceURL(url: string, accessToken?: string): string {
-        return normalizeSourceURL(url, accessToken);
+        return normalizeSourceURL(url, this._customAccessToken || accessToken);
     }
 
     normalizeSpriteURL(url: string, format: string, extension: string, accessToken?: string): string {
-        return normalizeSpriteURL(url, format, extension, accessToken);
+        return normalizeSpriteURL(url, format, extension, this._customAccessToken || accessToken);
     }
 
     normalizeTileURL(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
@@ -86,7 +88,7 @@ export class RequestManager {
             this._createSkuToken();
         }
 
-        return normalizeTileURL(tileURL, sourceURL, tileSize, this._skuToken);
+        return normalizeTileURL(tileURL, sourceURL, tileSize, this._skuToken, this._customAccessToken);
     }
 
     canonicalizeTileURL(url: string) {
@@ -170,7 +172,7 @@ const normalizeSpriteURL = function(url: string, format: string, extension: stri
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
 
-const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number, skuToken?: string): string {
+const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number, skuToken?: string, customAccessToken?: ?string): string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
 
     const urlObject = parseUrl(tileURL);
@@ -183,11 +185,11 @@ const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize
     urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
     urlObject.path = `/v4${urlObject.path}`;
 
-    if (config.REQUIRE_ACCESS_TOKEN && config.ACCESS_TOKEN && skuToken) {
+    if (config.REQUIRE_ACCESS_TOKEN && (config.ACCESS_TOKEN || customAccessToken) && skuToken) {
         urlObject.params.push(`sku=${skuToken}`);
     }
 
-    return makeAPIURL(urlObject);
+    return makeAPIURL(urlObject, customAccessToken);
 };
 
 // matches any file extension specified by a dot and one or more alphanumeric characters
@@ -273,6 +275,7 @@ class TelemetryEvent {
     queue: Array<any>;
     type: TelemetryEventType;
     pendingRequest: ?Cancelable;
+    _customAccessToken: ?string;
 
     constructor(type: TelemetryEventType) {
         this.type = type;
@@ -333,17 +336,18 @@ class TelemetryEvent {
 
     }
 
-    processRequests() {}
+    processRequests(_: ?string) {}
 
     /*
     * If any event data should be persisted after the POST request, the callback should modify eventData`
     * to the values that should be saved. For this reason, the callback should be invoked prior to the call
     * to TelemetryEvent#saveData
     */
-    postEvent(timestamp: number, additionalPayload: {[string]: any}, callback: (err: ?Error) => void) {
+    postEvent(timestamp: number, additionalPayload: {[string]: any}, callback: (err: ?Error) => void, customAccessToken?: ?string) {
         if (!config.EVENTS_URL) return;
         const eventsUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
-        eventsUrlObject.params.push(`access_token=${config.ACCESS_TOKEN || ''}`);
+        eventsUrlObject.params.push(`access_token=${customAccessToken || config.ACCESS_TOKEN || ''}`);
+
         const payload: Object = {
             event: this.type,
             created: new Date(timestamp).toISOString(),
@@ -366,13 +370,13 @@ class TelemetryEvent {
             this.pendingRequest = null;
             callback(error);
             this.saveEventData();
-            this.processRequests();
+            this.processRequests(customAccessToken);
         });
     }
 
-    queueRequest(event: number | {id: number, timestamp: number}) {
+    queueRequest(event: number | {id: number, timestamp: number}, customAccessToken?: ?string) {
         this.queue.push(event);
-        this.processRequests();
+        this.processRequests(customAccessToken);
     }
 }
 
@@ -386,20 +390,20 @@ export class MapLoadEvent extends TelemetryEvent {
         this.skuToken = '';
     }
 
-    postMapLoadEvent(tileUrls: Array<string>, mapId: number, skuToken: string) {
+    postMapLoadEvent(tileUrls: Array<string>, mapId: number, skuToken: string, customAccessToken: string) {
         //Enabled only when Mapbox Access Token is set and a source uses
         // mapbox tiles.
         this.skuToken = skuToken;
 
         if (config.EVENTS_URL &&
-            config.ACCESS_TOKEN &&
+            customAccessToken || config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
             tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
-            this.queueRequest({id: mapId, timestamp: Date.now()});
+            this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
         }
     }
 
-    processRequests() {
+    processRequests(customAccessToken?: ?string) {
         if (this.pendingRequest || this.queue.length === 0) return;
         const {id, timestamp} = this.queue.shift();
 
@@ -418,28 +422,29 @@ export class MapLoadEvent extends TelemetryEvent {
             if (!err) {
                 if (id) this.success[id] = true;
             }
-        });
+        }, customAccessToken);
     }
 }
 
 export class TurnstileEvent extends TelemetryEvent {
-    constructor() {
+    constructor(customAccessToken?: ?string) {
         super('appUserTurnstile');
+        this._customAccessToken = customAccessToken;
     }
 
-    postTurnstileEvent(tileUrls: Array<string>) {
+    postTurnstileEvent(tileUrls: Array<string>, customAccessToken?: ?string) {
         //Enabled only when Mapbox Access Token is set and a source uses
         // mapbox tiles.
         if (config.EVENTS_URL &&
             config.ACCESS_TOKEN &&
             Array.isArray(tileUrls) &&
             tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
-            this.queueRequest(Date.now());
+            this.queueRequest(Date.now(), customAccessToken);
         }
     }
 
 
-    processRequests() {
+    processRequests(customAccessToken?: ?string) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -479,7 +484,7 @@ export class TurnstileEvent extends TelemetryEvent {
                 this.eventData.lastSuccess = nextUpdate;
                 this.eventData.tokenU = tokenU;
             }
-        });
+        }, customAccessToken);
     }
 }
 

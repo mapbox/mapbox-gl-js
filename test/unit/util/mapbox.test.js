@@ -66,6 +66,12 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('takes map-specific tokens correctly', (t) => {
+            const m = new mapbox.RequestManager(undefined, 'customAccessToken');
+            t.equal(m.normalizeStyleURL('mapbox://styles/user/style'), 'https://api.mapbox.com/styles/v1/user/style?access_token=customAccessToken');
+            t.end();
+        });
+
         webpSupported.supported = false;
 
         t.test('.normalizeStyleURL', (t) => {

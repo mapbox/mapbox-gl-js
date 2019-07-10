@@ -73,9 +73,8 @@ class VectorTileSource extends Evented implements Source {
             } else if (tileJSON) {
                 extend(this, tileJSON);
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
-
-                postTurnstileEvent(tileJSON.tiles);
-                postMapLoadEvent(tileJSON.tiles, this.map._getMapId(), this.map._requestManager._skuToken);
+                postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
+                postMapLoadEvent(tileJSON.tiles, this.map._getMapId(), this.map._requestManager._skuToken, this.map._requestManager._customAccessToken);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
