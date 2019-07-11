@@ -68,19 +68,37 @@ export class RequestManager {
     }
 
     normalizeStyleURL(url: string, accessToken?: string): string {
-        return normalizeStyleURL(url, this._customAccessToken || accessToken);
+        if (!isMapboxURL(url)) return url;
+        const urlObject = parseUrl(url);
+        urlObject.path = `/styles/v1${urlObject.path}`;
+        return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
     normalizeGlyphsURL(url: string, accessToken?: string): string {
-        return normalizeGlyphsURL(url, this._customAccessToken || accessToken);
+        if (!isMapboxURL(url)) return url;
+        const urlObject = parseUrl(url);
+        urlObject.path = `/fonts/v1${urlObject.path}`;
+        return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
     normalizeSourceURL(url: string, accessToken?: string): string {
-        return normalizeSourceURL(url, this._customAccessToken || accessToken);
+        if (!isMapboxURL(url)) return url;
+        const urlObject = parseUrl(url);
+        urlObject.path = `/v4/${urlObject.authority}.json`;
+        // TileJSON requests need a secure flag appended to their URLs so
+        // that the server knows to send SSL-ified resource references.
+        urlObject.params.push('secure');
+        return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
     normalizeSpriteURL(url: string, format: string, extension: string, accessToken?: string): string {
-        return normalizeSpriteURL(url, format, extension, this._customAccessToken || accessToken);
+        const urlObject = parseUrl(url);
+        if (!isMapboxURL(url)) {
+            urlObject.path += `${format}${extension}`;
+            return formatUrl(urlObject);
+        }
+        urlObject.path = `/styles/v1${urlObject.path}/sprite${format}${extension}`;
+        return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
     normalizeTileURL(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
@@ -88,39 +106,79 @@ export class RequestManager {
             this._createSkuToken();
         }
 
-        return normalizeTileURL(tileURL, sourceURL, tileSize, this._skuToken, this._customAccessToken);
+        if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
+
+        const urlObject = parseUrl(tileURL);
+        const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
+
+        // The v4 mapbox tile API supports 512x512 image tiles only when @2x
+        // is appended to the tile URL. If `tileSize: 512` is specified for
+        // a Mapbox raster source force the @2x suffix even if a non hidpi device.
+        const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
+        const extension = webpSupported.supported ? '.webp' : '$1';
+        urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
+        urlObject.path = `/v4${urlObject.path}`;
+
+        if (config.REQUIRE_ACCESS_TOKEN && (config.ACCESS_TOKEN || this._customAccessToken) && this._skuToken) {
+            urlObject.params.push(`sku=${this._skuToken}`);
+        }
+
+        return this._makeAPIURL(urlObject, this._customAccessToken);
     }
 
     canonicalizeTileURL(url: string) {
-        return canonicalizeTileURL(url);
+        const version = "/v4/";
+        // matches any file extension specified by a dot and one or more alphanumeric characters
+        const extensionRe = /\.[\w]+$/;
+
+        const urlObject = parseUrl(url);
+        // Make sure that we are dealing with a valid Mapbox tile URL.
+        // Has to begin with /v4/, with a valid filename + extension
+        if (!urlObject.path.match(/(^\/v4\/)/) || !urlObject.path.match(extensionRe)) {
+            // Not a proper Mapbox tile URL.
+            return url;
+        }
+        // Reassemble the canonical URL from the parts we've parsed before.
+        let result = "mapbox://tiles/";
+        result +=  urlObject.path.replace(version, '');
+
+        // Append the query string, minus the access token parameter.
+        const params = urlObject.params.filter(p => !p.match(/^access_token=/));
+        if (params.length) result += `?${params.join('&')}`;
+        return result;
     }
 
     canonicalizeTileset(tileJSON: TileJSON, sourceURL: string) {
-        return canonicalizeTileset(tileJSON, sourceURL);
-    }
-}
-
-const help = 'See https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes';
-
-function makeAPIURL(urlObject: UrlObject, accessToken: string | null | void): string {
-    const apiUrlObject = parseUrl(config.API_URL);
-    urlObject.protocol = apiUrlObject.protocol;
-    urlObject.authority = apiUrlObject.authority;
-
-    if (apiUrlObject.path !== '/') {
-        urlObject.path = `${apiUrlObject.path}${urlObject.path}`;
+        if (!isMapboxURL(sourceURL)) return tileJSON.tiles || [];
+        const canonical = [];
+        for (const url of tileJSON.tiles) {
+            const canonicalUrl = this.canonicalizeTileURL(url);
+            canonical.push(canonicalUrl);
+        }
+        return canonical;
     }
 
-    if (!config.REQUIRE_ACCESS_TOKEN) return formatUrl(urlObject);
+    _makeAPIURL(urlObject: UrlObject, accessToken: string | null | void): string {
+        const help = 'See https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes';
+        const apiUrlObject = parseUrl(config.API_URL);
+        urlObject.protocol = apiUrlObject.protocol;
+        urlObject.authority = apiUrlObject.authority;
 
-    accessToken = accessToken || config.ACCESS_TOKEN;
-    if (!accessToken)
-        throw new Error(`An API access token is required to use Mapbox GL. ${help}`);
-    if (accessToken[0] === 's')
-        throw new Error(`Use a public access token (pk.*) with Mapbox GL, not a secret access token (sk.*). ${help}`);
+        if (apiUrlObject.path !== '/') {
+            urlObject.path = `${apiUrlObject.path}${urlObject.path}`;
+        }
 
-    urlObject.params.push(`access_token=${accessToken}`);
-    return formatUrl(urlObject);
+        if (!config.REQUIRE_ACCESS_TOKEN) return formatUrl(urlObject);
+
+        accessToken = accessToken || config.ACCESS_TOKEN;
+        if (!accessToken)
+            throw new Error(`An API access token is required to use Mapbox GL. ${help}`);
+        if (accessToken[0] === 's')
+            throw new Error(`Use a public access token (pk.*) with Mapbox GL, not a secret access token (sk.*). ${help}`);
+
+        urlObject.params.push(`access_token=${accessToken}`);
+        return formatUrl(urlObject);
+    }
 }
 
 function isMapboxURL(url: string) {
@@ -135,95 +193,6 @@ function isMapboxHTTPURL(url: string): boolean {
 function hasCacheDefeatingSku(url: string) {
     return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
 }
-
-const normalizeStyleURL = function(url: string, accessToken?: string): string {
-    if (!isMapboxURL(url)) return url;
-    const urlObject = parseUrl(url);
-    urlObject.path = `/styles/v1${urlObject.path}`;
-    return makeAPIURL(urlObject, accessToken);
-};
-
-const normalizeGlyphsURL = function(url: string, accessToken?: string): string {
-    if (!isMapboxURL(url)) return url;
-    const urlObject = parseUrl(url);
-    urlObject.path = `/fonts/v1${urlObject.path}`;
-    return makeAPIURL(urlObject, accessToken);
-};
-
-const normalizeSourceURL = function(url: string, accessToken?: string): string {
-    if (!isMapboxURL(url)) return url;
-    const urlObject = parseUrl(url);
-    urlObject.path = `/v4/${urlObject.authority}.json`;
-    // TileJSON requests need a secure flag appended to their URLs so
-    // that the server knows to send SSL-ified resource references.
-    urlObject.params.push('secure');
-    return makeAPIURL(urlObject, accessToken);
-};
-
-const normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken?: string): string {
-    const urlObject = parseUrl(url);
-    if (!isMapboxURL(url)) {
-        urlObject.path += `${format}${extension}`;
-        return formatUrl(urlObject);
-    }
-    urlObject.path = `/styles/v1${urlObject.path}/sprite${format}${extension}`;
-    return makeAPIURL(urlObject, accessToken);
-};
-
-const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
-
-const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number, skuToken?: string, customAccessToken?: ?string): string {
-    if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
-
-    const urlObject = parseUrl(tileURL);
-
-    // The v4 mapbox tile API supports 512x512 image tiles only when @2x
-    // is appended to the tile URL. If `tileSize: 512` is specified for
-    // a Mapbox raster source force the @2x suffix even if a non hidpi device.
-    const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
-    const extension = webpSupported.supported ? '.webp' : '$1';
-    urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
-    urlObject.path = `/v4${urlObject.path}`;
-
-    if (config.REQUIRE_ACCESS_TOKEN && (config.ACCESS_TOKEN || customAccessToken) && skuToken) {
-        urlObject.params.push(`sku=${skuToken}`);
-    }
-
-    return makeAPIURL(urlObject, customAccessToken);
-};
-
-// matches any file extension specified by a dot and one or more alphanumeric characters
-const extensionRe = /\.[\w]+$/;
-
-const canonicalizeTileURL = function(url: string) {
-    const version = "/v4/";
-
-    const urlObject = parseUrl(url);
-    // Make sure that we are dealing with a valid Mapbox tile URL.
-    // Has to begin with /v4/, with a valid filename + extension
-    if (!urlObject.path.match(/(^\/v4\/)/) || !urlObject.path.match(extensionRe)) {
-        // Not a proper Mapbox tile URL.
-        return url;
-    }
-    // Reassemble the canonical URL from the parts we've parsed before.
-    let result = "mapbox://tiles/";
-    result +=  urlObject.path.replace(version, '');
-
-    // Append the query string, minus the access token parameter.
-    const params = urlObject.params.filter(p => !p.match(/^access_token=/));
-    if (params.length) result += `?${params.join('&')}`;
-    return result;
-};
-
-const canonicalizeTileset = function(tileJSON: TileJSON, sourceURL: string) {
-    if (!isMapboxURL(sourceURL)) return tileJSON.tiles || [];
-    const canonical = [];
-    for (const url of tileJSON.tiles) {
-        const canonicalUrl = canonicalizeTileURL(url);
-        canonical.push(canonicalUrl);
-    }
-    return canonical;
-};
 
 const urlRe = /^(\w+):\/\/([^/?]*)(\/[^?]+)?\??(.+)?/;
 
