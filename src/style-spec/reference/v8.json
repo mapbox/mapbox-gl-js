@@ -636,7 +636,7 @@
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
       "sdk-support": {
-          "js": "1.0.0"
+          "js": "1.2.0"
       },
       "expression": {
         "interpolated": false,
@@ -675,7 +675,7 @@
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
       "sdk-support": {
-          "js": "1.0.0"
+          "js": "1.2.0"
       },
       "expression": {
         "interpolated": false,
@@ -884,7 +884,7 @@
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key when they overlap. Features with a lower sort key will have priority over other features when doing placement.",
       "sdk-support": {
-          "js": "1.0.0"
+          "js": "1.2.0"
       },
       "expression": {
         "interpolated": false,
