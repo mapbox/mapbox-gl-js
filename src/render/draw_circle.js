@@ -15,7 +15,7 @@ import type CircleBucket from '../data/bucket/circle_bucket';
 import type ProgramConfiguration from '../data/program_configuration';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
-import type CircleUniformsType from './program/circle_program';
+import type {CircleUniformsType} from './program/circle_program';
 
 export default drawCircles;
 

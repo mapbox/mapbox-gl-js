@@ -101,7 +101,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                     type: feature.type,
                     patterns: {},
                     sortKey
-                }
+                };
 
                 bucketFeatures.push(bucketFeature);
             }
