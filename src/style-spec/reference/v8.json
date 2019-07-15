@@ -1983,7 +1983,13 @@
           "doc": "If a text's language supports horizontal writing mode, symbols with point placement would be laid out horizontally."
         },
         "vertical": {
-          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically."
+          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically. Full-width Latin script glyphs would be rendered in upright orientation while half-width Latin script glyphs would be rendered in their respective natural orientation in vertical writing mode."
+        },
+        "vertical-latin-upright": {
+          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically. Latin script glyphs would be rendered in upright orientation."
+        },
+        "vertical-latin-sideways": {
+          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically. Latin script glyphs would be rendered in their respective natural orientation in vertical writing mode"
         }
       },
       "doc": "The property allows to control an orientation of a symbol. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. The order of elements in an array define priority order for the placement of an orientation variant.",
