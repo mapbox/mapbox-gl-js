@@ -54,14 +54,14 @@ const exported = {
         return linkEl.href;
     },
 
-    
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
 
     get devicePixelRatio() { return window.devicePixelRatio; },
     get prefersReducedMotion(): boolean {
+        if (!window.matchMedia) return false;
         //Lazily initialize media query
-        if ( _reducedMotionQuery == null ){
-            _reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+        if (_reducedMotionQuery == null) {
+            _reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         }
         return _reducedMotionQuery.matches;
     },
