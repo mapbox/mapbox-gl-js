@@ -19,6 +19,8 @@ const cancel = window.cancelAnimationFrame ||
 
 let linkEl;
 
+let _reducedMotionQuery: MediaQueryList;
+
 /**
  * @private
  */
@@ -52,8 +54,17 @@ const exported = {
         return linkEl.href;
     },
 
+    
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
-    get devicePixelRatio() { return window.devicePixelRatio; }
+
+    get devicePixelRatio() { return window.devicePixelRatio; },
+    get prefersReducedMotion(): boolean {
+        //Lazily initialize media query
+        if ( _reducedMotionQuery == null ){
+            _reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+        }
+        return _reducedMotionQuery.matches;
+    },
 };
 
 export default exported;
