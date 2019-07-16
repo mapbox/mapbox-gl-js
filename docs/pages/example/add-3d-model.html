@@ -1,5 +1,5 @@
-<script src='https://unpkg.com/three@0.102.0/build/three.min.js'></script>
-<script src="https://unpkg.com/three@0.102.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src='https://unpkg.com/three@0.106.2/build/three.min.js'></script>
+<script src="https://unpkg.com/three@0.106.2/examples/js/loaders/GLTFLoader.js"></script>
 <div id='map'></div>
 <script>
 var map = window.map = new mapboxgl.Map({
@@ -7,7 +7,8 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/light-v10',
     zoom: 17.5,
     center: [148.9819, -35.3981],
-    pitch: 60
+    pitch: 60,
+    antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
 });
 
 // parameters to ensure the model is georeferenced correctly on the map
@@ -57,7 +58,8 @@ var customLayer = {
         // use the Mapbox GL JS map canvas for three.js
         this.renderer = new THREE.WebGLRenderer({
             canvas: map.getCanvas(),
-            context: gl
+            context: gl,
+            antialias: true
         });
 
         this.renderer.autoClear = false;
