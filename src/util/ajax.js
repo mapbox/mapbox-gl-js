@@ -102,6 +102,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         signal: controller.signal
     });
     let complete = false;
+    let aborted = false;
 
     const cacheIgnoringSearch = hasCacheDefeatingSku(request.url);
 
@@ -110,6 +111,8 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
     }
 
     const validateOrFetch = (err, cachedResponse, responseIsFresh) => {
+        if (aborted) return;
+
         if (err) {
             // Do fetch in case of cache error.
             // HTTP pages in Edge trigger a security error that can be ignored.
@@ -152,6 +155,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             requestParameters.type === 'json' ? response.json() :
             response.text()
         ).then(result => {
+            if (aborted) return;
             if (cacheableResponse && requestTime) {
                 // The response needs to be inserted into the cache after it has completely loaded.
                 // Until it is fully loaded there is a chance it will be aborted. Aborting while
@@ -172,6 +176,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
     }
 
     return { cancel: () => {
+        aborted = true;
         if (!complete) controller.abort();
     }};
 }
