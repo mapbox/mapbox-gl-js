@@ -133,7 +133,7 @@
     "build-images": "mkdir -p docs/img/dist && node docs/bin/build-image-config.js && node docs/bin/appropriate-images.js --all",
     "create-image": "node docs/bin/create-image",
     "build": "run-s build-docs && batfish build # invoked by publisher when publishing docs on the publisher-production branch",
-    "start-docs": "run-s build-prod-min build-css build-docs && DEPLOY_ENV=local batfish start",
+    "start-docs": "run-s build-prod-min build-css build-docs && NODE_OPTIONS=\"--max_old_space_size=2048\" DEPLOY_ENV=local batfish start",
     "lint": "eslint --cache --ignore-path .gitignore src test bench docs docs/pages/example/*.html debug/*.html",
     "lint-docs": "documentation lint src/index.js",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
