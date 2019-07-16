@@ -15,20 +15,23 @@ import type CircleBucket from '../data/bucket/circle_bucket';
 import type ProgramConfiguration from '../data/program_configuration';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
+import type {UniformValues} from './uniform_binding';
 import type {CircleUniformsType} from './program/circle_program';
 
 export default drawCircles;
 
+type TileRenderState = {
+    programConfiguration: ProgramConfiguration,
+    program: Program<*>,
+    layoutVertexBuffer: VertexBuffer,
+    indexBuffer: IndexBuffer,
+    uniformValues: UniformValues<CircleUniformsType>
+};
+
 type SegmentsTileRenderState = {
     segments: SegmentVector,
     sortKey: number,
-    state: {
-        programConfiguration: ProgramConfiguration,
-        program: Program,
-        layoutVertexBuffer: VertexBuffer,
-        indexBuffer: IndexBuffer,
-        uniformValues: CircleUniformsType,
-    }
+    state: TileRenderState
 };
 
 function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<OverscaledTileID>) {
@@ -67,7 +70,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const indexBuffer = bucket.indexBuffer;
         const uniformValues = circleUniformValues(painter, coord, tile, layer);
 
-        const state: SegmentsTileRenderState = {
+        const state: TileRenderState = {
             programConfiguration,
             program,
             layoutVertexBuffer,
