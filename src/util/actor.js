@@ -56,12 +56,16 @@ class Actor {
         }, buffers);
         if (callback) {
             return {
-                cancel: () => this.target.postMessage({
-                    targetMapId,
-                    sourceMapId: this.mapId,
-                    type: '<cancel>',
-                    id: String(id)
-                })
+                cancel: () => {
+                    // Set the callback to null so that it never fires after the request is aborted.
+                    this.callbacks[id] = null;
+                    this.target.postMessage({
+                        targetMapId,
+                        sourceMapId: this.mapId,
+                        type: '<cancel>',
+                        id: String(id)
+                    });
+                }
             };
         }
     }
