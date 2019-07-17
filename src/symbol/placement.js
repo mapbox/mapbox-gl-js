@@ -771,7 +771,6 @@ export class Placement {
                     bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).hidden = symbolHidden || verticalHidden;
                 }
 
-
                 const prevOffset = this.variableOffsets[symbolInstance.crossTileID];
                 if (prevOffset) {
                     this.markUsedJustification(bucket, prevOffset.anchor, symbolInstance, placedOrientation);

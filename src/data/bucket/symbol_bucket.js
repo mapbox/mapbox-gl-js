@@ -431,7 +431,7 @@ class SymbolBucket implements Bucket {
             if (text) {
                 const fontStack = textFont.evaluate(feature, {}).join(',');
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
-                this.allowVerticalPlacement = this.writingModes && this.writingModes.includes(WritingMode.vertical);
+                this.allowVerticalPlacement = this.writingModes && this.writingModes.indexOf(WritingMode.vertical) >= 0;
                 for (const section of text.sections) {
                     const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
                     const sectionFont = section.fontStack || fontStack;
