@@ -900,7 +900,7 @@ const collection = {
 for (const d of data) {
     collection.features.push({
         type: 'Feature',
-        properties: { height: d.value * 100 },
+        properties: { height: d.value * 90 },
         geometry: {
             type: 'Polygon',
             coordinates: [d.shape]
@@ -922,7 +922,7 @@ const layerProps = {
   data,
   getPolygon: d => d.shape,
   getFillColor: [123, 145, 230, 255],
-  opacity: .6,
+  opacity: 1,
   extruded: true,
   getElevation: d => 100 * d.value,
 };
@@ -960,6 +960,7 @@ map.on('load', () => {
 });
 
 map2.on('load', () => {
+  map2.addLayer(new deck.MapboxLayer(layerProps));
   map2.addLayer({
       id: 'extrusions',
       type: 'fill-extrusion',
@@ -968,8 +969,8 @@ map2.on('load', () => {
           data: collection
       },
       paint: {
+          'fill-extrusion-translate': [-10, -10],
           'fill-extrusion-color': 'rgba(123, 145, 230, 1)',
-          'fill-extrusion-opacity': 0.8,
           'fill-extrusion-height': ["get", "height"]
       }
   });
