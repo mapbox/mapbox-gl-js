@@ -548,7 +548,7 @@ class Transform {
 
         // matrix for conversion from location to GL coordinates (-1 .. 1)
         let m = new Float64Array(16);
-        mat4.perspective(m, this._fov, this.width / this.height, this.height / 50, farZ);
+        mat4.perspective(m, this._fov, this.width / this.height, nearZ, farZ);
 
         mat4.scale(m, m, [1, -1, 1]);
         mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
