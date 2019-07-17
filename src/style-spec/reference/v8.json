@@ -969,7 +969,7 @@
         "basic functionality": {
           "js": "0.53.0",
           "android": "7.4.0",
-          "ios": "5.1.0",
+          "ios": "4.11.0",
           "macos": "0.14.0"
         },
         "data-driven styling": {}
