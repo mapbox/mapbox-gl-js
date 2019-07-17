@@ -6,26 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
-        body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
+body {
+  margin: 0;
+}
+
+#deckgl {
+  position: fixed;
+  width: 33vw;
+  height: 100vh;
+}
+
+#mapbox {
+  position: fixed;
+  left: 33vw;
+  width: 33vw;
+  height: 100vh;
+}
+#mapbox2 {
+  position: fixed;
+  left: 66vw;
+  width: 33vw;
+  height: 100vh;
+}
+
     </style>
 </head>
 
 <body>
-<div id='map'></div>
+<div id='deckgl'></div>
+<div id='mapbox'></div>
+<div id='mapbox2'></div>
 
 <script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/deckgl.min.js'></script>
 <script src='/debug/access_token_generated.js'></script>
-<script>
-
-var map = window.map = new mapboxgl.Map({
-    container: 'map',
-    zoom: 12.5,
-    center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v10',
-    hash: true
-});
-
-</script>
+<script src='/debug/index.js'></script>
 </body>
 </html>
