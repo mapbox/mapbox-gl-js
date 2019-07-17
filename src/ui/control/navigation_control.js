@@ -72,8 +72,16 @@ class NavigationControl {
 
     _updateZoomButtons() {
         const zoom = this._map.getZoom();
-        this._zoomInButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMaxZoom());
-        this._zoomOutButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMinZoom());
+        if (zoom === this._map.getMaxZoom()) {
+            this._zoomInButton.classList.add('mapboxgl-ctrl-icon-disabled');
+        } else {
+            this._zoomInButton.classList.remove('mapboxgl-ctrl-icon-disabled');
+        }
+        if (zoom === this._map.getMinZoom()) {
+            this._zoomOutButton.classList.add('mapboxgl-ctrl-icon-disabled');
+        } else {
+            this._zoomOutButton.classList.remove('mapboxgl-ctrl-icon-disabled');
+        }
     }
 
     _rotateCompassArrow() {
