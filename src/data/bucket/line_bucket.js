@@ -137,8 +137,8 @@ class LineBucket implements Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
         this.hasPattern = hasPattern('line', this.layers, options);
         const lineSortKey = this.layers[0].layout.get('line-sort-key');
-
         const bucketFeatures = [];
+
         for (const {feature, index, sourceLayerIndex} of features) {
             if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
 
@@ -148,18 +148,15 @@ class LineBucket implements Bucket {
                 undefined;
 
             const bucketFeature: BucketFeature = {
+                id: feature.id,
+                properties: feature.properties,
+                type: feature.type,
                 sourceLayerIndex,
                 index,
                 geometry,
-                properties: feature.properties,
-                type: feature.type,
                 patterns: {},
                 sortKey
             };
-
-            if (typeof feature.id !== 'undefined') {
-                bucketFeature.id = feature.id;
-            }
 
             bucketFeatures.push(bucketFeature);
         }
@@ -172,16 +169,17 @@ class LineBucket implements Bucket {
         }
 
         for (const bucketFeature of bucketFeatures) {
+            const {geometry, index, sourceLayerIndex} = bucketFeature;
+
             if (this.hasPattern) {
                 const patternBucketFeature = addPatternDependencies('line', this.layers, bucketFeature, this.zoom, options);
                 // pattern features are added only once the pattern is loaded into the image atlas
                 // so are stored during populate until later updated with positions by tile worker in addFeatures
                 this.patternFeatures.push(patternBucketFeature);
             } else {
-                this.addFeature(bucketFeature, bucketFeature.geometry, bucketFeature.index, {});
+                this.addFeature(bucketFeature, geometry, index, {});
             }
 
-            const {geometry, index, sourceLayerIndex} = bucketFeature;
             const feature = features[index].feature;
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }

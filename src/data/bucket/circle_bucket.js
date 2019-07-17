@@ -95,11 +95,12 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                     undefined;
 
                 const bucketFeature: BucketFeature = {
+                    id: feature.id,
+                    properties: feature.properties,
+                    type: feature.type,
                     sourceLayerIndex,
                     index,
                     geometry,
-                    properties: feature.properties,
-                    type: feature.type,
                     patterns: {},
                     sortKey
                 };
@@ -118,6 +119,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
             const feature = features[index].feature;
+
             this.addFeature(bucketFeature, geometry, index);
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
