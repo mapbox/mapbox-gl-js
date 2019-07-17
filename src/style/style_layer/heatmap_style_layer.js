@@ -6,11 +6,11 @@ import HeatmapBucket from '../../data/bucket/heatmap_bucket';
 import { RGBAImage } from '../../util/image';
 import properties from './heatmap_style_layer_properties';
 import renderColorRamp from '../../util/color_ramp';
-import { Transitionable, Transitioning, Layout, PossiblyEvaluated } from '../properties';
+import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
 
 import type Texture from '../../render/texture';
 import type Framebuffer from '../../gl/framebuffer';
-import type {LayoutProps, PaintProps} from './heatmap_style_layer_properties';
+import type {PaintProps} from './heatmap_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
 
 class HeatmapStyleLayer extends StyleLayer {
@@ -18,9 +18,6 @@ class HeatmapStyleLayer extends StyleLayer {
     heatmapFbo: ?Framebuffer;
     colorRamp: RGBAImage;
     colorRampTexture: ?Texture;
-
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
 
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;

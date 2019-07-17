@@ -58,7 +58,6 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     indexBuffer: IndexBuffer;
 
     hasPattern: boolean;
-    sortFeaturesByKey: boolean;
     programConfigurations: ProgramConfigurationSet<Layer>;
     segments: SegmentVector;
     uploaded: boolean;
@@ -71,25 +70,27 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.index = options.index;
         this.hasPattern = false;
 
-        const sortKey = this.layers[0].layout.get('circle-sort-key');
-        this.sortFeaturesByKey = sortKey.constantOr(1) !== undefined;
-
         this.layoutVertexArray = new CircleLayoutArray();
         this.indexArray = new TriangleIndexArray();
         this.segments = new SegmentVector();
         this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
-
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
+        const styleLayer = this.layers[0];
         const bucketFeatures = [];
-        const circleSortKey = this.layers[0].layout.get('circle-sort-key');
+        let circleSortKey = null;
+
+        // Heatmap layers are handled in this bucket and have no evaluated properties, so we check our access
+        if (styleLayer.type === 'circle') {
+            circleSortKey = ((styleLayer: any): CircleStyleLayer).layout.get('circle-sort-key');
+        }
 
         for (const {feature, index, sourceLayerIndex} of features) {
             if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) {
                 const geometry = loadGeometry(feature);
-                const sortKey = this.sortFeaturesByKey ?
+                const sortKey = circleSortKey ?
                     circleSortKey.evaluate(feature, {}) :
                     undefined;
 
@@ -107,7 +108,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
             }
         }
 
-        if (this.sortFeaturesByKey) {
+        if (circleSortKey) {
             bucketFeatures.sort((a, b) => {
                 // a.sortKey is always a number when sortFeaturesByKey is true
                 return ((a.sortKey: any): number) - ((b.sortKey: any): number);
