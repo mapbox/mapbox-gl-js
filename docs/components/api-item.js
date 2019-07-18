@@ -19,20 +19,20 @@ const formatters = createFormatters(linkerStack.link);
 
 class ApiItem extends React.Component {
 
-  constructor(props) {
-      super(props);
-      this.state = {
-          userName: undefined
-      };
-  }
+    constructor(props) {
+        super(props);
+        this.state = {
+            userName: undefined
+        };
+    }
 
-  componentDidMount() {
-      MapboxPageShell.afterUserCheck(() => {
-          this.setState({ userName: MapboxPageShell.getUser() ?
-              MapboxPageShell.getUser().id :
-              undefined});
-      });
-  }
+    componentDidMount() {
+        MapboxPageShell.afterUserCheck(() => {
+            this.setState({ userName: MapboxPageShell.getUser() ?
+                MapboxPageShell.getUser().id :
+                undefined});
+        });
+    }
 
     md = (ast, inline) => {
         if (inline && ast && ast.children.length && ast.children[0].type === 'paragraph') {
@@ -178,16 +178,16 @@ class ApiItem extends React.Component {
                         <ul>{section.sees.map((see, i) => <li key={i}>{this.md(see, true)}</li>)}</ul>
                     </div>}
 
-                    <div className="mt18">
-                        <Feedback
-                            site="Mapbox GL JS"
-                            section={section.name}
-                            type={`section on ${section.name}`}
-                            location={this.props.location}
-                            userName={this.state.userName}
-                            webhook={constants.FORWARD_EVENT_WEBHOOK}
-                        />
-                    </div>
+                <div className="mt18">
+                    <Feedback
+                        site="Mapbox GL JS"
+                        section={section.name}
+                        type={`section on ${section.name}`}
+                        location={this.props.location}
+                        userName={this.state.userName}
+                        webhook={constants.FORWARD_EVENT_WEBHOOK}
+                    />
+                </div>
             </section>
         );
     }

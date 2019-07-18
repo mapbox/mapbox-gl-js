@@ -70,20 +70,20 @@ function renderParams(params, maxLength) {
 }
 
 class SectionH2 extends React.Component {
-  constructor(props) {
-      super(props);
-      this.state = {
-          userName: undefined
-      };
-  }
+    constructor(props) {
+        super(props);
+        this.state = {
+            userName: undefined
+        };
+    }
 
-  componentDidMount() {
-      MapboxPageShell.afterUserCheck(() => {
-          this.setState({ userName: MapboxPageShell.getUser() ?
-              MapboxPageShell.getUser().id :
-              undefined});
-      });
-  }
+    componentDidMount() {
+        MapboxPageShell.afterUserCheck(() => {
+            this.setState({ userName: MapboxPageShell.getUser() ?
+                MapboxPageShell.getUser().id :
+                undefined});
+        });
+    }
     render() {
         const {props} = this;
         return (
