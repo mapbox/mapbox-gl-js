@@ -966,7 +966,13 @@
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key when they overlap. Features with a lower sort key will have priority over other features when doing placement.",
       "sdk-support": {
-          "js": "0.53.0"
+        "basic functionality": {
+          "js": "0.53.0",
+          "android": "7.4.0",
+          "ios": "4.11.0",
+          "macos": "0.14.0"
+        },
+        "data-driven styling": {}
       },
       "expression": {
         "interpolated": false,
