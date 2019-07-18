@@ -7,8 +7,7 @@ import {
     warnOnce,
     clamp,
     wrap,
-    ease as defaultEasing,
-    pick
+    ease as defaultEasing
 } from '../util/util';
 import { number as interpolate } from '../style-spec/util/interpolate';
 import browser from '../util/browser';
@@ -860,8 +859,14 @@ class Camera extends Evented {
     flyTo(options: Object, eventData?: Object) {
         // Fall throwugh to jumpTo is user has set prefers-reduced-motion
         if (browser.prefersReducedMotion) {
-            this.jumpTo(pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']), eventData);
-           return; 
+            this.jumpTo({
+                center: options.center,
+                zoom: options.zoom,
+                bearing: options.bearing,
+                pitch: options.pitch,
+                around: options.around
+            }, eventData);
+            return;
         }
 
         // This method implements an “optimal path” animation, as detailed in:
