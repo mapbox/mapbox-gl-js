@@ -50,7 +50,6 @@ class FillBucket implements Bucket {
     indexBuffer2: IndexBuffer;
 
     hasPattern: boolean;
-    sortFeaturesByKey: boolean;
     programConfigurations: ProgramConfigurationSet<FillStyleLayer>;
     segments: SegmentVector;
     segments2: SegmentVector;
@@ -65,9 +64,6 @@ class FillBucket implements Bucket {
         this.hasPattern = false;
         this.patternFeatures = [];
 
-        const sortKey = this.layers[0].layout.get('fill-sort-key');
-        this.sortFeaturesByKey = sortKey.constantOr(1) !== undefined;
-
         this.layoutVertexArray = new FillLayoutArray();
         this.indexArray = new TriangleIndexArray();
         this.indexArray2 = new LineIndexArray();
@@ -75,7 +71,6 @@ class FillBucket implements Bucket {
         this.segments = new SegmentVector();
         this.segments2 = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
-
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
@@ -87,7 +82,7 @@ class FillBucket implements Bucket {
             if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
 
             const geometry = loadGeometry(feature);
-            const sortKey = this.sortFeaturesByKey ?
+            const sortKey = fillSortKey ?
                 fillSortKey.evaluate(feature, {}) :
                 undefined;
 
@@ -105,9 +100,9 @@ class FillBucket implements Bucket {
             bucketFeatures.push(bucketFeature);
         }
 
-        if (this.sortFeaturesByKey) {
+        if (fillSortKey) {
             bucketFeatures.sort((a, b) => {
-                // a.sortKey is always a number when sortFeaturesByKey is true
+                // a.sortKey is always a number when in use
                 return ((a.sortKey: any): number) - ((b.sortKey: any): number);
             });
         }

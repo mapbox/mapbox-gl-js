@@ -109,7 +109,6 @@ class LineBucket implements Bucket {
     indexBuffer: IndexBuffer;
 
     hasPattern: boolean;
-    sortFeaturesByKey: boolean;
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
@@ -122,9 +121,6 @@ class LineBucket implements Bucket {
         this.index = options.index;
         this.hasPattern = false;
         this.patternFeatures = [];
-
-        const sortKey = this.layers[0].layout.get('line-sort-key');
-        this.sortFeaturesByKey = sortKey.constantOr(1) !== undefined;
 
         this.layoutVertexArray = new LineLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -143,7 +139,7 @@ class LineBucket implements Bucket {
             if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
 
             const geometry = loadGeometry(feature);
-            const sortKey = this.sortFeaturesByKey ?
+            const sortKey = lineSortKey ?
                 lineSortKey.evaluate(feature, {}) :
                 undefined;
 
@@ -161,9 +157,9 @@ class LineBucket implements Bucket {
             bucketFeatures.push(bucketFeature);
         }
 
-        if (this.sortFeaturesByKey) {
+        if (lineSortKey) {
             bucketFeatures.sort((a, b) => {
-                // a.sortKey is always a number when sortFeaturesByKey is true
+                // a.sortKey is always a number when in use
                 return ((a.sortKey: any): number) - ((b.sortKey: any): number);
             });
         }

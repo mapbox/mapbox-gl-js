@@ -111,7 +111,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
 
         if (circleSortKey) {
             bucketFeatures.sort((a, b) => {
-                // a.sortKey is always a number when sortFeaturesByKey is true
+                // a.sortKey is always a number when in use
                 return ((a.sortKey: any): number) - ((b.sortKey: any): number);
             });
         }
