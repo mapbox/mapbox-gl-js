@@ -36,7 +36,7 @@ test('camera', (t) => {
             .on('moveend', () => {
                 const endTime = new Date();
                 const timeDiff = endTime - startTime;
-                test.ok(timeDiff >= min && timeDiff < max, 'Camera transition time exceeded specified range');
+                test.ok(timeDiff >= min && timeDiff < max, `Camera transition time exceeded expected range( [${min},${max}) ) :${timeDiff}`);
                 test.end();
             });
     }
@@ -885,7 +885,7 @@ test('camera', (t) => {
             const camera = createCamera();
             const stub = t.stub(browser, 'prefersReducedMotion');
             stub.get(() => true);
-            assertTransitionTime(t, camera, 0, 1);
+            assertTransitionTime(t, camera, 0, 10);
             camera.easeTo({ center: [100, 0], zoom: 3.2, bearing: 90, duration: 1000 });
         });
 
@@ -1554,7 +1554,7 @@ test('camera', (t) => {
             const camera = createCamera();
             const stub = t.stub(browser, 'prefersReducedMotion');
             stub.get(() => true);
-            assertTransitionTime(t, camera, 0, 1);
+            assertTransitionTime(t, camera, 0, 10);
             camera.flyTo({ center: [100, 0], bearing: 90, animate: true });
         });
 
