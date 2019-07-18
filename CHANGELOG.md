@@ -1,3 +1,9 @@
+## 0.54.1
+
+### Bug fixes
+
+- Fix unbounded memory growth caused by failure to cancel requests in IE ([#8481](https://github.com/mapbox/mapbox-gl-js/issues/8481))
+
 ## 0.54.0
 
 ### Breaking changes
