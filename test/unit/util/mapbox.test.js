@@ -357,6 +357,15 @@ test("mapbox", (t) => {
                 t.end();
             });
 
+            t.test('.normalizeTileURL accounts for tileURLs w/ paths', (t) => {
+                // Add a path to the config:
+                config.API_URL = 'http://localhost:8080/mbx';
+                const input    = `https://localhost:8080/mbx/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/10/184/401.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
+                const expected =  `http://localhost:8080/mbx/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/10/184/401.vector.pbf?sku=${manager._skuToken}&access_token=${config.ACCESS_TOKEN}`;
+                t.equal(manager.normalizeTileURL(input, 'mapbox://mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7'), expected);
+                t.end();
+            });
+
             t.test('.normalizeTileURL ignores undefined sources', (t) => {
                 t.equal(manager.normalizeTileURL('http://path.png'), 'http://path.png');
                 t.end();
