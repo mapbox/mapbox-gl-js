@@ -7,7 +7,8 @@ import {
     warnOnce,
     clamp,
     wrap,
-    ease as defaultEasing
+    ease as defaultEasing,
+    pick
 } from '../util/util';
 import { number as interpolate } from '../style-spec/util/interpolate';
 import browser from '../util/browser';
@@ -857,15 +858,10 @@ class Camera extends Evented {
      * @see [Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
     flyTo(options: Object, eventData?: Object) {
-        // Fall throwugh to jumpTo is user has set prefers-reduced-motion
+        // Fall through to jumpTo is user has set prefers-reduced-motion
         if (browser.prefersReducedMotion) {
-            return this.jumpTo({
-                center: options.center,
-                zoom: options.zoom,
-                bearing: options.bearing,
-                pitch: options.pitch,
-                around: options.around
-            }, eventData);
+            const coercedOptions = (pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']): CameraOptions);
+            return this.jumpTo(coercedOptions, eventData);
         }
 
         // This method implements an “optimal path” animation, as detailed in:
