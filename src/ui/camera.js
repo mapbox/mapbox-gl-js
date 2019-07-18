@@ -859,14 +859,13 @@ class Camera extends Evented {
     flyTo(options: Object, eventData?: Object) {
         // Fall throwugh to jumpTo is user has set prefers-reduced-motion
         if (browser.prefersReducedMotion) {
-            this.jumpTo({
+            return this.jumpTo({
                 center: options.center,
                 zoom: options.zoom,
                 bearing: options.bearing,
                 pitch: options.pitch,
                 around: options.around
             }, eventData);
-            return;
         }
 
         // This method implements an “optimal path” animation, as detailed in:
