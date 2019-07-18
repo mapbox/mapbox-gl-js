@@ -98,7 +98,7 @@ class LineBucket implements Bucket {
     layerIds: Array<string>;
     stateDependentLayers: Array<any>;
     stateDependentLayerIds: Array<string>;
-    features: Array<BucketFeature>;
+    patternFeatures: Array<BucketFeature>;
 
     layoutVertexArray: LineLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -117,8 +117,8 @@ class LineBucket implements Bucket {
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
-        this.features = [];
         this.hasPattern = false;
+        this.patternFeatures = [];
 
         this.layoutVertexArray = new LineLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -129,33 +129,52 @@ class LineBucket implements Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
-        this.features = [];
         this.hasPattern = hasPattern('line', this.layers, options);
+        const lineSortKey = this.layers[0].layout.get('line-sort-key');
+        const bucketFeatures = [];
 
         for (const {feature, index, sourceLayerIndex} of features) {
             if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
 
             const geometry = loadGeometry(feature);
+            const sortKey = lineSortKey ?
+                lineSortKey.evaluate(feature, {}) :
+                undefined;
 
-            const patternFeature: BucketFeature = {
+            const bucketFeature: BucketFeature = {
+                id: feature.id,
+                properties: feature.properties,
+                type: feature.type,
                 sourceLayerIndex,
                 index,
                 geometry,
-                properties: feature.properties,
-                type: feature.type,
-                patterns: {}
+                patterns: {},
+                sortKey
             };
 
-            if (typeof feature.id !== 'undefined') {
-                patternFeature.id = feature.id;
-            }
+            bucketFeatures.push(bucketFeature);
+        }
+
+        if (lineSortKey) {
+            bucketFeatures.sort((a, b) => {
+                // a.sortKey is always a number when in use
+                return ((a.sortKey: any): number) - ((b.sortKey: any): number);
+            });
+        }
+
+        for (const bucketFeature of bucketFeatures) {
+            const {geometry, index, sourceLayerIndex} = bucketFeature;
 
             if (this.hasPattern) {
-                this.features.push(addPatternDependencies('line', this.layers, patternFeature, this.zoom, options));
+                const patternBucketFeature = addPatternDependencies('line', this.layers, bucketFeature, this.zoom, options);
+                // pattern features are added only once the pattern is loaded into the image atlas
+                // so are stored during populate until later updated with positions by tile worker in addFeatures
+                this.patternFeatures.push(patternBucketFeature);
             } else {
-                this.addFeature(patternFeature, geometry, index, {});
+                this.addFeature(bucketFeature, geometry, index, {});
             }
 
+            const feature = features[index].feature;
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
@@ -166,9 +185,8 @@ class LineBucket implements Bucket {
     }
 
     addFeatures(options: PopulateParameters, imagePositions: {[string]: ImagePosition}) {
-        for (const feature of this.features) {
-            const {geometry} = feature;
-            this.addFeature(feature, geometry, feature.index, imagePositions);
+        for (const feature of this.patternFeatures) {
+            this.addFeature(feature, feature.geometry, feature.index, imagePositions);
         }
     }
 
@@ -623,6 +641,6 @@ function calculateFullDistance(vertices: Array<Point>, first: number, len: numbe
     return total;
 }
 
-register('LineBucket', LineBucket, {omit: ['layers', 'features']});
+register('LineBucket', LineBucket, {omit: ['layers', 'patternFeatures']});
 
 export default LineBucket;

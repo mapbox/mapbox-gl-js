@@ -632,6 +632,21 @@
     }
   },
   "layout_fill": {
+    "fill-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+          "js": "1.2.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -656,6 +671,21 @@
     }
   },
   "layout_circle": {
+    "circle-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+          "js": "1.2.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -849,6 +879,21 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "line-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+          "js": "1.2.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
     },
     "visibility": {
       "type": "enum",
