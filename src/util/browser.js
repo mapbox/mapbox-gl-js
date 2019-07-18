@@ -19,7 +19,7 @@ const cancel = window.cancelAnimationFrame ||
 
 let linkEl;
 
-let _reducedMotionQuery: MediaQueryList;
+let reducedMotionQuery: MediaQueryList;
 
 /**
  * @private
@@ -60,10 +60,10 @@ const exported = {
     get prefersReducedMotion(): boolean {
         if (!window.matchMedia) return false;
         //Lazily initialize media query
-        if (_reducedMotionQuery == null) {
-            _reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        if (reducedMotionQuery == null) {
+            reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         }
-        return _reducedMotionQuery.matches;
+        return reducedMotionQuery.matches;
     },
 };
 
