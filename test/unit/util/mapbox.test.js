@@ -357,7 +357,7 @@ test("mapbox", (t) => {
                 t.end();
             });
 
-            t.test('.normalizeTileURL ignores non-mapbox:// sources', (t) => {
+            t.test('.normalizeTileURL accounts for tileURLs w/ paths', (t) => {
                 // Add a path to the config:
                 config.API_URL = 'http://localhost:8080/mbx';
                 const input    = `https://localhost:8080/mbx/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/10/184/401.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
