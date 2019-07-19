@@ -39,6 +39,7 @@
 * Fix docs dev dependencies being mistakenly installed as package dependencies ([#8121](https://github.com/mapbox/mapbox-gl-js/pull/8121)) (h/t [bravecow](https://github.com/bravecow))
 * Various typo fixes ([#8230](https://github.com/mapbox/mapbox-gl-js/pull/8230), h/t [erictheise](https://github.com/erictheise)) ([#8236](https://github.com/mapbox/mapbox-gl-js/pull/8236), h/t [fredj](https://github.com/fredj))
 
+
 ## 1.0.0
 
 ### ⚠️ Breaking changes
