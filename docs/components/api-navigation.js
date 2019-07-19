@@ -63,7 +63,7 @@ class ApiNavigation extends React.Component {
     render() {
         return (
             <div className='ml36'>
-                <ul id='toc' className='list-reset mb3 py1-ul'>
+                <ul id='toc' className='list-reset mb3 py1-ul' data-swiftype-index='false'>
                     {docs.map((doc, i) => (doc.kind === 'note') ?
                         <TableOfContentsNote key={i} {...doc}/> :
                         <TableOfContentsItem key={i} {...doc}/>)}
