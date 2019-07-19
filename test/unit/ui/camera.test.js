@@ -881,7 +881,7 @@ test('camera', (t) => {
             }, 0);
         });
 
-        t.test('duration is 0 when prefers-reduced-motions: reduce is set', (t) => {
+        t.test('duration is 0 when prefers-reduced-motion: reduce is set', (t) => {
             const camera = createCamera();
             const stub = t.stub(browser, 'prefersReducedMotion');
             stub.get(() => true);
