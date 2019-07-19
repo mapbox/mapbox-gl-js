@@ -7,7 +7,8 @@ import {
     warnOnce,
     clamp,
     wrap,
-    ease as defaultEasing
+    ease as defaultEasing,
+    pick
 } from '../util/util';
 import { number as interpolate } from '../style-spec/util/interpolate';
 import browser from '../util/browser';
@@ -653,6 +654,9 @@ class Camera extends Evented {
      * between old and new values. The map will retain its current values for any
      * details not specified in `options`.
      *
+     * Note: The transition will happen instantly if the user has enabled
+     * the `reduced motion` accesibility feature enabled in their operating system.
+     *
      * @memberof Map#
      * @param options Options describing the destination and animation of the transition.
      *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
@@ -679,7 +683,7 @@ class Camera extends Evented {
             easing: defaultEasing
         }, options);
 
-        if (options.animate === false) options.duration = 0;
+        if (options.animate === false || browser.prefersReducedMotion) options.duration = 0;
 
         const tr = this.transform,
             startZoom = this.getZoom(),
@@ -806,6 +810,9 @@ class Camera extends Evented {
      * evokes flight. The animation seamlessly incorporates zooming and panning to help
      * the user maintain her bearings even after traversing a great distance.
      *
+     * Note: The animation will be skipped, and this will behave equivalently to `jumpTo`
+     * if the user has the `reduced motion` accesibility feature enabled in their operating system.
+     *
      * @memberof Map#
      * @param {Object} options Options describing the destination and animation of the transition.
      *     Accepts {@link CameraOptions}, {@link AnimationOptions},
@@ -857,6 +864,12 @@ class Camera extends Evented {
      * @see [Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
     flyTo(options: Object, eventData?: Object) {
+        // Fall through to jumpTo if user has set prefers-reduced-motion
+        if (browser.prefersReducedMotion) {
+            const coercedOptions = (pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']): CameraOptions);
+            return this.jumpTo(coercedOptions, eventData);
+        }
+
         // This method implements an “optimal path” animation, as detailed in:
         //
         // Van Wijk, Jarke J.; Nuij, Wim A. A. “Smooth and efficient zooming and panning.” INFOVIS
