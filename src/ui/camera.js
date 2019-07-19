@@ -653,8 +653,8 @@ class Camera extends Evented {
      * Changes any combination of center, zoom, bearing, and pitch, with an animated transition
      * between old and new values. The map will retain its current values for any
      * details not specified in `options`.
-     * 
-     * Note: The transition will happen instantly if the user has enabled 
+     *
+     * Note: The transition will happen instantly if the user has enabled
      * the `reduced motion` accesibility feature enabled in their operating system.
      *
      * @memberof Map#
@@ -809,7 +809,7 @@ class Camera extends Evented {
      * Changes any combination of center, zoom, bearing, and pitch, animating the transition along a curve that
      * evokes flight. The animation seamlessly incorporates zooming and panning to help
      * the user maintain her bearings even after traversing a great distance.
-     * 
+     *
      * Note: The animation will be skipped, and this will behave equivalently to `jumpTo`
      * if the user has the `reduced motion` accesibility feature enabled in their operating system.
      *
