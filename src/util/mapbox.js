@@ -110,6 +110,7 @@ export class RequestManager {
 
         const urlObject = parseUrl(tileURL);
         const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
+        const tileURLAPIPrefixRe = /^.+\/v4\//;
 
         // The v4 mapbox tile API supports 512x512 image tiles only when @2x
         // is appended to the tile URL. If `tileSize: 512` is specified for
@@ -117,6 +118,7 @@ export class RequestManager {
         const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
         const extension = webpSupported.supported ? '.webp' : '$1';
         urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
+        urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
         urlObject.path = `/v4${urlObject.path}`;
 
         if (config.REQUIRE_ACCESS_TOKEN && (config.ACCESS_TOKEN || this._customAccessToken) && this._skuToken) {
@@ -176,6 +178,7 @@ export class RequestManager {
         if (accessToken[0] === 's')
             throw new Error(`Use a public access token (pk.*) with Mapbox GL, not a secret access token (sk.*). ${help}`);
 
+        urlObject.params = urlObject.params.filter((d) => !d.includes('access_token'));
         urlObject.params.push(`access_token=${accessToken}`);
         return formatUrl(urlObject);
     }

@@ -1,3 +1,11 @@
+## 1.1.1
+
+## 🐞 Bug fixes
+
+* Fix unbounded memory growth caused by failure to cancel requests to the cache ([#8472](https://github.com/mapbox/mapbox-gl-js/pull/8472))
+* Fix unbounded memory growth caused by failure to cancel requests in IE ([#8481](https://github.com/mapbox/mapbox-gl-js/issues/8481))
+* Fix performance of getting tiles from the cache ([#8489](https://github.com/mapbox/mapbox-gl-js/pull/8449))
+
 ## 1.1.0
 
 ## ✨ Minor features and improvements
@@ -30,7 +38,6 @@
 * Fix location dot shadow not displaying ([#8119](https://github.com/mapbox/mapbox-gl-js/pull/8119)) (h/t [bravecow](https://github.com/bravecow))
 * Fix docs dev dependencies being mistakenly installed as package dependencies ([#8121](https://github.com/mapbox/mapbox-gl-js/pull/8121)) (h/t [bravecow](https://github.com/bravecow))
 * Various typo fixes ([#8230](https://github.com/mapbox/mapbox-gl-js/pull/8230), h/t [erictheise](https://github.com/erictheise)) ([#8236](https://github.com/mapbox/mapbox-gl-js/pull/8236), h/t [fredj](https://github.com/fredj))
-
 
 ## 1.0.0
 

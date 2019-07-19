@@ -339,11 +339,12 @@ export class Placement {
                     const textBoxScale = symbolInstance.textBoxScale;
                     let anchors = layout.get('text-variable-anchor');
 
-                    // If we this symbol was in the last placement, shift the previously used
-                    // anchor to the front of the anchor list.
+                    // If this symbol was in the last placement, shift the previously used
+                    // anchor to the front of the anchor list, only if the previous anchor
+                    // is still in the anchor list
                     if (this.prevPlacement && this.prevPlacement.variableOffsets[symbolInstance.crossTileID]) {
                         const prevOffsets = this.prevPlacement.variableOffsets[symbolInstance.crossTileID];
-                        if (anchors[0] !== prevOffsets.anchor) {
+                        if (anchors.indexOf(prevOffsets.anchor) > 0) {
                             anchors = anchors.filter(anchor => anchor !== prevOffsets.anchor);
                             anchors.unshift(prevOffsets.anchor);
                         }

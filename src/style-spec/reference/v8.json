@@ -632,6 +632,21 @@
     }
   },
   "layout_fill": {
+    "fill-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+          "js": "1.2.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -656,6 +671,21 @@
     }
   },
   "layout_circle": {
+    "circle-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+          "js": "1.2.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -850,6 +880,21 @@
       },
       "property-type": "data-constant"
     },
+    "line-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+          "js": "1.2.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -966,7 +1011,13 @@
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key when they overlap. Features with a lower sort key will have priority over other features when doing placement.",
       "sdk-support": {
-          "js": "0.53.0"
+        "basic functionality": {
+          "js": "0.53.0",
+          "android": "7.4.0",
+          "ios": "4.11.0",
+          "macos": "0.14.0"
+        },
+        "data-driven styling": {}
       },
       "expression": {
         "interpolated": false,
