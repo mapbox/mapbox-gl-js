@@ -1867,7 +1867,10 @@
         }
       },
       "requires": [
-        "text-field"
+        "text-field",
+        {
+          "!" : "text-offset"
+        }
       ],
       "property-type": "data-driven",
       "expression": {
