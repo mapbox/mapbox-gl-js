@@ -38,7 +38,8 @@
 * Fix location dot shadow not displaying ([#8119](https://github.com/mapbox/mapbox-gl-js/pull/8119)) (h/t [bravecow](https://github.com/bravecow))
 * Fix docs dev dependencies being mistakenly installed as package dependencies ([#8121](https://github.com/mapbox/mapbox-gl-js/pull/8121)) (h/t [bravecow](https://github.com/bravecow))
 * Various typo fixes ([#8230](https://github.com/mapbox/mapbox-gl-js/pull/8230), h/t [erictheise](https://github.com/erictheise)) ([#8236](https://github.com/mapbox/mapbox-gl-js/pull/8236), h/t [fredj](https://github.com/fredj))
-
+* Fix geolocate button CSS ([#8367](https://github.com/mapbox/mapbox-gl-js/pull/8367), h/t [GuillaumeGomez](https://github.com/GuillaumeGomez))
+* Fix caching for Mapbox tiles ([#8389](https://github.com/mapbox/mapbox-gl-js/pull/8389))
 
 ## 1.0.0
 

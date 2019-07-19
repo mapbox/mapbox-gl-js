@@ -89,7 +89,7 @@ ${html}
                                 <iframe id='demo' style={{ height: 400 }} className='w-full' allowFullScreen={true} mozallowfullscreen='true' webkitallowfullscreen='true'
                                     ref={(iframe) => { this.iframe = iframe; }}/>}
 
-                            <div className='bg-white'>
+                            <div className='bg-white' data-swiftype-index='false'>
                                 <div id='code'>
                                     <CodeSnippet
                                         code={this.displayHTML()}
