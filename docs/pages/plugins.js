@@ -12,7 +12,7 @@ const meta = {
     pathname: '/mapbox-gl-js/plugins/'
 };
 
-export const plugins = {
+const plugins = {
     "User Interface Plugins": {
         "mapbox-gl-accessibility": {
             "website": "https://github.com/mapbox/mapbox-gl-accessibility/",
@@ -155,10 +155,6 @@ export const plugins = {
         "mapbox-gl-fps": {
             "website": "https://github.com/MazeMap/mapbox-gl-fps",
             "description": "A frames-per-seconds GUI control and measurer with statistic report output."
-        },
-        "mapbox-gl-framerate": {
-            "website": "https://github.com/mapbox/mapbox-gl-framerate",
-            "description": "A frame rate control to evaluate map rendering performance."
         }
     }
 };
