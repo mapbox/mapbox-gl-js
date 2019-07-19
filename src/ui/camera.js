@@ -858,7 +858,7 @@ class Camera extends Evented {
      * @see [Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
     flyTo(options: Object, eventData?: Object) {
-        // Fall through to jumpTo is user has set prefers-reduced-motion
+        // Fall through to jumpTo if user has set prefers-reduced-motion
         if (browser.prefersReducedMotion) {
             const coercedOptions = (pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']): CameraOptions);
             return this.jumpTo(coercedOptions, eventData);
