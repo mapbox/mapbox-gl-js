@@ -16,13 +16,10 @@ import TopNavTabs from './top-nav-tabs';
 import { tags } from '../data/tags.js';
 import { overviewNavigation } from '../data/overview-navigation';
 import { styleSpecNavigation } from '../data/style-spec-navigation';
-import { plugins } from '../pages/plugins';
+import { plugins } from '../data/plugins';
 import { routeToPrefixed } from '@mapbox/batfish/modules/route-to';
-import Search from '@mapbox/dr-ui/search';
 
 const slugger = new GithubSlugger();
-
-const site = "Mapbox GL JS";
 
 class PageShell extends React.Component {
 
@@ -214,12 +211,12 @@ class PageShell extends React.Component {
 
         const sidebarProps = this.getSidebarProps(activeTab);
         const topbarContent = {
-            productName: site,
+            productName: "Mapbox GL JS",
             topNav: <TopNavTabs activeTab={activeTab} />
         };
 
         return (
-            <ReactPageShell site={site} darkHeaderText={true} includeFooter={false} {...this.props}>
+            <ReactPageShell site="Mapbox GL JS" darkHeaderText={true} includeFooter={false} {...this.props}>
                 <Helmet>
                     <link
                         rel="canonical"
@@ -229,20 +226,15 @@ class PageShell extends React.Component {
                 <div className="shell-header-buffer" />
                 <TopbarSticker unStickWidth={980}>
                     <div className="limiter">
-                        <div className="grid">
+                        <div className="grid grid--gut36 mr-neg36 mr0-mm">
                             <div className={`col col--4-mm ${sidebarProps.sidebarColSize ? `col--${sidebarProps.sidebarColSize}-ml` : ''} col--12`}>
                                 <div className="ml24-mm pt12">
                                     <ProductMenu productName={topbarContent.productName} homePage='/mapbox-gl-js/'/>
                                 </div>
                             </div>
-                            <div className={`col col--7-mm ${sidebarProps.sidebarColSize ? `col--${11 - sidebarProps.sidebarColSize}-ml` : ''} col--12`}>
+                            <div className={`col col--8-mm ${sidebarProps.sidebarColSize ? `col--${12 - sidebarProps.sidebarColSize}-ml` : ''} col--12`}>
                                 <div style={{ height: '50px' }}>
                                     {topbarContent.topNav}
-                                </div>
-                            </div>
-                            <div className="col col--1-mm col--12">
-                                <div className="flex-parent-mm flex-parent--end-main h-full-mm wmax300 wmax-full-mm" style={{margin: '7px 0'}}>
-                                    <Search site={site} />
                                 </div>
                             </div>
                         </div>

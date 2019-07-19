@@ -1851,11 +1851,7 @@ class Map extends Camera {
 
     /**
      * Gets and sets a Boolean indicating whether the map will render an outline
-     * around each tile and the tile ID. These tile boundaries are useful for
-     * debugging.
-     *
-     * The uncompressed file size of the first vector source is drawn in the top left
-     * corner of each tile, next to the tile ID.
+     * around each tile. These tile boundaries are useful for debugging.
      *
      * @name showTileBoundaries
      * @type {boolean}
