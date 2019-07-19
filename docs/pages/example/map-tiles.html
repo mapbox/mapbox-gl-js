@@ -1,6 +1,5 @@
 <div id='map'></div>
 <script>
-var tileset = 'mapbox.streets';
 var map = new mapboxgl.Map({
     container: 'map', // container id
     style: {
@@ -8,8 +7,9 @@ var map = new mapboxgl.Map({
         "sources": {
             "raster-tiles": {
                 "type": "raster",
-                "url": "mapbox://" + tileset,
-                "tileSize": 256
+                "tiles": ["https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg"],
+                "tileSize": 256,
+                "attribution": 'Map tiles by <a target="_top" rel="noopener" href="http://stamen.com">Stamen Design</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>'
             }
         },
         "layers": [{
