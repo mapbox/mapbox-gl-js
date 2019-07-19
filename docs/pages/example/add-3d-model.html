@@ -15,7 +15,10 @@ var map = window.map = new mapboxgl.Map({
 var modelOrigin = [148.98190, -35.39847];
 var modelAltitude = 0;
 var modelRotate = [Math.PI / 2, 0, 0];
-var modelScale = 5.41843220338983e-8;
+
+var scaleFactor = 1 / Math.cos(modelOrigin[1] * Math.PI / 180);
+var mercatorExtent = 2 * Math.PI * 6378137;
+var modelScale = 1 / mercatorExtent * scaleFactor;
 
 // transformation parameters to position, rotate and scale the 3D model onto the map
 var modelTransform = {
