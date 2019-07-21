@@ -291,9 +291,13 @@ export default class Marker extends Evented {
      */
     setPopup(popup: ?Popup) {
         const keypressListener = (e: KeyboardEvent) => {
-            const code = e.charCode || e.keyCode;
+            const code = e.code;
+            const legacyCode = e.charCode || e.keyCode;
 
-            if ((code === 32) || (code === 13)) { // space or enter
+            if (
+                (code === 'Space') || (code === 'Enter') ||
+                (legacyCode === 32) || (legacyCode === 13) // space or enter
+            ) {
                 this.togglePopup();
             }
         };
