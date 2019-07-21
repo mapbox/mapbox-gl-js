@@ -120,6 +120,25 @@ test('Marker#togglePopup closes a popup that was open', (t) => {
     t.end();
 });
 
+test('Enter key on Marker opens a popup that was closed', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map)
+        .setPopup(new Popup())
+
+    // popup not initially open
+    t.notOk(marker.getPopup().isOpen());
+
+    simulate.keypress(marker.getElement(), { code: 'Enter' });
+
+    // popup open after Enter keypress
+    t.ok(marker.getPopup().isOpen());
+
+    map.remove();
+    t.end();
+});
+
 test('Marker anchor defaults to center', (t) => {
     const map = createMap(t);
     const marker = new Marker()
