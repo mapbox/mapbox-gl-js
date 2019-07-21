@@ -158,6 +158,33 @@ test('Space key on Marker opens a popup that was closed', (t) => {
     t.end();
 });
 
+test('Marker#setPopup sets a tabindex', (t) => {
+    const popup = new Popup();
+    const marker = new Marker()
+        .setPopup(popup);
+    t.equal(marker.getElement().getAttribute('tabindex'), "0");
+    t.end();
+});
+
+test('Marker#setPopup removes tabindex when unset', (t) => {
+    const popup = new Popup();
+    const marker = new Marker()
+        .setPopup(popup)
+        .setPopup();
+    t.notOk(marker.getElement().getAttribute('tabindex'));
+    t.end();
+});
+
+test('Marker#setPopup does not replace existing tabindex', (t) => {
+    const element = window.document.createElement('div');
+    element.setAttribute('tabindex', '5');
+    const popup = new Popup();
+    const marker = new Marker({element})
+        .setPopup(popup);
+    t.equal(marker.getElement().getAttribute('tabindex'), "5");
+    t.end();
+});
+
 test('Marker anchor defaults to center', (t) => {
     const map = createMap(t);
     const marker = new Marker()

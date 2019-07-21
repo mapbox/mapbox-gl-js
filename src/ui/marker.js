@@ -294,7 +294,10 @@ export default class Marker extends Evented {
             this._popup.remove();
             this._popup = null;
             this._element.removeEventListener('keypress', keypressListener);
-            this._element.removeAttribute('tabindex');
+
+            if (!this._originalTabIndex) {
+                this._element.removeAttribute('tabindex');
+            }
         }
 
         if (popup) {
@@ -316,7 +319,10 @@ export default class Marker extends Evented {
             this._popup = popup;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
-            this._element.setAttribute('tabindex', '0');
+            this._originalTabIndex = this._element.getAttribute('tabindex');
+            if (!this._originalTabIndex) {
+                this._element.setAttribute('tabindex', '0');
+            }
             this._element.addEventListener('keypress', keypressListener);
         }
 
