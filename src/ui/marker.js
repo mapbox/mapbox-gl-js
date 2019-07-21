@@ -51,6 +51,7 @@ export default class Marker extends Evented {
     _draggable: boolean;
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
     _positionDelta: ?number;
+    _originalTabIndex: ?string; // original tabindex of _element
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
