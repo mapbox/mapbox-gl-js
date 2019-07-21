@@ -125,7 +125,7 @@ test('Enter key on Marker opens a popup that was closed', (t) => {
     const marker = new Marker()
         .setLngLat([0, 0])
         .addTo(map)
-        .setPopup(new Popup())
+        .setPopup(new Popup());
 
     // popup not initially open
     t.notOk(marker.getPopup().isOpen());
@@ -144,7 +144,7 @@ test('Space key on Marker opens a popup that was closed', (t) => {
     const marker = new Marker()
         .setLngLat([0, 0])
         .addTo(map)
-        .setPopup(new Popup())
+        .setPopup(new Popup());
 
     // popup not initially open
     t.notOk(marker.getPopup().isOpen());
