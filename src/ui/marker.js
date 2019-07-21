@@ -60,6 +60,7 @@ export default class Marker extends Evented {
     _rotation: number;
     _pitchAlignment: string;
     _rotationAlignment: string;
+    _originalTabIndex: ?string; // original tabindex of _element
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
