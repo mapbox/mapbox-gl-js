@@ -814,14 +814,6 @@
     "@babel/helper-regex" "^7.4.3"
     regexpu-core "^4.5.4"
 
-"@babel/polyfill@^7.2.5":
-  version "7.4.4"
-  resolved "https://registry.yarnpkg.com/@babel/polyfill/-/polyfill-7.4.4.tgz#78801cf3dbe657844eeabf31c1cae3828051e893"
-  integrity sha512-WlthFLfhQQhh+A2Gn5NSFl0Huxz36x86Jn+E9OW7ibK8edKPq+KLy4apM1yDpQ8kJOVi1OVjpP4vSDLdrI04dg==
-  dependencies:
-    core-js "^2.6.5"
-    regenerator-runtime "^0.13.2"
-
 "@babel/preset-env@^7.1.0":
   version "7.4.3"
   resolved "https://registry.yarnpkg.com/@babel/preset-env/-/preset-env-7.4.3.tgz#e71e16e123dc0fbf65a52cbcbcefd072fbd02880"
@@ -900,7 +892,7 @@
   resolved "https://registry.yarnpkg.com/@babel/preset-stage-0/-/preset-stage-0-7.0.0.tgz#999aaec79ee8f0a763042c68c06539c97c6e0646"
   integrity sha512-FBMd0IiARPtH5aaOFUVki6evHiJQiY0pFy7fizyRF7dtwc+el3nwpzvhb9qBNzceG1OIJModG1xpE0DDFjPXwA==
 
-"@babel/runtime@^7.1.2", "@babel/runtime@^7.4.2":
+"@babel/runtime@^7.1.2", "@babel/runtime@^7.4.2", "@babel/runtime@^7.5.4":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.5.5.tgz#74fba56d35efbeca444091c7850ccd494fd2f132"
   integrity sha512-28QvEGyQyNkB0/m2B4FU7IEZGK2NUrcMtT6BZEFALTguLk+AUT6ofsHtPk5QyjAdUkpMJ+/Em+quwz4HOt30AQ==
@@ -940,45 +932,41 @@
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
 
-"@elastic/react-search-ui-views@0.10.0", "@elastic/react-search-ui-views@^0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@elastic/react-search-ui-views/-/react-search-ui-views-0.10.0.tgz#4ae423e0a10592d11c1083ee9875b40fec040a09"
-  integrity sha512-g2BZDa1XLVSZJf6bqeMXsrufaxUQyTfzxFvVhvMUn7IumkXXsZISqu0CvGT5esDoV9m8ipaB6hgZjA28+t1D5A==
+"@elastic/react-search-ui-views@1.0.0", "@elastic/react-search-ui-views@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@elastic/react-search-ui-views/-/react-search-ui-views-1.0.0.tgz#b170d68685048031abb92df73fe9ee41cf663c06"
+  integrity sha512-kcIGvxqs4AFtQ8J8mxoJHwV9AkYJE3DX5Jc+LDoKzp8GXi55WqtcO9jPCbTBvK9spZicYyA3WUhA2438lQe20w==
   dependencies:
-    "@babel/polyfill" "^7.2.5"
+    "@babel/runtime" "^7.5.4"
     autoprefixer "^9.4.7"
-    core-js "^2.6.9"
     deep-equal "^1.0.1"
     downshift "^3.2.7"
     rc-pagination "^1.17.3"
     react-select "^2.1.1"
 
-"@elastic/react-search-ui@^0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@elastic/react-search-ui/-/react-search-ui-0.10.0.tgz#c65343f44d84d9af83876d15047e5bfa7140bab9"
-  integrity sha512-YfSqLND2OqQw37OiEk3ugKptvQ0TRpTVTO2mKpwctRWs9HQMMfdTZf21PkLe8mowylWqz1VH7wCqsV87Xg5Rnw==
+"@elastic/react-search-ui@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@elastic/react-search-ui/-/react-search-ui-1.0.0.tgz#e3c48ef021362c643fe1b25800a3f4b8b5aaf978"
+  integrity sha512-r2oLZL8mhT5xNZNXB7mV8a2QwAJuOHTa76Lgb10Kob9fD1fM1BfRCS+ffM7klx4IcJ3L43OF5KXo6GwrGcGZyA==
   dependencies:
-    "@babel/polyfill" "^7.2.5"
-    "@elastic/react-search-ui-views" "0.10.0"
-    "@elastic/search-ui" "0.10.0"
-    core-js "^2.6.9"
+    "@babel/runtime" "^7.5.4"
+    "@elastic/react-search-ui-views" "1.0.0"
+    "@elastic/search-ui" "1.0.0"
     debounce-fn "^1.0.0"
 
-"@elastic/search-ui-site-search-connector@^0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@elastic/search-ui-site-search-connector/-/search-ui-site-search-connector-0.10.0.tgz#b3b705214a7bc690c45cdd4ed4a20608554b74fa"
-  integrity sha512-ZTxV57vhrGRdIQc3B/fjJJu9kh9JFLW3GVgNT5pn/CAg9q1TGO/+6/AMqBNWBrGWQNEY8x5qHobqbDTrea09HQ==
+"@elastic/search-ui-site-search-connector@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@elastic/search-ui-site-search-connector/-/search-ui-site-search-connector-1.0.0.tgz#0a221e7214f68e828962dc8c149437313963817a"
+  integrity sha512-I8uQL7uo2bnCft/7ruvMov0zqlM2tmMIAD3scs21P6wmiUUjG9UUX6Hv7GygcmTA/0gAVTEracjgqLH1CKDWSA==
   dependencies:
-    "@babel/polyfill" "^7.2.5"
-    core-js "^2.6.9"
+    "@babel/runtime" "^7.5.4"
 
-"@elastic/search-ui@0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@elastic/search-ui/-/search-ui-0.10.0.tgz#bcf86faaa12f5c16655397cf64f93056bf618a0a"
-  integrity sha512-5pMbeY/sodixMXh8aaJjUcey8FM7iV5I7gtRbXHjz9VY2mb3MdO88gHxKVYYb4PWzNQn+s2tzsaYiw2Cvgkkaw==
+"@elastic/search-ui@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@elastic/search-ui/-/search-ui-1.0.0.tgz#90b202676215937c86707b5125e1b9bd8e75f27c"
+  integrity sha512-Dg5xtfIxAHNWNYyW2jI1Mda4llleVBp3Yise3zTdGhNhzP30Ewgb3idaCFdxbd28WNEL/sHCI8reTxZA3itLsQ==
   dependencies:
-    "@babel/polyfill" "^7.2.5"
-    core-js "^2.6.9"
+    "@babel/runtime" "^7.5.4"
     date-fns "^1.29.0"
     debounce-fn "^1.0.0"
     deep-equal "^1.0.1"
@@ -1174,22 +1162,24 @@
     webpack-merge "^4.1.2"
     worker-farm "^1.6.0"
 
-"@mapbox/dr-ui@0.16.2":
-  version "0.16.2"
-  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.16.2.tgz#82e3f69bc0fa59a7a514ca8747b4845a7adcf688"
-  integrity sha512-Wsio/ieF5OZ91lrHjZ0hCpjALiMRXFj8KkMmjaI+E3voZ8bFZZPySHfJQT75NZG66OHBhH1klsJMKnZUpql38A==
+"@mapbox/dr-ui@0.19.0":
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.19.0.tgz#cd5a89f91370633e1eda697b9f6147d8991b1141"
+  integrity sha512-bRA6dQUtJ582Eja9cfJ10oM4C+Kb9rT7KYYcT2yku/QsqchSMceW7eJekzG4fffU7PL49+7Iwnzxa0QiMLmxKQ==
   dependencies:
-    "@elastic/react-search-ui" "^0.10.0"
-    "@elastic/react-search-ui-views" "^0.10.0"
-    "@elastic/search-ui-site-search-connector" "^0.10.0"
+    "@elastic/react-search-ui" "^1.0.0"
+    "@elastic/react-search-ui-views" "^1.0.0"
+    "@elastic/search-ui-site-search-connector" "^1.0.0"
     "@mapbox/mr-ui" "^0.7.0"
     classnames "^2.2.6"
+    compare-versions "^3.4.0"
     debounce "^1.2.0"
     downshift "^3.2.7"
     hastscript "^5.0.0"
     react-html-parser "^2.0.2"
     react-stickynode "^2.1.1"
     rehype-sectionize-headings "^1.0.0-rc.1"
+    uuid "^3.3.2"
 
 "@mapbox/flow-remove-types@^1.3.0-await.upstream.2":
   version "1.3.0-await.upstream.2"
@@ -1335,29 +1325,7 @@
     postcss-custom-media "^6.0.0"
     postcss-custom-properties "^7.0.0"
 
-"@mapbox/mr-ui@0.7.1":
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/@mapbox/mr-ui/-/mr-ui-0.7.1.tgz#832974fc2984a0af8678992d64ab11edeec18d44"
-  integrity sha512-ii3jiWjq4pCzXN9u+HxjyhLVR06lGt3bA9iMcxK5JwuWk+/qgDwUTZKsfKMij/MHyVKoucLxTk/DxxC8O1rPIA==
-  dependencies:
-    "@mapbox/query-selector-contains-node" "^1.0.0"
-    classnames "^2.2.6"
-    clipboard "^2.0.0"
-    debounce "^1.1.0"
-    focus-trap "^3.0.0"
-    hoverintent "^2.0.0"
-    os-key "^1.0.0"
-    prefix "^1.0.0"
-    react-aria-modal "^3.0.0"
-    react-datepicker "^0.60.2"
-    react-displace "^2.3.0"
-    react-submittable "^2.0.0"
-    select "^1.1.2"
-    shallow-equal "^1.0.0"
-    tabbable "^3.1.1"
-    xtend "^4.0.0"
-
-"@mapbox/mr-ui@^0.7.0":
+"@mapbox/mr-ui@0.7.2", "@mapbox/mr-ui@^0.7.0":
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/@mapbox/mr-ui/-/mr-ui-0.7.2.tgz#32ce7f7777890a8efd91f6593ac458ff9ee30c73"
   integrity sha512-gBUaM3Tr3ORirkNuuDt64FCTHOtVAT/tmEfxMOWvOmdEAH6YzOOm2ZzD+w1A88NhXsI/QAqWxx3d7xuIIOLelA==
@@ -4053,6 +4021,11 @@ commondir@^1.0.1:
   resolved "https://registry.yarnpkg.com/commondir/-/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
   integrity sha1-3dgA2gxmEnOTzKWVDqloo6rxJTs=
 
+compare-versions@^3.4.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/compare-versions/-/compare-versions-3.5.0.tgz#85fc22a1ae9612ff730d77fb092295acd056d311"
+  integrity sha512-hX+4kt2Rcwu+x1U0SsEFCn1quURjEjPEGH/cPBlpME/IidGimAdwfMU+B+xDr7et/KTR7VH2+ZqWGerv4NGs2w==
+
 component-bind@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/component-bind/-/component-bind-1.0.0.tgz#00c608ab7dcd93897c0009651b1d3a8e1e73bbd1"
@@ -4236,11 +4209,6 @@ core-js@^2.0.0, core-js@^2.4.0, core-js@^2.5.0:
   version "2.6.5"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.5.tgz#44bc8d249e7fb2ff5d00e0341a7ffb94fbf67895"
   integrity sha512-klh/kDpwX8hryYL14M9w/xei6vrv6sE8gTHDG7/T/+SEovB/G4ejwcfE/CBzO6Edsu+OETZMZ3wcX/EjUkrl5A==
-
-core-js@^2.6.5, core-js@^2.6.9:
-  version "2.6.9"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.9.tgz#6b4b214620c834152e179323727fc19741b084f2"
-  integrity sha512-HOpZf6eXmnl7la+cUdMnLvUxKNqLUzJvgIziQ0DiF3JwSImNphIqdGqzj6hIKyX04MmV0poclQ7+wjWvxQyR2A==
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -6677,13 +6645,6 @@ flush-write-stream@^1.0.0, flush-write-stream@^1.0.2:
   dependencies:
     inherits "^2.0.3"
     readable-stream "^2.3.6"
-
-focus-trap-react@^4.0.0:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/focus-trap-react/-/focus-trap-react-4.0.1.tgz#3cffd39341df3b2f546a4a2fe94cfdea66154683"
-  integrity sha512-UUZKVEn5cFbF6yUnW7lbXNW0iqN617ShSqYKgxctUvWw1wuylLtyVmC0RmPQNnJ/U+zoKc/djb0tZMs0uN/0QQ==
-  dependencies:
-    focus-trap "^3.0.0"
 
 focus-trap-react@^6.0.0:
   version "6.0.0"
@@ -11922,15 +11883,6 @@ rc@^1.0.1, rc@^1.1.2, rc@^1.1.6, rc@^1.2.7:
     ini "~1.3.0"
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
-
-react-aria-modal@^3.0.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/react-aria-modal/-/react-aria-modal-3.1.0.tgz#9b028113a69d649aec3ddd4ce5a53505b25acfa0"
-  integrity sha512-wTnKxbCe2uGRrHuxd//5mqIkMRskwr4QHWjISeVjOuyY8KNVjqAQ/iXGHN9OrWYqouKwE5r1RMcvX52wODwimA==
-  dependencies:
-    focus-trap-react "^4.0.0"
-    no-scroll "^2.1.1"
-    react-displace "^2.3.0"
 
 react-aria-modal@^4.0.0:
   version "4.0.0"
