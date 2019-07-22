@@ -60,6 +60,12 @@ When (and only when) loading tiles from a Mapbox API with a Mapbox access token 
 
 For further information on the pricing changes, you can read our [blog post](https://blog.mapbox.com/new-pricing-46b7c26166e7) and check out our new [pricing page](https://www.mapbox.com/pricing), which has a price calculator. As always, you can also contact our team at [https://support.mapbox.com](https://support.mapbox.com).
 
+## 0.54.1
+
+### Bug fixes
+
+- Fix unbounded memory growth caused by failure to cancel requests in IE ([#8481](https://github.com/mapbox/mapbox-gl-js/issues/8481))
+
 ## 0.54.0
 
 ### Breaking changes
