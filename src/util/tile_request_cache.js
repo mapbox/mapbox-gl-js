@@ -73,17 +73,20 @@ function stripQueryParameters(url: string) {
 export function cacheGet(request: Request, callback: (error: ?any, response: ?Response, fresh: ?boolean) => void) {
     if (!window.caches) return callback(null);
 
+    const strippedURL = stripQueryParameters(request.url);
+
     window.caches.open(CACHE_NAME)
         .catch(callback)
         .then(cache => {
-            cache.match(request, { ignoreSearch: true })
+            // manually strip URL instead of `ignoreSearch: true` because of a known
+            // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431
+            cache.match(strippedURL)
                 .catch(callback)
                 .then(response => {
                     const fresh = isFresh(response);
 
                     // Reinsert into cache so that order of keys in the cache is the order of access.
                     // This line makes the cache a LRU instead of a FIFO cache.
-                    const strippedURL = stripQueryParameters(request.url);
                     cache.delete(strippedURL);
                     if (fresh) {
                         cache.put(strippedURL, response.clone());

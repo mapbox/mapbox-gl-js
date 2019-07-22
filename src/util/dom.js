@@ -107,8 +107,8 @@ DOM.mousePos = function (el: HTMLElement, e: MouseEvent | window.TouchEvent | To
     const rect = el.getBoundingClientRect();
     const t = window.TouchEvent && (e instanceof window.TouchEvent) ? e.touches[0] : e;
     return new Point(
-        t.offsetX || t.clientX - rect.left - el.clientLeft,
-        t.offsetY || t.clientY - rect.top - el.clientTop
+        t.offsetX !== undefined ? t.offsetX : t.clientX - rect.left - el.clientLeft,
+        t.offsetY !== undefined ? t.offsetY :  t.clientY - rect.top - el.clientTop
     );
 };
 
