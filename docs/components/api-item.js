@@ -6,7 +6,8 @@ import {highlightJavascript} from '../components/prism_highlight.js';
 import docs from '../components/api.json'; // eslint-disable-line import/no-unresolved
 import ApiItemMember from './api-item-member';
 import IconText from '@mapbox/mr-ui/icon-text';
-
+import Feedback from '@mapbox/dr-ui/feedback';
+import constants from '../constants';
 
 const linkerStack = new LinkerStack({})
     .namespaceResolver(docs, (namespace) => {
@@ -17,6 +18,21 @@ const linkerStack = new LinkerStack({})
 const formatters = createFormatters(linkerStack.link);
 
 class ApiItem extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            userName: undefined
+        };
+    }
+
+    componentDidMount() {
+        MapboxPageShell.afterUserCheck(() => {
+            this.setState({ userName: MapboxPageShell.getUser() ?
+                MapboxPageShell.getUser().id :
+                undefined});
+        });
+    }
 
     md = (ast, inline) => {
         if (inline && ast && ast.children.length && ast.children[0].type === 'paragraph') {
@@ -161,6 +177,17 @@ class ApiItem extends React.Component {
                         <div className='py6 mt12 txt-m txt-bold'>Related</div>
                         <ul>{section.sees.map((see, i) => <li key={i}>{this.md(see, true)}</li>)}</ul>
                     </div>}
+
+                <div className="mt18">
+                    <Feedback
+                        site="Mapbox GL JS"
+                        section={section.name}
+                        type={`section on ${section.name}`}
+                        location={this.props.location}
+                        userName={this.state.userName}
+                        webhook={constants.FORWARD_EVENT_WEBHOOK}
+                    />
+                </div>
             </section>
         );
     }
