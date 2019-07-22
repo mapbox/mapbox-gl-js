@@ -96,6 +96,20 @@
     cursor: pointer;
 }
 
+.mapboxgl-ctrl-group > button + button {
+    border-top: 1px solid #ddd;
+}
+
+/* https://bugzilla.mozilla.org/show_bug.cgi?id=140562 */
+.mapboxgl-ctrl > button::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+.mapboxgl-ctrl > button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
 .mapboxgl-ctrl-group > button:focus {
     box-shadow: 0 0 2px 2px rgba(0, 150, 255, 1);
 }
@@ -110,20 +124,6 @@
 
 .mapboxgl-ctrl-group > button:focus:only-child {
     border-radius: inherit;
-}
-
-.mapboxgl-ctrl-group > button + button {
-    border-top: 1px solid #ddd;
-}
-
-/* https://bugzilla.mozilla.org/show_bug.cgi?id=140562 */
-.mapboxgl-ctrl > button::-moz-focus-inner {
-    border: 0;
-    padding: 0;
-}
-
-.mapboxgl-ctrl > button:hover {
-    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .mapboxgl-ctrl-icon,
