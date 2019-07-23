@@ -71,7 +71,11 @@ module.exports = () => {
             }
         },
         devBrowserslist: false,
-        babelInclude: ['documentation']
+        babelInclude: [
+          'documentation',
+          'debounce-fn',
+          'mimic-fn'
+        ]
     };
 
     // Local builds treat the `dist` directory as static assets, allowing you to test examples against the
