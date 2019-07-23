@@ -1,3 +1,13 @@
+## 13.7.2
+
+### 🐛 Bug fixes
+* Fix SDK support spec section for variable label placement ([#8384](https://github.com/mapbox/mapbox-gl-js/pull/8384)) (h/t [@pozdnyakov](https://github.com/pozdnyakov))
+
+### ✨ Features and improvements
+* Add SDK support spec section for text-radial-offset  ([#8401](https://github.com/mapbox/mapbox-gl-js/pull/8401))
+* Add *-sort-key layout property for circle, fill, line ([#8467](https://github.com/mapbox/mapbox-gl-js/pull/8467))
+* Expose convertFilter API in the style specification ([#8493](https://github.com/mapbox/mapbox-gl-js/pull/8493))
+
 ## 13.7.1
 
 ### 🐛 Bug fixes
