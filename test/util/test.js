@@ -1,6 +1,6 @@
 /* @flow */
 
-import tap from 'tap';
+import tape from 'tape';
 import sinon from 'sinon';
 
 type CreateTest = (typeof sinon) & {
@@ -25,13 +25,13 @@ type CreateTest = (typeof sinon) & {
     tearDown(() => void): void,
 };
 
-export const test = (tap.test: CreateTest);
-export const only = (tap.only: CreateTest);
+export const test = (tape.test: CreateTest);
+export const only = (tape.only: CreateTest);
 
 const consoleError = console.error;
 const consoleWarn = console.warn;
 
-tap.beforeEach(function (done) {
+tape.beforeEach(function (done) {
     this.sandbox = sinon.createSandbox({
         injectInto: this,
         properties: ['spy', 'stub', 'mock']
@@ -45,7 +45,7 @@ tap.beforeEach(function (done) {
     done();
 });
 
-tap.afterEach(function (done) {
+tape.afterEach(function (done) {
     // $FlowFixMe the assignment is intentional
     console.error = consoleError;
     // $FlowFixMe the assignment is intentional

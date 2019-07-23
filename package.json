@@ -104,7 +104,9 @@
     "st": "^1.2.2",
     "stylelint": "^9.10.1",
     "stylelint-config-standard": "^18.2.0",
-    "tap": "~12.4.1"
+    "tap": "~12.4.1",
+    "tape": "^4.11.0",
+    "tape-run": "^6.0.0"
   },
   "browser": {
     "./src/shaders/index.js": "./src/shaders/shaders.js",
