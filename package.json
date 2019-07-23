@@ -94,6 +94,8 @@
     "rollup-plugin-buble": "^0.19.8",
     "rollup-plugin-commonjs": "^10.0.1",
     "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
@@ -106,7 +108,7 @@
     "stylelint-config-standard": "^18.2.0",
     "tap": "~12.4.1",
     "tape": "^4.11.0",
-    "tape-run": "^6.0.0"
+    "testem": "^2.17.0"
   },
   "browser": {
     "./src/shaders/index.js": "./src/shaders/shaders.js",
@@ -120,6 +122,8 @@
     "build-prod": "rollup -c --environment BUILD:production",
     "build-prod-min": "rollup -c --environment BUILD:production,MINIFY:true",
     "build-csp": "rollup -c rollup.config.csp.js",
+    "build-test": "rollup -c rollup.config.test.js",
+    "run-test-browser": "cat rollup/build/test/unit.js | tape-run",
     "build-flow-types": "cp build/mapbox-gl.js.flow dist/mapbox-gl.js.flow && cp build/mapbox-gl.js.flow dist/mapbox-gl-dev.js.flow",
     "build-css": "postcss -o dist/mapbox-gl.css src/css/mapbox-gl.css",
     "build-style-spec": "cd src/style-spec && npm run build && cd ../.. && mkdir -p dist/style-spec && cp src/style-spec/dist/* dist/style-spec",

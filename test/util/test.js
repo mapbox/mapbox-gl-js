@@ -31,27 +31,28 @@ export const only = (tape.only: CreateTest);
 const consoleError = console.error;
 const consoleWarn = console.warn;
 
-tape.beforeEach(function (done) {
-    this.sandbox = sinon.createSandbox({
-        injectInto: this,
-        properties: ['spy', 'stub', 'mock']
-    });
+//TODO: Implement this in tape
+// tape.beforeEach(function (done) {
+//     this.sandbox = sinon.createSandbox({
+//         injectInto: this,
+//         properties: ['spy', 'stub', 'mock']
+//     });
 
-    // $FlowFixMe the assignment is intentional
-    console.error = () => this.fail(`console.error called -- please adjust your test (maybe stub console.error?)`);
-    // $FlowFixMe the assignment is intentional
-    console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
+//     // $FlowFixMe the assignment is intentional
+//     console.error = () => this.fail(`console.error called -- please adjust your test (maybe stub console.error?)`);
+//     // $FlowFixMe the assignment is intentional
+//     console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
 
-    done();
-});
+//     done();
+// });
 
-tape.afterEach(function (done) {
-    // $FlowFixMe the assignment is intentional
-    console.error = consoleError;
-    // $FlowFixMe the assignment is intentional
-    console.warn = consoleWarn;
+// tape.afterEach(function (done) {
+//     // $FlowFixMe the assignment is intentional
+//     console.error = consoleError;
+//     // $FlowFixMe the assignment is intentional
+//     console.warn = consoleWarn;
 
-    this.sandbox.restore();
+//     this.sandbox.restore();
 
-    done();
-});
+//     done();
+// });

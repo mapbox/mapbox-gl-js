@@ -6,6 +6,8 @@ import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from 'rollup-plugin-json';
 import { terser } from 'rollup-plugin-terser';
+import builtins from 'rollup-plugin-node-builtins';
+import globals from 'rollup-plugin-node-globals';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import { createFilter } from 'rollup-pluginutils';
 
@@ -30,6 +32,21 @@ export const plugins = (minified, production) => [
         ignoreGlobal: true
     })
 ].filter(Boolean);
+
+
+export const testPlugins = [
+    globals(),
+    flow(),
+    buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
+    resolve({
+        browser: true,
+        preferBuiltins: false
+    }),
+    commonjs({
+        ignoreGlobal: true
+    }),
+    builtins()
+]
 
 // Using this instead of rollup-plugin-flow due to
 // https://github.com/leebyron/rollup-plugin-flow/issues/5

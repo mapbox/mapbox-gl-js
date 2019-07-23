@@ -22,7 +22,7 @@ export default [{
     input: ['src/index.js', 'src/source/worker.js'],
     output: {
         dir: 'rollup/build/mapboxgl',
-        format: 'amd',
+        format: 'umd',
         sourcemap: 'inline',
         indent: false,
         chunkFileNames: 'shared.js'
