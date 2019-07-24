@@ -33,21 +33,6 @@ export const plugins = (minified, production) => [
     })
 ].filter(Boolean);
 
-
-export const testPlugins = [
-    globals(),
-    flow(),
-    buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
-    resolve({
-        browser: true,
-        preferBuiltins: false
-    }),
-    commonjs({
-        ignoreGlobal: true
-    }),
-    builtins()
-]
-
 // Using this instead of rollup-plugin-flow due to
 // https://github.com/leebyron/rollup-plugin-flow/issues/5
 export function flow() {

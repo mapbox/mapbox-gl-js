@@ -39,6 +39,7 @@
     "vt-pbf": "^3.1.1"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.5.5",
     "@mapbox/appropriate-images": "^2.0.0",
     "@mapbox/appropriate-images-react": "^1.0.0",
     "@mapbox/batfish": "1.9.8",
@@ -51,8 +52,10 @@
     "@mapbox/mr-ui": "0.7.1",
     "@octokit/rest": "^15.15.1",
     "babel-eslint": "^10.0.1",
+    "babelify": "^10.0.0",
     "benchmark": "^2.1.4",
-    "browserify": "^16.2.3",
+    "browserify": "^16.3.0",
+    "bubleify": "^1.2.1",
     "d3": "^4.12.0",
     "documentation": "~9.1.1",
     "ejs": "^2.5.7",
@@ -108,7 +111,9 @@
     "stylelint-config-standard": "^18.2.0",
     "tap": "~12.4.1",
     "tape": "^4.11.0",
-    "testem": "^2.17.0"
+    "testem": "^2.17.0",
+    "through2": "^3.0.1",
+    "unflowify": "^1.0.1"
   },
   "browser": {
     "./src/shaders/index.js": "./src/shaders/shaders.js",

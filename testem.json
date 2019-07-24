@@ -1,0 +1,11 @@
+{
+    "framework": "tap",
+    "src_files": [
+        "src/**/*.js",
+        "test/**/*.js"
+    ],
+    "serve_files": [
+        "rollup/build/test/unit.js"
+    ],
+    "launch_in_dev": [ "Chrome" ]
+}
