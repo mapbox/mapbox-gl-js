@@ -1455,11 +1455,13 @@ class Map extends Camera {
     }
 
     /**
-     * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
+     * Sets the state of a feature. The `state` object is merged in with the existing state of the feature. 
+     * Features are identified by their `id` attribute, which must be an integer or a string that can be 
+     * cast to an integer.
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {string | number} feature.id Unique id of the feature.
+     * @param {string | number} feature.id Unique id of the feature. 
      * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
      *  required.*
@@ -1480,7 +1482,8 @@ class Map extends Camera {
      * source is specified, removes all states of that source. If
      * target.id is also specified, removes all keys for that feature's state.
      * If key is also specified, removes that key from that feature's state.
-     *
+     * Features are identified by their `id` attribute, which must be an integer or a string that can be 
+     * cast to an integer.
      * @param {Object} target Identifier of where to set state: can be a source, a feature, or a specific key of feature.
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} target.id (optional) Unique id of the feature. Optional if key is not specified.
@@ -1496,7 +1499,9 @@ class Map extends Camera {
 
     /**
      * Gets the state of a feature.
-     *
+     * Features are identified by their `id` attribute, which must be an integer or a string that can be 
+     * cast to an integer.
+     * 
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} feature.id Unique id of the feature.
