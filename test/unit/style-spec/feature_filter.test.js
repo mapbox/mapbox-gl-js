@@ -139,6 +139,29 @@ test('convert legacy filters to expressions', t => {
         t.end();
     });
 
+    t.test('removes duplicates when outputting match expressions', (t) => {
+        const filter = [
+            "in",
+            "$id",
+            1,
+            1,
+            2,
+            3
+        ];
+
+        const expected = [
+            "match",
+            ["id"],
+            [1, 2, 3],
+            true,
+            false
+        ];
+
+        const converted = convertFilter(filter);
+        t.same(converted, expected);
+        t.end();
+    });
+
     t.end();
 });
 
