@@ -113,6 +113,8 @@
   },
   "esm": true,
   "scripts": {
+    "create-release-branch": "git checkout -b $RELEASE && git push -u origin $RELEASE",
+    "get-release-branch": "git fetch && git checkout $RELEASE && git reset HEAD --hard && rm -r node_modules && yarn install && yarn test && yarn run test-suite",
     "build-dev": "rollup -c --environment BUILD:dev",
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
     "build-prod": "rollup -c --environment BUILD:production",
