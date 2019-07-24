@@ -1466,7 +1466,7 @@ class Map extends Camera {
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      *
      * This method requires the `feature.id` attribute on data sets. For GeoJSON sources without
-     * feature ids, set the `generateIds` option in the `GeoJSONSourceSpecification` to auto-assign them. This
+     * feature ids, set the `generateId` option in the `GeoJSONSourceSpecification` to auto-assign them. This
      * option assigns ids based on a feature's index in the source data. If you change feature data using
      * `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
      */
