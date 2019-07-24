@@ -116,7 +116,7 @@
     "create-release-branch": "git checkout -b $RELEASE && git push -u origin $RELEASE",
     "get-release-branch": "git fetch && git checkout $RELEASE && git reset HEAD --hard && clean-branch",
     "clean-branch": "rm -r node_modules && yarn install && run-s test test-suite",
-    "preversion": "git checkout -b v$npm_package_version && git commit -am $npm_package_version && git push origin $npm_package_version && open https://github.com/mapbox/mapbox-gl-js/compare/$RELEASE...$npm_package_version?expand=1",
+    "preversion": "git checkout -b v$npm_package_version && git commit -am v$npm_package_version && git push origin v$npm_package_version && open https://github.com/mapbox/mapbox-gl-js/compare/$RELEASE...v$npm_package_version?expand=1",
     "build-dev": "rollup -c --environment BUILD:dev",
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
     "build-prod": "rollup -c --environment BUILD:production",
