@@ -31,10 +31,11 @@ export const only = (tape.only: CreateTest);
 const consoleError = console.error;
 const consoleWarn = console.warn;
 
-//TODO: Implement this in tape
-// tape.beforeEach(function (done) {
-//     this.sandbox = sinon.createSandbox({
-//         injectInto: this,
+let sandbox;
+
+// tape.test('setup', function (t) {
+//     sandbox = sinon.createSandbox({
+//         injectInto: t,
 //         properties: ['spy', 'stub', 'mock']
 //     });
 
@@ -43,16 +44,16 @@ const consoleWarn = console.warn;
 //     // $FlowFixMe the assignment is intentional
 //     console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
 
-//     done();
+//     t.end();
 // });
 
-// tape.afterEach(function (done) {
+// tape.test('teardown', function (t) {
 //     // $FlowFixMe the assignment is intentional
 //     console.error = consoleError;
 //     // $FlowFixMe the assignment is intentional
 //     console.warn = consoleWarn;
 
-//     this.sandbox.restore();
+//     sandbox.restore();
 
-//     done();
+//     t.end();
 // });
