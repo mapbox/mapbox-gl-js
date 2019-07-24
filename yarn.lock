@@ -1162,10 +1162,10 @@
     webpack-merge "^4.1.2"
     worker-farm "^1.6.0"
 
-"@mapbox/dr-ui@0.19.0":
-  version "0.19.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.19.0.tgz#cd5a89f91370633e1eda697b9f6147d8991b1141"
-  integrity sha512-bRA6dQUtJ582Eja9cfJ10oM4C+Kb9rT7KYYcT2yku/QsqchSMceW7eJekzG4fffU7PL49+7Iwnzxa0QiMLmxKQ==
+"@mapbox/dr-ui@0.19.2":
+  version "0.19.2"
+  resolved "https://registry.yarnpkg.com/@mapbox/dr-ui/-/dr-ui-0.19.2.tgz#1317aceecfc0382fc003e3dac7073cd2b98a0c2d"
+  integrity sha512-YjCsbDZl4xnwcMamI7l9Ro/4sBKn5Tn9o4Zkgf5DSXCjcq12nmojh4BmJ5K54rGp+b39cShy7EgGX8JxnhF9Vg==
   dependencies:
     "@elastic/react-search-ui" "^1.0.0"
     "@elastic/react-search-ui-views" "^1.0.0"
