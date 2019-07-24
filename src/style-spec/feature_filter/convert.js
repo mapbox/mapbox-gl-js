@@ -187,7 +187,16 @@ function convertInOp(property: string, values: Array<any>, negate = false) {
     }
 
     if (uniformTypes && (type === 'string' || type === 'number')) {
-        return ['match', get, values, !negate, negate];
+        // Match expressions must have unique values.
+        const seen = [];
+        const uniqueValues = values.filter(v => {
+            if (seen.indexOf(v) === -1) {
+                seen.push(v);
+                return true;
+            }
+            return false;
+        });
+        return ['match', get, uniqueValues, !negate, negate];
     }
 
     return [ negate ? 'all' : 'any' ].concat(
