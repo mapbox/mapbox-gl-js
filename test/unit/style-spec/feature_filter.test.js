@@ -121,7 +121,7 @@ test('convert legacy filters to expressions', t => {
             [
                 "match",
                 ["geometry-type"],
-                ["Polygon", "LineString", "Point"],
+                ["LineString", "Point", "Polygon"],
                 true,
                 false
             ],
@@ -144,9 +144,10 @@ test('convert legacy filters to expressions', t => {
             "in",
             "$id",
             1,
-            1,
             2,
-            3
+            3,
+            2,
+            1
         ];
 
         const expected = [
