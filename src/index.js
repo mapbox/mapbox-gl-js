@@ -112,6 +112,10 @@ const exported = {
      * cache that is managed by this library. Tiles may still be cached by the browser
      * in some cases.
      *
+     * This API is supported on browsers where the `Cache` API is supported and enabled.
+     * This includes all major browsers when pages are served over `https://`, except
+     * Internet Explorer and Edge Mobile.
+     *
      * @function clearStorage
      * @param {Function} callback Called with an error argument if there is an error.
      */
