@@ -188,9 +188,7 @@ function convertInOp(property: string, values: Array<any>, negate = false) {
 
     if (uniformTypes && (type === 'string' || type === 'number')) {
         // Match expressions must have unique values.
-        const uniqueValues = values.sort().filter((value, i) => {
-            return i === 0 || values[i - 1] !== value;
-        });
+        const uniqueValues = values.sort().filter((v, i) => i === 0 || values[i - 1] !== v);
         return ['match', get, uniqueValues, !negate, negate];
     }
 
