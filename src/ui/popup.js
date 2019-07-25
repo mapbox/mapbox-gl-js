@@ -203,6 +203,10 @@ export default class Popup extends Evented {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
 
+        this._trackPointer = false;
+
+        this._update();
+
         if (this._map) {
             this._map.on('move', this._update);
             this._map.off('mousemove');
@@ -210,9 +214,6 @@ export default class Popup extends Evented {
             this._map._canvasContainer.classList.remove('mapboxgl-track-pointer');
         }
 
-        this._trackPointer = false;
-
-        this._update();
         return this;
     }
 
