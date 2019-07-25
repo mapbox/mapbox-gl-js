@@ -54,7 +54,7 @@ class ApiItem extends React.Component {
                 <div>
                     <div className='py6 mt12 txt-m txt-bold'>{title}</div>
                     <div className='mb18'>
-                        {members.map((member, i) => <ApiItemMember key={i} {...member}/>)}
+                        {members.map((member, i) => <ApiItemMember {...this.props} key={i} {...member}/>)}
                     </div>
                 </div>;
 
