@@ -1,6 +1,6 @@
 /* @flow */
 
-import tape from 'tape';
+import { test } from './tape_build';
 import sinon from 'sinon';
 
 type CreateTest = (typeof sinon) & {
@@ -25,13 +25,13 @@ type CreateTest = (typeof sinon) & {
     tearDown(() => void): void,
 };
 
-export const test = (tape.test: CreateTest);
-export const only = (tape.only: CreateTest);
+export default test;
+// export const only = (tape.only: CreateTest);
 
-const consoleError = console.error;
-const consoleWarn = console.warn;
+// const consoleError = console.error;
+// const consoleWarn = console.warn;
 
-let sandbox;
+// let sandbox;
 
 // tape.test('setup', function (t) {
 //     sandbox = sinon.createSandbox({

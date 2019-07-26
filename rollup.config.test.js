@@ -1,15 +1,15 @@
-import {testPlugins} from './build/rollup_plugins';
+import {plugins} from './build/rollup_plugins';
 
 
 export default {
     // POC with running the browser tests in the browser
-    input: ['test/unit/util/browser.test.js'],
+    input: 'test/util/test.js',
     output: {
-        format: 'umd',
+        name: 'tape',
+        format: 'iife',
         sourcemap: 'inline',
         indent: false,
         file: 'rollup/build/test/unit.js'
     },
-    treeshake: true,
-    plugins: testPlugins
+    plugins: plugins(false, false, true)
 }
