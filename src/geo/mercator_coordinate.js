@@ -132,11 +132,15 @@ class MercatorCoordinate {
     }
 
     /**
-     * Returns the scale transform to convert real world units (meters) into `MercatorCoordinate`s.
+     * Returns the distance of 1 meter in `MercatorCoordinate` units at this latitude.
      *
-     * @returns {number} The scale number.
+     * For coordinates in real world units using meters, this naturally provides the scale
+     * to transform into `MercatorCoordinate`s.
+     *
+     * @returns {number} Distance of 1 meter in `MercatorCoordinate` units.
      */
-    toScale() {
+    meterInMercatorCoordinateUnits() {
+        // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude
         return 1 / circumferenceAtEquator * mercatorScale(latFromMercatorY(this.y));
     }
 
