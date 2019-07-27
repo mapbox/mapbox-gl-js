@@ -5,6 +5,7 @@
         "test/**/*.js"
     ],
     "serve_files": [
+        "rollup/build/test/tape.js",
         "rollup/build/test/unit.js"
     ],
     "launch_in_dev": [ "Chrome" ]

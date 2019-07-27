@@ -2,14 +2,14 @@ import {plugins} from './build/rollup_plugins';
 
 
 export default {
-    // POC with running the browser tests in the browser
-    input: 'test/util/test.js',
+    input: 'test/unit/ui/**/*.js',
     output: {
-        name: 'tape',
+        name: 'test',
         format: 'iife',
         sourcemap: 'inline',
         indent: false,
         file: 'rollup/build/test/unit.js'
     },
-    plugins: plugins(false, false, true)
+    plugins: plugins(false, false, true),
+    external: [ 'tape' ]
 }

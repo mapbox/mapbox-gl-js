@@ -1,6 +1,6 @@
 /* @flow */
 
-import { test } from './tape_build';
+import tape from 'tape';
 import sinon from 'sinon';
 
 type CreateTest = (typeof sinon) & {
@@ -25,17 +25,15 @@ type CreateTest = (typeof sinon) & {
     tearDown(() => void): void,
 };
 
-export default test;
-// export const only = (tape.only: CreateTest);
+export const test = (tape.test: CreateTest);
+export const only = (tape.only: CreateTest);
 
 // const consoleError = console.error;
 // const consoleWarn = console.warn;
 
-// let sandbox;
-
-// tape.test('setup', function (t) {
-//     sandbox = sinon.createSandbox({
-//         injectInto: t,
+// tap.beforeEach(function (done) {
+//     this.sandbox = sinon.createSandbox({
+//         injectInto: this,
 //         properties: ['spy', 'stub', 'mock']
 //     });
 
@@ -44,16 +42,16 @@ export default test;
 //     // $FlowFixMe the assignment is intentional
 //     console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
 
-//     t.end();
+//     done();
 // });
 
-// tape.test('teardown', function (t) {
+// tap.afterEach(function (done) {
 //     // $FlowFixMe the assignment is intentional
 //     console.error = consoleError;
 //     // $FlowFixMe the assignment is intentional
 //     console.warn = consoleWarn;
 
-//     sandbox.restore();
+//     this.sandbox.restore();
 
-//     t.end();
+//     done();
 // });

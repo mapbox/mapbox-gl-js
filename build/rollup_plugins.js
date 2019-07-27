@@ -6,8 +6,6 @@ import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from 'rollup-plugin-json';
 import { terser } from 'rollup-plugin-terser';
-import builtins from 'rollup-plugin-node-builtins';
-import globals from 'rollup-plugin-node-globals';
 import multiEntry from 'rollup-plugin-multi-entry';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import { createFilter } from 'rollup-pluginutils';
@@ -19,8 +17,6 @@ export const plugins = (minified, production, test) => [
     flow(),
     test ? false : minifyStyleSpec(),
     json(),
-    test ? globals() : false,
-    test ? builtins() : false,
     test ? multiEntry() : false,
     glsl('./src/shaders/*.glsl', production),
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
@@ -33,10 +29,7 @@ export const plugins = (minified, production, test) => [
     commonjs({
         // global keyword handling causes Webpack compatibility issues, so we disabled it:
         // https://github.com/mapbox/mapbox-gl-js/pull/6956
-        ignoreGlobal: true,
-        namedExports: {
-            'test/util/tape_build.js': [ 'test' ]
-        }
+        ignoreGlobal: true
     })
 ].filter(Boolean);
 
