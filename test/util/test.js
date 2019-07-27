@@ -1,6 +1,6 @@
 /* @flow */
 
-import tape from 'tape';
+import tap from 'tap';
 import sinon from 'sinon';
 
 type CreateTest = (typeof sinon) & {
@@ -25,33 +25,33 @@ type CreateTest = (typeof sinon) & {
     tearDown(() => void): void,
 };
 
-export const test = (tape.test: CreateTest);
-export const only = (tape.only: CreateTest);
+export const test = (tap.test: CreateTest);
+export const only = (tap.only: CreateTest);
 
-// const consoleError = console.error;
-// const consoleWarn = console.warn;
+const consoleError = console.error;
+const consoleWarn = console.warn;
 
-// tap.beforeEach(function (done) {
-//     this.sandbox = sinon.createSandbox({
-//         injectInto: this,
-//         properties: ['spy', 'stub', 'mock']
-//     });
+tap.beforeEach(function (done) {
+    this.sandbox = sinon.createSandbox({
+        injectInto: this,
+        properties: ['spy', 'stub', 'mock']
+    });
 
-//     // $FlowFixMe the assignment is intentional
-//     console.error = () => this.fail(`console.error called -- please adjust your test (maybe stub console.error?)`);
-//     // $FlowFixMe the assignment is intentional
-//     console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
+    // $FlowFixMe the assignment is intentional
+    console.error = () => this.fail(`console.error called -- please adjust your test (maybe stub console.error?)`);
+    // $FlowFixMe the assignment is intentional
+    console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
 
-//     done();
-// });
+    done();
+});
 
-// tap.afterEach(function (done) {
-//     // $FlowFixMe the assignment is intentional
-//     console.error = consoleError;
-//     // $FlowFixMe the assignment is intentional
-//     console.warn = consoleWarn;
+tap.afterEach(function (done) {
+    // $FlowFixMe the assignment is intentional
+    console.error = consoleError;
+    // $FlowFixMe the assignment is intentional
+    console.warn = consoleWarn;
 
-//     this.sandbox.restore();
+    this.sandbox.restore();
 
-//     done();
-// });
+    done();
+});
