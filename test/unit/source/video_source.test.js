@@ -15,7 +15,6 @@ function createSource(options) {
     return source;
 }
 
-
 test('VideoSource', (t) => {
 
     const source = createSource({
