@@ -12,9 +12,13 @@ There are two test suites associated with Mapbox GL JS
 
  To run individual tests:
 
- - Unit tests: `yarn test-unit path/to/file.test.js` where path *does not include* `test/unit/` 
+ - Unit tests: `yarn test-unit path/to/file.test.js` where path *does not include* `test/unit/`
    - e.g. `yarn test-unit ui/handler/scroll_zoom.test.js`
  - Render tests: `yarn test-render render-test-name` (e.g. `yarn test-render background-color/default`)
+
+## Integration Tests
+
+See [`test/integration/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/integration/README.md).
 
 ## Writing Unit Tests
 

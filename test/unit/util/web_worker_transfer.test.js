@@ -87,4 +87,3 @@ test('custom serialization', (t) => {
     t.end();
 });
 
-

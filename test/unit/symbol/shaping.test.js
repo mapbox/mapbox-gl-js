@@ -63,7 +63,6 @@ test('shaping', (t) => {
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-zero-width-space.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(shaped, expectedZeroWidthSpaceBreak);
 
-
     // Null shaping.
     shaped = shaping.shapeText(Formatted.fromString(''), glyphs, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal);
     t.equal(false, shaped);

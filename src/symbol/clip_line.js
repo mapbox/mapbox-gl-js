@@ -26,7 +26,6 @@ function clipLine(lines: Array<Array<Point>>, x1: number, y1: number, x2: number
             let p0 = line[i];
             let p1 = line[i + 1];
 
-
             if (p0.x < x1 && p1.x < x1) {
                 continue;
             } else if (p0.x < x1) {

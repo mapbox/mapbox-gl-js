@@ -94,7 +94,6 @@ test('classifyRings + maxRings', (t) => {
         return geometry;
     }
 
-
     t.test('maxRings=undefined', (t) => {
         const geometry = sortRings(classifyRings(createGeometry()));
         t.equal(geometry.length, 1);

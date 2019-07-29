@@ -89,5 +89,4 @@ class LogoControl {
 
 }
 
-
 export default LogoControl;

@@ -21,7 +21,6 @@
 <script src='/debug/access_token_generated.js'></script>
 <script>
 
-
 const CACHE_NAME = 'mapbox-tiles';
 let map;
 let cache;
@@ -50,8 +49,6 @@ function logResult() {
         r.style.backgroundColor = '#fcc';
     }
 }
-
-
 
 async function start(done) {
     cache = await caches.open(CACHE_NAME);
@@ -87,7 +84,6 @@ async function start(done) {
         });
     });
 }
-
 
 function storageClearedTest(callback) {
     mapboxgl.clearStorage(function() {
@@ -265,7 +261,6 @@ function initializeRaster(done) {
     map.on('load', done);
 }
 
-
 const expectedRasterURL = 'https://api.mapbox.com/v4/mapbox.satellite/1/0/0';
 let rasterTileExpiry;
 
@@ -324,14 +319,12 @@ function moveToFuture(skip) {
     };
 }
 
-
 function matchURL(keys, s) {
     for (const key of keys) {
         if (key.url.indexOf(s) >= 0) return true;
     }
     return false;
 }
-
 
 </script>
 </body>

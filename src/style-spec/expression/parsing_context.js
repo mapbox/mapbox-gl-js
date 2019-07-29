@@ -12,7 +12,6 @@ import CollatorExpression from './definitions/collator';
 import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
 import Var from './definitions/var';
 
-
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
 

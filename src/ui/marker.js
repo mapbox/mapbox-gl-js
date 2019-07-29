@@ -228,6 +228,8 @@ export default class Marker extends Evented {
             this._map.off('touchstart', this._addDragHandler);
             this._map.off('mouseup', this._onUp);
             this._map.off('touchend', this._onUp);
+            this._map.off('mousemove', this._onMove);
+            this._map.off('touchmove', this._onMove);
             delete this._map;
         }
         DOM.remove(this._element);

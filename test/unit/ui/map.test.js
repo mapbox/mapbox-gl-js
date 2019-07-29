@@ -50,6 +50,15 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('bad map-specific token breaks map', (t) => {
+        const container = window.document.createElement('div');
+        Object.defineProperty(container, 'offsetWidth', {value: 512});
+        Object.defineProperty(container, 'offsetHeight', {value: 512});
+        createMap(t, {accessToken:'notAToken'});
+        t.error();
+        t.end();
+    });
+
     t.test('initial bounds in constructor options', (t) => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});
@@ -524,7 +533,6 @@ test('Map', (t) => {
             t.end();
         });
 
-
         t.test('listen to window resize event', (t) => {
             window.addEventListener = function(type) {
                 if (type === 'resize') {
@@ -880,7 +888,6 @@ test('Map', (t) => {
         t.end();
 
     });
-
 
     t.test('#removeControl', (t) => {
         const map = createMap(t);

@@ -6,7 +6,6 @@ import {Struct, StructArray} from '../util/struct_array';
 import {register} from '../util/web_worker_transfer';
 import Point from '@mapbox/point-geometry';
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Int16[2]
@@ -38,7 +37,6 @@ class StructArrayLayout2i4 extends StructArray {
 
 StructArrayLayout2i4.prototype.bytesPerElement = 4;
 register('StructArrayLayout2i4', StructArrayLayout2i4);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -73,7 +71,6 @@ class StructArrayLayout4i8 extends StructArray {
 
 StructArrayLayout4i8.prototype.bytesPerElement = 8;
 register('StructArrayLayout4i8', StructArrayLayout4i8);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -111,7 +108,6 @@ class StructArrayLayout2i4i12 extends StructArray {
 
 StructArrayLayout2i4i12.prototype.bytesPerElement = 12;
 register('StructArrayLayout2i4i12', StructArrayLayout2i4i12);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -151,7 +147,6 @@ class StructArrayLayout2i4ub8 extends StructArray {
 StructArrayLayout2i4ub8.prototype.bytesPerElement = 8;
 register('StructArrayLayout2i4ub8', StructArrayLayout2i4ub8);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Uint16[8]
@@ -189,7 +184,6 @@ class StructArrayLayout8ui16 extends StructArray {
 
 StructArrayLayout8ui16.prototype.bytesPerElement = 16;
 register('StructArrayLayout8ui16', StructArrayLayout8ui16);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -232,7 +226,6 @@ class StructArrayLayout4i4ui16 extends StructArray {
 StructArrayLayout4i4ui16.prototype.bytesPerElement = 16;
 register('StructArrayLayout4i4ui16', StructArrayLayout4i4ui16);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Float32[3]
@@ -266,7 +259,6 @@ class StructArrayLayout3f12 extends StructArray {
 StructArrayLayout3f12.prototype.bytesPerElement = 12;
 register('StructArrayLayout3f12', StructArrayLayout3f12);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Uint32[1]
@@ -297,7 +289,6 @@ class StructArrayLayout1ul4 extends StructArray {
 
 StructArrayLayout1ul4.prototype.bytesPerElement = 4;
 register('StructArrayLayout1ul4', StructArrayLayout1ul4);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -348,7 +339,6 @@ class StructArrayLayout6i1ul2ui2i24 extends StructArray {
 StructArrayLayout6i1ul2ui2i24.prototype.bytesPerElement = 24;
 register('StructArrayLayout6i1ul2ui2i24', StructArrayLayout6i1ul2ui2i24);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Int16[2]
@@ -387,7 +377,6 @@ class StructArrayLayout2i2i2i12 extends StructArray {
 StructArrayLayout2i2i2i12.prototype.bytesPerElement = 12;
 register('StructArrayLayout2i2i2i12', StructArrayLayout2i2i2i12);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Uint8[2]
@@ -423,7 +412,6 @@ class StructArrayLayout2ub2f12 extends StructArray {
 
 StructArrayLayout2ub2f12.prototype.bytesPerElement = 12;
 register('StructArrayLayout2ub2f12', StructArrayLayout2ub2f12);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -484,7 +472,6 @@ class StructArrayLayout2i2ui3ul3ui2f2ub1ul44 extends StructArray {
 StructArrayLayout2i2ui3ul3ui2f2ub1ul44.prototype.bytesPerElement = 44;
 register('StructArrayLayout2i2ui3ul3ui2f2ub1ul44', StructArrayLayout2i2ui3ul3ui2f2ub1ul44);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Int16[6]
@@ -543,7 +530,6 @@ class StructArrayLayout6i9ui1ul2f44 extends StructArray {
 StructArrayLayout6i9ui1ul2f44.prototype.bytesPerElement = 44;
 register('StructArrayLayout6i9ui1ul2f44', StructArrayLayout6i9ui1ul2f44);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Float32[1]
@@ -574,7 +560,6 @@ class StructArrayLayout1f4 extends StructArray {
 
 StructArrayLayout1f4.prototype.bytesPerElement = 4;
 register('StructArrayLayout1f4', StructArrayLayout1f4);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -608,7 +593,6 @@ class StructArrayLayout3i6 extends StructArray {
 
 StructArrayLayout3i6.prototype.bytesPerElement = 6;
 register('StructArrayLayout3i6', StructArrayLayout3i6);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -647,7 +631,6 @@ class StructArrayLayout1ul2ui8 extends StructArray {
 StructArrayLayout1ul2ui8.prototype.bytesPerElement = 8;
 register('StructArrayLayout1ul2ui8', StructArrayLayout1ul2ui8);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Uint16[3]
@@ -681,7 +664,6 @@ class StructArrayLayout3ui6 extends StructArray {
 StructArrayLayout3ui6.prototype.bytesPerElement = 6;
 register('StructArrayLayout3ui6', StructArrayLayout3ui6);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Uint16[2]
@@ -714,7 +696,6 @@ class StructArrayLayout2ui4 extends StructArray {
 StructArrayLayout2ui4.prototype.bytesPerElement = 4;
 register('StructArrayLayout2ui4', StructArrayLayout2ui4);
 
-
 /**
  * Implementation of the StructArray layout:
  * [0]: Uint16[1]
@@ -745,7 +726,6 @@ class StructArrayLayout1ui2 extends StructArray {
 
 StructArrayLayout1ui2.prototype.bytesPerElement = 2;
 register('StructArrayLayout1ui2', StructArrayLayout1ui2);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -778,7 +758,6 @@ class StructArrayLayout2f8 extends StructArray {
 
 StructArrayLayout2f8.prototype.bytesPerElement = 8;
 register('StructArrayLayout2f8', StructArrayLayout2f8);
-
 
 /**
  * Implementation of the StructArray layout:
@@ -813,7 +792,6 @@ class StructArrayLayout4f16 extends StructArray {
 
 StructArrayLayout4f16.prototype.bytesPerElement = 16;
 register('StructArrayLayout4f16', StructArrayLayout4f16);
-
 
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
@@ -857,7 +835,6 @@ class CollisionBoxStruct extends Struct {
 CollisionBoxStruct.prototype.size = 24;
 
 export type CollisionBox = CollisionBoxStruct;
-
 
 /**
  * @private
@@ -927,7 +904,6 @@ class PlacedSymbolStruct extends Struct {
 PlacedSymbolStruct.prototype.size = 44;
 
 export type PlacedSymbol = PlacedSymbolStruct;
-
 
 /**
  * @private
@@ -1007,7 +983,6 @@ SymbolInstanceStruct.prototype.size = 44;
 
 export type SymbolInstance = SymbolInstanceStruct;
 
-
 /**
  * @private
  */
@@ -1034,7 +1009,6 @@ class GlyphOffsetStruct extends Struct {
 GlyphOffsetStruct.prototype.size = 4;
 
 export type GlyphOffset = GlyphOffsetStruct;
-
 
 /**
  * @private
@@ -1069,7 +1043,6 @@ class SymbolLineVertexStruct extends Struct {
 SymbolLineVertexStruct.prototype.size = 6;
 
 export type SymbolLineVertex = SymbolLineVertexStruct;
-
 
 /**
  * @private
@@ -1107,7 +1080,6 @@ FeatureIndexStruct.prototype.size = 8;
 
 export type FeatureIndex = FeatureIndexStruct;
 
-
 /**
  * @private
  */
@@ -1123,7 +1095,6 @@ export class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
 }
 
 register('FeatureIndexArray', FeatureIndexArray);
-
 
 export {
     StructArrayLayout2i4,

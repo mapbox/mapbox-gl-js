@@ -1,5 +1,5 @@
 
-function window(target) {
+export function window(target) {
     if (target.ownerDocument) {
         return target.ownerDocument.defaultView;
     } else if (target.defaultView) {

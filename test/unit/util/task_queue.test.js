@@ -51,7 +51,6 @@ test('TaskQueue', (t) => {
         t.end();
     });
 
-
     t.test('Allows each instance of a multiply-queued callback to be cancelled independently', (t) => {
         const q = new TaskQueue();
         const cb = t.spy();
