@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import glob from 'glob';
 import {shuffle} from 'shuffle-seed';
+import localizeURLs from './localize-urls';
 
 const OUTPUT_FILE = 'fixtures.json';
 
@@ -17,22 +18,28 @@ export default function ( directory, options ) {
     const tests = options.tests || [];
     const ignores = options.ignores || {};
 
-    const basePath = path.join(process.cwd(), directory);
+    const basePath = directory;
     const jsonPaths = path.join(basePath, '/**/*.json');
     const imagePaths = path.join(basePath, '/**/*.png');
+    const ignoreOutputPath = path.join(basePath, OUTPUT_FILE);
     //Extract the filedata into a flat dictionary
     let allFiles = {};
-    glob.sync(jsonPaths).concat(glob.sync(imagePaths)).forEach(fixturePath => {
-        try {
-            const fileName = path.basename(fixturePath);
-            const extension = path.extname(fixturePath)
+    let allPaths = glob.sync(jsonPaths, { ignore: [ignoreOutputPath] }).concat(glob.sync(imagePaths));
 
+    //A Set that stores test names that are malformed so they can eb reomved later
+    let malformedTests = {};
+
+    for(let fixturePath of allPaths){
+        const testName = path.dirname(fixturePath);
+        const fileName = path.basename(fixturePath);
+        const extension = path.extname(fixturePath)
+        try {
             if( extension === '.json' ){
                 let json = parseJsonFromFile(fixturePath);
 
                 //Special case for style json which needs some preprocessing
                 if( fileName === 'style.json' ) {
-
+                    json = processStyle(testName, json);
                 }
 
                 allFiles[fixturePath] = json;
@@ -43,18 +50,22 @@ export default function ( directory, options ) {
             }
         } catch (e) {
             console.log(`Error parsing file: ${fixturePath}`);
+            malformedTests[testName] = true;
         }
-    });
+    }
 
-    // Re-nest by directory name, each directory name defines a testcase.
+    // Re-nest by directory path, each directory path defines a testcase.
     let result = {};
     for ( let fullPath in allFiles ) {
-        const dirName = path.dirname(fullPath);
-        if( result[dirName] == null ){
-            result[dirName] = {};
+        const testName = path.dirname(fullPath);
+        //Skip if test is malformed
+        if(malformedTests[testName]) { continue; }
+
+        if( result[testName] == null ){
+            result[testName] = {};
         }
         const fileName = path.basename(fullPath, path.extname(fullPath));
-        result[dirName][fileName] = allFiles[fullPath];
+        result[testName][fileName] = allFiles[fullPath];
     }
 
     const outputStr = JSON.stringify(result, null, 4);
@@ -70,4 +81,21 @@ function parseJsonFromFile( filePath ) {
 
 function pngToBase64Str( filePath ) {
     return fs.readFileSync(filePath).toString('base64');
+}
+
+function processStyle( testName, style ) {
+    let clone = JSON.parse(JSON.stringify(style));
+    localizeURLs(clone);
+
+    clone.metadata = clone.metadata || {};
+    clone.metadata.test = Object.assign({
+        testName,
+        width: 512,
+        height: 512,
+        pixelRatio: 1,
+        recycleMap: false,
+        allowed: 0.00015
+    }, style.metadata.test);
+
+    return clone;
 }
