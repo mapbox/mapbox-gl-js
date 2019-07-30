@@ -12,7 +12,8 @@ var map = new mapboxgl.Map({
     },
     zoom: 15,
     pitch: 55,
-    container: 'map'
+    container: 'map',
+    antialias: true
 });
 
 map.addControl(new mapboxgl.FullscreenControl());

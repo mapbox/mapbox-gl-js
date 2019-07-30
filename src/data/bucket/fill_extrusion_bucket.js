@@ -34,7 +34,6 @@ import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state';
 import type {ImagePosition} from '../../render/image_atlas';
 
-
 const FACTOR = Math.pow(2, 13);
 
 function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
@@ -50,7 +49,6 @@ function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
         Math.round(e)
     );
 }
-
 
 class FillExtrusionBucket implements Bucket {
     index: number;

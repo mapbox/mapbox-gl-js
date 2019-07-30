@@ -28,7 +28,6 @@ function isComparableType(op: ComparisonOperator, type: Type) {
     }
 }
 
-
 function eq(ctx, a, b) { return a === b; }
 function neq(ctx, a, b) { return a !== b; }
 function lt(ctx, a, b) { return a < b; }

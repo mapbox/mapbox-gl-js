@@ -229,9 +229,7 @@ import {register} from '../util/web_worker_transfer';
 import Point from '@mapbox/point-geometry';
 
 ${layouts.map(structArrayLayoutJs).join('\n')}
-
 ${arraysWithStructAccessors.map(structArrayJs).join('\n')}
-
 export {
     ${layouts.map(layout => layout.className).join(',\n    ')},
     ${[...arrayTypeEntries].join(',\n    ')}

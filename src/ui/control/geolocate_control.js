@@ -434,7 +434,6 @@ export default GeolocateControl;
  *    There was an error from the Geolocation API while trying to show (but not track) the user location.
  */
 
-
 /**
  * Fired on each Geolocation API position update which returned as success.
  *

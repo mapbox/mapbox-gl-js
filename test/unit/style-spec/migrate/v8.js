@@ -120,7 +120,6 @@ test('renames urls', (t) => {
     t.end();
 });
 
-
 test('not migrate interpolated functions', (t) => {
     const input = {
         "version": 7,

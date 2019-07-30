@@ -27,7 +27,6 @@ const readPost = filename => {
     }
 };
 
-
 const listExamplesJs = dir => {
     const files = fs.readdirSync(`${dir}`);
     return files.reduce((arr, file) => {

@@ -17,7 +17,6 @@ test('hash', (t) => {
         return globalCreateMap(t, {container});
     }
 
-
     t.test('#addTo', (t) => {
         const map = createMap(t);
         const hash = createHash();

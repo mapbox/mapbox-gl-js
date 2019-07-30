@@ -460,7 +460,6 @@ export function b64EncodeUnicode(str: string) {
     );
 }
 
-
 // Unicode compliant decoder for base64-encoded strings
 export function b64DecodeUnicode(str: string) {
     return decodeURIComponent(window.atob(str).split('').map((c) => {

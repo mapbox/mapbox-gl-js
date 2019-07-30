@@ -175,7 +175,6 @@ test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTil
     t.end();
 });
 
-
 test('VectorTileWorkerSource provides resource timing information', (t) => {
     const rawTileData = fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
 

@@ -43,7 +43,6 @@ function tileCover(z: number, bounds: [MercatorCoordinate, MercatorCoordinate, M
     });
 }
 
-
 // Taken from polymaps src/Layer.js
 // https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
 

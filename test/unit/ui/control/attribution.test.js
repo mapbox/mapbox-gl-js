@@ -189,7 +189,6 @@ test('AttributionControl in compact mode shows custom attribution if customAttri
     t.end();
 });
 
-
 test('AttributionControl shows all custom attributions if customAttribution array of strings is provided', (t) => {
     const map = createMap(t);
     const attributionControl = new AttributionControl({

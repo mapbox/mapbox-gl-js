@@ -11,7 +11,6 @@ function createMockImage(height, width) {
     return new RGBAImage({height, width}, pixels);
 }
 
-
 test('DEMData', (t) => {
     t.test('constructor', (t) => {
         const dem = new DEMData(0, {width: 4, height: 4, data: new Uint8ClampedArray(4 * 4 * 4)});
@@ -43,7 +42,6 @@ test('DEMData', (t) => {
 
     t.end();
 });
-
 
 test('DEMData#backfillBorder', (t) => {
     const dem0 = new DEMData(0, createMockImage(4, 4));
@@ -127,7 +125,6 @@ test('DEMData#backfillBorder', (t) => {
         dem0.backfillBorder(dem1, 1, -1);
         t.true(dem0.get(4, -1) === dem1.get(0, 3), 'backfills neighbor -1, 1');
 
-
         t.end();
     });
 
@@ -161,7 +158,6 @@ test('DEMData#backfillBorder', (t) => {
 
         t.end();
     });
-
 
     t.end();
 });

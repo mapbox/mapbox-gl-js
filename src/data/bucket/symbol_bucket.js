@@ -36,7 +36,6 @@ import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
 
-
 import type {
     Bucket,
     BucketParameters,
@@ -576,7 +575,6 @@ class SymbolBucket implements Bucket {
             Math.round(extrude.x),
             Math.round(extrude.y));
     }
-
 
     addCollisionDebugVertices(x1: number, y1: number, x2: number, y2: number, arrays: CollisionBuffers, boxAnchorPoint: Point, symbolInstance: SymbolInstance, isCircle: boolean) {
         const segment = arrays.segments.prepareSegment(4, arrays.layoutVertexArray, arrays.indexArray);

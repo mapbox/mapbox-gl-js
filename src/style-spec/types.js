@@ -159,6 +159,7 @@ export type FillLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
+        "fill-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
@@ -186,6 +187,7 @@ export type LineLayerSpecification = {|
         "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter">,
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
+        "line-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
@@ -283,6 +285,7 @@ export type CircleLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
+        "circle-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|

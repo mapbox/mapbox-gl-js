@@ -127,7 +127,6 @@ export function getGlyphQuads(anchor: Anchor,
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
 
-
     for (let k = 0; k < positionedGlyphs.length; k++) {
         const positionedGlyph = positionedGlyphs[k];
         const glyphPositions = positions[positionedGlyph.fontStack];
