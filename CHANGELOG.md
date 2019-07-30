@@ -11,9 +11,7 @@
 
 ## Bug fixes
 * Fix changes to `text-variable-anchor`, such that previous anchor positions would take precedence only if they are present in the updated array (considered a bug fix, but is technically a breaking change from previous behavior) ([#8473](https://github.com/mapbox/mapbox-gl-js/pull/8473))
-* Fix unbounded memory growth caused by failure to cancel requests to the cache (https://github.com/mapbox/mapbox-gl-js/pull/8472)
 * Fix rendering of opaque pass layers over heatmap and fill-extrusion layers ([#8440](https://github.com/mapbox/mapbox-gl-js/pull/8440))
-* Fix regression in tile load times compared to 0.54.0 ([#8431](https://github.com/mapbox/mapbox-gl-js/issues/8431), fixed by [#8434](https://github.com/mapbox/mapbox-gl-js/pull/8434))
 * Fix rendering of extraneous vertical line in vector tiles ([#8477](https://github.com/mapbox/mapbox-gl-js/issues/8477), fixed by [#8479](https://github.com/mapbox/mapbox-gl-js/pull/8479))
 * Turn off 'move' event listeners when removing a marker ([#8465](https://github.com/mapbox/mapbox-gl-js/pull/8465))
 * Fix class toggling on navigation control for IE ([#8495](https://github.com/mapbox/mapbox-gl-js/pull/8495)) (h/t [cs09g](https://github.com/cs09g))
