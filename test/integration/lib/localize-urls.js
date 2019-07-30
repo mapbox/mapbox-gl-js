@@ -45,23 +45,23 @@ export default function localizeURLs(style) {
 
 
 function localizeURL(url) {
-    return url.replace(/^local:\/\//, 'http://localhost:2900/');
+    return url.replace(/^local:\/\//, 'http://localhost:7357/');
 }
 
 function localizeMapboxSpriteURL(url) {
-    return url.replace(/^mapbox:\/\//, 'http://localhost:2900/');
+    return url.replace(/^mapbox:\/\//, 'http://localhost:7357/');
 }
 
 function localizeMapboxFontsURL(url) {
-    return url.replace(/^mapbox:\/\/fonts/, 'http://localhost:2900/glyphs');
+    return url.replace(/^mapbox:\/\/fonts/, 'http://localhost:7357/glyphs');
 }
 
 function localizeMapboxTilesURL(url) {
-    return url.replace(/^mapbox:\/\//, 'http://localhost:2900/tiles/');
+    return url.replace(/^mapbox:\/\//, 'http://localhost:7357/tiles/');
 }
 
 function localizeMapboxTilesetURL(url) {
-    return url.replace(/^mapbox:\/\//, 'http://localhost:2900/tilesets/');
+    return url.replace(/^mapbox:\/\//, 'http://localhost:7357/tilesets/');
 }
 
 function localizeSourceURLs(source) {

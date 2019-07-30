@@ -22,7 +22,13 @@ const config: Config = {
         }
     },
     FEEDBACK_URL: 'https://apps.mapbox.com/feedback',
-    REQUIRE_ACCESS_TOKEN: true,
+    REQUIRE_ACCESS_TOKEN: (() => {
+        if(__ENVIRONMENT__ === 'test'){
+            return false;
+        }
+
+        return true;
+    }),
     ACCESS_TOKEN: null,
     MAX_PARALLEL_IMAGE_REQUESTS: 16
 };
