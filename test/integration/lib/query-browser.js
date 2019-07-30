@@ -83,7 +83,7 @@ function applyOperations(map, operations, doneCb) {
 
     // Start recursive chain
     const scheduleNextOperation = (lastOpIndex) => {
-        if(lastOpIndex === operations.length){
+        if(lastOpIndex === operations.length - 1){
             // Stop recusive chain when at the end of the operations
             doneCb();
             return;

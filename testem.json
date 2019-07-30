@@ -12,6 +12,18 @@
     "proxies": {
         "/tiles":{
            "target": "http://localhost:2900"
+        },
+        "/glyphs":{
+           "target": "http://localhost:2900"
+        },
+        "/tilesets":{
+           "target": "http://localhost:2900"
+        },
+        "/sprites":{
+           "target": "http://localhost:2900"
+        },
+        "/data":{
+           "target": "http://localhost:2900"
         }
     }
 }
