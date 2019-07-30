@@ -1,5 +1,8 @@
 #define SDF_PX 8.0
 
+#define SDF 0.0
+#define ICON 1.0
+
 uniform bool u_is_halo;
 uniform sampler2D u_texture;
 uniform highp float u_gamma_scale;
@@ -7,7 +10,7 @@ uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
 
 varying vec2 v_data0;
-varying vec3 v_data1;
+varying vec4 v_data1;
 
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
@@ -22,12 +25,23 @@ void main() {
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
 
+    float fade_opacity = v_data1[2];
+    vec2 tex = v_data0.xy;
+
+    if (v_data1.w == ICON) {
+        lowp float alpha = opacity * fade_opacity;
+        gl_FragColor = texture2D(u_texture, tex) * alpha;
+
+#ifdef OVERDRAW_INSPECTOR
+        gl_FragColor = vec4(1.0);
+#endif
+        return;
+    }
+
     float EDGE_GAMMA = 0.105 / u_device_pixel_ratio;
 
-    vec2 tex = v_data0.xy;
     float gamma_scale = v_data1.x;
     float size = v_data1.y;
-    float fade_opacity = v_data1[2];
 
     float fontScale = u_is_text ? size / 24.0 : size;
 

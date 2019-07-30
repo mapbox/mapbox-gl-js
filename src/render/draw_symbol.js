@@ -131,7 +131,7 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
                     shift);
 
             for (let g = 0; g < symbol.numGlyphs; g++) {
-                addDynamicAttributes(dynamicLayoutVertexArray, shiftedAnchor, 0);
+                addDynamicAttributes(dynamicLayoutVertexArray, shiftedAnchor, 0, false);
             }
         }
     }
@@ -176,7 +176,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
 
         if (!program) {
-            program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
+            program = painter.useProgram('symbolSDF', programConfiguration);
             size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
         }
 
@@ -206,7 +206,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
 
         if (alongLine) {
-            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
+            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, isSDF, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
         } else if (isText && size && variablePlacement) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
             updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,

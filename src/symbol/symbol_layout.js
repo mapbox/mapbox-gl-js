@@ -437,7 +437,8 @@ function addTextVertices(bucket: SymbolBucket,
         writingMode,
         anchor,
         lineArray.lineStartIndex,
-        lineArray.lineLength);
+        lineArray.lineLength,
+        false);
 
     // The placedSymbolArray is used at render time in drawTileSymbols
     // These indices allow access to the array at collision detection time
@@ -565,7 +566,8 @@ function addSymbol(bucket: SymbolBucket,
             false,
             anchor,
             lineArray.lineStartIndex,
-            lineArray.lineLength);
+            lineArray.lineLength,
+            !bucket.sdfIcons);
     }
 
     const iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;

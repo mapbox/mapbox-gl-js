@@ -10,7 +10,7 @@ import { heatmapUniforms, heatmapTextureUniforms } from './heatmap_program';
 import { hillshadeUniforms, hillshadePrepareUniforms } from './hillshade_program';
 import { lineUniforms, lineGradientUniforms, linePatternUniforms, lineSDFUniforms } from './line_program';
 import { rasterUniforms } from './raster_program';
-import { symbolIconUniforms, symbolSDFUniforms } from './symbol_program';
+import { symbolSDFUniforms } from './symbol_program';
 import { backgroundUniforms, backgroundPatternUniforms } from './background_program';
 
 export const programUniforms = {
@@ -34,7 +34,6 @@ export const programUniforms = {
     linePattern: linePatternUniforms,
     lineSDF: lineSDFUniforms,
     raster: rasterUniforms,
-    symbolIcon: symbolIconUniforms,
     symbolSDF: symbolSDFUniforms,
     background: backgroundUniforms,
     backgroundPattern: backgroundPatternUniforms

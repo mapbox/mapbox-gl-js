@@ -52,6 +52,7 @@ import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
 import type {FeatureStates} from '../../source/source_state';
 import type {ImagePosition} from '../../render/image_atlas';
+import { warnOnce } from '../../util/util';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -110,7 +111,16 @@ function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex) {
     );
 }
 
-function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, angle: number) {
+const ICON_MARKER_ADDEND = 40;
+
+function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, angle: number, isIcon: boolean) {
+    // Encode icon into angle data.
+    if (isIcon) {
+        angle += ICON_MARKER_ADDEND;
+        if (angle < ICON_MARKER_ADDEND - 10) {
+            warnOnce(`Implementation wrongly asumed that icon angle is greater than -10.`);
+        }
+    }
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
@@ -514,7 +524,8 @@ class SymbolBucket implements Bucket {
                writingMode: any,
                labelAnchor: Anchor,
                lineStartIndex: number,
-               lineLength: number) {
+               lineLength: number,
+               isIcon: boolean) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
@@ -539,7 +550,7 @@ class SymbolBucket implements Bucket {
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex);
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
 
-            addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, 0);
+            addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, 0, isIcon);
 
             indexArray.emplaceBack(index, index + 1, index + 2);
             indexArray.emplaceBack(index + 1, index + 2, index + 3);

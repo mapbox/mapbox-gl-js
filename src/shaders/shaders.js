@@ -48,8 +48,6 @@ import lineSDFFrag from './line_sdf.fragment.glsl';
 import lineSDFVert from './line_sdf.vertex.glsl';
 import rasterFrag from './raster.fragment.glsl';
 import rasterVert from './raster.vertex.glsl';
-import symbolIconFrag from './symbol_icon.fragment.glsl';
-import symbolIconVert from './symbol_icon.vertex.glsl';
 import symbolSDFFrag from './symbol_sdf.fragment.glsl';
 import symbolSDFVert from './symbol_sdf.vertex.glsl';
 
@@ -76,7 +74,6 @@ export const lineGradient = compile(lineGradientFrag, lineGradientVert);
 export const linePattern = compile(linePatternFrag, linePatternVert);
 export const lineSDF = compile(lineSDFFrag, lineSDFVert);
 export const raster = compile(rasterFrag, rasterVert);
-export const symbolIcon = compile(symbolIconFrag, symbolIconVert);
 export const symbolSDF = compile(symbolSDFFrag, symbolSDFVert);
 
 // Expand #pragmas to #ifdefs.
