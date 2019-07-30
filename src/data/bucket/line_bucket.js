@@ -53,7 +53,7 @@ const COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
 const SHARP_CORNER_OFFSET = 15;
 
 // Angle per triangle for approximating round line joins.
-const DEG_PER_TRIANGLE = 30;
+const DEG_PER_TRIANGLE = 20;
 
 // The number of bits that is used to store the line distance in the buffer.
 const LINE_DISTANCE_BUFFER_BITS = 15;
