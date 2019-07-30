@@ -2,14 +2,14 @@ import {plugins} from './build/rollup_plugins';
 
 
 export default {
-    input: 'test/unit/ui/**/*.js',
+    input: 'test/integration/lib/query-browser.js',
     output: {
-        name: 'test',
+        name: 'queryTests',
         format: 'iife',
         sourcemap: 'inline',
         indent: false,
-        file: 'rollup/build/test/unit.js'
+        file: 'test/dist/query-test.js'
     },
     plugins: plugins(false, false, true),
-    external: [ 'tape' ]
+    external: [ 'tape', 'mapboxgl' ]
 }

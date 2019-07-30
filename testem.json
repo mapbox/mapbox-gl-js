@@ -1,12 +1,12 @@
 {
     "framework": "tap",
     "src_files": [
-        "src/**/*.js",
-        "test/**/*.js"
+        "test/dist/*.js"
     ],
     "serve_files": [
-        "rollup/build/test/tape.js",
-        "rollup/build/test/unit.js"
+        "test/dist/tape.js",
+        "test/dist/mapbox-gl-test.js",
+        "test/dist/query-test.js"
     ],
     "launch_in_dev": [ "Chrome" ]
 }

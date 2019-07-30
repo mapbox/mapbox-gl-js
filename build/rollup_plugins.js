@@ -15,7 +15,7 @@ import { createFilter } from 'rollup-pluginutils';
 
 export const plugins = (minified, production, test) => [
     flow(),
-    test ? false : minifyStyleSpec(),
+    minifyStyleSpec(),
     json(),
     test ? multiEntry() : false,
     glsl('./src/shaders/*.glsl', production),

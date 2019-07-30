@@ -57,7 +57,7 @@ export default function ( directory, options ) {
     // Re-nest by directory path, each directory path defines a testcase.
     let result = {};
     for ( let fullPath in allFiles ) {
-        const testName = path.dirname(fullPath);
+        const testName = path.dirname(fullPath).replace('test/integration/', '');
         //Skip if test is malformed
         if(malformedTests[testName]) { continue; }
 
@@ -83,6 +83,7 @@ function pngToBase64Str( filePath ) {
     return fs.readFileSync(filePath).toString('base64');
 }
 
+//TODO: Inline images in `addImage` operations
 function processStyle( testName, style ) {
     let clone = JSON.parse(JSON.stringify(style));
     localizeURLs(clone);
@@ -95,7 +96,7 @@ function processStyle( testName, style ) {
         pixelRatio: 1,
         recycleMap: false,
         allowed: 0.00015
-    }, style.metadata.test);
+    }, clone.metadata.test);
 
     return clone;
 }

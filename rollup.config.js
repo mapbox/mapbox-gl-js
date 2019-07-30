@@ -6,9 +6,23 @@ import banner from './build/banner';
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
-const outputFile =
-    !production ? 'dist/mapbox-gl-dev.js' :
-    minified ? 'dist/mapbox-gl.js' : 'dist/mapbox-gl-unminified.js';
+const test = BUILD === 'test';
+
+const outputFile = (function() {
+    if(production) {
+        if (minified){
+            return 'dist/mapbox-gl.js';
+        }else{
+            return 'dist/mapbox-gl-unminified.js';
+        }
+    }
+
+    if(test) {
+        return 'test/dist/mapbox-gl-test.js';
+    }
+
+    return 'dist/mapbox-gl-dev.js';
+})();
 
 export default [{
     // First, use code splitting to bundle GL JS into three "chunks":
@@ -22,13 +36,13 @@ export default [{
     input: ['src/index.js', 'src/source/worker.js'],
     output: {
         dir: 'rollup/build/mapboxgl',
-        format: 'umd',
+        format: 'amd',
         sourcemap: 'inline',
         indent: false,
         chunkFileNames: 'shared.js'
     },
     treeshake: production,
-    plugins: plugins(minified, production)
+    plugins: plugins(minified, production, test)
 }, {
     // Next, bundle together the three "chunks" produced in the previous pass
     // into a single, final bundle. See rollup/bundle_prelude.js and
