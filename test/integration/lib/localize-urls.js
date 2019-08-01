@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const colors = require('chalk');
 
-module.exports = function localizeURLs(style) {
-    localizeStyleURLs(style);
+module.exports = function localizeURLs(style, port) {
+    localizeStyleURLs(style, port);
     if (style.metadata && style.metadata.test && style.metadata.test.operations) {
         style.metadata.test.operations.forEach((op) => {
             if (op[0] === 'addSource') {
@@ -35,7 +35,7 @@ module.exports = function localizeURLs(style) {
                     return;
                 }
 
-                localizeStyleURLs(styleJSON);
+                localizeStyleURLs(styleJSON, port);
 
                 op[1] = styleJSON;
                 op[2] = { diff: false };
@@ -44,59 +44,59 @@ module.exports = function localizeURLs(style) {
     }
 };
 
-function localizeURL(url) {
-    return url.replace(/^local:\/\//, 'http://localhost:7357/');
+function localizeURL(url, port) {
+    return url.replace(/^local:\/\//, `http://localhost:${port}/`);
 }
 
-function localizeMapboxSpriteURL(url) {
-    return url.replace(/^mapbox:\/\//, 'http://localhost:7357/');
+function localizeMapboxSpriteURL(url, port) {
+    return url.replace(/^mapbox:\/\//, `http://localhost:${port}/`);
 }
 
-function localizeMapboxFontsURL(url) {
-    return url.replace(/^mapbox:\/\/fonts/, 'http://localhost:7357/glyphs');
+function localizeMapboxFontsURL(url, port) {
+    return url.replace(/^mapbox:\/\/fonts/, `http://localhost:${port}/glyphs`);
 }
 
-function localizeMapboxTilesURL(url) {
-    return url.replace(/^mapbox:\/\//, 'http://localhost:7357/tiles/');
+function localizeMapboxTilesURL(url, port) {
+    return url.replace(/^mapbox:\/\//, `http://localhost:${port}/tiles/`);
 }
 
-function localizeMapboxTilesetURL(url) {
-    return url.replace(/^mapbox:\/\//, 'http://localhost:7357/tilesets/');
+function localizeMapboxTilesetURL(url, port) {
+    return url.replace(/^mapbox:\/\//, `http://localhost:${port}/tilesets/`);
 }
 
-function localizeSourceURLs(source) {
+function localizeSourceURLs(source, port) {
     for (const tile in source.tiles) {
-        source.tiles[tile] = localizeMapboxTilesURL(source.tiles[tile]);
-        source.tiles[tile] = localizeURL(source.tiles[tile]);
+        source.tiles[tile] = localizeMapboxTilesURL(source.tiles[tile], port);
+        source.tiles[tile] = localizeURL(source.tiles[tile], port);
     }
 
     if (source.urls) {
-        source.urls = source.urls.map(localizeMapboxTilesetURL);
-        source.urls = source.urls.map(localizeURL);
+        source.urls = source.urls.map((url) => localizeMapboxTilesetURL(url, port));
+        source.urls = source.urls.map((url) => localizeURL(url, port));
     }
 
     if (source.url) {
-        source.url = localizeMapboxTilesetURL(source.url);
-        source.url = localizeURL(source.url);
+        source.url = localizeMapboxTilesetURL(source.url, port);
+        source.url = localizeURL(source.url, port);
     }
 
     if (source.data && typeof source.data == 'string') {
-        source.data = localizeURL(source.data);
+        source.data = localizeURL(source.data, port);
     }
 }
 
-function localizeStyleURLs (style) {
+function localizeStyleURLs (style, port) {
     for (const source in style.sources) {
-        localizeSourceURLs(style.sources[source]);
+        localizeSourceURLs(style.sources[source], port);
     }
 
     if (style.sprite) {
-        style.sprite = localizeMapboxSpriteURL(style.sprite);
-        style.sprite = localizeURL(style.sprite);
+        style.sprite = localizeMapboxSpriteURL(style.sprite, port);
+        style.sprite = localizeURL(style.sprite, port);
     }
 
     if (style.glyphs) {
-        style.glyphs = localizeMapboxFontsURL(style.glyphs);
-        style.glyphs = localizeURL(style.glyphs);
+        style.glyphs = localizeMapboxFontsURL(style.glyphs, port);
+        style.glyphs = localizeURL(style.glyphs, port);
     }
 }

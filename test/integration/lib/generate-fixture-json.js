@@ -80,7 +80,8 @@ function pngToBase64Str(filePath) {
 
 function processStyle(testName, style) {
     const clone = JSON.parse(JSON.stringify(style));
-    localizeURLs(clone);
+    // 7357 is testem's default port
+    localizeURLs(clone, 7357);
 
     clone.metadata = clone.metadata || {};
     clone.metadata.test = Object.assign({

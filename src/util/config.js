@@ -1,5 +1,4 @@
 // @flow strict
-/* global __ENVIRONMENT__:readonly */
 
 type Config = {|
   API_URL: string,

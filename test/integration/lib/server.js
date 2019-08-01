@@ -5,6 +5,7 @@ const {createServer} = require('http');
 const localizeURLs = require('./localize-urls');
 
 module.exports = function () {
+    const port = 2900;
     const integrationMount = st({path: path.join(__dirname, '..')});
     const mapboxGLStylesMount = st({path: path.dirname(require.resolve('mapbox-gl-styles')), url: 'mapbox-gl-styles'});
     const mapboxMVTFixturesMount = st({path: path.dirname(require.resolve('@mapbox/mvt-fixtures')), url: 'mvt-fixtures'});
@@ -18,7 +19,7 @@ module.exports = function () {
 
     return {
         listen(callback) {
-            server.listen(2900, callback);
+            server.listen(port, callback);
         },
 
         close(callback) {
@@ -26,7 +27,7 @@ module.exports = function () {
         },
 
         localizeURLs(style) {
-            return localizeURLs(style);
+            return localizeURLs(style, port);
         }
     };
 };
