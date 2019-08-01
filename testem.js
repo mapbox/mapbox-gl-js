@@ -1,6 +1,6 @@
-import generateFixtureJson from './test/integration/lib/generate-fixture-json';
-import createServer from './test/integration/lib/server';
-import runAll from 'npm-run-all';
+var generateFixtureJson = require('./test/integration/lib/generate-fixture-json');
+var createServer = require('./test/integration/lib/server');
+var runAll = require('npm-run-all');
 
 let hookInvoked = false;
 let server;

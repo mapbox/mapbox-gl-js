@@ -1,7 +1,7 @@
-import path from 'path';
-import fs from 'fs';
+var path = require('path');
+var fs = require('fs');
 
-export default function localizeURLs(style) {
+module.exports = function localizeURLs(style) {
     localizeStyleURLs(style);
     if (style.metadata && style.metadata.test && style.metadata.test.operations) {
         style.metadata.test.operations.forEach((op) => {

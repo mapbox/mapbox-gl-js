@@ -1,10 +1,10 @@
-import path from 'path';
-import fs from 'fs';
-import st from 'st';
-import {createServer} from 'http';
-import colors from 'chalk';
+var path = require('path');
+var fs = require('fs');
+var st = require('st');
+var {createServer} = require('http');
+var colors = require('chalk');
 
-export default function () {
+module.exports = function () {
     const integrationMount = st({path: path.join(__dirname, '..')});
     const mapboxGLStylesMount = st({path: path.dirname(require.resolve('mapbox-gl-styles')), url: 'mapbox-gl-styles'});
     const mapboxMVTFixturesMount = st({path: path.dirname(require.resolve('@mapbox/mvt-fixtures')), url: 'mvt-fixtures'});

@@ -1,8 +1,8 @@
-import path from 'path';
-import fs from 'fs';
-import glob from 'glob';
-import {shuffle} from 'shuffle-seed';
-import localizeURLs from './localize-urls';
+var path = require('path');
+var fs = require('fs');
+var glob = require('glob');
+var {shuffle} = require('shuffle-seed');
+var localizeURLs = require('./localize-urls');
 
 const OUTPUT_FILE = 'fixtures.json';
 
@@ -14,7 +14,7 @@ const OUTPUT_FILE = 'fixtures.json';
  * @param {string} directory
  * @param {Object} options
  */
-export default function ( directory, options ) {
+module.exports = function ( directory, options ) {
     const tests = options.tests || [];
     const ignores = options.ignores || {};
 
