@@ -1,7 +1,7 @@
 {
   "expression": [
     "number-format",
-    987654321.23456789,
+    987654321.234567,
     {
         "locale": ["get", "locale"],
         "min-fraction-digits": ["get", "min"],
@@ -19,10 +19,10 @@
       "isZoomConstant": true,
       "type": "string"
     },
-    "outputs": ["987,654,321.234568000000000", "987,654,321.2346"],
+    "outputs": ["987,654,321.234567000000000", "987,654,321.2346"],
     "serialized": [
       "number-format",
-      987654321.2345679,
+      987654321.234567,
       {
           "locale": ["string", ["get", "locale"]],
           "min-fraction-digits": ["number", ["get", "min"]],

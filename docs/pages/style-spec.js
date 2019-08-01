@@ -8,6 +8,8 @@ import {highlightJavascript, highlightJSON} from '../components/prism_highlight'
 import entries from 'object.entries';
 import ref from '../../src/style-spec/reference/latest';
 import Icon from '@mapbox/mr-ui/icon';
+import Feedback from '@mapbox/dr-ui/feedback';
+import constants from '../constants';
 
 const meta = {
     title: 'Style Specification',
@@ -68,6 +70,20 @@ function renderParams(params, maxLength) {
 }
 
 class SectionH2 extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            userName: undefined
+        };
+    }
+
+    componentDidMount() {
+        MapboxPageShell.afterUserCheck(() => {
+            this.setState({ userName: MapboxPageShell.getUser() ?
+                MapboxPageShell.getUser().id :
+                undefined});
+        });
+    }
     render() {
         const {props} = this;
         return (
@@ -75,12 +91,23 @@ class SectionH2 extends React.Component {
                 <a id={props.id} className='anchor'/>
                 <h2><a className='unprose' href={`#${props.id}`} title={`link to ${props.title}`}>{props.title}</a></h2>
                 {this.props.children}
+                <div className="mt18">
+                    <Feedback
+                        site="Style Specification"
+                        section={props.title}
+                        type={`section on ${props.title}`}
+                        location={this.props.location}
+                        userName={this.state.userName}
+                        webhook={constants.FORWARD_EVENT_WEBHOOK}
+                    />
+                </div>
             </div>
         );
     }
 }
 
 class SectionH3 extends React.Component {
+
     render() {
         const {props} = this;
         return (
@@ -233,6 +260,7 @@ class Item extends React.Component {
 }
 
 export default class extends React.Component {
+
     render() {
         return (
             <PageShell meta={meta}>
@@ -255,7 +283,7 @@ export default class extends React.Component {
                         <p>For platform-appropriate documentation of style-related features, developers using the Mapbox Maps SDK for iOS should consult the <a href='https://docs.mapbox.com/ios/maps/overview/'>iOS SDK API reference</a>, and developers using the Mapbox Maps SDK for macOS should consult the <a href='https://mapbox.github.io/mapbox-gl-native/macos/'>macOS SDK API reference</a>.</p>
                     </div>
 
-                    <SectionH2 id='root' title='Root Properties'>
+                    <SectionH2 location={this.props.location} id='root' title='Root Properties'>
                         <p>Root level properties of a Mapbox style specify the map's layers, tile sources and other
                             resources, and default values for the initial camera position when not specified
                             elsewhere.</p>
@@ -276,7 +304,7 @@ export default class extends React.Component {
                         </InnerSection>
                     </SectionH2>
 
-                    <SectionH2 id='light' title='Light'>
+                    <SectionH2 location={this.props.location} id='light' title='Light'>
                         <p>
                             A style's <code>light</code> property provides global light source for that style.
                         </p>
@@ -288,7 +316,7 @@ export default class extends React.Component {
                         </InnerSection>
                     </SectionH2>
 
-                    <SectionH2 id='sources' title='Sources'>
+                    <SectionH2 location={this.props.location} id='sources' title='Sources'>
                         <p>
                             Sources supply data to be shown on the map. The type of source is specified by the
                             <code>"type"</code> property, and must be one of {sourceTypes.map((t, i) => <var key={i}>{t}</var>).reduce((prev, curr) => [prev, ', ', curr])}.
@@ -561,7 +589,7 @@ export default class extends React.Component {
                         </InnerSection>
                     </SectionH2>
 
-                    <SectionH2 id='sprite' title='Sprite'>
+                    <SectionH2 location={this.props.location} id='sprite' title='Sprite'>
                         <p>
                             A style's <code>sprite</code> property supplies a URL template for loading small images to use in
                             rendering <code>background-pattern</code>, <code>fill-pattern</code>, <code>line-pattern</code>,
@@ -618,7 +646,7 @@ export default class extends React.Component {
                         </p>
                     </SectionH2>
 
-                    <SectionH2 id='glyphs' title='Glyphs'>
+                    <SectionH2 location={this.props.location} id='glyphs' title='Glyphs'>
                         <p>
                             A style's <code>glyphs</code> property provides a URL template for loading signed-distance-field glyph sets in PBF format.
                         </p>
@@ -643,7 +671,7 @@ export default class extends React.Component {
                         </ul>
                     </SectionH2>
 
-                    <SectionH2 id='transition' title='Transition'>
+                    <SectionH2 location={this.props.location} id='transition' title='Transition'>
                         <p>
                             A <code>transition</code> property controls timing for the interpolation between a transitionable style
                             property's previous value and new value. A style's <a href='#root-transition' title='link to root-transition'>
@@ -659,7 +687,7 @@ export default class extends React.Component {
                         </InnerSection>
                     </SectionH2>
 
-                    <SectionH2 id='layers' title='Layers'>
+                    <SectionH2 location={this.props.location} id='layers' title='Layers'>
                         <p>
                             A style's <code>layers</code> property lists all of the layers available in that style. The type of
                             layer is specified by the <code>"type"</code> property, and must be one of {layerTypes.map((t, i) => <var key={i}>{t}</var>).reduce((prev, curr) => [prev, ', ', curr])}.
@@ -700,7 +728,7 @@ export default class extends React.Component {
                         </InnerSection>
                     </SectionH2>
 
-                    <SectionH2 id='types' title='Types'>
+                    <SectionH2 location={this.props.location} id='types' title='Types'>
                         <p>A Mapbox style contains values of various types, most commonly as values for the style properties of a layer.</p>
                         <SectionH3 id='types-color' title='Color'>
                             <p>
@@ -764,7 +792,7 @@ export default class extends React.Component {
                         </SectionH3>
                     </SectionH2>
 
-                    <SectionH2 id='expressions' title='Expressions'>
+                    <SectionH2 location={this.props.location} id='expressions' title='Expressions'>
                         <p>The value for any <a href="#layout-property">layout property</a>, <a
                             href="#paint-property">paint property</a>, or <a href="#layer-filter">filter</a> may be
                             specified as an <em>expression</em>. An expression defines a formula for computing the
@@ -1037,7 +1065,7 @@ export default class extends React.Component {
                         </SectionH3>
                     </SectionH2>
 
-                    <SectionH2 id='other' title='Other'>
+                    <SectionH2 location={this.props.location} id='other' title='Other'>
                         <SectionH3 id='other-function' title='Function'>
                             <p>The value for any layout or paint property may be specified as
                               a <em>function</em>. Functions allow you to make the appearance of a map feature
@@ -1273,7 +1301,7 @@ export default class extends React.Component {
                         </SectionH3>
                     </SectionH2>
 
-                    <SectionH2 id='other-filter' title='Other filter'>
+                    <SectionH2 location={this.props.location} id='other-filter' title='Other filter'>
                         <p>In previous versions of the style specification, <a href="#layer-filter">filters</a> were defined using the deprecated syntax documented below. Though filters defined with this syntax will continue to work, we recommend using the more flexible <a href="#expressions">expression</a> syntax instead. Expression syntax and the deprecated syntax below cannot be mixed in a single filter definition.</p>
 
                         <InnerSection>

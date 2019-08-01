@@ -52,6 +52,9 @@ const EXTRUDE_SCALE = 63;
 const COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
 const SHARP_CORNER_OFFSET = 15;
 
+// Angle per triangle for approximating round line joins.
+const DEG_PER_TRIANGLE = 20;
+
 // The number of bits that is used to store the line distance in the buffer.
 const LINE_DISTANCE_BUFFER_BITS = 15;
 
@@ -331,11 +334,16 @@ class LineBucket implements Bucket {
              *
              */
 
-            // Calculate the length of the miter (the ratio of the miter to the width).
-            // Find the cosine of the angle between the next and join normals
-            // using dot product. The inverse of that is the miter length.
+            // calculate cosines of the angle (and its half) using dot product
+            const cosAngle = prevNormal.x * nextNormal.x + prevNormal.y * nextNormal.y;
             const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
+
+            // Calculate the length of the miter (the ratio of the miter to the width)
+            // as the inverse of cosine of the angle between next and join normals
             const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
+
+            // approximate angle from cosine
+            const approxAngle = 2 * Math.sqrt(2 - 2 * cosHalfAngle);
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
 
@@ -420,21 +428,20 @@ class LineBucket implements Bucket {
                     // Create a round join by adding multiple pie slices. The join isn't actually round, but
                     // it looks like it is at the sizes we render lines at.
 
-                    // Add more triangles for sharper angles.
-                    // This math is just a good enough approximation. It isn't "correct".
-                    const n = Math.floor((0.5 - (cosHalfAngle - 0.5)) * 8);
-                    let approxFractionalJoinNormal;
+                    // pick the number of triangles for approximating round join by based on the angle between normals
+                    const n = Math.round((approxAngle * 180 / Math.PI) / DEG_PER_TRIANGLE);
 
-                    for (let m = 0; m < n; m++) {
-                        approxFractionalJoinNormal = nextNormal.mult((m + 1) / (n + 1))._add(prevNormal)._unit();
-                        this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft, segment, lineDistances);
-                    }
-
-                    this.addPieSliceVertex(currentVertex, this.distance, joinNormal, lineTurnsLeft, segment, lineDistances);
-
-                    for (let k = n - 1; k >= 0; k--) {
-                        approxFractionalJoinNormal = prevNormal.mult((k + 1) / (n + 1))._add(nextNormal)._unit();
-                        this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft, segment, lineDistances);
+                    for (let m = 1; m < n; m++) {
+                        let t = m / n;
+                        if (t !== 0.5) {
+                            // approximate spherical interpolation https://observablehq.com/@mourner/approximating-geometric-slerp
+                            const t2 = t - 0.5;
+                            const A = 1.0904 + cosAngle * (-3.2452 + cosAngle * (3.55645 - cosAngle * 1.43519));
+                            const B = 0.848013 + cosAngle * (-1.06021 + cosAngle * 0.215638);
+                            t = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
+                        }
+                        const approxFractionalNormal = prevNormal.mult(1 - t)._add(nextNormal.mult(t))._unit();
+                        this.addPieSliceVertex(currentVertex, this.distance, approxFractionalNormal, lineTurnsLeft, segment, lineDistances);
                     }
                 }
 

@@ -51,7 +51,7 @@ class ApiItemMember extends React.Component {
 
                 {this.state.disclosed &&
                     <div className="toggle-target bg-gray-faint round py18 px18 mb12">
-                        <ApiItem nested={true} {...member}/>
+                        <ApiItem nested={true} location={this.props.location} {...member}/>
                     </div>}
             </div>
         );
