@@ -163,14 +163,14 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-unit
+      - run: yarn run test-unit
 
   test-render:
     <<: *defaults
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-render
+      - run: yarn run test-render
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
@@ -179,7 +179,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-query-browser-ci
+      - run: yarn run test-query-browser-ci
       - store_test_results:
           path: test/integration/query-tests
 
