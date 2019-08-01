@@ -24,7 +24,7 @@ const config: Config = {
     },
     FEEDBACK_URL: 'https://apps.mapbox.com/feedback',
     REQUIRE_ACCESS_TOKEN: ((() => {
-        if (__ENVIRONMENT__ === 'test') {
+        if ('@@ENVIRONMENT' === 'test') {
             return false;
         }
 
