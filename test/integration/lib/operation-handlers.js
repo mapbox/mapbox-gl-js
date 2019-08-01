@@ -2,20 +2,18 @@ function handleOperation(map, operations, opIndex, doneCb) {
     const operation = operations[opIndex];
     const opName = operation[0];
     //Delegate to special handler if one is available
-    if(opName in operationHandlers){
+    if (opName in operationHandlers) {
         operationHandlers[opName](map, operation.slice(1), () => {
             doneCb(opIndex);
         });
-    }else{
+    } else {
         map[opName](...operation.slice(1));
         doneCb(opIndex);
     }
 }
 
-
-// TODO: support other actions, refer suite_implementation.js
 export const operationHandlers = {
-    wait: function(map, params, doneCb) {
+    wait(map, params, doneCb) {
         const wait = function() {
             if (map.loaded()) {
                 doneCb();
@@ -25,19 +23,18 @@ export const operationHandlers = {
         };
         wait();
     }
-}
-
+};
 
 export function applyOperations(map, operations, doneCb) {
     // No operations specified, end immediately adn invoke doneCb.
-    if(!operations || operations.length === 0){
+    if (!operations || operations.length === 0) {
         doneCb();
         return;
     }
 
     // Start recursive chain
     const scheduleNextOperation = (lastOpIndex) => {
-        if(lastOpIndex === operations.length - 1){
+        if (lastOpIndex === operations.length - 1) {
             // Stop recusive chain when at the end of the operations
             doneCb();
             return;
@@ -47,7 +44,3 @@ export function applyOperations(map, operations, doneCb) {
     };
     scheduleNextOperation(-1);
 }
-
-
-
-

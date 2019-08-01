@@ -1,4 +1,5 @@
 // @flow strict
+/* global __ENVIRONMENT__:readonly */
 
 type Config = {|
   API_URL: string,
@@ -22,13 +23,13 @@ const config: Config = {
         }
     },
     FEEDBACK_URL: 'https://apps.mapbox.com/feedback',
-    REQUIRE_ACCESS_TOKEN: (() => {
-        if(__ENVIRONMENT__ === 'test'){
+    REQUIRE_ACCESS_TOKEN: ((() => {
+        if (__ENVIRONMENT__ === 'test') {
             return false;
         }
 
         return true;
-    }),
+    })(): boolean),
     ACCESS_TOKEN: null,
     MAX_PARALLEL_IMAGE_REQUESTS: 16
 };

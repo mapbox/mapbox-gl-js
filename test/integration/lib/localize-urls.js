@@ -1,5 +1,7 @@
-var path = require('path');
-var fs = require('fs');
+/* eslint-disable import/no-commonjs */
+const path = require('path');
+const fs = require('fs');
+const colors = require('chalk');
 
 module.exports = function localizeURLs(style) {
     localizeStyleURLs(style);
@@ -40,9 +42,7 @@ module.exports = function localizeURLs(style) {
             }
         });
     }
-}
-
-
+};
 
 function localizeURL(url) {
     return url.replace(/^local:\/\//, 'http://localhost:7357/');

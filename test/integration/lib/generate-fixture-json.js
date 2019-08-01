@@ -1,8 +1,8 @@
-var path = require('path');
-var fs = require('fs');
-var glob = require('glob');
-var {shuffle} = require('shuffle-seed');
-var localizeURLs = require('./localize-urls');
+/* eslint-disable import/no-commonjs */
+const path = require('path');
+const fs = require('fs');
+const glob = require('glob');
+const localizeURLs = require('./localize-urls');
 
 const OUTPUT_FILE = 'fixtures.json';
 
@@ -12,38 +12,34 @@ const OUTPUT_FILE = 'fixtures.json';
  * to be shipped to the browser.
  *
  * @param {string} directory
- * @param {Object} options
  */
-module.exports = function ( directory, options ) {
-    const tests = options.tests || [];
-    const ignores = options.ignores || {};
-
+module.exports = function (directory) {
     const basePath = directory;
     const jsonPaths = path.join(basePath, '/**/*.json');
     const imagePaths = path.join(basePath, '/**/*.png');
     const ignoreOutputPath = path.join(basePath, OUTPUT_FILE);
     //Extract the filedata into a flat dictionary
-    let allFiles = {};
-    let allPaths = glob.sync(jsonPaths, { ignore: [ignoreOutputPath] }).concat(glob.sync(imagePaths));
+    const allFiles = {};
+    const allPaths = glob.sync(jsonPaths, { ignore: [ignoreOutputPath] }).concat(glob.sync(imagePaths));
 
     //A Set that stores test names that are malformed so they can eb reomved later
-    let malformedTests = {};
+    const malformedTests = {};
 
-    for(let fixturePath of allPaths){
+    for (const fixturePath of allPaths) {
         const testName = path.dirname(fixturePath);
         const fileName = path.basename(fixturePath);
-        const extension = path.extname(fixturePath)
+        const extension = path.extname(fixturePath);
         try {
-            if( extension === '.json' ){
+            if (extension === '.json') {
                 let json = parseJsonFromFile(fixturePath);
 
                 //Special case for style json which needs some preprocessing
-                if( fileName === 'style.json' ) {
+                if (fileName === 'style.json') {
                     json = processStyle(testName, json);
                 }
 
                 allFiles[fixturePath] = json;
-            } else if ( extension === '.png' ) {
+            } else if (extension === '.png') {
                 allFiles[fixturePath] = pngToBase64Str(fixturePath);
             } else {
                 throw new Error(`${extension} is incompatible , file path ${fixturePath}`);
@@ -55,13 +51,13 @@ module.exports = function ( directory, options ) {
     }
 
     // Re-nest by directory path, each directory path defines a testcase.
-    let result = {};
-    for ( let fullPath in allFiles ) {
+    const result = {};
+    for (const fullPath in allFiles) {
         const testName = path.dirname(fullPath).replace('test/integration/', '');
         //Skip if test is malformed
-        if(malformedTests[testName]) { continue; }
+        if (malformedTests[testName]) { continue; }
 
-        if( result[testName] == null ){
+        if (result[testName] == null) {
             result[testName] = {};
         }
         const fileName = path.basename(fullPath, path.extname(fullPath));
@@ -72,20 +68,18 @@ module.exports = function ( directory, options ) {
     const outputPath = path.join(basePath, OUTPUT_FILE);
 
     fs.writeFileSync(outputPath, outputStr, { encoding: 'utf8'});
+};
+
+function parseJsonFromFile(filePath) {
+    return JSON.parse(fs.readFileSync(filePath, { encoding: 'utf8' }));
 }
 
-
-function parseJsonFromFile( filePath ) {
-    return JSON.parse(fs.readFileSync( filePath, { encoding: 'utf8' }));
-}
-
-function pngToBase64Str( filePath ) {
+function pngToBase64Str(filePath) {
     return fs.readFileSync(filePath).toString('base64');
 }
 
-//TODO: Inline images in `addImage` operations
-function processStyle( testName, style ) {
-    let clone = JSON.parse(JSON.stringify(style));
+function processStyle(testName, style) {
+    const clone = JSON.parse(JSON.stringify(style));
     localizeURLs(clone);
 
     clone.metadata = clone.metadata || {};
