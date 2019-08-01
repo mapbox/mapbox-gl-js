@@ -89,7 +89,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: circleci/node:8.1.2-browsers
+    - image: circleci/node:10.16-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -100,7 +100,7 @@ jobs:
       - restore_cache:
           keys:
             - v3-yarn-{{ checksum "yarn.lock" }}
-      - run: npm install -g yarn & yarn install
+      - run: sudo npm install -g yarn & yarn install
       - save_cache:
           key: v3-yarn-{{ checksum "yarn.lock" }}
           paths:
