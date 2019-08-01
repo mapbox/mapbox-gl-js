@@ -2,7 +2,8 @@ var generateFixtureJson = require('./test/integration/lib/generate-fixture-json'
 var createServer = require('./test/integration/lib/server');
 var runAll = require('npm-run-all');
 
-let hookInvoked = false;
+let beforeHookInvoked = false;
+let afterHookInvoked = false;
 let server;
 
 module.exports =  {
@@ -35,7 +36,7 @@ module.exports =  {
         }
     },
     "before_tests": function(config, data, callback) {
-       if(!hookInvoked){
+       if(!beforeHookInvoked){
          server = createServer();
          //1. Compile fixture data into a json file, so it can be bundled
          generateFixtureJson('test/integration/query-tests', {});
@@ -47,7 +48,13 @@ module.exports =  {
              callback(e);
          });
 
-         hookInvoked = true;
+         beforeHookInvoked = true;
+       }
+    },
+    "after_tests": function(config, data, callback) {
+       if(!afterHookInvoked){
+         server.close(callback);
+         afterHookInvoked = true;
        }
     }
 }
