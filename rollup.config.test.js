@@ -5,7 +5,7 @@ export default {
     input: 'test/integration/lib/query-browser.js',
     output: {
         name: 'queryTests',
-        format: 'umd',
+        format: 'iife',
         sourcemap: 'inline',
         indent: false,
         file: 'test/dist/query-test.js'

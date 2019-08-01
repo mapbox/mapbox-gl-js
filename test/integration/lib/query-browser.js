@@ -2,8 +2,6 @@ import fixtures from '../query-tests/fixtures.json';
 import ignores from '../../ignores.json';
 import {operationHandlers, applyOperations} from './operation-handlers';
 
-// Dynamically generate a test for each fixture
-debugger;
 for(let testName in fixtures){
     const testFunc = (t) => {
         // This needs to be read from the `t` object because this function runs async in a closure.
@@ -66,8 +64,8 @@ for(let testName in fixtures){
     };
 
     if(testName in ignores){
-        test.skip(testName, testFunc);
+        tape.skip(testName, testFunc);
     }else{
-        test(testName, { timeout: 20000 }, testFunc);
+        tape(testName, { timeout: 20000 }, testFunc);
     }
 }
