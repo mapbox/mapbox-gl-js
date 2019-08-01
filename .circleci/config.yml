@@ -89,7 +89,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: mbgl/80dbb7f452:linux
+    - image: node:8.1.2-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -100,7 +100,7 @@ jobs:
       - restore_cache:
           keys:
             - v2-yarn-{{ checksum "yarn.lock" }}
-      - run: yarn
+      - run: npm install -g yarn & yarn install
       - save_cache:
           key: v2-yarn-{{ checksum "yarn.lock" }}
           paths:
@@ -179,11 +179,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run:
-          name: Install Latest Chrome
-          command: |
-            curl https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb > google-chrome-stable_current_amd64.deb
-            dpkg -i google-chrome-stable_current_amd64.deb; apt-get -f install; apt-get -f install
       - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-query-browser-ci
       - store_test_results:
           path: test/integration/query-tests
