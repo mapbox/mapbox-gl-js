@@ -9,6 +9,7 @@ import type {PositionedIcon, Shaping} from './shaping';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression';
 import type {GlyphPosition} from '../render/glyph_atlas';
+import ONE_EM from './one_em';
 
 /**
  * A textured quad for rendering a single icon or glyph.
@@ -168,7 +169,7 @@ export function getGlyphQuads(anchor: Anchor,
 
         const tl = new Point(x1, y1);
         const tr = new Point(x2, y1);
-        const bl  = new Point(x1, y2);
+        const bl = new Point(x1, y2);
         const br = new Point(x2, y2);
 
         if (rotateVerticalGlyph) {
@@ -183,7 +184,11 @@ export function getGlyphQuads(anchor: Anchor,
             // for when glyph is rotated and translated.
             const center = new Point(-halfAdvance, halfAdvance - shaping.yOffset);
             const verticalRotation = -Math.PI / 2;
-            const xOffsetCorrection = new Point(5 - shaping.yOffset, 0);
+
+            // xHalfWidhtOffsetcorrection is a difference between full-width and half-width
+            // advance, should be 0 for full-width glyphs and will pull up half-width glyphs.
+            const xHalfWidhtOffsetcorrection = ONE_EM / 2 - halfAdvance;
+            const xOffsetCorrection = new Point(5 - shaping.yOffset - xHalfWidhtOffsetcorrection, 0);
             const verticalOffsetCorrection = new Point(...verticalizedLabelOffset);
             tl._rotateAround(verticalRotation, center)._add(xOffsetCorrection)._add(verticalOffsetCorrection);
             tr._rotateAround(verticalRotation, center)._add(xOffsetCorrection)._add(verticalOffsetCorrection);

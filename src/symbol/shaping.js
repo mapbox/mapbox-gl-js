@@ -2,7 +2,8 @@
 
 import {
     charHasUprightVerticalOrientation,
-    charAllowsIdeographicBreaking
+    charAllowsIdeographicBreaking,
+    charInComplexShapingScript
 } from '../util/script_detection';
 import verticalizePunctuation from '../util/verticalize_punctuation';
 import { plugin as rtlTextPlugin } from '../source/rtl_text_plugin';
@@ -147,7 +148,8 @@ function shapeText(text: Formatted,
                    textJustify: TextJustify,
                    spacing: number,
                    translate: [number, number],
-                   writingMode: 1 | 2): Shaping | false {
+                   writingMode: 1 | 2,
+                   allowVerticalPlacement: boolean): Shaping | false {
     const logicalInput = TaggedString.fromFeature(text, defaultFontStack);
 
     if (writingMode === WritingMode.vertical) {
@@ -204,7 +206,7 @@ function shapeText(text: Formatted,
         yOffset: -17 // the y offset *should* be part of the font metadata
     };
 
-    shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, textJustify, writingMode, spacing);
+    shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement);
     if (!positionedGlyphs.length) return false;
 
     return shaping;
@@ -441,7 +443,8 @@ function shapeLines(shaping: Shaping,
                     textAnchor: SymbolAnchor,
                     textJustify: TextJustify,
                     writingMode: 1 | 2,
-                    spacing: number) {
+                    spacing: number,
+                    allowVerticalPlacement: boolean) {
 
     let x = 0;
     let y = shaping.yOffset;
@@ -476,7 +479,12 @@ function shapeLines(shaping: Shaping,
 
             if (!glyph) continue;
 
-            if (!charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
+            if (writingMode === WritingMode.horizontal ||
+                // Don't verticalize glyphs that have no upright orientation if vertical placement is disabled.
+                (!allowVerticalPlacement && !charHasUprightVerticalOrientation(codePoint)) ||
+                // If vertical placement is ebabled, don't verticalize glyphs that
+                // are from complex text layout script, or whitespaces.
+                (allowVerticalPlacement && (whitespace[codePoint] || charInComplexShapingScript(codePoint)))) {
                 positionedGlyphs.push({glyph: codePoint, x, y: y + baselineOffset, vertical: false, scale: section.scale, fontStack: section.fontStack});
                 x += glyph.metrics.advance * section.scale + spacing;
             } else {
