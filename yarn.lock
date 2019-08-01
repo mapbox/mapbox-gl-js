@@ -7819,6 +7819,11 @@ good-listener@^1.2.2:
   dependencies:
     delegate "^3.1.2"
 
+googlediff@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/googlediff/-/googlediff-0.1.0.tgz#99acf05cc06223eb66c29008d81f9b2d18c2453d"
+  integrity sha1-mazwXMBiI+tmwpAI2B+bLRjCRT0=
+
 got@^5.0.0:
   version "5.7.1"
   resolved "https://registry.yarnpkg.com/got/-/got-5.7.1.tgz#5f81635a61e4a6589f180569ea4e381680a51f35"
@@ -15101,6 +15106,17 @@ tap-mocha-reporter@^3.0.7:
   optionalDependencies:
     readable-stream "^2.1.5"
 
+tap-parser@^1.1.6:
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/tap-parser/-/tap-parser-1.3.2.tgz#120c5089c88c3c8a793ef288867de321e18f8c22"
+  integrity sha1-EgxQiciMPIp5PvKIhn3jIeGPjCI=
+  dependencies:
+    events-to-array "^1.0.1"
+    inherits "~2.0.1"
+    js-yaml "^3.2.7"
+  optionalDependencies:
+    readable-stream "^2"
+
 tap-parser@^5.1.0:
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/tap-parser/-/tap-parser-5.4.0.tgz#6907e89725d7b7fa6ae41ee2c464c3db43188aec"
@@ -15168,6 +15184,21 @@ tapable@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-1.1.1.tgz#4d297923c5a72a42360de2ab52dadfaaec00018e"
   integrity sha512-9I2ydhj8Z9veORCw5PRm4u9uebCn0mcCa6scWoNcbZ6dAtoo2618u9UUzxgmsCOreJpqDDuv61LvwofW7hLcBA==
+
+tape-dom@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/tape-dom/-/tape-dom-0.0.12.tgz#86f374e269254792e478f5aa24ae8c8873f22002"
+  integrity sha1-hvN04mklR5LkePWqJK6MiHPyIAI=
+  dependencies:
+    googlediff "^0.1.0"
+    tap-parser "^1.1.6"
+
+tape-filter@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/tape-filter/-/tape-filter-1.0.4.tgz#1d637ac064d51926f339ad88f642eb0f87ca9dc7"
+  integrity sha1-HWN6wGTVGSbzOa2I9kLrD4fKncc=
+  dependencies:
+    minimist "^1.2.0"
 
 tape@^4.11.0:
   version "4.11.0"

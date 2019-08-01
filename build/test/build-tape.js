@@ -2,9 +2,9 @@ var browserify = require('browserify');
 var fs = require('fs');
 
 
-var b = browserify(require.resolve('tape'), { standalone: 'tape' })
+var b = browserify(require.resolve('../../test/util/tape_config.js'), { standalone: 'test' })
     .bundle((err, buff) => {
         if(err) { throw err; }
 
-        fs.writeFileSync('test/dist/tape.js', buff, { encoding: 'utf8'});
+        fs.writeFileSync('test/dist/test.js', buff, { encoding: 'utf8'});
     });

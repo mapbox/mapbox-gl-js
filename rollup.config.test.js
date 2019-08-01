@@ -5,11 +5,11 @@ export default {
     input: 'test/integration/lib/query-browser.js',
     output: {
         name: 'queryTests',
-        format: 'iife',
+        format: 'umd',
         sourcemap: 'inline',
         indent: false,
         file: 'test/dist/query-test.js'
     },
     plugins: plugins(false, false, true),
-    external: [ 'tape', 'mapboxgl' ]
+    external: [ 'test', 'mapboxgl' ]
 }

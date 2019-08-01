@@ -19,7 +19,7 @@ runAll(['build-query-suite', 'build-tape', 'build-test'], {parallel: true}).then
     });
 //3. Once server has started start testem server
 }).then(() => {
-    return runAll(['start-test']);
+    return runAll(['start-test'], { stdout: process.stdout });
 }).then(() => {
     server.close();
 })

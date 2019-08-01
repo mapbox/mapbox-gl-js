@@ -110,7 +110,10 @@
     "stylelint": "^9.10.1",
     "stylelint-config-standard": "^18.2.0",
     "tap": "~12.4.1",
+    "tape-dom": "^0.0.12",
+    "tape-filter": "^1.0.4",
     "testem": "^2.17.0",
+    "through": "^2.3.8",
     "through2": "^3.0.1",
     "unflowify": "^1.0.1"
   },
