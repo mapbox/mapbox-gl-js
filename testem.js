@@ -18,6 +18,12 @@ module.exports =  {
     ],
     "launch_in_dev": [ "Chrome" ],
     "launch_in_ci": [ "Chrome" ],
+    "browser_args": {
+      "Chrome": {
+        "mode": "ci",
+        "args": [ "--headless", "--disable-gpu", "--remote-debugging-port=9222" ]
+      }
+    },
     "proxies": {
         "/tiles":{
            "target": "http://localhost:2900"

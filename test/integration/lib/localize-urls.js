@@ -8,10 +8,10 @@ module.exports = function localizeURLs(style, port) {
     if (style.metadata && style.metadata.test && style.metadata.test.operations) {
         style.metadata.test.operations.forEach((op) => {
             if (op[0] === 'addSource') {
-                localizeSourceURLs(op[2]);
+                localizeSourceURLs(op[2], port);
             } else if (op[0] === 'setStyle') {
                 if (typeof op[1] === 'object') {
-                    localizeStyleURLs(op[1]);
+                    localizeStyleURLs(op[1], port);
                     return;
                 }
 

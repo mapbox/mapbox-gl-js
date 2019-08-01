@@ -160,6 +160,7 @@
     "test-build": "build/run-tap --no-coverage test/build/**/*.test.js",
     "test-render": "node --max-old-space-size=2048 test/render.test.js",
     "test-query": "node test/query.test.js",
+    "test-query-browser-ci": "testem ci -R xunit > test/integration/query-tests/test-results.xml",
     "test-expressions": "build/run-node test/expression.test.js",
     "test-flow": "build/run-node build/generate-flow-typed-style-spec && flow .",
     "test-cov": "nyc --require=@mapbox/flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",

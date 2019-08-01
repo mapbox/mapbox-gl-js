@@ -18,6 +18,7 @@ test/integration/**/actual.png
 test/integration/**/actual.json
 test/integration/**/diff.png
 test/integration/**/fixtures.json
+test/integration/**/test-results.xml
 test/dist/**/*.js
 .eslintcache
 src/style-spec/dist/index.js

@@ -1,6 +1,7 @@
 /* eslint-env browser */
 /* global tape:readonly, mapboxgl:readonly */
-
+/* eslint-disable import/no-unresolved */
+// fixtures.json is generated when this file gets build, refer testem.js
 import fixtures from '../query-tests/fixtures.json';
 import ignores from '../../ignores.json';
 import {applyOperations} from './operation-handlers';
