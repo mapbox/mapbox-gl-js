@@ -105,7 +105,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
 
             map.remove();
             gl.getExtension('STACKGL_destroy_context').destroy();
-            delete map.painter.context.gl; pserver;
+            delete map.painter.context.gl;
 
             if (options.addFakeCanvas) {
                 const fakeCanvas = window.document.getElementById(options.addFakeCanvas.id);
