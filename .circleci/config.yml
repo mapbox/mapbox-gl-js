@@ -183,7 +183,7 @@ jobs:
           name: Install Latest Chrome
           command: |
             curl https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb > google-chrome-stable_current_amd64.deb
-            dpkg -i google-chrome-stable_current_amd64.deb; apt-get -f install
+            dpkg -i google-chrome-stable_current_amd64.deb; apt-get -f install; apt-get -f install
       - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-query-browser-ci
       - store_test_results:
           path: test/integration/query-tests
