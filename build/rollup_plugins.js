@@ -7,7 +7,6 @@ import unassert from 'rollup-plugin-unassert';
 import json from 'rollup-plugin-json';
 import replace from 'rollup-plugin-replace';
 import { terser } from 'rollup-plugin-terser';
-import multiEntry from 'rollup-plugin-multi-entry';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import { createFilter } from 'rollup-pluginutils';
 
@@ -26,7 +25,6 @@ export const plugins = (minified, production, test) => {
         flow(),
         minifyStyleSpec(),
         json(),
-        test ? multiEntry() : false,
         replace({
             "@@ENVIRONMENT": env
         }),
