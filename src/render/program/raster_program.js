@@ -23,6 +23,8 @@ export type RasterUniformsType = {|
     'u_image1': Uniform1i,
     'u_brightness_low': Uniform1f,
     'u_brightness_high': Uniform1f,
+    'u_stretch_low': Uniform1f,
+    'u_stretch_high': Uniform1f,
     'u_saturation_factor': Uniform1f,
     'u_contrast_factor': Uniform1f,
     'u_spin_weights': Uniform3f
@@ -39,6 +41,8 @@ const rasterUniforms = (context: Context, locations: UniformLocations): RasterUn
     'u_image1': new Uniform1i(context, locations.u_image1),
     'u_brightness_low': new Uniform1f(context, locations.u_brightness_low),
     'u_brightness_high': new Uniform1f(context, locations.u_brightness_high),
+    'u_stretch_low': new Uniform1f(context, locations.u_stretch_low),
+    'u_stretch_high': new Uniform1f(context, locations.u_stretch_high),
     'u_saturation_factor': new Uniform1f(context, locations.u_saturation_factor),
     'u_contrast_factor': new Uniform1f(context, locations.u_contrast_factor),
     'u_spin_weights': new Uniform3f(context, locations.u_spin_weights)
@@ -61,6 +65,8 @@ const rasterUniformValues = (
     'u_image1': 1,
     'u_brightness_low': layer.paint.get('raster-brightness-min'),
     'u_brightness_high': layer.paint.get('raster-brightness-max'),
+    'u_stretch_low': layer.paint.get('raster-stretch-min'),
+    'u_stretch_high': layer.paint.get('raster-stretch-max'),
     'u_saturation_factor': saturationFactor(layer.paint.get('raster-saturation')),
     'u_contrast_factor': contrastFactor(layer.paint.get('raster-contrast')),
     'u_spin_weights': spinWeights(layer.paint.get('raster-hue-rotate'))

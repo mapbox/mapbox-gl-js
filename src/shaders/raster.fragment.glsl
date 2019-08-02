@@ -8,6 +8,9 @@ varying vec2 v_pos1;
 uniform float u_brightness_low;
 uniform float u_brightness_high;
 
+uniform float u_stretch_low;
+uniform float u_stretch_high;
+
 uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
@@ -39,6 +42,9 @@ void main() {
 
     // contrast
     rgb = (rgb - 0.5) * u_contrast_factor + 0.5;
+
+    // stretching
+    rgb = mix(vec3(u_stretch_low / (u_stretch_low - float(1))), vec3(float(1) / u_stretch_high), rgb);
 
     // brightness
     vec3 u_high_vec = vec3(u_brightness_low, u_brightness_low, u_brightness_low);

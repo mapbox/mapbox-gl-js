@@ -362,6 +362,8 @@ export type RasterLayerSpecification = {|
         "raster-hue-rotate"?: PropertyValueSpecification<number>,
         "raster-brightness-min"?: PropertyValueSpecification<number>,
         "raster-brightness-max"?: PropertyValueSpecification<number>,
+        "raster-stretch-min"?: PropertyValueSpecification<number>,
+        "raster-stretch-max"?: PropertyValueSpecification<number>,
         "raster-saturation"?: PropertyValueSpecification<number>,
         "raster-contrast"?: PropertyValueSpecification<number>,
         "raster-resampling"?: PropertyValueSpecification<"linear" | "nearest">,
