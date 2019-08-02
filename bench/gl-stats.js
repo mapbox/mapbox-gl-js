@@ -2,6 +2,7 @@
 
 const puppeteer = require('puppeteer');
 const fs = require('fs');
+const zlib = require('zlib');
 const mapboxGlSrc = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 const benchSrc = fs.readFileSync('bench/gl-stats.html', 'utf8');
 
@@ -28,6 +29,10 @@ function waitForConsole(page) {
     await page.setContent(benchHTML);
 
     const stats = JSON.parse(await waitForConsole(page));
+    stats.bundleStats = {
+        size: mapboxGlSrc.length,
+        "size_gz": zlib.gzipSync(mapboxGlSrc).length
+    };
     console.log(JSON.stringify(stats, null, 2));
 
     await page.close();
