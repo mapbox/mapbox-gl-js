@@ -14,54 +14,59 @@ var map = new mapboxgl.Map({
     container: document.getElementById('map'),
     style: 'mapbox://styles/mapbox/streets-v11',
     center: [-77.07842066675323, 38.890315130853566],
-    zoom: 11.1,
-    fadeDuration: 0
+    zoom: 11
 });
 
 const gl = map.painter.context && map.painter.context.gl || map.painter.gl;
 const vao = map.painter.context && map.painter.context.extVertexArrayObject || map.painter.extVertexArrayObject;
 
-const stats = {
-    'buffer-data-bytes': 0,
-    'tex-image-2d-bytes': 0,
-    'draw-calls': 0,
-    'bind-vao-calls': 0,
-    'use-program-calls': 0
-};
+const tileStats = {};
+const frameStats = {};
+let numFrames = 0;
 
-const {bufferData, texImage2D, drawElements, drawArrays, useProgram} = gl;
-const {bindVertexArrayOES} = vao;
+function hookStats(stats, obj, methodName, statName = methodName, getStat) {
+    const originalFn = obj[methodName];
+    stats[statName] = 0;
+    obj[methodName] = (...args) => {
+        stats[statName] += getStat ? getStat(args) : 1;
+        originalFn.call(obj, ...args);
+    };
+}
 
-gl.bufferData = (...args) => {
-    stats['buffer-data-bytes'] += args[1].byteLength;
-    bufferData.call(gl, ...args);
-};
-gl.texImage2D = (...args) => {
-    stats['tex-image-2d-bytes'] += args[5] ? args[5].width * args[5].height : args[3] * args[4];
-    texImage2D.call(gl, ...args);
-};
-gl.drawElements = (...args) => {
-    stats['draw-calls']++;
-    drawElements.call(gl, ...args);
-};
-gl.drawArrays = (...args) => {
-    stats['draw-calls']++;
-    drawArrays.call(gl, ...args);
-};
-gl.useProgram = (...args) => {
-    stats['use-program-calls']++;
-    useProgram.call(gl, ...args);
-};
-vao.bindVertexArrayOES  = (...args) => {
-    stats['bind-vao-calls']++;
-    bindVertexArrayOES.call(vao, ...args);
-};
+map.on('data', function onData(e) {
+    if (!e.coord) return;
+    // wait for the tile to load before collecting metrics
 
-map.on('render', function logStats() {
-    if (!map._sourcesDirty && !map._repaint && !map._styleDirty && !map._placementDirty && map.loaded()) {
-        console.log(JSON.stringify(stats, null, 2));
-        map.off('render', logStats);
-    }
+    map.off('data', onData);
+
+    hookStats(tileStats, gl, 'bufferData');
+    hookStats(tileStats, gl, 'bufferData', 'bufferData_bytes', (args) => args[1].byteLength);
+
+    hookStats(frameStats, gl, 'bufferSubData');
+    hookStats(frameStats, gl, 'bufferSubData', 'bufferSubData_bytes', (args) => args[2].byteLength);
+
+    hookStats(tileStats, gl, 'texImage2D');
+    hookStats(tileStats, gl, 'texImage2D', 'texImage2D_bytes',
+        (args) => args[5] ? args[5].width * args[5].height : args[3] * args[4]);
+
+    hookStats(tileStats, gl, 'texSubImage2D');
+    hookStats(tileStats, gl, 'texSubImage2D', 'texSubImage2D_bytes',
+        (args) => args[6] && args[6].width ? args[6].width * args[6].height : args[4] * args[5]);
+
+    hookStats(frameStats, gl, 'drawElements', 'draw');
+    hookStats(frameStats, gl, 'drawArrays', 'draw');
+    hookStats(frameStats, gl, 'useProgram');
+    hookStats(frameStats, vao, 'bindVertexArrayOES', 'bindVAO');
+
+    map.on('render', () => numFrames++);
+    map.once('moveend', () => {
+        for (const id in frameStats) {
+            frameStats[id] = Math.round(10 * frameStats[id] / numFrames) / 10;
+        }
+        console.log(JSON.stringify({tileStats, frameStats}, null, 2));
+    });
+
+    setTimeout(() => map.zoomTo(11.99, {duration: 5000, easing: (t) => t}), 1000);
 });
 </script>
 </html>
