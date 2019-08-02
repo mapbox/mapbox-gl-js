@@ -25,6 +25,10 @@ export const registerForPluginAvailability = function(
     return callback;
 };
 
+export const rtlTextPluginRequested = function () {
+    return pluginRequested;
+};
+
 export const clearRTLTextPlugin = function() {
     pluginRequested = false;
     pluginURL = null;

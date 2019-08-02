@@ -19,7 +19,7 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
 import config from './util/config';
-import {setRTLTextPlugin} from './source/rtl_text_plugin';
+import {setRTLTextPlugin, rtlTextPluginRequested} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
 
@@ -89,6 +89,19 @@ const exported = {
 
     set workerCount(count: number) {
         WorkerPool.workerCount = count;
+    },
+
+    /**
+     * Gets a boolean indicating whether or not the RTL plugin has been previously requested
+     *
+     * @var {string} rtlTextPluginRequested
+     * @example
+     * if (!mapboxgl.rtlTextPluginRequested) {
+     *   mapboxgl.setRTLTextPlugin(pluginUrl);
+     * }
+     */
+    get rtlTextPluginRequested(): boolean {
+        return rtlTextPluginRequested();
     },
 
     /**
