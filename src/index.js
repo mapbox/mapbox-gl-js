@@ -92,12 +92,12 @@ const exported = {
     },
 
     /**
-     * Gets a boolean indicating whether or not the RTL plugin has been previously requested
+     * Gets a boolean indicating whether or not the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) has been previously requested
      *
      * @var {string} rtlTextPluginRequested
      * @example
      * if (!mapboxgl.rtlTextPluginRequested) {
-     *   mapboxgl.setRTLTextPlugin(pluginUrl);
+     *   mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
      * }
      */
     get rtlTextPluginRequested(): boolean {
