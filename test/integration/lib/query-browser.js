@@ -67,7 +67,7 @@ function testFunc(t) {
                 return featureJson;
             });
 
-            t.deepEqual(actual, expected);
+            t.deepEqual(actual, expected, `${t.name} output should match expected.json`);
             t.end();
         });
     });
