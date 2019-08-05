@@ -26,7 +26,7 @@ export const plugins = (minified, production, test) => {
         minifyStyleSpec(),
         json(),
         replace({
-            "@@ENVIRONMENT": env
+            "GL_JS_ENV": JSON.stringify(env)
         }),
         glsl('./src/shaders/*.glsl', production),
         buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
