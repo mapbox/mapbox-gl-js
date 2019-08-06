@@ -299,10 +299,9 @@ test('util', (t) => {
         t.end();
     });
 
-
     t.test('max', (t) => {
         t.test('empty array returns null', (t) => {
-            t.equal(max([] , (e) => e), null);
+            t.equal(max([], (e) => e), null);
             t.end();
         });
 
@@ -321,7 +320,7 @@ test('util', (t) => {
                     val: 10
                 }
             ];
-            t.equal(max(arr , (e) => e.val), arr[1]);
+            t.equal(max(arr, (e) => e.val), arr[1]);
             t.end();
         });
 
@@ -331,7 +330,7 @@ test('util', (t) => {
                     val: 10
                 }
             ];
-            t.equal(max(arr , (e) => e.val), arr[0]);
+            t.equal(max(arr, (e) => e.val), arr[0]);
             t.end();
         });
 

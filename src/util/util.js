@@ -395,13 +395,13 @@ export function isClosedPolygon(points: Array<Point>): boolean {
  * @param {(elem: any) => number} comparator
  * @returns {*}
  */
-export function max(array: Array<any>, comparator: (elem: any) => number ): ?any {
-    if(array.length === 0) { return null; }
+export function max(array: Array<any>, comparator: (elem: any) => number): ?any {
+    if (array.length === 0) { return null; }
 
     return array.reduce((currMax, curr) => {
-        if(comparator(curr) > comparator(currMax)){
+        if (comparator(curr) > comparator(currMax)) {
             return curr;
-        }else{
+        } else {
             return currMax;
         }
     }, array[0]);
