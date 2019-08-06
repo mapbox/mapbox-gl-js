@@ -8,8 +8,6 @@ import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray } from '../index_array_type';
 import EXTENT from '../extent';
 import earcut from 'earcut';
-import mvt from '@mapbox/vector-tile';
-const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import classifyRings from '../../util/classify_rings';
 import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
@@ -17,7 +15,7 @@ import { register } from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import EvaluationParameters from '../../style/evaluation_parameters';
-import { calculateSignedArea, max } from '../../util/util';
+import { calculateSignedArea } from '../../util/util';
 
 import type {
     Bucket,
@@ -281,11 +279,11 @@ function isEntirelyOutside(ring) {
         ring.every(p => p.y > EXTENT);
 }
 
-function cleanupPolygonWindingOrder(polygon){
+function cleanupPolygonWindingOrder(polygon) {
     // reverse all rings because have a case wherein the polygons are provided
     // with a clockwise winding order
-    if(calculateSignedArea(polygon[0]) < 0){
-        for( const ring of polygon ){
+    if (calculateSignedArea(polygon[0]) < 0) {
+        for (const ring of polygon) {
             ring.reverse();
         }
     }
