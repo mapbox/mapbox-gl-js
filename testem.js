@@ -43,7 +43,7 @@ module.exports =  {
             "target": "http://localhost:2900"
         }
     },
-    "before_tests"(config, data, callback) {
+    "before_tests"(config: any, data: any, callback: Function) {
         if (!beforeHookInvoked) {
             server = createServer();
             //1. Compile fixture data into a json file, so it can be bundled
@@ -57,7 +57,7 @@ module.exports =  {
             beforeHookInvoked = true;
         }
     },
-    "after_tests"(config, data, callback) {
+    "after_tests"(config: any, data: any, callback: Function) {
         if (!afterHookInvoked) {
             server.close(callback);
             afterHookInvoked = true;

@@ -8,7 +8,7 @@ const OUTPUT_FILE = 'fixtures.json';
 
 /**
  * Analyzes the contents of the specified `directory` ,and inlines
- * the contents into a single json file which can then we imported and built into a bundle
+ * the contents into a single json file which can then be imported and built into a bundle
  * to be shipped to the browser.
  *
  * @param {string} directory
