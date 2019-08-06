@@ -181,7 +181,7 @@ jobs:
           at: .
       - run: yarn run test-query-browser-ci
       - store_test_results:
-          path: test/integration
+          path: test/integration/query-tests
 
   test-expressions:
     <<: *defaults

@@ -5,7 +5,6 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from 'rollup-plugin-json';
-import replace from 'rollup-plugin-replace';
 import { terser } from 'rollup-plugin-terser';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import { createFilter } from 'rollup-pluginutils';
@@ -13,21 +12,11 @@ import { createFilter } from 'rollup-pluginutils';
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
-export const plugins = (minified, production, test) => {
-    let env = 'development';
-    if(production){
-        env = 'production';
-    }else if(test){
-        env = 'test';
-    }
-
+export const plugins = (minified, production) => {
     return [
         flow(),
         minifyStyleSpec(),
         json(),
-        replace({
-            "GL_JS_ENV": JSON.stringify(env)
-        }),
         glsl('./src/shaders/*.glsl', production),
         buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
         minified ? terser() : false,

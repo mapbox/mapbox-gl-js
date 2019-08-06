@@ -18,7 +18,7 @@ const outputFile = (function() {
     }
 
     if(test) {
-        return 'test/dist/mapbox-gl-test.js';
+        return 'test/integration/dist/mapbox-gl-test.js';
     }
 
     return 'dist/mapbox-gl-dev.js';
@@ -42,7 +42,7 @@ export default [{
         chunkFileNames: 'shared.js'
     },
     treeshake: production,
-    plugins: plugins(minified, production, test)
+    plugins: plugins(minified, production)
 }, {
     // Next, bundle together the three "chunks" produced in the previous pass
     // into a single, final bundle. See rollup/bundle_prelude.js and

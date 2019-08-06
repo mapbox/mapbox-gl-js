@@ -17,12 +17,11 @@ module.exports = function (directory) {
     const basePath = directory;
     const jsonPaths = path.join(basePath, '/**/*.json');
     const imagePaths = path.join(basePath, '/**/*.png');
-    const ignoreOutputPath = path.join(basePath, OUTPUT_FILE);
     //Extract the filedata into a flat dictionary
     const allFiles = {};
-    const allPaths = glob.sync(jsonPaths, { ignore: [ignoreOutputPath] }).concat(glob.sync(imagePaths));
+    const allPaths = glob.sync(jsonPaths).concat(glob.sync(imagePaths));
 
-    //A Set that stores test names that are malformed so they can eb reomved later
+    //A Set that stores test names that are malformed so they can be removed later
     const malformedTests = {};
 
     for (const fixturePath of allPaths) {
@@ -57,15 +56,17 @@ module.exports = function (directory) {
         //Skip if test is malformed
         if (malformedTests[testName]) { continue; }
 
+        //Lazily initaialize an object to store each file wihin a particular testName
         if (result[testName] == null) {
             result[testName] = {};
         }
+        //Trim extension from filename
         const fileName = path.basename(fullPath, path.extname(fullPath));
         result[testName][fileName] = allFiles[fullPath];
     }
 
     const outputStr = JSON.stringify(result, null, 4);
-    const outputPath = path.join(basePath, OUTPUT_FILE);
+    const outputPath = path.join('test/integration/dist', OUTPUT_FILE);
 
     fs.writeFileSync(outputPath, outputStr, { encoding: 'utf8'});
 };

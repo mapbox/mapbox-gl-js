@@ -1,5 +1,4 @@
 // @flow strict
-/* global GL_JS_ENV:readonly */
 
 type Config = {|
   API_URL: string,
@@ -23,13 +22,7 @@ const config: Config = {
         }
     },
     FEEDBACK_URL: 'https://apps.mapbox.com/feedback',
-    REQUIRE_ACCESS_TOKEN: ((() => {
-        if (GL_JS_ENV === 'test') {
-            return false;
-        }
-
-        return true;
-    })(): boolean),
+    REQUIRE_ACCESS_TOKEN: true,
     ACCESS_TOKEN: null,
     MAX_PARALLEL_IMAGE_REQUESTS: 16
 };

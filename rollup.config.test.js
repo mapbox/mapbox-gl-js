@@ -8,8 +8,8 @@ export default {
         format: 'iife',
         sourcemap: 'inline',
         indent: false,
-        file: 'test/dist/query-test.js'
+        file: 'test/integration/dist/query-test.js'
     },
-    plugins: plugins(false, false, true),
+    plugins: plugins(false, false),
     external: [ 'test', 'mapboxgl' ]
 }
