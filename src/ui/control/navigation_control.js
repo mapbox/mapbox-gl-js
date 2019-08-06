@@ -25,7 +25,7 @@ const defaultOptions: Options = {
  * @param {Object} [options]
  * @param {Boolean} [options.showCompass=true] If `true` the compass button is included.
  * @param {Boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
- * @param {Boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating Y-axis of compass.
+ * @param {Boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating X-axis of compass.
  * @example
  * var nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');
