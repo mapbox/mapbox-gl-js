@@ -17,6 +17,7 @@ import { register } from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import EvaluationParameters from '../../style/evaluation_parameters';
+import { calculateSignedArea, max } from '../../util/util';
 
 import type {
     Bucket,
@@ -158,6 +159,9 @@ class FillExtrusionBucket implements Bucket {
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, imagePositions: {[string]: ImagePosition}) {
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
+            // Mutates `polygon` in-place
+            cleanupPolygonWindingOrder(polygon);
+
             let numVertices = 0;
             for (const ring of polygon) {
                 numVertices += ring.length;
@@ -219,11 +223,6 @@ class FillExtrusionBucket implements Bucket {
                 segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
             }
 
-            //Only triangulate and draw the area of the feature if it is a polygon
-            //Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
-            if (vectorTileFeatureTypes[feature.type] !== 'Polygon')
-                continue;
-
             const flattened = [];
             const holeIndices = [];
             const triangleIndex = segment.vertexLength;
@@ -280,4 +279,16 @@ function isEntirelyOutside(ring) {
         ring.every(p => p.x > EXTENT) ||
         ring.every(p => p.y < 0) ||
         ring.every(p => p.y > EXTENT);
+}
+
+function cleanupPolygonWindingOrder(polygon){
+    // reverse all rings because have a case wherein the polygons are provided
+    // with a clockwise winding order
+    if(calculateSignedArea(polygon[0]) < 0){
+        for( const ring of polygon ){
+            ring.reverse();
+        }
+    }
+
+    return polygon;
 }

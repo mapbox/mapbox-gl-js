@@ -2,7 +2,7 @@
 
 import { test } from '../../util/test';
 
-import { easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid } from '../../../src/util/util';
+import { easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, max } from '../../../src/util/util';
 import Point from '@mapbox/point-geometry';
 
 test('util', (t) => {
@@ -296,6 +296,45 @@ test('util', (t) => {
         t.false(validateUuid(uuid().substr(0, 10)));
         t.false(validateUuid('foobar'));
         t.false(validateUuid(null));
+        t.end();
+    });
+
+
+    t.test('max', (t) => {
+        t.test('empty array returns null', (t) => {
+            t.equal(max([] , (e) => e), null);
+            t.end();
+        });
+
+        t.test('gets max from object array', (t) => {
+            const arr = [
+                {
+                    val: 10
+                },
+                {
+                    val: 100
+                },
+                {
+                    val: -1
+                },
+                {
+                    val: 10
+                }
+            ];
+            t.equal(max(arr , (e) => e.val), arr[1]);
+            t.end();
+        });
+
+        t.test('gets max from one element object array', (t) => {
+            const arr = [
+                {
+                    val: 10
+                }
+            ];
+            t.equal(max(arr , (e) => e.val), arr[0]);
+            t.end();
+        });
+
         t.end();
     });
 
