@@ -1,5 +1,3 @@
-// @flow
-/* eslint-disable import/no-commonjs */
 const generateFixtureJson = require('./test/integration/lib/generate-fixture-json');
 const createServer = require('./test/integration/lib/server');
 const runAll = require('npm-run-all');
@@ -43,7 +41,7 @@ module.exports =  {
             "target": "http://localhost:2900"
         }
     },
-    "before_tests"(config: any, data: any, callback: Function) {
+    "before_tests"(config, data, callback) {
         if (!beforeHookInvoked) {
             server = createServer();
             //1. Compile fixture data into a json file, so it can be bundled
@@ -57,7 +55,7 @@ module.exports =  {
             beforeHookInvoked = true;
         }
     },
-    "after_tests"(config: any, data: any, callback: Function) {
+    "after_tests"(config, data, callback) {
         if (!afterHookInvoked) {
             server.close(callback);
             afterHookInvoked = true;
