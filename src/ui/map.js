@@ -64,7 +64,7 @@ type IControl = {
 /* eslint-enable no-use-before-define */
 
 type MapOptions = {
-    hash?: boolean,
+    hash?: boolean | string,
     interactive?: boolean,
     container: HTMLElement | string,
     bearingSnap?: number,
@@ -173,6 +173,8 @@ const defaultOptions = {
  *
  * @param {boolean} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
  *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
+ *   If a string is provided, it will used as the name for a parameter-styled hash, for example:
+ *   `http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar`
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners will be attached to the map, so it will not respond to interaction.
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
  *   bearing will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
@@ -378,7 +380,7 @@ class Map extends Camera {
 
         bindHandlers(this, options);
 
-        this._hash = options.hash && (new Hash()).addTo(this);
+        this._hash = options.hash && (new Hash(options.hash)).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
             this.jumpTo({

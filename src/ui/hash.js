@@ -15,9 +15,12 @@ import type Map from './map';
 class Hash {
     _map: Map;
     _updateHash: () => ?TimeoutID;
+    _hashName: ?string;
 
-    constructor() {
+    constructor(hashName: string | boolean) {
+        this._hashName = (typeof hashName === 'string' && hashName) || null;
         bindAll([
+            '_getCurrentHash',
             '_onHashChange',
             '_updateHash'
         ], this);
@@ -67,18 +70,46 @@ class Hash {
         if (mapFeedback) {
             // new map feedback site has some constraints that don't allow
             // us to use the same hash format as we do for the Map hash option.
-            hash += `#/${lng}/${lat}/${zoom}`;
+            hash += `/${lng}/${lat}/${zoom}`;
         } else {
-            hash += `#${zoom}/${lat}/${lng}`;
+            hash += `${zoom}/${lat}/${lng}`;
         }
 
         if (bearing || pitch) hash += (`/${Math.round(bearing * 10) / 10}`);
         if (pitch) hash += (`/${Math.round(pitch)}`);
-        return hash;
+
+        if (this._hashName && !mapFeedback) {
+            let found = false;
+            const parts = window.location.hash.slice(1).split('&').map(part => {
+                const key = part.split('=')[0];
+                if (key === this._hashName) {
+                    found = true;
+                    return `${key}=${hash}`;
+                }
+                return part;
+            }).filter(a => a);
+            if (!found) {
+                parts.push(`${this._hashName || ''}=${hash}`);
+            }
+            return `#${parts.join('&')}`;
+        }
+
+        return `#${hash}`;
+    }
+
+    _getCurrentHash() {
+        const hash = window.location.hash.replace('#', '');
+        if (this._hashName) {
+            const keyval = hash.split('&').map(
+                part => part.split('=')
+            ).find(part => part[0] === this._hashName);
+            return (keyval ? keyval[1] || '' : '').split('/');
+        }
+        return hash.split('/');
     }
 
     _onHashChange() {
-        const loc = window.location.hash.replace('#', '').split('/');
+        const loc = this._getCurrentHash();
         if (loc.length >= 3) {
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
