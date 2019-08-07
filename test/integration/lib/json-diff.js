@@ -16,7 +16,7 @@ export function deepEqual(a, b) {
     if (typeof a !== typeof b)
         return false;
     if (typeof a === 'number')
-        return a === b;
+        return Math.abs(a - b) < 1e-10;
     if (a === null || typeof a !== 'object')
         return a === b;
 
