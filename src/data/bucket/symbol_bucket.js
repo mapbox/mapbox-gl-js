@@ -337,11 +337,6 @@ class SymbolBucket implements Bucket {
     createArrays() {
         const layout = this.layers[0].layout;
         this.hasPaintOverrides = SymbolStyleLayer.hasPaintOverrides(layout);
-        if (this.hasPaintOverrides) {
-            for (const layer of this.layers) {
-                layer.setPaintOverrides();
-            }
-        }
 
         this.text = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property)));
         this.icon = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property)));

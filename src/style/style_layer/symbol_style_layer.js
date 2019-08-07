@@ -90,6 +90,8 @@ class SymbolStyleLayer extends StyleLayer {
                 this.layout._values['text-writing-mode'] = ['horizontal'];
             }
         }
+
+        this._setPaintOverrides();
     }
 
     getValueAndResolveTokens(name: *, feature: Feature) {
@@ -115,7 +117,7 @@ class SymbolStyleLayer extends StyleLayer {
         return false;
     }
 
-    setPaintOverrides() {
+    _setPaintOverrides() {
         for (const overridable of properties.paint.overridableProperties) {
             if (!SymbolStyleLayer.hasPaintOverride(this.layout, overridable)) {
                 continue;
