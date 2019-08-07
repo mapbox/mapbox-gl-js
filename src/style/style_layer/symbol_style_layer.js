@@ -147,40 +147,42 @@ class SymbolStyleLayer extends StyleLayer {
 
     static hasPaintOverride(layout: PossiblyEvaluated<LayoutProps>, propertyName: string): boolean {
         const textField = layout.get('text-field');
+        const property = properties.paint.properties[propertyName];
+        let hasOverrides = false;
 
-        let sections: any = [];
-        if (textField.value.kind === 'constant' && textField.value.value instanceof Formatted) {
-            sections = textField.value.value.sections;
-        } else if (textField.value.kind === 'source') {
-            const checkExpression = (expression: Expression) => {
-                if (sections.length) {
+        const checkSections = (sections) => {
+            for (const section of sections) {
+                if (property.overrides && property.overrides.hasOverride(section)) {
+                    hasOverrides = true;
                     return;
                 }
+            }
+        };
+
+        if (textField.value.kind === 'constant' && textField.value.value instanceof Formatted) {
+            checkSections(textField.value.value.sections);
+        } else if (textField.value.kind === 'source') {
+
+            const checkExpression = (expression: Expression) => {
+                if (hasOverrides) return;
 
                 if (expression instanceof Literal && typeOf(expression.value) === FormattedType) {
                     const formatted: Formatted = ((expression.value): any);
-                    sections = formatted.sections;
+                    checkSections(formatted.sections);
                 } else if (expression instanceof FormatExpression) {
-                    sections = expression.sections;
+                    checkSections(expression.sections);
+                } else {
+                    expression.eachChild(checkExpression);
                 }
             };
 
             const expr: ZoomConstantExpression<'source'> = ((textField.value): any);
             if (expr._styleExpression) {
                 checkExpression(expr._styleExpression.expression);
-                if (!sections.length) {
-                    expr._styleExpression.expression.eachChild(checkExpression);
-                }
             }
         }
 
-        const property = properties.paint.properties[propertyName];
-        for (const section of sections) {
-            if (property.overrides && property.overrides.hasOverride(section)) {
-                return true;
-            }
-        }
-        return false;
+        return hasOverrides;
     }
 
     static hasPaintOverrides(layout: PossiblyEvaluated<LayoutProps>): boolean {
