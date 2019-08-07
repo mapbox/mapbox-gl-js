@@ -8,6 +8,8 @@ import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray } from '../index_array_type';
 import EXTENT from '../extent';
 import earcut from 'earcut';
+import mvt from '@mapbox/vector-tile';
+const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import classifyRings from '../../util/classify_rings';
 import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
@@ -221,6 +223,11 @@ class FillExtrusionBucket implements Bucket {
                 segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
             }
 
+            //Only triangulate and draw the area of the feature if it is a polygon
+            //Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
+            if (vectorTileFeatureTypes[feature.type] !== 'Polygon')
+                continue;
+
             const flattened = [];
             const holeIndices = [];
             const triangleIndex = segment.vertexLength;
@@ -280,8 +287,7 @@ function isEntirelyOutside(ring) {
 }
 
 function cleanupPolygonWindingOrder(polygon) {
-    // reverse all rings because have a case wherein the polygons are provided
-    // with a clockwise winding order
+    // Check if a  ring is using a clockwise winding order, and reverse it if so.
     if (calculateSignedArea(polygon[0]) < 0) {
         for (const ring of polygon) {
             ring.reverse();

@@ -386,28 +386,6 @@ export function isClosedPolygon(points: Array<Point>): boolean {
 }
 
 /**
- * Retruns the maximum value of an element in an array,
- * based on the value retured by the comparator function. Returns null if the
- * array is empty
- *
- * @export
- * @param {Array<any>} array
- * @param {(elem: any) => number} comparator
- * @returns {*}
- */
-export function max(array: Array<any>, comparator: (elem: any) => number): ?any {
-    if (array.length === 0) { return null; }
-
-    return array.reduce((currMax, curr) => {
-        if (comparator(curr) > comparator(currMax)) {
-            return curr;
-        } else {
-            return currMax;
-        }
-    }, array[0]);
-}
-
-/**
  * Converts spherical coordinates to cartesian coordinates.
  *
  * @private
