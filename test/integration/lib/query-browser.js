@@ -5,6 +5,7 @@
 import fixtures from '../dist/fixtures.json';
 import ignores from '../../ignores.json';
 import {applyOperations} from './operation-handlers';
+import {deepEqual, generateDiffLog} from './json-diff';
 
 for (const testName in fixtures) {
     if (testName in ignores) {
@@ -67,7 +68,12 @@ function testFunc(t) {
                 return featureJson;
             });
 
-            t.deepEqual(actual, expected, `${t.name} output should match expected.json`);
+            const success = deepEqual(actual, expected);
+            if (success) {
+                t.pass(`${t.name} output should match expected.json`);
+            } else {
+                t.fail(`${t.name} fail: \n ${generateDiffLog(expected, actual)}`);
+            }
             t.end();
         });
     });
