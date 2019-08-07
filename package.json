@@ -39,7 +39,6 @@
     "vt-pbf": "^3.1.1"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.5.5",
     "@mapbox/appropriate-images": "^2.0.0",
     "@mapbox/appropriate-images-react": "^1.0.0",
     "@mapbox/batfish": "1.9.8",
@@ -52,10 +51,8 @@
     "@mapbox/mr-ui": "0.7.2",
     "@octokit/rest": "^15.15.1",
     "babel-eslint": "^10.0.1",
-    "babelify": "^10.0.0",
     "benchmark": "^2.1.4",
     "browserify": "^16.3.0",
-    "bubleify": "^1.2.1",
     "d3": "^4.12.0",
     "diff": "^4.0.1",
     "documentation": "~9.1.1",
@@ -98,7 +95,6 @@
     "rollup-plugin-buble": "^0.19.8",
     "rollup-plugin-commonjs": "^10.0.1",
     "rollup-plugin-json": "^4.0.0",
-    "rollup-plugin-multi-entry": "^2.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
@@ -111,12 +107,8 @@
     "stylelint-config-standard": "^18.2.0",
     "tap": "~12.4.1",
     "tape": "^4.11.0",
-    "tape-dom": "^0.0.12",
     "tape-filter": "^1.0.4",
-    "testem": "^2.17.0",
-    "through": "^2.3.8",
-    "through2": "^3.0.1",
-    "unflowify": "^1.0.1"
+    "testem": "^2.17.0"
   },
   "browser": {
     "./src/shaders/index.js": "./src/shaders/shaders.js",
