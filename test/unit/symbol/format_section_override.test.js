@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { createExpression, ZoomConstantExpression } from '../../../src/style-spec/expression';
 import EvaluationContext from '../../../src/style-spec/expression/evaluation_context';
 import properties from '../../../src/style/style_layer/symbol_style_layer_properties';
