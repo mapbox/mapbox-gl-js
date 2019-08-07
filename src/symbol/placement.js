@@ -5,7 +5,7 @@ import EXTENT from '../data/extent';
 import * as symbolSize from './symbol_size';
 import * as projection from './projection';
 import { getAnchorJustification, evaluateRadialOffset } from './symbol_layout';
-import { getAnchorAlignment } from './shaping';
+import { getAnchorAlignment, WritingMode } from './shaping';
 import assert from 'assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import Point from '@mapbox/point-geometry';
@@ -165,6 +165,7 @@ export class Placement {
     placements: { [CrossTileID]: JointPlacement };
     opacities: { [CrossTileID]: JointOpacityState };
     variableOffsets: {[CrossTileID]: VariableOffset };
+    placedOrientations: {[CrossTileID]: number };
     commitTime: number;
     lastPlacementChangeTime: number;
     stale: boolean;
@@ -189,6 +190,8 @@ export class Placement {
         if (prevPlacement) {
             prevPlacement.prevPlacement = undefined; // Only hold on to one placement back
         }
+
+        this.placedOrientations = {};
     }
 
     placeLayerTile(styleLayer: StyleLayer, tile: Tile, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean }) {
@@ -234,7 +237,7 @@ export class Placement {
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
                            radialTextOffset: number, textBoxScale: number, rotateWithMap: boolean,
                            pitchWithMap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroup: CollisionGroup,
-                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket) {
+                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ box: Array<number>, offscreen: boolean }  {
 
         const shift = calculateVariableLayoutOffset(anchor, width, height, radialTextOffset, textBoxScale);
 
@@ -263,7 +266,13 @@ export class Placement {
                 textBoxScale,
                 prevAnchor
             };
-            this.markUsedJustification(bucket, anchor, symbolInstance);
+            this.markUsedJustification(bucket, anchor, symbolInstance, orientation);
+
+            if (bucket.allowVerticalPlacement) {
+                this.markUsedOrientation(bucket, orientation, symbolInstance);
+                this.placedOrientations[symbolInstance.crossTileID] = orientation;
+            }
+
             return placedGlyphBoxes;
         }
     }
@@ -317,26 +326,82 @@ export class Placement {
             let placeIcon = false;
             let offscreen = true;
 
+            let placed = { box: null, offscreen: null };
+            let placedVertical = { box: null, offscreen: null };
+
             let placedGlyphBoxes = null;
             let placedGlyphCircles = null;
             let placedIconBoxes = null;
             let textFeatureIndex = 0;
+            let verticalTextFeatureIndex = 0;
             let iconFeatureIndex = 0;
 
             if (collisionArrays.textFeatureIndex) {
                 textFeatureIndex = collisionArrays.textFeatureIndex;
             }
+            if (collisionArrays.verticalTextFeatureIndex) {
+                verticalTextFeatureIndex = collisionArrays.verticalTextFeatureIndex;
+            }
 
             const textBox = collisionArrays.textBox;
             if (textBox) {
+
+                const updatePreviousOrientationIfNotPlaced = (isPlaced) => {
+                    let previousOrientation = WritingMode.horizontal;
+                    if (bucket.allowVerticalPlacement && !isPlaced && this.prevPlacement) {
+                        const prevPlacedOrientation = this.prevPlacement.placedOrientations[symbolInstance.crossTileID];
+                        if (prevPlacedOrientation) {
+                            this.placedOrientations[symbolInstance.crossTileID] = prevPlacedOrientation;
+                            previousOrientation = prevPlacedOrientation;
+                            this.markUsedOrientation(bucket, previousOrientation, symbolInstance);
+                        }
+                    }
+                    return previousOrientation;
+                };
+
+                const placeTextForPlacementModes = (placeHorizontalFn, placeVerticalFn) => {
+                    if (bucket.allowVerticalPlacement && symbolInstance.numVerticalGlyphVertices > 0 && collisionArrays.verticalTextBox) {
+                        for (const placementMode of bucket.writingModes) {
+                            if (placementMode === WritingMode.vertical) {
+                                placed = placeVerticalFn();
+                                placedVertical = placed;
+                            } else {
+                                placed = placeHorizontalFn();
+                            }
+                            if (placed && placed.box && placed.box.length) break;
+                        }
+                    } else {
+                        placed = placeHorizontalFn();
+                    }
+                };
+
                 if (!layout.get('text-variable-anchor')) {
-                    placedGlyphBoxes = this.collisionIndex.placeCollisionBox(textBox,
-                            layout.get('text-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
-                    placeText = placedGlyphBoxes.box.length > 0;
+                    const placeBox = (collisionTextBox, orientation) => {
+                        const placedFeature = this.collisionIndex.placeCollisionBox(collisionTextBox, layout.get('text-allow-overlap'),
+                                                                                  textPixelRatio, posMatrix, collisionGroup.predicate);
+                        if (placedFeature && placedFeature.box && placedFeature.box.length) {
+                            this.markUsedOrientation(bucket, orientation, symbolInstance);
+                            this.placedOrientations[symbolInstance.crossTileID] = orientation;
+                        }
+                        return placedFeature;
+                    };
+
+                    const placeHorizontal = () => {
+                        return placeBox(textBox, WritingMode.horizontal);
+                    };
+
+                    const placeVertical = () => {
+                        const verticalTextBox = collisionArrays.verticalTextBox;
+                        if (bucket.allowVerticalPlacement && symbolInstance.numVerticalGlyphVertices > 0 && verticalTextBox) {
+                            return placeBox(verticalTextBox, WritingMode.vertical);
+                        }
+                        return { box: null, offscreen: null };
+                    };
+
+                    placeTextForPlacementModes(placeHorizontal, placeVertical);
+                    updatePreviousOrientationIfNotPlaced(placed && placed.box && placed.box.length);
+
                 } else {
-                    const width = textBox.x2 - textBox.x1;
-                    const height = textBox.y2 - textBox.y1;
-                    const textBoxScale = symbolInstance.textBoxScale;
                     let anchors = layout.get('text-variable-anchor');
 
                     // If this symbol was in the last placement, shift the previously used
@@ -350,28 +415,65 @@ export class Placement {
                         }
                     }
 
-                    for (const anchor of anchors) {
-                        placedGlyphBoxes = this.attemptAnchorPlacement(
-                            anchor, textBox, width, height, symbolInstance.radialTextOffset,
-                            textBoxScale, rotateWithMap, pitchWithMap, textPixelRatio, posMatrix,
-                            collisionGroup, textAllowOverlap, symbolInstance, bucket);
-                        if (placedGlyphBoxes) {
-                            placeText = true;
-                            break;
+                    const placeBoxForVariableAnchors = (collisionTextBox, orientation) => {
+                        const width = collisionTextBox.x2 - collisionTextBox.x1;
+                        const height = collisionTextBox.y2 - collisionTextBox.y1;
+                        const textBoxScale = symbolInstance.textBoxScale;
+
+                        let placedBox: ?{ box: Array<number>, offscreen: boolean }  = { box: [], offscreen: false };
+
+                        for (const anchor of anchors) {
+                            placedBox = this.attemptAnchorPlacement(
+                                anchor, collisionTextBox, width, height, symbolInstance.radialTextOffset,
+                                textBoxScale, rotateWithMap, pitchWithMap, textPixelRatio, posMatrix,
+                                collisionGroup, textAllowOverlap, symbolInstance, bucket, orientation);
+
+                            if (placedBox && placedBox.box && placedBox.box.length) {
+                                placeText = true;
+                                break;
+                            }
                         }
+
+                        return placedBox;
+                    };
+
+                    const placeHorizontal = () => {
+                        return placeBoxForVariableAnchors(textBox, WritingMode.horizontal);
+                    };
+
+                    const placeVertical = () => {
+                        const verticalTextBox = collisionArrays.verticalTextBox;
+                        const wasPlaced = placed && placed.box && placed.box.length;
+                        if (bucket.allowVerticalPlacement && !wasPlaced && symbolInstance.numVerticalGlyphVertices > 0 && verticalTextBox) {
+                            return placeBoxForVariableAnchors(verticalTextBox, WritingMode.vertical);
+                        }
+                        return { box: null, offscreen: null };
+                    };
+
+                    placeTextForPlacementModes(placeHorizontal, placeVertical);
+
+                    if (placed) {
+                        placeText = placed.box;
+                        offscreen = placed.offscreen;
                     }
+
+                    const prevOrientation = updatePreviousOrientationIfNotPlaced(placed && placed.box);
 
                     // If we didn't get placed, we still need to copy our position from the last placement for
                     // fade animations
-                    if (!this.variableOffsets[symbolInstance.crossTileID] && this.prevPlacement) {
+                    if (!placeText && this.prevPlacement) {
                         const prevOffset = this.prevPlacement.variableOffsets[symbolInstance.crossTileID];
                         if (prevOffset) {
                             this.variableOffsets[symbolInstance.crossTileID] = prevOffset;
-                            this.markUsedJustification(bucket, prevOffset.anchor, symbolInstance);
+                            this.markUsedJustification(bucket, prevOffset.anchor, symbolInstance, prevOrientation);
                         }
                     }
+
                 }
             }
+
+            placedGlyphBoxes = placed;
+            placeText = placedGlyphBoxes && placedGlyphBoxes.box && placedGlyphBoxes.box.length > 0;
 
             offscreen = placedGlyphBoxes && placedGlyphBoxes.offscreen;
             const textCircles = collisionArrays.textCircles;
@@ -422,9 +524,15 @@ export class Placement {
                 placeIcon = placeIcon && placeText;
             }
 
-            if (placeText && placedGlyphBoxes) {
-                this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
+            if (placeText && placedGlyphBoxes && placedGlyphBoxes.box) {
+                if (placedVertical && placedVertical.box && verticalTextFeatureIndex) {
+                    this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
+                        bucket.bucketInstanceId, verticalTextFeatureIndex, collisionGroup.ID);
+                } else {
+                    this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
                         bucket.bucketInstanceId, textFeatureIndex, collisionGroup.ID);
+                }
+
             }
             if (placeIcon && placedIconBoxes) {
                 this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'),
@@ -457,16 +565,28 @@ export class Placement {
         bucket.justReloaded = false;
     }
 
-    markUsedJustification(bucket: SymbolBucket, placedAnchor: TextAnchor, symbolInstance: SymbolInstance) {
+    markUsedJustification(bucket: SymbolBucket, placedAnchor: TextAnchor, symbolInstance: SymbolInstance, orientation: number) {
         const justifications = {
             "left": symbolInstance.leftJustifiedTextSymbolIndex,
             "center": symbolInstance.centerJustifiedTextSymbolIndex,
             "right": symbolInstance.rightJustifiedTextSymbolIndex
         };
-        const autoIndex = justifications[getAnchorJustification(placedAnchor)];
 
-        for (const justification in justifications) {
-            const index = justifications[justification];
+        let autoIndex;
+        if (orientation === WritingMode.vertical) {
+            autoIndex = symbolInstance.verticalPlacedTextSymbolIndex;
+        } else {
+            autoIndex = justifications[getAnchorJustification(placedAnchor)];
+        }
+
+        const indexes = [
+            symbolInstance.leftJustifiedTextSymbolIndex,
+            symbolInstance.centerJustifiedTextSymbolIndex,
+            symbolInstance.rightJustifiedTextSymbolIndex,
+            symbolInstance.verticalPlacedTextSymbolIndex
+        ];
+
+        for (const index of indexes) {
             if (index >= 0) {
                 if (autoIndex >= 0 && index !== autoIndex) {
                     // There are multiple justifications and this one isn't it: shift offscreen
@@ -476,6 +596,25 @@ export class Placement {
                     bucket.text.placedSymbolArray.get(index).crossTileID = symbolInstance.crossTileID;
                 }
             }
+        }
+    }
+
+    markUsedOrientation(bucket: SymbolBucket, orientation: number, symbolInstance: SymbolInstance) {
+        const horizontal = (orientation === WritingMode.horizontal || orientation === WritingMode.horizontalOnly) ? orientation : 0;
+        const vertical = orientation === WritingMode.vertical ? orientation : 0;
+
+        const horizontalIndexes = [
+            symbolInstance.leftJustifiedTextSymbolIndex,
+            symbolInstance.centerJustifiedTextSymbolIndex,
+            symbolInstance.rightJustifiedTextSymbolIndex
+        ];
+
+        for (const index of horizontalIndexes) {
+            bucket.text.placedSymbolArray.get(index).placedOrientation = horizontal;
+        }
+
+        if (symbolInstance.verticalPlacedTextSymbolIndex) {
+            bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).placedOrientation = vertical;
         }
     }
 
@@ -491,6 +630,8 @@ export class Placement {
 
         const prevOpacities = prevPlacement ? prevPlacement.opacities : {};
         const prevOffsets = prevPlacement ? prevPlacement.variableOffsets : {};
+        const prevOrientations = prevPlacement ? prevPlacement.placedOrientations : {};
+
         // add the opacities from the current placement, and copy their current values from the previous placement
         for (const crossTileID in this.placements) {
             const jointPlacement = this.placements[crossTileID];
@@ -520,6 +661,12 @@ export class Placement {
         for (const crossTileID in prevOffsets) {
             if (!this.variableOffsets[crossTileID] && this.opacities[crossTileID] && !this.opacities[crossTileID].isHidden()) {
                 this.variableOffsets[crossTileID] = prevOffsets[crossTileID];
+            }
+        }
+
+        for (const crossTileID in prevOrientations) {
+            if (!this.placedOrientations[crossTileID] && this.opacities[crossTileID] && !this.opacities[crossTileID].isHidden()) {
+                this.placedOrientations[crossTileID] = prevOrientations[crossTileID];
             }
         }
 
@@ -606,21 +753,33 @@ export class Placement {
                 // its position at render time. If this layer has variable placement, shift the various
                 // symbol instances appropriately so that symbols from buckets that have yet to be placed
                 // offset appropriately.
-                const hidden = opacityState.text.isHidden() ? 1 : 0;
+                const symbolHidden = opacityState.text.isHidden() ? 1 : 0;
+                const placedOrientation = this.placedOrientations[symbolInstance.crossTileID];
+                const verticalHidden = (placedOrientation === WritingMode.horizontal || placedOrientation === WritingMode.horizontalOnly) ? 1 : 0;
+                const horizontalHidden = placedOrientation === WritingMode.vertical ? 1 : 0;
                 [
                     symbolInstance.rightJustifiedTextSymbolIndex,
                     symbolInstance.centerJustifiedTextSymbolIndex,
-                    symbolInstance.leftJustifiedTextSymbolIndex,
-                    symbolInstance.verticalPlacedTextSymbolIndex
+                    symbolInstance.leftJustifiedTextSymbolIndex
                 ].forEach(index => {
                     if (index >= 0) {
-                        bucket.text.placedSymbolArray.get(index).hidden = hidden;
+                        bucket.text.placedSymbolArray.get(index).hidden = symbolHidden || horizontalHidden;
                     }
                 });
 
+                if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
+                    bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).hidden = symbolHidden || verticalHidden;
+                }
+
                 const prevOffset = this.variableOffsets[symbolInstance.crossTileID];
                 if (prevOffset) {
-                    this.markUsedJustification(bucket, prevOffset.anchor, symbolInstance);
+                    this.markUsedJustification(bucket, prevOffset.anchor, symbolInstance, placedOrientation);
+                }
+
+                const prevOrientation = this.placedOrientations[symbolInstance.crossTileID];
+                if (prevOrientation) {
+                    this.markUsedJustification(bucket, 'left', symbolInstance, prevOrientation);
+                    this.markUsedOrientation(bucket, prevOrientation, symbolInstance);
                 }
             }
 

@@ -53,6 +53,20 @@ class SymbolStyleLayer extends StyleLayer {
         if (this.layout.get('icon-pitch-alignment') === 'auto') {
             this.layout._values['icon-pitch-alignment'] = this.layout.get('icon-rotation-alignment');
         }
+
+        if (this.layout.get('symbol-placement') === 'point') {
+            const writingModes = this.layout.get('text-writing-mode');
+            if (writingModes) {
+                // remove duplicates, preserving order
+                const deduped = [];
+                for (const m of writingModes) {
+                    if (deduped.indexOf(m) < 0) deduped.push(m);
+                }
+                this.layout._values['text-writing-mode'] = deduped;
+            } else {
+                this.layout._values['text-writing-mode'] = ['horizontal'];
+            }
+        }
     }
 
     getValueAndResolveTokens(name: *, feature: Feature) {
