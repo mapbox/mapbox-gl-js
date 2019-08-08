@@ -86,6 +86,11 @@ export const getReferrer = isWorker() ?
     () => self.worker && self.worker.referrer :
     () => (window.location.protocol === 'blob:' ? window.parent : window).location.href;
 
+// Determines whether a URL is a file:// URL. This is obviously the case if it begins
+// with file://. Relative URLs are also file:// URLs iff the original document was loaded
+// via a file:// URL.
+const isFileURL = url => /^file:/.test(url) || (/^file:/.test(getReferrer()) && !/^\w+:/.test(url));
+
 function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     const controller = new window.AbortController();
     const request = new window.Request(requestParameters.url, {
@@ -187,6 +192,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
         xhr.setRequestHeader(k, requestParameters.headers[k]);
     }
     if (requestParameters.type === 'json') {
+        xhr.responseType = 'text';
         xhr.setRequestHeader('Accept', 'application/json');
     }
     xhr.withCredentials = requestParameters.credentials === 'include';
@@ -221,7 +227,7 @@ export const makeRequest = function(requestParameters: RequestParameters, callba
     //   some versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2)
     // - Requests for resources with the file:// URI scheme don't work with the Fetch API either. In
     //   this case we unconditionally use XHR on the current thread since referrers don't matter.
-    if (!/^file:/.test(requestParameters.url)) {
+    if (!isFileURL(requestParameters.url)) {
         if (window.fetch && window.Request && window.AbortController && window.Request.prototype.hasOwnProperty('signal')) {
             return makeFetchRequest(requestParameters, callback);
         }
