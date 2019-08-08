@@ -1,3 +1,5 @@
+/* eslint-disable import/no-commonjs */
+/* eslint-disable flowtype/require-valid-file-annotation */
 const generateFixtureJson = require('./test/integration/lib/generate-fixture-json');
 const createServer = require('./test/integration/lib/server');
 const runAll = require('npm-run-all');
