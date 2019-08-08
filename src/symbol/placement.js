@@ -117,7 +117,7 @@ class CollisionGroups {
     }
 }
 
-function calculateVariableLayoutOffset(anchor: TextAnchor, width: number, height: number, radialOffset: number, textBoxScale: number): Point {
+function calculateVariableLayoutOffset(anchor: TextAnchor, width: number, height: number, radialOffset: [number, number], textBoxScale: number): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
     const shiftY = -(verticalAlign - 0.5) * height;
@@ -149,7 +149,7 @@ function shiftVariableCollisionBox(collisionBox: SingleCollisionBox,
 }
 
 export type VariableOffset = {
-    radialOffset: number,
+    radialOffset: [number, number],
     width: number,
     height: number,
     anchor: TextAnchor,
@@ -235,7 +235,7 @@ export class Placement {
     }
 
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
-                           radialTextOffset: number, textBoxScale: number, rotateWithMap: boolean,
+                           radialTextOffset: [number, number], textBoxScale: number, rotateWithMap: boolean,
                            pitchWithMap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroup: CollisionGroup,
                            textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ box: Array<number>, offscreen: boolean }  {
 
@@ -424,7 +424,7 @@ export class Placement {
 
                         for (const anchor of anchors) {
                             placedBox = this.attemptAnchorPlacement(
-                                anchor, collisionTextBox, width, height, symbolInstance.radialTextOffset,
+                                anchor, collisionTextBox, width, height, [symbolInstance.radialTextOffset0, symbolInstance.radialTextOffset1],
                                 textBoxScale, rotateWithMap, pitchWithMap, textPixelRatio, posMatrix,
                                 collisionGroup, textAllowOverlap, symbolInstance, bucket, orientation);
 

@@ -62,7 +62,18 @@ export default function validate(options) {
         return validateExpression(options);
 
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {
-        return VALIDATORS[valueSpec.type](options);
+        const errors = VALIDATORS[valueSpec.type](options);
+        if (errors.length) {
+            const legacyType = valueSpec["legacy-type"];
+            if (legacyType && VALIDATORS[legacyType]) {
+                const legacyErrors = VALIDATORS[legacyType](options);
+                if (legacyErrors.length) {
+                    return errors.concat(legacyErrors);
+                }
+                return legacyErrors;
+            }
+        }
+        return errors;
 
     } else {
         const valid = validateObject(extend({}, options, {

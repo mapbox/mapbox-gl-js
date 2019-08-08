@@ -64,46 +64,67 @@ export type TextAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-l
 // (see "yOffset" in shaping.js)
 const baselineOffset = 7;
 
-export function evaluateRadialOffset(anchor: TextAnchor, radialOffset: number) {
+export function evaluateRadialOffset(anchor: TextAnchor, radialOffset: [number, number]) {
     let x = 0, y = 0;
     // solve for r where r^2 + r^2 = radialOffset^2
-    const hypotenuse = radialOffset / Math.sqrt(2);
+    const sqrt2 = Math.sqrt(2);
+    const radialOffsetX = radialOffset[0];
+    const hypotenuseX = radialOffsetX / sqrt2;
+    const radialOffsetY = radialOffset[1];
+    const hypotenuseY = radialOffsetY / sqrt2;
 
     switch (anchor) {
     case 'top-right':
     case 'top-left':
-        y = hypotenuse - baselineOffset;
+        y = hypotenuseY - baselineOffset;
         break;
     case 'bottom-right':
     case 'bottom-left':
-        y = -hypotenuse + baselineOffset;
+        y = -hypotenuseY + baselineOffset;
         break;
     case 'bottom':
-        y = -radialOffset + baselineOffset;
+        y = -radialOffsetY + baselineOffset;
         break;
     case 'top':
-        y = radialOffset - baselineOffset;
+        y = radialOffsetY - baselineOffset;
         break;
     }
 
     switch (anchor) {
     case 'top-right':
     case 'bottom-right':
-        x = -hypotenuse;
+        x = -hypotenuseX;
         break;
     case 'top-left':
     case 'bottom-left':
-        x = hypotenuse;
+        x = hypotenuseX;
         break;
     case 'left':
-        x = radialOffset;
+        x = radialOffsetX;
         break;
     case 'right':
-        x = -radialOffset;
+        x = -radialOffsetX;
         break;
     }
 
     return [x, y];
+}
+
+function handleRadialTextOffset(value) {
+    if (!value) return [0, 0];
+
+    if (Array.isArray(value)) {
+        switch (value.length) {
+        case 0:
+            return [0, 0];
+        case 1:
+            return [value[0] * ONE_EM, value[0] * ONE_EM];
+        default:
+            return [value[0] * ONE_EM, value[1] * ONE_EM];
+        }
+    }
+
+    return [value * ONE_EM, value * ONE_EM];
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
@@ -165,15 +186,15 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
             const textAnchor = layout.get('text-anchor').evaluate(feature, {});
             const variableTextAnchor = layout.get('text-variable-anchor');
-            const radialOffset = layout.get('text-radial-offset').evaluate(feature, {});
 
             if (!variableTextAnchor) {
+                const radialOffset: [number, number] = handleRadialTextOffset(layout.get('text-radial-offset').evaluate(feature, {}));
                 // Layers with variable anchors use the `text-radial-offset` property and the [x, y] offset vector
                 // is calculated at placement time instead of layout time
-                if (radialOffset) {
+                if (radialOffset[0]) {
                     // The style spec says don't use `text-offset` and `text-radial-offset` together
                     // but doesn't actually specify what happens if you use both. We go with the radial offset.
-                    textOffset = evaluateRadialOffset(textAnchor, radialOffset * ONE_EM);
+                    textOffset = evaluateRadialOffset(textAnchor, radialOffset);
                 } else {
                     textOffset = (layout.get('text-offset').evaluate(feature, {}).map(t => t * ONE_EM): any);
                 }
@@ -510,7 +531,8 @@ function addSymbol(bucket: SymbolBucket,
     let numVerticalGlyphVertices = 0;
     const placedTextSymbolIndices = {};
     let key = murmur3('');
-    const radialTextOffset = (layer.layout.get('text-radial-offset').evaluate(feature, {}) || 0) * ONE_EM;
+
+    const radialTextOffset: [number, number] = handleRadialTextOffset(layer.layout.get('text-radial-offset').evaluate(feature, {}));
 
     if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
         const textRotation = layer.layout.get('text-rotate').evaluate(feature, {});
@@ -623,7 +645,8 @@ function addSymbol(bucket: SymbolBucket,
         numIconVertices,
         0,
         textBoxScale,
-        radialTextOffset);
+        radialTextOffset[0],
+        radialTextOffset[1]);
 }
 
 function anchorIsTooClose(bucket: any, text: string, repeatDistance: number, anchor: Point) {

@@ -46,7 +46,7 @@ export type LayoutProps = {|
     "text-line-height": DataConstantProperty<number>,
     "text-letter-spacing": DataDrivenProperty<number>,
     "text-justify": DataDrivenProperty<"auto" | "left" | "center" | "right">,
-    "text-radial-offset": DataDrivenProperty<number>,
+    "text-radial-offset": DataDrivenProperty<Array<number>>,
     "text-variable-anchor": DataConstantProperty<Array<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">>,
     "text-anchor": DataDrivenProperty<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">,
     "text-max-angle": DataConstantProperty<number>,
