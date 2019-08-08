@@ -84,12 +84,7 @@ function isWorker() {
 /* global self, WorkerGlobalScope */
 export const getReferrer = isWorker() ?
     () => self.worker && self.worker.referrer :
-    () => {
-        const origin = window.location.origin;
-        if (origin && origin !== 'null' && origin !== 'file://') {
-            return origin + window.location.pathname;
-        }
-    };
+    () => (window.location.protocol === 'blob:' ? window.parent : window).location.href;
 
 function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     const controller = new window.AbortController();
