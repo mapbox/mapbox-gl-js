@@ -66,7 +66,7 @@ export default class extends React.Component {
                     <div className='api-section'>
                         {docs.map((doc, i) => doc.kind === 'note' ?
                             <Note key={i} {...doc}/> :
-                            <ApiItem key={i} {...doc}/>)}
+                            <ApiItem location={this.props.location} key={i} {...doc}/>)}
                     </div>
                 </div>
             </PageShell>

@@ -18,6 +18,7 @@ import { overviewNavigation } from '../data/overview-navigation';
 import { styleSpecNavigation } from '../data/style-spec-navigation';
 import { plugins } from '../pages/plugins';
 import { routeToPrefixed } from '@mapbox/batfish/modules/route-to';
+import Search from '@mapbox/dr-ui/search';
 
 const slugger = new GithubSlugger();
 

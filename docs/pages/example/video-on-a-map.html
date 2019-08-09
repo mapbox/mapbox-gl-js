@@ -44,4 +44,14 @@ var map = new mapboxgl.Map({
     bearing: -96,
     style: videoStyle
 });
+
+var playingVideo = true;
+
+map.on("click", function() {
+
+    playingVideo = !playingVideo;
+
+    if (playingVideo) map.getSource("video").play();
+    else map.getSource("video").pause();
+});
 </script>

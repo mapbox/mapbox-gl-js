@@ -29,6 +29,18 @@ test('camera', (t) => {
         return camera;
     }
 
+    function assertTransitionTime(test, camera, min, max) {
+        let startTime;
+        camera
+            .on('movestart', () => { startTime = new Date(); })
+            .on('moveend', () => {
+                const endTime = new Date();
+                const timeDiff = endTime - startTime;
+                test.ok(timeDiff >= min && timeDiff < max, `Camera transition time exceeded expected range( [${min},${max}) ) :${timeDiff}`);
+                test.end();
+            });
+    }
+
     t.test('#jumpTo', (t) => {
         // Choose initial zoom to avoid center being constrained by mercator latitude limits.
         const camera = createCamera({zoom: 1});
@@ -869,6 +881,14 @@ test('camera', (t) => {
             }, 0);
         });
 
+        t.test('duration is 0 when prefers-reduced-motion: reduce is set', (t) => {
+            const camera = createCamera();
+            const stub = t.stub(browser, 'prefersReducedMotion');
+            stub.get(() => true);
+            assertTransitionTime(t, camera, 0, 10);
+            camera.easeTo({ center: [100, 0], zoom: 3.2, bearing: 90, duration: 1000 });
+        });
+
         t.end();
     });
 
@@ -1528,6 +1548,14 @@ test('camera', (t) => {
                 });
 
             camera.flyTo({ center: [-122.3998631, 37.7884307], maxDuration: 100 });
+        });
+
+        t.test('flys instantly when prefers-reduce-motion:reduce is set', (t) => {
+            const camera = createCamera();
+            const stub = t.stub(browser, 'prefersReducedMotion');
+            stub.get(() => true);
+            assertTransitionTime(t, camera, 0, 10);
+            camera.flyTo({ center: [100, 0], bearing: 90, animate: true });
         });
 
         t.end();

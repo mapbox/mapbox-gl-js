@@ -1017,7 +1017,12 @@
           "ios": "4.11.0",
           "macos": "0.14.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.53.0",
+          "android": "7.4.0",
+          "ios": "4.11.0",
+          "macos": "0.14.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2033,6 +2038,48 @@
       },
       "property-type": "data-constant"
     },
+    "text-writing-mode": {
+      "type": "array",
+      "value": "enum",
+      "values": {
+        "horizontal": {
+          "doc": "If a text's language supports horizontal writing mode, symbols with point placement would be laid out horizontally."
+        },
+        "vertical": {
+          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically."
+        }
+      },
+      "doc": "The property allows control over a symbol's orientation. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. The order of elements in an array define priority order for the placement of an orientation variant.",
+      "requires": [
+        "text-field",
+        {
+          "symbol-placement": [
+              "point"
+          ]
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "next",
+          "android": "next",
+          "ios": "next",
+          "macos": "next"
+        },
+        "data-driven styling": {
+          "js": "Not yet supported",
+          "android": "Not yet supported",
+          "ios": "Not yet supported",
+          "macos": "Not yet supported"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
     "text-rotate": {
       "type": "number",
       "default": 0,
@@ -2902,7 +2949,7 @@
         }
       },
       "feature-state": {
-        "doc": "Retrieves a property value from the current feature's state. Returns null if the requested property is not present on the feature's state. A feature's state is not part of the GeoJSON or vector tile data, and must be set programmatically on each feature. Note that [\"feature-state\"] can only be used with paint properties that support data-driven styling.",
+        "doc": "Retrieves a property value from the current feature's state. Returns null if the requested property is not present on the feature's state. A feature's state is not part of the GeoJSON or vector tile data, and must be set programmatically on each feature. Features are identified by their `id` attribute, which must be an integer or a string that can be cast to an integer. Note that [\"feature-state\"] can only be used with paint properties that support data-driven styling.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
