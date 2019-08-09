@@ -1,8 +1,6 @@
 
 export default function getType(val) {
-    if (Number.isNaN(val)) {
-        return 'NaN';
-    } else if (val instanceof Number) {
+    if (val instanceof Number) {
         return 'number';
     } else if (val instanceof String) {
         return 'string';
