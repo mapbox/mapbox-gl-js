@@ -9,10 +9,10 @@ class EdgeInsets {
     right: number;
 
     constructor(top: number = 0, bottom: number = 0, left: number = 0, right: number = 0) {
-        if (isNaN(top) ||
-            isNaN(bottom) ||
-            isNaN(left) ||
-            isNaN(right)
+        if (isNaN(top) || top < 0 ||
+            isNaN(bottom) || bottom < 0 ||
+            isNaN(left) || left < 0 ||
+            isNaN(right) || right < 0
         ) {
             throw new Error('Invalid value for edge-insets, top, bottom, left and right must all be numbers');
         }
@@ -33,10 +33,14 @@ class EdgeInsets {
     }
 
     getCenter(width: number, height: number): Point {
-        return new Point(
-            this.left + 0.5 * (width - (this.left + this.right)),
-            this.top + 0.5 * (height - (this.top + this.bottom)),
-        );
+        // Clamp insets so they never overflow width/height and always calculate a valid center
+        const totalXInset = Math.min(this.left + this.right, width);
+        const totalYInset = Math.min(this.top + this.bottom, height);
+
+        const x = Math.min(this.left, width) + 0.5 * (width - totalXInset);
+        const y = Math.min(this.top, height) + 0.5 * (height - totalYInset);
+
+        return new Point(x, y);
     }
 
     equals(other: EdgeInsetLike): boolean {
