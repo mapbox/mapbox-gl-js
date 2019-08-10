@@ -2,6 +2,16 @@
 import { number } from "../style-spec/util/interpolate";
 import Point  from "@mapbox/point-geometry";
 
+/**
+ * An `EdgeInset` object represents screen space padding applied to the edge map viewport
+ * such that the vanishing point gets offset. This is useful for adding floating Ui elements
+ * on top of the map and hainv the vanishing point shift as UI elements resize.
+ *
+ * @param {number} [top=0]
+ * @param {number} [bottom=0]
+ * @param {number} [left=0]
+ * @param {number} [right=0]
+ */
 class EdgeInsets {
     top: number;
     bottom: number;
@@ -23,6 +33,14 @@ class EdgeInsets {
         this.right = right;
     }
 
+    /**
+     * Interpolates the inset in-placce.
+     *
+     * @param {EdgeInsetLike} target
+     * @param {number} t
+     * @returns {EdgeInsets}
+     * @memberof EdgeInsets
+     */
     interpolate(target: EdgeInsetLike, t: number): EdgeInsets {
         this.top = number(this.top, target.top, t);
         this.bottom = number(this.bottom, target.bottom, t);
@@ -32,6 +50,14 @@ class EdgeInsets {
         return this;
     }
 
+    /**
+     * Utility method for computing the vanishing point after applying insets.
+     *
+     * @param {number} width
+     * @param {number} height
+     * @returns {Point}
+     * @memberof EdgeInsets
+     */
     getCenter(width: number, height: number): Point {
         // Clamp insets so they never overflow width/height and always calculate a valid center
         const totalXInset = Math.min(this.left + this.right, width);
