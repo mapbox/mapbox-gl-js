@@ -25,7 +25,7 @@ const defaultOptions: Options = {
  * @param {Object} [options]
  * @param {Boolean} [options.showCompass=true] If `true` the compass button is included.
  * @param {Boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
- * @param {Boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating Y-axis of compass.
+ * @param {Boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating X-axis of compass.
  * @example
  * var nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');
@@ -86,8 +86,8 @@ class NavigationControl {
 
     _rotateCompassArrow() {
         const rotate = this.options.visualizePitch ?
-            `rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)` :
-            `rotate(${this._map.transform.angle}deg)`;
+            `scale(${1 / Math.pow(Math.cos(this._map.transform.pitch * (Math.PI / 180)), 0.5)}) rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)` :
+            `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
 
         this._compassArrow.style.transform = rotate;
     }
