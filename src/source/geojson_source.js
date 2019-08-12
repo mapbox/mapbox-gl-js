@@ -11,6 +11,7 @@ import type {Source} from './source';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
+import type Actor from '../util/actor';
 import type {Callback} from '../types/callback';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
 import type {GeoJSONSourceSpecification} from '../style-spec/types';
@@ -74,9 +75,8 @@ class GeoJSONSource extends Evented implements Source {
     _data: GeoJSON | string;
     _options: any;
     workerOptions: any;
-    dispatcher: Dispatcher;
     map: Map;
-    workerID: number;
+    actor: Actor;
     _loaded: boolean;
     _collectResourceTiming: boolean;
     _resourceTiming: Array<PerformanceResourceTiming>;
@@ -102,7 +102,7 @@ class GeoJSONSource extends Evented implements Source {
         this._removed = false;
         this._loaded = false;
 
-        this.dispatcher = dispatcher;
+        this.actor = dispatcher.getActor();
         this.setEventedParent(eventedParent);
 
         this._data = (options.data: any);
@@ -203,7 +203,7 @@ class GeoJSONSource extends Evented implements Source {
      * @returns {GeoJSONSource} this
      */
     getClusterExpansionZoom(clusterId: number, callback: Callback<number>) {
-        this.dispatcher.send('geojson.getClusterExpansionZoom', { clusterId, source: this.id }, callback, this.workerID);
+        this.actor.send('geojson.getClusterExpansionZoom', { clusterId, source: this.id }, callback);
         return this;
     }
 
@@ -215,7 +215,7 @@ class GeoJSONSource extends Evented implements Source {
      * @returns {GeoJSONSource} this
      */
     getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>) {
-        this.dispatcher.send('geojson.getClusterChildren', { clusterId, source: this.id }, callback, this.workerID);
+        this.actor.send('geojson.getClusterChildren', { clusterId, source: this.id }, callback);
         return this;
     }
 
@@ -229,12 +229,12 @@ class GeoJSONSource extends Evented implements Source {
      * @returns {GeoJSONSource} this
      */
     getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
-        this.dispatcher.send('geojson.getClusterLeaves', {
+        this.actor.send('geojson.getClusterLeaves', {
             source: this.id,
             clusterId,
             limit,
             offset
-        }, callback, this.workerID);
+        }, callback);
         return this;
     }
 
@@ -257,7 +257,7 @@ class GeoJSONSource extends Evented implements Source {
         // target {this.type}.loadData rather than literally geojson.loadData,
         // so that other geojson-like source types can easily reuse this
         // implementation
-        this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err, result) => {
+        this.actor.send(`${this.type}.loadData`, options, (err, result) => {
             if (this._removed || (result && result.abandoned)) {
                 return;
             }
@@ -273,10 +273,9 @@ class GeoJSONSource extends Evented implements Source {
             // message queue. Waiting instead for the 'coalesce' to round-trip
             // through the foreground just means we're throttling the worker
             // to run at a little less than full-throttle.
-            this.dispatcher.send(`${this.type}.coalesce`, { source: options.source }, null, this.workerID);
+            this.actor.send(`${this.type}.coalesce`, { source: options.source }, null);
             callback(err);
-
-        }, this.workerID);
+        });
     }
 
     loaded(): boolean {
@@ -284,7 +283,8 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const message = tile.workerID === undefined ? 'loadTile' : 'reloadTile';
+        const message = !tile.actor ? 'loadTile' : 'reloadTile';
+        tile.actor = this.actor;
         const params = {
             type: this.type,
             uid: tile.uid,
@@ -297,7 +297,7 @@ class GeoJSONSource extends Evented implements Source {
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        tile.workerID = this.dispatcher.send(message, params, (err, data) => {
+        this.actor.send(message, params, (err, data) => {
             tile.unloadVectorData();
 
             if (tile.aborted) {
@@ -311,7 +311,7 @@ class GeoJSONSource extends Evented implements Source {
             tile.loadVectorData(data, this.map.painter, message === 'reloadTile');
 
             return callback(null);
-        }, this.workerID);
+        });
     }
 
     abortTile(tile: Tile) {
@@ -320,12 +320,12 @@ class GeoJSONSource extends Evented implements Source {
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
-        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
+        this.actor.send('removeTile', { uid: tile.uid, type: this.type, source: this.id });
     }
 
     onRemove() {
         this._removed = true;
-        this.dispatcher.send('removeSource', { type: this.type, source: this.id }, null, this.workerID);
+        this.actor.send('removeSource', { type: this.type, source: this.id });
     }
 
     serialize() {

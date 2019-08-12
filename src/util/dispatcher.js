@@ -45,18 +45,12 @@ class Dispatcher {
     }
 
     /**
-     * Send a message to a Worker.
-     * @param targetID The ID of the Worker to which to send this message. Omit to allow the dispatcher to choose.
-     * @returns The ID of the worker to which the message was sent.
+     * Acquires an actor to dispatch messages to. The actors are distributed in round-robin fashion.
+     * @returns An actor object backed by a web worker for processing messages.
      */
-    send(type: string, data: mixed, callback?: ?Function, targetID?: number): number {
-        if (typeof targetID !== 'number' || isNaN(targetID)) {
-            // Use round robin to send requests to web workers.
-            targetID = this.currentActor = (this.currentActor + 1) % this.actors.length;
-        }
-
-        this.actors[targetID].send(type, data, callback);
-        return targetID;
+    getActor(): Actor {
+        this.currentActor = (this.currentActor + 1) % this.actors.length;
+        return this.actors[this.currentActor];
     }
 
     remove() {
