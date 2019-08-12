@@ -17,8 +17,8 @@ class Hash {
     _updateHash: () => ?TimeoutID;
     _hashName: ?string;
 
-    constructor(hashName: string | boolean) {
-        this._hashName = (typeof hashName === 'string' && hashName) || null;
+    constructor(hashName: ?string) {
+        this._hashName = hashName;
         bindAll([
             '_getCurrentHash',
             '_onHashChange',
