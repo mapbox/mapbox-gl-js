@@ -1953,7 +1953,7 @@ class Map extends Camera {
      * @var {string} version
      */
 
-     get version(): string { return version; }
+    get version(): string { return version; }
 }
 
 export default Map;
