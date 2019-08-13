@@ -247,6 +247,7 @@ class Map extends Camera {
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
     _showCollisionBoxes: ?boolean;
+    _showPadding: ?boolean;
     _showOverdrawInspector: boolean;
     _repaint: ?boolean;
     _vertices: ?boolean;
@@ -1627,12 +1628,14 @@ class Map extends Camera {
         const gl = this._canvas.getContext('webgl', attributes) ||
             this._canvas.getContext('experimental-webgl', attributes);
 
+        const ctx2d = this._canvas.getContext('2d');
+
         if (!gl) {
             this.fire(new ErrorEvent(new Error('Failed to initialize WebGL')));
             return;
         }
 
-        this.painter = new Painter(gl, this.transform);
+        this.painter = new Painter(gl, ctx2d, this.transform);
 
         webpSupported.testSupport(gl);
     }
@@ -1761,7 +1764,8 @@ class Map extends Camera {
             rotating: this.isRotating(),
             zooming: this.isZooming(),
             moving: this.isMoving(),
-            fadeDuration: this._fadeDuration
+            fadeDuration: this._fadeDuration,
+            showPadding: this.showPadding
         });
 
         this.fire(new Event('render'));
@@ -1871,6 +1875,22 @@ class Map extends Camera {
     set showTileBoundaries(value: boolean) {
         if (this._showTileBoundaries === value) return;
         this._showTileBoundaries = value;
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will visualize
+     * the padding offsets.
+     *
+     * @name showPadding
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     */
+    get showPadding(): boolean { return !!this._showPadding; }
+    set showPadding(value: boolean) {
+        if (this._showPadding === value) return;
+        this._showPadding = value;
         this._update();
     }
 

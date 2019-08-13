@@ -4,7 +4,7 @@ import { fillExtrusionUniforms, fillExtrusionPatternUniforms } from './fill_extr
 import { fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms } from './fill_program';
 import { circleUniforms } from './circle_program';
 import { collisionUniforms } from './collision_program';
-import { debugUniforms } from './debug_program';
+import { debugUniforms, debugSSRectUniforms } from './debug_program';
 import { clippingMaskUniforms } from './clipping_mask_program';
 import { heatmapUniforms, heatmapTextureUniforms } from './heatmap_program';
 import { hillshadeUniforms, hillshadePrepareUniforms } from './hillshade_program';
@@ -24,6 +24,7 @@ export const programUniforms = {
     collisionBox: collisionUniforms,
     collisionCircle: collisionUniforms,
     debug: debugUniforms,
+    debugSSRect: debugSSRectUniforms,
     clippingMask: clippingMaskUniforms,
     heatmap: heatmapUniforms,
     heatmapTexture: heatmapTextureUniforms,

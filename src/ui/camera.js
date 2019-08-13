@@ -22,6 +22,7 @@ import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {TaskID} from '../util/task_queue';
 import type {PointLike} from '@mapbox/point-geometry';
+import type {EdgeInsetLike} from '../geo/edge_insets';
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
@@ -35,13 +36,15 @@ import type {PointLike} from '@mapbox/point-geometry';
  * is "up"; for example, a bearing of 90° orients the map so that east is up.
  * @property {number} pitch The desired pitch, in degrees.
  * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
+ * @property {EdgeInsetLike} padding Dimensions in pixels applied on eachs side of the viewport for shifting the vanishing point.
  */
 export type CameraOptions = {
     center?: LngLatLike,
     zoom?: number,
     bearing?: number,
     pitch?: number,
-    around?: LngLatLike
+    around?: LngLatLike,
+    padding?: EdgeInsetLike
 };
 
 /**
@@ -80,6 +83,7 @@ class Camera extends Evented {
     _zooming: boolean;
     _rotating: boolean;
     _pitching: boolean;
+    _padding: boolean;
 
     _bearingSnap: number;
     _easeEndTimeoutID: TimeoutID;
@@ -604,7 +608,8 @@ class Camera extends Evented {
         const tr = this.transform;
         let zoomChanged = false,
             bearingChanged = false,
-            pitchChanged = false;
+            pitchChanged = false,
+            paddingChanged = false;
 
         if ('zoom' in options && tr.zoom !== +options.zoom) {
             zoomChanged = true;
@@ -623,6 +628,11 @@ class Camera extends Evented {
         if ('pitch' in options && tr.pitch !== +options.pitch) {
             pitchChanged = true;
             tr.pitch = +options.pitch;
+        }
+
+        if (options.padding != null && !tr.isPaddingEqual(options.padding)) {
+            paddingChanged = true;
+            tr.padding = options.padding;
         }
 
         this.fire(new Event('movestart', eventData))
@@ -644,6 +654,12 @@ class Camera extends Evented {
             this.fire(new Event('pitchstart', eventData))
                 .fire(new Event('pitch', eventData))
                 .fire(new Event('pitchend', eventData));
+        }
+
+        if (paddingChanged) {
+            this.fire(new Event('paddingstart', eventData))
+                .fire(new Event('padding', eventData))
+                .fire(new Event('paddingend', eventData));
         }
 
         return this.fire(new Event('moveend', eventData));
@@ -692,7 +708,8 @@ class Camera extends Evented {
 
             zoom = 'zoom' in options ? +options.zoom : startZoom,
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
-            pitch = 'pitch' in options ? +options.pitch : startPitch;
+            pitch = 'pitch' in options ? +options.pitch : startPitch,
+            padding = 'padding' in options ? +options.padding : tr.padding;
 
         const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
         const locationAtOffset = tr.pointLocation(pointAtOffset);
@@ -713,6 +730,7 @@ class Camera extends Evented {
         this._zooming = (zoom !== startZoom);
         this._rotating = (startBearing !== bearing);
         this._pitching = (pitch !== startPitch);
+        this._padding = !tr.isPaddingEqual(padding);
 
         this._prepareEase(eventData, options.noMoveStart);
 
@@ -727,6 +745,9 @@ class Camera extends Evented {
             }
             if (this._pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
+            }
+            if (this._padding) {
+                tr.interpolatePadding(padding, k);
             }
 
             if (around) {
@@ -769,6 +790,9 @@ class Camera extends Evented {
         if (this._pitching) {
             this.fire(new Event('pitchstart', eventData));
         }
+        if (this._padding) {
+            this.fire(new Event('paddingstart', eventData));
+        }
     }
 
     _fireMoveEvents(eventData?: Object) {
@@ -782,16 +806,21 @@ class Camera extends Evented {
         if (this._pitching) {
             this.fire(new Event('pitch', eventData));
         }
+        if (this._padding) {
+            this.fire(new Event('padding', eventData));
+        }
     }
 
     _afterEase(eventData?: Object) {
         const wasZooming = this._zooming;
         const wasRotating = this._rotating;
         const wasPitching = this._pitching;
+        const wasPadding = this._padding;
         this._moving = false;
         this._zooming = false;
         this._rotating = false;
         this._pitching = false;
+        this._padding = false;
 
         if (wasZooming) {
             this.fire(new Event('zoomend', eventData));
@@ -801,6 +830,9 @@ class Camera extends Evented {
         }
         if (wasPitching) {
             this.fire(new Event('pitchend', eventData));
+        }
+        if (wasPadding) {
+            this.fire(new Event('paddingend', eventData));
         }
         this.fire(new Event('moveend', eventData));
     }

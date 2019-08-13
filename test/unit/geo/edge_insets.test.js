@@ -61,6 +61,20 @@ test('EdgeInsets', (t) => {
             t.equal(inset3.right, 10);
             t.end();
         });
+
+        t.test('it retains insets that dont have new parameters passed in', (t) => {
+            const inset = new EdgeInsets(10, 15, 50, 10);
+            const target = {
+                top: 20
+            };
+            inset.interpolate(target, 0.5);
+            t.equal(inset.top, 15);
+            t.equal(inset.bottom, 15);
+            t.equal(inset.left, 50);
+            t.equal(inset.right, 10);
+            t.end();
+        });
+
         t.end();
     });
 
@@ -70,6 +84,14 @@ test('EdgeInsets', (t) => {
         const inset3 = new EdgeInsets(10, 15, 50, 11);
         t.ok(inset1.equals(inset2));
         t.notOk(inset2.equals(inset3));
+        t.end();
+    });
+
+    t.test('#clone', (t) => {
+        const inset1 = new EdgeInsets(10, 15, 50, 10);
+        const inset2 = inset1.clone();
+        t.notOk(inset2 === inset1);
+        t.ok(inset1.equals(inset2));
         t.end();
     });
 

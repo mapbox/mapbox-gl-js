@@ -9,7 +9,8 @@ import SegmentVector from '../data/segment';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import CullFaceMode from '../gl/cull_face_mode';
-import { debugUniformValues } from './program/debug_program';
+import ColorMode from '../gl/color_mode';
+import { debugUniformValues, debugSSRectUniformValues } from './program/debug_program';
 import Color from '../style-spec/util/color';
 
 import type Painter from './painter';
@@ -17,6 +18,38 @@ import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
 
 export default drawDebug;
+
+export function drawDebugPadding(painter: Painter) {
+    const padding = painter.transform.padding;
+    // Top
+    painter._ctx2d.fillStyle = 'rgba(255, 0, 0, 0.4)';
+    painter._ctx2d.fillRect(0, 0, painter.transform.width, padding.top);
+    // Bottom
+    painter._ctx2d.fillStyle = 'rgba(0, 255, 0, 0.4)';
+    painter._ctx2d.fillRect(0, painter.transform.height - padding.bottom, painter.transform.width, padding.bottom);
+    // Left
+    painter._ctx2d.fillStyle = 'rgba(0, 0, 255, 0.4)';
+    painter._ctx2d.fillRect(0, 0, padding.left, painter.transform.height);
+    // Right
+    painter._ctx2d.fillStyle = 'rgba(255, 0, 255, 0.4)';
+    painter._ctx2d.fillRect(painter.transform.width - padding.right, 0, padding.right, painter.transform.height);
+}
+
+function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, height: number, color: Color) {
+    const context = painter.context;
+    const gl = context.gl;
+
+    const program = painter.useProgram('debugSSRect');
+
+    const depthMode = DepthMode.disabled;
+    const stencilMode = StencilMode.disabled;
+    const colorMode = ColorMode.alphaBlended;
+    const id = '$debug_ss_rect';
+
+    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+        debugSSRectUniformValues(color, [x, y], [width, height]), id,
+        painter.viewportBuffer, painter.quadTriangleIndexBuffer, painter.viewportSegments);
+}
 
 function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {

@@ -33,7 +33,7 @@ import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
-import debug from './draw_debug';
+import debug, { drawDebugPadding } from './draw_debug';
 import custom from './draw_custom';
 
 const draw = {
@@ -68,6 +68,7 @@ export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
+    showPadding: boolean,
     rotating: boolean,
     zooming: boolean,
     moving: boolean,
@@ -82,6 +83,7 @@ type PainterOptions = {
  */
 class Painter {
     context: Context;
+    _ctx2d: CanvasRenderingContext2D;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
     numSublayers: number;
@@ -120,8 +122,9 @@ class Painter {
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
 
-    constructor(gl: WebGLRenderingContext, transform: Transform) {
+    constructor(gl: WebGLRenderingContext, ctx2d: CanvasRenderingContext2D, transform: Transform) {
         this.context = new Context(gl);
+        this._ctx2d = ctx2d;
         this.transform = transform;
         this._tileTextures = {};
 
@@ -432,6 +435,10 @@ class Painter {
                 draw.debug(this, sourceCaches[id], coordsAscending[id]);
                 break;
             }
+        }
+
+        if (this.options.showPadding) {
+            drawDebugPadding(this);
         }
 
         // Set defaults for most GL values so that anyone using the state after the render

@@ -4,8 +4,8 @@ import Point  from "@mapbox/point-geometry";
 
 /**
  * An `EdgeInset` object represents screen space padding applied to the edge map viewport
- * such that the vanishing point gets offset. This is useful for adding floating Ui elements
- * on top of the map and hainv the vanishing point shift as UI elements resize.
+ * such that the vanishing point gets offset. This is useful for adding floating UI elements
+ * on top of the map and have the vanishing point shift as UI elements resize.
  *
  * @param {number} [top=0]
  * @param {number} [bottom=0]
@@ -42,16 +42,16 @@ class EdgeInsets {
      * @memberof EdgeInsets
      */
     interpolate(target: EdgeInsetLike, t: number): EdgeInsets {
-        this.top = number(this.top, target.top, t);
-        this.bottom = number(this.bottom, target.bottom, t);
-        this.left = number(this.left, target.left, t);
-        this.right = number(this.right, target.right, t);
+        if (target.top != null) this.top = number(this.top, target.top, t);
+        if (target.bottom != null) this.bottom = number(this.bottom, target.bottom, t);
+        if (target.left != null) this.left = number(this.left, target.left, t);
+        if (target.right != null) this.right = number(this.right, target.right, t);
 
         return this;
     }
 
     /**
-     * Utility method for computing the vanishing point after applying insets.
+     * Utility method the computes the screen space the vanishing point after applying insets.
      *
      * @param {number} width
      * @param {number} height
@@ -75,8 +75,21 @@ class EdgeInsets {
             this.left === other.left &&
             this.right === other.right;
     }
+
+    clone(): EdgeInsets {
+        return new EdgeInsets(this.top, this.bottom, this.left, this.right);
+    }
+
+    toJSON(): EdgeInsetLike {
+        return {
+            top: this.top,
+            bottom: this.bottom,
+            left: this.left,
+            right: this.right
+        };
+    }
 }
 
-export type EdgeInsetLike = EdgeInsets | {top: number, bottom: number, right: number, left: number};
+export type EdgeInsetLike = EdgeInsets | {top: ?number, bottom: ?number, right: ?number, left: ?number};
 
 export default EdgeInsets;

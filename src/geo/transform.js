@@ -10,8 +10,10 @@ import tileCover from '../util/tile_cover';
 import { UnwrappedTileID } from '../source/tile_id';
 import EXTENT from '../data/extent';
 import { vec4, mat4, mat2 } from 'gl-matrix';
+import EdgeInsets from './edge_insets';
 
 import type { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
+import type { EdgeInsetLike } from './edge_insets';
 
 /**
  * A single transform, generally used for a single tile to be
@@ -47,6 +49,7 @@ class Transform {
     _minZoom: number;
     _maxZoom: number;
     _center: LngLat;
+    _edgeInsets: EdgeInsets;
     _constraining: boolean;
     _posMatrixCache: {[number]: Float32Array};
     _alignedPosMatrixCache: {[number]: Float32Array};
@@ -69,6 +72,7 @@ class Transform {
         this._fov = 0.6435011087932844;
         this._pitch = 0;
         this._unmodified = true;
+        this._edgeInsets = new EdgeInsets();
         this._posMatrixCache = {};
         this._alignedPosMatrixCache = {};
     }
@@ -85,6 +89,7 @@ class Transform {
         clone._fov = this._fov;
         clone._pitch = this._pitch;
         clone._unmodified = this._unmodified;
+        clone._edgeInsets = this._edgeInsets.clone();
         clone._calcMatrices();
         return clone;
     }
@@ -119,7 +124,7 @@ class Transform {
     }
 
     get centerPoint(): Point {
-        return this.size._div(2);
+        return this._edgeInsets.getCenter(this.width, this.height);
     }
 
     get size(): Point {
@@ -182,6 +187,39 @@ class Transform {
         this._unmodified = false;
         this._center = center;
         this._constrain();
+        this._calcMatrices();
+    }
+
+    get padding(): EdgeInsetLike { return this._edgeInsets.toJSON(); }
+    set padding(padding: EdgeInsetLike) {
+        if (this._edgeInsets.equals(padding)) return;
+        this._unmodified = false;
+        //Update edge-insets inplace
+        this._edgeInsets.interpolate(padding, 1);
+        this._calcMatrices();
+    }
+
+    /**
+     * Returns if the padding params match
+     *
+     * @param {EdgeInsetLike} padding
+     * @returns {boolean}
+     * @memberof Transform
+     */
+    isPaddingEqual(padding: EdgeInsetLike): boolean {
+        return this._edgeInsets.equals(padding);
+    }
+
+    /**
+     * Helper method to upadte edge-insets inplace
+     *
+     * @param {EdgeInsetLike} target
+     * @param {number} t
+     * @memberof Transform
+     */
+    interpolatePadding(target: EdgeInsetLike, t: number) {
+        this._unmodified = false;
+        this._edgeInsets.interpolate(target, t);
         this._calcMatrices();
     }
 
