@@ -1628,14 +1628,12 @@ class Map extends Camera {
         const gl = this._canvas.getContext('webgl', attributes) ||
             this._canvas.getContext('experimental-webgl', attributes);
 
-        const ctx2d = this._canvas.getContext('2d');
-
         if (!gl) {
             this.fire(new ErrorEvent(new Error('Failed to initialize WebGL')));
             return;
         }
 
-        this.painter = new Painter(gl, ctx2d, this.transform);
+        this.painter = new Painter(gl, this.transform);
 
         webpSupported.testSupport(gl);
     }

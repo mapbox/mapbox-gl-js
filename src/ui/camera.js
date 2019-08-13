@@ -709,7 +709,7 @@ class Camera extends Evented {
             zoom = 'zoom' in options ? +options.zoom : startZoom,
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
             pitch = 'pitch' in options ? +options.pitch : startPitch,
-            padding = 'padding' in options ? +options.padding : tr.padding;
+            padding = 'padding' in options ? options.padding : tr.padding;
 
         const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
         const locationAtOffset = tr.pointLocation(pointAtOffset);

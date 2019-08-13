@@ -19,20 +19,26 @@ import type {OverscaledTileID} from '../source/tile_id';
 
 export default drawDebug;
 
+const topColor = new Color(1, 0, 0, 0.4);
+const btmColor = new Color(0, 1, 0, 0.4);
+const leftColor = new Color(0, 0, 1, 0.4);
+const rightColor = new Color(1, 0, 1, 0.4);
+const centerColor = new Color(0, 1, 1, 0.4);
+
 export function drawDebugPadding(painter: Painter) {
     const padding = painter.transform.padding;
     // Top
-    painter._ctx2d.fillStyle = 'rgba(255, 0, 0, 0.4)';
-    painter._ctx2d.fillRect(0, 0, painter.transform.width, padding.top);
+    drawDebugSSRect(painter, 0, 0, painter.transform.width, padding.top, topColor);
     // Bottom
-    painter._ctx2d.fillStyle = 'rgba(0, 255, 0, 0.4)';
-    painter._ctx2d.fillRect(0, painter.transform.height - padding.bottom, painter.transform.width, padding.bottom);
+    drawDebugSSRect(painter, 0, painter.transform.height - padding.bottom, painter.transform.width, padding.bottom, btmColor);
     // Left
-    painter._ctx2d.fillStyle = 'rgba(0, 0, 255, 0.4)';
-    painter._ctx2d.fillRect(0, 0, padding.left, painter.transform.height);
+    drawDebugSSRect(painter, 0, 0, padding.left, painter.transform.height, leftColor);
     // Right
-    painter._ctx2d.fillStyle = 'rgba(255, 0, 255, 0.4)';
-    painter._ctx2d.fillRect(painter.transform.width - padding.right, 0, padding.right, painter.transform.height);
+    drawDebugSSRect(painter, painter.transform.width - padding.right, 0, padding.right, painter.transform.height, rightColor);
+    // Center
+    const center = painter.transform.centerPoint;
+    const centerSize = 10;
+    drawDebugSSRect(painter, center.x - centerSize / 2, center.y - centerSize / 2, centerSize, centerSize, centerColor);
 }
 
 function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, height: number, color: Color) {
@@ -46,8 +52,14 @@ function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, 
     const colorMode = ColorMode.alphaBlended;
     const id = '$debug_ss_rect';
 
+    // convert pixel-space co-ordinates to gl co-ordinates
+    const glWidth = 2 * width / painter.width;
+    const glHeight = 2 * -height / painter.height;
+    const glX =  (2 * x / painter.width - 1);
+    const glY = -1 * (2 * y / painter.height - 1);
+
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        debugSSRectUniformValues(color, [x, y], [width, height]), id,
+        debugSSRectUniformValues(color, [glX, glY], [glWidth, glHeight]), id,
         painter.viewportBuffer, painter.quadTriangleIndexBuffer, painter.viewportSegments);
 }
 

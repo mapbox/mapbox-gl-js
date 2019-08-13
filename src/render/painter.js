@@ -83,7 +83,6 @@ type PainterOptions = {
  */
 class Painter {
     context: Context;
-    _ctx2d: CanvasRenderingContext2D;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
     numSublayers: number;
@@ -122,9 +121,8 @@ class Painter {
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
 
-    constructor(gl: WebGLRenderingContext, ctx2d: CanvasRenderingContext2D, transform: Transform) {
+    constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
-        this._ctx2d = ctx2d;
         this.transform = transform;
         this._tileTextures = {};
 

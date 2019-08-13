@@ -80,7 +80,7 @@ class EdgeInsets {
         return new EdgeInsets(this.top, this.bottom, this.left, this.right);
     }
 
-    toJSON(): EdgeInsetLike {
+    toJSON(): EdgeInsetJSON {
         return {
             top: this.top,
             bottom: this.bottom,
@@ -90,6 +90,7 @@ class EdgeInsets {
     }
 }
 
-export type EdgeInsetLike = EdgeInsets | {top: ?number, bottom: ?number, right: ?number, left: ?number};
+export type EdgeInsetLike = EdgeInsets | {top?: number, bottom?: number, right?: number, left?: number} | EdgeInsetJSON;
+export type EdgeInsetJSON = {top: number, bottom: number, right: number, left: number}
 
 export default EdgeInsets;

@@ -13,7 +13,7 @@ import { vec4, mat4, mat2 } from 'gl-matrix';
 import EdgeInsets from './edge_insets';
 
 import type { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
-import type { EdgeInsetLike } from './edge_insets';
+import type { EdgeInsetLike, EdgeInsetJSON } from './edge_insets';
 
 /**
  * A single transform, generally used for a single tile to be
@@ -190,7 +190,7 @@ class Transform {
         this._calcMatrices();
     }
 
-    get padding(): EdgeInsetLike { return this._edgeInsets.toJSON(); }
+    get padding(): EdgeInsetJSON { return this._edgeInsets.toJSON(); }
     set padding(padding: EdgeInsetLike) {
         if (this._edgeInsets.equals(padding)) return;
         this._unmodified = false;
