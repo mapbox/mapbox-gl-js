@@ -75,6 +75,7 @@ import convertFunction from './function/convert';
 import { eachSource, eachLayer, eachProperty } from './visit';
 
 import validate from './validate_style';
+import validateExpression from './validate/validate_expression';
 
 const expression = {
     StyleExpression,
@@ -110,6 +111,7 @@ export {
     Color,
     styleFunction as function,
     validate,
+    validateExpression,
     visit
 };
 
