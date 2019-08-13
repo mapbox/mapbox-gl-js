@@ -95,8 +95,8 @@ class PauseablePlacement {
         this._done = true;
     }
 
-    commit(now: number) {
-        this.placement.commit(now);
+    commit(now: number, zoom: number) {
+        this.placement.commit(now, zoom);
         return this.placement;
     }
 }

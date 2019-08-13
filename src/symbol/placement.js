@@ -167,6 +167,8 @@ export class Placement {
     variableOffsets: {[CrossTileID]: VariableOffset };
     placedOrientations: {[CrossTileID]: number };
     commitTime: number;
+    commitZoom: number;
+    prevZoomAdjustment: number;
     lastPlacementChangeTime: number;
     stale: boolean;
     fadeDuration: number;
@@ -634,15 +636,15 @@ export class Placement {
         }
     }
 
-    commit(now: number): void {
+    commit(now: number, zoom: number): void {
         this.commitTime = now;
+        this.commitZoom = zoom;
 
         const prevPlacement = this.prevPlacement;
         let placementChanged = false;
 
-        const increment = (prevPlacement && this.fadeDuration !== 0) ?
-            (this.commitTime - prevPlacement.commitTime) / this.fadeDuration :
-            1;
+        this.prevZoomAdjustment = prevPlacement ? prevPlacement.zoomAdjustment(zoom) : 0;
+        const increment = prevPlacement ? prevPlacement.symbolFadeChange(now) : 1;
 
         const prevOpacities = prevPlacement ? prevPlacement.opacities : {};
         const prevOffsets = prevPlacement ? prevPlacement.variableOffsets : {};
@@ -893,7 +895,15 @@ export class Placement {
     symbolFadeChange(now: number) {
         return this.fadeDuration === 0 ?
             1 :
-            (now - this.commitTime) / this.fadeDuration;
+            ((now - this.commitTime) / this.fadeDuration + this.prevZoomAdjustment);
+    }
+
+    zoomAdjustment(zoom: number) {
+        // When zooming out quickly labels can overlap each quickly. This
+        // adjustment is used to reduce the fade duration when zooming out quickly and
+        // to reduce the interval between placement calculations. Discovering the
+        // collisions more quickly and fading them more quickly reduces the unwanted effect.
+        return Math.max(0, 1 - Math.pow(2, zoom - this.commitZoom));
     }
 
     hasTransitions(now: number) {
@@ -901,8 +911,8 @@ export class Placement {
             now - this.lastPlacementChangeTime < this.fadeDuration;
     }
 
-    stillRecent(now: number) {
-        return this.commitTime + this.fadeDuration > now;
+    stillRecent(now: number, zoom: number) {
+        return this.commitTime + this.fadeDuration * (1 - this.zoomAdjustment(zoom))  > now;
     }
 
     setStale() {
