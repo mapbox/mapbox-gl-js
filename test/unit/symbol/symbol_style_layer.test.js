@@ -19,7 +19,7 @@ function isOverriden(paintProperty) {
 test('setPaintOverrides', (t) => {
     t.test('setPaintOverrides, no overrides', (t) => {
         const layer = createSymbolLayer({});
-        layer.setPaintOverrides();
+        layer._setPaintOverrides();
         for (const overridable of properties.paint.overridableProperties) {
             t.equal(isOverriden(layer.paint.get(overridable)), false);
         }
@@ -29,7 +29,7 @@ test('setPaintOverrides', (t) => {
     t.test('setPaintOverrides, format expression, overriden text-color', (t) => {
         const props = { layout: {'text-field': ["format", "text", {"text-color": "yellow"}]} };
         const layer = createSymbolLayer(props);
-        layer.setPaintOverrides();
+        layer._setPaintOverrides();
         t.equal(isOverriden(layer.paint.get('text-color')), true);
         t.end();
     });
@@ -37,7 +37,7 @@ test('setPaintOverrides', (t) => {
     t.test('setPaintOverrides, format expression, no overrides', (t) => {
         const props = { layout: {'text-field': ["format", "text", {}]} };
         const layer = createSymbolLayer(props);
-        layer.setPaintOverrides();
+        layer._setPaintOverrides();
         t.equal(isOverriden(layer.paint.get('text-color')), false);
         t.end();
     });
