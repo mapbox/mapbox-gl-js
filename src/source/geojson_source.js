@@ -297,7 +297,8 @@ class GeoJSONSource extends Evented implements Source {
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        this.actor.send(message, params, (err, data) => {
+        tile.request = this.actor.send(message, params, (err, data) => {
+            delete tile.request;
             tile.unloadVectorData();
 
             if (tile.aborted) {
@@ -315,6 +316,10 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     abortTile(tile: Tile) {
+        if (tile.request) {
+            tile.request.cancel();
+            delete tile.request;
+        }
         tile.aborted = true;
     }
 
