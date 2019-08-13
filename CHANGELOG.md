@@ -1,3 +1,9 @@
+## 1.2.1
+
+## 🐞 Bug fixes
+
+* Fix bug in `NavigationControl` compass button that prevented it from rotating with the map ([#8605](https://github.com/mapbox/mapbox-gl-js/pull/8605))
+
 ## 1.2.0
 
 ## Features and improvements
