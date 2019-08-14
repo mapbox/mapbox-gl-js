@@ -124,7 +124,11 @@ class Transform {
     }
 
     get centerPoint(): Point {
-        return this._edgeInsets.getCenter(this.width, this.height);
+        return this.size._div(2);
+    }
+
+    get centerOffset(): Point {
+        return this._edgeInsets.getCenter(this.width, this.height).sub(this.size._div(2));
     }
 
     get size(): Point {
@@ -210,6 +214,11 @@ class Transform {
         return this._edgeInsets.equals(padding);
     }
 
+    getPaddedCenter(padding: EdgeInsetLike): Point {
+        const {top, bottom, left, right} = padding;
+        return new EdgeInsets(top, bottom, left, right).getCenter(this.width, this.height);
+    }
+
     /**
      * Helper method to upadte edge-insets inplace
      *
@@ -220,6 +229,7 @@ class Transform {
     interpolatePadding(target: EdgeInsetLike, t: number) {
         this._unmodified = false;
         this._edgeInsets.interpolate(target, t);
+        this._constrain();
         this._calcMatrices();
     }
 
@@ -558,15 +568,17 @@ class Transform {
     _calcMatrices() {
         if (!this.height) return;
 
-        this.cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+        const halfFov = this._fov / 2;
+        const offset = this.centerOffset;
+        this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height;
 
-        // Find the distance from the center point [width/2, height/2] to the
-        // center top point [width/2, 0] in Z units, using the law of sines.
+        // Find the distance from the center point [width/2 + offset.x, height/2 + offset.y] to the
+        // center top point [width/2 + offset.x, 0] in Z units, using the law of sines.
         // 1 Z unit is equivalent to 1 horizontal px at the center of the map
         // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
-        const halfFov = this._fov / 2;
         const groundAngle = Math.PI / 2 + this._pitch;
-        const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
+        const fovAboveCenter = this._fov * (0.5 + offset.y / this.height);
+        const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - fovAboveCenter);
         const point = this.point;
         const x = point.x, y = point.y;
 
@@ -578,6 +590,10 @@ class Transform {
         // matrix for conversion from location to GL coordinates (-1 .. 1)
         let m = new Float64Array(16);
         mat4.perspective(m, this._fov, this.width / this.height, 1, farZ);
+
+        //Apply center of perspective offset
+        m[8] = -offset.x * 2 / this.width;
+        m[9] = offset.y * 2 / this.height;
 
         mat4.scale(m, m, [1, -1, 1]);
         mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
