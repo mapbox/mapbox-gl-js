@@ -166,7 +166,6 @@ export class Placement {
     opacities: { [CrossTileID]: JointOpacityState };
     variableOffsets: {[CrossTileID]: VariableOffset };
     commitTime: number;
-    commitZoom: number;
     prevZoomAdjustment: number;
     lastPlacementChangeTime: number;
     stale: boolean;
@@ -483,7 +482,6 @@ export class Placement {
 
     commit(now: number, zoom: number): void {
         this.commitTime = now;
-        this.commitZoom = zoom;
 
         const prevPlacement = this.prevPlacement;
         let placementChanged = false;
@@ -707,7 +705,7 @@ export class Placement {
     symbolFadeChange(now: number) {
         return this.fadeDuration === 0 ?
             1 :
-            ((now - this.commitTime) / this.fadeDuration + this.prevZoomAdjustment);
+            ((now - this.commitTime) / this.fadeDuration + this.prevZoomAdjustment + 1);
     }
 
     zoomAdjustment(zoom: number) {
@@ -715,7 +713,7 @@ export class Placement {
         // adjustment is used to reduce the fade duration when zooming out quickly and
         // to reduce the interval between placement calculations. Discovering the
         // collisions more quickly and fading them more quickly reduces the unwanted effect.
-        return Math.max(0, 1 - Math.pow(2, zoom - this.commitZoom));
+        return Math.max(0, 1 - Math.pow(2, zoom - this.transform.zoom));
     }
 
     hasTransitions(now: number) {
