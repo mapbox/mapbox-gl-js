@@ -1,6 +1,6 @@
 import { test } from '../../util/test';
 import LngLat from '../../../src/geo/lng_lat';
-import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
+import MercatorCoordinate, { mercatorScale } from '../../../src/geo/mercator_coordinate';
 
 test('LngLat', (t) => {
     t.test('#constructor', (t) => {
@@ -24,6 +24,18 @@ test('LngLat', (t) => {
     t.test('#toAltitude', (t) => {
         const dc = new LngLat(-77, 39);
         t.equal(MercatorCoordinate.fromLngLat(dc, 500).toAltitude(), 500);
+        t.end();
+    });
+
+    t.test('#mercatorScale', (t) => {
+        t.equal(mercatorScale(0), 1, 'mercator scale at the equator');
+        t.equal(mercatorScale(45), 1.414213562373095, 'mercator scale at 45 degrees latitude');
+        t.end();
+    });
+
+    t.test('#meterInMercatorCoordinateUnits', (t) => {
+        const nullIsland = new LngLat(0, 0);
+        t.equal(MercatorCoordinate.fromLngLat(nullIsland).meterInMercatorCoordinateUnits(), 2.495320233665337e-8, 'length of 1 meter in MercatorCoordinate units at the equator');
         t.end();
     });
 
