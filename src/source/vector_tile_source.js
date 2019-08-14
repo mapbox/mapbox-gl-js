@@ -38,6 +38,7 @@ class VectorTileSource extends Evented implements Source {
     reparseOverscaled: boolean;
     isTileClipped: boolean;
     _tileJSONRequest: ?Cancelable;
+    _loaded: boolean;
 
     constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -51,6 +52,7 @@ class VectorTileSource extends Evented implements Source {
         this.tileSize = 512;
         this.reparseOverscaled = true;
         this.isTileClipped = true;
+        this._loaded = false;
 
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
         this._options = extend({ type: 'vector' }, options);
@@ -65,9 +67,11 @@ class VectorTileSource extends Evented implements Source {
     }
 
     load() {
+        this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, (err, tileJSON) => {
             this._tileJSONRequest = null;
+            this._loaded = true;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
@@ -83,6 +87,10 @@ class VectorTileSource extends Evented implements Source {
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
         });
+    }
+
+    loaded(): boolean {
+        return this._loaded;
     }
 
     hasTile(tileID: OverscaledTileID) {

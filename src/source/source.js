@@ -50,6 +50,7 @@ export interface Source {
     vectorLayerIds?: Array<string>,
 
     hasTransition(): boolean;
+    loaded(): boolean;
 
     fire(event: Event): mixed;
 

@@ -83,6 +83,7 @@ class ImageSource extends Evented implements Source {
     _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
     boundsSegments: SegmentVector;
+    _loaded: boolean;
 
     /**
      * @private
@@ -98,6 +99,7 @@ class ImageSource extends Evented implements Source {
         this.maxzoom = 22;
         this.tileSize = 512;
         this.tiles = {};
+        this._loaded = false;
 
         this.setEventedParent(eventedParent);
 
@@ -105,11 +107,13 @@ class ImageSource extends Evented implements Source {
     }
 
     load(newCoordinates?: Coordinates, successCallback?: () => void) {
+        this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this.url = this.options.url;
 
         getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
+            this._loaded = true;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
@@ -123,6 +127,10 @@ class ImageSource extends Evented implements Source {
                 this._finishLoading();
             }
         });
+    }
+
+    loaded(): boolean {
+        return this._loaded;
     }
 
     /**

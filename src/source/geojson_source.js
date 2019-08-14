@@ -100,6 +100,7 @@ class GeoJSONSource extends Evented implements Source {
         this.isTileClipped = true;
         this.reparseOverscaled = true;
         this._removed = false;
+        this._loaded = false;
 
         this.dispatcher = dispatcher;
         this.setEventedParent(eventedParent);
@@ -243,6 +244,7 @@ class GeoJSONSource extends Evented implements Source {
      * using geojson-vt or supercluster as appropriate.
      */
     _updateWorkerData(callback: Callback<void>) {
+        this._loaded = false;
         const options = extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {
@@ -275,6 +277,10 @@ class GeoJSONSource extends Evented implements Source {
             callback(err);
 
         }, this.workerID);
+    }
+
+    loaded(): boolean {
+        return this._loaded;
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
