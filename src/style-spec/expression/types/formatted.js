@@ -31,7 +31,7 @@ export default class Formatted {
         return this.sections.map(section => section.text).join('');
     }
 
-    serialize() {
+    serialize(): Array<mixed> {
         const serialized = ["format"];
         for (const section of this.sections) {
             serialized.push(section.text);
@@ -43,7 +43,7 @@ export default class Formatted {
                 options["font-scale"] = section.scale;
             }
             if (section.textColor) {
-                options["text-color"] = ["literal", section.textColor];
+                options["text-color"] = ["rgba"].concat(section.textColor.toArray());
             }
             serialized.push(options);
         }
