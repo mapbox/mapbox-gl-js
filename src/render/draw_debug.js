@@ -43,7 +43,9 @@ function drawDebugTile(painter, sourceCache, coord) {
     const tileRawData = sourceCache.getTileByID(coord.key).latestRawTileData;
     const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
     const tileSizeKb = Math.floor(tileByteLength / 1024);
-    const vertices = createTextVertices(`${coord.toString()} ${tileSizeKb}kb`, 50, 200, 5);
+    const tileSize = sourceCache.getTile(coord).tileSize;
+    const scaleRatio = 512 / Math.min(tileSize, 512);
+    const vertices = createTextVertices(`${coord.toString()} ${tileSizeKb}kb`, 50, 200 * scaleRatio, 5 * scaleRatio);
     const debugTextArray = new PosArray();
     const debugTextIndices = new LineIndexArray();
     for (let v = 0; v < vertices.length; v += 2) {
@@ -56,9 +58,21 @@ function drawDebugTile(painter, sourceCache, coord) {
 
     // Draw the halo with multiple 1px lines instead of one wider line because
     // the gl spec doesn't guarantee support for lines with width > 1.
-    const tileSize = sourceCache.getTile(coord).tileSize;
-    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.overscaledZ) * tileSize);
-    const translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.overscaledZ) * tileSize * scaleRatio);
+
+    const haloWidth = 1;
+    const translations = [];
+    for (let x = -haloWidth; x <= haloWidth; x++) {
+        for (let y = -haloWidth; y <= haloWidth; y++) {
+            if (x === 0 && y === 0) {
+                // don't draw the halo at 0,0 since the text is drawn there
+                break;
+            }
+
+            translations.push([x, y]);
+        }
+    }
+
     for (let i = 0; i < translations.length; i++) {
         const translation = translations[i];
 
