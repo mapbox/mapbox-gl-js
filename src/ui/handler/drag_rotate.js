@@ -166,7 +166,7 @@ class DragRotateHandler {
         this._state = 'pending';
         this._inertia = [[browser.now(), this._map.getBearing()]];
         this._startPos = this._prevPos = this._lastPos = DOM.mousePos(this._el, e);
-        this._center = this._map.transform.paddedCenter;  // Center of rotation
+        this._center = this._map.transform.centerPoint;  // Center of rotation
 
         e.preventDefault();
     }

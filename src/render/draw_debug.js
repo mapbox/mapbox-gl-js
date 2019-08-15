@@ -12,6 +12,7 @@ import CullFaceMode from '../gl/cull_face_mode';
 import ColorMode from '../gl/color_mode';
 import { debugUniformValues, debugSSRectUniformValues } from './program/debug_program';
 import Color from '../style-spec/util/color';
+import browser from '../util/browser';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -36,7 +37,7 @@ export function drawDebugPadding(painter: Painter) {
     // Right
     drawDebugSSRect(painter, painter.transform.width - padding.right, 0, padding.right, painter.transform.height, rightColor);
     // Center
-    const center = painter.transform.paddedCenter;
+    const center = painter.transform.centerPoint;
     const centerSize = 10;
     drawDebugSSRect(painter, center.x - centerSize / 2, center.y - centerSize / 2, centerSize, centerSize, centerColor);
 }
@@ -51,12 +52,11 @@ function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, 
     const stencilMode = StencilMode.disabled;
     const colorMode = ColorMode.alphaBlended;
     const id = '$debug_ss_rect';
-
-    // convert pixel-space co-ordinates to gl co-ordinates
-    const glWidth = 2 * width / painter.width;
-    const glHeight = 2 * -height / painter.height;
-    const glX =  (2 * x / painter.width - 1);
-    const glY = -1 * (2 * y / painter.height - 1);
+    // convert pixel-space coordinates to gl coordinates
+    const glWidth = 2 * browser.devicePixelRatio * width / painter.width;
+    const glHeight = 2 * browser.devicePixelRatio * -height / painter.height;
+    const glX =  (2 * browser.devicePixelRatio * x / painter.width - 1);
+    const glY = -1 * (2 * browser.devicePixelRatio * y / painter.height - 1);
 
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         debugSSRectUniformValues(color, [glX, glY], [glWidth, glHeight]), id,

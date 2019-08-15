@@ -200,6 +200,18 @@ class Transform {
     }
 
     /**
+     * The center of the screen in pixels with the top-left corner being (0,0)
+     * and +y axis pointing downwards. This accounts for padding.
+     *
+     * @readonly
+     * @type {Point}
+     * @memberof Transform
+     */
+    get centerPoint(): Point {
+        return this._edgeInsets.getCenter(this.width, this.height);
+    }
+
+    /**
      * Returns if the padding params match
      *
      * @param {EdgeInsetLike} padding
@@ -208,10 +220,6 @@ class Transform {
      */
     isPaddingEqual(padding: EdgeInsetLike): boolean {
         return this._edgeInsets.equals(padding);
-    }
-
-    get paddedCenter(): Point {
-        return this._edgeInsets.getCenter(this.width, this.height);
     }
 
     /**
@@ -340,7 +348,7 @@ class Transform {
 
     setLocationAtPoint(lnglat: LngLat, point: Point) {
         const a = this.pointCoordinate(point);
-        const b = this.pointCoordinate(this.paddedCenter);
+        const b = this.pointCoordinate(this.centerPoint);
         const loc = this.locationCoordinate(lnglat);
         const newCenter = new MercatorCoordinate(
                 loc.x - (a.x - b.x),
@@ -666,7 +674,7 @@ class Transform {
     getCameraPoint() {
         const pitch = this._pitch;
         const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
-        return this.paddedCenter.add(new Point(0, yOffset));
+        return this.centerPoint.add(new Point(0, yOffset));
     }
 
     /*

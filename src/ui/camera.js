@@ -712,7 +712,7 @@ class Camera extends Evented {
             padding = 'padding' in options ? options.padding : tr.padding;
 
         const offsetAsPoint = Point.convert(options.offset);
-        let pointAtOffset = tr.paddedCenter.add(offsetAsPoint);
+        let pointAtOffset = tr.centerPoint.add(offsetAsPoint);
         const locationAtOffset = tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
         this._normalizeCenter(center);
@@ -749,9 +749,9 @@ class Camera extends Evented {
             }
             if (this._padding) {
                 tr.interpolatePadding(padding, k);
-                // When padding is being applied, Transform#paddedCenter is changing continously,
+                // When padding is being applied, Transform#centerPoint is changing continously,
                 // thus we need to recalculate offsetPoint every fra,e
-                pointAtOffset = tr.paddedCenter.add(offsetAsPoint);
+                pointAtOffset = tr.centerPoint.add(offsetAsPoint);
             }
 
             if (around) {
@@ -935,7 +935,7 @@ class Camera extends Evented {
 
         const scale = tr.zoomScale(zoom - startZoom);
         const offsetAsPoint = Point.convert(options.offset);
-        let pointAtOffset = tr.paddedCenter.add(offsetAsPoint);
+        let pointAtOffset = tr.centerPoint.add(offsetAsPoint);
         const locationAtOffset = tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
         this._normalizeCenter(center);
@@ -1041,9 +1041,9 @@ class Camera extends Evented {
             }
             if (this._padding) {
                 tr.interpolatePadding(padding, k);
-                // When padding is being applied, Transform#paddedCenter is changing continously,
+                // When padding is being applied, Transform#centerPoint is changing continously,
                 // thus we need to recalculate offsetPoint every frame
-                pointAtOffset = tr.paddedCenter.add(offsetAsPoint);
+                pointAtOffset = tr.centerPoint.add(offsetAsPoint);
             }
 
             const newCenter = k === 1 ? center : tr.unproject(from.add(delta.mult(u(s))).mult(scale));
