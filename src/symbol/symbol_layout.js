@@ -64,46 +64,86 @@ export type TextAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-l
 // (see "yOffset" in shaping.js)
 const baselineOffset = 7;
 
-export function evaluateRadialOffset(anchor: TextAnchor, radialOffset: number) {
-    let x = 0, y = 0;
-    // solve for r where r^2 + r^2 = radialOffset^2
-    const hypotenuse = radialOffset / Math.sqrt(2);
+export function evaluateRadialOffset(anchor: TextAnchor, offset: [number, number]) {
 
-    switch (anchor) {
-    case 'top-right':
-    case 'top-left':
-        y = hypotenuse - baselineOffset;
-        break;
-    case 'bottom-right':
-    case 'bottom-left':
-        y = -hypotenuse + baselineOffset;
-        break;
-    case 'bottom':
-        y = -radialOffset + baselineOffset;
-        break;
-    case 'top':
-        y = radialOffset - baselineOffset;
-        break;
+    function fromRadialOffset(anchor: TextAnchor, radialOffset: number) {
+        let x = 0, y = 0;
+        if (radialOffset < 0) radialOffset = 0; // Ignore negative offset.
+        // solve for r where r^2 + r^2 = radialOffset^2
+        const hypotenuse = radialOffset / Math.sqrt(2);
+        switch (anchor) {
+        case 'top-right':
+        case 'top-left':
+            y = hypotenuse - baselineOffset;
+            break;
+        case 'bottom-right':
+        case 'bottom-left':
+            y = -hypotenuse + baselineOffset;
+            break;
+        case 'bottom':
+            y = -radialOffset + baselineOffset;
+            break;
+        case 'top':
+            y = radialOffset - baselineOffset;
+            break;
+        }
+
+        switch (anchor) {
+        case 'top-right':
+        case 'bottom-right':
+            x = -hypotenuse;
+            break;
+        case 'top-left':
+        case 'bottom-left':
+            x = hypotenuse;
+            break;
+        case 'left':
+            x = radialOffset;
+            break;
+        case 'right':
+            x = -radialOffset;
+            break;
+        }
+
+        return [x, y];
     }
 
-    switch (anchor) {
-    case 'top-right':
-    case 'bottom-right':
-        x = -hypotenuse;
-        break;
-    case 'top-left':
-    case 'bottom-left':
-        x = hypotenuse;
-        break;
-    case 'left':
-        x = radialOffset;
-        break;
-    case 'right':
-        x = -radialOffset;
-        break;
+    function fromTextOffset(anchor: TextAnchor, offsetX: number, offsetY: number) {
+        let x = 0, y = 0;
+        if (offsetX < 0 || offsetY < 0) { // Ignore negative offset.
+            offsetX = offsetY = 0;
+        }
+
+        switch (anchor) {
+        case 'top-right':
+        case 'top-left':
+        case 'top':
+            y = offsetY - baselineOffset;
+            break;
+        case 'bottom-right':
+        case 'bottom-left':
+        case 'bottom':
+            y = -offsetY + baselineOffset;
+            break;
+        }
+
+        switch (anchor) {
+        case 'top-right':
+        case 'bottom-right':
+        case 'right':
+            x = -offsetX;
+            break;
+        case 'top-left':
+        case 'bottom-left':
+        case 'left':
+            x = offsetX;
+            break;
+        }
+
+        return [x, y];
     }
 
-    return [x, y];
+    return (offset[1] !== Number.POSITIVE_INFINITY) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
@@ -165,15 +205,15 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
             const textAnchor = layout.get('text-anchor').evaluate(feature, {});
             const variableTextAnchor = layout.get('text-variable-anchor');
-            const radialOffset = layout.get('text-radial-offset').evaluate(feature, {});
 
             if (!variableTextAnchor) {
+                const radialOffset = layout.get('text-radial-offset').evaluate(feature, {});
                 // Layers with variable anchors use the `text-radial-offset` property and the [x, y] offset vector
                 // is calculated at placement time instead of layout time
                 if (radialOffset) {
                     // The style spec says don't use `text-offset` and `text-radial-offset` together
                     // but doesn't actually specify what happens if you use both. We go with the radial offset.
-                    textOffset = evaluateRadialOffset(textAnchor, radialOffset * ONE_EM);
+                    textOffset = evaluateRadialOffset(textAnchor, [radialOffset * ONE_EM, Number.POSITIVE_INFINITY]);
                 } else {
                     textOffset = (layout.get('text-offset').evaluate(feature, {}).map(t => t * ONE_EM): any);
                 }
@@ -510,7 +550,11 @@ function addSymbol(bucket: SymbolBucket,
     let numVerticalGlyphVertices = 0;
     const placedTextSymbolIndices = {};
     let key = murmur3('');
-    const radialTextOffset = (layer.layout.get('text-radial-offset').evaluate(feature, {}) || 0) * ONE_EM;
+    let radialTextOffset0 = (layer.layout.get('text-radial-offset').evaluate(feature, {}) || 0) * ONE_EM;
+    let radialTextOffset1 = Number.POSITIVE_INFINITY;
+    if (!radialTextOffset0) {
+        [radialTextOffset0, radialTextOffset1] = (layer.layout.get('text-offset').evaluate(feature, {}).map(t => t * ONE_EM): any);
+    }
 
     if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
         const textRotation = layer.layout.get('text-rotate').evaluate(feature, {});
@@ -623,7 +667,8 @@ function addSymbol(bucket: SymbolBucket,
         numIconVertices,
         0,
         textBoxScale,
-        radialTextOffset);
+        radialTextOffset0,
+        radialTextOffset1);
 }
 
 function anchorIsTooClose(bucket: any, text: string, repeatDistance: number, anchor: Point) {
