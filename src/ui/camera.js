@@ -711,7 +711,8 @@ class Camera extends Evented {
             pitch = 'pitch' in options ? +options.pitch : startPitch,
             padding = 'padding' in options ? options.padding : tr.padding;
 
-        const pointAtOffset = tr.paddedCenter.add(Point.convert(options.offset));
+        const offsetAsPoint = Point.convert(options.offset);
+        let pointAtOffset = tr.paddedCenter.add(offsetAsPoint);
         const locationAtOffset = tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
         this._normalizeCenter(center);
@@ -748,6 +749,9 @@ class Camera extends Evented {
             }
             if (this._padding) {
                 tr.interpolatePadding(padding, k);
+                // When padding is being applied, Transform#paddedCenter is changing continously,
+                // thus we need to recalculate offsetPoint every fra,e
+                pointAtOffset = tr.paddedCenter.add(offsetAsPoint);
             }
 
             if (around) {
@@ -759,7 +763,6 @@ class Camera extends Evented {
                     Math.max(0.5, finalScale);
                 const speedup = Math.pow(base, 1 - k);
                 const newCenter = tr.unproject(from.add(delta.mult(k * speedup)).mult(scale));
-
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
 
@@ -928,9 +931,11 @@ class Camera extends Evented {
         const zoom = 'zoom' in options ? clamp(+options.zoom, tr.minZoom, tr.maxZoom) : startZoom;
         const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
         const pitch = 'pitch' in options ? +options.pitch : startPitch;
+        const padding = 'padding' in options ? options.padding : tr.padding;
 
         const scale = tr.zoomScale(zoom - startZoom);
-        const pointAtOffset = tr.paddedCenter.add(Point.convert(options.offset));
+        const offsetAsPoint = Point.convert(options.offset);
+        let pointAtOffset = tr.paddedCenter.add(offsetAsPoint);
         const locationAtOffset = tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
         this._normalizeCenter(center);
@@ -1018,6 +1023,7 @@ class Camera extends Evented {
         this._zooming = true;
         this._rotating = (startBearing !== bearing);
         this._pitching = (pitch !== startPitch);
+        this._padding = !tr.isPaddingEqual(padding);
 
         this._prepareEase(eventData, false);
 
@@ -1032,6 +1038,12 @@ class Camera extends Evented {
             }
             if (this._pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
+            }
+            if (this._padding) {
+                tr.interpolatePadding(padding, k);
+                // When padding is being applied, Transform#paddedCenter is changing continously,
+                // thus we need to recalculate offsetPoint every frame
+                pointAtOffset = tr.paddedCenter.add(offsetAsPoint);
             }
 
             const newCenter = k === 1 ? center : tr.unproject(from.add(delta.mult(u(s))).mult(scale));
