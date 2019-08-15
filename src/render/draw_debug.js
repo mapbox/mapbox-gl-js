@@ -36,7 +36,7 @@ export function drawDebugPadding(painter: Painter) {
     // Right
     drawDebugSSRect(painter, painter.transform.width - padding.right, 0, padding.right, painter.transform.height, rightColor);
     // Center
-    const center = painter.transform.centerPoint;
+    const center = painter.transform.paddedCenter;
     const centerSize = 10;
     drawDebugSSRect(painter, center.x - centerSize / 2, center.y - centerSize / 2, centerSize, centerSize, centerColor);
 }

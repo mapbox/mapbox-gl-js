@@ -711,7 +711,7 @@ class Camera extends Evented {
             pitch = 'pitch' in options ? +options.pitch : startPitch,
             padding = 'padding' in options ? options.padding : tr.padding;
 
-        const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
+        const pointAtOffset = tr.paddedCenter.add(Point.convert(options.offset));
         const locationAtOffset = tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
         this._normalizeCenter(center);
@@ -759,6 +759,7 @@ class Camera extends Evented {
                     Math.max(0.5, finalScale);
                 const speedup = Math.pow(base, 1 - k);
                 const newCenter = tr.unproject(from.add(delta.mult(k * speedup)).mult(scale));
+
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
 
@@ -929,7 +930,7 @@ class Camera extends Evented {
         const pitch = 'pitch' in options ? +options.pitch : startPitch;
 
         const scale = tr.zoomScale(zoom - startZoom);
-        const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
+        const pointAtOffset = tr.paddedCenter.add(Point.convert(options.offset));
         const locationAtOffset = tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
         this._normalizeCenter(center);
