@@ -117,7 +117,7 @@ class CollisionGroups {
     }
 }
 
-function calculateVariableLayoutOffset(anchor: TextAnchor, width: number, height: number, radialOffset: number, textBoxScale: number): Point {
+function calculateVariableLayoutOffset(anchor: TextAnchor, width: number, height: number, radialOffset: [number, number], textBoxScale: number): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
     const shiftY = -(verticalAlign - 0.5) * height;
@@ -149,7 +149,7 @@ function shiftVariableCollisionBox(collisionBox: SingleCollisionBox,
 }
 
 export type VariableOffset = {
-    radialOffset: number,
+    radialOffset: [number, number],
     width: number,
     height: number,
     anchor: TextAnchor,
@@ -235,11 +235,12 @@ export class Placement {
     }
 
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
-                           radialTextOffset: number, textBoxScale: number, rotateWithMap: boolean,
+                           textBoxScale: number, rotateWithMap: boolean,
                            pitchWithMap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroup: CollisionGroup,
                            textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ box: Array<number>, offscreen: boolean }  {
 
-        const shift = calculateVariableLayoutOffset(anchor, width, height, radialTextOffset, textBoxScale);
+        const radialOffset = [symbolInstance.radialTextOffset0, symbolInstance.radialTextOffset1];
+        const shift = calculateVariableLayoutOffset(anchor, width, height, radialOffset, textBoxScale);
 
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
             shiftVariableCollisionBox(
@@ -259,7 +260,7 @@ export class Placement {
             }
             assert(symbolInstance.crossTileID !== 0);
             this.variableOffsets[symbolInstance.crossTileID] = {
-                radialOffset: radialTextOffset,
+                radialOffset,
                 width,
                 height,
                 anchor,
@@ -426,7 +427,7 @@ export class Placement {
                             const anchor = anchors[i % anchors.length];
                             const allowOverlap = (i >= anchors.length);
                             placedBox = this.attemptAnchorPlacement(
-                                anchor, collisionTextBox, width, height, symbolInstance.radialTextOffset,
+                                anchor, collisionTextBox, width, height,
                                 textBoxScale, rotateWithMap, pitchWithMap, textPixelRatio, posMatrix,
                                 collisionGroup, allowOverlap, symbolInstance, bucket, orientation);
 

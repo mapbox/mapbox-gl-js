@@ -96,7 +96,7 @@ export const symbolInstance = createLayout([
     {type: 'Uint16', name: 'numIconVertices'},
     {type: 'Uint32', name: 'crossTileID'},
     {type: 'Float32', name: 'textBoxScale'},
-    {type: 'Float32', name: 'radialTextOffset'}
+    {type: 'Float32', components: 2, name: 'radialTextOffset'}
 ]);
 
 export const glyphOffset = createLayout([
