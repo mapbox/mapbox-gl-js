@@ -75,7 +75,8 @@ export default class Marker extends Evented {
             '_onMove',
             '_onUp',
             '_addDragHandler',
-            '_onMapClick'
+            '_onMapClick',
+            '_onKeyPress'
         ], this);
 
         this._anchor = options && options.anchor || 'center';
@@ -291,22 +292,10 @@ export default class Marker extends Evented {
      * @returns {Marker} `this`
      */
     setPopup(popup: ?Popup) {
-        const keypressListener = (e: KeyboardEvent) => {
-            const code = e.code;
-            const legacyCode = e.charCode || e.keyCode;
-
-            if (
-                (code === 'Space') || (code === 'Enter') ||
-                (legacyCode === 32) || (legacyCode === 13) // space or enter
-            ) {
-                this.togglePopup();
-            }
-        };
-
         if (this._popup) {
             this._popup.remove();
             this._popup = null;
-            this._element.removeEventListener('keypress', keypressListener);
+            this._element.removeEventListener('keypress', this._onKeyPress);
 
             if (!this._originalTabIndex) {
                 this._element.removeAttribute('tabindex');
@@ -336,10 +325,22 @@ export default class Marker extends Evented {
             if (!this._originalTabIndex) {
                 this._element.setAttribute('tabindex', '0');
             }
-            this._element.addEventListener('keypress', keypressListener);
+            this._element.addEventListener('keypress', this._onKeyPress);
         }
 
         return this;
+    }
+
+    _onKeyPress(e: KeyboardEvent) {
+        const code = e.code;
+        const legacyCode = e.charCode || e.keyCode;
+
+        if (
+            (code === 'Space') || (code === 'Enter') ||
+            (legacyCode === 32) || (legacyCode === 13) // space or enter
+        ) {
+            this.togglePopup();
+        }
     }
 
     _onMapClick(e: MapMouseEvent) {
