@@ -9,9 +9,10 @@ function getAccessToken() {
         getURLParameter('access_token') ||
         localStorage.getItem('accessToken')
     );
+    console.log('accessToken', accessToken);
     try {
         localStorage.setItem('accessToken', accessToken);
-    } catch (_) {}
+    } catch (e) {console.log('e', e);}
     return accessToken;
 }
 
