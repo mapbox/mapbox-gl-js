@@ -108,9 +108,16 @@ const exported = {
     },
 
     /**
-     * Clears browser storage used by this library. Using this method flushes the tile
+     * Clears browser storage used by this library. Using this method flushes the Mapbox tile
      * cache that is managed by this library. Tiles may still be cached by the browser
      * in some cases.
+     *
+     * This API is supported on browsers where the [`Cache` API](https://developer.mozilla.org/en-US/docs/Web/API/Cache)
+     * is supported and enabled. This includes all major browsers when pages are served over
+     * `https://`, except Internet Explorer and Edge Mobile.
+     *
+     * When called in unsupported browsers or environments (private or incognito mode), the
+     * callback will be called with an error argument.
      *
      * @function clearStorage
      * @param {Function} callback Called with an error argument if there is an error.
