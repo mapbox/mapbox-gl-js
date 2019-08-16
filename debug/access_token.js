@@ -11,7 +11,7 @@ function getAccessToken() {
     );
     try {
         localStorage.setItem('accessToken', accessToken);
-    } catch (e) {console.log('e', e);}
+    } catch (_) {}
     return accessToken;
 }
 
