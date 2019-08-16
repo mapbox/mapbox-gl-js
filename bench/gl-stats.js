@@ -5,6 +5,7 @@ const fs = require('fs');
 const zlib = require('zlib');
 const mapboxGlSrc = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 const benchSrc = fs.readFileSync('bench/gl-stats.html', 'utf8');
+const {execSync} = require('child_process');
 
 const benchHTML = benchSrc.replace(/<script src="..\/dist\/mapbox-gl.js"><\/script>/, `<script>${mapboxGlSrc}</script>`);
 
@@ -33,6 +34,8 @@ function waitForConsole(page) {
         size: mapboxGlSrc.length,
         "size_gz": zlib.gzipSync(mapboxGlSrc).length
     };
+    stats.dt = new Date().toISOString().substring(0, 16);
+    stats.commit = execSync('git rev-parse --short=7 HEAD').toString().trim();
     console.log(JSON.stringify(stats, null, 2));
 
     await page.close();
