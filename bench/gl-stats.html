@@ -39,11 +39,14 @@ map.on('data', function onData(e) {
 
     map.off('data', onData);
 
-    hookStats(tileStats, gl, 'bufferData');
-    hookStats(tileStats, gl, 'bufferData', 'bufferData_bytes', (args) => args[1].byteLength);
+    const ifIndex = (args, value = 1) => args[0] === gl.ELEMENT_ARRAY_BUFFER ? value : 0;
+    const ifVertex = (args, value = 1) => args[0] === gl.ARRAY_BUFFER ? value : 0;
 
-    hookStats(frameStats, gl, 'bufferSubData');
-    hookStats(frameStats, gl, 'bufferSubData', 'bufferSubData_bytes', (args) => args[2].byteLength);
+    hookStats(tileStats, gl, 'bufferData', 'bufferData_index', ifIndex);
+    hookStats(tileStats, gl, 'bufferData', 'bufferData_vertex', ifVertex);
+
+    hookStats(tileStats, gl, 'bufferData', 'bufferData_index_bytes', (args) => ifIndex(args, args[1].byteLength));
+    hookStats(tileStats, gl, 'bufferData', 'bufferData_vertex_bytes', (args) => ifVertex(args, args[1].byteLength));
 
     hookStats(tileStats, gl, 'texImage2D');
     hookStats(tileStats, gl, 'texImage2D', 'texImage2D_bytes',
@@ -57,6 +60,9 @@ map.on('data', function onData(e) {
     hookStats(frameStats, gl, 'drawArrays', 'draw');
     hookStats(frameStats, gl, 'useProgram');
     hookStats(frameStats, vao, 'bindVertexArrayOES', 'bindVAO');
+
+    hookStats(frameStats, gl, 'bufferSubData', 'bufferSubData');
+    hookStats(frameStats, gl, 'bufferSubData', 'bufferSubData_bytes', (args) => args[2].byteLength);
 
     map.on('render', () => numFrames++);
     map.once('moveend', () => {
