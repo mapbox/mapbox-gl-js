@@ -22,7 +22,7 @@ import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {TaskID} from '../util/task_queue';
 import type {PointLike} from '@mapbox/point-geometry';
-import type {EdgeInsetLike} from '../geo/edge_insets';
+import type {, EdgeInsetJSON} from '../geo/edge_insets';
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
@@ -283,6 +283,34 @@ class Camera extends Evented {
     setBearing(bearing: number, eventData?: Object) {
         this.jumpTo({bearing}, eventData);
         return this;
+    }
+
+    /**
+     * Returns the current padding applied around the map viewport.
+     *
+     * @memberof Map#
+     * @returns The current padding around the map viewport.
+     */
+    getPadding(): EdgeInsetJSON { return this.transform.padding; }
+
+    /**
+     * Sets the padding in pixels around the viewport.
+     *
+     * Equivalent to `jumpTo({padding: padding})`.
+     *
+     * @memberof Map#
+     * @param padding The desired padding. Format: { left: number, right: number, top: number, bottom: number }
+     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     * @example
+     * // Sets a left padding of 300px, and a top padding of 50px
+     * map.setPadding({ left: 300, top: 50 });
+     */
+    setPadding(padding: EdgeInsetLike, eventData?: Object) {
+        this.jumpTo({padding}, eventData);
+        return this
     }
 
     /**

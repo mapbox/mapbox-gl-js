@@ -3,9 +3,9 @@ import { number } from "../style-spec/util/interpolate";
 import Point  from "@mapbox/point-geometry";
 
 /**
- * An `EdgeInset` object represents screen space padding applied to the edge map viewport
- * such that the vanishing point gets offset. This is useful for adding floating UI elements
- * on top of the map and have the vanishing point shift as UI elements resize.
+ * An `EdgeInset` object represents screen space padding applied to the edges of the viewport.
+ * This shifts the apprent center or the vanishing point of the map. This is useful for adding floating UI elements
+ * on top of the map and having the vanishing point shift as UI elements resize.
  *
  * @param {number} [top=0]
  * @param {number} [bottom=0]
@@ -34,7 +34,8 @@ class EdgeInsets {
     }
 
     /**
-     * Interpolates the inset in-placce.
+     * Interpolates the inset in-place.
+     * This maintains the current inset value for any inset not present in `target`.
      *
      * @param {EdgeInsetLike} target
      * @param {number} t
@@ -51,7 +52,8 @@ class EdgeInsets {
     }
 
     /**
-     * Utility method the computes the screen space the vanishing point after applying insets.
+     * Utility method that computes the new apprent center or vanishing point after applying insets.
+     * This is in pixels and with the top left being (0.0) and +y being downwards.
      *
      * @param {number} width
      * @param {number} height
@@ -80,6 +82,13 @@ class EdgeInsets {
         return new EdgeInsets(this.top, this.bottom, this.left, this.right);
     }
 
+    /**
+     * Returns the current sdtate as json, useful when you want to have a
+     * read-only representation of the inset.
+     *
+     * @returns {EdgeInsetJSON}
+     * @memberof EdgeInsets
+     */
     toJSON(): EdgeInsetJSON {
         return {
             top: this.top,
