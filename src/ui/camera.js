@@ -22,7 +22,7 @@ import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {TaskID} from '../util/task_queue';
 import type {PointLike} from '@mapbox/point-geometry';
-import type {, EdgeInsetJSON} from '../geo/edge_insets';
+import type {EdgeInsetLike, EdgeInsetJSON} from '../geo/edge_insets';
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
@@ -310,7 +310,7 @@ class Camera extends Evented {
      */
     setPadding(padding: EdgeInsetLike, eventData?: Object) {
         this.jumpTo({padding}, eventData);
-        return this
+        return this;
     }
 
     /**
