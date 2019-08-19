@@ -82,7 +82,7 @@ class GlyphManager {
                     (err, response: ?{[number]: StyleGlyph | null}) => {
                         if (response) {
                             for (const id in response) {
-                                if (!this._doesCharSupportLocalGlyph(id)) {
+                                if (!this._doesCharSupportLocalGlyph(+id)) {
                                     entry.glyphs[+id] = response[+id];
                                 }
                             }
@@ -121,13 +121,13 @@ class GlyphManager {
         });
     }
 
-    _doesCharSupportLocalGlyph(id: number): Boolean {
+    _doesCharSupportLocalGlyph(id: number):boolean {
         /* eslint-disable new-cap */
-        return this.localIdeographFontFamily && 
+        return !!this.localIdeographFontFamily &&
             (isChar['CJK Unified Ideographs'](id) ||
                 isChar['Hangul Syllables'](id) ||
                 isChar['Hiragana'](id) ||
-                isChar['Katakana'](id)) 
+                isChar['Katakana'](id));
         /* eslint-enable new-cap */
     }
 
