@@ -64,6 +64,7 @@ class GlyphManager {
 
             glyph = this._tinySDF(entry, stack, id);
             if (glyph) {
+                entry.glyphs[id] = glyph;
                 callback(null, {stack, id, glyph});
                 return;
             }
