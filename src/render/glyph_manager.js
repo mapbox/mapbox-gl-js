@@ -121,7 +121,7 @@ class GlyphManager {
         });
     }
 
-    _doesCharSupportLocalGlyph(id: number):boolean {
+    _doesCharSupportLocalGlyph(id: number): boolean {
         /* eslint-disable new-cap */
         return !!this.localIdeographFontFamily &&
             (isChar['CJK Unified Ideographs'](id) ||

@@ -47,8 +47,8 @@ test('GlyphManager does not cache CJK chars that should be rendered locally', (t
     t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
         const overlappingGlyphs = {};
         const start = range * 256;
-        const end = start + 256
-        for (let i=start, j = 0; i < end; i++, j++) {
+        const end = start + 256;
+        for (let i = start, j = 0; i < end; i++, j++) {
             overlappingGlyphs[i] = glyphs[j];
         }
         setImmediate(() => callback(null, overlappingGlyphs));
@@ -136,7 +136,7 @@ test('GlyphManager generates Hiragana PBF locally', (t) => {
 
 test('GlyphManager caches locally generated glyphs', (t) => {
     let drawCallCount = 0;
-    const stub = t.stub(GlyphManager, 'TinySDF').value(class {
+    t.stub(GlyphManager, 'TinySDF').value(class {
         // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
         draw() {
             drawCallCount++;
@@ -151,7 +151,7 @@ test('GlyphManager caches locally generated glyphs', (t) => {
     manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, (err, glyphs) => {
         t.ifError(err);
         t.equal(glyphs['Arial Unicode MS'][0x30c6].metrics.advance, 24);
-        manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, (err, glyphs) => {
+        manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, () => {
             t.equal(drawCallCount, 1);
             t.end();
         });
