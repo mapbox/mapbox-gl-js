@@ -26,7 +26,7 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
         const buffers = drawCircles ? (isText ? bucket.textCollisionCircle : bucket.iconCollisionCircle) : (isText ? bucket.textCollisionBox : bucket.iconCollisionBox);
         if (!buffers) continue;
         let posMatrix = coord.posMatrix;
-        if(translate[0] != 0 || translate[1] != 0) {
+        if (translate[0] !== 0 || translate[1] !== 0) {
             posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor);
         }
         program.draw(context, drawCircles ? gl.TRIANGLES : gl.LINES,

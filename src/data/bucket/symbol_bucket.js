@@ -41,9 +41,9 @@ import Formatted from '../../style-spec/expression/types/formatted';
 
 import type {
     Bucket,
-        BucketParameters,
-        IndexedFeature,
-        PopulateParameters
+    BucketParameters,
+    IndexedFeature,
+    PopulateParameters
 } from '../bucket';
 import type { CollisionBoxArray, CollisionBox, SymbolInstance } from '../array_types';
 import type { StructArray, StructArrayMember } from '../../util/struct_array';
@@ -77,15 +77,15 @@ export type CollisionArrays = {
 
 export type SymbolFeature = {|
     sortKey: number | void,
-        text: Formatted | void,
-            icon: string | void,
-                index: number,
-                    sourceLayerIndex: number,
-                        geometry: Array < Array < Point >>,
-                            properties: Object,
-                                type: 'Point' | 'LineString' | 'Polygon',
-                                    id ?: any
-                                        |};
+    text: Formatted | void,
+    icon: string | void,
+    index: number,
+    sourceLayerIndex: number,
+    geometry: Array<Array<Point>>,
+    properties: Object,
+    type: 'Point' | 'LineString' | 'Polygon',
+    id ?: any
+|};
 
 // Opacity arrays are frequently updated but don't contain a lot of information, so we pack them
 // tight. Each Uint32 is actually four duplicate Uint8s for the four corners of a glyph
@@ -195,8 +195,8 @@ class CollisionBuffers {
     collisionVertexBuffer: VertexBuffer;
 
     constructor(LayoutArray: Class<StructArray>,
-        layoutAttributes: Array<StructArrayMember>,
-        IndexArray: Class<TriangleIndexArray | LineIndexArray>) {
+                layoutAttributes: Array<StructArrayMember>,
+                IndexArray: Class<TriangleIndexArray | LineIndexArray>) {
         this.layoutVertexArray = new LayoutArray();
         this.layoutAttributes = layoutAttributes;
         this.indexArray = new IndexArray();
@@ -462,406 +462,406 @@ class SymbolBucket implements Bucket {
             this.features.sort((a, b) => {
                 // a.sortKey is always a number when sortFeaturesByKey is true
                 return ((a.sortKey: any): number) - ((b.sortKey: any): number);
-        });
+            });
+        }
     }
-}
 
-update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[string]: ImagePosition}) {
-    if (!this.stateDependentLayers.length) return;
-    this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, imagePositions);
-    this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, imagePositions);
-}
-
-isEmpty() {
-    return this.symbolInstances.length === 0;
-}
-
-uploadPending() {
-    return !this.uploaded || this.text.programConfigurations.needsUpload || this.icon.programConfigurations.needsUpload;
-}
-
-upload(context: Context) {
-    if (!this.uploaded) {
-        this.textCollisionBox.upload(context);
-        this.iconCollisionBox.upload(context);
-        this.textCollisionCircle.upload(context);
-        this.iconCollisionCircle.upload(context);
+    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[string]: ImagePosition}) {
+        if (!this.stateDependentLayers.length) return;
+        this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, imagePositions);
+        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, imagePositions);
     }
-    this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload);
-    this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.icon.programConfigurations.needsUpload);
-    this.uploaded = true;
-}
 
-destroy() {
-    this.text.destroy();
-    this.icon.destroy();
-    this.textCollisionBox.destroy();
-    this.iconCollisionBox.destroy();
-    this.textCollisionCircle.destroy();
-    this.iconCollisionCircle.destroy();
-}
+    isEmpty() {
+        return this.symbolInstances.length === 0;
+    }
 
-addToLineVertexArray(anchor: Anchor, line: any) {
-    const lineStartIndex = this.lineVertexArray.length;
-    if (anchor.segment !== undefined) {
-        let sumForwardLength = anchor.dist(line[anchor.segment + 1]);
-        let sumBackwardLength = anchor.dist(line[anchor.segment]);
-        const vertices = {};
-        for (let i = anchor.segment + 1; i < line.length; i++) {
-            vertices[i] = { x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumForwardLength };
-            if (i < line.length - 1) {
-                sumForwardLength += line[i + 1].dist(line[i]);
+    uploadPending() {
+        return !this.uploaded || this.text.programConfigurations.needsUpload || this.icon.programConfigurations.needsUpload;
+    }
+
+    upload(context: Context) {
+        if (!this.uploaded) {
+            this.textCollisionBox.upload(context);
+            this.iconCollisionBox.upload(context);
+            this.textCollisionCircle.upload(context);
+            this.iconCollisionCircle.upload(context);
+        }
+        this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload);
+        this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.icon.programConfigurations.needsUpload);
+        this.uploaded = true;
+    }
+
+    destroy() {
+        this.text.destroy();
+        this.icon.destroy();
+        this.textCollisionBox.destroy();
+        this.iconCollisionBox.destroy();
+        this.textCollisionCircle.destroy();
+        this.iconCollisionCircle.destroy();
+    }
+
+    addToLineVertexArray(anchor: Anchor, line: any) {
+        const lineStartIndex = this.lineVertexArray.length;
+        if (anchor.segment !== undefined) {
+            let sumForwardLength = anchor.dist(line[anchor.segment + 1]);
+            let sumBackwardLength = anchor.dist(line[anchor.segment]);
+            const vertices = {};
+            for (let i = anchor.segment + 1; i < line.length; i++) {
+                vertices[i] = { x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumForwardLength };
+                if (i < line.length - 1) {
+                    sumForwardLength += line[i + 1].dist(line[i]);
+                }
+            }
+            for (let i = anchor.segment || 0; i >= 0; i--) {
+                vertices[i] = { x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumBackwardLength };
+                if (i > 0) {
+                    sumBackwardLength += line[i - 1].dist(line[i]);
+                }
+            }
+            for (let i = 0; i < line.length; i++) {
+                const vertex = vertices[i];
+                this.lineVertexArray.emplaceBack(vertex.x, vertex.y, vertex.tileUnitDistanceFromAnchor);
             }
         }
-        for (let i = anchor.segment || 0; i >= 0; i--) {
-            vertices[i] = { x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumBackwardLength };
-            if (i > 0) {
-                sumBackwardLength += line[i - 1].dist(line[i]);
-            }
-        }
-        for (let i = 0; i < line.length; i++) {
-            const vertex = vertices[i];
-            this.lineVertexArray.emplaceBack(vertex.x, vertex.y, vertex.tileUnitDistanceFromAnchor);
-        }
+        return {
+            lineStartIndex,
+            lineLength: this.lineVertexArray.length - lineStartIndex
+        };
     }
-    return {
-        lineStartIndex,
-        lineLength: this.lineVertexArray.length - lineStartIndex
-    };
-}
 
-addSymbols(arrays: SymbolBuffers,
-    quads: Array<SymbolQuad>,
-    sizeVertex: any,
-    lineOffset: [number, number],
-    alongLine: boolean,
-    feature: SymbolFeature,
-    writingMode: any,
-    labelAnchor: Anchor,
-    lineStartIndex: number,
-    lineLength: number) {
-    const indexArray = arrays.indexArray;
-    const layoutVertexArray = arrays.layoutVertexArray;
-    const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
+    addSymbols(arrays: SymbolBuffers,
+        quads: Array<SymbolQuad>,
+        sizeVertex: any,
+        lineOffset: [number, number],
+        alongLine: boolean,
+        feature: SymbolFeature,
+        writingMode: any,
+        labelAnchor: Anchor,
+        lineStartIndex: number,
+        lineLength: number) {
+        const indexArray = arrays.indexArray;
+        const layoutVertexArray = arrays.layoutVertexArray;
+        const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
 
-    const segment = arrays.segments.prepareSegment(4 * quads.length, arrays.layoutVertexArray, arrays.indexArray, feature.sortKey);
-    const glyphOffsetArrayStart = this.glyphOffsetArray.length;
-    const vertexStartIndex = segment.vertexLength;
+        const segment = arrays.segments.prepareSegment(4 * quads.length, arrays.layoutVertexArray, arrays.indexArray, feature.sortKey);
+        const glyphOffsetArrayStart = this.glyphOffsetArray.length;
+        const vertexStartIndex = segment.vertexLength;
 
-    const angle = (this.allowVerticalPlacement && writingMode === WritingMode.vertical) ? Math.PI / 2 : 0;
+        const angle = (this.allowVerticalPlacement && writingMode === WritingMode.vertical) ? Math.PI / 2 : 0;
 
-    const addSymbol = (symbol: SymbolQuad) => {
-        const tl = symbol.tl,
-            tr = symbol.tr,
-            bl = symbol.bl,
-            br = symbol.br,
-            tex = symbol.tex;
+        const addSymbol = (symbol: SymbolQuad) => {
+            const tl = symbol.tl,
+                tr = symbol.tr,
+                bl = symbol.bl,
+                br = symbol.br,
+                tex = symbol.tex;
 
+            const index = segment.vertexLength;
+
+            const y = symbol.glyphOffset[1];
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
+
+            addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, angle);
+
+            indexArray.emplaceBack(index, index + 1, index + 2);
+            indexArray.emplaceBack(index + 1, index + 2, index + 3);
+
+            segment.vertexLength += 4;
+            segment.primitiveLength += 2;
+
+            this.glyphOffsetArray.emplaceBack(symbol.glyphOffset[0]);
+        };
+
+        if (feature.text && feature.text.sections) {
+            const sections = feature.text.sections;
+
+            if (this.hasPaintOverrides) {
+                let currentSectionIndex;
+                const populatePaintArrayForSection = (sectionIndex?: number, lastSection: boolean) => {
+                    if (currentSectionIndex !== undefined && (currentSectionIndex !== sectionIndex || lastSection)) {
+                        arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {}, sections[currentSectionIndex]);
+                    }
+                    currentSectionIndex = sectionIndex;
+                };
+
+                for (const symbol of quads) {
+                    populatePaintArrayForSection(symbol.sectionIndex, false);
+                    addSymbol(symbol);
+                }
+
+                // Populate paint arrays for the last section.
+                populatePaintArrayForSection(currentSectionIndex, true);
+            } else {
+                for (const symbol of quads) {
+                    addSymbol(symbol);
+                }
+                arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {}, sections[0]);
+            }
+
+        } else {
+            for (const symbol of quads) {
+                addSymbol(symbol);
+            }
+            arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {});
+        }
+
+        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
+            glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
+            lineStartIndex, lineLength, (labelAnchor.segment: any),
+            sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
+            lineOffset[0], lineOffset[1],
+            writingMode,
+            // placedOrientation is null initially; will be updated to horizontal(1)/vertical(2) if placed
+            0,
+            (false: any),
+        // The crossTileID is only filled/used on the foreground for dynamic text anchors
+        0);
+    }
+
+    _addCollisionDebugVertex(layoutVertexArray: StructArray, collisionVertexArray: StructArray, point: Point, anchorX: number, anchorY: number, extrude: Point) {
+        collisionVertexArray.emplaceBack(0, 0);
+        return layoutVertexArray.emplaceBack(
+            // pos
+            point.x,
+            point.y,
+            // a_anchor_pos
+            anchorX,
+            anchorY,
+            // extrude
+            Math.round(extrude.x),
+            Math.round(extrude.y));
+    }
+
+    addCollisionDebugVertices(x1: number, y1: number, x2: number, y2: number, arrays: CollisionBuffers, boxAnchorPoint: Point, symbolInstance: SymbolInstance, isCircle: boolean) {
+        const segment = arrays.segments.prepareSegment(4, arrays.layoutVertexArray, arrays.indexArray);
         const index = segment.vertexLength;
 
-        const y = symbol.glyphOffset[1];
-        addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex);
-        addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex);
-        addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex);
-        addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
+        const layoutVertexArray = arrays.layoutVertexArray;
+        const collisionVertexArray = arrays.collisionVertexArray;
 
-        addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, angle);
+        const anchorX = symbolInstance.anchorX;
+        const anchorY = symbolInstance.anchorY;
 
-        indexArray.emplaceBack(index, index + 1, index + 2);
-        indexArray.emplaceBack(index + 1, index + 2, index + 3);
+        this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(x1, y1));
+        this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(x2, y1));
+        this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(x2, y2));
+        this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(x1, y2));
 
         segment.vertexLength += 4;
-        segment.primitiveLength += 2;
+        if (isCircle) {
+            const indexArray: TriangleIndexArray = (arrays.indexArray: any);
+            indexArray.emplaceBack(index, index + 1, index + 2);
+            indexArray.emplaceBack(index, index + 2, index + 3);
 
-        this.glyphOffsetArray.emplaceBack(symbol.glyphOffset[0]);
-    };
-
-    if (feature.text && feature.text.sections) {
-        const sections = feature.text.sections;
-
-        if (this.hasPaintOverrides) {
-            let currentSectionIndex;
-            const populatePaintArrayForSection = (sectionIndex?: number, lastSection: boolean) => {
-                if (currentSectionIndex !== undefined && (currentSectionIndex !== sectionIndex || lastSection)) {
-                    arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {}, sections[currentSectionIndex]);
-                }
-                currentSectionIndex = sectionIndex;
-            };
-
-            for (const symbol of quads) {
-                populatePaintArrayForSection(symbol.sectionIndex, false);
-                addSymbol(symbol);
-            }
-
-            // Populate paint arrays for the last section.
-            populatePaintArrayForSection(currentSectionIndex, true);
+            segment.primitiveLength += 2;
         } else {
-            for (const symbol of quads) {
-                addSymbol(symbol);
-            }
-            arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {}, sections[0]);
+            const indexArray: LineIndexArray = (arrays.indexArray: any);
+            indexArray.emplaceBack(index, index + 1);
+            indexArray.emplaceBack(index + 1, index + 2);
+            indexArray.emplaceBack(index + 2, index + 3);
+            indexArray.emplaceBack(index + 3, index);
+
+            segment.primitiveLength += 4;
         }
+    }
 
-    } else {
-        for (const symbol of quads) {
-            addSymbol(symbol);
+    addDebugCollisionBoxes(startIndex: number, endIndex: number, symbolInstance: SymbolInstance, isText: boolean) {
+        for (let b = startIndex; b < endIndex; b++) {
+            const box: CollisionBox = (this.collisionBoxArray.get(b): any);
+            const x1 = box.x1;
+            const y1 = box.y1;
+            const x2 = box.x2;
+            const y2 = box.y2;
+
+            // If the radius > 0, this collision box is actually a circle
+            // The data we add to the buffers is exactly the same, but we'll render with a different shader.
+            const isCircle = box.radius > 0;
+            this.addCollisionDebugVertices(x1, y1, x2, y2, isCircle ?
+                (isText ? this.textCollisionCircle : this.iconCollisionCircle) : (isText ? this.textCollisionBox : this.iconCollisionBox),
+                box.anchorPoint, symbolInstance, isCircle);
         }
-        arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {});
     }
 
-    arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
-        glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
-        lineStartIndex, lineLength, (labelAnchor.segment: any),
-        sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
-        lineOffset[0], lineOffset[1],
-        writingMode,
-        // placedOrientation is null initially; will be updated to horizontal(1)/vertical(2) if placed
-        0,
-        (false: any),
-    // The crossTileID is only filled/used on the foreground for dynamic text anchors
-    0);
-}
-
-_addCollisionDebugVertex(layoutVertexArray: StructArray, collisionVertexArray: StructArray, point: Point, anchorX: number, anchorY: number, extrude: Point) {
-    collisionVertexArray.emplaceBack(0, 0);
-    return layoutVertexArray.emplaceBack(
-        // pos
-        point.x,
-        point.y,
-        // a_anchor_pos
-        anchorX,
-        anchorY,
-        // extrude
-        Math.round(extrude.x),
-        Math.round(extrude.y));
-}
-
-addCollisionDebugVertices(x1: number, y1: number, x2: number, y2: number, arrays: CollisionBuffers, boxAnchorPoint: Point, symbolInstance: SymbolInstance, isCircle: boolean) {
-    const segment = arrays.segments.prepareSegment(4, arrays.layoutVertexArray, arrays.indexArray);
-    const index = segment.vertexLength;
-
-    const layoutVertexArray = arrays.layoutVertexArray;
-    const collisionVertexArray = arrays.collisionVertexArray;
-
-    const anchorX = symbolInstance.anchorX;
-    const anchorY = symbolInstance.anchorY;
-
-    this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(x1, y1));
-    this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(x2, y1));
-    this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(x2, y2));
-    this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, anchorX, anchorY, new Point(x1, y2));
-
-    segment.vertexLength += 4;
-    if (isCircle) {
-        const indexArray: TriangleIndexArray = (arrays.indexArray: any);
-        indexArray.emplaceBack(index, index + 1, index + 2);
-        indexArray.emplaceBack(index, index + 2, index + 3);
-
-        segment.primitiveLength += 2;
-    } else {
-        const indexArray: LineIndexArray = (arrays.indexArray: any);
-        indexArray.emplaceBack(index, index + 1);
-        indexArray.emplaceBack(index + 1, index + 2);
-        indexArray.emplaceBack(index + 2, index + 3);
-        indexArray.emplaceBack(index + 3, index);
-
-        segment.primitiveLength += 4;
+    generateCollisionDebugBuffers() {
+        for (let i = 0; i < this.symbolInstances.length; i++) {
+            const symbolInstance = this.symbolInstances.get(i);
+            this.addDebugCollisionBoxes(symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance, true);
+            this.addDebugCollisionBoxes(symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance, true);
+            this.addDebugCollisionBoxes(symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance, false);
+        }
     }
-}
 
-addDebugCollisionBoxes(startIndex: number, endIndex: number, symbolInstance: SymbolInstance, isText: boolean) {
-    for (let b = startIndex; b < endIndex; b++) {
-        const box: CollisionBox = (this.collisionBoxArray.get(b): any);
-        const x1 = box.x1;
-        const y1 = box.y1;
-        const x2 = box.x2;
-        const y2 = box.y2;
-
-        // If the radius > 0, this collision box is actually a circle
-        // The data we add to the buffers is exactly the same, but we'll render with a different shader.
-        const isCircle = box.radius > 0;
-        this.addCollisionDebugVertices(x1, y1, x2, y2, isCircle ?
-            (isText ? this.textCollisionCircle : this.iconCollisionCircle) : (isText ? this.textCollisionBox : this.iconCollisionBox),
-            box.anchorPoint, symbolInstance, isCircle);
-    }
-}
-
-generateCollisionDebugBuffers() {
-    for (let i = 0; i < this.symbolInstances.length; i++) {
-        const symbolInstance = this.symbolInstances.get(i);
-        this.addDebugCollisionBoxes(symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance, true);
-        this.addDebugCollisionBoxes(symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance, true);
-        this.addDebugCollisionBoxes(symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance, false);
-    }
-}
-
-// These flat arrays are meant to be quicker to iterate over than the source
-// CollisionBoxArray
-_deserializeCollisionBoxesForSymbol(collisionBoxArray: CollisionBoxArray, textStartIndex: number, textEndIndex: number, verticalTextStartIndex: number, verticalTextEndIndex: number, iconStartIndex: number, iconEndIndex: number): CollisionArrays {
-    const collisionArrays = {};
-    for (let k = textStartIndex; k < textEndIndex; k++) {
-        const box: CollisionBox = (collisionBoxArray.get(k): any);
-        if (box.radius === 0) {
-            collisionArrays.textBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
-            collisionArrays.textFeatureIndex = box.featureIndex;
-            break; // Only one box allowed per instance
-        } else {
-            if (!collisionArrays.textCircles) {
-                collisionArrays.textCircles = [];
+    // These flat arrays are meant to be quicker to iterate over than the source
+    // CollisionBoxArray
+    _deserializeCollisionBoxesForSymbol(collisionBoxArray: CollisionBoxArray, textStartIndex: number, textEndIndex: number, verticalTextStartIndex: number, verticalTextEndIndex: number, iconStartIndex: number, iconEndIndex: number): CollisionArrays {
+        const collisionArrays = {};
+        for (let k = textStartIndex; k < textEndIndex; k++) {
+            const box: CollisionBox = (collisionBoxArray.get(k): any);
+            if (box.radius === 0) {
+                collisionArrays.textBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
                 collisionArrays.textFeatureIndex = box.featureIndex;
+                break; // Only one box allowed per instance
+            } else {
+                if (!collisionArrays.textCircles) {
+                    collisionArrays.textCircles = [];
+                    collisionArrays.textFeatureIndex = box.featureIndex;
+                }
+                const used = 1; // May be updated at collision detection time
+                collisionArrays.textCircles.push(box.anchorPointX, box.anchorPointY, box.radius, box.signedDistanceFromAnchor, used);
             }
-            const used = 1; // May be updated at collision detection time
-            collisionArrays.textCircles.push(box.anchorPointX, box.anchorPointY, box.radius, box.signedDistanceFromAnchor, used);
         }
-    }
-    for (let k = verticalTextStartIndex; k < verticalTextEndIndex; k++) {
-        const box: CollisionBox = (collisionBoxArray.get(k): any);
-        if (box.radius === 0) {
-            collisionArrays.verticalTextBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
-            collisionArrays.verticalTextFeatureIndex = box.featureIndex;
-            break; // Only one box allowed per instance
-        }
-    }
-    for (let k = iconStartIndex; k < iconEndIndex; k++) {
-        // An icon can only have one box now, so this indexing is a bit vestigial...
-        const box: CollisionBox = (collisionBoxArray.get(k): any);
-        if (box.radius === 0) {
-            collisionArrays.iconBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
-            collisionArrays.iconFeatureIndex = box.featureIndex;
-            break; // Only one box allowed per instance
-        }
-    }
-    return collisionArrays;
-}
-
-deserializeCollisionBoxes(collisionBoxArray: CollisionBoxArray) {
-    this.collisionArrays = [];
-    for (let i = 0; i < this.symbolInstances.length; i++) {
-        const symbolInstance = this.symbolInstances.get(i);
-        this.collisionArrays.push(this._deserializeCollisionBoxesForSymbol(
-            collisionBoxArray,
-            symbolInstance.textBoxStartIndex,
-            symbolInstance.textBoxEndIndex,
-            symbolInstance.verticalTextBoxStartIndex,
-            symbolInstance.verticalTextBoxEndIndex,
-            symbolInstance.iconBoxStartIndex,
-            symbolInstance.iconBoxEndIndex
-        ));
-    }
-}
-
-hasTextData() {
-    return this.text.segments.get().length > 0;
-}
-
-hasIconData() {
-    return this.icon.segments.get().length > 0;
-}
-
-hasTextCollisionBoxData() {
-    return this.textCollisionBox.segments.get().length > 0;
-}
-
-hasIconCollisionBoxData() {
-    return this.iconCollisionBox.segments.get().length > 0;
-}
-
-hasTextCollisionCircleData() {
-    return this.textCollisionCircle.segments.get().length > 0;
-}
-
-hasIconCollisionCircleData() {
-    return this.iconCollisionCircle.segments.get().length > 0;
-}
-
-addIndicesForPlacedTextSymbol(placedTextSymbolIndex: number) {
-    const placedSymbol = this.text.placedSymbolArray.get(placedTextSymbolIndex);
-
-    const endIndex = placedSymbol.vertexStartIndex + placedSymbol.numGlyphs * 4;
-    for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
-        this.text.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
-        this.text.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
-    }
-}
-
-getSortedSymbolIndexes(angle: number) {
-    if (this.sortedAngle === angle && this.symbolInstanceIndexes !== undefined) {
-        return this.symbolInstanceIndexes;
-    }
-    const sin = Math.sin(angle);
-    const cos = Math.cos(angle);
-    const rotatedYs = [];
-    const featureIndexes = [];
-    const result = [];
-
-    for (let i = 0; i < this.symbolInstances.length; ++i) {
-        result.push(i);
-        const symbolInstance = this.symbolInstances.get(i);
-        rotatedYs.push(Math.round(sin * symbolInstance.anchorX + cos * symbolInstance.anchorY) | 0);
-        featureIndexes.push(symbolInstance.featureIndex);
-    }
-
-    result.sort((aIndex, bIndex) => {
-        return (rotatedYs[aIndex] - rotatedYs[bIndex]) ||
-            (featureIndexes[bIndex] - featureIndexes[aIndex]);
-    });
-
-    return result;
-}
-
-sortFeatures(angle: number) {
-    if (!this.sortFeaturesByY) return;
-    if (this.sortedAngle === angle) return;
-
-    // The current approach to sorting doesn't sort across segments so don't try.
-    // Sorting within segments separately seemed not to be worth the complexity.
-    if (this.text.segments.get().length > 1 || this.icon.segments.get().length > 1) return;
-
-    // If the symbols are allowed to overlap sort them by their vertical screen position.
-    // The index array buffer is rewritten to reference the (unchanged) vertices in the
-    // sorted order.
-
-    // To avoid sorting the actual symbolInstance array we sort an array of indexes.
-    this.symbolInstanceIndexes = this.getSortedSymbolIndexes(angle);
-    this.sortedAngle = angle;
-
-    this.text.indexArray.clear();
-    this.icon.indexArray.clear();
-
-    this.featureSortOrder = [];
-
-    for (const i of this.symbolInstanceIndexes) {
-        const symbolInstance = this.symbolInstances.get(i);
-        this.featureSortOrder.push(symbolInstance.featureIndex);
-
-        [
-            symbolInstance.rightJustifiedTextSymbolIndex,
-            symbolInstance.centerJustifiedTextSymbolIndex,
-            symbolInstance.leftJustifiedTextSymbolIndex
-        ].forEach((index, i, array) => {
-            // Only add a given index the first time it shows up,
-            // to avoid duplicate opacity entries when multiple justifications
-            // share the same glyphs.
-            if (index >= 0 && array.indexOf(index) === i) {
-                this.addIndicesForPlacedTextSymbol(index);
+        for (let k = verticalTextStartIndex; k < verticalTextEndIndex; k++) {
+            const box: CollisionBox = (collisionBoxArray.get(k): any);
+            if (box.radius === 0) {
+                collisionArrays.verticalTextBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
+                collisionArrays.verticalTextFeatureIndex = box.featureIndex;
+                break; // Only one box allowed per instance
             }
+        }
+        for (let k = iconStartIndex; k < iconEndIndex; k++) {
+            // An icon can only have one box now, so this indexing is a bit vestigial...
+            const box: CollisionBox = (collisionBoxArray.get(k): any);
+            if (box.radius === 0) {
+                collisionArrays.iconBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
+                collisionArrays.iconFeatureIndex = box.featureIndex;
+                break; // Only one box allowed per instance
+            }
+        }
+        return collisionArrays;
+    }
+
+    deserializeCollisionBoxes(collisionBoxArray: CollisionBoxArray) {
+        this.collisionArrays = [];
+        for (let i = 0; i < this.symbolInstances.length; i++) {
+            const symbolInstance = this.symbolInstances.get(i);
+            this.collisionArrays.push(this._deserializeCollisionBoxesForSymbol(
+                collisionBoxArray,
+                symbolInstance.textBoxStartIndex,
+                symbolInstance.textBoxEndIndex,
+                symbolInstance.verticalTextBoxStartIndex,
+                symbolInstance.verticalTextBoxEndIndex,
+                symbolInstance.iconBoxStartIndex,
+                symbolInstance.iconBoxEndIndex
+            ));
+        }
+    }
+
+    hasTextData() {
+        return this.text.segments.get().length > 0;
+    }
+
+    hasIconData() {
+        return this.icon.segments.get().length > 0;
+    }
+
+    hasTextCollisionBoxData() {
+        return this.textCollisionBox.segments.get().length > 0;
+    }
+
+    hasIconCollisionBoxData() {
+        return this.iconCollisionBox.segments.get().length > 0;
+    }
+
+    hasTextCollisionCircleData() {
+        return this.textCollisionCircle.segments.get().length > 0;
+    }
+
+    hasIconCollisionCircleData() {
+        return this.iconCollisionCircle.segments.get().length > 0;
+    }
+
+    addIndicesForPlacedTextSymbol(placedTextSymbolIndex: number) {
+        const placedSymbol = this.text.placedSymbolArray.get(placedTextSymbolIndex);
+
+        const endIndex = placedSymbol.vertexStartIndex + placedSymbol.numGlyphs * 4;
+        for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
+            this.text.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+            this.text.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
+        }
+    }
+
+    getSortedSymbolIndexes(angle: number) {
+        if (this.sortedAngle === angle && this.symbolInstanceIndexes !== undefined) {
+            return this.symbolInstanceIndexes;
+        }
+        const sin = Math.sin(angle);
+        const cos = Math.cos(angle);
+        const rotatedYs = [];
+        const featureIndexes = [];
+        const result = [];
+
+        for (let i = 0; i < this.symbolInstances.length; ++i) {
+            result.push(i);
+            const symbolInstance = this.symbolInstances.get(i);
+            rotatedYs.push(Math.round(sin * symbolInstance.anchorX + cos * symbolInstance.anchorY) | 0);
+            featureIndexes.push(symbolInstance.featureIndex);
+        }
+
+        result.sort((aIndex, bIndex) => {
+            return (rotatedYs[aIndex] - rotatedYs[bIndex]) ||
+                (featureIndexes[bIndex] - featureIndexes[aIndex]);
         });
 
-        if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
-            this.addIndicesForPlacedTextSymbol(symbolInstance.verticalPlacedTextSymbolIndex);
-        }
-
-        const placedIcon = this.icon.placedSymbolArray.get(i);
-        if (placedIcon.numGlyphs) {
-            const vertexIndex = placedIcon.vertexStartIndex;
-            this.icon.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
-            this.icon.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
-        }
+        return result;
     }
 
-    if (this.text.indexBuffer) this.text.indexBuffer.updateData(this.text.indexArray);
-    if (this.icon.indexBuffer) this.icon.indexBuffer.updateData(this.icon.indexArray);
-}
+    sortFeatures(angle: number) {
+        if (!this.sortFeaturesByY) return;
+        if (this.sortedAngle === angle) return;
+
+        // The current approach to sorting doesn't sort across segments so don't try.
+        // Sorting within segments separately seemed not to be worth the complexity.
+        if (this.text.segments.get().length > 1 || this.icon.segments.get().length > 1) return;
+
+        // If the symbols are allowed to overlap sort them by their vertical screen position.
+        // The index array buffer is rewritten to reference the (unchanged) vertices in the
+        // sorted order.
+
+        // To avoid sorting the actual symbolInstance array we sort an array of indexes.
+        this.symbolInstanceIndexes = this.getSortedSymbolIndexes(angle);
+        this.sortedAngle = angle;
+
+        this.text.indexArray.clear();
+        this.icon.indexArray.clear();
+
+        this.featureSortOrder = [];
+
+        for (const i of this.symbolInstanceIndexes) {
+            const symbolInstance = this.symbolInstances.get(i);
+            this.featureSortOrder.push(symbolInstance.featureIndex);
+
+            [
+                symbolInstance.rightJustifiedTextSymbolIndex,
+                symbolInstance.centerJustifiedTextSymbolIndex,
+                symbolInstance.leftJustifiedTextSymbolIndex
+            ].forEach((index, i, array) => {
+                // Only add a given index the first time it shows up,
+                // to avoid duplicate opacity entries when multiple justifications
+                // share the same glyphs.
+                if (index >= 0 && array.indexOf(index) === i) {
+                    this.addIndicesForPlacedTextSymbol(index);
+                }
+            });
+
+            if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
+                this.addIndicesForPlacedTextSymbol(symbolInstance.verticalPlacedTextSymbolIndex);
+            }
+
+            const placedIcon = this.icon.placedSymbolArray.get(i);
+            if (placedIcon.numGlyphs) {
+                const vertexIndex = placedIcon.vertexStartIndex;
+                this.icon.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+                this.icon.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
+            }
+        }
+
+        if (this.text.indexBuffer) this.text.indexBuffer.updateData(this.text.indexArray);
+        if (this.icon.indexBuffer) this.icon.indexBuffer.updateData(this.icon.indexArray);
+    }
 }
 
 register('SymbolBucket', SymbolBucket, {

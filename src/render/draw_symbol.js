@@ -77,7 +77,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
             stencilMode, colorMode, variableOffsets
         );
     }
-  
+
     if (sourceCache.map.showCollisionBoxes) {
         drawCollisionDebug(painter, sourceCache, layer, coords, layer.paint.get('text-translate'),
             layer.paint.get('text-translate-anchor'), true);
