@@ -336,8 +336,9 @@ test('camera', (t) => {
             t.equal(currentPadding.left, padding.left);
             t.equal(currentPadding.top, padding.top);
             // padding1 here
-            t.equal(currentPadding.right, padding1.top);
+            t.equal(currentPadding.right, padding1.right);
             t.equal(currentPadding.bottom, padding.bottom);
+            t.end();
         });
 
         t.end();
