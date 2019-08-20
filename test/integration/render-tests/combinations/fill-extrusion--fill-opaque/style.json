@@ -49,16 +49,14 @@
       "type": "fill-extrusion",
       "source": "geojson",
       "paint": {
-        "fill-extrusion-opacity": 0.5,
         "fill-extrusion-color": "red"
       }
     },
     {
-      "id": "fill-translucent",
+      "id": "fill-opaque",
       "type": "fill",
       "source": "geojson",
       "paint": {
-        "fill-opacity": 0.5,
         "fill-color": "blue"
       }
     }
