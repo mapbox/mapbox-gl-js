@@ -240,8 +240,10 @@ register('CollisionBuffers', CollisionBuffers);
  *      `this.collisionBoxArray`: collision data for use by foreground
  *      `this.text`: SymbolBuffers for text symbols
  *      `this.icons`: SymbolBuffers for icons
- *      `this.collisionBox`: Debug SymbolBuffers for collision boxes
- *      `this.collisionCircle`: Debug SymbolBuffers for collision circles
+ *      `this.iconCollisionBox`: Debug SymbolBuffers for icon collision boxes
+ *      `this.textCollisionBox`: Debug SymbolBuffers for text collision boxes
+ *      `this.iconCollisionCircle`: Debug SymbolBuffers for icon collision circles
+ *      `this.textCollisionCircle`: Debug SymbolBuffers for text collision circles
  *    The results are sent to the foreground for rendering
  *
  * 4. performSymbolPlacement(bucket, collisionIndex) is run on the foreground,
