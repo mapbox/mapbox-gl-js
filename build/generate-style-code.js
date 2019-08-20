@@ -12,6 +12,12 @@ global.camelize = function (str) {
     });
 };
 
+global.camelizeWithLeadingLowercase = function (str) {
+    return str.replace(/-(.)/g, function (_, x) {
+      return x.toUpperCase();
+    });
+};
+
 global.flowType = function (property) {
     switch (property.type) {
         case 'boolean':
@@ -96,10 +102,18 @@ global.defaultValue = function (property) {
     }
 };
 
+global.overrides = function (property) {
+    return `{ runtimeType: ${runtimeType(property)}, getOverride: (o) => o.${camelizeWithLeadingLowercase(property.name)}, hasOverride: (o) => !!o.${camelizeWithLeadingLowercase(property.name)} }`;
+}
+
 global.propertyValue = function (property, type) {
     switch (property['property-type']) {
         case 'data-driven':
-            return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+            if (property.overridable) {
+                return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"], ${overrides(property)})`;
+            } else {
+                return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+            }
         case 'cross-faded':
             return `new CrossFadedProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'cross-faded-data-driven':

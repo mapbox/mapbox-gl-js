@@ -421,12 +421,14 @@ export class Placement {
                         const textBoxScale = symbolInstance.textBoxScale;
 
                         let placedBox: ?{ box: Array<number>, offscreen: boolean }  = { box: [], offscreen: false };
-
-                        for (const anchor of anchors) {
+                        const placementAttempts = textAllowOverlap ? anchors.length * 2 : anchors.length;
+                        for (let i = 0; i < placementAttempts; ++i) {
+                            const anchor = anchors[i % anchors.length];
+                            const allowOverlap = (i >= anchors.length);
                             placedBox = this.attemptAnchorPlacement(
                                 anchor, collisionTextBox, width, height, symbolInstance.radialTextOffset,
                                 textBoxScale, rotateWithMap, pitchWithMap, textPixelRatio, posMatrix,
-                                collisionGroup, textAllowOverlap, symbolInstance, bucket, orientation);
+                                collisionGroup, allowOverlap, symbolInstance, bucket, orientation);
 
                             if (placedBox && placedBox.box && placedBox.box.length) {
                                 placeText = true;

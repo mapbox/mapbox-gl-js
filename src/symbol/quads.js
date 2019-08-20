@@ -36,7 +36,8 @@ export type SymbolQuad = {
         h: number
     },
     writingMode: any | void,
-    glyphOffset: [number, number]
+    glyphOffset: [number, number],
+    sectionIndex: number
 };
 
 /**
@@ -108,7 +109,7 @@ export function getIconQuads(anchor: Anchor,
     }
 
     // Icon quad is padded, so texture coordinates also need to be padded.
-    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0]}];
+    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0}];
 }
 
 /**
@@ -207,7 +208,7 @@ export function getGlyphQuads(anchor: Anchor,
             br._matMult(matrix);
         }
 
-        quads.push({tl, tr, bl, br, tex: rect, writingMode: shaping.writingMode, glyphOffset});
+        quads.push({tl, tr, bl, br, tex: rect, writingMode: shaping.writingMode, glyphOffset, sectionIndex: positionedGlyph.sectionIndex});
     }
 
     return quads;

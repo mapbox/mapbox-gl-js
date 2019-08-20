@@ -73,10 +73,9 @@ export interface Source {
 }
 
 type SourceStatics = {
-    /**
+    /*
      * An optional URL to a script which, when run by a Worker, registers a {@link WorkerSource}
      * implementation for this Source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
-     * @private
      */
     workerSourceURL?: URL;
 };
