@@ -866,7 +866,7 @@ export class Placement {
             bucket.iconCollisionCircle.collisionVertexBuffer.updateData(bucket.iconCollisionCircle.collisionVertexArray);
         }
         if (bucket.hasTextCollisionCircleData() && bucket.textCollisionCircle.collisionVertexBuffer) {
-            bucket.iconCollisionCircle.collisionVertexBuffer.updateData(bucket.iconCollisionCircle.collisionVertexArray);
+            bucket.textCollisionCircle.collisionVertexBuffer.updateData(bucket.textCollisionCircle.collisionVertexArray);
         }
 
         assert(bucket.text.opacityVertexArray.length === bucket.text.layoutVertexArray.length / 4);

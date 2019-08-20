@@ -1,15 +1,13 @@
 // @flow
 
-import {
-    symbolLayoutAttributes,
+import { symbolLayoutAttributes,
     collisionVertexAttributes,
     collisionBoxLayout,
     collisionCircleLayout,
     dynamicLayoutAttributes
 } from './symbol_attributes';
 
-import {
-    SymbolLayoutArray,
+import { SymbolLayoutArray,
     SymbolDynamicLayoutArray,
     SymbolOpacityArray,
     CollisionBoxLayoutArray,
@@ -531,15 +529,15 @@ class SymbolBucket implements Bucket {
     }
 
     addSymbols(arrays: SymbolBuffers,
-        quads: Array<SymbolQuad>,
-        sizeVertex: any,
-        lineOffset: [number, number],
-        alongLine: boolean,
-        feature: SymbolFeature,
-        writingMode: any,
-        labelAnchor: Anchor,
-        lineStartIndex: number,
-        lineLength: number) {
+               quads: Array<SymbolQuad>,
+               sizeVertex: any,
+               lineOffset: [number, number],
+               alongLine: boolean,
+               feature: SymbolFeature,
+               writingMode: any,
+               labelAnchor: Anchor,
+               lineStartIndex: number,
+               lineLength: number) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
@@ -618,8 +616,8 @@ class SymbolBucket implements Bucket {
             // placedOrientation is null initially; will be updated to horizontal(1)/vertical(2) if placed
             0,
             (false: any),
-        // The crossTileID is only filled/used on the foreground for dynamic text anchors
-        0);
+            // The crossTileID is only filled/used on the foreground for dynamic text anchors
+            0);
     }
 
     _addCollisionDebugVertex(layoutVertexArray: StructArray, collisionVertexArray: StructArray, point: Point, anchorX: number, anchorY: number, extrude: Point) {
@@ -803,7 +801,7 @@ class SymbolBucket implements Bucket {
 
         result.sort((aIndex, bIndex) => {
             return (rotatedYs[aIndex] - rotatedYs[bIndex]) ||
-                (featureIndexes[bIndex] - featureIndexes[aIndex]);
+                   (featureIndexes[bIndex] - featureIndexes[aIndex]);
         });
 
         return result;
