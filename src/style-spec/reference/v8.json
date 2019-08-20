@@ -1855,7 +1855,7 @@
       "type": "number",
       "units": "ems",
       "default": 0,
-      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which doesn't support the two-dimensional `text-offset`.",
+      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which otherwise uses the two-dimensional `text-offset`.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.54.0",
@@ -2214,7 +2214,7 @@
     },
     "text-offset": {
       "type": "array",
-      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up.",
+      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up. Note that in combination with `text-variable-anchor` only positive values are allowed and they indicate radial offsets along x- and y-axis accordingly.",
       "value": "number",
       "units": "ems",
       "length": 2,
@@ -2226,9 +2226,6 @@
         "text-field",
         {
             "!": "text-radial-offset"
-        },
-        {
-            "!": "text-variable-anchor"
         }
       ],
       "sdk-support": {
