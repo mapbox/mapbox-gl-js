@@ -1967,7 +1967,7 @@ class Map extends Camera {
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      */
-    getCanvasContainer() {
+    getCanvasContainer(): HTMLElement {
         return this._canvasContainer;
     }
 
@@ -1981,6 +1981,16 @@ class Map extends Camera {
      */
     getCanvas() {
         return this._canvas;
+    }
+
+    /**
+     * Returns the current width of the container in pixels, after accounting for applied padding.
+     *
+     * @returns {number}
+     */
+    getEffectiveWidth(): number {
+        const padding = this.getPadding();
+        return Math.max(this.getCanvasContainer().offsetWidth - padding.left - padding.right, 0);
     }
 
     _containerDimensions() {
@@ -2270,6 +2280,33 @@ class Map extends Camera {
     }
 
     /**
+     * Updates the positioning of the dom-elements in `this._controlPositions`
+     * to account for applied padding.
+     */
+    _updateControlContainers() {
+        if (!this.transform.isPaddingDirty) return;
+
+        const positions = this._controlPositions;
+        const padding = this.getPadding();
+        for (const containerName in positions) {
+            const container = positions[containerName];
+
+            const positionParams = containerName.split('-');
+            for (const positionParam of positionParams) {
+                container.style[positionParam] = `${padding[positionParam]}px`;
+            }
+        }
+
+        for(const control of this._controls){
+            if(control._updateCompact) {
+                control._updateCompact();
+            }
+        }
+
+        this.transform.markPaddingClean();
+    }
+
+    /**
      * Clean up and release all internal resources associated with this map.
      *
      * This includes DOM elements, event bindings, web workers, and WebGL resources.
@@ -2317,6 +2354,7 @@ class Map extends Camera {
                 PerformanceUtils.frame(paintStartTimestamp);
                 this._frame = null;
                 this._render();
+                this._updateControlContainers();
             });
         }
     }
