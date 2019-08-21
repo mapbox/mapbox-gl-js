@@ -63,6 +63,7 @@ class VideoSource extends ImageSource {
     }
 
     load() {
+        this._loaded = false;
         const options = this.options;
 
         this.urls = [];
@@ -71,6 +72,7 @@ class VideoSource extends ImageSource {
         }
 
         getVideo(this.urls, (err, video) => {
+            this._loaded = true;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (video) {

@@ -62,9 +62,11 @@ class RasterTileSource extends Evented implements Source {
     }
 
     load() {
+        this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, (err, tileJSON) => {
             this._tileJSONRequest = null;
+            this._loaded = true;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
@@ -81,6 +83,10 @@ class RasterTileSource extends Evented implements Source {
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
         });
+    }
+
+    loaded(): boolean {
+        return this._loaded;
     }
 
     onAdd(map: Map) {
