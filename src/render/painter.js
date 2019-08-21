@@ -274,6 +274,8 @@ class Painter {
     }
 
     stencilModeFor3D(): StencilMode {
+        this.currentStencilSource = undefined;
+
         if (this.nextStencilID + 1 > 256) {
             this.clearStencil();
         }
