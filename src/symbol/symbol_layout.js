@@ -550,10 +550,14 @@ function addSymbol(bucket: SymbolBucket,
     let numVerticalGlyphVertices = 0;
     const placedTextSymbolIndices = {};
     let key = murmur3('');
-    let radialTextOffset0 = (layer.layout.get('text-radial-offset').evaluate(feature, {}) || 0) * ONE_EM;
-    let radialTextOffset1 = Number.POSITIVE_INFINITY;
-    if (!radialTextOffset0) {
+
+    let radialTextOffset0 = 0;
+    let radialTextOffset1 = 0;
+    if (layer._unevaluatedLayout.getValue('text-radial-offset') === undefined) {
         [radialTextOffset0, radialTextOffset1] = (layer.layout.get('text-offset').evaluate(feature, {}).map(t => t * ONE_EM): any);
+    } else {
+        radialTextOffset0 = layer.layout.get('text-radial-offset').evaluate(feature, {}) * ONE_EM;
+        radialTextOffset1 = Number.POSITIVE_INFINITY;
     }
 
     if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
