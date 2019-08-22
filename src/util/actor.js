@@ -2,6 +2,7 @@
 
 import { bindAll } from './util';
 import { serialize, deserialize } from './web_worker_transfer';
+import ThrottledInvoker from './throttled_invoker';
 
 import type {Transferable} from '../types/transferable';
 import type {Cancelable} from '../types/cancelable';
@@ -26,7 +27,7 @@ class Actor {
     tasks: { number: any };
     taskQueue: Array<number>;
     cancelCallbacks: { number: Cancelable };
-    taskTimeout: ?TimeoutID;
+    invoker: ThrottledInvoker;
 
     static taskId: number;
 
@@ -37,9 +38,9 @@ class Actor {
         this.callbacks = {};
         this.tasks = {};
         this.taskQueue = [];
-        this.taskTimeout = null;
         this.cancelCallbacks = {};
         bindAll(['receive', 'process'], this);
+        this.invoker = new ThrottledInvoker(this.process);
         this.target.addEventListener('message', this.receive, false);
     }
 
@@ -108,18 +109,15 @@ class Actor {
             // is necessary because we want to keep receiving messages, and in particular,
             // <cancel> messages. Some tasks may take a while in the worker thread, so before
             // executing the next task in our queue, postMessage preempts this and <cancel>
-            // messages can be processed.
+            // messages can be processed. We're using a MessageChannel object to get throttle the
+            // process() flow to one at a time.
             this.tasks[id] = data;
             this.taskQueue.push(id);
-            if (!this.taskTimeout) {
-                this.taskTimeout = setTimeout(this.process, 0);
-            }
+            this.invoker.trigger();
         }
     }
 
     process() {
-        // Reset the timeout ID so that we know that no process call is scheduled in the future yet.
-        this.taskTimeout = null;
         if (!this.taskQueue.length) {
             return;
         }
@@ -130,7 +128,7 @@ class Actor {
         // current task. This is necessary so that processing continues even if the current task
         // doesn't execute successfully.
         if (this.taskQueue.length) {
-            this.taskTimeout = setTimeout(this.process, 0);
+            this.invoker.trigger();
         }
         if (!task) {
             // If the task ID doesn't have associated task data anymore, it was canceled.
