@@ -26,7 +26,8 @@ class Actor {
     tasks: { number: any };
     taskQueue: Array<number>;
     cancelCallbacks: { number: Cancelable };
-    taskTimeout: ?TimeoutID;
+    channel: MessageChannel;
+    triggeredProcessing: boolean;
 
     static taskId: number;
 
@@ -37,9 +38,11 @@ class Actor {
         this.callbacks = {};
         this.tasks = {};
         this.taskQueue = [];
-        this.taskTimeout = null;
         this.cancelCallbacks = {};
+        this.channel = new MessageChannel();
+        this.triggeredProcessing = false;
         bindAll(['receive', 'process'], this);
+        this.channel.port2.onmessage = this.process;
         this.target.addEventListener('message', this.receive, false);
     }
 
@@ -108,18 +111,20 @@ class Actor {
             // is necessary because we want to keep receiving messages, and in particular,
             // <cancel> messages. Some tasks may take a while in the worker thread, so before
             // executing the next task in our queue, postMessage preempts this and <cancel>
-            // messages can be processed.
+            // messages can be processed. We're using a MessageChannel object to get throttle the
+            // process() flow to one at a time.
             this.tasks[id] = data;
             this.taskQueue.push(id);
-            if (!this.taskTimeout) {
-                this.taskTimeout = setTimeout(this.process, 0);
+            if (!this.triggeredProcessing) {
+                this.triggeredProcessing = true;
+                this.channel.port1.postMessage(true);
             }
         }
     }
 
     process() {
-        // Reset the timeout ID so that we know that no process call is scheduled in the future yet.
-        this.taskTimeout = null;
+        // Reset the flag so that we know that no process call is scheduled for the future yet.
+        this.triggeredProcessing = false;
         if (!this.taskQueue.length) {
             return;
         }
@@ -130,7 +135,8 @@ class Actor {
         // current task. This is necessary so that processing continues even if the current task
         // doesn't execute successfully.
         if (this.taskQueue.length) {
-            this.taskTimeout = setTimeout(this.process, 0);
+            this.triggeredProcessing = true;
+            this.channel.port1.postMessage(true);
         }
         if (!task) {
             // If the task ID doesn't have associated task data anymore, it was canceled.
