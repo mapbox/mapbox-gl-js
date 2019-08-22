@@ -2,6 +2,7 @@
 
 import { bindAll } from './util';
 import { serialize, deserialize } from './web_worker_transfer';
+import ThrottledInvoker from './throttled_invoker';
 
 import type {Transferable} from '../types/transferable';
 import type {Cancelable} from '../types/cancelable';
@@ -26,8 +27,7 @@ class Actor {
     tasks: { number: any };
     taskQueue: Array<number>;
     cancelCallbacks: { number: Cancelable };
-    channel: MessageChannel;
-    triggeredProcessing: boolean;
+    invoker: ThrottledInvoker;
 
     static taskId: number;
 
@@ -39,10 +39,8 @@ class Actor {
         this.tasks = {};
         this.taskQueue = [];
         this.cancelCallbacks = {};
-        this.channel = new MessageChannel();
-        this.triggeredProcessing = false;
         bindAll(['receive', 'process'], this);
-        this.channel.port2.onmessage = this.process;
+        this.invoker = new ThrottledInvoker(this.process);
         this.target.addEventListener('message', this.receive, false);
     }
 
@@ -115,16 +113,11 @@ class Actor {
             // process() flow to one at a time.
             this.tasks[id] = data;
             this.taskQueue.push(id);
-            if (!this.triggeredProcessing) {
-                this.triggeredProcessing = true;
-                this.channel.port1.postMessage(true);
-            }
+            this.invoker.trigger();
         }
     }
 
     process() {
-        // Reset the flag so that we know that no process call is scheduled for the future yet.
-        this.triggeredProcessing = false;
         if (!this.taskQueue.length) {
             return;
         }
@@ -135,8 +128,7 @@ class Actor {
         // current task. This is necessary so that processing continues even if the current task
         // doesn't execute successfully.
         if (this.taskQueue.length) {
-            this.triggeredProcessing = true;
-            this.channel.port1.postMessage(true);
+            this.invoker.trigger();
         }
         if (!task) {
             // If the task ID doesn't have associated task data anymore, it was canceled.
