@@ -17,13 +17,14 @@ import type Color from '../../style-spec/util/color';
 
 import type Formatted from '../../style-spec/expression/types/formatted';
 
+import type Image from '../../style-spec/expression/types/image';
 
 export type PaintProps = {|
     "fill-extrusion-opacity": DataConstantProperty<number>,
     "fill-extrusion-color": DataDrivenProperty<Color>,
     "fill-extrusion-translate": DataConstantProperty<[number, number]>,
     "fill-extrusion-translate-anchor": DataConstantProperty<"map" | "viewport">,
-    "fill-extrusion-pattern": CrossFadedDataDrivenProperty<string>,
+    "fill-extrusion-pattern": CrossFadedDataDrivenProperty<Image>,
     "fill-extrusion-height": DataDrivenProperty<number>,
     "fill-extrusion-base": DataDrivenProperty<number>,
     "fill-extrusion-vertical-gradient": DataConstantProperty<boolean>,

@@ -17,6 +17,8 @@ import type Color from '../../style-spec/util/color';
 
 import type Formatted from '../../style-spec/expression/types/formatted';
 
+import type Image from '../../style-spec/expression/types/image';
+
 import {
     ColorType
 } from '../../style-spec/expression/types';
@@ -34,7 +36,7 @@ export type LayoutProps = {|
     "icon-size": DataDrivenProperty<number>,
     "icon-text-fit": DataConstantProperty<"none" | "width" | "height" | "both">,
     "icon-text-fit-padding": DataConstantProperty<[number, number, number, number]>,
-    "icon-image": DataDrivenProperty<string>,
+    "icon-image": DataDrivenProperty<Image>,
     "icon-rotate": DataDrivenProperty<number>,
     "icon-padding": DataConstantProperty<number>,
     "icon-keep-upright": DataConstantProperty<boolean>,
