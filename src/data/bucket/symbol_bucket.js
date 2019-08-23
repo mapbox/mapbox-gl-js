@@ -36,6 +36,7 @@ import {getSizeData} from '../../symbol/symbol_size';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
+import Image from '../../style-spec/expression/types/image';
 
 import type {
     Bucket,
@@ -76,7 +77,7 @@ export type CollisionArrays = {
 export type SymbolFeature = {|
     sortKey: number | void,
     text: Formatted | void,
-    icon: string | void,
+    icon: Image | void,
     index: number,
     sourceLayerIndex: number,
     geometry: Array<Array<Point>>,
@@ -409,7 +410,14 @@ class SymbolBucket implements Bucket {
 
             let icon;
             if (hasIcon) {
-                icon = layer.getValueAndResolveTokens('icon-image', feature);
+                // Expression evaluation will automatically coerce to Image
+                // but plain string token evaluation skips that pathway so do the
+                // conversion here.
+                const resolvedTokens = layer.getValueAndResolveTokens('icon-image', feature);
+                icon = resolvedTokens instanceof Image ?
+                    resolvedTokens :
+                    Image.fromString(resolvedTokens);
+                console.log('icon', icon);
             }
 
             if (!text && !icon) {

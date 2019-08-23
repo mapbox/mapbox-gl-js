@@ -7,6 +7,7 @@ import {Color, toString as valueToString, validateRGBA} from '../values';
 import RuntimeError from '../runtime_error';
 import Formatted from '../types/formatted';
 import FormatExpression from '../definitions/format';
+import Image from '../types/image';
 
 import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -101,6 +102,7 @@ class Coercion implements Expression {
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'image') {
             console.log('image type!', this.args);
+            return Image.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else {
             return valueToString(this.args[0].evaluate(ctx));
         }
