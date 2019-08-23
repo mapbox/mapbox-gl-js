@@ -26,6 +26,7 @@ class KeyboardHandler {
     _map: Map;
     _el: HTMLElement;
     _enabled: boolean;
+    _keys: Object;
 
     /**
      * @private
@@ -33,9 +34,10 @@ class KeyboardHandler {
     constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();
+        this._keys = {};
 
         bindAll([
-            '_onKeyDown'
+            '_onKeyDownUp'
         ], this);
     }
 
@@ -56,7 +58,8 @@ class KeyboardHandler {
      */
     enable() {
         if (this.isEnabled()) return;
-        this._el.addEventListener('keydown', this._onKeyDown, false);
+        this._el.addEventListener('keydown', this._onKeyDownUp, false);
+        this._el.addEventListener('keyup', this._onKeyDownUp, false);
         this._enabled = true;
     }
 
@@ -68,11 +71,12 @@ class KeyboardHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
-        this._el.removeEventListener('keydown', this._onKeyDown);
+        this._el.removeEventListener('keydown', this._onKeyDownUp);
+        this._el.removeEventListener('keyup', this._onKeyDownUp);
         this._enabled = false;
     }
 
-    _onKeyDown(e: KeyboardEvent) {
+    _onKeyDownUp(e: KeyboardEvent) {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
 
         let zoomDir = 0;
@@ -98,42 +102,51 @@ class KeyboardHandler {
         case 37:
             if (e.shiftKey) {
                 bearingDir = -1;
+                delete this._keys.left
             } else {
                 e.preventDefault();
-                xDir = -1;
+                this._keys['left'] = (e.type === 'keydown');
             }
             break;
 
         case 39:
             if (e.shiftKey) {
                 bearingDir = 1;
+                delete this._keys.right
             } else {
                 e.preventDefault();
-                xDir = 1;
+                this._keys['right'] = (e.type === 'keydown');
             }
             break;
 
         case 38:
             if (e.shiftKey) {
                 pitchDir = 1;
+                delete this._keys.up
             } else {
                 e.preventDefault();
-                yDir = -1;
+                this._keys['up'] = (e.type === 'keydown');
             }
             break;
 
         case 40:
             if (e.shiftKey) {
                 pitchDir = -1;
+                delete this._keys.down
             } else {
-                yDir = 1;
                 e.preventDefault();
+                this._keys['down'] = (e.type === 'keydown');
             }
             break;
 
         default:
             return;
         }
+
+        if (this._keys.left) xDir = -1;
+        if (this._keys.right) xDir = 1;
+        if (this._keys.up) yDir = -1;
+        if (this._keys.down) yDir = 1;
 
         const map = this._map;
         const zoom = map.getZoom();
