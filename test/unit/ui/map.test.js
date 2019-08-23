@@ -259,6 +259,7 @@ test('Map', (t) => {
         });
 
         t.test('style transform does not override map transform modified via options using 0/0/0', (t) => {
+            t.stub(Map.prototype, '_detectMissingCSS');
             const map = new Map({container: window.document.createElement('div'), zoom: 0, center: [0, 0]});
             t.notOk(map.transform.unmodified, 'map transform is modified by options');
             map.setStyle(createStyle());
