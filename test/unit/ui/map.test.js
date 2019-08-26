@@ -183,6 +183,23 @@ test('Map', (t) => {
             });
         });
 
+        t.test('fires load event', (t) => {
+            const map = createMap(t);
+
+            const spy1 = t.spy(() => {
+                const spy2 = t.spy(() => {
+                    t.ok(spy1.calledOnce);
+                    t.ok(spy2.calledOnce);
+                    t.end();
+                });
+
+                map.once('load', spy2);
+                map.setStyle(createStyle());
+            });
+
+            map.once('load', spy1);
+        });
+
         t.test('fires *data and *dataloading events', (t) => {
             createMap(t, {}, (error, map) => {
                 t.error(error);
