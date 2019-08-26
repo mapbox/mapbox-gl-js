@@ -64,6 +64,7 @@ class GlyphManager {
 
             glyph = this._tinySDF(entry, stack, id);
             if (glyph) {
+                entry.glyphs[id] = glyph;
                 callback(null, {stack, id, glyph});
                 return;
             }
@@ -81,7 +82,9 @@ class GlyphManager {
                     (err, response: ?{[number]: StyleGlyph | null}) => {
                         if (response) {
                             for (const id in response) {
-                                entry.glyphs[+id] = response[+id];
+                                if (!this._doesCharSupportLocalGlyph(+id)) {
+                                    entry.glyphs[+id] = response[+id];
+                                }
                             }
                         }
                         for (const cb of requests) {
@@ -118,17 +121,23 @@ class GlyphManager {
         });
     }
 
+    _doesCharSupportLocalGlyph(id: number): boolean {
+        /* eslint-disable new-cap */
+        return !!this.localIdeographFontFamily &&
+            (isChar['CJK Unified Ideographs'](id) ||
+                isChar['Hangul Syllables'](id) ||
+                isChar['Hiragana'](id) ||
+                isChar['Katakana'](id));
+        /* eslint-enable new-cap */
+    }
+
     _tinySDF(entry: Entry, stack: string, id: number): ?StyleGlyph {
         const family = this.localIdeographFontFamily;
         if (!family) {
             return;
         }
-        /* eslint-disable new-cap */
-        if (!isChar['CJK Unified Ideographs'](id) &&
-            !isChar['Hangul Syllables'](id) &&
-            !isChar['Hiragana'](id) &&
-            !isChar['Katakana'](id)
-        ) { /* eslint-enable new-cap */
+
+        if (!this._doesCharSupportLocalGlyph(id)) {
             return;
         }
 

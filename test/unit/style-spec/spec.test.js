@@ -61,7 +61,8 @@ function validSchema(k, t, obj, ref, version, kind) {
         'minimum',
         'period',
         'requires',
-        'sdk-support'
+        'sdk-support',
+        'overridable'
     ];
 
     // Schema object.

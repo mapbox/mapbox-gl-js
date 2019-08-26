@@ -64,8 +64,9 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                     encoding: this.encoding
                 };
 
-                if (!tile.workerID || tile.state === 'expired') {
-                    tile.workerID = this.dispatcher.send('loadDEMTile', params, done.bind(this));
+                if (!tile.actor || tile.state === 'expired') {
+                    tile.actor = this.dispatcher.getActor();
+                    tile.actor.send('loadDEMTile', params, done.bind(this));
                 }
             }
         }
@@ -125,7 +126,9 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         delete tile.neighboringTiles;
 
         tile.state = 'unloaded';
-        this.dispatcher.send('removeDEMTile', { uid: tile.uid, source: this.id }, undefined, tile.workerID);
+        if (tile.actor) {
+            tile.actor.send('removeDEMTile', { uid: tile.uid, source: this.id });
+        }
     }
 
 }

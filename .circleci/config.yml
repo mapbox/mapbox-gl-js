@@ -225,3 +225,10 @@ jobs:
             upload mapbox-gl.js.map application/octet-stream
             upload mapbox-gl-dev.js application/javascript
             upload mapbox-gl.css    text/css
+
+            upload mapbox-gl-unminified.js     application/javascript
+            upload mapbox-gl-unminified.js.map application/octet-stream
+            upload mapbox-gl-csp.js            application/javascript
+            upload mapbox-gl-csp.js.map        application/octet-stream
+            upload mapbox-gl-csp-worker.js     application/javascript
+            upload mapbox-gl-csp-worker.js.map application/octet-stream

@@ -24,7 +24,11 @@ test('QueryFeatures#source', (t) => {
             type: 'geojson',
             data: { type: 'FeatureCollection', features: [] }
         }, {
-            send (type, params, callback) { return callback(); }
+            getActor() {
+                return {
+                    send(type, params, callback) { return callback(); }
+                };
+            }
         });
         const result = querySourceFeatures(sourceCache, {});
         t.deepEqual(result, []);

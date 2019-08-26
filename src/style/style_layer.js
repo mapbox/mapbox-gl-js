@@ -17,7 +17,7 @@ import type { FeatureState } from '../style-spec/expression';
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter} from '../style-spec/feature_filter';
-import type {TransitionParameters} from './properties';
+import type {TransitionParameters, PropertyValue} from './properties';
 import type EvaluationParameters, {CrossfadeParameters} from './evaluation_parameters';
 import type Transform from '../geo/transform';
 import type {
@@ -154,21 +154,29 @@ class StyleLayer extends Evented {
             const transitionable = this._transitionablePaint._values[name];
             const isCrossFadedProperty = transitionable.property.specification["property-type"] === 'cross-faded-data-driven';
             const wasDataDriven = transitionable.value.isDataDriven();
+            const oldValue = transitionable.value;
 
             this._transitionablePaint.setValue(name, value);
             this._handleSpecialPaintPropertyUpdate(name);
 
-            const isDataDriven = this._transitionablePaint._values[name].value.isDataDriven();
+            const newValue = this._transitionablePaint._values[name].value;
+            const isDataDriven = newValue.isDataDriven();
 
             // if a cross-faded value is changed, we need to make sure the new icons get added to each tile's iconAtlas
             // so a call to _updateLayer is necessary, and we return true from this function so it gets called in
             // Style#setPaintProperty
-            return isDataDriven || wasDataDriven || isCrossFadedProperty;
+            return isDataDriven || wasDataDriven || isCrossFadedProperty || this._handleOverridablePaintPropertyUpdate(name, oldValue, newValue);
         }
     }
 
     _handleSpecialPaintPropertyUpdate(_: string) {
         // No-op; can be overridden by derived classes.
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
+        // No-op; can be overridden by derived classes.
+        return false;
     }
 
     isHidden(zoom: number) {

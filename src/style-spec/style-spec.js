@@ -39,7 +39,8 @@ export type StylePropertySpecification = {
     'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     transition: boolean,
-    default?: string
+    default?: string,
+    overridable: boolean
 } | {
     type: 'array',
     value: 'number',

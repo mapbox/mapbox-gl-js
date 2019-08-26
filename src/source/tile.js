@@ -22,6 +22,7 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
 import type {WorkerTileResult} from './worker_source';
+import type Actor from '../util/actor';
 import type DEMData from '../data/dem_data';
 import type {AlphaImage} from '../util/image';
 import type ImageAtlas from '../render/image_atlas';
@@ -73,7 +74,7 @@ class Tile {
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
     placementSource: any;
-    workerID: number | void;
+    actor: ?Actor;
     vtLayers: {[string]: VectorTileLayer};
     mask: Mask;
 

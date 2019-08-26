@@ -5,8 +5,20 @@ import window from '../../../src/util/window';
 import { Evented } from '../../../src/util/evented';
 import { RequestManager } from '../../../src/util/mapbox';
 
+const wrapDispatcher = (dispatcher) => {
+    return {
+        getActor() {
+            return dispatcher;
+        }
+    };
+};
+
+const mockDispatcher = wrapDispatcher({
+    send () {}
+});
+
 function createSource(options, transformCallback) {
-    const source = new VectorTileSource('id', options, { send() {} }, options.eventedParent);
+    const source = new VectorTileSource('id', options, mockDispatcher, options.eventedParent);
     source.onAdd({
         transform: { showCollisionBoxes: false },
         _getMapId: () => 1,
@@ -145,11 +157,13 @@ test('VectorTileSource', (t) => {
                 scheme
             });
 
-            source.dispatcher.send = function(type, params) {
-                t.equal(type, 'loadTile');
-                t.equal(expectedURL, params.request.url);
-                t.end();
-            };
+            source.dispatcher = wrapDispatcher({
+                send(type, params) {
+                    t.equal(type, 'loadTile');
+                    t.equal(expectedURL, params.request.url);
+                    t.end();
+                }
+            });
 
             source.on('data', (e) => {
                 if (e.sourceDataType === 'metadata') source.loadTile({
@@ -191,11 +205,13 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
         const events = [];
-        source.dispatcher.send = function(type, params, cb) {
-            events.push(type);
-            if (cb) setTimeout(cb, 0);
-            return 1;
-        };
+        source.dispatcher = wrapDispatcher({
+            send(type, params, cb) {
+                events.push(type);
+                if (cb) setTimeout(cb, 0);
+                return 1;
+            }
+        });
 
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
@@ -277,16 +293,18 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             collectResourceTiming: true
         });
-        source.dispatcher.send = function(type, params, cb) {
-            t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
-            setTimeout(cb, 0);
-            t.end();
+        source.dispatcher = wrapDispatcher({
+            send(type, params, cb) {
+                t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
+                setTimeout(cb, 0);
+                t.end();
 
-            // do nothing for cache size check dispatch
-            source.dispatcher.send = function() {};
+                // do nothing for cache size check dispatch
+                source.dispatcher = mockDispatcher;
 
-            return 1;
-        };
+                return 1;
+            }
+        });
 
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
