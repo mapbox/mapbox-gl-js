@@ -1,4 +1,4 @@
-// @flow
+/* eslint-disable flowtype/require-valid-file-annotation */
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import {plugins} from './build/rollup_plugins';
