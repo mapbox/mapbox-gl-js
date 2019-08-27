@@ -68,7 +68,13 @@ module.exports = function (directory) {
     const outputStr = JSON.stringify(result, null, 4);
     const outputPath = path.join('test/integration/dist', OUTPUT_FILE);
 
-    fs.writeFileSync(outputPath, outputStr, { encoding: 'utf8'});
+    return new Promise((resolve, reject) => {
+        fs.writeFile(outputPath, outputStr, { encoding: 'utf8'}, (err) => {
+            if (err) { reject(err); }
+
+            resolve();
+        });
+    });
 };
 
 function parseJsonFromFile(filePath) {

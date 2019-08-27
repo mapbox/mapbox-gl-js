@@ -1,5 +1,4 @@
-import {plugins} from './build/rollup_plugins';
-
+import {plugins} from '../../build/rollup_plugins';
 
 export default {
     input: 'test/integration/lib/query-browser.js',
@@ -11,5 +10,5 @@ export default {
         file: 'test/integration/dist/query-test.js'
     },
     plugins: plugins(false, false),
-    external: [ 'test', 'mapboxgl' ]
-}
+    external: [ 'tape', 'mapboxgl' ]
+};

@@ -2,6 +2,7 @@
 /* eslint-disable flowtype/require-valid-file-annotation */
 const generateFixtureJson = require('./test/integration/lib/generate-fixture-json');
 const createServer = require('./test/integration/lib/server');
+const buildTape = require('./build/test/build-tape');
 const runAll = require('npm-run-all');
 
 let beforeHookInvoked = false;
@@ -15,7 +16,7 @@ module.exports =  {
     ],
     "serve_files": [
         "test/integration/dist/tape.js",
-        "test/integration/dist/mapbox-gl-test.js",
+        "dist/mapbox-gl-dev.js",
         "test/integration/dist/query-test.js"
     ],
     "launch_in_dev": [ "Chrome" ],
@@ -48,12 +49,17 @@ module.exports =  {
             server = createServer();
             //1. Compile fixture data into a json file, so it can be bundled
             generateFixtureJson('test/integration/query-tests', {});
-            //2. Build test artifacts in parallel
-            runAll(['build-query-suite', 'build-tape', 'build-test'], {parallel: true}).then(() => {
+            //2. Build tape
+            const tapePromise = buildTape();
+            //3. Build test artifacts in parallel
+            const rollupPromise = runAll(['build-query-suite', 'build-dev'], {parallel: true});
+
+            Promise.all([tapePromise, rollupPromise]).then(() => {
                 server.listen(callback);
             }).catch((e) => {
                 callback(e);
             });
+
             beforeHookInvoked = true;
         }
     },

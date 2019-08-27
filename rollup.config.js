@@ -6,23 +6,9 @@ import banner from './build/banner';
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
-const test = BUILD === 'test';
-
-const outputFile = (function() {
-    if(production) {
-        if (minified){
-            return 'dist/mapbox-gl.js';
-        }else{
-            return 'dist/mapbox-gl-unminified.js';
-        }
-    }
-
-    if(test) {
-        return 'test/integration/dist/mapbox-gl-test.js';
-    }
-
-    return 'dist/mapbox-gl-dev.js';
-})();
+const outputFile =
+    !production ? 'dist/mapbox-gl-dev.js' :
+    minified ? 'dist/mapbox-gl.js' : 'dist/mapbox-gl-unminified.js';
 
 export default [{
     // First, use code splitting to bundle GL JS into three "chunks":
