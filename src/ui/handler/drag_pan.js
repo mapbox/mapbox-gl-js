@@ -129,13 +129,8 @@ class DragPanHandler {
         if (!this.isEnabled()) return;
         if (e.touches && e.touches.length > 1) { // multi-finger touch
             // Listen for the multi-touch end in case it's reduced to a single touch
+            DOM.removeEventListener(window.document, 'touchend', this._onTouchEnd);
             DOM.addEventListener(window.document, 'touchend', this._onMultiTouchEnd);
-
-            // If we're already dragging with one finger and the user adds another finger(s),
-            // let TouchZoomRotateHandler handler take over if it's enabled by stopping the drag
-            if ((this._state === 'pending' || this._state === 'active') && this._map.touchZoomRotate.isEnabled()) {
-                this._onMultiTouchStart(e);
-            }
             return;
         }
 
@@ -173,14 +168,6 @@ class DragPanHandler {
         this._drainInertiaBuffer();
         this._inertia.push([browser.now(), this._lastPos]);
 
-        if (this._state === 'pending') {
-            // we treat the first move event (rather than the mousedown event)
-            // as the start of the drag
-            this._state = 'active';
-            this._fireEvent('dragstart', e);
-            this._fireEvent('movestart', e);
-        }
-
         if (!this._frameId) {
             this._frameId = this._map._requestRenderFrame(this._onDragFrame);
         }
@@ -193,8 +180,21 @@ class DragPanHandler {
     _onDragFrame() {
         this._frameId = null;
 
+        if (this._map.touchZoomRotate.isActive()) {
+            this._abort();
+            return;
+        }
+
         const e = this._lastMoveEvent;
         if (!e) return;
+
+        if (this._state === 'pending') {
+            // we treat the first move event (rather than the mousedown event)
+            // as the start of the drag
+            this._state = 'active';
+            this._fireEvent('dragstart', e);
+            this._fireEvent('movestart', e);
+        }
         const tr = this._map.transform;
         tr.setLocationAtPoint(tr.pointLocation(this._startPos), this._lastPos);
         this._fireEvent('drag', e);
@@ -249,7 +249,11 @@ class DragPanHandler {
 
         DOM.removeEventListener(window.document, 'touchend', this._onMultiTouchEnd);
 
-        if (!e.touches || e.touches.length === 0) return; // all fingers were removed at once; nothing left to do
+        // all fingers were removed at once; nothing left to do
+        if (!e.touches || e.touches.length === 0) {
+            this._onTouchEnd(e);
+            return;
+        }
 
         // Back to single-touch (e.touches.length === 1); treat this like a touchstart & activate drag
 
