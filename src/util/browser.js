@@ -36,7 +36,7 @@ const exported = {
         return { cancel: () => cancel(frame) };
     },
 
-    getImageData(img: CanvasImageSource): ImageData {
+    getImageData(img: CanvasImageSource, padding?: number = 0): ImageData {
         const canvas = window.document.createElement('canvas');
         const context = canvas.getContext('2d');
         if (!context) {
@@ -45,7 +45,7 @@ const exported = {
         canvas.width = img.width;
         canvas.height = img.height;
         context.drawImage(img, 0, 0, img.width, img.height);
-        return context.getImageData(0, 0, img.width, img.height);
+        return context.getImageData(-padding, -padding, img.width + 2 * padding, img.height + 2 * padding);
     },
 
     resolveURL(path: string) {
