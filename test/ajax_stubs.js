@@ -94,8 +94,15 @@ export const getImage = function({ url }, callback) {
     });
 };
 
-browser.getImageData = function({width, height, data}) {
-    return {width, height, data: new Uint8Array(data)};
+browser.getImageData = function({width, height, data}, padding = 0) {
+    const source = new Uint8Array(data);
+    const dest = new Uint8Array((2 * padding + width) * (2 * padding + height) * 4);
+
+    const offset = (2 * padding + width) * padding + padding;
+    for (let i = 0; i < height; i++) {
+        dest.set(source.slice(i * width * 4, (i + 1) * width * 4), 4 * (offset + (width + 2 * padding) * i));
+    }
+    return {width: width + 2 * padding, height: height + 2 * padding, data: dest};
 };
 
 // Hack: since node doesn't have any good video codec modules, just grab a png with
