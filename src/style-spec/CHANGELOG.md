@@ -1,3 +1,9 @@
+## 13.8.0
+
+- Introduce `text-writing-mode` symbol layer property to allow placing point labels vertically. [#8399](https://github.com/mapbox/mapbox-gl-js/pull/8399)
+- Allow `text-color` to be used in formatted expressions to be able to draw different parts of a label in different colors. [#8068](https://github.com/mapbox/mapbox-gl-js/pull/8068)
+- Improve conversion of legacy filters with duplicate values. [#8542](https://github.com/mapbox/mapbox-gl-js/pull/8542)
+
 ## 13.7.2
 
 ### 🐛 Bug fixes
@@ -5,7 +11,7 @@
 
 ### ✨ Features and improvements
 * Add SDK support spec section for text-radial-offset  ([#8401](https://github.com/mapbox/mapbox-gl-js/pull/8401))
-* Add *-sort-key layout property for circle, fill, line ([#8467](https://github.com/mapbox/mapbox-gl-js/pull/8467))
+* Add `*-sort-key` layout property for circle, fill, line ([#8467](https://github.com/mapbox/mapbox-gl-js/pull/8467))
 * Expose convertFilter API in the style specification ([#8493](https://github.com/mapbox/mapbox-gl-js/pull/8493))
 
 ## 13.7.1
