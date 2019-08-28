@@ -79,7 +79,10 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     }
 
     if (sourceCache.map.showCollisionBoxes) {
-        drawCollisionDebug(painter, sourceCache, layer, coords);
+        drawCollisionDebug(painter, sourceCache, layer, coords, layer.paint.get('text-translate'),
+            layer.paint.get('text-translate-anchor'), true);
+        drawCollisionDebug(painter, sourceCache, layer, coords, layer.paint.get('icon-translate'),
+            layer.paint.get('icon-translate-anchor'), false);
     }
 }
 

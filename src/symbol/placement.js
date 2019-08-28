@@ -696,8 +696,10 @@ export class Placement {
     updateBucketOpacities(bucket: SymbolBucket, seenCrossTileIDs: { [string | number]: boolean }, collisionBoxArray: ?CollisionBoxArray) {
         if (bucket.hasTextData()) bucket.text.opacityVertexArray.clear();
         if (bucket.hasIconData()) bucket.icon.opacityVertexArray.clear();
-        if (bucket.hasCollisionBoxData()) bucket.collisionBox.collisionVertexArray.clear();
-        if (bucket.hasCollisionCircleData()) bucket.collisionCircle.collisionVertexArray.clear();
+        if (bucket.hasIconCollisionBoxData()) bucket.iconCollisionBox.collisionVertexArray.clear();
+        if (bucket.hasTextCollisionBoxData()) bucket.textCollisionBox.collisionVertexArray.clear();
+        if (bucket.hasIconCollisionCircleData()) bucket.iconCollisionCircle.collisionVertexArray.clear();
+        if (bucket.hasTextCollisionCircleData()) bucket.textCollisionCircle.collisionVertexArray.clear();
 
         const layout = bucket.layers[0].layout;
         const duplicateOpacityState = new JointOpacityState(null, 0, false, false, true);
@@ -715,7 +717,8 @@ export class Placement {
                 iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || layout.get('text-optional')),
                 true);
 
-        if (!bucket.collisionArrays && collisionBoxArray && (bucket.hasCollisionBoxData() || bucket.hasCollisionCircleData())) {
+        if (!bucket.collisionArrays && collisionBoxArray && ((bucket.hasIconCollisionBoxData() || bucket.hasIconCollisionCircleData() ||
+            bucket.hasTextCollisionBoxData() || bucket.hasTextCollisionCircleData()))) {
             bucket.deserializeCollisionBoxes(collisionBoxArray);
         }
 
@@ -794,7 +797,8 @@ export class Placement {
                     (opacityState.icon.isHidden(): any);
             }
 
-            if (bucket.hasCollisionBoxData() || bucket.hasCollisionCircleData()) {
+            if (bucket.hasIconCollisionBoxData() || bucket.hasIconCollisionCircleData() ||
+                bucket.hasTextCollisionBoxData() || bucket.hasTextCollisionCircleData()) {
                 const collisionArrays = bucket.collisionArrays[s];
                 if (collisionArrays) {
                     if (collisionArrays.textBox) {
@@ -823,18 +827,18 @@ export class Placement {
                             }
                         }
 
-                        updateCollisionVertices(bucket.collisionBox.collisionVertexArray, opacityState.text.placed, !used, shift.x, shift.y);
+                        updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used, shift.x, shift.y);
                     }
 
                     if (collisionArrays.iconBox) {
-                        updateCollisionVertices(bucket.collisionBox.collisionVertexArray, opacityState.icon.placed, false);
+                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, false);
                     }
 
                     const textCircles = collisionArrays.textCircles;
-                    if (textCircles && bucket.hasCollisionCircleData()) {
+                    if (textCircles && bucket.hasTextCollisionCircleData()) {
                         for (let k = 0; k < textCircles.length; k += 5) {
                             const notUsed = isDuplicate || textCircles[k + 4] === 0;
-                            updateCollisionVertices(bucket.collisionCircle.collisionVertexArray, opacityState.text.placed, notUsed);
+                            updateCollisionVertices(bucket.textCollisionCircle.collisionVertexArray, opacityState.text.placed, notUsed);
                         }
                     }
                 }
@@ -852,11 +856,17 @@ export class Placement {
         if (bucket.hasIconData() && bucket.icon.opacityVertexBuffer) {
             bucket.icon.opacityVertexBuffer.updateData(bucket.icon.opacityVertexArray);
         }
-        if (bucket.hasCollisionBoxData() && bucket.collisionBox.collisionVertexBuffer) {
-            bucket.collisionBox.collisionVertexBuffer.updateData(bucket.collisionBox.collisionVertexArray);
+        if (bucket.hasIconCollisionBoxData() && bucket.iconCollisionBox.collisionVertexBuffer) {
+            bucket.iconCollisionBox.collisionVertexBuffer.updateData(bucket.iconCollisionBox.collisionVertexArray);
         }
-        if (bucket.hasCollisionCircleData() && bucket.collisionCircle.collisionVertexBuffer) {
-            bucket.collisionCircle.collisionVertexBuffer.updateData(bucket.collisionCircle.collisionVertexArray);
+        if (bucket.hasTextCollisionBoxData() && bucket.textCollisionBox.collisionVertexBuffer) {
+            bucket.textCollisionBox.collisionVertexBuffer.updateData(bucket.textCollisionBox.collisionVertexArray);
+        }
+        if (bucket.hasIconCollisionCircleData() && bucket.iconCollisionCircle.collisionVertexBuffer) {
+            bucket.iconCollisionCircle.collisionVertexBuffer.updateData(bucket.iconCollisionCircle.collisionVertexArray);
+        }
+        if (bucket.hasTextCollisionCircleData() && bucket.textCollisionCircle.collisionVertexBuffer) {
+            bucket.textCollisionCircle.collisionVertexBuffer.updateData(bucket.textCollisionCircle.collisionVertexArray);
         }
 
         assert(bucket.text.opacityVertexArray.length === bucket.text.layoutVertexArray.length / 4);
