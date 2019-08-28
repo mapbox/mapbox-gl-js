@@ -31,6 +31,7 @@ class DragPanHandler {
     _inertia: Array<[number, Point]>;
     _frameId: ?TaskID;
     _clickTolerance: number;
+    _shouldStart: ?boolean;
 
     /**
      * @private
@@ -166,6 +167,11 @@ class DragPanHandler {
         this._drainInertiaBuffer();
         this._inertia.push([browser.now(), this._lastPos]);
 
+        if (this._state === 'pending') {
+          this._state = 'active';
+          this._shouldStart = true;
+        }
+
         if (!this._frameId) {
             this._frameId = this._map._requestRenderFrame(this._onDragFrame);
         }
@@ -186,12 +192,12 @@ class DragPanHandler {
         const e = this._lastMoveEvent;
         if (!e) return;
 
-        if (this._state === 'pending') {
-            // we treat the first move event (rather than the mousedown event)
-            // as the start of the drag
-            this._state = 'active';
-            this._fireEvent('dragstart', e);
-            this._fireEvent('movestart', e);
+        if (this._shouldStart) {
+          // we treat the first drag frame (rather than the mousedown event)
+          // as the start of the drag
+          this._fireEvent('dragstart', e);
+          this._fireEvent('movestart', e);
+          this._shouldStart = false;
         }
         const tr = this._map.transform;
         tr.setLocationAtPoint(tr.pointLocation(this._startPos), this._lastPos);
