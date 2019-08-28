@@ -1,13 +1,13 @@
 // @flow
 
-import { clamp } from '../util/util';
+import {clamp} from '../util/util';
 
 import ImageSource from '../source/image_source';
 import browser from '../util/browser';
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
-import { rasterUniformValues } from './program/raster_program';
+import {rasterUniformValues} from './program/raster_program';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';

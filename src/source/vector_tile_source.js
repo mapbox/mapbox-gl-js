@@ -1,14 +1,14 @@
 // @flow
 
-import { Event, ErrorEvent, Evented } from '../util/evented';
+import {Event, ErrorEvent, Evented} from '../util/evented';
 
-import { extend, pick } from '../util/util';
+import {extend, pick} from '../util/util';
 import loadTileJSON from './load_tilejson';
-import { postTurnstileEvent, postMapLoadEvent } from '../util/mapbox';
+import {postTurnstileEvent, postMapLoadEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
-import { ResourceType } from '../util/ajax';
+import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
-import { cacheEntryPossiblyAdded } from '../util/tile_request_cache';
+import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -55,7 +55,7 @@ class VectorTileSource extends Evented implements Source {
         this._loaded = false;
 
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
-        this._options = extend({ type: 'vector' }, options);
+        this._options = extend({type: 'vector'}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
 
@@ -171,14 +171,14 @@ class VectorTileSource extends Evented implements Source {
             delete tile.request;
         }
         if (tile.actor) {
-            tile.actor.send('abortTile', { uid: tile.uid, type: this.type, source: this.id }, undefined);
+            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id}, undefined);
         }
     }
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
         if (tile.actor) {
-            tile.actor.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, undefined);
+            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id}, undefined);
         }
     }
 

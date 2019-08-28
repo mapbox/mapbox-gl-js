@@ -1,10 +1,10 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import Tile from '../../../src/source/tile';
-import { OverscaledTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 import GeoJSONSource from '../../../src/source/geojson_source';
 import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';
-import { extend } from '../../../src/util/util';
+import {extend} from '../../../src/util/util';
 
 const wrapDispatcher = (dispatcher) => {
     return {
@@ -55,7 +55,7 @@ const hawkHill = {
 test('GeoJSONSource#setData', (t) => {
     function createSource(opts) {
         opts = opts || {};
-        opts = extend(opts, { data: {} });
+        opts = extend(opts, {data: {}});
         return new GeoJSONSource('id', opts, wrapDispatcher({
             send (type, data, callback) {
                 if (callback) {
@@ -87,10 +87,10 @@ test('GeoJSONSource#setData', (t) => {
     });
 
     t.test('respects collectResourceTiming parameter on source', (t) => {
-        const source = createSource({ collectResourceTiming: true });
+        const source = createSource({collectResourceTiming: true});
         source.map = {
             _requestManager: {
-                transformRequest: (url) => { return { url }; }
+                transformRequest: (url) => { return {url}; }
             }
         };
         source.actor.send = function(type, params, cb) {
@@ -112,7 +112,7 @@ test('GeoJSONSource#onRemove', (t) => {
             send(type, data, callback) {
                 t.false(callback);
                 t.equal(type, 'removeSource');
-                t.deepEqual(data, { type: 'geojson', source: 'id' });
+                t.deepEqual(data, {type: 'geojson', source: 'id'});
                 t.end();
             },
             broadcast() {
@@ -173,7 +173,7 @@ test('GeoJSONSource#update', (t) => {
     t.test('transforms url before making request', (t) => {
         const mapStub = {
             _requestManager: {
-                transformRequest: (url) => { return { url }; }
+                transformRequest: (url) => { return {url}; }
             }
         };
         const transformSpy = t.spy(mapStub._requestManager, 'transformRequest');
@@ -254,7 +254,7 @@ test('GeoJSONSource#update', (t) => {
 test('GeoJSONSource#serialize', (t) => {
     const mapStub = {
         _requestManager: {
-            transformRequest: (url) => { return { url }; }
+            transformRequest: (url) => { return {url}; }
         }
     };
     t.test('serialize source with inline data', (t) => {

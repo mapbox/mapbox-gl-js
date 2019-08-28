@@ -79,7 +79,7 @@ class GeoJSONWrapper implements VectorTile, VectorTileLayer {
     _features: Array<Feature>;
 
     constructor(features: Array<Feature>) {
-        this.layers = { '_geojsonTileLayer': this };
+        this.layers = {'_geojsonTileLayer': this};
         this.name = '_geojsonTileLayer';
         this.extent = EXTENT;
         this.length = features.length;

@@ -3,7 +3,7 @@
 import assert from 'assert';
 import supported from '@mapbox/mapbox-gl-supported';
 
-import { version } from '../package.json';
+import {version} from '../package.json';
 import Map from './ui/map';
 import NavigationControl from './ui/control/navigation_control';
 import GeolocateControl from './ui/control/geolocate_control';

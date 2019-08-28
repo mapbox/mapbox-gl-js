@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import glob from 'glob';
 import fs from 'fs';
 import path from 'path';

@@ -1,16 +1,16 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import TileCache from '../../../src/source/tile_cache';
-import { OverscaledTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 
 const idA = new OverscaledTileID(10, 0, 10, 0, 1);
 const idB = new OverscaledTileID(10, 0, 10, 0, 2);
 const idC = new OverscaledTileID(10, 0, 10, 0, 3);
 const idD = new OverscaledTileID(10, 0, 10, 0, 4);
-const tileA = { tileID: idA };
-const tileA2 = { tileID: idA };
-const tileB = { tileID: idB };
-const tileC = { tileID: idC };
-const tileD = { tileID: idD };
+const tileA = {tileID: idA};
+const tileA2 = {tileID: idA};
+const tileB = {tileID: idB};
+const tileC = {tileID: idC};
+const tileD = {tileID: idD};
 
 function keysExpected(t, cache, ids) {
     t.deepEqual(cache.order, ids.map((id) => id.key), 'keys');

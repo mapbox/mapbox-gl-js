@@ -1,4 +1,4 @@
-import { test } from '../../../util/test';
+import {test} from '../../../util/test';
 import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
@@ -6,7 +6,7 @@ import simulate from '../../../util/simulate_interaction';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({ container: DOM.create('div', '', window.document.body) });
+    return new Map({container: DOM.create('div', '', window.document.body)});
 }
 
 function simulateDoubleTap(map, delay = 100) {
@@ -145,7 +145,7 @@ test('DoubleClickZoomHandler zooms on the second touchend event of a double tap'
     map._renderTaskQueue.run();
 
     t.ok(zoom.called, 'should trigger zoom after second touchend');
-    t.deepEquals(zoom.getCall(0).args[0].point, { x: 0.5, y: 0.5 }, 'should zoom to correct point');
+    t.deepEquals(zoom.getCall(0).args[0].point, {x: 0.5, y: 0.5}, 'should zoom to correct point');
 
     t.end();
 });

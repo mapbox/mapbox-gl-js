@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import fs from 'fs';
 import path from 'path';
 import Protobuf from 'pbf';
-import { VectorTile } from '@mapbox/vector-tile';
+import {VectorTile} from '@mapbox/vector-tile';
 import Point from '@mapbox/point-geometry';
 import segment from '../../../src/data/segment';
 import LineBucket from '../../../src/data/bucket/line_bucket';
@@ -21,10 +21,10 @@ function createLine(numPoints) {
 }
 
 test('LineBucket', (t) => {
-    const layer = new LineStyleLayer({ id: 'test', type: 'line' });
+    const layer = new LineStyleLayer({id: 'test', type: 'line'});
     layer.recalculate({zoom: 0, zoomHistory: {}});
 
-    const bucket = new LineBucket({ layers: [layer] });
+    const bucket = new LineBucket({layers: [layer]});
 
     const line = {
         type: 2,
@@ -104,10 +104,10 @@ test('LineBucket segmentation', (t) => {
     // breaking across array groups without tests taking a _long_ time.
     t.stub(segment, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
 
-    const layer = new LineStyleLayer({ id: 'test', type: 'line' });
+    const layer = new LineStyleLayer({id: 'test', type: 'line'});
     layer.recalculate({zoom: 0, zoomHistory: {}});
 
-    const bucket = new LineBucket({ layers: [layer] });
+    const bucket = new LineBucket({layers: [layer]});
 
     // first add an initial, small feature to make sure the next one starts at
     // a non-zero offset

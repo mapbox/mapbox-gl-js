@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import fs from 'fs';
 import path from 'path';
 import Protobuf from 'pbf';
-import { VectorTile } from '@mapbox/vector-tile';
+import {VectorTile} from '@mapbox/vector-tile';
 import loadGeometry from '../../../src/data/load_geometry.js';
 
 // Load a line feature from fixture tile.

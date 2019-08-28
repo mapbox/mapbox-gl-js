@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
-import { createFunction } from '../../../src/style-spec/function';
+import {test} from '../../util/test';
+import {createFunction} from '../../../src/style-spec/function';
 import Color from '../../../src/style-spec/util/color';
 import Formatted from '../../../src/style-spec/expression/types/formatted';
-import { equalWithPrecision } from '../../util';
+import {equalWithPrecision} from '../../util';
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {
@@ -329,20 +329,20 @@ test('exponential function', (t) => {
         const f = createFunction({
             type: 'exponential',
             property: 'prop',
-            stops: [[{ zoom: 1, value: 1 }, 2]]
+            stops: [[{zoom: 1, value: 1}, 2]]
         }, {
             type: 'number'
         }).evaluate;
 
-        t.equal(f({zoom: 0}, {properties: { prop: 0 }}), 2);
-        t.equal(f({zoom: 1}, {properties: { prop: 0 }}), 2);
-        t.equal(f({zoom: 2}, {properties: { prop: 0 }}), 2);
-        t.equal(f({zoom: 0}, {properties: { prop: 1 }}), 2);
-        t.equal(f({zoom: 1}, {properties: { prop: 1 }}), 2);
-        t.equal(f({zoom: 2}, {properties: { prop: 1 }}), 2);
-        t.equal(f({zoom: 0}, {properties: { prop: 2 }}), 2);
-        t.equal(f({zoom: 1}, {properties: { prop: 2 }}), 2);
-        t.equal(f({zoom: 2}, {properties: { prop: 2 }}), 2);
+        t.equal(f({zoom: 0}, {properties: {prop: 0}}), 2);
+        t.equal(f({zoom: 1}, {properties: {prop: 0}}), 2);
+        t.equal(f({zoom: 2}, {properties: {prop: 0}}), 2);
+        t.equal(f({zoom: 0}, {properties: {prop: 1}}), 2);
+        t.equal(f({zoom: 1}, {properties: {prop: 1}}), 2);
+        t.equal(f({zoom: 2}, {properties: {prop: 1}}), 2);
+        t.equal(f({zoom: 0}, {properties: {prop: 2}}), 2);
+        t.equal(f({zoom: 1}, {properties: {prop: 2}}), 2);
+        t.equal(f({zoom: 2}, {properties: {prop: 2}}), 2);
 
         t.end();
     });
@@ -353,24 +353,24 @@ test('exponential function', (t) => {
             property: 'prop',
             base: 1,
             stops: [
-                [{ zoom: 1, value: 0 }, 0],
-                [{ zoom: 1, value: 2 }, 4],
-                [{ zoom: 3, value: 0 }, 0],
-                [{ zoom: 3, value: 2 }, 12]]
+                [{zoom: 1, value: 0}, 0],
+                [{zoom: 1, value: 2}, 4],
+                [{zoom: 3, value: 0}, 0],
+                [{zoom: 3, value: 2}, 12]]
         }, {
             type: 'number'
         }).evaluate;
 
-        t.equal(f({zoom: 0}, {properties: { prop: 1 }}), 2);
-        t.equal(f({zoom: 1}, {properties: { prop: 1 }}), 2);
-        t.equal(f({zoom: 2}, {properties: { prop: 1 }}), 4);
-        t.equal(f({zoom: 3}, {properties: { prop: 1 }}), 6);
-        t.equal(f({zoom: 4}, {properties: { prop: 1 }}), 6);
+        t.equal(f({zoom: 0}, {properties: {prop: 1}}), 2);
+        t.equal(f({zoom: 1}, {properties: {prop: 1}}), 2);
+        t.equal(f({zoom: 2}, {properties: {prop: 1}}), 4);
+        t.equal(f({zoom: 3}, {properties: {prop: 1}}), 6);
+        t.equal(f({zoom: 4}, {properties: {prop: 1}}), 6);
 
-        t.equal(f({zoom: 2}, {properties: { prop: -1}}), 0);
-        t.equal(f({zoom: 2}, {properties: { prop: 0}}), 0);
-        t.equal(f({zoom: 2}, {properties: { prop: 2}}), 8);
-        t.equal(f({zoom: 2}, {properties: { prop: 3}}), 8);
+        t.equal(f({zoom: 2}, {properties: {prop: -1}}), 0);
+        t.equal(f({zoom: 2}, {properties: {prop: 0}}), 0);
+        t.equal(f({zoom: 2}, {properties: {prop: 2}}), 8);
+        t.equal(f({zoom: 2}, {properties: {prop: 3}}), 8);
 
         t.end();
     });
@@ -381,19 +381,19 @@ test('exponential function', (t) => {
             property: 'prop',
             base: 1,
             stops: [
-                [{ zoom: 1, value: 0}, 0],
-                [{ zoom: 1, value: 2}, 4],
-                [{ zoom: 3, value: 0}, 0],
-                [{ zoom: 3, value: 2}, 12],
-                [{ zoom: 5, value: 0}, 0],
-                [{ zoom: 5, value: 2}, 20]]
+                [{zoom: 1, value: 0}, 0],
+                [{zoom: 1, value: 2}, 4],
+                [{zoom: 3, value: 0}, 0],
+                [{zoom: 3, value: 2}, 12],
+                [{zoom: 5, value: 0}, 0],
+                [{zoom: 5, value: 2}, 20]]
         }, {
             type: 'number'
         }).evaluate;
 
-        t.equal(f({zoom: 0}, {properties: { prop: 1 }}), 2);
-        t.equal(f({zoom: 1}, {properties: { prop: 1 }}), 2);
-        t.equal(f({zoom: 2}, {properties: { prop: 1 }}), 4);
+        t.equal(f({zoom: 0}, {properties: {prop: 1}}), 2);
+        t.equal(f({zoom: 1}, {properties: {prop: 1}}), 2);
+        t.equal(f({zoom: 2}, {properties: {prop: 1}}), 4);
 
         t.end();
     });
@@ -404,16 +404,16 @@ test('exponential function', (t) => {
             property: 'prop',
             base: 1,
             stops: [
-                [{ zoom: 1.9, value: 0 }, 4],
-                [{ zoom: 2.1, value: 0 }, 8]
+                [{zoom: 1.9, value: 0}, 4],
+                [{zoom: 2.1, value: 0}, 8]
             ]
         }, {
             type: 'number'
         }).evaluate;
 
-        t.equal(f({zoom: 1.9}, {properties: { prop: 1 }}), 4);
-        t.equal(f({zoom: 2}, {properties: { prop: 1 }}), 6);
-        t.equal(f({zoom: 2.1}, {properties: { prop: 1 }}), 8);
+        t.equal(f({zoom: 1.9}, {properties: {prop: 1}}), 4);
+        t.equal(f({zoom: 2}, {properties: {prop: 1}}), 6);
+        t.equal(f({zoom: 2.1}, {properties: {prop: 1}}), 8);
 
         t.end();
     });
@@ -424,19 +424,19 @@ test('exponential function', (t) => {
             property: 'prop',
             base: 1,
             stops: [
-                [{ zoom: 1, value: 0 }, 0],
-                [{ zoom: 1.5, value: 0 }, 1],
-                [{ zoom: 2, value: 0 }, 10],
-                [{ zoom: 2.5, value: 0 }, 20]
+                [{zoom: 1, value: 0}, 0],
+                [{zoom: 1.5, value: 0}, 1],
+                [{zoom: 2, value: 0}, 10],
+                [{zoom: 2.5, value: 0}, 20]
             ]
         }, {
             type: 'number'
         }).evaluate;
 
-        t.equal(f({zoom: 1}, {properties: { prop: 0 }}), 0);
-        t.equal(f({zoom: 1.5}, {properties: { prop: 0 }}), 1);
-        t.equal(f({zoom: 2}, {properties: { prop: 0 }}), 10);
-        t.equal(f({zoom: 2.5}, {properties: { prop: 0 }}), 20);
+        t.equal(f({zoom: 1}, {properties: {prop: 0}}), 0);
+        t.equal(f({zoom: 1.5}, {properties: {prop: 0}}), 1);
+        t.equal(f({zoom: 2}, {properties: {prop: 0}}), 10);
+        t.equal(f({zoom: 2.5}, {properties: {prop: 0}}), 20);
 
         t.end();
     });
@@ -449,8 +449,8 @@ test('exponential function', (t) => {
             property: 'prop',
             base: 1,
             stops: [
-                [{ zoom: 0, value: 1 }, 'red'],
-                [{ zoom: 1, value: 1 }, 'red']
+                [{zoom: 0, value: 1}, 'red'],
+                [{zoom: 1, value: 1}, 'red']
             ]
         }, {
             type: 'color'
@@ -1043,7 +1043,7 @@ test('kind', (t) => {
 
     t.test('composite', (t) => {
         const f = createFunction({
-            stops: [[{ zoom: 1, value: 1 }, 1]],
+            stops: [[{zoom: 1, value: 1}, 1]],
             property: 'mapbox'
         }, {
             type: 'number'

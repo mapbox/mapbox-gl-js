@@ -1,7 +1,7 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import GeoJSONWorkerSource from '../../../src/source/geojson_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
-import { OverscaledTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 import perf from '../../../src/util/performance';
 
 test('reloadTile', (t) => {
@@ -36,8 +36,8 @@ test('reloadTile', (t) => {
         };
 
         function addData(callback) {
-            source.loadData({ source: 'sourceId', data: JSON.stringify(geoJson) }, (err) => {
-                source.coalesce({ source: 'sourceId' });
+            source.loadData({source: 'sourceId', data: JSON.stringify(geoJson)}, (err) => {
+                source.coalesce({source: 'sourceId'});
                 t.equal(err, null);
                 callback();
             });
@@ -128,7 +128,7 @@ test('resourceTiming', (t) => {
         const layerIndex = new StyleLayerIndex(layers);
         const source = new GeoJSONWorkerSource(null, layerIndex, (params, callback) => { return callback(null, geoJson); });
 
-        source.loadData({ source: 'testSource', request: { url: 'http://localhost/nonexistent', collectResourceTiming: true } }, (err, result) => {
+        source.loadData({source: 'testSource', request: {url: 'http://localhost/nonexistent', collectResourceTiming: true}}, (err, result) => {
             t.equal(err, null);
             t.deepEquals(result.resourceTiming.testSource, [ exampleResourceTiming ], 'got expected resource timing');
             t.end();
@@ -160,9 +160,9 @@ test('resourceTiming', (t) => {
         const layerIndex = new StyleLayerIndex(layers);
         const source = new GeoJSONWorkerSource(null, layerIndex, (params, callback) => { return callback(null, geoJson); });
 
-        source.loadData({ source: 'testSource', request: { url: 'http://localhost/nonexistent', collectResourceTiming: true } }, (err, result) => {
+        source.loadData({source: 'testSource', request: {url: 'http://localhost/nonexistent', collectResourceTiming: true}}, (err, result) => {
             t.equal(err, null);
-            t.deepEquals(result.resourceTiming.testSource, [{"duration": 250, "entryType": "measure", "name": "http://localhost/nonexistent", "startTime": 100 }], 'got expected resource timing');
+            t.deepEquals(result.resourceTiming.testSource, [{"duration": 250, "entryType": "measure", "name": "http://localhost/nonexistent", "startTime": 100}], 'got expected resource timing');
             t.end();
         });
     });
@@ -171,7 +171,7 @@ test('resourceTiming', (t) => {
         const layerIndex = new StyleLayerIndex(layers);
         const source = new GeoJSONWorkerSource(null, layerIndex);
 
-        source.loadData({ source: 'testSource', data: JSON.stringify(geoJson) }, (err, result) => {
+        source.loadData({source: 'testSource', data: JSON.stringify(geoJson)}, (err, result) => {
             t.equal(err, null);
             t.equal(result.resourceTiming, undefined, 'no resourceTiming property when loadData is not sent a URL');
             t.end();
@@ -223,18 +223,18 @@ test('loadData', (t) => {
         // Expect first call to run, second to be abandoned,
         // and third to run in response to coalesce
         const worker = createWorker();
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
+        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
             t.equal(err, null);
             t.notOk(result && result.abandoned);
-            worker.coalesce({ source: 'source1' });
+            worker.coalesce({source: 'source1'});
         });
 
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
+        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
             t.equal(err, null);
             t.ok(result && result.abandoned);
         });
 
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
+        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
             t.equal(err, null);
             t.notOk(result && result.abandoned);
             t.end();
@@ -248,18 +248,18 @@ test('loadData', (t) => {
         // removeSource is executed immediately
         // First loadData finishes running, sends results back to foreground
         const worker = createWorker();
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
+        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
             t.equal(err, null);
             t.notOk(result && result.abandoned);
             t.end();
         });
 
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
+        worker.loadData({source: 'source1', data: JSON.stringify(geoJson)}, (err, result) => {
             t.equal(err, null);
             t.ok(result && result.abandoned);
         });
 
-        worker.removeSource({ source: 'source1' }, (err) => {
+        worker.removeSource({source: 'source1'}, (err) => {
             t.notOk(err);
         });
 

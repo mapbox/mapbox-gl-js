@@ -4,8 +4,8 @@ import CollisionIndex from './collision_index';
 import EXTENT from '../data/extent';
 import * as symbolSize from './symbol_size';
 import * as projection from './projection';
-import { getAnchorJustification, evaluateRadialOffset } from './symbol_layout';
-import { getAnchorAlignment, WritingMode } from './shaping';
+import {getAnchorJustification, evaluateRadialOffset} from './symbol_layout';
+import {getAnchorAlignment, WritingMode} from './shaping';
 import assert from 'assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import Point from '@mapbox/point-geometry';
@@ -13,7 +13,7 @@ import type Transform from '../geo/transform';
 import type StyleLayer from '../style/style_layer';
 
 import type Tile from '../source/tile';
-import type SymbolBucket, { CollisionArrays, SingleCollisionBox } from '../data/bucket/symbol_bucket';
+import type SymbolBucket, {CollisionArrays, SingleCollisionBox} from '../data/bucket/symbol_bucket';
 import type {mat4} from 'gl-matrix';
 import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types';
 import type FeatureIndex from '../data/feature_index';
@@ -112,7 +112,7 @@ class CollisionGroups {
             }
             return this.collisionGroups[sourceID];
         } else {
-            return { ID: 0, predicate: null };
+            return {ID: 0, predicate: null};
         }
     }
 }
@@ -326,8 +326,8 @@ export class Placement {
             let placeIcon = false;
             let offscreen = true;
 
-            let placed = { box: null, offscreen: null };
-            let placedVertical = { box: null, offscreen: null };
+            let placed = {box: null, offscreen: null};
+            let placedVertical = {box: null, offscreen: null};
 
             let placedGlyphBoxes = null;
             let placedGlyphCircles = null;
@@ -395,7 +395,7 @@ export class Placement {
                         if (bucket.allowVerticalPlacement && symbolInstance.numVerticalGlyphVertices > 0 && verticalTextBox) {
                             return placeBox(verticalTextBox, WritingMode.vertical);
                         }
-                        return { box: null, offscreen: null };
+                        return {box: null, offscreen: null};
                     };
 
                     placeTextForPlacementModes(placeHorizontal, placeVertical);
@@ -420,7 +420,7 @@ export class Placement {
                         const height = collisionTextBox.y2 - collisionTextBox.y1;
                         const textBoxScale = symbolInstance.textBoxScale;
 
-                        let placedBox: ?{ box: Array<number>, offscreen: boolean }  = { box: [], offscreen: false };
+                        let placedBox: ?{ box: Array<number>, offscreen: boolean }  = {box: [], offscreen: false};
                         const placementAttempts = textAllowOverlap ? anchors.length * 2 : anchors.length;
                         for (let i = 0; i < placementAttempts; ++i) {
                             const anchor = anchors[i % anchors.length];
@@ -449,7 +449,7 @@ export class Placement {
                         if (bucket.allowVerticalPlacement && !wasPlaced && symbolInstance.numVerticalGlyphVertices > 0 && verticalTextBox) {
                             return placeBoxForVariableAnchors(verticalTextBox, WritingMode.vertical);
                         }
-                        return { box: null, offscreen: null };
+                        return {box: null, offscreen: null};
                     };
 
                     placeTextForPlacementModes(placeHorizontal, placeVertical);

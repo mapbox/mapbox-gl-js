@@ -1,12 +1,12 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import * as mapbox from '../../../src/util/mapbox';
 import config from '../../../src/util/config';
 import window from '../../../src/util/window';
 import webpSupported from '../../../src/util/webp_supported';
-import { uuid } from '../../../src/util/util';
-import { SKU_ID } from '../../../src/util/sku_token';
-import { version } from '../../../package.json';
-import { equalWithPrecision } from '../../util';
+import {uuid} from '../../../src/util/util';
+import {SKU_ID} from '../../../src/util/sku_token';
+import {version} from '../../../package.json';
+import {equalWithPrecision} from '../../util';
 
 const mapboxTileURLs = [
     'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf',

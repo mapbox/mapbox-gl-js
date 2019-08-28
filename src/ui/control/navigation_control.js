@@ -1,7 +1,7 @@
 // @flow
 
 import DOM from '../../util/dom';
-import { extend, bindAll } from '../../util/util';
+import {extend, bindAll} from '../../util/util';
 import DragRotateHandler from '../handler/drag_rotate';
 
 import type Map from '../map';
@@ -106,7 +106,7 @@ class NavigationControl {
             this._rotateCompassArrow();
             this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
             DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
-            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, { passive: false });
+            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, {passive: false});
             this._handler.enable();
         }
         return this._container;
@@ -123,7 +123,7 @@ class NavigationControl {
             }
             this._map.off('rotate', this._rotateCompassArrow);
             DOM.removeEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
-            DOM.removeEventListener(this._compass, 'touchstart', this._handler.onMouseDown, { passive: false });
+            DOM.removeEventListener(this._compass, 'touchstart', this._handler.onMouseDown, {passive: false});
             this._handler.disable();
             delete this._handler;
         }

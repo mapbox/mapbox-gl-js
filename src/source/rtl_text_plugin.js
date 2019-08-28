@@ -1,6 +1,6 @@
 // @flow
 
-import { Event, Evented } from '../util/evented';
+import {Event, Evented} from '../util/evented';
 import browser from '../util/browser';
 
 let pluginRequested = false;
@@ -18,7 +18,7 @@ export const registerForPluginAvailability = function(
     callback: (args: {pluginURL: string, completionCallback: CompletionCallback}) => void
 ) {
     if (pluginURL) {
-        callback({ pluginURL, completionCallback: _completionCallback});
+        callback({pluginURL, completionCallback: _completionCallback});
     } else {
         evented.once('pluginAvailable', callback);
     }
@@ -48,7 +48,7 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
             foregroundLoadComplete = true;
         }
     };
-    evented.fire(new Event('pluginAvailable', { pluginURL, completionCallback: _completionCallback }));
+    evented.fire(new Event('pluginAvailable', {pluginURL, completionCallback: _completionCallback}));
 };
 
 export const plugin: {

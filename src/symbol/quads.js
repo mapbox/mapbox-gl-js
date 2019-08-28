@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 
-import { GLYPH_PBF_BORDER } from '../style/parse_glyph_pbf';
+import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
 
 import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';

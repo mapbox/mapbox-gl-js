@@ -1,6 +1,6 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import window from '../../../src/util/window';
-import { createMap as globalCreateMap } from '../../util';
+import {createMap as globalCreateMap} from '../../util';
 import Marker from '../../../src/ui/marker';
 import Popup from '../../../src/ui/popup';
 import LngLat from '../../../src/geo/lng_lat';
@@ -22,13 +22,13 @@ test('Marker uses a default marker element with an appropriate offset', (t) => {
 });
 
 test('Marker uses a default marker element with custom color', (t) => {
-    const marker = new Marker({ color: '#123456' });
+    const marker = new Marker({color: '#123456'});
     t.ok(marker.getElement().innerHTML.includes('#123456'));
     t.end();
 });
 
 test('Marker uses a default marker with custom offset', (t) => {
-    const marker = new Marker({ offset: [1, 2] });
+    const marker = new Marker({offset: [1, 2]});
     t.ok(marker.getElement());
     t.ok(marker.getOffset().equals(new Point(1, 2)));
     t.end();
@@ -152,7 +152,7 @@ test('Marker accepts backward-compatible constructor parameters', (t) => {
     const m1 = new Marker(element);
     t.equal(m1.getElement(), element);
 
-    const m2 = new Marker(element, { offset: [1, 2] });
+    const m2 = new Marker(element, {offset: [1, 2]});
     t.equal(m2.getElement(), element);
     t.ok(m2.getOffset().equals(new Point(1, 2)));
     t.end();

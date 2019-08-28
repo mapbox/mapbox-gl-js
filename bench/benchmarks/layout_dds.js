@@ -2,7 +2,7 @@
 
 import Benchmark from '../lib/benchmark';
 import TileParser from '../lib/tile_parser';
-import { OverscaledTileID } from '../../src/source/tile_id';
+import {OverscaledTileID} from '../../src/source/tile_id';
 
 const LAYER_COUNT = 2;
 
@@ -18,7 +18,7 @@ export default class LayoutDDS extends Benchmark {
         const styleJSON = {
             "version": 8,
             "sources": {
-                "mapbox": { "type": "vector", "url": "mapbox://mapbox.mapbox-streets-v7" }
+                "mapbox": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v7"}
             },
             "layers": []
         };

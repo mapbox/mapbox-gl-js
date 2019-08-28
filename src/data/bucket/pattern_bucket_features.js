@@ -50,7 +50,7 @@ export function addPatternDependencies(type: string, layers: PatternStyleLayers,
             patterns[max] = true;
 
             // save for layout
-            patternFeature.patterns[layer.id] = { min, mid, max };
+            patternFeature.patterns[layer.id] = {min, mid, max};
         }
     }
     return patternFeature;

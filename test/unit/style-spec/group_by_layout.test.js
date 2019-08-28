@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import group from '../../../src/style-spec/group_by_layout';
 
 test('group layers whose ref properties are identical', (t) => {

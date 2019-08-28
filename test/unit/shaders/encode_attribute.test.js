@@ -1,5 +1,5 @@
-import { test } from '../../util/test';
-import { packUint8ToFloat } from '../../../src/shaders/encode_attribute';
+import {test} from '../../util/test';
+import {packUint8ToFloat} from '../../../src/shaders/encode_attribute';
 
 test('packUint8ToFloat', (t) => {
     t.equal(packUint8ToFloat(0, 0), 0);

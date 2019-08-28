@@ -3,7 +3,7 @@
 import StyleLayer from '../style_layer';
 
 import properties from './raster_style_layer_properties';
-import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
+import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 
 import type {PaintProps} from './raster_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';

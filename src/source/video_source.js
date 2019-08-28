@@ -1,12 +1,12 @@
 // @flow
 
-import { getVideo, ResourceType } from '../util/ajax';
+import {getVideo, ResourceType} from '../util/ajax';
 
 import ImageSource from './image_source';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
-import { ErrorEvent } from '../util/evented';
+import {ErrorEvent} from '../util/evented';
 import ValidationError from '../style-spec/error/validation_error';
 
 import type Map from '../ui/map';
