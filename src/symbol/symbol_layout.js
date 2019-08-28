@@ -110,9 +110,9 @@ export function evaluateRadialOffset(anchor: TextAnchor, offset: [number, number
 
     function fromTextOffset(anchor: TextAnchor, offsetX: number, offsetY: number) {
         let x = 0, y = 0;
-        if (offsetX < 0 || offsetY < 0) { // Ignore negative offset.
-            offsetX = offsetY = 0;
-        }
+        // Use absolute offset values.
+        offsetX = Math.abs(offsetX);
+        offsetY = Math.abs(offsetY);
 
         switch (anchor) {
         case 'top-right':
