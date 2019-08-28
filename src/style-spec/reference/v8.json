@@ -1855,7 +1855,7 @@
       "type": "number",
       "units": "ems",
       "default": 0,
-      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which otherwise uses the two-dimensional `text-offset`.",
+      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which defaults to using the two-dimensional `text-offset` if present.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.54.0",
