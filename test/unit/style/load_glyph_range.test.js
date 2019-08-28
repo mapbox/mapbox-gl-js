@@ -1,10 +1,10 @@
 // @flow
 
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import fs from 'fs';
 import path from 'path';
 import window from '../../../src/util/window';
-import { RequestManager } from '../../../src/util/mapbox';
+import {RequestManager} from '../../../src/util/mapbox';
 import loadGlyphRange from '../../../src/style/load_glyph_range';
 
 test('loadGlyphRange', (t) => {

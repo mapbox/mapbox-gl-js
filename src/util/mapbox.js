@@ -18,14 +18,14 @@ import config from './config';
 import browser from './browser';
 import window from './window';
 import webpSupported from './webp_supported';
-import { createSkuToken, SKU_ID } from './sku_token';
-import { version as sdkVersion } from '../../package.json';
-import { uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend } from './util';
-import { postData, ResourceType } from './ajax';
+import {createSkuToken, SKU_ID} from './sku_token';
+import {version as sdkVersion} from '../../package.json';
+import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util';
+import {postData, ResourceType} from './ajax';
 
-import type { RequestParameters } from './ajax';
-import type { Cancelable } from '../types/cancelable';
-import type { TileJSON } from '../types/tilejson';
+import type {RequestParameters} from './ajax';
+import type {Cancelable} from '../types/cancelable';
+import type {TileJSON} from '../types/tilejson';
 
 type ResourceTypeEnum = $Keys<typeof ResourceType>;
 export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
@@ -217,7 +217,7 @@ function formatUrl(obj: UrlObject): string {
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
 
-export { isMapboxURL, isMapboxHTTPURL, hasCacheDefeatingSku };
+export {isMapboxURL, isMapboxHTTPURL, hasCacheDefeatingSku};
 
 const telemEventKey = 'mapbox.eventData';
 

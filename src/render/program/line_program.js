@@ -8,7 +8,7 @@ import {
     UniformMatrix4f
 } from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
-import { extend } from '../../util/util';
+import {extend} from '../../util/util';
 import browser from '../../util/browser';
 
 import type Context from '../../gl/context';

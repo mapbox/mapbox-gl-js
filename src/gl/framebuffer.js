@@ -1,5 +1,5 @@
 // @flow
-import { ColorAttachment, DepthAttachment } from './value';
+import {ColorAttachment, DepthAttachment} from './value';
 
 import type Context from './context';
 

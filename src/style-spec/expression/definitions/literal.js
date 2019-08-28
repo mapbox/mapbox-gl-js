@@ -1,12 +1,12 @@
 // @flow
 
 import assert from 'assert';
-import { isValue, typeOf, Color } from '../values';
+import {isValue, typeOf, Color} from '../values';
 import Formatted from '../types/formatted';
 
-import type { Type } from '../types';
-import type { Value }  from '../values';
-import type { Expression } from '../expression';
+import type {Type} from '../types';
+import type {Value}  from '../values';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 
 class Literal implements Expression {

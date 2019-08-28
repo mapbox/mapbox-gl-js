@@ -1,5 +1,5 @@
 // @flow
-import type { StencilOpConstant, StencilTest } from './types';
+import type {StencilOpConstant, StencilTest} from './types';
 
 const ALWAYS = 0x0207;
 const KEEP = 0x1E00;
@@ -25,6 +25,6 @@ class StencilMode {
     static disabled: $ReadOnly<StencilMode>;
 }
 
-StencilMode.disabled = new StencilMode({ func: ALWAYS, mask: 0 }, 0, 0, KEEP, KEEP, KEEP);
+StencilMode.disabled = new StencilMode({func: ALWAYS, mask: 0}, 0, 0, KEEP, KEEP, KEEP);
 
 export default StencilMode;

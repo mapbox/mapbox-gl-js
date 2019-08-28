@@ -2,11 +2,11 @@
 
 import assert from 'assert';
 
-import { clone, extend, easeCubicInOut } from '../util/util';
+import {clone, extend, easeCubicInOut} from '../util/util';
 import * as interpolate from '../style-spec/util/interpolate';
-import { normalizePropertyExpression } from '../style-spec/expression';
+import {normalizePropertyExpression} from '../style-spec/expression';
 import Color from '../style-spec/util/color';
-import { register } from '../util/web_worker_transfer';
+import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from './evaluation_parameters';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
@@ -632,7 +632,7 @@ export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFa
 
     _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): CrossFaded<T> {
         const z = parameters.zoom;
-        return z > parameters.zoomHistory.lastIntegerZoom ? { from: min, to: mid } : { from: max, to: mid };
+        return z > parameters.zoomHistory.lastIntegerZoom ? {from: min, to: mid} : {from: max, to: mid};
     }
 
     interpolate(a: PossiblyEvaluatedPropertyValue<?CrossFaded<T>>): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
@@ -670,7 +670,7 @@ export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
 
     _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): ?CrossFaded<T> {
         const z = parameters.zoom;
-        return z > parameters.zoomHistory.lastIntegerZoom ? { from: min, to: mid } : { from: max, to: mid };
+        return z > parameters.zoomHistory.lastIntegerZoom ? {from: min, to: mid} : {from: max, to: mid};
     }
 
     interpolate(a: ?CrossFaded<T>): ?CrossFaded<T> {

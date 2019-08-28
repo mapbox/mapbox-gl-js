@@ -1,6 +1,6 @@
 // @flow
 
-import { register } from '../util/web_worker_transfer';
+import {register} from '../util/web_worker_transfer';
 
 class OpacityState {
     opacity: number;

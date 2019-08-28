@@ -1,14 +1,14 @@
 // @flow
 
-import { array, ValueType, NumberType } from '../types';
+import {array, ValueType, NumberType} from '../types';
 
 import RuntimeError from '../runtime_error';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Type, ArrayType } from '../types';
-import type { Value } from '../values';
+import type {Type, ArrayType} from '../types';
+import type {Value} from '../values';
 
 class At implements Expression {
     type: Type;

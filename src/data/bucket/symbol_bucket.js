@@ -1,13 +1,13 @@
 // @flow
 
-import { symbolLayoutAttributes,
+import {symbolLayoutAttributes,
     collisionVertexAttributes,
     collisionBoxLayout,
     collisionCircleLayout,
     dynamicLayoutAttributes
 } from './symbol_attributes';
 
-import { SymbolLayoutArray,
+import {SymbolLayoutArray,
     SymbolDynamicLayoutArray,
     SymbolOpacityArray,
     CollisionBoxLayoutArray,
@@ -21,19 +21,19 @@ import { SymbolLayoutArray,
 
 import Point from '@mapbox/point-geometry';
 import SegmentVector from '../segment';
-import { ProgramConfigurationSet } from '../program_configuration';
-import { TriangleIndexArray, LineIndexArray } from '../index_array_type';
+import {ProgramConfigurationSet} from '../program_configuration';
+import {TriangleIndexArray, LineIndexArray} from '../index_array_type';
 import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
 import {allowsVerticalWritingMode} from '../../util/script_detection';
-import { WritingMode } from '../../symbol/shaping';
+import {WritingMode} from '../../symbol/shaping';
 import loadGeometry from '../load_geometry';
 import mvt from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import Anchor from '../../symbol/anchor';
-import { getSizeData } from '../../symbol/symbol_size';
-import { register } from '../../util/web_worker_transfer';
+import {getSizeData} from '../../symbol/symbol_size';
+import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
 
@@ -44,7 +44,7 @@ import type {
     PopulateParameters
 } from '../bucket';
 import type {CollisionBoxArray, CollisionBox, SymbolInstance} from '../array_types';
-import type { StructArray, StructArrayMember } from '../../util/struct_array';
+import type {StructArray, StructArrayMember} from '../../util/struct_array';
 import SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
@@ -94,7 +94,7 @@ export type SymbolFeature = {|
 //     { name: 'a_fade_opacity', components: 1, type: 'Uint32' }
 // ];
 const shaderOpacityAttributes = [
-    { name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0 }
+    {name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0}
 ];
 
 function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex) {
@@ -508,13 +508,13 @@ class SymbolBucket implements Bucket {
             let sumBackwardLength = anchor.dist(line[anchor.segment]);
             const vertices = {};
             for (let i = anchor.segment + 1; i < line.length; i++) {
-                vertices[i] = { x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumForwardLength };
+                vertices[i] = {x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumForwardLength};
                 if (i < line.length - 1) {
                     sumForwardLength += line[i + 1].dist(line[i]);
                 }
             }
             for (let i = anchor.segment || 0; i >= 0; i--) {
-                vertices[i] = { x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumBackwardLength };
+                vertices[i] = {x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumBackwardLength};
                 if (i > 0) {
                     sumBackwardLength += line[i - 1].dist(line[i]);
                 }
@@ -702,7 +702,7 @@ class SymbolBucket implements Bucket {
         for (let k = textStartIndex; k < textEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
             if (box.radius === 0) {
-                collisionArrays.textBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
+                collisionArrays.textBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY};
                 collisionArrays.textFeatureIndex = box.featureIndex;
                 break; // Only one box allowed per instance
             } else {
@@ -717,7 +717,7 @@ class SymbolBucket implements Bucket {
         for (let k = verticalTextStartIndex; k < verticalTextEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
             if (box.radius === 0) {
-                collisionArrays.verticalTextBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
+                collisionArrays.verticalTextBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY};
                 collisionArrays.verticalTextFeatureIndex = box.featureIndex;
                 break; // Only one box allowed per instance
             }
@@ -726,7 +726,7 @@ class SymbolBucket implements Bucket {
             // An icon can only have one box now, so this indexing is a bit vestigial...
             const box: CollisionBox = (collisionBoxArray.get(k): any);
             if (box.radius === 0) {
-                collisionArrays.iconBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
+                collisionArrays.iconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY};
                 collisionArrays.iconFeatureIndex = box.featureIndex;
                 break; // Only one box allowed per instance
             }
@@ -879,4 +879,4 @@ SymbolBucket.MAX_GLYPHS = 65535;
 SymbolBucket.addDynamicAttributes = addDynamicAttributes;
 
 export default SymbolBucket;
-export { addDynamicAttributes };
+export {addDynamicAttributes};

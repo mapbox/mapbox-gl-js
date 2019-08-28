@@ -8,7 +8,7 @@ import type SymbolBucket from '../data/bucket/symbol_bucket';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import CullFaceMode from '../gl/cull_face_mode';
-import { collisionUniformValues } from './program/collision_program';
+import {collisionUniformValues} from './program/collision_program';
 
 export default drawCollisionDebug;
 

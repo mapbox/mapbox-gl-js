@@ -10,9 +10,9 @@ import DictionaryCoder from '../util/dictionary_coder';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import GeoJSONFeature from '../util/vectortile_to_geojson';
-import { arraysIntersect } from '../util/util';
-import { OverscaledTileID } from '../source/tile_id';
-import { register } from '../util/web_worker_transfer';
+import {arraysIntersect} from '../util/util';
+import {OverscaledTileID} from '../source/tile_id';
+import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from '../style/evaluation_parameters';
 import SourceFeatureState from '../source/source_state';
 import {polygonIntersectsBox} from '../util/intersection_tests';
@@ -22,7 +22,7 @@ import type {FeatureFilter} from '../style-spec/feature_filter';
 import type Transform from '../geo/transform';
 import type {FilterSpecification} from '../style-spec/types';
 
-import { FeatureIndexArray } from './array_types';
+import {FeatureIndexArray} from './array_types';
 
 type QueryParameters = {
     scale: number,
@@ -206,7 +206,7 @@ class FeatureIndex {
             if (layerResult === undefined) {
                 layerResult = result[layerID] = [];
             }
-            layerResult.push({ featureIndex, feature: geojsonFeature, intersectionZ });
+            layerResult.push({featureIndex, feature: geojsonFeature, intersectionZ});
         }
     }
 
@@ -252,7 +252,7 @@ class FeatureIndex {
 register(
     'FeatureIndex',
     FeatureIndex,
-    { omit: ['rawTileData', 'sourceLayerCoder'] }
+    {omit: ['rawTileData', 'sourceLayerCoder']}
 );
 
 export default FeatureIndex;
@@ -268,7 +268,7 @@ function getBounds(geometry: Array<Point>) {
         maxX = Math.max(maxX, p.x);
         maxY = Math.max(maxY, p.y);
     }
-    return { minX, minY, maxX, maxY };
+    return {minX, minY, maxX, maxY};
 }
 
 function topDownFeatureComparator(a, b) {

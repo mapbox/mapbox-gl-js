@@ -1,8 +1,8 @@
 // @flow
-import { RGBAImage } from '../util/image';
+import {RGBAImage} from '../util/image';
 
-import { warnOnce } from '../util/util';
-import { register } from '../util/web_worker_transfer';
+import {warnOnce} from '../util/util';
+import {register} from '../util/web_worker_transfer';
 
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
 // data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially

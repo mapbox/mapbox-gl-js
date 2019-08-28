@@ -1,10 +1,10 @@
 // @flow
 
-import { isCounterClockwise } from './util';
+import {isCounterClockwise} from './util';
 
 import Point from '@mapbox/point-geometry';
 
-export { polygonIntersectsBufferedPoint, polygonIntersectsMultiPolygon, polygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared, polygonIntersectsBox };
+export {polygonIntersectsBufferedPoint, polygonIntersectsMultiPolygon, polygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared, polygonIntersectsBox};
 
 type Line = Array<Point>;
 type MultiLine = Array<Line>;

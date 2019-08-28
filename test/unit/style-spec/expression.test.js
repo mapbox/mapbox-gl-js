@@ -1,5 +1,5 @@
-import { test } from '../../util/test';
-import { createPropertyExpression } from '../../../src/style-spec/expression';
+import {test} from '../../util/test';
+import {createPropertyExpression} from '../../../src/style-spec/expression';
 import definitions from '../../../src/style-spec/expression/definitions';
 import v8 from '../../../src/style-spec/reference/v8';
 
@@ -53,8 +53,8 @@ test('evaluate expression', (t) => {
 
         t.equal(value.kind, 'source');
 
-        t.equal(value.evaluate({}, { properties: {x: 'b'} }), 'b');
-        t.equal(value.evaluate({}, { properties: {x: 'invalid'} }), 'a');
+        t.equal(value.evaluate({}, {properties: {x: 'b'}}), 'b');
+        t.equal(value.evaluate({}, {properties: {x: 'invalid'}}), 'a');
         t.ok(console.warn.calledWith(`Expected value to be one of "a", "b", "c", but found "invalid" instead.`));
 
         t.end();

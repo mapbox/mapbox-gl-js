@@ -4,8 +4,8 @@ import loadGlyphRange from '../style/load_glyph_range';
 
 import TinySDF from '@mapbox/tiny-sdf';
 import isChar from '../util/is_char_in_unicode_block';
-import { asyncAll } from '../util/util';
-import { AlphaImage } from '../util/image';
+import {asyncAll} from '../util/util';
+import {AlphaImage} from '../util/image';
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {RequestManager} from '../util/mapbox';

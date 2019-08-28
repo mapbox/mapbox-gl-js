@@ -1,9 +1,9 @@
 // @flow
 
-import { getJSON, getImage, ResourceType } from '../util/ajax';
+import {getJSON, getImage, ResourceType} from '../util/ajax';
 
 import browser from '../util/browser';
-import { RGBAImage } from '../util/image';
+import {RGBAImage} from '../util/image';
 
 import type {StyleImage} from './style_image';
 import type {RequestManager} from '../util/mapbox';

@@ -1,15 +1,15 @@
 // @flow
 
-import { LineLayoutArray } from '../array_types';
+import {LineLayoutArray} from '../array_types';
 
-import { members as layoutAttributes } from './line_attributes';
+import {members as layoutAttributes} from './line_attributes';
 import SegmentVector from '../segment';
-import { ProgramConfigurationSet } from '../program_configuration';
-import { TriangleIndexArray } from '../index_array_type';
+import {ProgramConfigurationSet} from '../program_configuration';
+import {TriangleIndexArray} from '../index_array_type';
 import EXTENT from '../extent';
 import mvt from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
-import { register } from '../../util/web_worker_transfer';
+import {register} from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import EvaluationParameters from '../../style/evaluation_parameters';

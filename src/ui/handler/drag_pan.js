@@ -1,10 +1,10 @@
 // @flow
 
 import DOM from '../../util/dom';
-import { bezier, bindAll } from '../../util/util';
+import {bezier, bindAll} from '../../util/util';
 import window from '../../util/window';
 import browser from '../../util/browser';
-import { Event } from '../../util/evented';
+import {Event} from '../../util/evented';
 import assert from 'assert';
 
 import type Map from '../map';
@@ -307,11 +307,11 @@ class DragPanHandler {
             duration: duration * 1000,
             easing: inertiaEasing,
             noMoveStart: true
-        }, { originalEvent: e });
+        }, {originalEvent: e});
     }
 
     _fireEvent(type: string, e: *) {
-        return this._map.fire(new Event(type, e ? { originalEvent: e } : {}));
+        return this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 
     _drainInertiaBuffer() {

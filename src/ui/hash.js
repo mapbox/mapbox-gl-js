@@ -1,6 +1,6 @@
 // @flow
 
-import { bindAll } from '../util/util';
+import {bindAll} from '../util/util';
 import window from '../util/window';
 import throttle from '../util/throttle';
 

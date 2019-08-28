@@ -2,20 +2,20 @@
 
 import styleSpec from '../style-spec/reference/latest';
 
-import { endsWith, extend, sphericalToCartesian } from '../util/util';
-import { Evented } from '../util/evented';
+import {endsWith, extend, sphericalToCartesian} from '../util/util';
+import {Evented} from '../util/evented';
 import {
     validateStyle,
     validateLight,
     emitValidationErrors
 } from './validate_style';
 import Color from '../style-spec/util/color';
-import { number as interpolate } from '../style-spec/util/interpolate';
+import {number as interpolate} from '../style-spec/util/interpolate';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type EvaluationParameters from './evaluation_parameters';
 import type {StyleSetterOptions} from '../style/style';
-import { Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty } from './properties';
+import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties';
 
 import type {
     Property,

@@ -1,15 +1,15 @@
 // @flow
 
-import { extend, pick } from '../util/util';
+import {extend, pick} from '../util/util';
 
-import { getImage, ResourceType } from '../util/ajax';
-import { Event, ErrorEvent, Evented } from '../util/evented';
+import {getImage, ResourceType} from '../util/ajax';
+import {Event, ErrorEvent, Evented} from '../util/evented';
 import loadTileJSON from './load_tilejson';
-import { postTurnstileEvent, postMapLoadEvent } from '../util/mapbox';
+import {postTurnstileEvent, postMapLoadEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
 import Texture from '../render/texture';
 
-import { cacheEntryPossiblyAdded } from '../util/tile_request_cache';
+import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -57,7 +57,7 @@ class RasterTileSource extends Evented implements Source {
         this.tileSize = 512;
         this._loaded = false;
 
-        this._options = extend({ type: 'raster' }, options);
+        this._options = extend({type: 'raster'}, options);
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
 
@@ -129,9 +129,9 @@ class RasterTileSource extends Evented implements Source {
                 const gl = context.gl;
                 tile.texture = this.map.painter.getTileTexture(img.width);
                 if (tile.texture) {
-                    tile.texture.update(img, { useMipmap: true });
+                    tile.texture.update(img, {useMipmap: true});
                 } else {
-                    tile.texture = new Texture(context, img, gl.RGBA, { useMipmap: true });
+                    tile.texture = new Texture(context, img, gl.RGBA, {useMipmap: true});
                     tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
                     if (context.extTextureFilterAnisotropic) {

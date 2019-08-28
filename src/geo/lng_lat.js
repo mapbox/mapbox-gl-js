@@ -1,6 +1,6 @@
 // @flow
 
-import { wrap } from '../util/util';
+import {wrap} from '../util/util';
 import LngLatBounds from './lng_lat_bounds';
 
 /**

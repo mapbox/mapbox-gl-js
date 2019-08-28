@@ -1,12 +1,12 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import assert from 'assert';
 import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
-import { extend } from '../../../src/util/util';
-import { RequestManager } from '../../../src/util/mapbox';
-import { Event, Evented } from '../../../src/util/evented';
+import {extend} from '../../../src/util/util';
+import {RequestManager} from '../../../src/util/mapbox';
+import {Event, Evented} from '../../../src/util/evented';
 import window from '../../../src/util/window';
 import {
     setRTLTextPlugin,
@@ -14,7 +14,7 @@ import {
     evented as rtlTextPluginEvented
 } from '../../../src/source/rtl_text_plugin';
 import browser from '../../../src/util/browser';
-import { OverscaledTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 
 function createStyleJSON(properties) {
     return extend({
@@ -343,7 +343,7 @@ test('Style#loadJSON', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             sources: {
-                '-source-id-': { type: "vector", tiles: [] }
+                '-source-id-': {type: "vector", tiles: []}
             },
             layers: []
         }));
@@ -352,7 +352,7 @@ test('Style#loadJSON', (t) => {
             style.removeSource('-source-id-');
 
             const source = createSource();
-            source['vector_layers'] = [{ id: 'green' }];
+            source['vector_layers'] = [{id: 'green'}];
             style.addSource('-source-id-', source);
             style.addLayer({
                 'id': '-layer-id-',
@@ -450,8 +450,8 @@ test('Style#update', (t) => {
     style.on('error', (error) => { t.error(error); });
 
     style.on('style.load', () => {
-        style.addLayer({id: 'first', source: 'source', type: 'fill', 'source-layer': 'source-layer' }, 'second');
-        style.addLayer({id: 'third', source: 'source', type: 'fill', 'source-layer': 'source-layer' });
+        style.addLayer({id: 'first', source: 'source', type: 'fill', 'source-layer': 'source-layer'}, 'second');
+        style.addLayer({id: 'third', source: 'source', type: 'fill', 'source-layer': 'source-layer'});
         style.removeLayer('second');
 
         style.dispatcher.broadcast = function(key, value) {
@@ -522,7 +522,7 @@ test('Style#setState', (t) => {
             sources: {
                 foo: {
                     type: 'geojson',
-                    data: { type: 'FeatureCollection', features: [] }
+                    data: {type: 'FeatureCollection', features: []}
                 }
             }
         });
@@ -539,7 +539,7 @@ test('Style#setState', (t) => {
 
     t.test('sets GeoJSON source data if different', (t) => {
         const initialState = createStyleJSON({
-            "sources": { "source-id": createGeoJSONSource() }
+            "sources": {"source-id": createGeoJSONSource()}
         });
 
         const geoJSONSourceData = {
@@ -844,7 +844,7 @@ test('Style#addLayer', (t) => {
         style.loadJSON(createStyleJSON({
             sources: {
                 // At least one source must be added to trigger the load event
-                dummy: { type: "vector", tiles: [] }
+                dummy: {type: "vector", tiles: []}
             }
         }));
 
@@ -901,7 +901,7 @@ test('Style#addLayer', (t) => {
                     "coordinates": [ 0, 0]
                 }
             };
-            const layer = {id: 'inline-source-layer', type: 'circle', source };
+            const layer = {id: 'inline-source-layer', type: 'circle', source};
             style.addLayer(layer);
             t.deepEqual(layer.source, source);
             t.end();
@@ -1105,7 +1105,7 @@ test('Style#addLayer', (t) => {
             sources: {
                 dummy: {
                     type: 'geojson',
-                    data: { type: 'FeatureCollection', features: [] }
+                    data: {type: 'FeatureCollection', features: []}
                 }
             }
         }));
@@ -1118,7 +1118,7 @@ test('Style#addLayer', (t) => {
         };
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
+            style.on('error', ({error}) => {
                 t.match(error.message, /does not exist on source/);
                 t.end();
             });
@@ -1181,7 +1181,7 @@ test('Style#removeLayer', (t) => {
         style.loadJSON(createStyleJSON());
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
+            style.on('error', ({error}) => {
                 t.match(error.message, /does not exist in the map\'s style and cannot be removed/);
                 t.end();
             });
@@ -1257,7 +1257,7 @@ test('Style#moveLayer', (t) => {
         style.loadJSON(createStyleJSON());
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
+            style.on('error', ({error}) => {
                 t.match(error.message, /does not exist in the map\'s style and cannot be moved/);
                 t.end();
             });
@@ -1594,7 +1594,7 @@ test('Style#setFilter', (t) => {
                 geojson: createGeoJSONSource()
             },
             layers: [
-                { id: 'symbol', type: 'symbol', source: 'geojson', filter: ['==', 'id', 0] }
+                {id: 'symbol', type: 'symbol', source: 'geojson', filter: ['==', 'id', 0]}
             ]
         });
         return style;
@@ -1678,7 +1678,7 @@ test('Style#setFilter', (t) => {
         const style = createStyle();
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
+            style.on('error', ({error}) => {
                 t.match(error.message, /does not exist in the map\'s style and cannot be filtered/);
                 t.end();
             });
@@ -1760,7 +1760,7 @@ test('Style#setLayerZoomRange', (t) => {
     t.test('fires an error if layer not found', (t) => {
         const style = createStyle();
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
+            style.on('error', ({error}) => {
                 t.match(error.message, /does not exist in the map\'s style and cannot have zoom extent/);
                 t.end();
             });
@@ -1803,7 +1803,7 @@ test('Style#queryRenderedFeatures', (t) => {
         // format result to shape of tile.queryRenderedFeatures result
         for (const layer in features) {
             features[layer] = features[layer].map((feature, featureIndex) =>
-                ({ feature, featureIndex }));
+                ({feature, featureIndex}));
         }
 
         if (params.layers) {
@@ -1822,11 +1822,11 @@ test('Style#queryRenderedFeatures', (t) => {
         "sources": {
             "mapbox": {
                 "type": "geojson",
-                "data": { type: "FeatureCollection", features: [] }
+                "data": {type: "FeatureCollection", features: []}
             },
             "other": {
                 "type": "geojson",
-                "data": { type: "FeatureCollection", features: [] }
+                "data": {type: "FeatureCollection", features: []}
             }
         },
         "layers": [{
@@ -1869,7 +1869,7 @@ test('Style#queryRenderedFeatures', (t) => {
     style.on('style.load', () => {
         style.sourceCaches.mapbox.tilesIn = () => {
             return [{
-                tile: { queryRenderedFeatures: queryMapboxFeatures },
+                tile: {queryRenderedFeatures: queryMapboxFeatures},
                 tileID: new OverscaledTileID(0, 0, 0, 0, 0),
                 queryGeometry: [],
                 scale: 1
@@ -1973,9 +1973,9 @@ test('Style defers expensive methods', (t) => {
         t.spy(style, '_reloadSource');
         t.spy(style, '_updateWorkerLayers');
 
-        style.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
-        style.addLayer({ id: 'second', type: 'symbol', source: 'streets' });
-        style.addLayer({ id: 'third', type: 'symbol', source: 'terrain' });
+        style.addLayer({id: 'first', type: 'symbol', source: 'streets'});
+        style.addLayer({id: 'second', type: 'symbol', source: 'streets'});
+        style.addLayer({id: 'third', type: 'symbol', source: 'terrain'});
 
         style.setPaintProperty('first', 'text-color', 'black');
         style.setPaintProperty('first', 'text-halo-color', 'white');
@@ -2072,7 +2072,7 @@ test('Style#query*Features', (t) => {
 });
 
 test('Style#addSourceType', (t) => {
-    const _types = { 'existing' () {} };
+    const _types = {'existing' () {}};
 
     t.stub(Style, 'getSourceType').callsFake(name => _types[name]);
     t.stub(Style, 'setSourceType').callsFake((name, create) => {
@@ -2144,7 +2144,7 @@ test('Style#hasTransitions', (t) => {
 
         style.on('style.load', () => {
             style.setPaintProperty("background", "background-color", "blue");
-            style.update({transition: { duration: 300, delay: 0 }});
+            style.update({transition: {duration: 300, delay: 0}});
             t.equal(style.hasTransitions(), true);
             t.end();
         });
@@ -2163,7 +2163,7 @@ test('Style#hasTransitions', (t) => {
 
         style.on('style.load', () => {
             style.setPaintProperty("background", "background-color", "blue");
-            style.update({transition: { duration: 0, delay: 0 }});
+            style.update({transition: {duration: 0, delay: 0}});
             t.equal(style.hasTransitions(), false);
             t.end();
         });

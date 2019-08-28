@@ -1,11 +1,11 @@
 // @flow
 
-import { packUint8ToFloat } from '../shaders/encode_attribute';
+import {packUint8ToFloat} from '../shaders/encode_attribute';
 import Color from '../style-spec/util/color';
-import { supportsPropertyExpression } from '../style-spec/util/properties';
-import { register, serialize, deserialize } from '../util/web_worker_transfer';
-import { PossiblyEvaluatedPropertyValue } from '../style/properties';
-import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray } from './array_types';
+import {supportsPropertyExpression} from '../style-spec/util/properties';
+import {register, serialize, deserialize} from '../util/web_worker_transfer';
+import {PossiblyEvaluatedPropertyValue} from '../style/properties';
+import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray} from './array_types';
 
 import EvaluationParameters from '../style/evaluation_parameters';
 import FeaturePositionMap from './feature_position_map';
@@ -346,7 +346,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
         const paintArray = this.paintVertexArray;
 
-        const min = this.expression.evaluate({zoom: this.zoom    }, feature, featureState);
+        const min = this.expression.evaluate({zoom: this.zoom}, feature, featureState);
         const max = this.expression.evaluate({zoom: this.zoom + 1}, feature, featureState);
 
         if (this.type === 'color') {
@@ -450,14 +450,14 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
 
         const zoomInArray = this.zoomInPaintVertexArray;
         const zoomOutArray = this.zoomOutPaintVertexArray;
-        const { layerId } = this;
+        const {layerId} = this;
         const start = zoomInArray.length;
 
         zoomInArray.reserve(length);
         zoomOutArray.reserve(length);
 
         if (imagePositions && feature.patterns && feature.patterns[layerId]) {
-            const { min, mid, max } = feature.patterns[layerId];
+            const {min, mid, max} = feature.patterns[layerId];
 
             const imageMin = imagePositions[min];
             const imageMid = imagePositions[mid];
@@ -486,7 +486,7 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
 
         const zoomInArray = this.zoomInPaintVertexArray;
         const zoomOutArray = this.zoomOutPaintVertexArray;
-        const { layerId } = this;
+        const {layerId} = this;
 
         if (imagePositions && feature.patterns && feature.patterns[layerId]) {
             const {min, mid, max} = feature.patterns[layerId];

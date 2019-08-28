@@ -1,8 +1,8 @@
 // @flow
 
-import { Color } from './values';
-import type { FormattedSection } from './types/formatted';
-import type { GlobalProperties, Feature, FeatureState } from './index';
+import {Color} from './values';
+import type {FormattedSection} from './types/formatted';
+import type {GlobalProperties, Feature, FeatureState} from './index';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 

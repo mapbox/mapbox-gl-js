@@ -1,6 +1,6 @@
 // @flow
 
-import { bindAll } from '../util/util';
+import {bindAll} from '../util/util';
 
 import type Dispatcher from '../util/dispatcher';
 import type {Event, Evented} from '../util/evented';

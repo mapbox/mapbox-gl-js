@@ -1,10 +1,10 @@
-import { test } from '../../../util/test';
+import {test} from '../../../util/test';
 import browser from '../../../../src/util/browser';
 import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from '../../../util/simulate_interaction';
-import { equalWithPrecision } from '../../../util';
+import {equalWithPrecision} from '../../../util';
 import sinon from 'sinon';
 
 function createMap(t) {

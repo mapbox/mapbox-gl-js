@@ -33,10 +33,10 @@ function createSkuToken(): SkuTokenObject {
     const token = [TOKEN_VERSION, SKU_ID, sessionRandomizer].join('');
     const tokenExpiresAt = Date.now() + expiration;
 
-    return { token, tokenExpiresAt };
+    return {token, tokenExpiresAt};
 }
 
-export { createSkuToken, SKU_ID };
+export {createSkuToken, SKU_ID};
 
 /***** END WARNING - REMOVAL OR MODIFICATION OF THE
 PRECEDING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******/

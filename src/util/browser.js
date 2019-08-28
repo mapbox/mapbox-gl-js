@@ -1,7 +1,7 @@
 // @flow strict
 
 import window from './window';
-import type { Cancelable } from '../types/cancelable';
+import type {Cancelable} from '../types/cancelable';
 
 const now = window.performance && window.performance.now ?
     window.performance.now.bind(window.performance) :
@@ -33,7 +33,7 @@ const exported = {
 
     frame(fn: () => void): Cancelable {
         const frame = raf(fn);
-        return { cancel: () => cancel(frame) };
+        return {cancel: () => cancel(frame)};
     },
 
     getImageData(img: CanvasImageSource, padding?: number = 0): ImageData {

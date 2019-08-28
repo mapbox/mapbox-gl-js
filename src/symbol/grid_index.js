@@ -121,7 +121,7 @@ class GridIndex {
         } else {
             const queryArgs = {
                 hitTest,
-                seenUids: { box: {}, circle: {} }
+                seenUids: {box: {}, circle: {}}
             };
             this._forEachCell(x1, y1, x2, y2, this._queryCell, result, queryArgs, predicate);
             return hitTest ? result.length > 0 : result;
@@ -145,8 +145,8 @@ class GridIndex {
         const result = [];
         const queryArgs = {
             hitTest,
-            circle: { x, y, radius },
-            seenUids: { box: {}, circle: {} }
+            circle: {x, y, radius},
+            seenUids: {box: {}, circle: {}}
         };
         this._forEachCell(x1, y1, x2, y2, this._queryCellCircle, result, queryArgs, predicate);
         return hitTest ? result.length > 0 : result;

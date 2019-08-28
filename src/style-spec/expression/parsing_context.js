@@ -1,7 +1,7 @@
 // @flow
 
 import Scope from './scope';
-import { checkSubtype } from './types';
+import {checkSubtype} from './types';
 import ParsingError from './parsing_error';
 import Literal from './definitions/literal';
 import Assertion from './definitions/assertion';

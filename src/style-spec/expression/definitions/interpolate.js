@@ -3,16 +3,16 @@
 import UnitBezier from '@mapbox/unitbezier';
 
 import * as interpolate from '../../util/interpolate';
-import { toString, NumberType, ColorType } from '../types';
-import { findStopLessThanOrEqualTo } from '../stops';
-import { hcl, lab } from '../../util/color_spaces';
+import {toString, NumberType, ColorType} from '../types';
+import {findStopLessThanOrEqualTo} from '../stops';
+import {hcl, lab} from '../../util/color_spaces';
 
-import type { Stops } from '../stops';
-import type { Expression } from '../expression';
+import type {Stops} from '../stops';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Value } from '../values';
-import type { Type } from '../types';
+import type {Value} from '../values';
+import type {Type} from '../types';
 
 export type InterpolationType =
     { name: 'linear' } |
@@ -64,7 +64,7 @@ class Interpolate implements Expression {
         }
 
         if (interpolation[0] === 'linear') {
-            interpolation = { name: 'linear' };
+            interpolation = {name: 'linear'};
         } else if (interpolation[0] === 'exponential') {
             const base = interpolation[1];
             if (typeof base !== 'number')

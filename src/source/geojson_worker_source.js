@@ -1,6 +1,6 @@
 // @flow
 
-import { getJSON } from '../util/ajax';
+import {getJSON} from '../util/ajax';
 
 import performance from '../util/performance';
 import rewind from '@mapbox/geojson-rewind';
@@ -10,7 +10,7 @@ import Supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
 import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
-import { createExpression } from '../style-spec/expression';
+import {createExpression} from '../style-spec/expression';
 
 import type {
     WorkerTileParameters,
@@ -21,8 +21,8 @@ import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 
 import type {LoadVectorDataCallback} from './vector_tile_worker_source';
-import type { RequestParameters, ResponseCallback } from '../util/ajax';
-import type { Callback } from '../types/callback';
+import type {RequestParameters, ResponseCallback} from '../util/ajax';
+import type {Callback} from '../types/callback';
 import type {GeoJSONFeature} from '@mapbox/geojson-types';
 
 export type LoadGeoJSONParameters = {
@@ -132,7 +132,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         abandoned?: boolean }>) {
         if (this._pendingCallback) {
             // Tell the foreground the previous call has been abandoned
-            this._pendingCallback(null, { abandoned: true });
+            this._pendingCallback(null, {abandoned: true});
         }
         this._pendingCallback = callback;
         this._pendingLoadDataParams = params;
@@ -277,7 +277,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     removeSource(params: {source: string}, callback: Callback<mixed>) {
         if (this._pendingCallback) {
             // Don't leak callbacks
-            this._pendingCallback(null, { abandoned: true });
+            this._pendingCallback(null, {abandoned: true});
         }
         callback();
     }

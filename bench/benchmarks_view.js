@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
-import { kde, probabilitiesOfSuperiority, summaryStatistics, regression } from './lib/statistics';
+import {kde, probabilitiesOfSuperiority, summaryStatistics, regression} from './lib/statistics';
 
 const versionColor = d3.scaleOrdinal(['#1b9e77', '#7570b3', '#d95f02']);
 const formatSample = d3.format(".3r");
@@ -224,12 +224,12 @@ class StatisticsPlot extends React.Component {
                                     strokeWidth={bandwidth}
                                     strokeOpacity={1} />
                                 <use href="#up-arrow" // mean
-                                    style={{ stroke: color, fill: color, fillOpacity: 0.4 }}
+                                    style={{stroke: color, fill: color, fillOpacity: 0.4}}
                                     transform={mean >= tMax ? 'translate(-10, 0)' : `translate(-5, ${t(mean)}) rotate(90)`}
                                     x={0}
                                     y={0} />
                                 <use href="#up-arrow" // trimmed mean
-                                    style={{ stroke: color, fill: color }}
+                                    style={{stroke: color, fill: color}}
                                     transform={`translate(-5, ${t(trimmedMean)}) rotate(90)`}
                                     x={0}
                                     y={0} />
@@ -275,7 +275,7 @@ class StatisticsPlot extends React.Component {
     }
 
     componentDidMount() {
-        this.setState({ width: this.ref.clientWidth });
+        this.setState({width: this.ref.clientWidth});
     }
 }
 
@@ -342,7 +342,7 @@ class RegressionPlot extends React.Component {
     }
 
     componentDidMount() {
-        this.setState({ width: this.ref.clientWidth });
+        this.setState({width: this.ref.clientWidth});
     }
 }
 
