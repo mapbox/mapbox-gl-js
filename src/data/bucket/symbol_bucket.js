@@ -25,12 +25,12 @@ import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray, LineIndexArray } from '../index_array_type';
 import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
-import { allowsVerticalWritingMode } from '../../util/script_detection';
+import {allowsVerticalWritingMode} from '../../util/script_detection';
 import { WritingMode } from '../../symbol/shaping';
 import loadGeometry from '../load_geometry';
 import mvt from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
-import { verticalizedCharacterMap } from '../../util/verticalize_punctuation';
+import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import Anchor from '../../symbol/anchor';
 import { getSizeData } from '../../symbol/symbol_size';
 import { register } from '../../util/web_worker_transfer';
@@ -43,16 +43,16 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../bucket';
-import type { CollisionBoxArray, CollisionBox, SymbolInstance } from '../array_types';
+import type {CollisionBoxArray, CollisionBox, SymbolInstance} from '../array_types';
 import type { StructArray, StructArrayMember } from '../../util/struct_array';
 import SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
-import type { SymbolQuad } from '../../symbol/quads';
-import type { SizeData } from '../../symbol/symbol_size';
-import type { FeatureStates } from '../../source/source_state';
-import type { ImagePosition } from '../../render/image_atlas';
+import type {SymbolQuad} from '../../symbol/quads';
+import type {SizeData} from '../../symbol/symbol_size';
+import type {FeatureStates} from '../../source/source_state';
+import type {ImagePosition} from '../../render/image_atlas';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -82,7 +82,7 @@ export type SymbolFeature = {|
     geometry: Array<Array<Point>>,
     properties: Object,
     type: 'Point' | 'LineString' | 'Polygon',
-    id ?: any
+    id?: any
 |};
 
 // Opacity arrays are frequently updated but don't contain a lot of information, so we pack them
@@ -282,7 +282,7 @@ class SymbolBucket implements Bucket {
     collisionArrays: Array<CollisionArrays>;
     pixelRatio: number;
     tilePixelRatio: number;
-    compareText: { [string]: Array<Point> };
+    compareText: {[string]: Array<Point>};
     fadeStartTime: number;
     sortFeaturesByKey: boolean;
     sortFeaturesByY: boolean;

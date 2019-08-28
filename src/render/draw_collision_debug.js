@@ -3,7 +3,7 @@
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type StyleLayer from '../style/style_layer';
-import type { OverscaledTileID } from '../source/tile_id';
+import type {OverscaledTileID} from '../source/tile_id';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
