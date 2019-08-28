@@ -47,7 +47,6 @@ class DragPanHandler {
             '_onMove',
             '_onMouseUp',
             '_onTouchEnd',
-            '_onMultiTouchEnd',
             '_onBlur',
             '_onDragFrame'
         ], this);
@@ -128,10 +127,9 @@ class DragPanHandler {
     onTouchStart(e: TouchEvent) {
         if (!this.isEnabled()) return;
         if (e.touches && e.touches.length > 1) { // multi-finger touch
-            // Listen for the multi-touch end in case it's reduced to a single touch
-            DOM.removeEventListener(window.document, 'touchend', this._onTouchEnd);
-            DOM.addEventListener(window.document, 'touchend', this._onMultiTouchEnd);
-            return;
+            // If we are already dragging (e.g. with one finger) and add another finger,
+            // keep the handler active but don't attempt to ._start() again
+            if (this._state === 'pending' || this._state === 'active') return;
         }
 
         // Bind window-level event listeners for touchmove/end events. In the absence of
@@ -225,47 +223,23 @@ class DragPanHandler {
     }
 
     _onTouchEnd(e: TouchEvent) {
+      if (!e.touches || e.touches.length === 0) { // only stop drag if all fingers have been removed
         switch (this._state) {
-        case 'active':
-            this._state = 'enabled';
-            this._unbind();
-            this._deactivate();
-            this._inertialPan(e);
-            break;
-        case 'pending':
-            this._state = 'enabled';
-            this._unbind();
-            break;
-        default:
-            assert(false);
-            break;
+          case 'active':
+              this._state = 'enabled';
+              this._unbind();
+              this._deactivate();
+              this._inertialPan(e);
+              break;
+          case 'pending':
+              this._state = 'enabled';
+              this._unbind();
+              break;
+          default:
+              assert(false);
+              break;
         }
-    }
-
-    _onMultiTouchEnd(e: TouchEvent) {
-        // A multi-finger touch is ending; decide whether to activate dragging
-
-        if (e.touches && e.touches.length > 1) return; // there are still multiple fingers touching; wait
-
-        DOM.removeEventListener(window.document, 'touchend', this._onMultiTouchEnd);
-
-        // all fingers were removed at once; nothing left to do
-        if (!e.touches || e.touches.length === 0) {
-            this._onTouchEnd(e);
-            return;
-        }
-
-        // Back to single-touch (e.touches.length === 1); treat this like a touchstart & activate drag
-
-        // Bind window-level event listeners for touchmove/end events. In the absence of
-        // the pointer capture API, which is not supported by all necessary platforms,
-        // window-level event listeners give us the best shot at capturing events that
-        // fall outside the map canvas element. Use `{capture: true}` for the move event
-        // to prevent map move events from being fired during a drag.
-        DOM.addEventListener(window.document, 'touchmove', this._onMove, {capture: true, passive: false});
-        DOM.addEventListener(window.document, 'touchend', this._onTouchEnd);
-
-        this._start(e);
+      }
     }
 
     _abort(e: FocusEvent | TouchEvent) {
@@ -285,11 +259,6 @@ class DragPanHandler {
             assert(false);
             break;
         }
-    }
-
-    _onMultiTouchStart(e: TouchEvent) {
-        // Additional fingers are now touching; treat this almost like a touchend & stop dragging,
-        this._abort(e);
     }
 
     _onBlur(e: FocusEvent) {
