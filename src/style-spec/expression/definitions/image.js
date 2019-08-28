@@ -19,15 +19,24 @@ export default class ImageExpression implements Expression {
     }
 
     static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
+        if (args.length !== 2) {
+            return context.error(`Expected two arguments.`);
+        }
 
+        const imageName = args[1];
+
+        console.log('parse', args, context);
+        console.log('new ImageExpression(imageName)', new ImageExpression(imageName));
+        return new ImageExpression(imageName);
     }
 
     evaluate(ctx: EvaluationContext) {
-
+        console.log('evaluate', ctx);
     }
 
     eachChild(fn: (Expression) => void) {
-
+        console.log('each child', fn);
+        fn(this.name);
     }
 
     possibleOutputs() {

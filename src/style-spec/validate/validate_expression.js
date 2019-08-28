@@ -7,6 +7,7 @@ import {deepUnbundle} from '../util/unbundle_jsonlint';
 import {isStateConstant, isGlobalPropertyConstant, isFeatureConstant} from '../expression/is_constant';
 
 export default function validateExpression(options: any): Array<ValidationError> {
+    console.log('validate', options);
     const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec);
     if (expression.result === 'error') {
         return expression.value.map((error) => {

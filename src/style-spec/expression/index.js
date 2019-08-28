@@ -213,6 +213,7 @@ export type StylePropertyExpression =
 
 export function createPropertyExpression(expression: mixed, propertySpec: StylePropertySpecification): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec);
+    console.log('expression', expression);
     if (expression.result === 'error') {
         return expression;
     }
@@ -220,6 +221,7 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
     const parsed = expression.value.expression;
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
+    console.log('isFeatureConstant', isFeatureConstant);
     if (!isFeatureConstant && !supportsPropertyExpression(propertySpec)) {
         return error([new ParsingError('', 'data expressions not supported')]);
     }
@@ -351,6 +353,7 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
 import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, array} from './types';
 
 function getExpectedType(spec: StylePropertySpecification): Type {
+    console.log('spec', spec);
     const types = {
         color: ColorType,
         string: StringType,
