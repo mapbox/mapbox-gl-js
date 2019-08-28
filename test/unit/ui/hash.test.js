@@ -67,6 +67,14 @@ test('hash', (t) => {
         t.equal(map.getBearing(), 30);
         t.equal(map.getPitch(), 60);
 
+        window.location.hash = '#4/wronlgy/formed/hash';
+
+        t.false(hash._onHashChange());
+
+        window.location.hash = '#map=10/3.00/-1.00&foo=bar';
+
+        t.false(hash._onHashChange());
+
         window.location.hash = '';
 
         t.end();
@@ -114,6 +122,18 @@ test('hash', (t) => {
         t.equal(map.getZoom(), 10);
         t.equal(map.getBearing(), 0);
         t.equal(map.getPitch(), 0);
+
+        window.location.hash = '#map&foo=bar';
+
+        t.false(hash._onHashChange());
+
+        window.location.hash = '#map=4/5/baz&foo=bar';
+
+        t.false(hash._onHashChange());
+
+        window.location.hash = '#5/1.00/0.50/30/60';
+
+        t.false(hash._onHashChange());
 
         window.location.hash = '';
 

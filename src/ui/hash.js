@@ -110,7 +110,7 @@ class Hash {
 
     _onHashChange() {
         const loc = this._getCurrentHash();
-        if (loc.length >= 3) {
+        if (loc.length >= 3 && !loc.some(v => isNaN(+v))) {
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
