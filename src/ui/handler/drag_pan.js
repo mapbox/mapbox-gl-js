@@ -199,6 +199,9 @@ class DragPanHandler {
           this._fireEvent('movestart', e);
           this._shouldStart = false;
         }
+
+        if (!this.isActive()) return; // It's possible for the dragstart event to trigger a disable() call (#2419) so we must account for that
+
         const tr = this._map.transform;
         tr.setLocationAtPoint(tr.pointLocation(this._startPos), this._lastPos);
         this._fireEvent('drag', e);
