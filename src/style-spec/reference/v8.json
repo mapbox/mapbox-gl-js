@@ -1922,7 +1922,7 @@
             ]
         }
       ],
-      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the render will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` instead of the two-dimensional `text-offset`.",
+      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the render will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` or the two-dimensional `text-offset`.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.54.0",
@@ -2214,7 +2214,7 @@
     },
     "text-offset": {
       "type": "array",
-      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up. Note that in combination with `text-variable-anchor` only positive values are allowed and they indicate radial offsets along x- and y-axis accordingly.",
+      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up. Note that in combination with `text-variable-anchor` absolute values are used and they indicate radial offsets along x- and y-axis accordingly.",
       "value": "number",
       "units": "ems",
       "length": 2,
