@@ -1,4 +1,4 @@
-import { test } from '../../../util/test';
+import {test} from '../../../util/test';
 import browser from '../../../../src/util/browser';
 import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
@@ -7,7 +7,7 @@ import simulate from '../../../util/simulate_interaction';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({ container: DOM.create('div', '', window.document.body) });
+    return new Map({container: DOM.create('div', '', window.document.body)});
 }
 
 test('Map#isZooming returns false by default', (t) => {
@@ -30,7 +30,7 @@ test('Map#isZooming returns true during a camera zoom animation', (t) => {
         t.end();
     });
 
-    map.zoomTo(5, { duration: 0 });
+    map.zoomTo(5, {duration: 0});
 });
 
 test('Map#isZooming returns true when scroll zooming', (t) => {

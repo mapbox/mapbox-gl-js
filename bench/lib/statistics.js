@@ -87,7 +87,7 @@ function leastSquaresRegression(data) {
     const slope = covariance / varianceX;
     const intercept = meanY - slope * meanX;
 
-    return { correlation, slope, intercept, data };
+    return {correlation, slope, intercept, data};
 }
 
 export function kde(samples, summary, ticks) {

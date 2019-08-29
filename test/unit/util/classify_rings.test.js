@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import fs from 'fs';
 import path from 'path';
 import Protobuf from 'pbf';
-import { VectorTile } from '@mapbox/vector-tile';
+import {VectorTile} from '@mapbox/vector-tile';
 import classifyRings from '../../../src/util/classify_rings';
 
 // Load a fill feature from fixture tile.

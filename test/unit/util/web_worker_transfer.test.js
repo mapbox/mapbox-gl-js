@@ -1,9 +1,9 @@
 // @flow
 
-import { test } from '../../util/test';
-import { register, serialize, deserialize } from '../../../src/util/web_worker_transfer';
+import {test} from '../../util/test';
+import {register, serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
-import type { Serialized } from '../../../src/util/web_worker_transfer';
+import type {Serialized} from '../../../src/util/web_worker_transfer';
 
 test('round trip', (t) => {
     class Foo {
@@ -26,7 +26,7 @@ test('round trip', (t) => {
         }
     }
 
-    register('Foo', Foo, { omit: ['_cached'] });
+    register('Foo', Foo, {omit: ['_cached']});
 
     const foo = new Foo(10);
     const transferables = [];

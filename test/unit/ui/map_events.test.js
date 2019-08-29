@@ -1,6 +1,6 @@
-import { test } from '../../util/test';
-import { createMap } from '../../util';
-import simulate, { window } from '../../util/simulate_interaction';
+import {test} from '../../util/test';
+import {createMap} from '../../util';
+import simulate, {window} from '../../util/simulate_interaction';
 
 test('Map#on adds a non-delegated event listener', (t) => {
     const map = createMap(t);
@@ -555,7 +555,7 @@ test(`Map#on mousedown doesn't fire subsequent click event if mousepos changes`,
 });
 
 test(`Map#on mousedown fires subsequent click event if mouse position changes less than click tolerance`, (t) => {
-    const map = createMap(t, { clickTolerance: 4 });
+    const map = createMap(t, {clickTolerance: 4});
 
     map.on('mousedown', e => e.preventDefault());
 
@@ -571,7 +571,7 @@ test(`Map#on mousedown fires subsequent click event if mouse position changes le
 });
 
 test(`Map#on mousedown does not fire subsequent click event if mouse position changes more than click tolerance`, (t) => {
-    const map = createMap(t, { clickTolerance: 4 });
+    const map = createMap(t, {clickTolerance: 4});
 
     map.on('mousedown', e => e.preventDefault());
 
@@ -587,7 +587,7 @@ test(`Map#on mousedown does not fire subsequent click event if mouse position ch
 });
 
 test(`Map#on click fires subsequent click event if there is no corresponding mousedown/mouseup event`, (t) => {
-    const map = createMap(t, { clickTolerance: 4 });
+    const map = createMap(t, {clickTolerance: 4});
 
     const click = t.spy();
     map.on('click', click);

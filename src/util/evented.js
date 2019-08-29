@@ -1,6 +1,6 @@
 // @flow
 
-import { extend } from './util';
+import {extend} from './util';
 
 type Listener = (Object) => any;
 type Listeners = { [string]: Array<Listener> };

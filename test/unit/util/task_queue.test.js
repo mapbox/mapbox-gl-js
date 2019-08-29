@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import TaskQueue from '../../../src/util/task_queue';
 
 test('TaskQueue', (t) => {

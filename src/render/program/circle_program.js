@@ -66,4 +66,4 @@ const circleUniformValues = (
     };
 };
 
-export { circleUniforms, circleUniformValues };
+export {circleUniforms, circleUniformValues};

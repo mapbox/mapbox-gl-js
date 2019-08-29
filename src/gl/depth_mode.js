@@ -1,5 +1,5 @@
 // @flow
-import type { DepthFuncType, DepthMaskType, DepthRangeType } from './types';
+import type {DepthFuncType, DepthMaskType, DepthRangeType} from './types';
 
 const ALWAYS = 0x0207;
 

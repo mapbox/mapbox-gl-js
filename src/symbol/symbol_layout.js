@@ -2,12 +2,12 @@
 
 import Anchor from './anchor';
 
-import { getAnchors, getCenterAnchor } from './get_anchors';
+import {getAnchors, getCenterAnchor} from './get_anchors';
 import clipLine from './clip_line';
-import { shapeText, shapeIcon, WritingMode } from './shaping';
-import { getGlyphQuads, getIconQuads } from './quads';
+import {shapeText, shapeIcon, WritingMode} from './shaping';
+import {getGlyphQuads, getIconQuads} from './quads';
 import CollisionFeature from './collision_feature';
-import { warnOnce } from '../util/util';
+import {warnOnce} from '../util/util';
 import {
     allowsVerticalWritingMode,
     allowsLetterSpacing

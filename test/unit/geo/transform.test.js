@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';
-import { OverscaledTileID, CanonicalTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID, CanonicalTileID} from '../../../src/source/tile_id';
 import {fixedLngLat, fixedCoord} from '../../util/fixed';
 
 test('transform', (t) => {
@@ -24,7 +24,7 @@ test('transform', (t) => {
         t.equal(transform.minZoom = 10, 10);
         t.equal(transform.maxZoom = 10, 10);
         t.equal(transform.minZoom, 10);
-        t.deepEqual(transform.center, { lng: 0, lat: 0 });
+        t.deepEqual(transform.center, {lng: 0, lat: 0});
         t.equal(transform.maxZoom, 10);
         t.equal(transform.size.equals(new Point(500, 500)), true);
         t.equal(transform.centerPoint.equals(new Point(250, 250)), true);
@@ -32,10 +32,10 @@ test('transform', (t) => {
         t.equal(transform.scaleZoom(10), 3.3219280948873626);
         t.deepEqual(transform.point, new Point(262144, 262144));
         t.equal(transform.height, 500);
-        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(250, 250))), { lng: 0, lat: 0 });
-        t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), { x: 0.5, y: 0.5, z: 0 });
-        t.deepEqual(transform.locationPoint(new LngLat(0, 0)), { x: 250, y: 250 });
-        t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), { x: 0.5, y: 0.5, z: 0 });
+        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(250, 250))), {lng: 0, lat: 0});
+        t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), {x: 0.5, y: 0.5, z: 0});
+        t.deepEqual(transform.locationPoint(new LngLat(0, 0)), {x: 250, y: 250});
+        t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), {x: 0.5, y: 0.5, z: 0});
         t.end();
     });
 
@@ -50,9 +50,9 @@ test('transform', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         transform.zoom = 4;
-        t.deepEqual(transform.center, { lng: 0, lat: 0 });
-        transform.setLocationAtPoint({ lng: 13, lat: 10 }, new Point(15, 45));
-        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(15, 45))), { lng: 13, lat: 10 });
+        t.deepEqual(transform.center, {lng: 0, lat: 0});
+        transform.setLocationAtPoint({lng: 13, lat: 10}, new Point(15, 45));
+        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(15, 45))), {lng: 13, lat: 10});
         t.end();
     });
 
@@ -61,9 +61,9 @@ test('transform', (t) => {
         transform.resize(500, 500);
         transform.zoom = 4;
         transform.pitch = 50;
-        t.deepEqual(transform.center, { lng: 0, lat: 0 });
-        transform.setLocationAtPoint({ lng: 13, lat: 10 }, new Point(15, 45));
-        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(15, 45))), { lng: 13, lat: 10 });
+        t.deepEqual(transform.center, {lng: 0, lat: 0});
+        transform.setLocationAtPoint({lng: 13, lat: 10}, new Point(15, 45));
+        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(15, 45))), {lng: 13, lat: 10});
         t.end();
     });
 
@@ -117,7 +117,7 @@ test('transform', (t) => {
         transform.resize(200, 200);
 
         // make slightly off center so that sort order is not subject to precision issues
-        transform.center = { lng: -0.01, lat: 0.01 };
+        transform.center = {lng: -0.01, lat: 0.01};
 
         transform.zoom = 0;
         t.deepEqual(transform.coveringTiles(options), []);
@@ -240,7 +240,7 @@ test('transform', (t) => {
         const transform = new Transform();
         transform.resize(200, 200);
         transform.zoom = 0;
-        transform.center = { lng: -170.01, lat: 0.01 };
+        transform.center = {lng: -170.01, lat: 0.01};
 
         let unwrappedCoords = transform.getVisibleUnwrappedCoordinates(new CanonicalTileID(0, 0, 0));
         t.equal(unwrappedCoords.length, 4);

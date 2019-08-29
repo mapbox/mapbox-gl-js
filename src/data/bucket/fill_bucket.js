@@ -1,16 +1,16 @@
 // @flow
 
-import { FillLayoutArray } from '../array_types';
+import {FillLayoutArray} from '../array_types';
 
-import { members as layoutAttributes } from './fill_attributes';
+import {members as layoutAttributes} from './fill_attributes';
 import SegmentVector from '../segment';
-import { ProgramConfigurationSet } from '../program_configuration';
-import { LineIndexArray, TriangleIndexArray } from '../index_array_type';
+import {ProgramConfigurationSet} from '../program_configuration';
+import {LineIndexArray, TriangleIndexArray} from '../index_array_type';
 import earcut from 'earcut';
 import classifyRings from '../../util/classify_rings';
 import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
-import { register } from '../../util/web_worker_transfer';
+import {register} from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import EvaluationParameters from '../../style/evaluation_parameters';

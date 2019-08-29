@@ -1,6 +1,6 @@
 // @flow
 
-import { endsWith, filterObject } from '../util/util';
+import {endsWith, filterObject} from '../util/util';
 
 import styleSpec from '../style-spec/reference/latest';
 import {
@@ -9,11 +9,11 @@ import {
     validatePaintProperty,
     emitValidationErrors
 } from './validate_style';
-import { Evented } from '../util/evented';
-import { Layout, Transitionable, Transitioning, Properties, PossiblyEvaluatedPropertyValue } from './properties';
-import { supportsPropertyExpression } from '../style-spec/util/properties';
+import {Evented} from '../util/evented';
+import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluatedPropertyValue} from './properties';
+import {supportsPropertyExpression} from '../style-spec/util/properties';
 
-import type { FeatureState } from '../style-spec/expression';
+import type {FeatureState} from '../style-spec/expression';
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter} from '../style-spec/feature_filter';

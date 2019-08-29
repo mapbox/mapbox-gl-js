@@ -1,6 +1,6 @@
 // @flow
 
-import { RGBAImage } from './image';
+import {RGBAImage} from './image';
 
 import type {StylePropertyExpression} from '../style-spec/expression/index';
 

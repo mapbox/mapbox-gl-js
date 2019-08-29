@@ -2,19 +2,19 @@
 
 import FeatureIndex from '../data/feature_index';
 
-import { performSymbolLayout } from '../symbol/symbol_layout';
-import { CollisionBoxArray } from '../data/array_types';
+import {performSymbolLayout} from '../symbol/symbol_layout';
+import {CollisionBoxArray} from '../data/array_types';
 import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import LineBucket from '../data/bucket/line_bucket';
 import FillBucket from '../data/bucket/fill_bucket';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
-import { warnOnce, mapObject, values } from '../util/util';
+import {warnOnce, mapObject, values} from '../util/util';
 import assert from 'assert';
 import ImageAtlas from '../render/image_atlas';
 import GlyphAtlas from '../render/glyph_atlas';
 import EvaluationParameters from '../style/evaluation_parameters';
-import { OverscaledTileID } from './tile_id';
+import {OverscaledTileID} from './tile_id';
 
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
@@ -95,7 +95,7 @@ class WorkerTile {
             const features = [];
             for (let index = 0; index < sourceLayer.length; index++) {
                 const feature = sourceLayer.feature(index);
-                features.push({ feature, index, sourceLayerIndex });
+                features.push({feature, index, sourceLayerIndex});
             }
 
             for (const family of layerFamilies[sourceLayerId]) {

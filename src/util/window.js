@@ -13,7 +13,7 @@ import sinon from 'sinon';
 
 import type {Window} from '../types/window';
 
-const { window: _window } = new jsdom.JSDOM('', {
+const {window: _window} = new jsdom.JSDOM('', {
     virtualConsole: new jsdom.VirtualConsole().sendTo(console)
 });
 
@@ -32,7 +32,7 @@ function restore(): Window {
     }
 
     // Create new window and inject into exported object
-    const { window } = new jsdom.JSDOM('', {
+    const {window} = new jsdom.JSDOM('', {
         // Send jsdom console output to the node console object.
         virtualConsole: new jsdom.VirtualConsole().sendTo(console)
     });

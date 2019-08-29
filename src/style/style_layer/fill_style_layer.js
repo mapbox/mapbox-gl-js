@@ -3,12 +3,12 @@
 import StyleLayer from '../style_layer';
 
 import FillBucket from '../../data/bucket/fill_bucket';
-import { polygonIntersectsMultiPolygon } from '../../util/intersection_tests';
-import { translateDistance, translate } from '../query_utils';
+import {polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
+import {translateDistance, translate} from '../query_utils';
 import properties from './fill_style_layer_properties';
-import { Transitionable, Transitioning, Layout, PossiblyEvaluated } from '../properties';
+import {Transitionable, Transitioning, Layout, PossiblyEvaluated} from '../properties';
 
-import type { FeatureState } from '../../style-spec/expression';
+import type {FeatureState} from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {LayoutProps, PaintProps} from './fill_style_layer_properties';

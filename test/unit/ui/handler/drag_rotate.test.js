@@ -1,5 +1,5 @@
-import { test } from '../../../util/test';
-import { extend } from '../../../../src/util/util';
+import {test} from '../../../util/test';
+import {extend} from '../../../../src/util/util';
 import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
@@ -8,7 +8,7 @@ import browser from '../../../../src/util/browser';
 
 function createMap(t, options) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map(extend({ container: DOM.create('div', '', window.document.body) }, options));
+    return new Map(extend({container: DOM.create('div', '', window.document.body)}, options));
 }
 
 test('DragRotateHandler fires rotatestart, rotate, and rotateend events at appropriate times in response to a right-click drag', (t) => {

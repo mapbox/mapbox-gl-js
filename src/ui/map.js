@@ -1,13 +1,13 @@
 // @flow
 
-import { version } from '../../package.json';
-import { extend, bindAll, warnOnce, uniqueId } from '../util/util';
+import {version} from '../../package.json';
+import {extend, bindAll, warnOnce, uniqueId} from '../util/util';
 import browser from '../util/browser';
 import window from '../util/window';
-const { HTMLImageElement, HTMLElement } = window;
+const {HTMLImageElement, HTMLElement} = window;
 import DOM from '../util/dom';
-import { getImage, getJSON, ResourceType } from '../util/ajax';
-import { RequestManager } from '../util/mapbox';
+import {getImage, getJSON, ResourceType} from '../util/ajax';
+import {RequestManager} from '../util/mapbox';
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
@@ -21,15 +21,15 @@ import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control';
 import LogoControl from './control/logo_control';
 import isSupported from '@mapbox/mapbox-gl-supported';
-import { RGBAImage } from '../util/image';
-import { Event, ErrorEvent } from '../util/evented';
-import { MapMouseEvent } from './events';
+import {RGBAImage} from '../util/image';
+import {Event, ErrorEvent} from '../util/evented';
+import {MapMouseEvent} from './events';
 import TaskQueue from '../util/task_queue';
 import webpSupported from '../util/webp_supported';
-import { setCacheLimits } from '../util/tile_request_cache';
+import {setCacheLimits} from '../util/tile_request_cache';
 
 import type {PointLike} from '@mapbox/point-geometry';
-import type { RequestTransformFunction } from '../util/mapbox';
+import type {RequestTransformFunction} from '../util/mapbox';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {StyleOptions, StyleSetterOptions} from '../style/style';
@@ -391,17 +391,17 @@ class Map extends Camera {
 
             if (options.bounds) {
                 this.resize();
-                this.fitBounds(options.bounds, extend({}, options.fitBoundsOptions, { duration: 0 }));
+                this.fitBounds(options.bounds, extend({}, options.fitBoundsOptions, {duration: 0}));
             }
         }
 
         this.resize();
 
         this._localIdeographFontFamily = options.localIdeographFontFamily;
-        if (options.style) this.setStyle(options.style, { localIdeographFontFamily: options.localIdeographFontFamily });
+        if (options.style) this.setStyle(options.style, {localIdeographFontFamily: options.localIdeographFontFamily});
 
         if (options.attributionControl)
-            this.addControl(new AttributionControl({ customAttribution: options.customAttribution }));
+            this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
 
         this.addControl(new LogoControl(), options.logoPosition);
 
@@ -965,7 +965,7 @@ class Map extends Camera {
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
-        options = extend({}, { localIdeographFontFamily: this._localIdeographFontFamily}, options);
+        options = extend({}, {localIdeographFontFamily: this._localIdeographFontFamily}, options);
 
         if ((options.diff !== false && options.localIdeographFontFamily === this._localIdeographFontFamily) && this.style && style) {
             this._diffStyle(style, options);
@@ -1163,7 +1163,7 @@ class Map extends Camera {
 
         if (image instanceof HTMLImageElement) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(id, { data: new RGBAImage({width, height}, data), pixelRatio, sdf, version });
+            this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, sdf, version});
         } else if (image.width === undefined || image.height === undefined) {
             return this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +

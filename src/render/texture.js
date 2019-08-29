@@ -1,7 +1,7 @@
 // @flow
 
 import window from '../util/window';
-const { HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData } = window;
+const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData} = window;
 
 import type Context from '../gl/context';
 import type {RGBAImage, AlphaImage} from '../util/image';
@@ -72,7 +72,7 @@ class Texture {
             }
 
         } else {
-            const {x, y} = position || { x: 0, y: 0};
+            const {x, y} = position || {x: 0, y: 0};
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, gl.RGBA, gl.UNSIGNED_BYTE, image);
             } else {

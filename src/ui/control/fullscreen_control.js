@@ -2,7 +2,7 @@
 
 import DOM from '../../util/dom';
 
-import { bindAll, warnOnce } from '../../util/util';
+import {bindAll, warnOnce} from '../../util/util';
 import window from '../../util/window';
 
 import type Map from '../map';

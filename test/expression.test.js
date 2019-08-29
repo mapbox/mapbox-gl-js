@@ -1,8 +1,8 @@
-import { run } from './integration/lib/expression';
-import { createPropertyExpression } from '../src/style-spec/expression';
-import { isFunction } from '../src/style-spec/function';
+import {run} from './integration/lib/expression';
+import {createPropertyExpression} from '../src/style-spec/expression';
+import {isFunction} from '../src/style-spec/function';
 import convertFunction from '../src/style-spec/function/convert';
-import { toString } from '../src/style-spec/expression/types';
+import {toString} from '../src/style-spec/expression/types';
 import ignores from './ignores.json';
 
 let tests;
@@ -11,7 +11,7 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
     tests = process.argv.slice(2);
 }
 
-run('js', { ignores, tests }, (fixture) => {
+run('js', {ignores, tests}, (fixture) => {
     const spec = Object.assign({}, fixture.propertySpec);
 
     if (!spec['property-type']) {
@@ -47,7 +47,7 @@ run('js', { ignores, tests }, (fixture) => {
 
         for (const input of fixture.inputs || []) {
             try {
-                const feature = { properties: input[1].properties || {} };
+                const feature = {properties: input[1].properties || {}};
                 if ('id' in input[1]) {
                     feature.id = input[1].id;
                 }
@@ -61,9 +61,9 @@ run('js', { ignores, tests }, (fixture) => {
                 evaluationResult.push(value);
             } catch (error) {
                 if (error.name === 'ExpressionEvaluationError') {
-                    evaluationResult.push({ error: error.toJSON() });
+                    evaluationResult.push({error: error.toJSON()});
                 } else {
-                    evaluationResult.push({ error: error.message });
+                    evaluationResult.push({error: error.message});
                 }
             }
         }
@@ -73,7 +73,7 @@ run('js', { ignores, tests }, (fixture) => {
         }
     };
 
-    const result = { compiled: {}, recompiled: {} };
+    const result = {compiled: {}, recompiled: {}};
     const expression = (() => {
         if (isFunction(fixture.expression)) {
             return createPropertyExpression(convertFunction(fixture.expression, spec), spec);

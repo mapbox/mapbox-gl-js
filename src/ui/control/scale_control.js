@@ -1,7 +1,7 @@
 // @flow
 
 import DOM from '../../util/dom';
-import { extend, bindAll } from '../../util/util';
+import {extend, bindAll} from '../../util/util';
 
 import type Map from '../map';
 

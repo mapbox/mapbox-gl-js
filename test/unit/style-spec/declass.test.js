@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import declass from '../../../src/style-spec/declass';
 
 test('declass a style, one class', (t) => {
@@ -6,11 +6,11 @@ test('declass a style, one class', (t) => {
         layers: [{
             id: 'a',
             paint: {
-                'fill-color': { base: 2, stops: [[0, 'red'], [22, 'yellow']] },
+                'fill-color': {base: 2, stops: [[0, 'red'], [22, 'yellow']]},
                 'fill-outline-color': 'green'
             },
             'paint.one': {
-                'fill-color': { base: 1 },
+                'fill-color': {base: 1},
                 'fill-opacity': 0.5
             }
         }]
@@ -27,7 +27,7 @@ test('declass a style, one class', (t) => {
         layers: [{
             id: 'a',
             paint: {
-                'fill-color': { base: 1 },
+                'fill-color': {base: 1},
                 'fill-outline-color': 'green',
                 'fill-opacity': 0.5
             }

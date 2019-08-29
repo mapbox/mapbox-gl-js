@@ -2,7 +2,7 @@
 
 import CompoundExpression from './compound_expression';
 
-import type { Expression } from './expression.js';
+import type {Expression} from './expression.js';
 
 function isFeatureConstant(e: Expression) {
     if (e instanceof CompoundExpression) {
@@ -52,4 +52,4 @@ function isGlobalPropertyConstant(e: Expression, properties: Array<string>) {
     return result;
 }
 
-export { isFeatureConstant, isGlobalPropertyConstant, isStateConstant };
+export {isFeatureConstant, isGlobalPropertyConstant, isStateConstant};

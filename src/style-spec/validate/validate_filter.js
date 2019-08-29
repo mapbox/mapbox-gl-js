@@ -3,15 +3,15 @@ import ValidationError from '../error/validation_error';
 import validateExpression from './validate_expression';
 import validateEnum from './validate_enum';
 import getType from '../util/get_type';
-import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import extend from '../util/extend';
-import { isExpressionFilter } from '../feature_filter';
+import {isExpressionFilter} from '../feature_filter';
 
 export default function validateFilter(options) {
     if (isExpressionFilter(deepUnbundle(options.value))) {
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',
-            valueSpec: { value: 'boolean' }
+            valueSpec: {value: 'boolean'}
         }));
     } else {
         return validateNonExpressionFilter(options);

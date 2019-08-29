@@ -1,4 +1,4 @@
-import { test } from '../util/test';
+import {test} from '../util/test';
 import cp from 'child_process';
 
 test('downstream projects can consume published flow types', (t) => {

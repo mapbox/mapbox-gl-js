@@ -1,13 +1,13 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import VertexBuffer from '../../../src/gl/vertex_buffer';
-import { StructArrayLayout3i6 } from '../../../src/data/array_types';
+import {StructArrayLayout3i6} from '../../../src/data/array_types';
 import Context from '../../../src/gl/context';
 
 test('VertexBuffer', (t) => {
     class TestArray extends StructArrayLayout3i6 {}
     const attributes = [
-        { name: 'map', components: 1, type: 'Int16', offset: 0 },
-        { name: 'box', components: 2, type: 'Int16', offset: 4 }
+        {name: 'map', components: 1, type: 'Int16', offset: 0},
+        {name: 'box', components: 2, type: 'Int16', offset: 4}
     ];
 
     t.test('constructs itself', (t) => {
@@ -20,8 +20,8 @@ test('VertexBuffer', (t) => {
         const buffer = new VertexBuffer(context, array, attributes);
 
         t.deepEqual(buffer.attributes, [
-            { name: 'map', components: 1, type: 'Int16', offset: 0 },
-            { name: 'box', components: 2, type: 'Int16', offset: 4 }
+            {name: 'map', components: 1, type: 'Int16', offset: 0},
+            {name: 'box', components: 2, type: 'Int16', offset: 4}
         ]);
         t.deepEqual(buffer.itemSize, 6);
         t.deepEqual(buffer.length, 3);
@@ -33,7 +33,7 @@ test('VertexBuffer', (t) => {
         const array = new TestArray();
         const buffer = new VertexBuffer(context, array, attributes);
         t.stub(context.gl, 'enableVertexAttribArray').callsFake(() => {});
-        buffer.enableAttributes(context.gl, { attributes: { map: 5, box: 6 } });
+        buffer.enableAttributes(context.gl, {attributes: {map: 5, box: 6}});
         t.deepEqual(context.gl.enableVertexAttribArray.args, [[5], [6]]);
         t.end();
     });
@@ -43,7 +43,7 @@ test('VertexBuffer', (t) => {
         const array = new TestArray();
         const buffer = new VertexBuffer(context, array, attributes);
         t.stub(context.gl, 'vertexAttribPointer').callsFake(() => {});
-        buffer.setVertexAttribPointers(context.gl, { attributes: { map: 5, box: 6 } }, 50);
+        buffer.setVertexAttribPointers(context.gl, {attributes: {map: 5, box: 6}}, 50);
         t.deepEqual(context.gl.vertexAttribPointer.args, [
             [5, 1, context.gl['SHORT'], false, 6, 300],
             [6, 2, context.gl['SHORT'], false, 6, 304]

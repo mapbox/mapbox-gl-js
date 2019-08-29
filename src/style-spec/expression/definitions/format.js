@@ -1,13 +1,13 @@
 // @flow
 
-import { NumberType, ValueType, FormattedType, array, StringType, ColorType } from '../types';
-import Formatted, { FormattedSection } from '../types/formatted';
-import { toString } from '../values';
+import {NumberType, ValueType, FormattedType, array, StringType, ColorType} from '../types';
+import Formatted, {FormattedSection} from '../types/formatted';
+import {toString} from '../values';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
-import type { Type } from '../types';
+import type {Type} from '../types';
 
 type FormattedSectionExpression = {
     text: Expression,

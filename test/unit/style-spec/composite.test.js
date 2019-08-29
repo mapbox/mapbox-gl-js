@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import composite from '../../../src/style-spec/composite';
 
 test('composites Mapbox vector sources', (t) => {

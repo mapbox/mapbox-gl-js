@@ -1,11 +1,11 @@
 import MercatorCoordinate from '../../src/geo/mercator_coordinate';
-import { OverscaledTileID } from '../../src/source/tile_id';
+import {OverscaledTileID} from '../../src/source/tile_id';
 
 export default function locationsWithTileID(locations) {
     return locations.map(feature => {
-        const { coordinates } = feature.geometry;
-        const { zoom } = feature.properties;
-        const { x, y } = MercatorCoordinate.fromLngLat({
+        const {coordinates} = feature.geometry;
+        const {zoom} = feature.properties;
+        const {x, y} = MercatorCoordinate.fromLngLat({
             lng: coordinates[0],
             lat: coordinates[1]
         });

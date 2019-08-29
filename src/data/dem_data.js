@@ -1,8 +1,8 @@
 // @flow
-import { RGBAImage } from '../util/image';
+import {RGBAImage} from '../util/image';
 
-import { warnOnce } from '../util/util';
-import { register } from '../util/web_worker_transfer';
+import {warnOnce} from '../util/util';
+import {register} from '../util/web_worker_transfer';
 
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
 // data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially
@@ -16,56 +16,53 @@ import { register } from '../util/web_worker_transfer';
 
 export default class DEMData {
     uid: string;
-    data: Int32Array;
+    data: Uint32Array;
     stride: number;
     dim: number;
+    encoding: "mapbox" | "terrarium";
 
+    // RGBAImage data has uniform 1px padding on all sides: square tile edge size defines stride
+    // and dim is calculated as stride - 2.
     constructor(uid: string, data: RGBAImage, encoding: "mapbox" | "terrarium") {
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return warnOnce(
             `"${encoding}" is not a valid encoding type. Valid types include "mapbox" and "terrarium".`
         );
-        const dim = this.dim = data.height;
-        this.stride = this.dim + 2;
-        this.data = new Int32Array(this.stride * this.stride);
-
-        const pixels = data.data;
-        const unpack = encoding === "terrarium" ? this._unpackTerrarium : this._unpackMapbox;
-        for (let y = 0; y < dim; y++) {
-            for (let x = 0; x < dim; x++) {
-                const i = y * dim + x;
-                const j = i * 4;
-                this.set(x, y, unpack(pixels[j], pixels[j + 1], pixels[j + 2]));
-            }
-        }
+        this.stride = data.height;
+        const dim = this.dim = data.height - 2;
+        this.data = new Uint32Array(data.data.buffer);
+        this.encoding = encoding || 'mapbox';
 
         // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
         // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
         // tiles are loaded and the accurate data can be backfilled using DEMData#backfillBorder
         for (let x = 0; x < dim; x++) {
             // left vertical border
-            this.set(-1, x, this.get(0, x));
+            this.data[this._idx(-1, x)] = this.data[this._idx(0, x)];
             // right vertical border
-            this.set(dim, x, this.get(dim - 1, x));
+            this.data[this._idx(dim, x)] = this.data[this._idx(dim - 1, x)];
             // left horizontal border
-            this.set(x, -1, this.get(x, 0));
+            this.data[this._idx(x, -1)] = this.data[this._idx(x, 0)];
             // right horizontal border
-            this.set(x, dim, this.get(x, dim - 1));
+            this.data[this._idx(x, dim)] = this.data[this._idx(x, dim - 1)];
         }
         // corners
-        this.set(-1, -1, this.get(0, 0));
-        this.set(dim, -1, this.get(dim - 1, 0));
-        this.set(-1, dim, this.get(0, dim - 1));
-        this.set(dim, dim, this.get(dim - 1, dim - 1));
-    }
-
-    set(x: number, y: number, value: number) {
-        this.data[this._idx(x, y)] = value + 65536;
+        this.data[this._idx(-1, -1)] = this.data[this._idx(0, 0)];
+        this.data[this._idx(dim, -1)] = this.data[this._idx(dim - 1, 0)];
+        this.data[this._idx(-1, dim)] = this.data[this._idx(0, dim - 1)];
+        this.data[this._idx(dim, dim)] = this.data[this._idx(dim - 1, dim - 1)];
     }
 
     get(x: number, y: number) {
-        return this.data[this._idx(x, y)] - 65536;
+        const pixels = new Uint8Array(this.data.buffer);
+        const index = this._idx(x, y) * 4;
+        const unpack = this.encoding === "terrarium" ? this._unpackTerrarium : this._unpackMapbox;
+        return unpack(pixels[index], pixels[index + 1], pixels[index + 2]);
+    }
+
+    getUnpackVector() {
+        return this.encoding === "terrarium" ? [256.0, 1.0, 1.0 / 256.0, 32768.0] : [6553.6, 25.6, 0.1, 10000.0];
     }
 
     _idx(x: number, y: number) {
@@ -119,7 +116,7 @@ export default class DEMData {
         const oy = -dy * this.dim;
         for (let y = yMin; y < yMax; y++) {
             for (let x = xMin; x < xMax; x++) {
-                this.set(x, y, borderTile.get(x + ox, y + oy));
+                this.data[this._idx(x, y)] = borderTile.data[this._idx(x + ox, y + oy)];
             }
         }
     }

@@ -45,7 +45,7 @@ class ThreeJSCube {
         this.scene = new THREE.Scene();
 
         var geometry = new THREE.BoxGeometry(1, 1, 1);
-        var material = new THREE.MeshPhongMaterial({ color: 0xeeeeff });
+        var material = new THREE.MeshPhongMaterial({color: 0xeeeeff});
         this.cube = new THREE.Mesh(geometry, material);
         this.scene.add(this.cube);
 

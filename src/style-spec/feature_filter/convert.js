@@ -1,8 +1,8 @@
 // @flow
 
-import { isExpressionFilter } from './index';
+import {isExpressionFilter} from './index';
 
-import type { FilterSpecification } from '../types';
+import type {FilterSpecification} from '../types';
 
 type ExpectedTypes = {[string]: 'string' | 'number' | 'boolean'};
 

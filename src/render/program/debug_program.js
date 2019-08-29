@@ -24,4 +24,4 @@ const debugUniformValues = (matrix: Float32Array, color: Color): UniformValues<D
     'u_color': color
 });
 
-export { debugUniforms, debugUniformValues };
+export {debugUniforms, debugUniformValues};

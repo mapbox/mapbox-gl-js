@@ -2,7 +2,7 @@
 
 import DOM from '../../util/dom';
 
-import { bindAll } from '../../util/util';
+import {bindAll} from '../../util/util';
 
 import type Map from '../map';
 

@@ -1,6 +1,6 @@
 // @flow
 
-import { parseCSSColor } from 'csscolorparser';
+import {parseCSSColor} from 'csscolorparser';
 
 /**
  * An RGBA color value. Create instances from color strings using the static

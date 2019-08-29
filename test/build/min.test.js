@@ -2,8 +2,8 @@ import {test} from '../util/test';
 import fs from 'fs';
 import path from 'path';
 import reference from '../../src/style-spec/reference/latest';
-import { Linter } from 'eslint';
-import { scripts } from '../../package.json';
+import {Linter} from 'eslint';
+import {scripts} from '../../package.json';
 
 const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 

@@ -170,7 +170,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         } else if (operation[0] === 'setStyle') {
             // Disable local ideograph generation (enabled by default) for
             // consistent local ideograph rendering using fixtures in all runs of the test suite.
-            map.setStyle(operation[1], { localIdeographFontFamily: false });
+            map.setStyle(operation[1], {localIdeographFontFamily: false});
             applyOperations(map, operations.slice(1), callback);
         } else {
             map[operation[0]](...operation.slice(1));

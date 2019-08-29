@@ -14,7 +14,7 @@ import {
     toString as typeToString
 } from '../types';
 
-import { typeOf, Color, validateRGBA, toString as valueToString } from '../values';
+import {typeOf, Color, validateRGBA, toString as valueToString} from '../values';
 import CompoundExpression from '../compound_expression';
 import RuntimeError from '../runtime_error';
 import Let from './let';
@@ -41,8 +41,8 @@ import NumberFormat from './number_format';
 import FormatExpression from './format';
 import Length from './length';
 
-import type { Varargs } from '../compound_expression';
-import type { ExpressionRegistry } from '../expression';
+import type {Varargs} from '../compound_expression';
+import type {ExpressionRegistry} from '../expression';
 
 const expressions: ExpressionRegistry = {
     // special forms
@@ -111,7 +111,7 @@ function binarySearch(v, a, i, j) {
 }
 
 function varargs(type: Type): Varargs {
-    return { type };
+    return {type};
 }
 
 CompoundExpression.register(expressions, {

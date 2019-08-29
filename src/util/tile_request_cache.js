@@ -1,6 +1,6 @@
 // @flow
 
-import { parseCacheControl } from './util';
+import {parseCacheControl} from './util';
 import window from './window';
 
 import type Dispatcher from './dispatcher';
