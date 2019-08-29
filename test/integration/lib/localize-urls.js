@@ -38,7 +38,7 @@ module.exports = function localizeURLs(style, port) {
                 localizeStyleURLs(styleJSON, port);
 
                 op[1] = styleJSON;
-                op[2] = { diff: false };
+                op[2] = {diff: false};
             }
         });
     }

@@ -73,7 +73,7 @@ module.exports = function (directory, includeImages = false) {
     const outputPath = path.join('test/integration/dist', OUTPUT_FILE);
 
     return new Promise((resolve, reject) => {
-        fs.writeFile(outputPath, outputStr, { encoding: 'utf8'}, (err) => {
+        fs.writeFile(outputPath, outputStr, {encoding: 'utf8'}, (err) => {
             if (err) { reject(err); }
 
             resolve();
@@ -82,7 +82,7 @@ module.exports = function (directory, includeImages = false) {
 };
 
 function parseJsonFromFile(filePath) {
-    return JSON.parse(fs.readFileSync(filePath, { encoding: 'utf8' }));
+    return JSON.parse(fs.readFileSync(filePath, {encoding: 'utf8'}));
 }
 
 function pngToBase64Str(filePath) {

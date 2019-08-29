@@ -12,7 +12,7 @@ for (const testName in fixtures) {
     if (testName in ignores) {
         tape.skip(testName, testFunc);
     } else {
-        tape(testName, { timeout: 20000 }, testFunc);
+        tape(testName, {timeout: 20000}, testFunc);
     }
 }
 
