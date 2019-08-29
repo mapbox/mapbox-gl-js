@@ -63,6 +63,7 @@ export type TextAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-l
 // We don't actually load baseline data, but we assume an offset of ONE_EM - 17
 // (see "yOffset" in shaping.js)
 const baselineOffset = 7;
+const INVALID_TEXT_OFFSET = Number.POSITIVE_INFINITY;
 
 export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, number]) {
 
@@ -143,7 +144,7 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
         return [x, y];
     }
 
-    return (offset[1] !== Number.POSITIVE_INFINITY) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
+    return (offset[1] !== INVALID_TEXT_OFFSET) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
@@ -213,7 +214,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 if (radialOffset) {
                     // The style spec says don't use `text-offset` and `text-radial-offset` together
                     // but doesn't actually specify what happens if you use both. We go with the radial offset.
-                    textOffset = evaluateVariableOffset(textAnchor, [radialOffset * ONE_EM, Number.POSITIVE_INFINITY]);
+                    textOffset = evaluateVariableOffset(textAnchor, [radialOffset * ONE_EM, INVALID_TEXT_OFFSET]);
                 } else {
                     textOffset = (layout.get('text-offset').evaluate(feature, {}).map(t => t * ONE_EM): any);
                 }
@@ -557,7 +558,7 @@ function addSymbol(bucket: SymbolBucket,
         [textOffset0, textOffset1] = (layer.layout.get('text-offset').evaluate(feature, {}).map(t => t * ONE_EM): any);
     } else {
         textOffset0 = layer.layout.get('text-radial-offset').evaluate(feature, {}) * ONE_EM;
-        textOffset1 = Number.POSITIVE_INFINITY;
+        textOffset1 = INVALID_TEXT_OFFSET;
     }
 
     if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
