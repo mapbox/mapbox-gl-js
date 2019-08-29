@@ -12,14 +12,18 @@ const OUTPUT_FILE = 'fixtures.json';
  * to be shipped to the browser.
  *
  * @param {string} directory
+ * @param {boolean} includeImages
  */
-module.exports = function (directory) {
+module.exports = function (directory, includeImages = false) {
     const basePath = directory;
     const jsonPaths = path.join(basePath, '/**/*.json');
     const imagePaths = path.join(basePath, '/**/*.png');
     //Extract the filedata into a flat dictionary
     const allFiles = {};
-    const allPaths = glob.sync(jsonPaths).concat(glob.sync(imagePaths));
+    let allPaths = glob.sync(jsonPaths);
+    if (includeImages) {
+        allPaths = allPaths.concat(glob.sync(imagePaths));
+    }
 
     //A Set that stores test names that are malformed so they can be removed later
     const malformedTests = {};
