@@ -154,7 +154,8 @@ function shapeText(text: Formatted,
                    spacing: number,
                    translate: [number, number],
                    writingMode: 1 | 2,
-                   allowVerticalPlacement: boolean): Shaping | false {
+                   allowVerticalPlacement: boolean,
+                   symbolPlacement: string): Shaping | false {
     const logicalInput = TaggedString.fromFeature(text, defaultFontStack);
 
     if (writingMode === WritingMode.vertical) {
@@ -169,7 +170,7 @@ function shapeText(text: Formatted,
         lines = [];
         const untaggedLines =
             processBidirectionalText(logicalInput.toString(),
-                                     determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+                                     determineLineBreaks(logicalInput, spacing, maxWidth, glyphs, symbolPlacement));
         for (const line of untaggedLines) {
             const taggedLine = new TaggedString();
             taggedLine.text = line;
@@ -186,7 +187,7 @@ function shapeText(text: Formatted,
         const processedLines =
             processStyledBidirectionalText(logicalInput.text,
                                            logicalInput.sectionIndex,
-                                           determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+                                           determineLineBreaks(logicalInput, spacing, maxWidth, glyphs, symbolPlacement));
         for (const line of processedLines) {
             const taggedLine = new TaggedString();
             taggedLine.text = line[0];
@@ -195,7 +196,7 @@ function shapeText(text: Formatted,
             lines.push(taggedLine);
         }
     } else {
-        lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+        lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs, symbolPlacement));
     }
 
     const positionedGlyphs = [];
@@ -358,8 +359,9 @@ function leastBadBreaks(lastLineBreak: ?Break): Array<number> {
 function determineLineBreaks(logicalInput: TaggedString,
                              spacing: number,
                              maxWidth: number,
-                             glyphMap: {[string]: {[number]: ?StyleGlyph}}): Array<number> {
-    if (!maxWidth)
+                             glyphMap: {[string]: {[number]: ?StyleGlyph}},
+                             symbolPlacement: string): Array<number> {
+    if (symbolPlacement !== 'point')
         return [];
 
     if (!logicalInput)
