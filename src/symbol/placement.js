@@ -4,7 +4,7 @@ import CollisionIndex from './collision_index';
 import EXTENT from '../data/extent';
 import * as symbolSize from './symbol_size';
 import * as projection from './projection';
-import {getAnchorJustification, evaluateRadialOffset} from './symbol_layout';
+import {getAnchorJustification, evaluateVariableOffset} from './symbol_layout';
 import {getAnchorAlignment, WritingMode} from './shaping';
 import assert from 'assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
@@ -117,11 +117,11 @@ class CollisionGroups {
     }
 }
 
-function calculateVariableLayoutOffset(anchor: TextAnchor, width: number, height: number, radialOffset: [number, number], textBoxScale: number): Point {
+function calculateVariableLayoutShift(anchor: TextAnchor, width: number, height: number, textOffset: [number, number], textBoxScale: number): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
     const shiftY = -(verticalAlign - 0.5) * height;
-    const offset = evaluateRadialOffset(anchor, radialOffset);
+    const offset = evaluateVariableOffset(anchor, textOffset);
     return new Point(
         shiftX + offset[0] * textBoxScale,
         shiftY + offset[1] * textBoxScale
@@ -149,7 +149,7 @@ function shiftVariableCollisionBox(collisionBox: SingleCollisionBox,
 }
 
 export type VariableOffset = {
-    radialOffset: [number, number],
+    textOffset: [number, number],
     width: number,
     height: number,
     anchor: TextAnchor,
@@ -239,8 +239,8 @@ export class Placement {
                            pitchWithMap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroup: CollisionGroup,
                            textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ box: Array<number>, offscreen: boolean }  {
 
-        const radialOffset = [symbolInstance.radialTextOffset0, symbolInstance.radialTextOffset1];
-        const shift = calculateVariableLayoutOffset(anchor, width, height, radialOffset, textBoxScale);
+        const textOffset = [symbolInstance.textOffset0, symbolInstance.textOffset1];
+        const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textBoxScale);
 
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
             shiftVariableCollisionBox(
@@ -260,7 +260,7 @@ export class Placement {
             }
             assert(symbolInstance.crossTileID !== 0);
             this.variableOffsets[symbolInstance.crossTileID] = {
-                radialOffset,
+                textOffset,
                 width,
                 height,
                 anchor,
@@ -812,10 +812,10 @@ export class Placement {
                                 // successfully placed position (so you can visualize what collision
                                 // just made the symbol disappear, and the most likely place for the
                                 // symbol to come back)
-                                shift = calculateVariableLayoutOffset(variableOffset.anchor,
+                                shift = calculateVariableLayoutShift(variableOffset.anchor,
                                    variableOffset.width,
                                    variableOffset.height,
-                                   variableOffset.radialOffset,
+                                   variableOffset.textOffset,
                                    variableOffset.textBoxScale);
                                 if (rotateWithMap) {
                                     shift._rotate(pitchWithMap ? this.transform.angle : -this.transform.angle);

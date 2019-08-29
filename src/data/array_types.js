@@ -949,8 +949,8 @@ class SymbolInstanceStruct extends Struct {
     numIconVertices: number;
     crossTileID: number;
     textBoxScale: number;
-    radialTextOffset0: number;
-    radialTextOffset1: number;
+    textOffset0: number;
+    textOffset1: number;
     get anchorX() { return this._structArray.int16[this._pos2 + 0]; }
     set anchorX(x: number) { this._structArray.int16[this._pos2 + 0] = x; }
     get anchorY() { return this._structArray.int16[this._pos2 + 1]; }
@@ -989,10 +989,10 @@ class SymbolInstanceStruct extends Struct {
     set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 9] = x; }
     get textBoxScale() { return this._structArray.float32[this._pos4 + 10]; }
     set textBoxScale(x: number) { this._structArray.float32[this._pos4 + 10] = x; }
-    get radialTextOffset0() { return this._structArray.float32[this._pos4 + 11]; }
-    set radialTextOffset0(x: number) { this._structArray.float32[this._pos4 + 11] = x; }
-    get radialTextOffset1() { return this._structArray.float32[this._pos4 + 12]; }
-    set radialTextOffset1(x: number) { this._structArray.float32[this._pos4 + 12] = x; }
+    get textOffset0() { return this._structArray.float32[this._pos4 + 11]; }
+    set textOffset0(x: number) { this._structArray.float32[this._pos4 + 11] = x; }
+    get textOffset1() { return this._structArray.float32[this._pos4 + 12]; }
+    set textOffset1(x: number) { this._structArray.float32[this._pos4 + 12] = x; }
 }
 
 SymbolInstanceStruct.prototype.size = 52;

@@ -16,7 +16,7 @@ import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
 
 import {getAnchorAlignment, WritingMode} from '../symbol/shaping';
 import ONE_EM from '../symbol/one_em';
-import {evaluateRadialOffset} from '../symbol/symbol_layout';
+import {evaluateVariableOffset} from '../symbol/symbol_layout';
 
 import {
     symbolIconUniformValues,
@@ -86,14 +86,14 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     }
 }
 
-function calculateVariableRenderShift(anchor, width, height, radialOffset, textBoxScale, renderTextSize): Point {
+function calculateVariableRenderShift(anchor, width, height, textOffset, textBoxScale, renderTextSize): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
     const shiftY = -(verticalAlign - 0.5) * height;
-    const offset = evaluateRadialOffset(anchor, radialOffset);
+    const variableOffset = evaluateVariableOffset(anchor, textOffset);
     return new Point(
-        (shiftX / textBoxScale + offset[0]) * renderTextSize,
-        (shiftY / textBoxScale + offset[1]) * renderTextSize
+        (shiftX / textBoxScale + variableOffset[0]) * renderTextSize,
+        (shiftY / textBoxScale + variableOffset[1]) * renderTextSize
     );
 }
 
@@ -120,10 +120,10 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
                 renderTextSize *= bucket.tilePixelRatio / tileScale;
             }
 
-            const {width, height, radialOffset, textBoxScale} = variableOffset;
+            const {width, height, anchor, textOffset, textBoxScale} = variableOffset;
 
             const shift = calculateVariableRenderShift(
-                variableOffset.anchor, width, height, radialOffset, textBoxScale, renderTextSize);
+                anchor, width, height, textOffset, textBoxScale, renderTextSize);
 
             // Usual case is that we take the projected anchor and add the pixel-based shift
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent
