@@ -179,9 +179,11 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: yarn run test-query-browser-ci
+      - run: yarn run test-query-browser
       - store_test_results:
           path: test/integration/query-tests
+      - store_artifacts:
+          path: "test/integration/query-tests/test-results.xml"
 
   test-expressions:
     <<: *defaults
