@@ -12,26 +12,24 @@ import { createFilter } from 'rollup-pluginutils';
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
-export const plugins = (minified, production) => {
-    return [
-        flow(),
-        minifyStyleSpec(),
-        json(),
-        glsl('./src/shaders/*.glsl', production),
-        buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
-        minified ? terser() : false,
-        production ? unassert() : false,
-        resolve({
-            browser: true,
-            preferBuiltins: false
-        }),
-        commonjs({
-            // global keyword handling causes Webpack compatibility issues, so we disabled it:
-            // https://github.com/mapbox/mapbox-gl-js/pull/6956
-            ignoreGlobal: true
-        })
-    ].filter(Boolean);
-}
+export const plugins = (minified, production) => [
+    flow(),
+    minifyStyleSpec(),
+    json(),
+    glsl('./src/shaders/*.glsl', production),
+    buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
+    minified ? terser() : false,
+    production ? unassert() : false,
+    resolve({
+        browser: true,
+        preferBuiltins: false
+    }),
+    commonjs({
+        // global keyword handling causes Webpack compatibility issues, so we disabled it:
+        // https://github.com/mapbox/mapbox-gl-js/pull/6956
+        ignoreGlobal: true
+    })
+].filter(Boolean);
 
 // Using this instead of rollup-plugin-flow due to
 // https://github.com/leebyron/rollup-plugin-flow/issues/5
