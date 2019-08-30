@@ -29,8 +29,6 @@ class Actor {
     cancelCallbacks: { number: Cancelable };
     invoker: ThrottledInvoker;
 
-    static taskId: number;
-
     constructor(target: any, parent: any, mapId: ?number) {
         this.target = target;
         this.parent = parent;
@@ -53,7 +51,11 @@ class Actor {
      * @private
      */
     send(type: string, data: mixed, callback: ?Function, targetMapId: ?string): ?Cancelable {
-        const id = ++Actor.taskId;
+        // We're using a string ID instead of numbers because they are being used as object keys
+        // anyway, and thus stringified implicitly. We use random IDs because an actor may receive
+        // message from multiple other actors which could run in different execution context. A
+        // linearly increasing ID could produce collisions.
+        const id = Math.round((Math.random() * 1e18)).toString(36).substring(0, 10);
         if (callback) {
             this.callbacks[id] = callback;
         }
@@ -191,7 +193,5 @@ class Actor {
         this.target.removeEventListener('message', this.receive, false);
     }
 }
-
-Actor.taskId = 0;
 
 export default Actor;
