@@ -257,8 +257,11 @@ class DragPanHandler {
             this._state = 'enabled';
             this._unbind();
             this._deactivate();
-            this._fireEvent('dragend', e);
-            this._fireEvent('moveend', e);
+            if (!this._shouldStart) { // If we scheduled the dragstart but never fired, nothing to end
+              // We already started the drag, end it
+              this._fireEvent('dragend', e);
+              this._fireEvent('moveend', e);
+            }
             break;
         case 'pending':
             this._state = 'enabled';
@@ -291,6 +294,7 @@ class DragPanHandler {
         delete this._startPos;
         delete this._mouseDownPos;
         delete this._lastPos;
+        // delete this._shouldStart;
     }
 
     _inertialPan(e: MouseEvent | TouchEvent) {
