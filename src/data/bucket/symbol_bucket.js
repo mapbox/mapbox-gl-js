@@ -417,7 +417,6 @@ class SymbolBucket implements Bucket {
                 icon = resolvedTokens instanceof Image ?
                     resolvedTokens :
                     Image.fromString(resolvedTokens);
-                console.log('icon', icon);
             }
 
             if (!text && !icon) {

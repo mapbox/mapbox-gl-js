@@ -7,6 +7,10 @@ export default class Image {
         this.name = name;
     }
 
+    toString(): string {
+        return this.name;
+    }
+
     static fromString(imageName: string): Image {
         return new Image(imageName);
     }
