@@ -793,7 +793,7 @@ test('DragPanHandler starts a drag on a multi-finger no-zoom touch, and continue
     t.notOk(dragstart.called);
     t.notOk(drag.called);
 
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}, {clientX: 40, clientY: 40}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}, {clientX: 20, clientY: 20}]});
     map._renderTaskQueue.run();
     t.ok(map.dragPan.isActive());
     t.equal(dragstart.callCount, 1);
@@ -805,7 +805,7 @@ test('DragPanHandler starts a drag on a multi-finger no-zoom touch, and continue
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
 
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 20, clientY: 20}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}]});
     map._renderTaskQueue.run();
     t.ok(map.dragPan.isActive());
     t.equal(dragstart.callCount, 1);
