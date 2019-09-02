@@ -537,9 +537,18 @@ class Transform {
         // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
         const farZ = furthestDistance * 1.01;
 
+        // The larger the value of nearZ is
+        // - the more depth precision is available for features (good)
+        // - clipping starts appearing sooner when the camera is close to 3d features (bad)
+        //
+        // Smaller values worked well for mapbox-gl-js but deckgl was encountering precision issues
+        // when rendering it's layers using custom layers. This value was experimentally chosen and
+        // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
+        const nearZ = this.height / 50;
+
         // matrix for conversion from location to GL coordinates (-1 .. 1)
         let m = new Float64Array(16);
-        mat4.perspective(m, this._fov, this.width / this.height, 1, farZ);
+        mat4.perspective(m, this._fov, this.width / this.height, nearZ, farZ);
 
         mat4.scale(m, m, [1, -1, 1]);
         mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);

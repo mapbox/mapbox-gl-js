@@ -34,6 +34,9 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
             }
             setTimeout(callback, 0);
         }
+        loaded() {
+            return true;
+        }
         onAdd() {
             if (sourceOptions.noLoad) return;
             if (sourceOptions.error) {

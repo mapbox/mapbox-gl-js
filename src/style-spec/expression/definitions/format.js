@@ -1,6 +1,6 @@
 // @flow
 
-import { NumberType, ValueType, FormattedType, array, StringType } from '../types';
+import { NumberType, ValueType, FormattedType, array, StringType, ColorType } from '../types';
 import Formatted, { FormattedSection } from '../types/formatted';
 import { toString } from '../values';
 
@@ -13,6 +13,7 @@ type FormattedSectionExpression = {
     text: Expression,
     scale: Expression | null;
     font: Expression | null;
+    textColor: Expression | null;
 }
 
 export default class FormatExpression implements Expression {
@@ -56,7 +57,13 @@ export default class FormatExpression implements Expression {
                 font = context.parse(options['text-font'], 1, array(StringType));
                 if (!font) return null;
             }
-            sections.push({text, scale, font});
+
+            let textColor = null;
+            if (options['text-color']) {
+                textColor = context.parse(options['text-color'], 1, ColorType);
+                if (!textColor) return null;
+            }
+            sections.push({text, scale, font, textColor});
         }
 
         return new FormatExpression(sections);
@@ -68,7 +75,8 @@ export default class FormatExpression implements Expression {
                 new FormattedSection(
                     toString(section.text.evaluate(ctx)),
                     section.scale ? section.scale.evaluate(ctx) : null,
-                    section.font ? section.font.evaluate(ctx).join(',') : null
+                    section.font ? section.font.evaluate(ctx).join(',') : null,
+                    section.textColor ? section.textColor.evaluate(ctx) : null
                 )
             )
         );
@@ -82,6 +90,9 @@ export default class FormatExpression implements Expression {
             }
             if (section.font) {
                 fn(section.font);
+            }
+            if (section.textColor) {
+                fn(section.textColor);
             }
         }
     }
@@ -102,6 +113,9 @@ export default class FormatExpression implements Expression {
             }
             if (section.font) {
                 options['text-font'] = section.font.serialize();
+            }
+            if (section.textColor) {
+                options['text-color'] = section.textColor.serialize();
             }
             serialized.push(options);
         }

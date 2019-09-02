@@ -111,6 +111,7 @@ class CanvasSource extends ImageSource {
      */
 
     load() {
+        this._loaded = true;
         if (!this.canvas) {
             this.canvas = (this.options.canvas instanceof window.HTMLCanvasElement) ?
                 this.options.canvas :

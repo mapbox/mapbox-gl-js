@@ -137,7 +137,7 @@ The conventions for module exports are:
 
 ## Documentation Conventions
 
-See [`docs/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
+See [`README.md`](https://github.com/mapbox/mapbox-gl-js-docs/blob/publisher-production/README.md) from [`mapbox-gl-js-docs`](https://github.com/mapbox/mapbox-gl-js-docs/).
 
 ### Github Issue Labels
 

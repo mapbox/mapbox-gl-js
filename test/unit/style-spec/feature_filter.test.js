@@ -121,7 +121,7 @@ test('convert legacy filters to expressions', t => {
             [
                 "match",
                 ["geometry-type"],
-                ["Polygon", "LineString", "Point"],
+                ["LineString", "Point", "Polygon"],
                 true,
                 false
             ],
@@ -132,6 +132,30 @@ test('convert legacy filters to expressions', t => {
                 true,
                 false
             ]
+        ];
+
+        const converted = convertFilter(filter);
+        t.same(converted, expected);
+        t.end();
+    });
+
+    t.test('removes duplicates when outputting match expressions', (t) => {
+        const filter = [
+            "in",
+            "$id",
+            1,
+            2,
+            3,
+            2,
+            1
+        ];
+
+        const expected = [
+            "match",
+            ["id"],
+            [1, 2, 3],
+            true,
+            false
         ];
 
         const converted = convertFilter(filter);

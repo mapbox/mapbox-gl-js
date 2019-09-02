@@ -72,11 +72,6 @@ or
 open ./test/integration/query-tests/index.html
 ```
 
-When run via Travis, the test artifacts are uploaded to S3 as a permanent record of results. Near the
-end of the Travis output is a link to the result, for example:
-
-http://mapbox.s3.amazonaws.com/mapbox-gl-native/tests/5952.10/index.html
-
 ## Writing new tests
 
 _Note: Expected results are always generated with the **js** implementation. This is merely for consistency and does not

@@ -1,5 +1,6 @@
 // @flow
 
+import { version } from '../../package.json';
 import { extend, bindAll, warnOnce, uniqueId } from '../util/util';
 import browser from '../util/browser';
 import window from '../util/window';
@@ -207,8 +208,8 @@ const defaultOptions = {
  * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
  *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana' and 'Hangul Syllables' ranges.
  *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
- *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
- *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (see [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs))
+ *   Set to `false`, to enable font settings from the map's style for these glyph ranges.  Note that [Mapbox Studio](https://studio.mapbox.com/) sets this value to `false` by default.
+ *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (See [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs).)
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
  *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
@@ -964,7 +965,7 @@ class Map extends Camera {
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
-        options = extend({}, { localIdeographFontFamily: defaultOptions.localIdeographFontFamily}, options);
+        options = extend({}, { localIdeographFontFamily: this._localIdeographFontFamily}, options);
 
         if ((options.diff !== false && options.localIdeographFontFamily === this._localIdeographFontFamily) && this.style && style) {
             this._diffStyle(style, options);
@@ -1456,6 +1457,8 @@ class Map extends Camera {
 
     /**
      * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
+     * Features are identified by their `id` attribute, which must be an integer or a string that can be
+     * cast to an integer.
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
@@ -1466,7 +1469,7 @@ class Map extends Camera {
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      *
      * This method requires the `feature.id` attribute on data sets. For GeoJSON sources without
-     * feature ids, set the `generateIds` option in the `GeoJSONSourceSpecification` to auto-assign them. This
+     * feature ids, set the `generateId` option in the `GeoJSONSourceSpecification` to auto-assign them. This
      * option assigns ids based on a feature's index in the source data. If you change feature data using
      * `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
      */
@@ -1480,7 +1483,8 @@ class Map extends Camera {
      * source is specified, removes all states of that source. If
      * target.id is also specified, removes all keys for that feature's state.
      * If key is also specified, removes that key from that feature's state.
-     *
+     * Features are identified by their `id` attribute, which must be an integer or a string that can be
+     * cast to an integer.
      * @param {Object} target Identifier of where to set state: can be a source, a feature, or a specific key of feature.
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} target.id (optional) Unique id of the feature. Optional if key is not specified.
@@ -1496,6 +1500,8 @@ class Map extends Camera {
 
     /**
      * Gets the state of a feature.
+     * Features are identified by their `id` attribute, which must be an integer or a string that can be
+     * cast to an integer.
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
@@ -1937,6 +1943,17 @@ class Map extends Camera {
     _setCacheLimits(limit: number, checkThreshold: number) {
         setCacheLimits(limit, checkThreshold);
     }
+
+    /**
+     * The version of Mapbox GL JS in use as specified in package.json, CHANGELOG.md, and the GitHub release.
+     *
+     * @name version
+     * @instance
+     * @memberof Map
+     * @var {string} version
+     */
+
+    get version(): string { return version; }
 }
 
 export default Map;

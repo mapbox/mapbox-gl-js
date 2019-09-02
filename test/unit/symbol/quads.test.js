@@ -37,7 +37,8 @@ test('getIconQuads', (t) => {
                 br: { x: 9, y: 7 },
                 tex: {  x: 0, y: 0, w: 17, h: 13 },
                 writingMode: null,
-                glyphOffset: [0, 0]
+                glyphOffset: [0, 0],
+                sectionIndex: 0
             }]);
         t.end();
     });
@@ -55,7 +56,8 @@ test('getIconQuads', (t) => {
                 br: { x: 9, y: 7 },
                 tex: { x: 0, y: 0, w: 17, h: 13 },
                 writingMode: null,
-                glyphOffset: [0, 0]
+                glyphOffset: [0, 0],
+                sectionIndex: 0
             }]);
         t.end();
     });
