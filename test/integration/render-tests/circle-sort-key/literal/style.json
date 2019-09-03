@@ -7,7 +7,7 @@
       "debug": true
     }
   },
-  "center": [0, 29],
+  "center": [0.5, 30],
   "zoom": 1,
   "sources": {
     "geojson": {
