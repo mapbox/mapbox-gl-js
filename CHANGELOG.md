@@ -1,3 +1,8 @@
+## 1.3.1
+
+- Fix a race condition that produced an error when a map was removed while reloading a source. [#8711](https://github.com/mapbox/mapbox-gl-js/pull/8711)
+- Fix a race condition were `render` event was sometimes not fired after `load` event in IE11. [#8708](https://github.com/mapbox/mapbox-gl-js/pull/8708)
+
 ## 1.3.0
 
 ### 🍏 Features
