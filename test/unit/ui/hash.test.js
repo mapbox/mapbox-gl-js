@@ -67,7 +67,7 @@ test('hash', (t) => {
         t.equal(map.getBearing(), 30);
         t.equal(map.getPitch(), 60);
 
-        window.location.hash = '#4/wronlgy/formed/hash';
+        window.location.hash = '#4/wrongly/formed/hash';
 
         t.false(hash._onHashChange());
 

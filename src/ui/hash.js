@@ -100,6 +100,7 @@ class Hash {
     _getCurrentHash() {
         const hash = window.location.hash.replace('#', '');
         if (this._hashName) {
+            // Split the parameter-styled hash into parts and find the value we need
             const keyval = hash.split('&').map(
                 part => part.split('=')
             ).find(part => part[0] === this._hashName);
@@ -110,7 +111,7 @@ class Hash {
 
     _onHashChange() {
         const loc = this._getCurrentHash();
-        if (loc.length >= 3 && !loc.some(v => isNaN(+v))) {
+        if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
