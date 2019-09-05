@@ -1,13 +1,13 @@
 // @flow
 
-import { extend, bindAll } from '../util/util';
-import { Event, Evented } from '../util/evented';
+import {extend, bindAll} from '../util/util';
+import {Event, Evented} from '../util/evented';
 import DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import window from '../util/window';
 import smartWrap from '../util/smart_wrap';
-import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
+import {type Anchor, anchorTranslate, applyAnchorClass} from './anchor';
 
 import type Map from './map';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -203,6 +203,10 @@ export default class Popup extends Evented {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
 
+        this._trackPointer = false;
+
+        this._update();
+
         if (this._map) {
             this._map.on('move', this._update);
             this._map.off('mousemove');
@@ -210,9 +214,6 @@ export default class Popup extends Evented {
             this._map._canvasContainer.classList.remove('mapboxgl-track-pointer');
         }
 
-        this._trackPointer = false;
-
-        this._update();
         return this;
     }
 
@@ -363,7 +364,6 @@ export default class Popup extends Evented {
             }
 
         }
-
 
         if (this.options.maxWidth && this._container.style.maxWidth !== this.options.maxWidth) {
             this._container.style.maxWidth = this.options.maxWidth;

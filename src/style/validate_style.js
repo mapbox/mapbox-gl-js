@@ -1,6 +1,6 @@
 // @flow
 import validateStyleMin from '../style-spec/validate_style.min';
-import { ErrorEvent } from '../util/evented';
+import {ErrorEvent} from '../util/evented';
 
 import type {Evented} from '../util/evented';
 

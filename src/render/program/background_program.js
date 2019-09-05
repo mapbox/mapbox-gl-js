@@ -1,6 +1,6 @@
 // @flow
 
-import { bgPatternUniformValues } from './pattern';
+import {bgPatternUniformValues} from './pattern';
 import {
     Uniform1i,
     Uniform1f,
@@ -8,7 +8,7 @@ import {
     UniformColor,
     UniformMatrix4f
 } from '../uniform_binding';
-import { extend } from '../../util/util';
+import {extend} from '../../util/util';
 
 import type Painter from '../painter';
 import type {UniformValues, UniformLocations} from '../uniform_binding';

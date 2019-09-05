@@ -1,6 +1,6 @@
 // @flow
 
-import { warnOnce } from '../util/util';
+import {warnOnce} from '../util/util';
 
 import type Context from '../gl/context';
 

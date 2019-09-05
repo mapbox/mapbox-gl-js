@@ -1,6 +1,6 @@
 // @flow
 
-import { MapMouseEvent, MapTouchEvent, MapWheelEvent } from '../ui/events';
+import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../ui/events';
 import DOM from '../util/dom';
 import type Map from './map';
 import scrollZoom from './handler/scroll_zoom';
@@ -152,7 +152,7 @@ export default function bindHandlers(map: Map, options: {interactive: boolean, c
 
     function onClick(e: MouseEvent) {
         const pos = DOM.mousePos(el, e);
-        if (pos.equals(startPos) || pos.dist(startPos) < options.clickTolerance) {
+        if (!startPos || pos.equals(startPos) || pos.dist(startPos) < options.clickTolerance) {
             map.fire(new MapMouseEvent('click', map, e));
         }
     }

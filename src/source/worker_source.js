@@ -2,15 +2,15 @@
 
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
-import type { GlyphPositions } from '../render/glyph_atlas';
+import type {GlyphPositions} from '../render/glyph_atlas';
 import type ImageAtlas from '../render/image_atlas';
 import type {OverscaledTileID} from './tile_id';
 import type {Bucket} from '../data/bucket';
 import type FeatureIndex from '../data/feature_index';
 import type {CollisionBoxArray} from '../data/array_types';
 import type DEMData from '../data/dem_data';
-import type { StyleGlyph } from '../style/style_glyph';
-import type { StyleImage } from '../style/style_image';
+import type {StyleGlyph} from '../style/style_glyph';
+import type {StyleImage} from '../style/style_image';
 
 export type TileParameters = {
     source: string,
@@ -57,7 +57,7 @@ export type WorkerDEMTileCallback = (err: ?Error, result: ?DEMData) => void;
  * the WebWorkers. In addition to providing a custom
  * {@link WorkerSource#loadTile}, any other methods attached to a `WorkerSource`
  * implementation may also be targeted by the {@link Source} via
- * `dispatcher.send('source-type.methodname', params, callback)`.
+ * `dispatcher.getActor().send('source-type.methodname', params, callback)`.
  *
  * @see {@link Map#addSourceType}
  * @private

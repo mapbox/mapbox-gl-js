@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import fs from 'fs';
 import path from 'path';
 import Protobuf from 'pbf';
-import { VectorTile } from '@mapbox/vector-tile';
+import {VectorTile} from '@mapbox/vector-tile';
 import Point from '@mapbox/point-geometry';
 import segment from '../../../src/data/segment';
 import FillBucket from '../../../src/data/bucket/fill_bucket';
@@ -21,10 +21,10 @@ function createPolygon(numPoints) {
 }
 
 test('FillBucket', (t) => {
-    const layer = new FillStyleLayer({ id: 'test', type: 'fill', layout: {} });
+    const layer = new FillStyleLayer({id: 'test', type: 'fill', layout: {}});
     layer.recalculate({zoom: 0, zoomHistory: {}});
 
-    const bucket = new FillBucket({ layers: [layer] });
+    const bucket = new FillBucket({layers: [layer]});
 
     bucket.addFeature({}, [[
         new Point(0, 0),
@@ -57,7 +57,7 @@ test('FillBucket segmentation', (t) => {
     });
     layer.recalculate({zoom: 0, zoomHistory: {}});
 
-    const bucket = new FillBucket({ layers: [layer] });
+    const bucket = new FillBucket({layers: [layer]});
 
     // first add an initial, small feature to make sure the next one starts at
     // a non-zero offset

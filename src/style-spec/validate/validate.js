@@ -1,8 +1,8 @@
 
 import extend from '../util/extend';
-import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
-import { isExpression } from '../expression';
-import { isFunction } from '../function';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
+import {isExpression} from '../expression';
+import {isFunction} from '../function';
 
 import validateFunction from './validate_function';
 import validateExpression from './validate_expression';
@@ -39,7 +39,6 @@ const VALIDATORS = {
     'string': validateString,
     'formatted': validateFormatted
 };
-
 
 // Main recursive validation function. Tracks:
 //

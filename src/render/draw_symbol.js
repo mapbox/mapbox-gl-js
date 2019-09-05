@@ -7,16 +7,16 @@ import SegmentVector from '../data/segment';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import * as symbolProjection from '../symbol/projection';
 import * as symbolSize from '../symbol/symbol_size';
-import { mat4 } from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
 
-import { getAnchorAlignment } from '../symbol/shaping';
+import {getAnchorAlignment, WritingMode} from '../symbol/shaping';
 import ONE_EM from '../symbol/one_em';
-import { evaluateRadialOffset } from '../symbol/symbol_layout';
+import {evaluateVariableOffset} from '../symbol/symbol_layout';
 
 import {
     symbolIconUniformValues,
@@ -31,7 +31,7 @@ import type Texture from '../render/texture';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {UniformValues} from './uniform_binding';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program';
-import type { CrossTileID, VariableOffset } from '../symbol/placement';
+import type {CrossTileID, VariableOffset} from '../symbol/placement';
 
 export default drawSymbols;
 
@@ -79,18 +79,21 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     }
 
     if (sourceCache.map.showCollisionBoxes) {
-        drawCollisionDebug(painter, sourceCache, layer, coords);
+        drawCollisionDebug(painter, sourceCache, layer, coords, layer.paint.get('text-translate'),
+            layer.paint.get('text-translate-anchor'), true);
+        drawCollisionDebug(painter, sourceCache, layer, coords, layer.paint.get('icon-translate'),
+            layer.paint.get('icon-translate-anchor'), false);
     }
 }
 
-function calculateVariableRenderShift(anchor, width, height, radialOffset, textBoxScale, renderTextSize): Point {
+function calculateVariableRenderShift(anchor, width, height, textOffset, textBoxScale, renderTextSize): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
     const shiftY = -(verticalAlign - 0.5) * height;
-    const offset = evaluateRadialOffset(anchor, radialOffset);
+    const variableOffset = evaluateVariableOffset(anchor, textOffset);
     return new Point(
-        (shiftX / textBoxScale + offset[0]) * renderTextSize,
-        (shiftY / textBoxScale + offset[1]) * renderTextSize
+        (shiftX / textBoxScale + variableOffset[0]) * renderTextSize,
+        (shiftY / textBoxScale + variableOffset[1]) * renderTextSize
     );
 }
 
@@ -101,7 +104,8 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
     dynamicLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
-        const variableOffset = (!symbol.hidden && symbol.crossTileID) ? variableOffsets[symbol.crossTileID] : null;
+        const skipOrientation = bucket.allowVerticalPlacement && !symbol.placedOrientation;
+        const variableOffset = (!symbol.hidden && symbol.crossTileID && !skipOrientation) ? variableOffsets[symbol.crossTileID] : null;
         if (!variableOffset) {
             // These symbols are from a justification that is not being used, or a label that wasn't placed
             // so we don't need to do the extra math to figure out what incremental shift to apply.
@@ -116,10 +120,10 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
                 renderTextSize *= bucket.tilePixelRatio / tileScale;
             }
 
-            const { width, height, radialOffset, textBoxScale } = variableOffset;
+            const {width, height, anchor, textOffset, textBoxScale} = variableOffset;
 
             const shift = calculateVariableRenderShift(
-                variableOffset.anchor, width, height, radialOffset, textBoxScale, renderTextSize);
+                anchor, width, height, textOffset, textBoxScale, renderTextSize);
 
             // Usual case is that we take the projected anchor and add the pixel-based shift
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent
@@ -130,8 +134,32 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
                     shift.rotate(-transform.angle) :
                     shift);
 
+            const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
             for (let g = 0; g < symbol.numGlyphs; g++) {
-                addDynamicAttributes(dynamicLayoutVertexArray, shiftedAnchor, 0);
+                addDynamicAttributes(dynamicLayoutVertexArray, shiftedAnchor, angle);
+            }
+        }
+    }
+    bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
+}
+
+function updateVerticalLabels(bucket) {
+    const placedSymbols = bucket.text.placedSymbolArray;
+    const dynamicLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
+    dynamicLayoutVertexArray.clear();
+    for (let s = 0; s < placedSymbols.length; s++) {
+        const symbol: any = placedSymbols.get(s);
+        const shouldHide = symbol.hidden || !symbol.placedOrientation;
+        if (shouldHide) {
+            // These symbols are from an orientation that is not being used, or a label that wasn't placed
+            // so we don't need to do the extra math to figure out what incremental shift to apply.
+            symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
+        } else  {
+            const tileAnchor = new Point(symbol.anchorX, symbol.anchorY);
+            const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
+
+            for (let g = 0; g < symbol.numGlyphs; g++) {
+                addDynamicAttributes(dynamicLayoutVertexArray, tileAnchor, angle);
             }
         }
     }
@@ -211,6 +239,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
             updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
                                   tr, labelPlaneMatrix, coord.posMatrix, tileScale, size);
+        } else if (isText && size && bucket.allowVerticalPlacement) {
+            updateVerticalLabels(bucket);
         }
 
         const matrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),

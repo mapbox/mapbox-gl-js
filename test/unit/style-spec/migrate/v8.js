@@ -1,4 +1,4 @@
-import { test } from '../../../util/test';
+import {test} from '../../../util/test';
 import migrate from '../../../../src/style-spec/migrate/v8';
 
 test('split text-font', (t) => {
@@ -119,7 +119,6 @@ test('renames urls', (t) => {
     t.deepEqual(migrate(input), output, 'renames url and flips coordinates of of video');
     t.end();
 });
-
 
 test('not migrate interpolated functions', (t) => {
     const input = {

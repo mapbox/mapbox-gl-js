@@ -6,7 +6,7 @@ import {
     Uniform2f,
     UniformMatrix4f
 } from '../uniform_binding';
-import { extend } from '../../util/util';
+import {extend} from '../../util/util';
 import browser from '../../util/browser';
 
 import type Context from '../../gl/context';
@@ -153,4 +153,4 @@ const symbolSDFUniformValues = (
     });
 };
 
-export { symbolIconUniforms, symbolSDFUniforms, symbolIconUniformValues, symbolSDFUniformValues };
+export {symbolIconUniforms, symbolSDFUniforms, symbolIconUniformValues, symbolSDFUniformValues};

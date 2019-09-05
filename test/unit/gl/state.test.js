@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
-import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha } from '../../../src/gl/value';
+import {test} from '../../util/test';
+import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha} from '../../../src/gl/value';
 import Context from '../../../src/gl/context';
 import Color from '../../../src/style-spec/util/color';
-import { deepEqual } from '../../../src/util/util';
+import {deepEqual} from '../../../src/util/util';
 
 const context = new Context(require('gl')(10, 10));
 
@@ -29,7 +29,6 @@ function ValueTest(Constructor, options, t) {
 test('ClearColor', ValueTest.bind(ValueTest, ClearColor, {
     setValue: new Color(1, 1, 0, 1)
 }));
-
 
 test('ClearDepth', ValueTest.bind(ValueTest, ClearDepth, {
     setValue: 0.5

@@ -1,14 +1,26 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import VectorTileSource from '../../../src/source/vector_tile_source';
-import { OverscaledTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 import window from '../../../src/util/window';
-import { Evented } from '../../../src/util/evented';
-import { RequestManager } from '../../../src/util/mapbox';
+import {Evented} from '../../../src/util/evented';
+import {RequestManager} from '../../../src/util/mapbox';
+
+const wrapDispatcher = (dispatcher) => {
+    return {
+        getActor() {
+            return dispatcher;
+        }
+    };
+};
+
+const mockDispatcher = wrapDispatcher({
+    send () {}
+});
 
 function createSource(options, transformCallback) {
-    const source = new VectorTileSource('id', options, { send() {} }, options.eventedParent);
+    const source = new VectorTileSource('id', options, mockDispatcher, options.eventedParent);
     source.onAdd({
-        transform: { showCollisionBoxes: false },
+        transform: {showCollisionBoxes: false},
         _getMapId: () => 1,
         _requestManager: new RequestManager(transformCallback)
     });
@@ -16,7 +28,6 @@ function createSource(options, transformCallback) {
     source.on('error', (e) => {
         throw e.error;
     });
-
 
     return source;
 }
@@ -54,7 +65,7 @@ test('VectorTileSource', (t) => {
     t.test('can be constructed from a TileJSON URL', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
 
-        const source = createSource({ url: "/source.json" });
+        const source = createSource({url: "/source.json"});
 
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
@@ -72,10 +83,10 @@ test('VectorTileSource', (t) => {
     t.test('transforms the request for TileJSON URL', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
         const transformSpy = t.spy((url) => {
-            return { url };
+            return {url};
         });
 
-        createSource({ url: "/source.json" }, transformSpy);
+        createSource({url: "/source.json"}, transformSpy);
         window.server.respond();
         t.equal(transformSpy.getCall(0).args[0], '/source.json');
         t.equal(transformSpy.getCall(0).args[1], 'Source');
@@ -84,7 +95,7 @@ test('VectorTileSource', (t) => {
 
     t.test('fires event with metadata property', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
-        const source = createSource({ url: "/source.json" });
+        const source = createSource({url: "/source.json"});
         source.on('data', (e) => {
             if (e.sourceDataType === 'content') t.end();
         });
@@ -98,7 +109,7 @@ test('VectorTileSource', (t) => {
         evented.on('dataloading', () => {
             dataloadingFired = true;
         });
-        const source = createSource({ url: "/source.json", eventedParent: evented });
+        const source = createSource({url: "/source.json", eventedParent: evented});
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 if (!dataloadingFired) t.fail();
@@ -146,11 +157,13 @@ test('VectorTileSource', (t) => {
                 scheme
             });
 
-            source.dispatcher.send = function(type, params) {
-                t.equal(type, 'loadTile');
-                t.equal(expectedURL, params.request.url);
-                t.end();
-            };
+            source.dispatcher = wrapDispatcher({
+                send(type, params) {
+                    t.equal(type, 'loadTile');
+                    t.equal(expectedURL, params.request.url);
+                    t.end();
+                }
+            });
 
             source.on('data', (e) => {
                 if (e.sourceDataType === 'metadata') source.loadTile({
@@ -166,7 +179,7 @@ test('VectorTileSource', (t) => {
     t.test('transforms tile urls before requesting', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
 
-        const source = createSource({ url: "/source.json" });
+        const source = createSource({url: "/source.json"});
         const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
@@ -192,11 +205,13 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
         const events = [];
-        source.dispatcher.send = function(type, params, cb) {
-            events.push(type);
-            if (cb) setTimeout(cb, 0);
-            return 1;
-        };
+        source.dispatcher = wrapDispatcher({
+            send(type, params, cb) {
+                events.push(type);
+                if (cb) setTimeout(cb, 0);
+                return 1;
+            }
+        });
 
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
@@ -261,7 +276,7 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             bounds: [-47, -7, -45, -5]
         }));
-        const source = createSource({ url: "/source.json" });
+        const source = createSource({url: "/source.json"});
 
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
@@ -278,16 +293,18 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             collectResourceTiming: true
         });
-        source.dispatcher.send = function(type, params, cb) {
-            t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
-            setTimeout(cb, 0);
-            t.end();
+        source.dispatcher = wrapDispatcher({
+            send(type, params, cb) {
+                t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
+                setTimeout(cb, 0);
+                t.end();
 
-            // do nothing for cache size check dispatch
-            source.dispatcher.send = function() {};
+                // do nothing for cache size check dispatch
+                source.dispatcher = mockDispatcher;
 
-            return 1;
-        };
+                return 1;
+            }
+        });
 
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
@@ -303,7 +320,7 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('cancels TileJSON request if removed', (t) => {
-        const source = createSource({ url: "/source.json" });
+        const source = createSource({url: "/source.json"});
         source.onRemove();
         t.equal(window.server.lastRequest.aborted, true);
         t.end();

@@ -5,9 +5,9 @@ import window from '../util/window';
 import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap';
-import { bindAll, extend } from '../util/util';
-import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
-import { Event, Evented } from '../util/evented';
+import {bindAll, extend} from '../util/util';
+import {type Anchor, anchorTranslate, applyAnchorClass} from './anchor';
+import {Event, Evented} from '../util/evented';
 import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
@@ -228,6 +228,8 @@ export default class Marker extends Evented {
             this._map.off('touchstart', this._addDragHandler);
             this._map.off('mouseup', this._onUp);
             this._map.off('touchend', this._onUp);
+            this._map.off('mousemove', this._onMove);
+            this._map.off('touchmove', this._onMove);
             delete this._map;
         }
         DOM.remove(this._element);

@@ -1,12 +1,12 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import * as mapbox from '../../../src/util/mapbox';
 import config from '../../../src/util/config';
 import window from '../../../src/util/window';
 import webpSupported from '../../../src/util/webp_supported';
-import { uuid } from '../../../src/util/util';
-import { SKU_ID } from '../../../src/util/sku_token';
-import { version } from '../../../package.json';
-import { equalWithPrecision } from '../../util';
+import {uuid} from '../../../src/util/util';
+import {SKU_ID} from '../../../src/util/sku_token';
+import {version} from '../../../package.json';
+import {equalWithPrecision} from '../../util';
 
 const mapboxTileURLs = [
     'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf',
@@ -63,6 +63,12 @@ test("mapbox", (t) => {
             const token = manager._skuToken;
             withFixedDate(t, now + ms13Hours, () => manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf", mapboxSource));
             t.notEqual(token, manager._skuToken);
+            t.end();
+        });
+
+        t.test('takes map-specific tokens correctly', (t) => {
+            const m = new mapbox.RequestManager(undefined, 'customAccessToken');
+            t.equal(m.normalizeStyleURL('mapbox://styles/user/style'), 'https://api.mapbox.com/styles/v1/user/style?access_token=customAccessToken');
             t.end();
         });
 
@@ -348,6 +354,15 @@ test("mapbox", (t) => {
 
             t.test('.normalizeTileURL ignores non-mapbox:// sources', (t) => {
                 t.equal(manager.normalizeTileURL('http://path.png', nonMapboxSource), 'http://path.png');
+                t.end();
+            });
+
+            t.test('.normalizeTileURL accounts for tileURLs w/ paths', (t) => {
+                // Add a path to the config:
+                config.API_URL = 'http://localhost:8080/mbx';
+                const input    = `https://localhost:8080/mbx/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/10/184/401.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
+                const expected =  `http://localhost:8080/mbx/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/10/184/401.vector.pbf?sku=${manager._skuToken}&access_token=${config.ACCESS_TOKEN}`;
+                t.equal(manager.normalizeTileURL(input, 'mapbox://mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7'), expected);
                 t.end();
             });
 
@@ -896,7 +911,6 @@ test("mapbox", (t) => {
                 window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, anonId);
                 turnstileEvent.postTurnstileEvent(mapboxTileURLs);
                 event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
-
 
                 const turnstileReq = window.server.requests[0];
                 turnstileReq.respond(200);

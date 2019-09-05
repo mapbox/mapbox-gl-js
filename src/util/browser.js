@@ -1,7 +1,7 @@
 // @flow strict
 
 import window from './window';
-import type { Cancelable } from '../types/cancelable';
+import type {Cancelable} from '../types/cancelable';
 
 const now = window.performance && window.performance.now ?
     window.performance.now.bind(window.performance) :
@@ -19,6 +19,8 @@ const cancel = window.cancelAnimationFrame ||
 
 let linkEl;
 
+let reducedMotionQuery: MediaQueryList;
+
 /**
  * @private
  */
@@ -31,10 +33,10 @@ const exported = {
 
     frame(fn: () => void): Cancelable {
         const frame = raf(fn);
-        return { cancel: () => cancel(frame) };
+        return {cancel: () => cancel(frame)};
     },
 
-    getImageData(img: CanvasImageSource): ImageData {
+    getImageData(img: CanvasImageSource, padding?: number = 0): ImageData {
         const canvas = window.document.createElement('canvas');
         const context = canvas.getContext('2d');
         if (!context) {
@@ -43,7 +45,7 @@ const exported = {
         canvas.width = img.width;
         canvas.height = img.height;
         context.drawImage(img, 0, 0, img.width, img.height);
-        return context.getImageData(0, 0, img.width, img.height);
+        return context.getImageData(-padding, -padding, img.width + 2 * padding, img.height + 2 * padding);
     },
 
     resolveURL(path: string) {
@@ -53,7 +55,16 @@ const exported = {
     },
 
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
-    get devicePixelRatio() { return window.devicePixelRatio; }
+
+    get devicePixelRatio() { return window.devicePixelRatio; },
+    get prefersReducedMotion(): boolean {
+        if (!window.matchMedia) return false;
+        //Lazily initialize media query
+        if (reducedMotionQuery == null) {
+            reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        }
+        return reducedMotionQuery.matches;
+    },
 };
 
 export default exported;

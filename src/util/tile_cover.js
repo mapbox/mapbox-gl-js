@@ -3,7 +3,7 @@
 import MercatorCoordinate from '../geo/mercator_coordinate';
 import Point from '@mapbox/point-geometry';
 
-import { OverscaledTileID } from '../source/tile_id';
+import {OverscaledTileID} from '../source/tile_id';
 
 export default tileCover;
 
@@ -42,7 +42,6 @@ function tileCover(z: number, bounds: [MercatorCoordinate, MercatorCoordinate, M
         return t[id];
     });
 }
-
 
 // Taken from polymaps src/Layer.js
 // https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383

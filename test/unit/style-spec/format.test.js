@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import format from '../../../src/style-spec/format';
 
 function roundtrip(style) {

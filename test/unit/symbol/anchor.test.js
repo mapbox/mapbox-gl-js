@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import Anchor from '../../../src/symbol/anchor';
 
 test('Anchor', (t) => {

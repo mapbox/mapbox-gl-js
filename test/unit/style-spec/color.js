@@ -1,6 +1,6 @@
 // @flow
 
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import Color from '../../../src/style-spec/util/color';
 
 test('Color.parse', (t) => {

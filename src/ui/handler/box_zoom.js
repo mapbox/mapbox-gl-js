@@ -2,9 +2,9 @@
 
 import DOM from '../../util/dom';
 
-import { bindAll } from '../../util/util';
+import {bindAll} from '../../util/util';
 import window from '../../util/window';
-import { Event } from '../../util/evented';
+import {Event} from '../../util/evented';
 
 import type Map from '../map';
 
@@ -136,7 +136,7 @@ class BoxZoomHandler {
         } else {
             this._map
                 .fitScreenCoordinates(p0, p1, this._map.getBearing(), {linear: true})
-                .fire(new Event('boxzoomend', { originalEvent: e}));
+                .fire(new Event('boxzoomend', {originalEvent: e}));
         }
     }
 
@@ -168,7 +168,7 @@ class BoxZoomHandler {
     }
 
     _fireEvent(type: string, e: *) {
-        return this._map.fire(new Event(type, { originalEvent: e }));
+        return this._map.fire(new Event(type, {originalEvent: e}));
     }
 }
 

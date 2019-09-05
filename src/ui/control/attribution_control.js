@@ -1,7 +1,7 @@
 // @flow
 
 import DOM from '../../util/dom';
-import { bindAll } from '../../util/util';
+import {bindAll} from '../../util/util';
 import config from '../../util/config';
 
 import type Map from '../map';
@@ -94,7 +94,7 @@ class AttributionControl {
         const params = [
             {key: "owner", value: this.styleOwner},
             {key: "id", value: this.styleId},
-            {key: "access_token", value: config.ACCESS_TOKEN}
+            {key: "access_token", value: this._map._requestManager._customAccessToken || config.ACCESS_TOKEN}
         ];
 
         if (editLink) {

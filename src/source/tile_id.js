@@ -6,7 +6,7 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../geo/mercator_coordinate';
 
 import assert from 'assert';
-import { register } from '../util/web_worker_transfer';
+import {register} from '../util/web_worker_transfer';
 
 export class CanonicalTileID {
     z: number;
@@ -166,7 +166,6 @@ function calculateKey(wrap: number, z: number, x: number, y: number) {
     const dim = 1 << z;
     return ((dim * dim * wrap + dim * y + x) * 32) + z;
 }
-
 
 function getQuadkey(z, x, y) {
     let quadkey = '', mask;

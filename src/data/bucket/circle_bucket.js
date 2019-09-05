@@ -1,19 +1,20 @@
 // @flow
 
-import { CircleLayoutArray } from '../array_types';
+import {CircleLayoutArray} from '../array_types';
 
-import { members as layoutAttributes } from './circle_attributes';
+import {members as layoutAttributes} from './circle_attributes';
 import SegmentVector from '../segment';
-import { ProgramConfigurationSet } from '../program_configuration';
-import { TriangleIndexArray } from '../index_array_type';
+import {ProgramConfigurationSet} from '../program_configuration';
+import {TriangleIndexArray} from '../index_array_type';
 import loadGeometry from '../load_geometry';
 import EXTENT from '../extent';
-import { register } from '../../util/web_worker_transfer';
+import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 
 import type {
     Bucket,
     BucketParameters,
+    BucketFeature,
     IndexedFeature,
     PopulateParameters
 } from '../bucket';
@@ -26,13 +27,11 @@ import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state';
 import type {ImagePosition} from '../../render/image_atlas';
 
-
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
         (x * 2) + ((extrudeX + 1) / 2),
         (y * 2) + ((extrudeY + 1) / 2));
 }
-
 
 /**
  * Circles are represented by two triangles.
@@ -74,16 +73,53 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.segments = new SegmentVector();
         this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
-
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
+        const styleLayer = this.layers[0];
+        const bucketFeatures = [];
+        let circleSortKey = null;
+
+        // Heatmap layers are handled in this bucket and have no evaluated properties, so we check our access
+        if (styleLayer.type === 'circle') {
+            circleSortKey = ((styleLayer: any): CircleStyleLayer).layout.get('circle-sort-key');
+        }
+
         for (const {feature, index, sourceLayerIndex} of features) {
             if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) {
                 const geometry = loadGeometry(feature);
-                this.addFeature(feature, geometry, index);
-                options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
+                const sortKey = circleSortKey ?
+                    circleSortKey.evaluate(feature, {}) :
+                    undefined;
+
+                const bucketFeature: BucketFeature = {
+                    id: feature.id,
+                    properties: feature.properties,
+                    type: feature.type,
+                    sourceLayerIndex,
+                    index,
+                    geometry,
+                    patterns: {},
+                    sortKey
+                };
+
+                bucketFeatures.push(bucketFeature);
             }
+        }
+
+        if (circleSortKey) {
+            bucketFeatures.sort((a, b) => {
+                // a.sortKey is always a number when in use
+                return ((a.sortKey: any): number) - ((b.sortKey: any): number);
+            });
+        }
+
+        for (const bucketFeature of bucketFeatures) {
+            const {geometry, index, sourceLayerIndex} = bucketFeature;
+            const feature = features[index].feature;
+
+            this.addFeature(bucketFeature, geometry, index);
+            options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
 
@@ -117,7 +153,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.segments.destroy();
     }
 
-    addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>, index: number) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number) {
         for (const ring of geometry) {
             for (const point of ring) {
                 const x = point.x;
@@ -135,7 +171,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 // │ 0     1 │
                 // └─────────┘
 
-                const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+                const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray, feature.sortKey);
                 const index = segment.vertexLength;
 
                 addCircleVertex(this.layoutVertexArray, x, y, -1, -1);

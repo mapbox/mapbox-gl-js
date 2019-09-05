@@ -2,13 +2,13 @@
 
 import assert from 'assert';
 
-import { typeOf } from '../values';
-import { ValueType, type Type } from '../types';
+import {typeOf} from '../values';
+import {ValueType, type Type} from '../types';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Value } from '../values';
+import type {Value} from '../values';
 
 // Map input label values to output expression index
 type Cases = {[number | string]: number};

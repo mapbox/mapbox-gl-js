@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import CollisionFeature from '../../../src/symbol/collision_feature';
 import Anchor from '../../../src/symbol/anchor';
 import Point from '@mapbox/point-geometry';
-import { CollisionBoxArray } from '../../../src/data/array_types';
+import {CollisionBoxArray} from '../../../src/data/array_types';
 
 test('CollisionFeature', (t) => {
 
@@ -36,26 +36,26 @@ test('CollisionFeature', (t) => {
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true, 1);
         const boxPoints = pluckAnchorPoints(cf);
         t.deepEqual(boxPoints, [
-            { x: 370, y: 74},
-            { x: 389, y: 78},
-            { x: 409, y: 82},
-            { x: 428, y: 86},
-            { x: 448, y: 90},
-            { x: 468, y: 94},
-            { x: 478, y: 96},
-            { x: 487, y: 97},
-            { x: 497, y: 99},
-            { x: 505, y: 95},
-            { x: 513, y: 89},
-            { x: 522, y: 84},
-            { x: 531, y: 80},
-            { x: 540, y: 76},
-            { x: 549, y: 72},
-            { x: 558, y: 67},
-            { x: 576, y: 59},
-            { x: 594, y: 50},
-            { x: 612, y: 42},
-            { x: 630, y: 33} ]);
+            {x: 370, y: 74},
+            {x: 389, y: 78},
+            {x: 409, y: 82},
+            {x: 428, y: 86},
+            {x: 448, y: 90},
+            {x: 468, y: 94},
+            {x: 478, y: 96},
+            {x: 487, y: 97},
+            {x: 497, y: 99},
+            {x: 505, y: 95},
+            {x: 513, y: 89},
+            {x: 522, y: 84},
+            {x: 531, y: 80},
+            {x: 540, y: 76},
+            {x: 549, y: 72},
+            {x: 558, y: 67},
+            {x: 576, y: 59},
+            {x: 594, y: 50},
+            {x: 612, y: 42},
+            {x: 630, y: 33} ]);
         t.end();
     });
 
@@ -94,21 +94,21 @@ test('CollisionFeature', (t) => {
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true, 1);
         const boxPoints = pluckAnchorPoints(cf);
         t.deepEqual(boxPoints, [
-            { x: 0, y: 10 },
-            { x: 0, y: 30 },
-            { x: 0, y: 50 },
-            { x: 0, y: 70 },
-            { x: 0, y: 80 },
-            { x: 0, y: 90 },
-            { x: 0, y: 100 },
-            { x: 0, y: 110 },
-            { x: 0, y: 120 },
-            { x: 0, y: 130 },
-            { x: 0, y: 140 },
-            { x: 0, y: 150 },
-            { x: 0, y: 160 },
-            { x: 0, y: 170 },
-            { x: 0, y: 190 } ]);
+            {x: 0, y: 10},
+            {x: 0, y: 30},
+            {x: 0, y: 50},
+            {x: 0, y: 70},
+            {x: 0, y: 80},
+            {x: 0, y: 90},
+            {x: 0, y: 100},
+            {x: 0, y: 110},
+            {x: 0, y: 120},
+            {x: 0, y: 130},
+            {x: 0, y: 140},
+            {x: 0, y: 150},
+            {x: 0, y: 160},
+            {x: 0, y: 170},
+            {x: 0, y: 190} ]);
         t.end();
     });
 
@@ -160,7 +160,7 @@ test('CollisionFeature', (t) => {
     test('height is big enough that first box can be placed *after* anchor', (t) => {
         const line = [new Point(3103, 4068), new Point(3225.6206896551726, 4096)];
         const anchor = new Anchor(3144.5959947505007, 4077.498298013894, 0.22449735614507618, 0);
-        const shaping = { right: 256, left: 0, bottom: 256, top: 0 };
+        const shaping = {right: 256, left: 0, bottom: 256, top: 0};
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shaping, 1, 0, true, 1);
         t.equal(cf.boxEndIndex - cf.boxStartIndex, 1);
         t.end();

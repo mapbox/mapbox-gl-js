@@ -1,11 +1,11 @@
 // @flow
 
-import { packUint8ToFloat } from '../shaders/encode_attribute';
+import {packUint8ToFloat} from '../shaders/encode_attribute';
 import Color from '../style-spec/util/color';
-import { supportsPropertyExpression } from '../style-spec/util/properties';
-import { register, serialize, deserialize } from '../util/web_worker_transfer';
-import { PossiblyEvaluatedPropertyValue } from '../style/properties';
-import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray } from './array_types';
+import {supportsPropertyExpression} from '../style-spec/util/properties';
+import {register, serialize, deserialize} from '../util/web_worker_transfer';
+import {PossiblyEvaluatedPropertyValue} from '../style/properties';
+import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray} from './array_types';
 
 import EvaluationParameters from '../style/evaluation_parameters';
 import FeaturePositionMap from './feature_position_map';
@@ -32,6 +32,7 @@ import type {
 } from '../style-spec/expression';
 import type {PossiblyEvaluated} from '../style/properties';
 import type {FeatureStates} from '../source/source_state';
+import type {FormattedSection} from '../style-spec/expression/types/formatted';
 
 export type BinderUniform = {
     name: string,
@@ -78,7 +79,7 @@ interface Binder<T> {
     maxValue: number;
     uniformNames: Array<string>;
 
-    populatePaintArray(length: number, feature: Feature, imagePositions: {[string]: ImagePosition}): void;
+    populatePaintArray(length: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection): void;
     updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState, imagePositions: {[string]: ImagePosition}): void;
     upload(Context): void;
     destroy(): void;
@@ -215,13 +216,13 @@ class SourceExpressionBinder<T> implements Binder<T> {
 
     setConstantPatternPositions() {}
 
-    populatePaintArray(newLength: number, feature: Feature) {
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
         const paintArray = this.paintVertexArray;
 
         const start = paintArray.length;
         paintArray.reserve(newLength);
 
-        const value = this.expression.evaluate(new EvaluationParameters(0), feature, {});
+        const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, formattedSection);
 
         if (this.type === 'color') {
             const color = packColor(value);
@@ -319,14 +320,14 @@ class CompositeExpressionBinder<T> implements Binder<T> {
 
     setConstantPatternPositions() {}
 
-    populatePaintArray(newLength: number, feature: Feature) {
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
         const paintArray = this.paintVertexArray;
 
         const start = paintArray.length;
         paintArray.reserve(newLength);
 
-        const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {});
-        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {});
+        const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, formattedSection);
+        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, formattedSection);
 
         if (this.type === 'color') {
             const minColor = packColor(min);
@@ -345,7 +346,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
         const paintArray = this.paintVertexArray;
 
-        const min = this.expression.evaluate({zoom: this.zoom    }, feature, featureState);
+        const min = this.expression.evaluate({zoom: this.zoom}, feature, featureState);
         const max = this.expression.evaluate({zoom: this.zoom + 1}, feature, featureState);
 
         if (this.type === 'color') {
@@ -449,14 +450,14 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
 
         const zoomInArray = this.zoomInPaintVertexArray;
         const zoomOutArray = this.zoomOutPaintVertexArray;
-        const { layerId } = this;
+        const {layerId} = this;
         const start = zoomInArray.length;
 
         zoomInArray.reserve(length);
         zoomOutArray.reserve(length);
 
         if (imagePositions && feature.patterns && feature.patterns[layerId]) {
-            const { min, mid, max } = feature.patterns[layerId];
+            const {min, mid, max} = feature.patterns[layerId];
 
             const imageMin = imagePositions[min];
             const imageMid = imagePositions[mid];
@@ -485,7 +486,7 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
 
         const zoomInArray = this.zoomInPaintVertexArray;
         const zoomOutArray = this.zoomOutPaintVertexArray;
-        const { layerId } = this;
+        const {layerId} = this;
 
         if (imagePositions && feature.patterns && feature.patterns[layerId]) {
             const {min, mid, max} = feature.patterns[layerId];
@@ -611,10 +612,10 @@ export default class ProgramConfiguration {
         return self;
     }
 
-    populatePaintArrays(newLength: number, feature: Feature, index: number, imagePositions: {[string]: ImagePosition}) {
+    populatePaintArrays(newLength: number, feature: Feature, index: number, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            binder.populatePaintArray(newLength, feature, imagePositions);
+            binder.populatePaintArray(newLength, feature, imagePositions, formattedSection);
         }
         if (feature.id !== undefined) {
             this._featureMap.add(+feature.id, index, this._bufferOffset, newLength);
@@ -743,9 +744,9 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         this.needsUpload = false;
     }
 
-    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: {[string]: ImagePosition}) {
+    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
         for (const key in this.programConfigurations) {
-            this.programConfigurations[key].populatePaintArrays(length, feature, index, imagePositions);
+            this.programConfigurations[key].populatePaintArrays(length, feature, index, imagePositions, formattedSection);
         }
         this.needsUpload = true;
     }

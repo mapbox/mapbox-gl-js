@@ -2,12 +2,12 @@
 
 import Anchor from './anchor';
 
-import { getAnchors, getCenterAnchor } from './get_anchors';
+import {getAnchors, getCenterAnchor} from './get_anchors';
 import clipLine from './clip_line';
-import { shapeText, shapeIcon, WritingMode } from './shaping';
-import { getGlyphQuads, getIconQuads } from './quads';
+import {shapeText, shapeIcon, WritingMode} from './shaping';
+import {getGlyphQuads, getIconQuads} from './quads';
 import CollisionFeature from './collision_feature';
-import { warnOnce } from '../util/util';
+import {warnOnce} from '../util/util';
 import {
     allowsVerticalWritingMode,
     allowsLetterSpacing
@@ -63,47 +63,88 @@ export type TextAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-l
 // We don't actually load baseline data, but we assume an offset of ONE_EM - 17
 // (see "yOffset" in shaping.js)
 const baselineOffset = 7;
+const INVALID_TEXT_OFFSET = Number.POSITIVE_INFINITY;
 
-export function evaluateRadialOffset(anchor: TextAnchor, radialOffset: number) {
-    let x = 0, y = 0;
-    // solve for r where r^2 + r^2 = radialOffset^2
-    const hypotenuse = radialOffset / Math.sqrt(2);
+export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, number]) {
 
-    switch (anchor) {
-    case 'top-right':
-    case 'top-left':
-        y = hypotenuse - baselineOffset;
-        break;
-    case 'bottom-right':
-    case 'bottom-left':
-        y = -hypotenuse + baselineOffset;
-        break;
-    case 'bottom':
-        y = -radialOffset + baselineOffset;
-        break;
-    case 'top':
-        y = radialOffset - baselineOffset;
-        break;
+    function fromRadialOffset(anchor: TextAnchor, radialOffset: number) {
+        let x = 0, y = 0;
+        if (radialOffset < 0) radialOffset = 0; // Ignore negative offset.
+        // solve for r where r^2 + r^2 = radialOffset^2
+        const hypotenuse = radialOffset / Math.sqrt(2);
+        switch (anchor) {
+        case 'top-right':
+        case 'top-left':
+            y = hypotenuse - baselineOffset;
+            break;
+        case 'bottom-right':
+        case 'bottom-left':
+            y = -hypotenuse + baselineOffset;
+            break;
+        case 'bottom':
+            y = -radialOffset + baselineOffset;
+            break;
+        case 'top':
+            y = radialOffset - baselineOffset;
+            break;
+        }
+
+        switch (anchor) {
+        case 'top-right':
+        case 'bottom-right':
+            x = -hypotenuse;
+            break;
+        case 'top-left':
+        case 'bottom-left':
+            x = hypotenuse;
+            break;
+        case 'left':
+            x = radialOffset;
+            break;
+        case 'right':
+            x = -radialOffset;
+            break;
+        }
+
+        return [x, y];
     }
 
-    switch (anchor) {
-    case 'top-right':
-    case 'bottom-right':
-        x = -hypotenuse;
-        break;
-    case 'top-left':
-    case 'bottom-left':
-        x = hypotenuse;
-        break;
-    case 'left':
-        x = radialOffset;
-        break;
-    case 'right':
-        x = -radialOffset;
-        break;
+    function fromTextOffset(anchor: TextAnchor, offsetX: number, offsetY: number) {
+        let x = 0, y = 0;
+        // Use absolute offset values.
+        offsetX = Math.abs(offsetX);
+        offsetY = Math.abs(offsetY);
+
+        switch (anchor) {
+        case 'top-right':
+        case 'top-left':
+        case 'top':
+            y = offsetY - baselineOffset;
+            break;
+        case 'bottom-right':
+        case 'bottom-left':
+        case 'bottom':
+            y = -offsetY + baselineOffset;
+            break;
+        }
+
+        switch (anchor) {
+        case 'top-right':
+        case 'bottom-right':
+        case 'right':
+            x = -offsetX;
+            break;
+        case 'top-left':
+        case 'bottom-left':
+        case 'left':
+            x = offsetX;
+            break;
+        }
+
+        return [x, y];
     }
 
-    return [x, y];
+    return (offset[1] !== INVALID_TEXT_OFFSET) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
@@ -148,7 +189,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const keepUpright = layout.get('text-keep-upright');
 
-
     for (const feature of bucket.features) {
         const fontstack = layout.get('text-font').evaluate(feature, {}).join(',');
         const glyphPositionMap = glyphPositions;
@@ -166,15 +206,15 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
             const textAnchor = layout.get('text-anchor').evaluate(feature, {});
             const variableTextAnchor = layout.get('text-variable-anchor');
-            const radialOffset = layout.get('text-radial-offset').evaluate(feature, {});
 
             if (!variableTextAnchor) {
+                const radialOffset = layout.get('text-radial-offset').evaluate(feature, {});
                 // Layers with variable anchors use the `text-radial-offset` property and the [x, y] offset vector
                 // is calculated at placement time instead of layout time
                 if (radialOffset) {
                     // The style spec says don't use `text-offset` and `text-radial-offset` together
                     // but doesn't actually specify what happens if you use both. We go with the radial offset.
-                    textOffset = evaluateRadialOffset(textAnchor, radialOffset * ONE_EM);
+                    textOffset = evaluateVariableOffset(textAnchor, [radialOffset * ONE_EM, INVALID_TEXT_OFFSET]);
                 } else {
                     textOffset = (layout.get('text-offset').evaluate(feature, {}).map(t => t * ONE_EM): any);
                 }
@@ -187,6 +227,16 @@ export function performSymbolLayout(bucket: SymbolBucket,
             const maxWidth = layout.get('symbol-placement') === 'point' ?
                 layout.get('text-max-width').evaluate(feature, {}) * ONE_EM :
                 0;
+
+            const addVerticalShapingForPointLabelIfNeeded = () => {
+                if (bucket.allowVerticalPlacement && allowsVerticalWritingMode(unformattedText)) {
+                    // Vertical POI label placement is meant to be used for scripts that support vertical
+                    // writing mode, thus, default left justification is used. If Latin
+                    // scripts would need to be supported, this should take into account other justifications.
+                    shapedTextOrientations.vertical = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor,
+                                                                'left', spacingIfAllowed, textOffset, WritingMode.vertical, true);
+                }
+            };
 
             // If this layer uses text-variable-anchor, generate shapings for all justification possibilities.
             if (!textAlongLine && variableTextAnchor) {
@@ -206,24 +256,32 @@ export function performSymbolLayout(bucket: SymbolBucket,
                         // If using text-variable-anchor for the layer, we use a center anchor for all shapings and apply
                         // the offsets for the anchor in the placement step.
                         const shaping = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, 'center',
-                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal);
+                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false);
                         if (shaping) {
                             shapedTextOrientations.horizontal[justification] = shaping;
                             singleLine = shaping.lineCount === 1;
                         }
                     }
                 }
+
+                addVerticalShapingForPointLabelIfNeeded();
             } else {
                 if (textJustify === "auto") {
                     textJustify = getAnchorJustification(textAnchor);
                 }
+
+                // Horizontal point or line label.
                 const shaping = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
-                                          textOffset, WritingMode.horizontal);
+                                          textOffset, WritingMode.horizontal, false);
                 if (shaping) shapedTextOrientations.horizontal[textJustify] = shaping;
 
+                // Vertical point label (if allowVerticalPlacement is enabled).
+                addVerticalShapingForPointLabelIfNeeded();
+
+                // Verticalized line label.
                 if (allowsVerticalWritingMode(unformattedText) && textAlongLine && keepUpright) {
                     shapedTextOrientations.vertical = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify,
-                                                                spacingIfAllowed, textOffset, WritingMode.vertical);
+                                                                spacingIfAllowed, textOffset, WritingMode.vertical, false);
                 }
             }
 
@@ -406,7 +464,7 @@ function addTextVertices(bucket: SymbolBucket,
                          glyphPositionMap: {[string]: {[number]: GlyphPosition}},
                          sizes: Sizes) {
     const glyphQuads = getGlyphQuads(anchor, shapedText, textOffset,
-                            layer, textAlongLine, feature, glyphPositionMap);
+                            layer, textAlongLine, feature, glyphPositionMap, bucket.allowVerticalPlacement);
 
     const sizeData = bucket.textSizeData;
     let textSizeData = null;
@@ -458,7 +516,6 @@ function getDefaultHorizontalShaping(horizontalShaping: {[TextJustify]: Shaping}
     return null;
 }
 
-
 /**
  * Add a single label & icon placement.
  *
@@ -487,14 +544,29 @@ function addSymbol(bucket: SymbolBucket,
                    sizes: Sizes) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
-    let textCollisionFeature, iconCollisionFeature;
+    let textCollisionFeature, iconCollisionFeature, verticalTextCollisionFeature;
 
     let numIconVertices = 0;
     let numHorizontalGlyphVertices = 0;
     let numVerticalGlyphVertices = 0;
     const placedTextSymbolIndices = {};
     let key = murmur3('');
-    const radialTextOffset = (layer.layout.get('text-radial-offset').evaluate(feature, {}) || 0) * ONE_EM;
+
+    let textOffset0 = 0;
+    let textOffset1 = 0;
+    if (layer._unevaluatedLayout.getValue('text-radial-offset') === undefined) {
+        [textOffset0, textOffset1] = (layer.layout.get('text-offset').evaluate(feature, {}).map(t => t * ONE_EM): any);
+    } else {
+        textOffset0 = layer.layout.get('text-radial-offset').evaluate(feature, {}) * ONE_EM;
+        textOffset1 = INVALID_TEXT_OFFSET;
+    }
+
+    if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
+        const textRotation = layer.layout.get('text-rotate').evaluate(feature, {});
+        const verticalTextRotation = textRotation + 90.0;
+        const verticalShaping = shapedTextOrientations.vertical;
+        verticalTextCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
+    }
 
     for (const justification: any in shapedTextOrientations.horizontal) {
         const shaping = shapedTextOrientations.horizontal[justification];
@@ -527,6 +599,9 @@ function addSymbol(bucket: SymbolBucket,
 
     const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
     const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
+
+    const verticalTextBoxStartIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
+    const verticalTextBoxEndIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
 
     if (shapedIcon) {
         const iconQuads = getIconQuads(anchor, shapedIcon, layer,
@@ -587,6 +662,8 @@ function addSymbol(bucket: SymbolBucket,
         key,
         textBoxStartIndex,
         textBoxEndIndex,
+        verticalTextBoxStartIndex,
+        verticalTextBoxEndIndex,
         iconBoxStartIndex,
         iconBoxEndIndex,
         featureIndex,
@@ -595,7 +672,8 @@ function addSymbol(bucket: SymbolBucket,
         numIconVertices,
         0,
         textBoxScale,
-        radialTextOffset);
+        textOffset0,
+        textOffset1);
 }
 
 function anchorIsTooClose(bucket: any, text: string, repeatDistance: number, anchor: Point) {

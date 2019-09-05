@@ -4,7 +4,6 @@ import StyleLayer from '../style_layer';
 import type Map from '../../ui/map';
 import assert from 'assert';
 
-
 type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => void;
 
 /**

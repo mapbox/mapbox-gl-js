@@ -632,6 +632,21 @@
     }
   },
   "layout_fill": {
+    "fill-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+          "js": "1.2.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -656,6 +671,21 @@
     }
   },
   "layout_circle": {
+    "circle-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+          "js": "1.2.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -850,6 +880,21 @@
       },
       "property-type": "data-constant"
     },
+    "line-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+          "js": "1.2.0"
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -966,7 +1011,18 @@
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key when they overlap. Features with a lower sort key will have priority over other features when doing placement.",
       "sdk-support": {
-          "js": "0.53.0"
+        "basic functionality": {
+          "js": "0.53.0",
+          "android": "7.4.0",
+          "ios": "4.11.0",
+          "macos": "0.14.0"
+        },
+        "data-driven styling": {
+          "js": "0.53.0",
+          "android": "7.4.0",
+          "ios": "4.11.0",
+          "macos": "0.14.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1799,7 +1855,7 @@
       "type": "number",
       "units": "ems",
       "default": 0,
-      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which doesn't support the two-dimensional `text-offset`.",
+      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which defaults to using the two-dimensional `text-offset` if present.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.54.0",
@@ -1815,9 +1871,7 @@
         }
       },
       "requires": [
-        {
-          "!" : "text-offset"
-        }
+        "text-field"
       ],
       "property-type": "data-driven",
       "expression": {
@@ -1861,19 +1915,14 @@
         }
       },
       "requires": [
-        {
-          "!": "text-anchor"
-        },
-        {
-          "!": "text-offset"
-        },
+        "text-field",
         {
             "symbol-placement": [
                 "point"
             ]
         }
       ],
-      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the render will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` instead of the two-dimensional `text-offset`.",
+      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the render will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` or the two-dimensional `text-offset`.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.54.0",
@@ -1898,9 +1947,6 @@
     },
     "text-anchor": {
       "type": "enum",
-      "requires": {
-        "!": "text-variable-anchor"
-      },
       "values": {
         "center": {
           "doc": "The center of the text is placed closest to the anchor."
@@ -1933,7 +1979,10 @@
       "default": "center",
       "doc": "Part of the text placed closest to the anchor.",
       "requires": [
-        "text-field"
+        "text-field",
+        {
+          "!": "text-variable-anchor"
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -1983,6 +2032,48 @@
       },
       "expression": {
         "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "text-writing-mode": {
+      "type": "array",
+      "value": "enum",
+      "values": {
+        "horizontal": {
+          "doc": "If a text's language supports horizontal writing mode, symbols with point placement would be laid out horizontally."
+        },
+        "vertical": {
+          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically."
+        }
+      },
+      "doc": "The property allows control over a symbol's orientation. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. The order of elements in an array define priority order for the placement of an orientation variant.",
+      "requires": [
+        "text-field",
+        {
+          "symbol-placement": [
+              "point"
+          ]
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "next",
+          "android": "next",
+          "ios": "next",
+          "macos": "next"
+        },
+        "data-driven styling": {
+          "js": "Not yet supported",
+          "android": "Not yet supported",
+          "ios": "Not yet supported",
+          "macos": "Not yet supported"
+        }
+      },
+      "expression": {
+        "interpolated": false,
         "parameters": [
           "zoom"
         ]
@@ -2123,7 +2214,7 @@
     },
     "text-offset": {
       "type": "array",
-      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up.",
+      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up. If used with text-variable-anchor, input values will be taken as absolute values. Offsets along the x- and y-axis will be applied automatically based on the anchor position.",
       "value": "number",
       "units": "ems",
       "length": 2,
@@ -2552,7 +2643,7 @@
         }
       },
       "step": {
-        "doc": "Produces discrete, stepped results by evaluating a piecewise-constant function defined by pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. Returns the output value of the stop just less than the input, or the first input if the input is less than the first stop.",
+        "doc": "Produces discrete, stepped results by evaluating a piecewise-constant function defined by pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. Returns the output value of the stop just less than the input, or the first output if the input is less than the first stop.",
         "group": "Ramps, scales, curves",
         "sdk-support": {
           "basic functionality": {
@@ -2702,7 +2793,7 @@
         }
       },
       "format": {
-        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. If set, the `text-font` argument overrides the font specified by the root layout properties. If set, the `font-scale` argument specifies a scaling factor relative to the `text-size` specified in the root layout properties.",
+        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. If set, the `text-font` argument overrides the font specified by the root layout properties. If set, the `font-scale` argument specifies a scaling factor relative to the `text-size` specified in the root layout properties. If set, the `text-color` argument overrides the color specified by the paint properties for this layer.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -2855,7 +2946,7 @@
         }
       },
       "feature-state": {
-        "doc": "Retrieves a property value from the current feature's state. Returns null if the requested property is not present on the feature's state. A feature's state is not part of the GeoJSON or vector tile data, and must be set programmatically on each feature. Note that [\"feature-state\"] can only be used with paint properties that support data-driven styling.",
+        "doc": "Retrieves a property value from the current feature's state. Returns null if the requested property is not present on the feature's state. A feature's state is not part of the GeoJSON or vector tile data, and must be set programmatically on each feature. Features are identified by their `id` attribute, which must be an integer or a string that can be cast to an integer. Note that [\"feature-state\"] can only be used with paint properties that support data-driven styling.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -5047,6 +5138,7 @@
       "doc": "The color with which the text will be drawn.",
       "default": "#000000",
       "transition": true,
+      "overridable": true,
       "requires": [
         "text-field"
       ],

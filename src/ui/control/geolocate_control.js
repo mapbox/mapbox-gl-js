@@ -1,15 +1,15 @@
 // @flow
 
-import { Event, Evented } from '../../util/evented';
+import {Event, Evented} from '../../util/evented';
 import DOM from '../../util/dom';
 import window from '../../util/window';
-import { extend, bindAll, warnOnce } from '../../util/util';
+import {extend, bindAll, warnOnce} from '../../util/util';
 import assert from 'assert';
 import LngLat from '../../geo/lng_lat';
 import Marker from '../marker';
 
 import type Map from '../map';
-import type { AnimationOptions, CameraOptions } from '../camera';
+import type {AnimationOptions, CameraOptions} from '../camera';
 
 type Options = {
     positionOptions?: PositionOptions,
@@ -43,7 +43,7 @@ function checkGeolocationSupport(callback) {
         // http://caniuse.com/#feat=permissions-api
         // Test for the case where a browser disables Geolocation because of an
         // insecure origin
-        window.navigator.permissions.query({ name: 'geolocation' }).then((p) => {
+        window.navigator.permissions.query({name: 'geolocation'}).then((p) => {
             supportsGeolocation = p.state !== 'denied';
             callback(supportsGeolocation);
         });
@@ -433,7 +433,6 @@ export default GeolocateControl;
  * BACKGROUND_ERROR
  *    There was an error from the Geolocation API while trying to show (but not track) the user location.
  */
-
 
 /**
  * Fired on each Geolocation API position update which returned as success.

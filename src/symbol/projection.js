@@ -2,9 +2,9 @@
 
 import Point from '@mapbox/point-geometry';
 
-import { mat4, vec4 } from 'gl-matrix';
+import {mat4, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size';
-import { addDynamicAttributes } from '../data/bucket/symbol_bucket';
+import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
 
 import type Painter from '../render/painter';
 import type Transform from '../geo/transform';
@@ -14,9 +14,9 @@ import type {
     SymbolLineVertexArray,
     SymbolDynamicLayoutArray
 } from '../data/array_types';
-import { WritingMode } from '../symbol/shaping';
+import {WritingMode} from '../symbol/shaping';
 
-export { updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, placeFirstAndLastGlyph, xyTransformMat4 };
+export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, placeFirstAndLastGlyph, xyTransformMat4};
 
 /*
  * # Overview of coordinate spaces
@@ -226,7 +226,7 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffset
     if (!lastPlacedGlyph)
         return null;
 
-    return { first: firstPlacedGlyph, last: lastPlacedGlyph };
+    return {first: firstPlacedGlyph, last: lastPlacedGlyph};
 }
 
 function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRatio) {
@@ -238,13 +238,13 @@ function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRat
         const rise = Math.abs(lastPoint.y - firstPoint.y);
         const run = Math.abs(lastPoint.x - firstPoint.x) * aspectRatio;
         if (rise > run) {
-            return { useVertical: true };
+            return {useVertical: true};
         }
     }
 
     if (writingMode === WritingMode.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x) {
         // Includes "horizontalOnly" case for labels without vertical glyphs
-        return { needsFlipping: true };
+        return {needsFlipping: true};
     }
 
     return null;
@@ -265,7 +265,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         // the overall orientation of the label and determine whether it needs to be flipped in keepUpright mode
         const firstAndLastGlyph = placeFirstAndLastGlyph(fontScale, glyphOffsetArray, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol, lineVertexArray, labelPlaneMatrix, projectionCache, false);
         if (!firstAndLastGlyph) {
-            return { notEnoughRoom: true };
+            return {notEnoughRoom: true};
         }
         const firstPoint = project(firstAndLastGlyph.first.point, glCoordMatrix).point;
         const lastPoint = project(firstAndLastGlyph.last.point, glCoordMatrix).point;
@@ -301,7 +301,6 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
                 projectedVertex.point :
                 projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix);
 
-
             const orientationChange = requiresOrientationChange(symbol.writingMode, a, b, aspectRatio);
             if (orientationChange) {
                 return orientationChange;
@@ -311,7 +310,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         const singleGlyph = placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(symbol.glyphStartIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
             symbol.lineStartIndex, symbol.lineStartIndex + symbol.lineLength, lineVertexArray, labelPlaneMatrix, projectionCache, false);
         if (!singleGlyph)
-            return { notEnoughRoom: true };
+            return {notEnoughRoom: true};
 
         placedGlyphs = [singleGlyph];
     }

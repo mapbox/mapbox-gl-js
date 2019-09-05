@@ -51,7 +51,7 @@
     }],
     "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
     "no-warning-comments": "error",
-    "object-curly-spacing": "off",
+    "object-curly-spacing": ["error", "never"],
     "prefer-arrow-callback": "error",
     "prefer-const": ["error", {"destructuring": "all"}],
     "prefer-template": "error",
@@ -70,6 +70,9 @@
       "FunctionExpression": {
         "parameters": "off"
       }
+    }],
+    "no-multiple-empty-lines": [ "error", { 
+        "max": 1
     }]
   },
   "globals": {

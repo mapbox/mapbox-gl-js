@@ -8,11 +8,12 @@ import type SymbolBucket from '../data/bucket/symbol_bucket';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import CullFaceMode from '../gl/cull_face_mode';
-import { collisionUniformValues } from './program/collision_program';
+import {collisionUniformValues} from './program/collision_program';
 
 export default drawCollisionDebug;
 
-function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>, drawCircles: boolean) {
+function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>, drawCircles: boolean,
+    translate: [number, number], translateAnchor: 'map' | 'viewport', isText: boolean) {
     const context = painter.context;
     const gl = context.gl;
     const program = drawCircles ? painter.useProgram('collisionCircle') : painter.useProgram('collisionBox');
@@ -22,15 +23,18 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
         const tile = sourceCache.getTile(coord);
         const bucket: ?SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        const buffers = drawCircles ? bucket.collisionCircle : bucket.collisionBox;
+        const buffers = drawCircles ? (isText ? bucket.textCollisionCircle : bucket.iconCollisionCircle) : (isText ? bucket.textCollisionBox : bucket.iconCollisionBox);
         if (!buffers) continue;
-
+        let posMatrix = coord.posMatrix;
+        if (translate[0] !== 0 || translate[1] !== 0) {
+            posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor);
+        }
         program.draw(context, drawCircles ? gl.TRIANGLES : gl.LINES,
             DepthMode.disabled, StencilMode.disabled,
             painter.colorModeForRenderPass(),
             CullFaceMode.disabled,
             collisionUniformValues(
-                coord.posMatrix,
+                posMatrix,
                 painter.transform,
                 tile),
             layer.id, buffers.layoutVertexBuffer, buffers.indexBuffer,
@@ -39,7 +43,7 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
     }
 }
 
-function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
-    drawCollisionDebugGeometry(painter, sourceCache, layer, coords, false);
-    drawCollisionDebugGeometry(painter, sourceCache, layer, coords, true);
+function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>, translate: [number, number], translateAnchor: 'map' | 'viewport', isText: boolean) {
+    drawCollisionDebugGeometry(painter, sourceCache, layer, coords, false, translate, translateAnchor, isText);
+    drawCollisionDebugGeometry(painter, sourceCache, layer, coords, true, translate, translateAnchor, isText);
 }

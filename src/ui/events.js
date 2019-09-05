@@ -1,10 +1,10 @@
 // @flow
 
-import { Event } from '../util/evented';
+import {Event} from '../util/evented';
 
 import DOM from '../util/dom';
 import Point from '@mapbox/point-geometry';
-import { extend } from '../util/util';
+import {extend} from '../util/util';
 
 import type Map from './map';
 import type LngLat from '../geo/lng_lat';
@@ -78,7 +78,7 @@ export class MapMouseEvent extends Event {
     constructor(type: string, map: Map, originalEvent: MouseEvent, data: Object = {}) {
         const point = DOM.mousePos(map.getCanvasContainer(), originalEvent);
         const lngLat = map.unproject(point);
-        super(type, extend({ point, lngLat, originalEvent }, data));
+        super(type, extend({point, lngLat, originalEvent}, data));
         this._defaultPrevented = false;
         this.target = map;
     }
@@ -161,11 +161,10 @@ export class MapTouchEvent extends Event {
             return prev.add(curr.div(arr.length));
         }, new Point(0, 0));
         const lngLat = map.unproject(point);
-        super(type, { points, point, lngLats, lngLat, originalEvent });
+        super(type, {points, point, lngLats, lngLat, originalEvent});
         this._defaultPrevented = false;
     }
 }
-
 
 /**
  * `MapWheelEvent` is the event type for the `wheel` map event.
@@ -209,7 +208,7 @@ export class MapWheelEvent extends Event {
      * @private
      */
     constructor(type: string, map: Map, originalEvent: WheelEvent) {
-        super(type, { originalEvent });
+        super(type, {originalEvent});
         this._defaultPrevented = false;
     }
 }

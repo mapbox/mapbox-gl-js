@@ -1,4 +1,4 @@
-import { test } from '../../../util/test';
+import {test} from '../../../util/test';
 import * as colorSpaces from '../../../../src/style-spec/util/color_spaces';
 import Color from '../../../../src/style-spec/util/color';
 

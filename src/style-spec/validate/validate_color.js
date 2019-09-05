@@ -1,7 +1,7 @@
 
 import ValidationError from '../error/validation_error';
 import getType from '../util/get_type';
-import { parseCSSColor } from 'csscolorparser';
+import {parseCSSColor} from 'csscolorparser';
 
 export default function validateColor(options) {
     const key = options.key;

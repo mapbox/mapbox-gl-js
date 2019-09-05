@@ -1,6 +1,6 @@
 // @flow
 
-import { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
+import {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 
 import type Tile from './../source/tile';
 import type Context from '../gl/context';
@@ -58,7 +58,6 @@ export type Mask = {
 // Only other renderable tiles that are *children* of the tile we are generating the mask for will
 // be considered. For example, adding TileID 4/8/13 to renderableTiles won't affect the TileMask for
 // 2/1/3, since it is not a descendant of it.
-
 
 export default function(renderableTiles: Array<Tile>, context: Context) {
     const sortedRenderables = renderableTiles.sort((a, b) => { return a.tileID.isLessThan(b.tileID) ? -1 : b.tileID.isLessThan(a.tileID) ? 1 : 0; });

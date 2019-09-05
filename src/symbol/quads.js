@@ -2,13 +2,14 @@
 
 import Point from '@mapbox/point-geometry';
 
-import { GLYPH_PBF_BORDER } from '../style/parse_glyph_pbf';
+import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
 
 import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression';
 import type {GlyphPosition} from '../render/glyph_atlas';
+import ONE_EM from './one_em';
 
 /**
  * A textured quad for rendering a single icon or glyph.
@@ -35,7 +36,8 @@ export type SymbolQuad = {
         h: number
     },
     writingMode: any | void,
-    glyphOffset: [number, number]
+    glyphOffset: [number, number],
+    sectionIndex: number
 };
 
 /**
@@ -107,7 +109,7 @@ export function getIconQuads(anchor: Anchor,
     }
 
     // Icon quad is padded, so texture coordinates also need to be padded.
-    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0]}];
+    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0}];
 }
 
 /**
@@ -120,13 +122,13 @@ export function getGlyphQuads(anchor: Anchor,
                        layer: SymbolStyleLayer,
                        alongLine: boolean,
                        feature: Feature,
-                       positions: {[string]: {[number]: GlyphPosition}}): Array<SymbolQuad> {
+                       positions: {[string]: {[number]: GlyphPosition}},
+                       allowVerticalPlacement: boolean): Array<SymbolQuad> {
 
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
-
 
     for (let k = 0; k < positionedGlyphs.length; k++) {
         const positionedGlyph = positionedGlyphs[k];
@@ -147,9 +149,19 @@ export function getGlyphQuads(anchor: Anchor,
             [positionedGlyph.x + halfAdvance, positionedGlyph.y] :
             [0, 0];
 
-        const builtInOffset = alongLine ?
+        let builtInOffset = alongLine ?
             [0, 0] :
             [positionedGlyph.x + halfAdvance + textOffset[0], positionedGlyph.y + textOffset[1]];
+
+        const rotateVerticalGlyph = (alongLine || allowVerticalPlacement) && positionedGlyph.vertical;
+
+        let verticalizedLabelOffset = [0, 0];
+        if (rotateVerticalGlyph) {
+            // Vertical POI labels that are rotated 90deg CW and whose glyphs must preserve upright orientation
+            // need to be rotated 90deg CCW. After a quad is rotated, it is translated to the original built-in offset.
+            verticalizedLabelOffset = builtInOffset;
+            builtInOffset = [0, 0];
+        }
 
         const x1 = (glyph.metrics.left - rectBuffer) * positionedGlyph.scale - halfAdvance + builtInOffset[0];
         const y1 = (-glyph.metrics.top - rectBuffer) * positionedGlyph.scale + builtInOffset[1];
@@ -158,24 +170,31 @@ export function getGlyphQuads(anchor: Anchor,
 
         const tl = new Point(x1, y1);
         const tr = new Point(x2, y1);
-        const bl  = new Point(x1, y2);
+        const bl = new Point(x1, y2);
         const br = new Point(x2, y2);
 
-        if (alongLine && positionedGlyph.vertical) {
+        if (rotateVerticalGlyph) {
             // Vertical-supporting glyphs are laid out in 24x24 point boxes (1 square em)
             // In horizontal orientation, the y values for glyphs are below the midline
             // and we use a "yOffset" of -17 to pull them up to the middle.
             // By rotating counter-clockwise around the point at the center of the left
             // edge of a 24x24 layout box centered below the midline, we align the center
             // of the glyphs with the horizontal midline, so the yOffset is no longer
-            // necessary, but we also pull the glyph to the left along the x axis
-            const center = new Point(-halfAdvance, halfAdvance);
+            // necessary, but we also pull the glyph to the left along the x axis.
+            // The y coordinate includes baseline yOffset, thus needs to be accounted
+            // for when glyph is rotated and translated.
+            const center = new Point(-halfAdvance, halfAdvance - shaping.yOffset);
             const verticalRotation = -Math.PI / 2;
-            const xOffsetCorrection = new Point(5, 0);
-            tl._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
-            tr._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
-            bl._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
-            br._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
+
+            // xHalfWidhtOffsetcorrection is a difference between full-width and half-width
+            // advance, should be 0 for full-width glyphs and will pull up half-width glyphs.
+            const xHalfWidhtOffsetcorrection = ONE_EM / 2 - halfAdvance;
+            const xOffsetCorrection = new Point(5 - shaping.yOffset - xHalfWidhtOffsetcorrection, 0);
+            const verticalOffsetCorrection = new Point(...verticalizedLabelOffset);
+            tl._rotateAround(verticalRotation, center)._add(xOffsetCorrection)._add(verticalOffsetCorrection);
+            tr._rotateAround(verticalRotation, center)._add(xOffsetCorrection)._add(verticalOffsetCorrection);
+            bl._rotateAround(verticalRotation, center)._add(xOffsetCorrection)._add(verticalOffsetCorrection);
+            br._rotateAround(verticalRotation, center)._add(xOffsetCorrection)._add(verticalOffsetCorrection);
         }
 
         if (textRotate) {
@@ -189,7 +208,7 @@ export function getGlyphQuads(anchor: Anchor,
             br._matMult(matrix);
         }
 
-        quads.push({tl, tr, bl, br, tex: rect, writingMode: shaping.writingMode, glyphOffset});
+        quads.push({tl, tr, bl, br, tex: rect, writingMode: shaping.writingMode, glyphOffset, sectionIndex: positionedGlyph.sectionIndex});
     }
 
     return quads;

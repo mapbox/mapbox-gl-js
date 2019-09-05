@@ -3,7 +3,7 @@
 import StyleLayer from './style_layer';
 import createStyleLayer from './create_style_layer';
 
-import { values } from '../util/util';
+import {values} from '../util/util';
 import featureFilter from '../style-spec/feature_filter';
 import groupByLayout from '../style-spec/group_by_layout';
 

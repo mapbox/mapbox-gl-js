@@ -269,6 +269,14 @@ export function charHasRotatedVerticalOrientation(char: number) {
              charHasNeutralVerticalOrientation(char));
 }
 
+export function charInComplexShapingScript(char: number) {
+    return isChar['Arabic'](char) ||
+           isChar['Arabic Supplement'](char) ||
+           isChar['Arabic Extended-A'](char) ||
+           isChar['Arabic Presentation Forms-A'](char) ||
+           isChar['Arabic Presentation Forms-B'](char);
+}
+
 export function charInSupportedScript(char: number, canRenderRTL: boolean) {
     // This is a rough heuristic: whether we "can render" a script
     // actually depends on the properties of the font being used

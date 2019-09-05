@@ -1,14 +1,14 @@
 // @flow
 
-import { toString, ValueType, BooleanType, CollatorType } from '../types';
+import {toString, ValueType, BooleanType, CollatorType} from '../types';
 import Assertion from './assertion';
-import { typeOf } from '../values';
+import {typeOf} from '../values';
 import RuntimeError from '../runtime_error';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
-import type { Type } from '../types';
+import type {Type} from '../types';
 
 type ComparisonOperator = '==' | '!=' | '<' | '>' | '<=' | '>=' ;
 
@@ -27,7 +27,6 @@ function isComparableType(op: ComparisonOperator, type: Type) {
             type.kind === 'value';
     }
 }
-
 
 function eq(ctx, a, b) { return a === b; }
 function neq(ctx, a, b) { return a !== b; }

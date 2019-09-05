@@ -1,17 +1,17 @@
 // @flow
 
-import { create as createSource } from './source';
+import {create as createSource} from './source';
 
 import Tile from './tile';
-import { Event, ErrorEvent, Evented } from '../util/evented';
+import {Event, ErrorEvent, Evented} from '../util/evented';
 import TileCache from './tile_cache';
 import MercatorCoordinate from '../geo/mercator_coordinate';
-import { keysDifference } from '../util/util';
+import {keysDifference} from '../util/util';
 import EXTENT from '../data/extent';
 import Context from '../gl/context';
 import Point from '@mapbox/point-geometry';
 import browser from '../util/browser';
-import { OverscaledTileID } from './tile_id';
+import {OverscaledTileID} from './tile_id';
 import assert from 'assert';
 import SourceFeatureState from './source_state';
 
@@ -119,6 +119,7 @@ class SourceCache extends Evented {
     loaded(): boolean {
         if (this._sourceErrored) { return true; }
         if (!this._sourceLoaded) { return false; }
+        if (!this._source.loaded()) { return false; }
         for (const t in this._tiles) {
             const tile = this._tiles[t];
             if (tile.state !== 'loaded' && tile.state !== 'errored')
@@ -644,7 +645,6 @@ class SourceCache extends Evented {
         if (tile)
             return tile;
 
-
         tile = this._cache.getAndRemove(tileID);
         if (tile) {
             this._setTileReloadTimer(tileID.key, tile);
@@ -708,7 +708,7 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
-        if (tile.hasData()) {
+        if (tile.hasData() && tile.state !== 'reloading') {
             this._cache.add(tile.tileID, tile, tile.getExpiryTimeout());
         } else {
             tile.aborted = true;

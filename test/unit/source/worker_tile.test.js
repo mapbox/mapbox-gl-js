@@ -1,7 +1,7 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import WorkerTile from '../../../src/source/worker_tile';
 import Wrapper from '../../../src/source/geojson_wrapper';
-import { OverscaledTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 
 function createWorkerTile() {
@@ -44,7 +44,7 @@ test('WorkerTile#parse skips hidden layers', (t) => {
         id: 'test-hidden',
         source: 'source',
         type: 'fill',
-        layout: { visibility: 'none' }
+        layout: {visibility: 'none'}
     }]);
 
     const tile = createWorkerTile();

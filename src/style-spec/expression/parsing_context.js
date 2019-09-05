@@ -1,7 +1,7 @@
 // @flow
 
 import Scope from './scope';
-import { checkSubtype } from './types';
+import {checkSubtype} from './types';
 import ParsingError from './parsing_error';
 import Literal from './definitions/literal';
 import Assertion from './definitions/assertion';
@@ -11,7 +11,6 @@ import CompoundExpression from './compound_expression';
 import CollatorExpression from './definitions/collator';
 import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
 import Var from './definitions/var';
-
 
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';

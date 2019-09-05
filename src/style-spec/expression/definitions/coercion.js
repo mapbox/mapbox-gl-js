@@ -8,11 +8,11 @@ import RuntimeError from '../runtime_error';
 import Formatted from '../types/formatted';
 import FormatExpression from '../definitions/format';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Value } from '../values';
-import type { Type } from '../types';
+import type {Value} from '../values';
+import type {Type} from '../types';
 
 const types = {
     'to-boolean': BooleanType,
@@ -114,7 +114,7 @@ class Coercion implements Expression {
 
     serialize() {
         if (this.type.kind === 'formatted') {
-            return new FormatExpression([{text: this.args[0], scale: null, font: null}]).serialize();
+            return new FormatExpression([{text: this.args[0], scale: null, font: null, textColor: null}]).serialize();
         }
         const serialized = [`to-${this.type.kind}`];
         this.eachChild(child => { serialized.push(child.serialize()); });

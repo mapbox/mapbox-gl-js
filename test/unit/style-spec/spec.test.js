@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 
 /* eslint-disable import/namespace */
 import * as spec from '../../../src/style-spec/style-spec';
@@ -61,7 +61,8 @@ function validSchema(k, t, obj, ref, version, kind) {
         'minimum',
         'period',
         'requires',
-        'sdk-support'
+        'sdk-support',
+        'overridable'
     ];
 
     // Schema object.

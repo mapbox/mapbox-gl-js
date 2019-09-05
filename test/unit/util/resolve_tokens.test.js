@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import resolveTokens from '../../../src/util/resolve_tokens';
 
 test('resolveToken', (t) => {

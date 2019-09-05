@@ -2,7 +2,7 @@
 
 import RuntimeError from './runtime_error';
 
-import type { Expression } from './expression';
+import type {Expression} from './expression';
 
 export type Stops = Array<[number, Expression]>;
 

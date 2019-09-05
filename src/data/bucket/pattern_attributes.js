@@ -1,5 +1,5 @@
 // @flow
-import { createLayout } from '../../util/struct_array';
+import {createLayout} from '../../util/struct_array';
 
 export default createLayout([
     // [tl.x, tl.y, br.x, br.y]

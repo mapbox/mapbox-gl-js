@@ -2,11 +2,11 @@
 
 import assert from 'assert';
 
-import { clone, extend, easeCubicInOut } from '../util/util';
+import {clone, extend, easeCubicInOut} from '../util/util';
 import * as interpolate from '../style-spec/util/interpolate';
-import { normalizePropertyExpression } from '../style-spec/expression';
+import {normalizePropertyExpression} from '../style-spec/expression';
 import Color from '../style-spec/util/color';
-import { register } from '../util/web_worker_transfer';
+import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from './evaluation_parameters';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
@@ -535,9 +535,11 @@ export class DataConstantProperty<T> implements Property<T, T> {
  */
 export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
     specification: StylePropertySpecification;
+    overrides: ?Object;
 
-    constructor(specification: StylePropertySpecification) {
+    constructor(specification: StylePropertySpecification, overrides?: Object) {
         this.specification = specification;
+        this.overrides = overrides;
     }
 
     possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters): PossiblyEvaluatedPropertyValue<T> {
@@ -613,7 +615,6 @@ export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFa
         }
     }
 
-
     evaluate(value: PossiblyEvaluatedValue<?CrossFaded<T>>, globals: EvaluationParameters, feature: Feature, featureState: FeatureState): ?CrossFaded<T> {
         if (value.kind === 'source') {
             const constant = value.evaluate(globals, feature, featureState);
@@ -631,7 +632,7 @@ export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFa
 
     _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): CrossFaded<T> {
         const z = parameters.zoom;
-        return z > parameters.zoomHistory.lastIntegerZoom ? { from: min, to: mid } : { from: max, to: mid };
+        return z > parameters.zoomHistory.lastIntegerZoom ? {from: min, to: mid} : {from: max, to: mid};
     }
 
     interpolate(a: PossiblyEvaluatedPropertyValue<?CrossFaded<T>>): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
@@ -669,7 +670,7 @@ export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
 
     _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): ?CrossFaded<T> {
         const z = parameters.zoom;
-        return z > parameters.zoomHistory.lastIntegerZoom ? { from: min, to: mid } : { from: max, to: mid };
+        return z > parameters.zoomHistory.lastIntegerZoom ? {from: min, to: mid} : {from: max, to: mid};
     }
 
     interpolate(a: ?CrossFaded<T>): ?CrossFaded<T> {
@@ -716,6 +717,7 @@ export class Properties<Props: Object> {
     defaultTransitionablePropertyValues: TransitionablePropertyValues<Props>;
     defaultTransitioningPropertyValues: TransitioningPropertyValues<Props>;
     defaultPossiblyEvaluatedValues: PossiblyEvaluatedPropertyValues<Props>;
+    overridableProperties: Array<string>;
 
     constructor(properties: Props) {
         this.properties = properties;
@@ -723,9 +725,13 @@ export class Properties<Props: Object> {
         this.defaultTransitionablePropertyValues = ({}: any);
         this.defaultTransitioningPropertyValues = ({}: any);
         this.defaultPossiblyEvaluatedValues = ({}: any);
+        this.overridableProperties = ([]: any);
 
         for (const property in properties) {
             const prop = properties[property];
+            if (prop.specification.overridable) {
+                this.overridableProperties.push(property);
+            }
             const defaultPropertyValue = this.defaultPropertyValues[property] =
                 new PropertyValue(prop, undefined);
             const defaultTransitionablePropertyValue = this.defaultTransitionablePropertyValues[property] =

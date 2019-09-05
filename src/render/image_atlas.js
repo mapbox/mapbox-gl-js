@@ -1,7 +1,7 @@
 // @flow
 
-import { RGBAImage } from '../util/image';
-import { register } from '../util/web_worker_transfer';
+import {RGBAImage} from '../util/image';
+import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
 
 import type {StyleImage} from '../style/style_image';
@@ -16,7 +16,6 @@ type Rect = {
     w: number,
     h: number
 };
-
 
 export class ImagePosition {
     paddedRect: Rect;
@@ -90,10 +89,10 @@ export default class ImageAtlas {
 
             RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x, y}, src.data);
             // Add 1 pixel wrapped padding on each side of the image.
-            RGBAImage.copy(src.data, image, { x: 0, y: h - 1 }, { x, y: y - 1 }, { width: w, height: 1 }); // T
-            RGBAImage.copy(src.data, image, { x: 0, y:     0 }, { x, y: y + h }, { width: w, height: 1 }); // B
-            RGBAImage.copy(src.data, image, { x: w - 1, y: 0 }, { x: x - 1, y }, { width: 1, height: h }); // L
-            RGBAImage.copy(src.data, image, { x: 0,     y: 0 }, { x: x + w, y }, { width: 1, height: h }); // R
+            RGBAImage.copy(src.data, image, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}); // T
+            RGBAImage.copy(src.data, image, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}); // B
+            RGBAImage.copy(src.data, image, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}); // L
+            RGBAImage.copy(src.data, image, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}); // R
         }
 
         this.image = image;

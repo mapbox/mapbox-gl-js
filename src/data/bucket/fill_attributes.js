@@ -1,5 +1,5 @@
 // @flow
-import { createLayout } from '../../util/struct_array';
+import {createLayout} from '../../util/struct_array';
 
 const layout = createLayout([
     {name: 'a_pos', components: 2, type: 'Int16'}
