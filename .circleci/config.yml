@@ -105,10 +105,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v2-yarn-{{ checksum "yarn.lock" }}
+            - v3-yarn-{{ checksum "yarn.lock" }}
       - run: yarn
       - save_cache:
-          key: v2-yarn-{{ checksum "yarn.lock" }}
+          key: v3-yarn-{{ checksum "yarn.lock" }}
           paths:
             - '~/.yarn'
             - 'node_modules'
@@ -124,13 +124,13 @@ jobs:
           at: .
       - restore_cache:
           keys:
-            - v1-lint-{{ .Branch }}
-            - v1-lint
+            - v2-lint-{{ .Branch }}
+            - v2-lint
       - run: yarn run lint
       - run: yarn run lint-docs
       - run: yarn run lint-css
       - save_cache:
-          key: v1-lint-{{ .Branch }}-{{ .Revision }}
+          key: v2-lint-{{ .Branch }}-{{ .Revision }}
           paths:
             - '.eslintcache'
 
