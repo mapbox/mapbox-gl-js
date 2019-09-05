@@ -19,8 +19,8 @@
             "geometry": {
               "type": "Point",
               "coordinates": [
-                -80,
-                0
+                [0, 0],
+                [0, 0.25]
               ]
             }
           }
