@@ -7,7 +7,9 @@ const mapboxGlSrc = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 const benchSrc = fs.readFileSync('bench/gl-stats.html', 'utf8');
 const {execSync} = require('child_process');
 
-const benchHTML = benchSrc.replace(/<script src="..\/dist\/mapbox-gl.js"><\/script>/, `<script>${mapboxGlSrc}</script>`);
+const benchHTML = benchSrc
+    .replace(/<script src="..\/dist\/mapbox-gl.js"><\/script>/, `<script>${mapboxGlSrc}</script>`)
+    .replace('MAPBOX_ACCESS_TOKEN', process.env.MAPBOX_ACCESS_TOKEN);
 
 function waitForConsole(page) {
     return new Promise((resolve) => {
