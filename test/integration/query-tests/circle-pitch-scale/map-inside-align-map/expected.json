@@ -7,9 +7,9 @@
         33.92512970007199
       ]
     },
-    "type": "BLAH BLAH",
+    "type": "Feature",
     "properties": {},
-    "source": "geojson blah",
+    "source": "geojson",
     "state": {}
   }
 ]
