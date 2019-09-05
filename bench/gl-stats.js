@@ -30,12 +30,11 @@ function waitForConsole(page) {
     await page.setContent(benchHTML);
 
     const stats = JSON.parse(await waitForConsole(page));
-    stats.bundleStats = {
-        size: mapboxGlSrc.length,
-        "size_gz": zlib.gzipSync(mapboxGlSrc).length
-    };
-    stats.dt = new Date().toISOString().substring(0, 16);
-    stats.commit = execSync('git rev-parse --short=7 HEAD').toString().trim();
+    stats["bundle_size"] = mapboxGlSrc.length;
+    stats["bundle_size_gz"] = zlib.gzipSync(mapboxGlSrc).length;
+    stats.dt = execSync('git show --no-patch --no-notes --pretty=\'%cI\' HEAD').toString().substring(0, 19);
+    stats.commit = execSync('git rev-parse --short HEAD').toString().trim();
+    stats.message = execSync('git show -s --format=%s HEAD').toString().trim();
     console.log(JSON.stringify(stats, null, 2));
 
     await page.close();

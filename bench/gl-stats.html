@@ -2,6 +2,10 @@
 <html>
 <head>
 <meta charset="utf-8">
+<script>
+let now = performance.now();
+window.performance.now = () => now;
+</script>
 <script src="../dist/mapbox-gl.js"></script>
 <style>.mapboxgl-canary { background-color: salmon; }</style>
 </head>
@@ -64,15 +68,26 @@ map.on('data', function onData(e) {
     hookStats(frameStats, gl, 'bufferSubData', 'bufferSubData');
     hookStats(frameStats, gl, 'bufferSubData', 'bufferSubData_bytes', (args) => args[2].byteLength);
 
-    map.on('render', () => numFrames++);
+    map.on('render', () => {
+        numFrames++;
+        now += 16;
+    });
     map.once('moveend', () => {
         for (const id in frameStats) {
             frameStats[id] = Math.round(10 * frameStats[id] / numFrames) / 10;
         }
-        console.log(JSON.stringify({tileStats, frameStats}, null, 2));
+        const stats = {};
+        for (const id in tileStats) stats[`tile_${id}`] = tileStats[id];
+        for (const id in frameStats) stats[`frame_${id}`] = frameStats[id];
+        console.log(JSON.stringify(stats, null, 2));
     });
 
-    setTimeout(() => map.zoomTo(11.99, {duration: 5000, easing: (t) => t}), 1000);
+    map.on('render', function onIdle() {
+        if (!map._sourcesDirty && !map._repaint && !map._styleDirty && !map._placementDirty && map.loaded()) {
+            map.off('render', onIdle);
+            map.zoomTo(11.99, {duration: 1000, easing: (t) => t});
+        }
+    });
 });
 </script>
 </html>
