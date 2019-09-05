@@ -95,7 +95,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: mbgl/80dbb7f452:linux
+    - image: circleci/node:10.16-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -162,7 +162,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: apt-get update -yq && apt-get install -yq libxcomposite1 libxtst6 libnss3 libcups2 libxss1 libasound2 libatk1.0-0 libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3-0
       - run: node bench/gl-stats.js
 
   test-flow:
@@ -177,14 +176,14 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-unit
+      - run: npm run test-unit
 
   test-render:
     <<: *defaults
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-render
+      - run: npm run test-render
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
@@ -193,7 +192,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-query
+      - run: npm run test-query
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
 
