@@ -58,23 +58,27 @@ function testFunc(t) {
                 map.queryRenderedFeatures(options.queryGeometry, options.queryOptions || {}) :
                 [];
 
-            //Cleanup WebGL context
-            map.remove();
-            delete map.painter.context.gl;
-            document.body.removeChild(container);
-
             const actual = results.map((feature) => {
                 const featureJson = JSON.parse(JSON.stringify(feature.toJSON()));
                 delete featureJson.layer;
                 return featureJson;
             });
 
+            const testMetaData = {
+                name: t.name,
+                actual: map.getCanvas().toDataURL()
+            };
             const success = deepEqual(actual, expected);
             if (success) {
-                t.pass(`${t.name} output should match expected.json`);
+                t.pass(JSON.stringify(testMetaData));
             } else {
-                t.fail(`${t.name} fail: \n ${generateDiffLog(expected, actual)}`);
+                testMetaData['difference'] = generateDiffLog(expected, actual);
+                t.fail(JSON.stringify(testMetaData));
             }
+            //Cleanup WebGL context
+            map.remove();
+            delete map.painter.context.gl;
+            document.body.removeChild(container);
             t.end();
         });
     });

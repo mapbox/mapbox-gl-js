@@ -22,13 +22,8 @@ let fixtureWatcher;
 const rollupWatchers = {};
 
 module.exports =  {
-    "framework": "tap",
+    "test_page": "test/integration/testem_page.html",
     "src_files": [
-        "dist/mapbox-gl-dev.js",
-        "test/integration/dist/query-test.js"
-    ],
-    "serve_files": [
-        "test/integration/dist/tape.js",
         "dist/mapbox-gl-dev.js",
         "test/integration/dist/query-test.js"
     ],
