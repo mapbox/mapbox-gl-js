@@ -5,6 +5,7 @@
 // this file also acts as the entrypoint for browserify.
 const tape = require('tape');
 const TapHtmlGenerator = require('./tap_html');
+const browserWriteFile = require('./browser_write_file');
 
 //Add test filtering ability
 const filter = getQueryVariable('filter') || '.*';
@@ -34,4 +35,15 @@ Testem.handleConsoleMessage = function(msg) {
     tapHtmlGenerator.pushTapLine(msg);
     return false;
 };
+
+// Persist the current html on the page as an artifact once tests finish
+Testem.afterTests((config, data, cb) => {
+    browserWriteFile(
+        'test/integration/query-tests/index.html',
+        window.btoa(document.documentElement.outerHTML),
+        () => {
+            cb();
+        }
+    );
+});
 

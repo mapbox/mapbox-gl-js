@@ -50,6 +50,9 @@ module.exports =  {
         },
         "/data":{
             "target": "http://localhost:2900"
+        },
+        "/write-file":{
+            "target": "http://localhost:2900"
         }
     },
     "before_tests"(config, data, callback) {

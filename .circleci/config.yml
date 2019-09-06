@@ -183,7 +183,7 @@ jobs:
       - store_test_results:
           path: test/integration/query-tests
       - store_artifacts:
-          path: "test/integration/query-tests/test-results.xml"
+          path: "test/integration/query-tests/index.html"
 
   test-expressions:
     <<: *defaults
