@@ -20,6 +20,9 @@ uniform mat4 u_matrix;
 uniform mat4 u_label_plane_matrix;
 uniform mat4 u_coord_matrix;
 uniform bool u_is_text;
+uniform bool u_crisp;
+uniform lowp float u_device_pixel_ratio;
+uniform vec2 u_canvas_size;
 uniform bool u_pitch_with_map;
 uniform highp float u_pitch;
 uniform bool u_rotate_symbol;
@@ -105,6 +108,12 @@ void main() {
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
     gl_Position = u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 32.0 * fontScale), 0.0, 1.0);
     float gamma_scale = gl_Position.w;
+
+    if (u_crisp && is_sdf == 0.0) {
+        vec2 half_canvas_size = u_canvas_size / 2.0;
+        vec2 factor = half_canvas_size / gl_Position.w;
+        gl_Position.xy = (round_vec2(gl_Position.xy * factor) + fract(half_canvas_size)) / factor;
+    }
 
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;

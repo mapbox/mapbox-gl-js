@@ -158,7 +158,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const tileSize = 512 * bucket.overscaling;
     bucket.tilePixelRatio = EXTENT / tileSize;
     bucket.compareText = {};
-    bucket.iconsNeedLinear = false;
 
     const layout = bucket.layers[0].layout;
     const unevaluatedLayoutValues = bucket.layers[0]._unevaluatedLayout._values;
@@ -304,11 +303,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
                     bucket.sdfIcons = image.sdf;
                 } else if (bucket.sdfIcons !== image.sdf) {
                     warnOnce('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
-                }
-                if (image.pixelRatio !== bucket.pixelRatio) {
-                    bucket.iconsNeedLinear = true;
-                } else if (layout.get('icon-rotate').constantOr(1) !== 0) {
-                    bucket.iconsNeedLinear = true;
                 }
             }
         }

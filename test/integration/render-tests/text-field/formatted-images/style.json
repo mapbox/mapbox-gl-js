@@ -26,7 +26,7 @@
     }
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
-  "sprite": "local://sprites/emerald@2x",
+  "sprite": "local://sprites/emerald",
   "layers": [
     {
       "id": "text",

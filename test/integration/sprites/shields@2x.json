@@ -1,0 +1,44 @@
+{
+  "a": {
+    "width": 42,
+    "height": 30,
+    "x": 0,
+    "y": 0,
+    "pixelRatio": 2
+  },
+  "b": {
+    "width": 42,
+    "height": 30,
+    "x": 0,
+    "y": 30,
+    "pixelRatio": 2
+  },
+  "c": {
+    "width": 42,
+    "height": 30,
+    "x": 0,
+    "y": 60,
+    "pixelRatio": 2
+  },
+  "d": {
+    "width": 42,
+    "height": 30,
+    "x": 0,
+    "y": 90,
+    "pixelRatio": 2
+  },
+  "e": {
+    "width": 42,
+    "height": 30,
+    "x": 0,
+    "y": 120,
+    "pixelRatio": 2
+  },
+  "f": {
+    "width": 42,
+    "height": 30,
+    "x": 0,
+    "y": 150,
+    "pixelRatio": 2
+  }
+}
