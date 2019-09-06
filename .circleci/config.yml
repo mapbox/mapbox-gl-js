@@ -89,7 +89,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: circleci/node:10.16-browsers
+    - image: circleci/node:10.16-stretch-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
