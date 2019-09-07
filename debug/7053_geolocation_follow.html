@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='access_token_generated.js'></script>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGlldGVyZHJlaXN0IiwiYSI6ImNpZ2IyNXF6ZTAzeHR4Y2trNXZwYnhmcTUifQ.uUzC8AUHDZ5rXfnRQdSLmw';
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [-96, 37.8], // starting position
+    zoom: 3 // starting zoom
+});
+
+// Add geolocate control to the map.
+map.addControl(new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true
+    },
+    trackUserLocation: true
+}));
+
+</script>
+</body>
+</html>

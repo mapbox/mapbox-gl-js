@@ -334,3 +334,45 @@ test('GeolocateControl trackuserlocationstart event', (t) => {
     geolocate._geolocateButton.dispatchEvent(click);
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
 });
+
+test('GeolocateControl does not switch to BACKGROUND and stays in ACTIVE_LOCK state on window resize', (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        t.equal(geolocate._watchState, 'ACTIVE_LOCK');
+        window.dispatchEvent(new window.Event('resize'));
+        t.equal(geolocate._watchState, 'ACTIVE_LOCK');
+        t.end();
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
+});
+
+test('GeolocateControl switches to BACKGROUND state on map manipulation', (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        t.equal(geolocate._watchState, 'ACTIVE_LOCK');
+        map.jumpTo({
+            center: [0, 0]
+        });
+        t.equal(geolocate._watchState, 'BACKGROUND');
+        t.end();
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
+});
