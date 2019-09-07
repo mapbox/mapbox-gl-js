@@ -2,15 +2,15 @@
 /* eslint-disable import/no-commonjs */
 /* eslint-disable flowtype/require-valid-file-annotation */
 require = require("esm")(module);
-const generateFixtureJson = require('./test/integration/lib/generate-fixture-json');
-const createServer = require('./test/integration/lib/server');
-const buildTape = require('./build/test/build-tape');
+const generateFixtureJson = require('./lib/generate-fixture-json');
+const createServer = require('./lib/server');
+const buildTape = require('../../build/test/build-tape');
 const runAll = require('npm-run-all');
 const chokidar = require('chokidar');
 const rollup = require('rollup');
 const notifier = require('node-notifier');
-const rollupDevConfig = require('./rollup.config').default;
-const rollupTestConfig = require('./test/integration/rollup.config.test').default;
+const rollupDevConfig = require('../../rollup.config').default;
+const rollupTestConfig = require('./rollup.config.test').default;
 
 const fixturePath = 'test/integration/query-tests';
 const fixtureBuildInterval = 2000;
