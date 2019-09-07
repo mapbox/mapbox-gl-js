@@ -157,7 +157,7 @@ test('GeolocateControl no watching map camera on geolocation', (t) => {
 
     const click = new window.Event('click');
 
-    map.on('moveend', () => {
+    map.once('moveend', () => {
         t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location');
 
         const mapBounds = map.getBounds();
