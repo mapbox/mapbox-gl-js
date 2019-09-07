@@ -237,7 +237,7 @@ export class Placement {
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
                            textBoxScale: number, rotateWithMap: boolean,
                            pitchWithMap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroup: CollisionGroup,
-                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ box: Array<number>, offscreen: boolean }  {
+                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ placedBox: { box: Array<number>, offscreen: boolean }, shift: Point }  {
 
         const textOffset = [symbolInstance.textOffset0, symbolInstance.textOffset1];
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textBoxScale);
@@ -274,7 +274,7 @@ export class Placement {
                 this.placedOrientations[symbolInstance.crossTileID] = orientation;
             }
 
-            return placedGlyphBoxes;
+            return { placedBox: placedGlyphBoxes, shift };
         }
     }
 
@@ -308,6 +308,7 @@ export class Placement {
 
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
+        const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
 
         if (!bucket.collisionArrays && collisionBoxArray) {
@@ -328,7 +329,9 @@ export class Placement {
             let offscreen = true;
 
             let placed = {box: null, offscreen: null};
-            let placedVertical = {box: null, offscreen: null};
+            let placedVerticalText = {box: null, offscreen: null};
+            let placedVerticalIcon = {box: null, offscreen: null};
+            let shift = new Point(0, 0);
 
             let placedGlyphBoxes = null;
             let placedGlyphCircles = null;
@@ -336,6 +339,7 @@ export class Placement {
             let textFeatureIndex = 0;
             let verticalTextFeatureIndex = 0;
             let iconFeatureIndex = 0;
+            let verticalIconFeatureIndex = 0;
 
             if (collisionArrays.textFeatureIndex) {
                 textFeatureIndex = collisionArrays.textFeatureIndex;
@@ -365,7 +369,7 @@ export class Placement {
                         for (const placementMode of bucket.writingModes) {
                             if (placementMode === WritingMode.vertical) {
                                 placed = placeVerticalFn();
-                                placedVertical = placed;
+                                placedVerticalText = placed;
                             } else {
                                 placed = placeHorizontalFn();
                             }
@@ -426,14 +430,18 @@ export class Placement {
                         for (let i = 0; i < placementAttempts; ++i) {
                             const anchor = anchors[i % anchors.length];
                             const allowOverlap = (i >= anchors.length);
-                            placedBox = this.attemptAnchorPlacement(
+                            const placed = this.attemptAnchorPlacement(
                                 anchor, collisionTextBox, width, height,
                                 textBoxScale, rotateWithMap, pitchWithMap, textPixelRatio, posMatrix,
                                 collisionGroup, allowOverlap, symbolInstance, bucket, orientation);
 
-                            if (placedBox && placedBox.box && placedBox.box.length) {
-                                placeText = true;
-                                break;
+                            if (placed) {
+                                placedBox = placed.placedBox;
+                                if (placedBox && placedBox.box && placedBox.box.length) {
+                                    shift = placed.shift;
+                                    placeText = true;
+                                    break;
+                                }
                             }
                         }
 
@@ -508,6 +516,20 @@ export class Placement {
                 iconFeatureIndex = collisionArrays.iconFeatureIndex;
             }
             if (collisionArrays.iconBox) {
+                if (placedVerticalText && placedVerticalText.box) {
+                    placedVerticalIcon = placedIconBoxes = this.collisionIndex.placeCollisionBox(collisionArrays.iconBox,
+                            layout.get('icon-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
+                } else {
+                    placedIconBoxes = this.collisionIndex.placeCollisionBox(collisionArrays.iconBox,
+                            layout.get('icon-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
+                }
+                placeIcon = placedIconBoxes.box.length > 0;
+                offscreen = offscreen && placedIconBoxes.offscreen;
+            }
+            if (collisionArrays.verticalIconFeatureIndex) {
+                verticalIconFeatureIndex = collisionArrays.verticalIconFeatureIndex;
+            }
+            if (collisionArrays.iconBox) {
                 placedIconBoxes = this.collisionIndex.placeCollisionBox(collisionArrays.iconBox,
                         layout.get('icon-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
                 placeIcon = placedIconBoxes.box.length > 0;
@@ -528,7 +550,7 @@ export class Placement {
             }
 
             if (placeText && placedGlyphBoxes && placedGlyphBoxes.box) {
-                if (placedVertical && placedVertical.box && verticalTextFeatureIndex) {
+                if (placedVerticalText && placedVerticalText.box && verticalTextFeatureIndex) {
                     this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
                         bucket.bucketInstanceId, verticalTextFeatureIndex, collisionGroup.ID);
                 } else {
@@ -538,8 +560,13 @@ export class Placement {
 
             }
             if (placeIcon && placedIconBoxes) {
-                this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'),
-                        bucket.bucketInstanceId, iconFeatureIndex, collisionGroup.ID);
+                if (placedVerticalIcon && placedVerticalIcon.box && verticalIconFeatureIndex) {
+                    this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'),
+                            bucket.bucketInstanceId, verticalIconFeatureIndex, collisionGroup.ID);
+                } else {
+                    this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'),
+                            bucket.bucketInstanceId, iconFeatureIndex, collisionGroup.ID);
+                }
             }
             if (placeText && placedGlyphCircles) {
                 this.collisionIndex.insertCollisionCircles(placedGlyphCircles.circles, layout.get('text-ignore-placement'),
@@ -618,6 +645,14 @@ export class Placement {
 
         if (symbolInstance.verticalPlacedTextSymbolIndex) {
             bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).placedOrientation = vertical;
+        }
+
+        if (symbolInstance.placedIconSymbolIndex) {
+            bucket.icon.placedSymbolArray.get(symbolInstance.placedIconSymbolIndex).placedOrientation = horizontal;
+        }
+
+        if (symbolInstance.verticalPlacedIconSymbolIndex) {
+            bucket.icon.placedSymbolArray.get(symbolInstance.verticalPlacedIconSymbolIndex).placedOrientation = horizontal;
         }
     }
 
@@ -791,11 +826,20 @@ export class Placement {
 
             if (hasIcon) {
                 const packedOpacity = packOpacity(opacityState.icon);
-                for (let i = 0; i < symbolInstance.numIconVertices / 4; i++) {
-                    bucket.icon.opacityVertexArray.emplaceBack(packedOpacity);
-                }
-                bucket.icon.placedSymbolArray.get(s).hidden =
-                    (opacityState.icon.isHidden(): any);
+                //if (symbolInstance.placedIconSymbolIndex) {
+                    for (let i = 0; i < symbolInstance.numIconVertices / 4; i++) {
+                        bucket.icon.opacityVertexArray.emplaceBack(packedOpacity);
+                    }
+                    bucket.icon.placedSymbolArray.get(symbolInstance.placedIconSymbolIndex).hidden =
+                        (opacityState.icon.isHidden(): any);
+                //}
+                //if (symbolInstance.verticalPlacedIconSymbolIndex) {
+                    for (let i = 0; i < symbolInstance.numVerticalIconVertices / 4; i++) {
+                        bucket.icon.opacityVertexArray.emplaceBack(packedOpacity);
+                    }
+                    bucket.icon.placedSymbolArray.get(symbolInstance.verticalPlacedIconSymbolIndex).hidden =
+                        (opacityState.icon.isHidden(): any);
+                //}
             }
 
             if (bucket.hasIconCollisionBoxData() || bucket.hasIconCollisionCircleData() ||

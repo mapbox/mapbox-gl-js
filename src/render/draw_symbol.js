@@ -98,9 +98,10 @@ function calculateVariableRenderShift(anchor, width, height, textOffset, textBox
 }
 
 function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                               transform, labelPlaneMatrix, posMatrix, tileScale, size) {
+                               transform, labelPlaneMatrix, posMatrix, tileScale, size, updateTextFitIcon) {
     const placedSymbols = bucket.text.placedSymbolArray;
     const dynamicLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
+    const placedTextShifts = {};
     dynamicLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
@@ -134,18 +135,45 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
                     shift.rotate(-transform.angle) :
                     shift);
 
+            if (updateTextFitIcon && symbol.placedIconSymbolIndex) {
+                placedTextShifts[symbol.placedIconSymbolIndex] = { index: s, shiftedAnchor };   
+            }
+
             const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
             for (let g = 0; g < symbol.numGlyphs; g++) {
                 addDynamicAttributes(dynamicLayoutVertexArray, shiftedAnchor, angle);
             }
         }
     }
+
+    if (updateTextFitIcon) {
+        bucket.icon.dynamicLayoutVertexArray.clear();
+        const placedIcons = bucket.text.placedSymbolArray;
+        for (let i = 0; i < placedIcons.length; i++) {
+            const placedIcon = placedIcons.get(i);
+            if (placedIcon.hidden || (!placedIcon.placedOrientation && bucket.allowVerticalPlacement)) {
+                symbolProjection.hideGlyphs(placedIcon.numGlyphs, bucket.icon.dynamicLayoutVertexArray);
+            } else {
+                const placedShift = placedTextShifts[i];
+                if (!placedShift) {
+                    symbolProjection.hideGlyphs(placedIcon.numGlyphs, bucket.icon.dynamicLayoutVertexArray);
+                } else {
+                    const {index, shiftedAnchor} = placedShift;
+                    const angle = (bucket.allowVerticalPlacement && placedIcon.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
+                    for (let g = 0; g < placedIcon.numGlyphs; g++) {
+                        addDynamicAttributes(bucket.icon.dynamicLayoutVertexArray, shiftedAnchor, angle);
+                    }
+                }
+            }
+        }
+        bucket.icon.dynamicLayoutVertexBuffer.updateData(bucket.icon.dynamicLayoutVertexArray);
+    }
     bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
 }
 
-function updateVerticalLabels(bucket) {
-    const placedSymbols = bucket.text.placedSymbolArray;
-    const dynamicLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
+function updateVerticalLabels(bucket, buffers) {
+    const placedSymbols = buffers.placedSymbolArray;
+    const dynamicLayoutVertexArray = buffers.dynamicLayoutVertexArray;
     dynamicLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
@@ -163,7 +191,7 @@ function updateVerticalLabels(bucket) {
             }
         }
     }
-    bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
+    buffers.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
@@ -233,18 +261,28 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
 
+        const hasVariableAnchors = variablePlacement && bucket.hasTextData();
+        const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&
+            (bucket.allowVerticalPlacement || hasVariableAnchors) &&
+            bucket.hasIconData();
+
         if (alongLine) {
             symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
-        } else if (isText && size && variablePlacement) {
+        } else if (isText && size && hasVariableAnchors) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
+            const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none'
             updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                                  tr, labelPlaneMatrix, coord.posMatrix, tileScale, size);
+                                  tr, labelPlaneMatrix, coord.posMatrix, tileScale, size, updateTextFitIcon);
         } else if (isText && size && bucket.allowVerticalPlacement) {
-            updateVerticalLabels(bucket);
+            updateVerticalLabels(bucket, bucket.text);
+            if (updateTextFitIcon) {
+                 // When text box is rotated, icon-text-fit icon must be rotated as well.
+                updateVerticalLabels(bucket, bucket.icon);
+            }
         }
 
         const matrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),
-            uLabelPlaneMatrix = (alongLine || (isText && variablePlacement)) ? identityMat4 : labelPlaneMatrix,
+            uLabelPlaneMatrix = (alongLine || variablePlacement) ? identityMat4 : labelPlaneMatrix,
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
 
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;

@@ -9,6 +9,7 @@ import type {PositionedIcon, Shaping} from './shaping';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression';
 import type {GlyphPosition} from '../render/glyph_atlas';
+import type {WritingModeType} from './shaping';
 import ONE_EM from './one_em';
 
 /**
@@ -44,11 +45,10 @@ export type SymbolQuad = {
  * Create the quads used for rendering an icon.
  * @private
  */
-export function getIconQuads(anchor: Anchor,
+export function getIconQuads(
                       shapedIcon: PositionedIcon,
+                      writingMode: WritingModeType,
                       layer: SymbolStyleLayer,
-                      alongLine: boolean,
-                      shapedText: Shaping | null,
                       feature: Feature): Array<SymbolQuad> {
     const image = shapedIcon.image;
     const layout = layer.layout;
@@ -62,9 +62,8 @@ export function getIconQuads(anchor: Anchor,
     const left = shapedIcon.left - border / image.pixelRatio;
     const bottom = shapedIcon.bottom + border / image.pixelRatio;
     const right = shapedIcon.right + border / image.pixelRatio;
-    let tl, tr, br, bl;
 
-    // text-fit mode
+                          /*
     if (layout.get('icon-text-fit') !== 'none' && shapedText) {
         const iconWidth = (right - left),
             iconHeight = (bottom - top),
@@ -87,13 +86,13 @@ export function getIconQuads(anchor: Anchor,
         tr = new Point(textLeft + offsetX + padR + width, textTop + offsetY - padT);
         br = new Point(textLeft + offsetX + padR + width, textTop + offsetY + padB + height);
         bl = new Point(textLeft + offsetX - padL,         textTop + offsetY + padB + height);
+
+        */
     // Normal icon size mode
-    } else {
-        tl = new Point(left, top);
-        tr = new Point(right, top);
-        br = new Point(right, bottom);
-        bl = new Point(left, bottom);
-    }
+    const tl = new Point(left, top);
+    const tr = new Point(right, top);
+    const br = new Point(right, bottom);
+    const bl = new Point(left, bottom);
 
     const angle = layer.layout.get('icon-rotate').evaluate(feature, {}) * Math.PI / 180;
 
@@ -109,7 +108,7 @@ export function getIconQuads(anchor: Anchor,
     }
 
     // Icon quad is padded, so texture coordinates also need to be padded.
-    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0}];
+    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode, glyphOffset: [0, 0], sectionIndex: 0}];
 }
 
 /**

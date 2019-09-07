@@ -1,5 +1,6 @@
 // @flow
 
+import assert from 'assert';
 import {
     charHasUprightVerticalOrientation,
     charAllowsIdeographicBreaking,
@@ -13,13 +14,16 @@ import type {StyleGlyph} from '../style/style_glyph';
 import type {ImagePosition} from '../render/image_atlas';
 import Formatted from '../style-spec/expression/types/formatted';
 
+import type {LayoutProps, PaintProps} from '../style/style_layer/symbol_style_layer_properties';
+import type {PossiblyEvaluated} from '../style/properties';
+
 const WritingMode = {
     horizontal: 1,
     vertical: 2,
     horizontalOnly: 3
 };
 
-export {shapeText, shapeIcon, getAnchorAlignment, WritingMode};
+export {shapeText, shapeIcon, fitIconToText, getAnchorAlignment, WritingMode};
 
 // The position of a glyph relative to the text's anchor point.
 export type PositionedGlyph = {
@@ -32,6 +36,8 @@ export type PositionedGlyph = {
     sectionIndex: number
 };
 
+export type WritingModeType = 1 | 2;
+
 // A collection of positioned glyphs and some metadata
 export type Shaping = {
     positionedGlyphs: Array<PositionedGlyph>,
@@ -39,7 +45,7 @@ export type Shaping = {
     bottom: number,
     left: number,
     right: number,
-    writingMode: 1 | 2,
+    writingMode: WritingModeType,
     lineCount: number,
     text: string,
     yOffset: number,
@@ -578,4 +584,36 @@ function shapeIcon(image: ImagePosition, iconOffset: [number, number], iconAncho
     const y1 = dy - image.displaySize[1] * verticalAlign;
     const y2 = y1 + image.displaySize[1];
     return {image, top: y1, bottom: y2, left: x1, right: x2};
+}
+
+function fitIconToText(shapedIcon: PositionedIcon, layout: PossiblyEvaluated<LayoutProps>, shapedText: Shaping, fontScale: number) {
+    assert(layout.get('icon-text-fit') !== 'none' && shapedText);
+
+    const { image, left, right, top, bottom } = shapedIcon;
+
+    const iconWidth = (right - left),
+        iconHeight = (bottom - top),
+        size = fontScale, //layout.get('text-size').evaluate(feature, {}) / 24,
+        textLeft = shapedText.left * size,
+        textRight = shapedText.right * size,
+        textTop = shapedText.top * size,
+        textBottom = shapedText.bottom * size,
+        textWidth = textRight - textLeft,
+        textHeight = textBottom - textTop,
+        padT = layout.get('icon-text-fit-padding')[0],
+        padR = layout.get('icon-text-fit-padding')[1],
+        padB = layout.get('icon-text-fit-padding')[2],
+        padL = layout.get('icon-text-fit-padding')[3],
+        offsetY = layout.get('icon-text-fit') === 'width' ? (textHeight - iconHeight) * 0.5 : 0,
+        offsetX = layout.get('icon-text-fit') === 'height' ? (textWidth - iconWidth) * 0.5 : 0,
+        width = layout.get('icon-text-fit') === 'width' || layout.get('icon-text-fit') === 'both' ? textWidth : iconWidth,
+        height = layout.get('icon-text-fit') === 'height' || layout.get('icon-text-fit') === 'both' ? textHeight : iconHeight;
+
+    return {
+        image,
+        left: textLeft + offsetX - padL,
+        top: textTop + offsetY - padT,
+        right: textLeft + offsetX + padR + width,
+        bottom: textTop + offsetY + padB + height
+    };
 }
