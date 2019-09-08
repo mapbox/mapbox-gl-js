@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 96,
+      "width": 128,
       "height": 64
     }
   },
@@ -26,19 +26,14 @@
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "text-field": "ABC",
+        "text-field": "ABCD efgh",
+        "text-size": 24,
         "text-font": [
           "Open Sans Semibold",
           "Arial Unicode MS Bold"
         ],
-        "icon-image": "label",
-        "icon-text-fit": "height",
-        "icon-text-fit-padding": [
-          5,
-          10,
-          5,
-          10
-        ]
+        "icon-image": "small-box",
+        "icon-text-fit": "both"
       }
     }
   ]
