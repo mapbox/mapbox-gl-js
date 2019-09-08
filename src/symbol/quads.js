@@ -58,42 +58,49 @@ export function getIconQuads(anchor: Anchor,
     // on one edge in some cases.
     const border = 1;
 
-    const top = shapedIcon.top - border / image.pixelRatio;
-    const left = shapedIcon.left - border / image.pixelRatio;
-    const bottom = shapedIcon.bottom + border / image.pixelRatio;
-    const right = shapedIcon.right + border / image.pixelRatio;
-    let tl, tr, br, bl;
+    const size = layout.get('text-size').evaluate(feature, {}) / 24;
+    const stretchX = layout.get('icon-text-fit') === 'width' || layout.get('icon-text-fit') === 'both';
+    const stretchY = layout.get('icon-text-fit') === 'height' || layout.get('icon-text-fit') === 'both';
 
-    // text-fit mode
-    if (layout.get('icon-text-fit') !== 'none' && shapedText) {
-        const iconWidth = (right - left),
-            iconHeight = (bottom - top),
-            size = layout.get('text-size').evaluate(feature, {}) / 24,
-            textLeft = shapedText.left * size,
-            textRight = shapedText.right * size,
-            textTop = shapedText.top * size,
-            textBottom = shapedText.bottom * size,
-            textWidth = textRight - textLeft,
-            textHeight = textBottom - textTop,
-            padT = layout.get('icon-text-fit-padding')[0],
-            padR = layout.get('icon-text-fit-padding')[1],
-            padB = layout.get('icon-text-fit-padding')[2],
-            padL = layout.get('icon-text-fit-padding')[3],
-            offsetY = layout.get('icon-text-fit') === 'width' ? (textHeight - iconHeight) * 0.5 : 0,
-            offsetX = layout.get('icon-text-fit') === 'height' ? (textWidth - iconWidth) * 0.5 : 0,
-            width = layout.get('icon-text-fit') === 'width' || layout.get('icon-text-fit') === 'both' ? textWidth : iconWidth,
-            height = layout.get('icon-text-fit') === 'height' || layout.get('icon-text-fit') === 'both' ? textHeight : iconHeight;
-        tl = new Point(textLeft + offsetX - padL,         textTop + offsetY - padT);
-        tr = new Point(textLeft + offsetX + padR + width, textTop + offsetY - padT);
-        br = new Point(textLeft + offsetX + padR + width, textTop + offsetY + padB + height);
-        bl = new Point(textLeft + offsetX - padL,         textTop + offsetY + padB + height);
-    // Normal icon size mode
+    let left, right;
+    if (shapedText && stretchX) {
+        // Stretched horizontally
+        const padL = layout.get('icon-text-fit-padding')[3];
+        const padR = layout.get('icon-text-fit-padding')[1];
+        const textLeft = shapedText.left * size;
+        const textRight = shapedText.right * size;
+        const textWidth = textRight - textLeft;
+        // Expand the box to respect the 1 pixel border in the atlas image.
+        const expandX = (textWidth * image.paddedRect.w / (image.paddedRect.w - 2 * border) - textWidth) / 2;
+        left = textLeft - expandX - padL;
+        right = textRight + expandX + padR;
     } else {
-        tl = new Point(left, top);
-        tr = new Point(right, top);
-        br = new Point(right, bottom);
-        bl = new Point(left, bottom);
+        // Normal icon size mode
+        left = shapedIcon.left - border / image.pixelRatio;
+        right = shapedIcon.right + border / image.pixelRatio;
     }
+
+    let top, bottom;
+    if (shapedText && stretchY) {
+        // Stretched vertically
+        const padT = layout.get('icon-text-fit-padding')[0];
+        const padB = layout.get('icon-text-fit-padding')[2];
+        const textTop = shapedText.top * size;
+        const textBottom = shapedText.bottom * size;
+        const textHeight = textBottom - textTop;
+        // Expand the box to respect the 1 pixel border in the atlas image.
+        const expandY = (textHeight * image.paddedRect.h / (image.paddedRect.h - 2 * border) - textHeight) / 2;
+        top = textTop - expandY - padT;
+        bottom = textBottom + expandY + padB;
+    } else {
+        top = shapedIcon.top - border / image.pixelRatio;
+        bottom = shapedIcon.bottom + border / image.pixelRatio;
+    }
+
+    const tl = new Point(left, top);
+    const tr = new Point(right, top);
+    const br = new Point(right, bottom);
+    const bl = new Point(left, bottom);
 
     const angle = layer.layout.get('icon-rotate').evaluate(feature, {}) * Math.PI / 180;
 
