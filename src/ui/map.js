@@ -442,6 +442,9 @@ class Map extends Camera {
      * @param {string} [position] position on the map to which the control will be added.
      * Valid values are `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`. Defaults to `'top-right'`.
      * @returns {Map} `this`
+     * @example
+     * // Add zoom and rotation controls to the map.
+     * map.addControl(new mapboxgl.NavigationControl());
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
     addControl(control: IControl, position?: ControlPosition) {
@@ -472,6 +475,13 @@ class Map extends Camera {
      *
      * @param {IControl} control The {@link IControl} to remove.
      * @returns {Map} `this`
+     * @example
+     * // Define a new navigation control.
+     * var navigation = new mapboxgl.NavigationControl();
+     * // Add zoom and rotation controls to the map.
+     * map.addControl(navigation);
+     * // Remove zoom and rotation controls from the map.
+     * map.removeControl(navigation);
      */
     removeControl(control: IControl) {
         if (!control || !control.onRemove) {
