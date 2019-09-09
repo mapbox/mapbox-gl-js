@@ -52,8 +52,8 @@ class NavigationControl {
             bindAll([
                 '_updateZoomButtons'
             ], this);
-            this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom in', (e) => this._map.zoomIn({}, { originalEvent: e }));
-            this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom out', (e) => this._map.zoomOut({}, { originalEvent: e }));
+            this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom in', (e) => this._map.zoomIn({}, {originalEvent: e}));
+            this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom out', (e) => this._map.zoomOut({}, {originalEvent: e}));
         }
         if (this.options.showCompass) {
             bindAll([
@@ -61,9 +61,9 @@ class NavigationControl {
             ], this);
             this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset bearing to north', (e) => {
                 if (this.options.visualizePitch) {
-                    this._map.resetNorthPitch({}, { originalEvent: e });
+                    this._map.resetNorthPitch({}, {originalEvent: e});
                 } else {
-                    this._map.resetNorth({}, { originalEvent: e });
+                    this._map.resetNorth({}, {originalEvent: e});
                 }
             });
             this._compassArrow = DOM.create('span', 'mapboxgl-ctrl-compass-arrow', this._compass);
