@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import Light from '../../../src/style/light';
 import styleSpec from '../../../src/style-spec/reference/latest';
 import Color from '../../../src/style-spec/util/color';
-import { sphericalToCartesian } from '../../../src/util/util';
+import {sphericalToCartesian} from '../../../src/util/util';
 
 const spec = styleSpec.light;
 
@@ -60,8 +60,8 @@ test('Light#getLight', (t) => {
 test('Light#setLight', (t) => {
     t.test('sets light', (t) => {
         const light = new Light({});
-        light.setLight({ color: 'red', "color-transition": { duration: 3000 }});
-        light.updateTransitions({ transition: true }, {});
+        light.setLight({color: 'red', "color-transition": {duration: 3000}});
+        light.updateTransitions({transition: true}, {});
         light.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
         t.deepEqual(light.properties.get('color'), new Color(1, 0.5, 0.5, 1));
         t.end();
@@ -71,8 +71,8 @@ test('Light#setLight', (t) => {
         const light = new Light({});
         const lightSpy = t.spy(light, '_validate');
         t.stub(console, 'error');
-        light.setLight({ color: 'notacolor'});
-        light.updateTransitions({ transition: false}, {});
+        light.setLight({color: 'notacolor'});
+        light.updateTransitions({transition: false}, {});
         light.recalculate({zoom: 16, zoomHistory: {}, now: 10});
         t.ok(lightSpy.calledOnce);
         t.ok(console.error.calledOnce);
@@ -84,8 +84,8 @@ test('Light#setLight', (t) => {
         const light = new Light({});
 
         const lightSpy = t.spy(light, '_validate');
-        light.setLight({ color: [999]}, {validate: false});
-        light.updateTransitions({ transition: false}, {});
+        light.setLight({color: [999]}, {validate: false});
+        light.updateTransitions({transition: false}, {});
         light.recalculate({zoom: 16, zoomHistory: {}, now: 10});
 
         t.ok(lightSpy.calledOnce);

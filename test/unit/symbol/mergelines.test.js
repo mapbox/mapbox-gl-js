@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import mergeLines from '../../../src/symbol/mergelines';
 import Point from '@mapbox/point-geometry';
 

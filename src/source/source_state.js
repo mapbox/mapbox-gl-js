@@ -1,6 +1,6 @@
 // @flow
 
-import { extend } from '../util/util';
+import {extend} from '../util/util';
 import Tile from './tile';
 import type {FeatureState} from '../style-spec/expression';
 

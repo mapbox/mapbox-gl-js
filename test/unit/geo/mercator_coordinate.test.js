@@ -1,6 +1,6 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import LngLat from '../../../src/geo/lng_lat';
-import MercatorCoordinate, { mercatorScale } from '../../../src/geo/mercator_coordinate';
+import MercatorCoordinate, {mercatorScale} from '../../../src/geo/mercator_coordinate';
 
 test('LngLat', (t) => {
     t.test('#constructor', (t) => {
@@ -11,13 +11,13 @@ test('LngLat', (t) => {
 
     t.test('#fromLngLat', (t) => {
         const nullIsland = new LngLat(0, 0);
-        t.deepEqual(MercatorCoordinate.fromLngLat(nullIsland), { x: 0.5, y: 0.5, z: 0 });
+        t.deepEqual(MercatorCoordinate.fromLngLat(nullIsland), {x: 0.5, y: 0.5, z: 0});
         t.end();
     });
 
     t.test('#toLngLat', (t) => {
         const dc = new LngLat(-77, 39);
-        t.deepEqual(MercatorCoordinate.fromLngLat(dc, 500).toLngLat(), { lng: -77, lat: 39 });
+        t.deepEqual(MercatorCoordinate.fromLngLat(dc, 500).toLngLat(), {lng: -77, lat: 39});
         t.end();
     });
 

@@ -68,34 +68,22 @@ function renderHillshade(painter, tile, layer, depthMode, stencilMode, colorMode
 function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
-    // decode rgba levels by using integer overflow to convert each Uint32Array element -> 4 Uint8Array elements.
-    // ex.
-    // Uint32:
-    // base 10 - 67308
-    // base 2 - 0000 0000 0000 0001 0000 0110 1110 1100
-    //
-    // Uint8:
-    // base 10 - 0, 1, 6, 236 (this order is reversed in the resulting array via the overflow.
-    // first 8 bits represent 236, so the r component of the texture pixel will be 236 etc.)
-    // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
-    if (tile.dem && tile.dem.data) {
-        const tileSize = tile.dem.dim;
-        const textureStride = tile.dem.stride;
+    const dem = tile.dem;
+    if (dem && dem.data) {
+        const tileSize = dem.dim;
+        const textureStride = dem.stride;
 
-        const pixelData = tile.dem.getPixels();
+        const pixelData = dem.getPixels();
         context.activeTexture.set(gl.TEXTURE1);
 
-        // if UNPACK_PREMULTIPLY_ALPHA_WEBGL is set to true prior to drawHillshade being called
-        // tiles will appear blank, because as you can see above the alpha value for these textures
-        // is always 0
         context.pixelStoreUnpackPremultiplyAlpha.set(false);
         tile.demTexture = tile.demTexture || painter.getTileTexture(textureStride);
         if (tile.demTexture) {
             const demTexture = tile.demTexture;
-            demTexture.update(pixelData, { premultiply: false });
+            demTexture.update(pixelData, {premultiply: false});
             demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         } else {
-            tile.demTexture = new Texture(context, pixelData, gl.RGBA, { premultiply: false });
+            tile.demTexture = new Texture(context, pixelData, gl.RGBA, {premultiply: false});
             tile.demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
@@ -116,7 +104,7 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
 
         painter.useProgram('hillshadePrepare').draw(context, gl.TRIANGLES,
             depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-            hillshadeUniformPrepareValues(tile, sourceMaxZoom),
+            hillshadeUniformPrepareValues(tile.tileID, dem, sourceMaxZoom),
             layer.id, painter.rasterBoundsBuffer,
             painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
 

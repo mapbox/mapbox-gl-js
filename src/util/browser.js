@@ -1,7 +1,7 @@
 // @flow strict
 
 import window from './window';
-import type { Cancelable } from '../types/cancelable';
+import type {Cancelable} from '../types/cancelable';
 
 const now = window.performance && window.performance.now ?
     window.performance.now.bind(window.performance) :
@@ -33,10 +33,10 @@ const exported = {
 
     frame(fn: () => void): Cancelable {
         const frame = raf(fn);
-        return { cancel: () => cancel(frame) };
+        return {cancel: () => cancel(frame)};
     },
 
-    getImageData(img: CanvasImageSource): ImageData {
+    getImageData(img: CanvasImageSource, padding?: number = 0): ImageData {
         const canvas = window.document.createElement('canvas');
         const context = canvas.getContext('2d');
         if (!context) {
@@ -45,7 +45,7 @@ const exported = {
         canvas.width = img.width;
         canvas.height = img.height;
         context.drawImage(img, 0, 0, img.width, img.height);
-        return context.getImageData(0, 0, img.width, img.height);
+        return context.getImageData(-padding, -padding, img.width + 2 * padding, img.height + 2 * padding);
     },
 
     resolveURL(path: string) {

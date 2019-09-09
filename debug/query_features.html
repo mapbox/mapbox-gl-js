@@ -28,10 +28,10 @@ var map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.NavigationControl());
 
-var emptyFc = { type: 'FeatureCollection', features: [] };
+var emptyFc = {type: 'FeatureCollection', features: []};
 
 map.on('style.load', function() {
-    map.addSource('queried', { type: 'geojson', data: emptyFc });
+    map.addSource('queried', {type: 'geojson', data: emptyFc});
     map.addLayer({
         "id": "query",
         "type": "line",
@@ -42,7 +42,7 @@ map.on('style.load', function() {
         }
     }, 'country-label-sm');
 
-    map.addSource('boxsource', { type: 'geojson', data: emptyFc });
+    map.addSource('boxsource', {type: 'geojson', data: emptyFc});
     map.addLayer({
         "id": "box",
         "type": "fill",

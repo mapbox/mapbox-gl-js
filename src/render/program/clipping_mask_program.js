@@ -1,6 +1,6 @@
 // @flow
 
-import { UniformMatrix4f } from '../uniform_binding';
+import {UniformMatrix4f} from '../uniform_binding';
 
 import type Context from '../../gl/context';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
@@ -17,4 +17,4 @@ const clippingMaskUniformValues = (matrix: Float32Array): UniformValues<Clipping
     'u_matrix': matrix
 });
 
-export { clippingMaskUniforms, clippingMaskUniformValues };
+export {clippingMaskUniforms, clippingMaskUniformValues};

@@ -2,13 +2,13 @@
 
 import assert from 'assert';
 
-import { checkSubtype, ValueType } from '../types';
+import {checkSubtype, ValueType} from '../types';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Value } from '../values';
-import type { Type } from '../types';
+import type {Value} from '../values';
+import type {Type} from '../types';
 
 class Coalesce implements Expression {
     type: Type;

@@ -1,12 +1,12 @@
 // @flow
 
-import { getVideo, ResourceType } from '../util/ajax';
+import {getVideo, ResourceType} from '../util/ajax';
 
 import ImageSource from './image_source';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
-import { ErrorEvent } from '../util/evented';
+import {ErrorEvent} from '../util/evented';
 import ValidationError from '../style-spec/error/validation_error';
 
 import type Map from '../ui/map';
@@ -63,6 +63,7 @@ class VideoSource extends ImageSource {
     }
 
     load() {
+        this._loaded = false;
         const options = this.options;
 
         this.urls = [];
@@ -71,6 +72,7 @@ class VideoSource extends ImageSource {
         }
 
         getVideo(this.urls, (err, video) => {
+            this._loaded = true;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (video) {

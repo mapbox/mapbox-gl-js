@@ -1,11 +1,11 @@
 // @flow
 
-import { StringType, NumberType } from '../types';
+import {StringType, NumberType} from '../types';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
-import type { Type } from '../types';
+import type {Type} from '../types';
 
 declare var Intl: {
     NumberFormat: Class<Intl$NumberFormat>

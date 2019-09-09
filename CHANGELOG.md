@@ -3,6 +3,7 @@
 ## 🐞 Bug fixes
 
 * Fix bug in `NavigationControl` compass button that prevented it from rotating with the map ([#8605](https://github.com/mapbox/mapbox-gl-js/pull/8605))
+* Fix rendering of `collisionBox` when `text-translate` or `icon-translate` is enabled  ([#8659](https://github.com/mapbox/mapbox-gl-js/pull/8659))
 
 ## 1.2.0
 

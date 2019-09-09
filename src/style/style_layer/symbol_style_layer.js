@@ -27,7 +27,7 @@ import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
 import type {LayerSpecification} from '../../style-spec/types';
-import type { Feature, SourceExpression, CompositeExpression } from '../../style-spec/expression';
+import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression';
 import type {Expression} from '../../style-spec/expression/expression';
 import {FormattedType} from '../../style-spec/expression/types';
 import {typeOf} from '../../style-spec/expression/values';

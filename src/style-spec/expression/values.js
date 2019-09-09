@@ -5,9 +5,9 @@ import assert from 'assert';
 import Color from '../util/color';
 import Collator from './types/collator';
 import Formatted from './types/formatted';
-import { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, FormattedType, array } from './types';
+import {NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, FormattedType, array} from './types';
 
-import type { Type } from './types';
+import type {Type} from './types';
 
 export function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
     if (!(
@@ -115,4 +115,4 @@ export function toString(value: Value) {
     }
 }
 
-export { Color, Collator };
+export {Color, Collator};

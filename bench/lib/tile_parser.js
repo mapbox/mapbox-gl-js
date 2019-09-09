@@ -6,15 +6,15 @@ import assert from 'assert';
 
 import deref from '../../src/style-spec/deref';
 import Style from '../../src/style/style';
-import { Evented } from '../../src/util/evented';
-import { RequestManager } from '../../src/util/mapbox';
+import {Evented} from '../../src/util/evented';
+import {RequestManager} from '../../src/util/mapbox';
 import WorkerTile from '../../src/source/worker_tile';
 import StyleLayerIndex from '../../src/style/style_layer_index';
 
-import type { StyleSpecification } from '../../src/style-spec/types';
-import type { WorkerTileResult } from '../../src/source/worker_source';
-import type { OverscaledTileID } from '../../src/source/tile_id';
-import type { TileJSON } from '../../src/types/tilejson';
+import type {StyleSpecification} from '../../src/style-spec/types';
+import type {WorkerTileResult} from '../../src/source/worker_source';
+import type {OverscaledTileID} from '../../src/source/tile_id';
+import type {TileJSON} from '../../src/types/tilejson';
 
 class StubMap extends Evented {
     _requestManager: RequestManager;

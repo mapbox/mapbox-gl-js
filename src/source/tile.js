@@ -1,18 +1,18 @@
 // @flow
 
-import { uniqueId, deepEqual, parseCacheControl } from '../util/util';
-import { deserialize as deserializeBucket } from '../data/bucket';
+import {uniqueId, deepEqual, parseCacheControl} from '../util/util';
+import {deserialize as deserializeBucket} from '../data/bucket';
 import FeatureIndex from '../data/feature_index';
 import GeoJSONFeature from '../util/vectortile_to_geojson';
 import featureFilter from '../style-spec/feature_filter';
 import SymbolBucket from '../data/bucket/symbol_bucket';
-import { RasterBoundsArray, CollisionBoxArray } from '../data/array_types';
+import {RasterBoundsArray, CollisionBoxArray} from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import EXTENT from '../data/extent';
 import Point from '@mapbox/point-geometry';
 import Texture from '../render/texture';
 import SegmentVector from '../data/segment';
-import { TriangleIndexArray } from '../data/index_array_type';
+import {TriangleIndexArray} from '../data/index_array_type';
 import browser from '../util/browser';
 import EvaluationParameters from '../style/evaluation_parameters';
 import SourceFeatureState from '../source/source_state';
@@ -22,6 +22,7 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
 import type {WorkerTileResult} from './worker_source';
+import type Actor from '../util/actor';
 import type DEMData from '../data/dem_data';
 import type {AlphaImage} from '../util/image';
 import type ImageAtlas from '../render/image_atlas';
@@ -73,7 +74,7 @@ class Tile {
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
     placementSource: any;
-    workerID: number | void;
+    actor: ?Actor;
     vtLayers: {[string]: VectorTileLayer};
     mask: Mask;
 

@@ -1,13 +1,13 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
 import window from '../../../src/util/window';
-import { OverscaledTileID } from '../../../src/source/tile_id';
-import { RequestManager } from '../../../src/util/mapbox';
+import {OverscaledTileID} from '../../../src/source/tile_id';
+import {RequestManager} from '../../../src/util/mapbox';
 
 function createSource(options, transformCallback) {
-    const source = new RasterDEMTileSource('id', options, { send() {} }, options.eventedParent);
+    const source = new RasterDEMTileSource('id', options, {send() {}}, options.eventedParent);
     source.onAdd({
-        transform: { angle: 0, pitch: 0, showCollisionBoxes: false },
+        transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
         _getMapId: () => 1,
         _requestManager: new RequestManager(transformCallback)
     });
@@ -39,10 +39,10 @@ test('RasterTileSource', (t) => {
             bounds: [-47, -7, -45, -5]
         }));
         const transformSpy = t.spy((url) => {
-            return { url };
+            return {url};
         });
 
-        createSource({ url: "/source.json" }, transformSpy);
+        createSource({url: "/source.json"}, transformSpy);
         window.server.respond();
 
         t.equal(transformSpy.getCall(0).args[0], '/source.json');
@@ -58,7 +58,7 @@ test('RasterTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             bounds: [-47, -7, -45, -5]
         }));
-        const source = createSource({ url: "/source.json" });
+        const source = createSource({url: "/source.json"});
         const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
@@ -86,7 +86,7 @@ test('RasterTileSource', (t) => {
             attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         }));
-        const source = createSource({ url: "/source.json" });
+        const source = createSource({url: "/source.json"});
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {
@@ -122,7 +122,7 @@ test('RasterTileSource', (t) => {
             attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         }));
-        const source = createSource({ url: "/source.json" });
+        const source = createSource({url: "/source.json"});
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {

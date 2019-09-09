@@ -1,14 +1,14 @@
 // @flow
 
-import { CircleLayoutArray } from '../array_types';
+import {CircleLayoutArray} from '../array_types';
 
-import { members as layoutAttributes } from './circle_attributes';
+import {members as layoutAttributes} from './circle_attributes';
 import SegmentVector from '../segment';
-import { ProgramConfigurationSet } from '../program_configuration';
-import { TriangleIndexArray } from '../index_array_type';
+import {ProgramConfigurationSet} from '../program_configuration';
+import {TriangleIndexArray} from '../index_array_type';
 import loadGeometry from '../load_geometry';
 import EXTENT from '../extent';
-import { register } from '../../util/web_worker_transfer';
+import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 
 import type {

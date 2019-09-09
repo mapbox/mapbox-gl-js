@@ -59,7 +59,7 @@ map.on("load", () => {
 
     setInterval(() => {
         currentImage = (currentImage + 1) % frameCount;
-        map.getSource("radar").updateImage({ url: getPath() });
+        map.getSource("radar").updateImage({url: getPath()});
     }, 200);
 });
 

@@ -1,11 +1,11 @@
 // @flow
 
-import { getArrayBuffer } from '../util/ajax';
+import {getArrayBuffer} from '../util/ajax';
 
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import WorkerTile from './worker_tile';
-import { extend } from '../util/util';
+import {extend} from '../util/util';
 import performance from '../util/performance';
 
 import type {

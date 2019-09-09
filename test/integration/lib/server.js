@@ -117,7 +117,7 @@ export default function () {
                         localizeStyleURLs(styleJSON);
 
                         op[1] = styleJSON;
-                        op[2] = { diff: false };
+                        op[2] = {diff: false};
                     }
                 });
             }

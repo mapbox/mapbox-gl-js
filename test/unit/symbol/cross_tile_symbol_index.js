@@ -1,6 +1,6 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
-import { OverscaledTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 
 const styleLayer = {
     id: 'test'

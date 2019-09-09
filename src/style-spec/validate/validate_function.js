@@ -5,8 +5,8 @@ import validate from './validate';
 import validateObject from './validate_object';
 import validateArray from './validate_array';
 import validateNumber from './validate_number';
-import { isExpression } from '../expression';
-import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
+import {isExpression} from '../expression';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import {
     supportsPropertyExpression,
     supportsZoomExpression,
@@ -124,10 +124,10 @@ export default function validateFunction(options) {
             errors = errors.concat(validateObject({
                 key: `${key}[0]`,
                 value: value[0],
-                valueSpec: { zoom: {} },
+                valueSpec: {zoom: {}},
                 style: options.style,
                 styleSpec: options.styleSpec,
-                objectElementValidators: { zoom: validateNumber, value: validateStopDomainValue }
+                objectElementValidators: {zoom: validateNumber, value: validateStopDomainValue}
             }));
         } else {
             errors = errors.concat(validateStopDomainValue({

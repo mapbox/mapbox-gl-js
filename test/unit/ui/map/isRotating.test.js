@@ -1,4 +1,4 @@
-import { test } from '../../../util/test';
+import {test} from '../../../util/test';
 import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
@@ -7,7 +7,7 @@ import browser from '../../../../src/util/browser';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({ container: DOM.create('div', '', window.document.body) });
+    return new Map({container: DOM.create('div', '', window.document.body)});
 }
 
 test('Map#isRotating returns false by default', (t) => {
@@ -30,7 +30,7 @@ test('Map#isRotating returns true during a camera rotate animation', (t) => {
         t.end();
     });
 
-    map.rotateTo(5, { duration: 0 });
+    map.rotateTo(5, {duration: 0});
 });
 
 test('Map#isRotating returns true when drag rotating', (t) => {

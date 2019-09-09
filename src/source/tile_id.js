@@ -6,7 +6,7 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../geo/mercator_coordinate';
 
 import assert from 'assert';
-import { register } from '../util/web_worker_transfer';
+import {register} from '../util/web_worker_transfer';
 
 export class CanonicalTileID {
     z: number;

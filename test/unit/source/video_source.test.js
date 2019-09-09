@@ -1,6 +1,6 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import VideoSource from '../../../src/source/video_source';
-import { extend } from '../../../src/util/util';
+import {extend} from '../../../src/util/util';
 import window from '../../../src/util/window';
 
 function createSource(options) {
@@ -9,7 +9,7 @@ function createSource(options) {
 
     options = extend({coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]]}, options);
 
-    const source = new VideoSource('id', options, { send() {} }, options.eventedParent);
+    const source = new VideoSource('id', options, {send() {}}, options.eventedParent);
 
     source.video = c;
     return source;

@@ -1855,7 +1855,7 @@
       "type": "number",
       "units": "ems",
       "default": 0,
-      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which doesn't support the two-dimensional `text-offset`.",
+      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which defaults to using the two-dimensional `text-offset` if present.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.54.0",
@@ -1922,7 +1922,7 @@
             ]
         }
       ],
-      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the render will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` instead of the two-dimensional `text-offset`.",
+      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the render will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` or the two-dimensional `text-offset`.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.54.0",
@@ -2214,7 +2214,7 @@
     },
     "text-offset": {
       "type": "array",
-      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up.",
+      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up. If used with text-variable-anchor, input values will be taken as absolute values. Offsets along the x- and y-axis will be applied automatically based on the anchor position.",
       "value": "number",
       "units": "ems",
       "length": 2,
@@ -2226,9 +2226,6 @@
         "text-field",
         {
             "!": "text-radial-offset"
-        },
-        {
-            "!": "text-variable-anchor"
         }
       ],
       "sdk-support": {
@@ -2646,7 +2643,7 @@
         }
       },
       "step": {
-        "doc": "Produces discrete, stepped results by evaluating a piecewise-constant function defined by pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. Returns the output value of the stop just less than the input, or the first input if the input is less than the first stop.",
+        "doc": "Produces discrete, stepped results by evaluating a piecewise-constant function defined by pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. Returns the output value of the stop just less than the input, or the first output if the input is less than the first stop.",
         "group": "Ramps, scales, curves",
         "sdk-support": {
           "basic functionality": {

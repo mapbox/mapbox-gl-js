@@ -100,4 +100,4 @@ function bgPatternUniformValues(image: CrossFaded<string>, crossfade: CrossfadeP
         'u_pixel_coord_lower': [pixelX & 0xFFFF, pixelY & 0xFFFF]
     };
 }
-export { bgPatternUniformValues, patternUniformValues };
+export {bgPatternUniformValues, patternUniformValues};

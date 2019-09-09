@@ -3,14 +3,14 @@
 import StyleLayer from '../style_layer';
 
 import FillExtrusionBucket from '../../data/bucket/fill_extrusion_bucket';
-import { polygonIntersectsPolygon, polygonIntersectsMultiPolygon } from '../../util/intersection_tests';
-import { translateDistance, translate } from '../query_utils';
+import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
+import {translateDistance, translate} from '../query_utils';
 import properties from './fill_extrusion_style_layer_properties';
-import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
+import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import {vec4} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 
-import type { FeatureState } from '../../style-spec/expression';
+import type {FeatureState} from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
 import type {PaintProps} from './fill_extrusion_style_layer_properties';
 import type Transform from '../../geo/transform';

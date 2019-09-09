@@ -1,6 +1,6 @@
-import { test } from '../../../util/test';
+import {test} from '../../../util/test';
 import window from '../../../../src/util/window';
-import { createMap } from '../../../util';
+import {createMap} from '../../../util';
 import GeolocateControl from '../../../../src/ui/control/geolocate_control';
 
 // window and navigator globals need to be set for mock-geolocation
@@ -133,7 +133,7 @@ test('GeolocateControl non-zero bearing', (t) => {
     const click = new window.Event('click');
 
     map.once('moveend', () => {
-        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 10, lng: 20 }, 'map centered on location');
+        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location');
         t.equal(map.getBearing(), 45, 'map bearing retained');
         t.equal(map.getZoom(), 10, 'geolocate fitBounds maxZoom');
         t.end();
@@ -158,7 +158,7 @@ test('GeolocateControl no watching map camera on geolocation', (t) => {
     const click = new window.Event('click');
 
     map.on('moveend', () => {
-        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 10, lng: 20 }, 'map centered on location');
+        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location');
 
         const mapBounds = map.getBounds();
 
@@ -207,11 +207,11 @@ test('GeolocateControl watching map updates recenter on location with dot', (t) 
         if (moveendCount > 0) return;
         moveendCount++;
 
-        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 10, lng: 20 }, 'map centered on location after 1st update');
+        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location after 1st update');
         t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot marker on map');
         t.false(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation does not have stale class');
         map.once('moveend', () => {
-            t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 40, lng: 50 }, 'map centered on location after 2nd update');
+            t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 40, lng: 50}, 'map centered on location after 2nd update');
             geolocate.once('error', () => {
                 t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot  marker on map');
                 t.ok(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation has stale class');

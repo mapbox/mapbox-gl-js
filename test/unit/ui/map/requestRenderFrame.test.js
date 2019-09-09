@@ -1,5 +1,5 @@
-import { test } from '../../../util/test';
-import { createMap } from '../../../util';
+import {test} from '../../../util/test';
+import {createMap} from '../../../util';
 
 test('Map#_requestRenderFrame schedules a new render frame if necessary', (t) => {
     const map = createMap(t);

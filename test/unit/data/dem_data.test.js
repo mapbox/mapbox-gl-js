@@ -1,9 +1,12 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import DEMData from '../../../src/data/dem_data';
-import { RGBAImage } from '../../../src/util/image';
-import { serialize, deserialize } from '../../../src/util/web_worker_transfer';
+import {RGBAImage} from '../../../src/util/image';
+import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
 function createMockImage(height, width) {
+    // RGBAImage passed to constructor has uniform 1px padding on all sides.
+    height += 2;
+    width += 2;
     const pixels = new Uint8Array(height * width * 4);
     for (let i = 0; i < pixels.length; i++) {
         pixels[i] = (i + 1) % 4 === 0 ? 1 : Math.floor(Math.random() * 256);
@@ -15,9 +18,8 @@ test('DEMData', (t) => {
     t.test('constructor', (t) => {
         const dem = new DEMData(0, {width: 4, height: 4, data: new Uint8ClampedArray(4 * 4 * 4)});
         t.equal(dem.uid, 0);
-        t.equal(dem.dim, 4);
-        t.equal(dem.stride, 6);
-        t.true(dem.data instanceof Int32Array);
+        t.equal(dem.dim, 2);
+        t.equal(dem.stride, 4);
         t.end();
     });
 
@@ -139,6 +141,7 @@ test('DEMData#backfillBorder', (t) => {
             dim: 4,
             stride: 6,
             data: dem0.data,
+            encoding: 'mapbox'
         }, 'serializes DEM');
 
         const transferrables = [];

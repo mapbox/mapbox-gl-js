@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import RasterDEMTileWorkerSource from '../../../src/source/raster_dem_tile_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import DEMData from '../../../src/data/dem_data';

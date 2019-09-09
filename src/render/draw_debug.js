@@ -1,16 +1,16 @@
 // @flow
 
-import { mat4 } from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 import EXTENT from '../data/extent';
-import { PosArray } from '../data/array_types';
-import { LineIndexArray } from '../data/index_array_type';
+import {PosArray} from '../data/array_types';
+import {LineIndexArray} from '../data/index_array_type';
 import posAttributes from '../data/pos_attributes';
 import SegmentVector from '../data/segment';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import ColorMode from '../gl/color_mode';
-import { debugUniformValues, debugSSRectUniformValues } from './program/debug_program';
+import {debugUniformValues, debugSSRectUniformValues} from './program/debug_program';
 import Color from '../style-spec/util/color';
 import browser from '../util/browser';
 

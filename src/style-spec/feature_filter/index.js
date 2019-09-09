@@ -1,12 +1,12 @@
 // @flow
 
-import { createExpression } from '../expression';
+import {createExpression} from '../expression';
 
 import type {GlobalProperties} from '../expression';
 export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
 
 export default createFilter;
-export { isExpressionFilter };
+export {isExpressionFilter};
 
 function isExpressionFilter(filter: any) {
     if (filter === true || filter === false) {

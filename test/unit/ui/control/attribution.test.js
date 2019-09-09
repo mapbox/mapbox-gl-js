@@ -1,7 +1,7 @@
-import { test } from '../../../util/test';
+import {test} from '../../../util/test';
 import config from '../../../../src/util/config';
 import AttributionControl from '../../../../src/ui/control/attribution_control';
-import { createMap as globalCreateMap } from '../../../util';
+import {createMap as globalCreateMap} from '../../../util';
 
 function createMap(t) {
     config.ACCESS_TOKEN = 'pk.123';
@@ -81,20 +81,20 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
     map.addControl(attribution);
 
     map.on('load', () => {
-        map.addSource('1', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'World' });
-        map.addSource('2', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Hello World' });
-        map.addSource('3', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Another Source' });
-        map.addSource('4', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Hello' });
-        map.addSource('5', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Hello World' });
-        map.addSource('6', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Hello World' });
-        map.addSource('7', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'GeoJSON Source' });
-        map.addLayer({ id: '1', type: 'fill', source: '1' });
-        map.addLayer({ id: '2', type: 'fill', source: '2' });
-        map.addLayer({ id: '3', type: 'fill', source: '3' });
-        map.addLayer({ id: '4', type: 'fill', source: '4' });
-        map.addLayer({ id: '5', type: 'fill', source: '5' });
-        map.addLayer({ id: '6', type: 'fill', source: '6' });
-        map.addLayer({ id: '7', type: 'fill', source: '7' });
+        map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'World'});
+        map.addSource('2', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Hello World'});
+        map.addSource('3', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Another Source'});
+        map.addSource('4', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Hello'});
+        map.addSource('5', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Hello World'});
+        map.addSource('6', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Hello World'});
+        map.addSource('7', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'GeoJSON Source'});
+        map.addLayer({id: '1', type: 'fill', source: '1'});
+        map.addLayer({id: '2', type: 'fill', source: '2'});
+        map.addLayer({id: '3', type: 'fill', source: '3'});
+        map.addLayer({id: '4', type: 'fill', source: '4'});
+        map.addLayer({id: '5', type: 'fill', source: '5'});
+        map.addLayer({id: '6', type: 'fill', source: '6'});
+        map.addLayer({id: '7', type: 'fill', source: '7'});
     });
 
     let times = 0;
@@ -114,8 +114,8 @@ test('AttributionControl has the correct edit map link', (t) => {
     const attribution = new AttributionControl();
     map.addControl(attribution);
     map.on('load', () => {
-        map.addSource('1', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: '<a class="mapbox-improve-map" href="https://feedback.com" target="_blank">Improve this map</a>'});
-        map.addLayer({ id: '1', type: 'fill', source: '1' });
+        map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: '<a class="mapbox-improve-map" href="https://feedback.com" target="_blank">Improve this map</a>'});
+        map.addLayer({id: '1', type: 'fill', source: '1'});
         map.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 t.equal(attribution._editLink.rel, 'noopener nofollow');
@@ -133,8 +133,8 @@ test('AttributionControl is hidden if empty', (t) => {
     const attribution = new AttributionControl();
     map.addControl(attribution);
     map.on('load', () => {
-        map.addSource('1', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }});
-        map.addLayer({ id: '1', type: 'fill', source: '1' });
+        map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}});
+        map.addLayer({id: '1', type: 'fill', source: '1'});
     });
 
     const container = map.getContainer();
@@ -143,8 +143,8 @@ test('AttributionControl is hidden if empty', (t) => {
         t.equal(attribution._innerContainer.innerHTML, '');
         t.equal(container.querySelectorAll('.mapboxgl-attrib-empty').length, 1, 'includes empty class when no attribution strings are provided');
 
-        map.addSource('2', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Hello World'});
-        map.addLayer({ id: '2', type: 'fill', source: '2' });
+        map.addSource('2', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Hello World'});
+        map.addLayer({id: '2', type: 'fill', source: '2'});
     };
 
     const checkNotEmptyLater = () => {
@@ -209,11 +209,11 @@ test('AttributionControl hides attributions for sources that are not currently v
     map.addControl(attribution);
 
     map.on('load', () => {
-        map.addSource('1', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Used' });
-        map.addSource('2', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Not used' });
-        map.addSource('3', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Vibility none' });
-        map.addLayer({ id: '1', type: 'fill', source: '1' });
-        map.addLayer({ id: '3', type: 'fill', source: '3', layout: { visibility: 'none' } });
+        map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Used'});
+        map.addSource('2', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Not used'});
+        map.addSource('3', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Vibility none'});
+        map.addLayer({id: '1', type: 'fill', source: '1'});
+        map.addLayer({id: '3', type: 'fill', source: '3', layout: {visibility: 'none'}});
     });
 
     let times = 0;

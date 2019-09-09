@@ -1,12 +1,12 @@
-import { test } from '../../util/test';
-import { extend } from '../../../src/util/util';
+import {test} from '../../util/test';
+import {extend} from '../../../src/util/util';
 import window from '../../../src/util/window';
 import Map from '../../../src/ui/map';
-import { createMap } from '../../util';
+import {createMap} from '../../util';
 import LngLat from '../../../src/geo/lng_lat';
 import Tile from '../../../src/source/tile';
-import { OverscaledTileID } from '../../../src/source/tile_id';
-import { Event, ErrorEvent } from '../../../src/util/evented';
+import {OverscaledTileID} from '../../../src/source/tile_id';
+import {Event, ErrorEvent} from '../../../src/util/evented';
 import simulate from '../../util/simulate_interaction';
 import {fixedLngLat, fixedNum} from '../../util/fixed';
 
@@ -67,7 +67,7 @@ test('Map', (t) => {
         const bounds = [[-133, 16], [-68, 50]];
         const map = createMap(t, {container, bounds});
 
-        t.deepEqual(fixedLngLat(map.getCenter(), 4), { lng: -100.5, lat: 34.7171 });
+        t.deepEqual(fixedLngLat(map.getCenter(), 4), {lng: -100.5, lat: 34.7171});
         t.equal(fixedNum(map.getZoom(), 3), 2.113);
 
         t.end();
@@ -80,11 +80,11 @@ test('Map', (t) => {
             const container = window.document.createElement('div');
             Object.defineProperty(container, 'offsetWidth', {value: 512});
             Object.defineProperty(container, 'offsetHeight', {value: 512});
-            return createMap(t, { skipCSSStub, container, bounds, fitBoundsOptions });
+            return createMap(t, {skipCSSStub, container, bounds, fitBoundsOptions});
         };
 
         const unpadded = map(undefined, false);
-        const padded = map({ padding: 100 }, true);
+        const padded = map({padding: 100}, true);
 
         t.ok(unpadded.getZoom() > padded.getZoom());
 
@@ -132,7 +132,7 @@ test('Map', (t) => {
 
     t.test('emits load event after a style is set', (t) => {
         t.stub(Map.prototype, '_detectMissingCSS');
-        const map = new Map({ container: window.document.createElement('div') });
+        const map = new Map({container: window.document.createElement('div')});
 
         map.on('load', fail);
 
@@ -149,7 +149,7 @@ test('Map', (t) => {
     t.test('#setStyle', (t) => {
         t.test('returns self', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
-            const map = new Map({ container: window.document.createElement('div') });
+            const map = new Map({container: window.document.createElement('div')});
             t.equal(map.setStyle({
                 version: 8,
                 sources: {},
@@ -236,7 +236,7 @@ test('Map', (t) => {
             t.ok(map.transform.unmodified, 'map transform is not modified');
             map.setStyle(createStyle());
             map.on('style.load', () => {
-                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -73.9749, lat: 40.7736 }));
+                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({lng: -73.9749, lat: 40.7736}));
                 t.equal(fixedNum(map.transform.zoom), 12.5);
                 t.equal(fixedNum(map.transform.bearing), 29);
                 t.equal(fixedNum(map.transform.pitch), 50);
@@ -250,7 +250,7 @@ test('Map', (t) => {
             t.notOk(map.transform.unmodified, 'map transform is modified by options');
             map.setStyle(createStyle());
             map.on('style.load', () => {
-                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -77.0186, lat: 38.8888 }));
+                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({lng: -77.0186, lat: 38.8888}));
                 t.equal(fixedNum(map.transform.zoom), 10);
                 t.equal(fixedNum(map.transform.bearing), 0);
                 t.equal(fixedNum(map.transform.pitch), 0);
@@ -267,7 +267,7 @@ test('Map', (t) => {
             t.notOk(map.transform.unmodified, 'map transform is modified via setters');
             map.setStyle(createStyle());
             map.on('style.load', () => {
-                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -77.0186, lat: 38.8888 }));
+                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({lng: -77.0186, lat: 38.8888}));
                 t.equal(fixedNum(map.transform.zoom), 10);
                 t.equal(fixedNum(map.transform.bearing), 0);
                 t.equal(fixedNum(map.transform.pitch), 0);
@@ -363,7 +363,7 @@ test('Map', (t) => {
             const map = createMap(t, {style});
 
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /There is no source with ID/);
                     t.end();
                 });
@@ -402,7 +402,7 @@ test('Map', (t) => {
                 map.addSource('fill', source);
                 map.addLayer(layer);
                 t.deepEqual(map.getStyle(), extend(createStyle(), {
-                    sources: { fill: source },
+                    sources: {fill: source},
                     layers: [layer]
                 }));
                 t.end();
@@ -411,7 +411,7 @@ test('Map', (t) => {
 
         t.test('creates a new Style if diff fails', (t) => {
             const style = createStyle();
-            const map = createMap(t, { style });
+            const map = createMap(t, {style});
             t.stub(map.style, 'setState').callsFake(() => {
                 throw new Error('Dummy error');
             });
@@ -425,7 +425,7 @@ test('Map', (t) => {
 
         t.test('creates a new Style if diff option is false', (t) => {
             const style = createStyle();
-            const map = createMap(t, { style });
+            const map = createMap(t, {style});
             t.stub(map.style, 'setState').callsFake(() => {
                 t.fail();
             });
@@ -580,7 +580,7 @@ test('Map', (t) => {
     });
 
     t.test('#getBounds', (t) => {
-        const map = createMap(t, { zoom: 0 });
+        const map = createMap(t, {zoom: 0});
         t.deepEqual(parseFloat(map.getBounds().getCenter().lng.toFixed(10)), 0, 'getBounds');
         t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
 
@@ -589,7 +589,7 @@ test('Map', (t) => {
             [ 70.31249999999977, 57.32652122521695 ] ]));
 
         t.test('rotated bounds', (t) => {
-            const map = createMap(t, { zoom: 1, bearing: 45, skipCSSStub: true });
+            const map = createMap(t, {zoom: 1, bearing: 45, skipCSSStub: true});
             t.deepEqual(
                 toFixed([[-49.718445552178764, -44.44541580601936], [49.7184455522, 44.445415806019355]]),
                 toFixed(map.getBounds().toArray())
@@ -908,13 +908,13 @@ test('Map', (t) => {
 
     t.test('#project', (t) => {
         const map = createMap(t);
-        t.deepEqual(map.project([0, 0]), { x: 100, y: 100 });
+        t.deepEqual(map.project([0, 0]), {x: 100, y: 100});
         t.end();
     });
 
     t.test('#unproject', (t) => {
         const map = createMap(t);
-        t.deepEqual(fixedLngLat(map.unproject([100, 100])), { lng: 0, lat: 0 });
+        t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
         t.end();
     });
 
@@ -967,7 +967,7 @@ test('Map', (t) => {
                 const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
-                t.deepEqual(args[0], [{ x: 100, y: 100 }]); // query geometry
+                t.deepEqual(args[0], [{x: 100, y: 100}]); // query geometry
                 t.deepEqual(args[1], {}); // params
                 t.deepEqual(args[2], map.transform); // transform
                 t.deepEqual(output, []);
@@ -1093,7 +1093,7 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
                     t.end();
                 });
@@ -1264,7 +1264,7 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /does not exist in the map\'s style/);
                     t.end();
                 });
@@ -1321,7 +1321,7 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
                     t.end();
                 });
@@ -1344,8 +1344,8 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
-                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
+                map.setFeatureState({source: 'geojson', id: 12345}, {'hover': true});
+                const fState = map.getFeatureState({source: 'geojson', id: 12345});
                 t.equal(fState.hover, true);
                 t.end();
             });
@@ -1361,8 +1361,8 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
-                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
+                map.setFeatureState({source: 'geojson', id: '12345'}, {'hover': true});
+                const fState = map.getFeatureState({source: 'geojson', id: 12345});
                 t.equal(fState.hover, true);
                 t.end();
             });
@@ -1378,7 +1378,7 @@ test('Map', (t) => {
                 }
             });
             t.throws(() => {
-                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+                map.setFeatureState({source: 'geojson', id: 12345}, {'hover': true});
             }, Error, /load/i);
 
             t.end();
@@ -1394,11 +1394,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /source/);
                     t.end();
                 });
-                map.setFeatureState({ source: 'vector', id: 12345}, {'hover': true});
+                map.setFeatureState({source: 'vector', id: 12345}, {'hover': true});
             });
         });
         t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
@@ -1415,11 +1415,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /sourceLayer/);
                     t.end();
                 });
-                map.setFeatureState({ source: 'vector', sourceLayer: 0, id: 12345}, {'hover': true});
+                map.setFeatureState({source: 'vector', sourceLayer: 0, id: 12345}, {'hover': true});
             });
         });
         t.test('fires an error if id not provided', (t) => {
@@ -1436,11 +1436,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /id/);
                     t.end();
                 });
-                map.setFeatureState({ source: 'vector', sourceLayer: "1"}, {'hover': true});
+                map.setFeatureState({source: 'vector', sourceLayer: "1"}, {'hover': true});
             });
         });
         t.test('fires an error if id is less than zero', (t) => {
@@ -1457,11 +1457,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /id/);
                     t.end();
                 });
-                map.setFeatureState({ source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
+                map.setFeatureState({source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
             });
         });
         t.test('fires an error if id cannot be parsed as an int', (t) => {
@@ -1478,11 +1478,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /id/);
                     t.end();
                 });
-                map.setFeatureState({ source: 'vector', sourceLayer: "1", id: 'abc'}, {'hover': true});
+                map.setFeatureState({source: 'vector', sourceLayer: "1", id: 'abc'}, {'hover': true});
             });
         });
         t.end();
@@ -1501,9 +1501,9 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true, 'click': true});
-                map.removeFeatureState({ source: 'geojson', id: 0}, 'hover');
-                const fState = map.getFeatureState({ source: 'geojson', id: 0});
+                map.setFeatureState({source: 'geojson', id: 0}, {'hover': true, 'click': true});
+                map.removeFeatureState({source: 'geojson', id: 0}, 'hover');
+                const fState = map.getFeatureState({source: 'geojson', id: 0});
                 t.equal(fState.hover, undefined);
                 t.equal(fState.click, true);
                 t.end();
@@ -1520,9 +1520,9 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
-                map.removeFeatureState({ source: 'geojson', id: 12345}, 'hover');
-                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
+                map.setFeatureState({source: 'geojson', id: 12345}, {'hover': true});
+                map.removeFeatureState({source: 'geojson', id: 12345}, 'hover');
+                const fState = map.getFeatureState({source: 'geojson', id: 12345});
                 t.equal(fState.hover, undefined);
                 t.end();
             });
@@ -1538,10 +1538,10 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
-                map.removeFeatureState({ source: 'geojson', id: 1});
+                map.setFeatureState({source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.removeFeatureState({source: 'geojson', id: 1});
 
-                const fState = map.getFeatureState({ source: 'geojson', id: 1});
+                const fState = map.getFeatureState({source: 'geojson', id: 1});
                 t.equal(fState.hover, undefined);
                 t.equal(fState.foo, undefined);
 
@@ -1559,10 +1559,10 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true, 'foo': true});
-                map.removeFeatureState({ source: 'geojson', id: 0});
+                map.setFeatureState({source: 'geojson', id: 0}, {'hover': true, 'foo': true});
+                map.removeFeatureState({source: 'geojson', id: 0});
 
-                const fState = map.getFeatureState({ source: 'geojson', id: 0});
+                const fState = map.getFeatureState({source: 'geojson', id: 0});
                 t.equal(fState.hover, undefined);
                 t.equal(fState.foo, undefined);
 
@@ -1580,10 +1580,10 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
-                map.removeFeatureState({ source: 'geojson', id: 1}, 'hover');
+                map.setFeatureState({source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.removeFeatureState({source: 'geojson', id: 1}, 'hover');
 
-                const fState = map.getFeatureState({ source: 'geojson', id: 1});
+                const fState = map.getFeatureState({source: 'geojson', id: 1});
                 t.equal(fState.foo, true);
 
                 t.end();
@@ -1600,16 +1600,16 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
-                map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
+                map.setFeatureState({source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.setFeatureState({source: 'geojson', id: 2}, {'hover': true, 'foo': true});
 
-                map.removeFeatureState({ source: 'geojson'});
+                map.removeFeatureState({source: 'geojson'});
 
-                const fState1 = map.getFeatureState({ source: 'geojson', id: 1});
+                const fState1 = map.getFeatureState({source: 'geojson', id: 1});
                 t.equal(fState1.hover, undefined);
                 t.equal(fState1.foo, undefined);
 
-                const fState2 = map.getFeatureState({ source: 'geojson', id: 2});
+                const fState2 = map.getFeatureState({source: 'geojson', id: 2});
                 t.equal(fState2.hover, undefined);
                 t.equal(fState2.foo, undefined);
 
@@ -1627,27 +1627,27 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
-                map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
+                map.setFeatureState({source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.setFeatureState({source: 'geojson', id: 2}, {'hover': true, 'foo': true});
 
-                map.removeFeatureState({ source: 'geojson', id: 1});
-                map.removeFeatureState({ source: 'geojson', id: 1}, 'foo');
+                map.removeFeatureState({source: 'geojson', id: 1});
+                map.removeFeatureState({source: 'geojson', id: 1}, 'foo');
 
-                const fState1 = map.getFeatureState({ source: 'geojson', id: 1});
+                const fState1 = map.getFeatureState({source: 'geojson', id: 1});
                 t.equal(fState1.hover, undefined);
 
-                map.setFeatureState({ source: 'geojson', id: 1}, {'hover': true, 'foo': true});
-                map.removeFeatureState({ source: 'geojson'});
-                map.removeFeatureState({ source: 'geojson', id: 1}, 'foo');
+                map.setFeatureState({source: 'geojson', id: 1}, {'hover': true, 'foo': true});
+                map.removeFeatureState({source: 'geojson'});
+                map.removeFeatureState({source: 'geojson', id: 1}, 'foo');
 
-                const fState2 = map.getFeatureState({ source: 'geojson', id: 2});
+                const fState2 = map.getFeatureState({source: 'geojson', id: 2});
                 t.equal(fState2.hover, undefined);
 
-                map.setFeatureState({ source: 'geojson', id: 2}, {'hover': true, 'foo': true});
-                map.removeFeatureState({ source: 'geojson'});
-                map.removeFeatureState({ source: 'geojson', id: 2}, 'foo');
+                map.setFeatureState({source: 'geojson', id: 2}, {'hover': true, 'foo': true});
+                map.removeFeatureState({source: 'geojson'});
+                map.removeFeatureState({source: 'geojson', id: 2}, 'foo');
 
-                const fState3 = map.getFeatureState({ source: 'geojson', id: 2});
+                const fState3 = map.getFeatureState({source: 'geojson', id: 2});
                 t.equal(fState3.hover, undefined);
 
                 t.end();
@@ -1664,17 +1664,17 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+                map.setFeatureState({source: 'geojson', id: 12345}, {'hover': true});
 
-                map.removeFeatureState({ source: 'geojson', id: 12345});
-                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+                map.removeFeatureState({source: 'geojson', id: 12345});
+                map.setFeatureState({source: 'geojson', id: 12345}, {'hover': true});
 
-                const fState1 = map.getFeatureState({ source: 'geojson', id: 12345});
+                const fState1 = map.getFeatureState({source: 'geojson', id: 12345});
                 t.equal(fState1.hover, true);
 
-                map.removeFeatureState({ source: 'geojson', id: 12345});
+                map.removeFeatureState({source: 'geojson', id: 12345});
 
-                const fState2 = map.getFeatureState({ source: 'geojson', id: 12345});
+                const fState2 = map.getFeatureState({source: 'geojson', id: 12345});
                 t.equal(fState2.hover, undefined);
 
                 t.end();
@@ -1691,7 +1691,7 @@ test('Map', (t) => {
                 }
             });
             t.throws(() => {
-                map.removeFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+                map.removeFeatureState({source: 'geojson', id: 12345}, {'hover': true});
             }, Error, /load/i);
 
             t.end();
@@ -1707,11 +1707,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /source/);
                     t.end();
                 });
-                map.removeFeatureState({ source: 'vector', id: 12345}, {'hover': true});
+                map.removeFeatureState({source: 'vector', id: 12345}, {'hover': true});
             });
         });
         t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
@@ -1728,11 +1728,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /sourceLayer/);
                     t.end();
                 });
-                map.removeFeatureState({ source: 'vector', sourceLayer: 0, id: 12345}, {'hover': true});
+                map.removeFeatureState({source: 'vector', sourceLayer: 0, id: 12345}, {'hover': true});
             });
         });
         t.test('fires an error if state property is provided without a feature id', (t) => {
@@ -1749,11 +1749,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /id/);
                     t.end();
                 });
-                map.removeFeatureState({ source: 'vector', sourceLayer: "1"}, {'hover': true});
+                map.removeFeatureState({source: 'vector', sourceLayer: "1"}, {'hover': true});
             });
         });
         t.test('removeFeatureState fires an error if id is less than zero', (t) => {
@@ -1770,11 +1770,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /id/);
                     t.end();
                 });
-                map.removeFeatureState({ source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
+                map.removeFeatureState({source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
             });
         });
         t.test('fires an error if id cannot be parsed as an int', (t) => {
@@ -1791,11 +1791,11 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.on('error', ({ error }) => {
+                map.on('error', ({error}) => {
                     t.match(error.message, /id/);
                     t.end();
                 });
-                map.removeFeatureState({ source: 'vector', sourceLayer: "1", id: 'abc'}, {'hover': true});
+                map.removeFeatureState({source: 'vector', sourceLayer: "1", id: 'abc'}, {'hover': true});
             });
         });
         t.end();
@@ -1841,7 +1841,7 @@ test('Map', (t) => {
         });
 
         let timer;
-        const map = createMap(t, { style });
+        const map = createMap(t, {style});
         map.on('render', () => {
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => {
@@ -1855,7 +1855,7 @@ test('Map', (t) => {
 
     t.test('no render after idle event', (t) => {
         const style = createStyle();
-        const map = createMap(t, { style });
+        const map = createMap(t, {style});
         map.on('idle', () => {
             map.on('render', t.fail);
             setTimeout(() => {
@@ -1866,9 +1866,9 @@ test('Map', (t) => {
 
     t.test('no idle event during move', (t) => {
         const style = createStyle();
-        const map = createMap(t, { style, fadeDuration: 0 });
+        const map = createMap(t, {style, fadeDuration: 0});
         map.once('idle', () => {
-            map.zoomTo(0.5, { duration: 100 });
+            map.zoomTo(0.5, {duration: 100});
             t.ok(map.isMoving(), "map starts moving immediately after zoomTo");
             map.once('idle', () => {
                 t.ok(!map.isMoving(), "map stops moving before firing idle event");
@@ -1910,7 +1910,7 @@ test('Map', (t) => {
 
     t.test('stops camera animation on mousedown when interactive', (t) => {
         const map = createMap(t, {interactive: true});
-        map.flyTo({ center: [200, 0], duration: 100 });
+        map.flyTo({center: [200, 0], duration: 100});
 
         simulate.mousedown(map.getCanvasContainer());
         t.equal(map.isEasing(), false);
@@ -1921,7 +1921,7 @@ test('Map', (t) => {
 
     t.test('continues camera animation on mousedown when non-interactive', (t) => {
         const map = createMap(t, {interactive: false});
-        map.flyTo({ center: [200, 0], duration: 100 });
+        map.flyTo({center: [200, 0], duration: 100});
 
         simulate.mousedown(map.getCanvasContainer());
         t.equal(map.isEasing(), true);
@@ -1932,7 +1932,7 @@ test('Map', (t) => {
 
     t.test('stops camera animation on touchstart when interactive', (t) => {
         const map = createMap(t, {interactive: true});
-        map.flyTo({ center: [200, 0], duration: 100 });
+        map.flyTo({center: [200, 0], duration: 100});
 
         simulate.touchstart(map.getCanvasContainer());
         t.equal(map.isEasing(), false);
@@ -1943,7 +1943,7 @@ test('Map', (t) => {
 
     t.test('continues camera animation on touchstart when non-interactive', (t) => {
         const map = createMap(t, {interactive: false});
-        map.flyTo({ center: [200, 0], duration: 100 });
+        map.flyTo({center: [200, 0], duration: 100});
 
         simulate.touchstart(map.getCanvasContainer());
         t.equal(map.isEasing(), true);
@@ -1960,7 +1960,7 @@ test('Map', (t) => {
         window.document.styleSheets[0] = styleSheet;
         window.document.styleSheets.length = 1;
 
-        new Map({ container: window.document.createElement('div') });
+        new Map({container: window.document.createElement('div')});
 
         t.notok(stub.calledOnce);
         t.end();
@@ -1968,7 +1968,7 @@ test('Map', (t) => {
 
     t.test('should warn when CSS is missing', (t) => {
         const stub = t.stub(console, 'warn');
-        new Map({ container: window.document.createElement('div') });
+        new Map({container: window.document.createElement('div')});
 
         t.ok(stub.calledOnce);
 
@@ -1979,7 +1979,7 @@ test('Map', (t) => {
         const map = createMap(t),
             container = map.getContainer();
 
-        map.flyTo({ center: [200, 0], duration: 100 });
+        map.flyTo({center: [200, 0], duration: 100});
 
         Object.defineProperty(container, 'clientWidth', {value: 250});
         Object.defineProperty(container, 'clientHeight', {value: 250});

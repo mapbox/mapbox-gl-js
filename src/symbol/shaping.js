@@ -6,7 +6,7 @@ import {
     charInComplexShapingScript
 } from '../util/script_detection';
 import verticalizePunctuation from '../util/verticalize_punctuation';
-import { plugin as rtlTextPlugin } from '../source/rtl_text_plugin';
+import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
 import ONE_EM from './one_em';
 
 import type {StyleGlyph} from '../style/style_glyph';
@@ -19,7 +19,7 @@ const WritingMode = {
     horizontalOnly: 3
 };
 
-export { shapeText, shapeIcon, getAnchorAlignment, WritingMode };
+export {shapeText, shapeIcon, getAnchorAlignment, WritingMode};
 
 // The position of a glyph relative to the text's anchor point.
 export type PositionedGlyph = {
@@ -438,7 +438,7 @@ function getAnchorAlignment(anchor: SymbolAnchor) {
         break;
     }
 
-    return { horizontalAlign, verticalAlign };
+    return {horizontalAlign, verticalAlign};
 }
 
 function shapeLines(shaping: Shaping,

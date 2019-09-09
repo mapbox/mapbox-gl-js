@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import perf from '../../../src/util/performance';
@@ -13,8 +13,8 @@ test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
     source.loadTile({
         source: 'source',
         uid: 0,
-        tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
-        request: { url: 'http://localhost:2900/abort' }
+        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+        request: {url: 'http://localhost:2900/abort'}
     }, (err, res) => {
         t.false(err);
         t.false(res);
@@ -64,7 +64,7 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) =
     };
 
     const callback = t.spy();
-    source.reloadTile({ uid: 0 }, callback);
+    source.reloadTile({uid: 0}, callback);
     t.equal(parse.callCount, 1);
 
     parse.firstCall.args[3]();
@@ -87,11 +87,11 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
 
     const callback1 = t.spy();
     const callback2 = t.spy();
-    source.reloadTile({ uid: 0 }, callback1);
+    source.reloadTile({uid: 0}, callback1);
     t.equal(parse.callCount, 1);
 
     source.loaded[0].status = 'parsing';
-    source.reloadTile({ uid: 0 }, callback2);
+    source.reloadTile({uid: 0}, callback2);
     t.equal(parse.callCount, 1);
 
     parse.firstCall.args[3]();
@@ -122,11 +122,11 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
     const callback1 = t.spy();
     const callback2 = t.spy();
     const callback3 = t.spy();
-    source.reloadTile({ uid: 0 }, callback1);
+    source.reloadTile({uid: 0}, callback1);
     t.equal(parse.callCount, 1);
 
     source.loaded[0].status = 'parsing';
-    source.reloadTile({ uid: 0 }, callback2);
+    source.reloadTile({uid: 0}, callback2);
     t.equal(parse.callCount, 1);
 
     parse.firstCall.args[3]();
@@ -135,7 +135,7 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
     t.equal(callback2.callCount, 0);
     t.equal(callback3.callCount, 0);
 
-    source.reloadTile({ uid: 0 }, callback3);
+    source.reloadTile({uid: 0}, callback3);
     t.equal(parse.callCount, 2);
     t.equal(callback1.callCount, 1);
     t.equal(callback2.callCount, 0);
@@ -168,7 +168,7 @@ test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTil
 
     const callback = t.spy();
 
-    source.reloadTile({ uid: 0 }, callback);
+    source.reloadTile({uid: 0}, callback);
     t.ok(parse.notCalled);
     t.ok(callback.calledOnce);
 
@@ -222,8 +222,8 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
     source.loadTile({
         source: 'source',
         uid: 0,
-        tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
-        request: { url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true }
+        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+        request: {url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true}
     }, (err, res) => {
         t.false(err);
         t.deepEquals(res.resourceTiming[0], exampleResourceTiming, 'resourceTiming resp is expected');
@@ -276,11 +276,11 @@ test('VectorTileWorkerSource provides resource timing information (fallback meth
     source.loadTile({
         source: 'source',
         uid: 0,
-        tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
-        request: { url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true }
+        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+        request: {url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true}
     }, (err, res) => {
         t.false(err);
-        t.deepEquals(res.resourceTiming[0], {"duration": 250, "entryType": "measure", "name": "http://localhost:2900/faketile.pbf", "startTime": 100 }, 'resourceTiming resp is expected');
+        t.deepEquals(res.resourceTiming[0], {"duration": 250, "entryType": "measure", "name": "http://localhost:2900/faketile.pbf", "startTime": 100}, 'resourceTiming resp is expected');
         t.end();
     });
 });

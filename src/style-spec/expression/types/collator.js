@@ -45,7 +45,7 @@ export default class Collator {
 
         this.locale = locale;
         this.collator = new Intl.Collator(this.locale ? this.locale : [],
-            { sensitivity: this.sensitivity, usage: 'search' });
+            {sensitivity: this.sensitivity, usage: 'search'});
     }
 
     compare(lhs: string, rhs: string): number {

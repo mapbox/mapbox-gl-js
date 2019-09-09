@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-import { Event, ErrorEvent, Evented } from '../util/evented';
+import {Event, ErrorEvent, Evented} from '../util/evented';
 import StyleLayer from './style_layer';
 import createStyleLayer from './create_style_layer';
 import loadSprite from './load_sprite';
@@ -10,18 +10,18 @@ import ImageManager from '../render/image_manager';
 import GlyphManager from '../render/glyph_manager';
 import Light from './light';
 import LineAtlas from '../render/line_atlas';
-import { pick, clone, extend, deepEqual, filterObject, mapObject } from '../util/util';
-import { getJSON, getReferrer, makeRequest, ResourceType } from '../util/ajax';
-import { isMapboxURL } from '../util/mapbox';
+import {pick, clone, extend, deepEqual, filterObject, mapObject} from '../util/util';
+import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax';
+import {isMapboxURL} from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
-import { validateStyle, emitValidationErrors as _emitValidationErrors } from './validate_style';
+import {validateStyle, emitValidationErrors as _emitValidationErrors} from './validate_style';
 import {
     getType as getSourceType,
     setType as setSourceType,
     type SourceClass
 } from '../source/source';
-import { queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures } from '../source/query_features';
+import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '../source/query_features';
 import SourceCache from '../source/source_cache';
 import GeoJSONSource from '../source/geojson_source';
 import styleSpec from '../style-spec/reference/latest';
@@ -916,7 +916,7 @@ class Style extends Evented {
     }
 
     getTransition() {
-        return extend({ duration: 300, delay: 0 }, this.stylesheet && this.stylesheet.transition);
+        return extend({duration: 300, delay: 0}, this.stylesheet && this.stylesheet.transition);
     }
 
     serialize() {

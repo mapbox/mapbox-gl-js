@@ -1,6 +1,6 @@
 // @flow
 
-import { parseCacheControl } from './util';
+import {parseCacheControl} from './util';
 import window from './window';
 
 import type Dispatcher from './dispatcher';
@@ -115,7 +115,7 @@ let globalEntryCounter = Infinity;
 export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
     globalEntryCounter++;
     if (globalEntryCounter > cacheCheckThreshold) {
-        dispatcher.send('enforceCacheSizeLimit', cacheLimit);
+        dispatcher.getActor().send('enforceCacheSizeLimit', cacheLimit);
         globalEntryCounter = 0;
     }
 }

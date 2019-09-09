@@ -37,7 +37,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         bindFramebuffer(context, painter, layer);
 
-        context.clear({ color: Color.transparent });
+        context.clear({color: Color.transparent});
 
         for (let i = 0; i < coords.length; i++) {
             const coord = coords[i];

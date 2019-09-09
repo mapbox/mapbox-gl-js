@@ -3,7 +3,7 @@
 import MercatorCoordinate from '../geo/mercator_coordinate';
 import Point from '@mapbox/point-geometry';
 
-import { OverscaledTileID } from '../source/tile_id';
+import {OverscaledTileID} from '../source/tile_id';
 
 export default tileCover;
 

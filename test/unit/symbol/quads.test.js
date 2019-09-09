@@ -1,5 +1,5 @@
-import { test } from '../../util/test';
-import { getIconQuads } from '../../../src/symbol/quads';
+import {test} from '../../util/test';
+import {getIconQuads} from '../../../src/symbol/quads';
 import Anchor from '../../../src/symbol/anchor';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
 
@@ -17,7 +17,7 @@ function createShapedIcon() {
         right: 8,
         image: {
             pixelRatio: 1,
-            paddedRect: { x: 0, y: 0, w: 17, h: 13}
+            paddedRect: {x: 0, y: 0, w: 17, h: 13}
         }
     };
 }
@@ -31,11 +31,11 @@ test('getIconQuads', (t) => {
         });
         t.deepEqual(getIconQuads(anchor, createShapedIcon(), layer, false), [
             {
-                tl: { x: -8, y: -6 },
-                tr: { x: 9, y: -6 },
-                bl: { x: -8, y: 7 },
-                br: { x: 9, y: 7 },
-                tex: {  x: 0, y: 0, w: 17, h: 13 },
+                tl: {x: -8, y: -6},
+                tr: {x: 9, y: -6},
+                bl: {x: -8, y: 7},
+                br: {x: 9, y: 7},
+                tex: {x: 0, y: 0, w: 17, h: 13},
                 writingMode: null,
                 glyphOffset: [0, 0],
                 sectionIndex: 0
@@ -50,11 +50,11 @@ test('getIconQuads', (t) => {
         });
         t.deepEqual(getIconQuads(anchor, createShapedIcon(), layer, false), [
             {
-                tl: { x: -8, y: -6 },
-                tr: { x: 9, y: -6 },
-                bl: { x: -8, y: 7 },
-                br: { x: 9, y: 7 },
-                tex: { x: 0, y: 0, w: 17, h: 13 },
+                tl: {x: -8, y: -6},
+                tr: {x: 9, y: -6},
+                bl: {x: -8, y: 7},
+                br: {x: 9, y: 7},
+                tex: {x: 0, y: 0, w: 17, h: 13},
                 writingMode: null,
                 glyphOffset: [0, 0],
                 sectionIndex: 0
@@ -74,7 +74,7 @@ test('getIconQuads text-fit', (t) => {
             right: 10,
             image: {
                 pixelRatio: 1,
-                paddedRect: {  x: 0, y: 0, w: 22, h: 22 }
+                paddedRect: {x: 0, y: 0, w: 22, h: 22}
             }
         };
     }
@@ -94,10 +94,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit': 'none'
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -11, y: -11 });
-        t.deepEqual(quads[0].tr, { x: 11, y: -11 });
-        t.deepEqual(quads[0].bl, { x: -11, y: 11 });
-        t.deepEqual(quads[0].br, { x: 11, y: 11 });
+        t.deepEqual(quads[0].tl, {x: -11, y: -11});
+        t.deepEqual(quads[0].tr, {x: 11, y: -11});
+        t.deepEqual(quads[0].bl, {x: -11, y: 11});
+        t.deepEqual(quads[0].br, {x: 11, y: 11});
 
         t.deepEqual(quads, getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
@@ -119,10 +119,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -60, y: -1 });
-        t.deepEqual(quads[0].tr, { x: 20, y: -1 });
-        t.deepEqual(quads[0].bl, { x: -60, y: 21 });
-        t.deepEqual(quads[0].br, { x: 20, y: 21 });
+        t.deepEqual(quads[0].tl, {x: -60, y: -1});
+        t.deepEqual(quads[0].tr, {x: 20, y: -1});
+        t.deepEqual(quads[0].bl, {x: -60, y: 21});
+        t.deepEqual(quads[0].br, {x: 20, y: 21});
         t.end();
     });
 
@@ -136,10 +136,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -30, y: -6 });
-        t.deepEqual(quads[0].tr, { x: 10, y: -6 });
-        t.deepEqual(quads[0].bl, { x: -30, y: 16 });
-        t.deepEqual(quads[0].br, { x: 10, y: 16 });
+        t.deepEqual(quads[0].tl, {x: -30, y: -6});
+        t.deepEqual(quads[0].tr, {x: 10, y: -6});
+        t.deepEqual(quads[0].bl, {x: -30, y: 16});
+        t.deepEqual(quads[0].br, {x: 10, y: 16});
         t.end();
     });
 
@@ -154,10 +154,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 5, 10, 5, 10 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -40, y: -11 });
-        t.deepEqual(quads[0].tr, { x: 20, y: -11 });
-        t.deepEqual(quads[0].bl, { x: -40, y: 21 });
-        t.deepEqual(quads[0].br, { x: 20, y: 21 });
+        t.deepEqual(quads[0].tl, {x: -40, y: -11});
+        t.deepEqual(quads[0].tr, {x: 20, y: -11});
+        t.deepEqual(quads[0].bl, {x: -40, y: 21});
+        t.deepEqual(quads[0].br, {x: 20, y: 21});
         t.end();
     });
 
@@ -171,10 +171,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -31, y: -10 });
-        t.deepEqual(quads[0].tr, { x: -9, y: -10 });
-        t.deepEqual(quads[0].bl, { x: -31, y: 30 });
-        t.deepEqual(quads[0].br, { x: -9, y: 30 });
+        t.deepEqual(quads[0].tl, {x: -31, y: -10});
+        t.deepEqual(quads[0].tr, {x: -9, y: -10});
+        t.deepEqual(quads[0].bl, {x: -31, y: 30});
+        t.deepEqual(quads[0].br, {x: -9, y: 30});
         t.end();
     });
 
@@ -188,10 +188,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -21, y: -5 });
-        t.deepEqual(quads[0].tr, { x: 1, y: -5 });
-        t.deepEqual(quads[0].bl, { x: -21, y: 15 });
-        t.deepEqual(quads[0].br, { x: 1, y: 15 });
+        t.deepEqual(quads[0].tl, {x: -21, y: -5});
+        t.deepEqual(quads[0].tr, {x: 1, y: -5});
+        t.deepEqual(quads[0].bl, {x: -21, y: 15});
+        t.deepEqual(quads[0].br, {x: 1, y: 15});
         t.end();
     });
 
@@ -206,10 +206,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 5, 10, 5, 10 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -31, y: -10 });
-        t.deepEqual(quads[0].tr, { x: 11, y: -10 });
-        t.deepEqual(quads[0].bl, { x: -31, y: 20 });
-        t.deepEqual(quads[0].br, { x: 11, y: 20 });
+        t.deepEqual(quads[0].tl, {x: -31, y: -10});
+        t.deepEqual(quads[0].tr, {x: 11, y: -10});
+        t.deepEqual(quads[0].bl, {x: -31, y: 20});
+        t.deepEqual(quads[0].br, {x: 11, y: 20});
         t.end();
     });
 
@@ -222,10 +222,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -60, y: -10 });
-        t.deepEqual(quads[0].tr, { x: 20, y: -10 });
-        t.deepEqual(quads[0].bl, { x: -60, y: 30 });
-        t.deepEqual(quads[0].br, { x: 20, y: 30 });
+        t.deepEqual(quads[0].tl, {x: -60, y: -10});
+        t.deepEqual(quads[0].tr, {x: 20, y: -10});
+        t.deepEqual(quads[0].bl, {x: -60, y: 30});
+        t.deepEqual(quads[0].br, {x: 20, y: 30});
         t.end();
     });
 
@@ -238,10 +238,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -30, y: -5 });
-        t.deepEqual(quads[0].tr, { x: 10, y: -5 });
-        t.deepEqual(quads[0].bl, { x: -30, y: 15 });
-        t.deepEqual(quads[0].br, { x: 10, y: 15 });
+        t.deepEqual(quads[0].tl, {x: -30, y: -5});
+        t.deepEqual(quads[0].tr, {x: 10, y: -5});
+        t.deepEqual(quads[0].bl, {x: -30, y: 15});
+        t.deepEqual(quads[0].br, {x: 10, y: 15});
         t.end();
     });
 
@@ -255,10 +255,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 5, 10, 5, 10 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -40, y: -10 });
-        t.deepEqual(quads[0].tr, { x: 20, y: -10 });
-        t.deepEqual(quads[0].bl, { x: -40, y: 20 });
-        t.deepEqual(quads[0].br, { x: 20, y: 20 });
+        t.deepEqual(quads[0].tl, {x: -40, y: -10});
+        t.deepEqual(quads[0].tr, {x: 20, y: -10});
+        t.deepEqual(quads[0].bl, {x: -40, y: 20});
+        t.deepEqual(quads[0].br, {x: 20, y: 20});
         t.end();
     });
 
@@ -272,10 +272,10 @@ test('getIconQuads text-fit', (t) => {
                 'icon-text-fit-padding': [ 0, 5, 10, 15 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -45, y: -5 });
-        t.deepEqual(quads[0].tr, { x: 15, y: -5 });
-        t.deepEqual(quads[0].bl, { x: -45, y: 25 });
-        t.deepEqual(quads[0].br, { x: 15, y: 25 });
+        t.deepEqual(quads[0].tl, {x: -45, y: -5});
+        t.deepEqual(quads[0].tr, {x: 15, y: -5});
+        t.deepEqual(quads[0].bl, {x: -45, y: 25});
+        t.deepEqual(quads[0].br, {x: 15, y: 25});
         t.end();
     });
 
