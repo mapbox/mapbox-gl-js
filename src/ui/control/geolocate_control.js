@@ -270,7 +270,8 @@ class GeolocateControl extends Evented {
             `${className}-icon ${className}-geolocate`,
             this._container);
         this._geolocateButton.type = 'button';
-        this._geolocateButton.setAttribute('aria-label', 'Geolocate');
+        this._geolocateButton.title = 'Find my location';
+        this._geolocateButton.setAttribute('aria-label', 'Find my location');
 
         if (this.options.trackUserLocation) {
             this._geolocateButton.setAttribute('aria-pressed', 'false');
