@@ -214,6 +214,9 @@ export class MapWheelEvent extends Event {
 }
 
 /**
+ * A `MapBoxZoomEvent` is the event type for boxzoom-related map events.
+ * `originalEvent` can be a {@link Map.event:click} when the zoom is triggered by a UI event.
+ *
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent
  */
