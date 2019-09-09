@@ -319,7 +319,7 @@ test('camera', (t) => {
     t.test('#setPadding', (t) => {
         t.test('sets padding', (t) => {
             const camera = createCamera();
-            const padding = { left: 300, top: 100, right: 50, bottom: 10};
+            const padding = {left: 300, top: 100, right: 50, bottom: 10};
             camera.setPadding(padding);
             t.deepEqual(camera.getPadding(), padding);
             t.end();
@@ -327,7 +327,7 @@ test('camera', (t) => {
 
         t.test('existing padding is retained if no new values are passed in', (t) => {
             const camera = createCamera();
-            const padding = { left: 300, top: 100, right: 50, bottom: 10};
+            const padding = {left: 300, top: 100, right: 50, bottom: 10};
             camera.setPadding(padding);
             camera.setPadding({});
 
@@ -338,9 +338,9 @@ test('camera', (t) => {
 
         t.test('doesnt change padding thats already present if new value isnt passed in', (t) => {
             const camera = createCamera();
-            const padding = { left: 300, top: 100, right: 50, bottom: 10};
+            const padding = {left: 300, top: 100, right: 50, bottom: 10};
             camera.setPadding(padding);
-            const padding1 = { right: 100 };
+            const padding1 = {right: 100};
             camera.setPadding(padding1);
 
             const currentPadding = camera.getPadding();
