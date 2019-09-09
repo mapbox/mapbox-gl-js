@@ -33,7 +33,7 @@ import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
-import debug, { drawDebugPadding } from './draw_debug';
+import debug, {drawDebugPadding} from './draw_debug';
 import custom from './draw_custom';
 
 const draw = {

@@ -1,5 +1,5 @@
 // @flow
-import { number } from "../style-spec/util/interpolate";
+import {number} from "../style-spec/util/interpolate";
 import Point  from "@mapbox/point-geometry";
 
 /**

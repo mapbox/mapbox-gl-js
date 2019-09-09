@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import EdgeInsets from '../../../src/geo/edge_insets';
 
 test('EdgeInsets', (t) => {
