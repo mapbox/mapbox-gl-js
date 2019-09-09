@@ -27,6 +27,8 @@ class DragPanHandler {
     _startPos: Point;
     _mouseDownPos: Point;
     _lastPos: Point;
+    _startTouch: Array<Point> | void;
+    _lastTouch: Array<Point> | void;
     _lastMoveEvent: MouseEvent | TouchEvent | void;
     _inertia: Array<[number, Point]>;
     _frameId: ?TaskID;
@@ -151,19 +153,33 @@ class DragPanHandler {
 
         this._state = 'pending';
         this._startPos = this._mouseDownPos = this._lastPos = DOM.mousePos(this._el, e);
+        this._startTouch = this._lastTouch = e.touches ? DOM.touchPos(this._el, e) : null ;
         this._inertia = [[browser.now(), this._startPos]];
+    }
+
+    _touchesMatch(lastTouch: Array<Point>, thisTouch: Array<Point>) {
+      if (lastTouch.length !== thisTouch.length) return false;
+      for (let i = 0; i < lastTouch.length; i++) {
+        if (!lastTouch[i].equals(thisTouch[i])) return false;
+      }
+      return true;
     }
 
     _onMove(e: MouseEvent | TouchEvent) {
         e.preventDefault();
 
+        const touchPos = e.touches ? DOM.touchPos(this._el, e) : null;
         const pos = DOM.mousePos(this._el, e);
-        if (this._lastPos.equals(pos) || (this._state === 'pending' && pos.dist(this._mouseDownPos) < this._clickTolerance)) {
+
+        const matchesLastPos = touchPos ? this._touchesMatch(this._lastTouch, touchPos) : this._lastPos.equals(pos);
+
+        if (matchesLastPos || (this._state === 'pending' && pos.dist(this._mouseDownPos) < this._clickTolerance)) {
             return;
         }
 
         this._lastMoveEvent = e;
         this._lastPos = pos;
+        this._lastTouch = touchPos;
         this._drainInertiaBuffer();
         this._inertia.push([browser.now(), this._lastPos]);
 
@@ -184,13 +200,13 @@ class DragPanHandler {
     _onDragFrame() {
         this._frameId = null;
 
-        if (this._map.touchZoomRotate.isActive()) {
-            this._abort();
-            return;
-        }
-
         const e = this._lastMoveEvent;
         if (!e) return;
+
+        if (this._map.touchZoomRotate.isActive()) {
+          this._abort(e);
+          return;
+        }
 
         if (this._shouldStart) {
           // we treat the first drag frame (rather than the mousedown event)
@@ -244,10 +260,27 @@ class DragPanHandler {
               this._state = 'enabled';
               this._unbind();
               break;
+          case 'enabled':
+              this._unbind();
+              break;
           default:
               assert(false);
               break;
         }
+      } else {  // some finger(s) still touching the screen
+          switch (this._state) {
+            case 'pending':
+            case 'active':
+                // we are already dragging; continue
+                break;
+            case 'enabled':
+                // not currently dragging; get ready to start a new drag
+                this.onTouchStart(e);
+                break;
+            default:
+                assert(false);
+                break;
+          }
       }
     }
 
@@ -255,16 +288,24 @@ class DragPanHandler {
         switch (this._state) {
         case 'active':
             this._state = 'enabled';
-            this._unbind();
-            this._deactivate();
             if (!this._shouldStart) { // If we scheduled the dragstart but never fired, nothing to end
               // We already started the drag, end it
               this._fireEvent('dragend', e);
               this._fireEvent('moveend', e);
             }
+            this._unbind();
+            this._deactivate();
+            if (e.touches && e.touches.length > 1) {
+                // If there are multiple fingers touching, reattach touchend listner in case
+                // all but one finger is removed and we need to restart a drag on touchend
+                DOM.addEventListener(window.document, 'touchend', this._onTouchEnd);
+            }
             break;
         case 'pending':
             this._state = 'enabled';
+            this._unbind();
+            break;
+        case 'enabled':
             this._unbind();
             break;
         default:
@@ -294,7 +335,9 @@ class DragPanHandler {
         delete this._startPos;
         delete this._mouseDownPos;
         delete this._lastPos;
-        // delete this._shouldStart;
+        delete this._startTouch;
+        delete this._lastTouch;
+        delete this._shouldStart;
     }
 
     _inertialPan(e: MouseEvent | TouchEvent) {
