@@ -296,7 +296,8 @@ class GeolocateControl extends Evented {
         // the watch mode to background watch, so that the marker is updated but not the camera.
         if (this.options.trackUserLocation) {
             this._map.on('movestart', (event) => {
-                if (!event.geolocateSource && this._watchState === 'ACTIVE_LOCK') {
+                const fromResize = event.originalEvent && event.originalEvent.type === 'resize';
+                if (!event.geolocateSource && this._watchState === 'ACTIVE_LOCK' && !fromResize) {
                     this._watchState = 'BACKGROUND';
                     this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
                     this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');

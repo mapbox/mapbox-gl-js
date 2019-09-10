@@ -1849,9 +1849,9 @@ class Map extends Camera {
         this._update();
     }
 
-    _onWindowResize() {
+    _onWindowResize(event: Event) {
         if (this._trackResize) {
-            this.resize()._update();
+            this.resize({originalEvent: event})._update();
         }
     }
 
