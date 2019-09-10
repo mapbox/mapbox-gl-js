@@ -667,6 +667,9 @@ class Map extends Camera {
      *
      * @param {LngLatLike} lnglat The geographical location to project.
      * @returns {Point} The {@link Point} corresponding to `lnglat`, relative to the map's `container`.
+     * @example
+     * var coordinate = [-122.420679, 37.772537];
+     * var point = map.project(coordinate);
      */
     project(lnglat: LngLatLike) {
         return this.transform.locationPoint(LngLat.convert(lnglat));
@@ -678,7 +681,11 @@ class Map extends Camera {
      *
      * @param {PointLike} point The pixel coordinates to unproject.
      * @returns {LngLat} The {@link LngLat} corresponding to `point`.
-     * @see [Show polygon information on click](https://www.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/)
+     * @example
+     * map.on('click', function(e) {
+     *   // When the map is clicked, get the geographic coordinate.
+     *   var coordinate = map.unproject(e.point);
+     * });
      */
     unproject(point: PointLike) {
         return this.transform.pointLocation(Point.convert(point));
