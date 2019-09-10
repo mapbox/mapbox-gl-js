@@ -498,11 +498,19 @@ class Map extends Camera {
      * Resizes the map according to the dimensions of its
      * `container` element.
      *
-     * This method must be called after the map's `container` is resized by another script,
+     * Checks if the map container size changed and updates the map if it has changed.
+     * This method must be called after the map's `container` is resized by another script
      * or when the map is shown after being initially hidden with CSS.
      *
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param eventData Additional properties to be passed to `movestart`, `move`, `resize`, and `moveend`
+     *   events that get triggered as a result of resize. This can be useful for differentiating the
+     *   source of an event (for example, user-initiated or programmatically-triggered events).
      * @returns {Map} `this`
+     * @example
+     * // Resize the map when the map container is shown
+     * // after being initially hidden with CSS.
+     * var mapDiv = document.getElementById('map');
+     * if (mapDiv.visibility === true) map.resize();
      */
     resize(eventData?: Object) {
         const dimensions = this._containerDimensions();
