@@ -288,7 +288,7 @@ class Map extends Camera {
     boxZoom: BoxZoomHandler;
 
     /**
-     * The map's `DragRotateHandler, which implements rotating the map while dragging with the right
+     * The map's `DragRotateHandler`, which implements rotating the map while dragging with the right
      * mouse button or with the Control key pressed. Find more details and examples using `dragRotate` 
      * in the {@link DragRotateHandler} section.
      */
@@ -510,7 +510,7 @@ class Map extends Camera {
      * // Resize the map when the map container is shown
      * // after being initially hidden with CSS.
      * var mapDiv = document.getElementById('map');
-     * if (mapDiv.visibility === true) map.resize();
+     * if (mapDiv.style.visibility === true) map.resize();
      */
     resize(eventData?: Object) {
         const dimensions = this._containerDimensions();
@@ -893,11 +893,11 @@ class Map extends Camera {
      * representing the style layer to  which the feature belongs. Layout and paint properties in this object contain values
      * which are fully evaluated for the given zoom level and feature.
      *
-     * Only features that are currently rendered are included. Some features will not be included, like:
+     * Only features that are currently rendered are included. Some features will **not** be included, like:
      *
-     * - Features from layers whose `visibility` property is `"none"`
-     * - Features from layers whose zoom range excludes the current zoom level are not included.
-     * - Symbol features that have been hidden due to text or icon collision are not included.
+     * - Features from layers whose `visibility` property is `"none"`.
+     * - Features from layers whose zoom range excludes the current zoom level.
+     * - Symbol features that have been hidden due to text or icon collision.
      *
      * Features from all other layers are included, including features that may have no visible
      * contribution to the rendered result; for example, because the layer's opacity or color alpha component is set to
