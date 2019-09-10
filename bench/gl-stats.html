@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <script>
+// stub performance.now for deterministic rendering per-frame;
+// we'll later increment the value by 16 on every frame (16ms per frame for 60fps)
 let now = performance.now();
 window.performance.now = () => now;
 </script>
