@@ -37,7 +37,10 @@ function waitForConsole(page) {
     stats.dt = execSync('git show --no-patch --no-notes --pretty=\'%cI\' HEAD').toString().substring(0, 19);
     stats.commit = execSync('git rev-parse --short HEAD').toString().trim();
     stats.message = execSync('git show -s --format=%s HEAD').toString().trim();
-    console.log(JSON.stringify(stats, null, 2));
+    const statsStr = JSON.stringify(stats, null, 2);
+    console.log(statsStr);
+
+    fs.writeFileSync('data.json.gz', zlib.gzipSync(statsStr));
 
     await page.close();
     await browser.close();
