@@ -869,7 +869,7 @@ class Map extends Camera {
      * or with only a `options` argument) is equivalent to passing a bounding box encompassing the entire
      * map viewport.
      * @param {Object} [options]
-     * @param {Array<string>} [options.layers] An array of style layer IDs for the query to inspect.
+     * @param {Array<string>} [options.layers] An array of [style layer IDs](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-id) for the query to inspect.
      *   Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
      * @param {Array} [options.filter] A [filter](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter)
      *   to limit query results.
@@ -885,9 +885,13 @@ class Map extends Camera {
      * representing the style layer to  which the feature belongs. Layout and paint properties in this object contain values
      * which are fully evaluated for the given zoom level and feature.
      *
-     * Features from layers whose `visibility` property is `"none"`, or from layers whose zoom range excludes the
-     * current zoom level are not included. Symbol features that have been hidden due to text or icon collision are
-     * not included. Features from all other layers are included, including features that may have no visible
+     * Only features that are currently rendered are included. Some features will not be included, like:
+     *
+     * - Features from layers whose `visibility` property is `"none"`
+     * - Features from layers whose zoom range excludes the current zoom level are not included.
+     * - Symbol features that have been hidden due to text or icon collision are not included.
+     *
+     * Features from all other layers are included, including features that may have no visible
      * contribution to the rendered result; for example, because the layer's opacity or color alpha component is set to
      * 0.
      *
@@ -931,7 +935,7 @@ class Map extends Camera {
      * var features = map.queryRenderedFeatures({ layers: ['my-layer-name'] });
      * @see [Get features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/queryrenderedfeatures/)
      * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
-     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
+     * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
     queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Object) {
         // The first parameter can be omitted entirely, making this effectively an overloaded method
@@ -974,8 +978,8 @@ class Map extends Camera {
      *
      * @param {string} sourceId The ID of the vector tile or GeoJSON source to query.
      * @param {Object} [parameters]
-     * @param {string} [parameters.sourceLayer] The name of the vector tile layer to query. *For vector tile
-     *   sources, this parameter is required.* For GeoJSON sources, it is ignored.
+     * @param {string} [parameters.sourceLayer] The name of the [source layer](https://docs.mapbox.com/help/glossary/source-layer/)
+     *   to query. *For vector tile sources, this parameter is required.* For GeoJSON sources, it is ignored.
      * @param {Array} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter)
      *   to limit query results.
      * @param {boolean} [parameters.validate=true] Whether to check if the [parameters.filter] conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
@@ -983,8 +987,7 @@ class Map extends Camera {
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
      * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
-     * In contrast to {@link Map#queryRenderedFeatures}, this function
-     * returns all features matching the query parameters,
+     * In contrast to {@link Map#queryRenderedFeatures}, this function returns all features matching the query parameters,
      * whether or not they are rendered by the current style (i.e. visible). The domain of the query includes all currently-loaded
      * vector tiles and GeoJSON source tiles: this function does not check tiles outside the currently
      * visible viewport.
@@ -996,7 +999,13 @@ class Map extends Camera {
      * rectangle, even if the highway extends into other tiles, and the portion of the highway within each map tile
      * will be returned as a separate feature. Similarly, a point feature near a tile boundary may appear in multiple
      * tiles due to tile buffering.
-     * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
+     *
+     * @example
+     * // Find all features in one source layer in a vector source
+     * var features = map.querySourceFeatures('your-source-id', {
+     *   sourceLayer: 'your-source-layer'
+     * });
+     *
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
     querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
