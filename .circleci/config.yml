@@ -33,7 +33,9 @@ workflows:
             - build
           filters:
             tags:
-              only: /.*/
+              ignore: /.*/
+            branches:
+              only: master
       - test-flow:
           requires:
             - prepare
@@ -170,7 +172,7 @@ jobs:
       - aws-cli/install
       - run:
           name: Upload performance stats
-          command: aws s3 cp data.json.gz s3://mapbox-loading-dock/raw/gl_js.perf_metrics_dev/ci/`git show -s --date=short --format=%cd-%h HEAD`.json.gz
+          command: aws s3 cp data.json.gz s3://mapbox-loading-dock/raw/gl_js.perf_metrics_staging/ci/`git show -s --date=short --format=%cd-%h HEAD`.json.gz
 
   test-flow:
     <<: *defaults
