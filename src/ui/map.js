@@ -523,6 +523,8 @@ class Map extends Camera {
     /**
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
+     * @example
+     * map.getBounds();
      */
     getBounds(): LngLatBounds {
         return this.transform.getBounds();
@@ -530,6 +532,8 @@ class Map extends Camera {
 
     /**
      * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
+     * @example
+     * map.getMaxBounds();
      */
     getMaxBounds(): LngLatBounds | null {
         return this.transform.getMaxBounds();
@@ -547,6 +551,14 @@ class Map extends Camera {
      *
      * @param {LngLatBoundsLike | null | undefined} bounds The maximum bounds to set. If `null` or `undefined` is provided, the function removes the map's maximum bounds.
      * @returns {Map} `this`
+     * @example
+     * // Define bounds that conform to the `LngLatBoundsLike` object.
+     * var bounds = [
+     *   [-74.04728, 40.68392], // Southwest coordinates
+     *   [-73.91058, 40.87764]  // Northeast coordinates
+     * ];
+     * // Set the map's max bounds.
+     * map.setMaxBounds(bounds);
      */
     setMaxBounds(bounds: LngLatBoundsLike) {
         this.transform.setMaxBounds(LngLatBounds.convert(bounds));
