@@ -573,6 +573,8 @@ class Map extends Camera {
      * @param {number | null | undefined} minZoom The minimum zoom level to set (0-24).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
+     * @example
+     * map.setMinZoom(12.25);
      */
     setMinZoom(minZoom?: ?number) {
 
@@ -593,6 +595,8 @@ class Map extends Camera {
      * Returns the map's minimum allowable zoom level.
      *
      * @returns {number} minZoom
+     * @example
+     * map.getMinZoom();
      */
     getMinZoom() { return this.transform.minZoom; }
 
@@ -604,6 +608,8 @@ class Map extends Camera {
      * @param {number | null | undefined} maxZoom The maximum zoom level to set.
      *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 22).
      * @returns {Map} `this`
+     * @example
+     * map.setMaxZoom(18.75);
      */
     setMaxZoom(maxZoom?: ?number) {
 
@@ -619,6 +625,16 @@ class Map extends Camera {
 
         } else throw new Error(`maxZoom must be greater than the current minZoom`);
     }
+
+    /**
+     * Returns the map's maximum allowable zoom level.
+     *
+     * @returns {number} maxZoom
+     * @example
+     * map.getMaxZoom();
+     */
+    getMaxZoom() { return this.transform.maxZoom; }
+
 
     /**
      * Returns the state of renderWorldCopies.
@@ -637,13 +653,6 @@ class Map extends Camera {
         this.transform.renderWorldCopies = renderWorldCopies;
         return this._update();
     }
-
-    /**
-     * Returns the map's maximum allowable zoom level.
-     *
-     * @returns {number} maxZoom
-     */
-    getMaxZoom() { return this.transform.maxZoom; }
 
     /**
      * Returns a {@link Point} representing pixel coordinates, relative to the map's `container`,
