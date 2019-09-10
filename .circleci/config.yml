@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@0.1.16
 
 workflows:
   version: 2
@@ -26,6 +28,14 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - collect-stats:
+          requires:
+            - build
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: master
       - test-flow:
           requires:
             - prepare
@@ -89,7 +99,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: mbgl/80dbb7f452:linux
+    - image: circleci/node:10.16-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -99,10 +109,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v2-yarn-{{ checksum "yarn.lock" }}
+            - v3-yarn-{{ checksum "yarn.lock" }}
       - run: yarn
       - save_cache:
-          key: v2-yarn-{{ checksum "yarn.lock" }}
+          key: v3-yarn-{{ checksum "yarn.lock" }}
           paths:
             - '~/.yarn'
             - 'node_modules'
@@ -118,13 +128,13 @@ jobs:
           at: .
       - restore_cache:
           keys:
-            - v1-lint-{{ .Branch }}
-            - v1-lint
+            - v2-lint-{{ .Branch }}
+            - v2-lint
       - run: yarn run lint
       - run: yarn run lint-docs
       - run: yarn run lint-css
       - save_cache:
-          key: v1-lint-{{ .Branch }}-{{ .Revision }}
+          key: v2-lint-{{ .Branch }}-{{ .Revision }}
           paths:
             - '.eslintcache'
 
@@ -153,6 +163,19 @@ jobs:
           at: .
       - run: node build/check-bundle-size.js "dist/mapbox-gl.js" "GL JS - Minified"
 
+  collect-stats:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Collect performance stats
+          command: node bench/gl-stats.js
+      - aws-cli/install
+      - run:
+          name: Upload performance stats
+          command: aws s3 cp data.json.gz s3://mapbox-loading-dock/raw/gl_js.perf_metrics_staging/ci/`git show -s --date=short --format=%cd-%h HEAD`.json.gz
+
   test-flow:
     <<: *defaults
     steps:
@@ -165,14 +188,14 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-unit
+      - run: npm run test-unit
 
   test-render:
     <<: *defaults
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-render
+      - run: npm run test-render
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
@@ -181,7 +204,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-query
+      - run: npm run test-query
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
 

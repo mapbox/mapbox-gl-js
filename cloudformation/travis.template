@@ -35,7 +35,8 @@
                                     ],
                                     "Effect": "Allow",
                                     "Resource": [
-                                        "arn:aws:s3:::mapbox-gl-js/*"
+                                        "arn:aws:s3:::mapbox-gl-js/*",
+                                        "arn:aws:s3:::mapbox-loading-dock/raw/gl_js.perf_metrics*/*"
                                     ]
                                 }
                             ]
