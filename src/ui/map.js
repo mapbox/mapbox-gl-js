@@ -203,7 +203,7 @@ const defaultOptions = {
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A [`fitBounds`](#map#fitbounds) options object to use _only_ when fitting the initial `bounds` provided above.
- * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered, when zoomed out.
+ * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered side by side when the map is zoomed out far enough that a single representation of the world does not fill the map's entire container.
  * @param {number} [options.maxTileCacheSize=null]  The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
  * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
  *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana' and 'Hangul Syllables' ranges.
@@ -637,17 +637,24 @@ class Map extends Camera {
 
 
     /**
-     * Returns the state of renderWorldCopies.
+     * Returns the state of `renderWorldCopies`. If `true`, multiple copies of the world will be rendered side by side
+     * when the map is zoomed out far enough that a single representation of the world does not fill the map's entire container.
      *
      * @returns {boolean} renderWorldCopies
+     * @example
+     * map.getRenderWorldCopies();
      */
     getRenderWorldCopies() { return this.transform.renderWorldCopies; }
 
     /**
-     * Sets the state of renderWorldCopies.
+     * Sets the state of `renderWorldCopies`.
      *
-     * @param {boolean} renderWorldCopies If `true`, multiple copies of the world will be rendered, when zoomed out. `undefined` is treated as `true`, `null` is treated as `false`.
+     * @param {boolean} renderWorldCopies If `true`, multiple copies of the world will be rendered side by side when
+     * the map is zoomed out far enough that a single representation of the world does not fill the map's entire container.
+     * `undefined` is treated as `true`, `null` is treated as `false`.
      * @returns {Map} `this`
+     * @example
+     * map.setRenderWorldCopies(true);
      */
     setRenderWorldCopies(renderWorldCopies?: ?boolean) {
         this.transform.renderWorldCopies = renderWorldCopies;
