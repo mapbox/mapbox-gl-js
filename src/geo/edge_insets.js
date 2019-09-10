@@ -42,11 +42,11 @@ class EdgeInsets {
      * @returns {EdgeInsets}
      * @memberof EdgeInsets
      */
-    interpolate(target: EdgeInsetLike, t: number): EdgeInsets {
-        if (target.top != null) this.top = number(this.top, target.top, t);
-        if (target.bottom != null) this.bottom = number(this.bottom, target.bottom, t);
-        if (target.left != null) this.left = number(this.left, target.left, t);
-        if (target.right != null) this.right = number(this.right, target.right, t);
+    interpolate(start: EdgeInsetJSON | EdgeInsets, target: EdgeInsetLike, t: number): EdgeInsets {
+        if (target.top != null) this.top = number(start.top, target.top, t);
+        if (target.bottom != null) this.bottom = number(start.bottom, target.bottom, t);
+        if (target.left != null) this.left = number(start.left, target.left, t);
+        if (target.right != null) this.right = number(start.right, target.right, t);
 
         return this;
     }

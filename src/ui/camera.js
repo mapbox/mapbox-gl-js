@@ -733,6 +733,7 @@ class Camera extends Evented {
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
+            startPadding = this.getPadding(),
 
             zoom = 'zoom' in options ? +options.zoom : startZoom,
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
@@ -776,7 +777,7 @@ class Camera extends Evented {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (this._padding) {
-                tr.interpolatePadding(padding, k);
+                tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continously,
                 // thus we need to recalculate offsetPoint every fra,e
                 pointAtOffset = tr.centerPoint.add(offsetAsPoint);
@@ -954,7 +955,8 @@ class Camera extends Evented {
         const tr = this.transform,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
-            startPitch = this.getPitch();
+            startPitch = this.getPitch(),
+            startPadding = this.getPadding();
 
         const zoom = 'zoom' in options ? clamp(+options.zoom, tr.minZoom, tr.maxZoom) : startZoom;
         const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
@@ -1068,7 +1070,7 @@ class Camera extends Evented {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (this._padding) {
-                tr.interpolatePadding(padding, k);
+                tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continously,
                 // thus we need to recalculate offsetPoint every frame
                 pointAtOffset = tr.centerPoint.add(offsetAsPoint);

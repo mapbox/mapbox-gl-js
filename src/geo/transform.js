@@ -195,7 +195,7 @@ class Transform {
         if (this._edgeInsets.equals(padding)) return;
         this._unmodified = false;
         //Update edge-insets inplace
-        this._edgeInsets.interpolate(padding, 1);
+        this._edgeInsets.interpolate(this._edgeInsets, padding, 1);
         this._calcMatrices();
     }
 
@@ -229,9 +229,9 @@ class Transform {
      * @param {number} t
      * @memberof Transform
      */
-    interpolatePadding(target: EdgeInsetLike, t: number) {
+    interpolatePadding(start: EdgeInsetJSON, target: EdgeInsetLike, t: number) {
         this._unmodified = false;
-        this._edgeInsets.interpolate(target, t);
+        this._edgeInsets.interpolate(start, target, t);
         this._constrain();
         this._calcMatrices();
     }

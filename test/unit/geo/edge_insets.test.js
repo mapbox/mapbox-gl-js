@@ -51,7 +51,7 @@ test('EdgeInsets', (t) => {
         t.test('it works', (t) => {
             const inset1 = new EdgeInsets(10, 15, 50, 10);
             const inset2 = new EdgeInsets(20, 30, 100, 10);
-            const inset3 = inset1.interpolate(inset2, 0.5);
+            const inset3 = inset1.interpolate(inset1, inset2, 0.5);
             // inset1 is mutated in-place
             t.equal(inset3, inset1);
 
@@ -67,7 +67,7 @@ test('EdgeInsets', (t) => {
             const target = {
                 top: 20
             };
-            inset.interpolate(target, 0.5);
+            inset.interpolate(inset, target, 0.5);
             t.equal(inset.top, 15);
             t.equal(inset.bottom, 15);
             t.equal(inset.left, 50);
