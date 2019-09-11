@@ -111,6 +111,11 @@ jobs:
           keys:
             - v3-yarn-{{ checksum "yarn.lock" }}
       - aws-cli/install
+      - persist_to_workspace:
+          root: /usr/local
+          paths:
+            - aws
+            - bin
       - run: yarn
       - save_cache:
           key: v3-yarn-{{ checksum "yarn.lock" }}
