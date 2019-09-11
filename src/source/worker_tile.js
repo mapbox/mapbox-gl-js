@@ -60,7 +60,7 @@ class WorkerTile {
         this.returnDependencies = !!params.returnDependencies;
     }
 
-    parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
+    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
         this.status = 'parsing';
         this.data = data;
 
@@ -76,7 +76,8 @@ class WorkerTile {
             featureIndex,
             iconDependencies: {},
             patternDependencies: {},
-            glyphDependencies: {}
+            glyphDependencies: {},
+            availableImages
         };
 
         const layerFamilies = layerIndex.familiesBySource[this.source];

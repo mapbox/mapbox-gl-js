@@ -59,19 +59,21 @@ export class StyleExpression {
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
+        this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
+        this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection || null;
 
         try {
@@ -135,12 +137,12 @@ export class ZoomConstantExpression<Kind: EvaluationKind> {
         this.isStateDependent = kind !== ('constant': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, formattedSection);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, availableImages, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
-        return this._styleExpression.evaluate(globals, feature, featureState, formattedSection);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluate(globals, feature, featureState, availableImages, formattedSection);
     }
 }
 

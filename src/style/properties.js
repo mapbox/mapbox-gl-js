@@ -453,8 +453,8 @@ export class PossiblyEvaluatedPropertyValue<T> {
         }
     }
 
-    evaluate(feature: Feature, featureState: FeatureState): T {
-        return this.property.evaluate(this.value, this.parameters, feature, featureState);
+    evaluate(feature: Feature, featureState: FeatureState, availableImages: Array<string>): T {
+        return this.property.evaluate(this.value, this.parameters, feature, featureState, availableImages);
     }
 }
 
@@ -577,11 +577,11 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         }
     }
 
-    evaluate(value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, feature: Feature, featureState: FeatureState): T {
+    evaluate(value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, feature: Feature, featureState: FeatureState, availableImages: Array<string>): T {
         if (value.kind === 'constant') {
             return value.value;
         } else {
-            return value.evaluate(parameters, feature, featureState);
+            return value.evaluate(parameters, feature, featureState, availableImages);
         }
     }
 }

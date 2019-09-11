@@ -389,6 +389,7 @@ class SymbolBucket implements Bucket {
 
         const icons = options.iconDependencies;
         const stacks = options.glyphDependencies;
+        const availableImages = options.availableImages;
         const globalProperties = new EvaluationParameters(this.zoom);
 
         for (const {feature, index, sourceLayerIndex} of features) {
@@ -413,7 +414,7 @@ class SymbolBucket implements Bucket {
                 // Expression evaluation will automatically coerce to Image
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
-                const resolvedTokens = layer.getValueAndResolveTokens('icon-image', feature);
+                const resolvedTokens = layer.getValueAndResolveTokens('icon-image', feature, availableImages);
                 icon = resolvedTokens instanceof Image ?
                     resolvedTokens :
                     Image.fromString(resolvedTokens);

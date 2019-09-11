@@ -92,8 +92,8 @@ class SymbolStyleLayer extends StyleLayer {
         this._setPaintOverrides();
     }
 
-    getValueAndResolveTokens(name: *, feature: Feature) {
-        const value = this.layout.get(name).evaluate(feature, {});
+    getValueAndResolveTokens(name: *, feature: Feature, availableImages: Array<string>) {
+        const value = this.layout.get(name).evaluate(feature, {}, availableImages);
         const unevaluated = this._unevaluatedLayout._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value)) {
             return resolveTokens(feature.properties, value);

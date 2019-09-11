@@ -238,6 +238,7 @@ class Style extends Evented {
                 }
 
                 this.imageManager.setLoaded(true);
+                this.dispatcher.broadcast('setImages', this.imageManager.listImages());
                 this.fire(new Event('data', {dataType: 'style'}));
             });
         } else {
@@ -256,7 +257,6 @@ class Style extends Evented {
             layer.setEventedParent(this, {layer: {id: layer.id}});
             this._layers[layer.id] = layer;
         }
-
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);

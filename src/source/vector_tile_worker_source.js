@@ -72,6 +72,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
 class VectorTileWorkerSource implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
+    availableImages: Array<string>;
     loadVectorData: LoadVectorData;
     loading: { [string]: WorkerTile };
     loaded: { [string]: WorkerTile };
@@ -82,9 +83,10 @@ class VectorTileWorkerSource implements WorkerSource {
      * {@link VectorTileWorkerSource#loadTile}. The default implementation simply
      * loads the pbf at `params.url`.
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, loadVectorData: ?LoadVectorData) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, loadVectorData: ?LoadVectorData) {
         this.actor = actor;
         this.layerIndex = layerIndex;
+        this.availableImages = availableImages;
         this.loadVectorData = loadVectorData || loadVectorTile;
         this.loading = {};
         this.loaded = {};
@@ -129,7 +131,7 @@ class VectorTileWorkerSource implements WorkerSource {
             }
 
             workerTile.vectorTile = response.vectorTile;
-            workerTile.parse(response.vectorTile, this.layerIndex, this.actor, (err, result) => {
+            workerTile.parse(response.vectorTile, this.layerIndex, this.availableImages, this.actor, (err, result) => {
                 if (err || !result) return callback(err);
 
                 // Transferring a copy of rawTileData because the worker needs to retain its copy.

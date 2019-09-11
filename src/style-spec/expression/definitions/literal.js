@@ -54,7 +54,6 @@ class Literal implements Expression {
     }
 
     serialize(): Array<mixed> {
-        console.log('literal serialize', this);
         if (this.type.kind === 'array' || this.type.kind === 'object') {
             return ["literal", this.value];
         } else if (this.value instanceof Color) {
