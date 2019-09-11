@@ -204,7 +204,7 @@ const defaultOptions = {
  * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A [`fitBounds`](#map#fitbounds) options object to use _only_ when fitting the initial `bounds` provided above.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
- * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire 
+ * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
  * container, there will be blank space beyond 180 and -180 degrees longitude.
  * - Features that cross 180 and -180 degrees longitude will be cut in two (with one portion on the right edge of the
  * map and the other on the left edge of the map) at every zoom level.
@@ -293,7 +293,7 @@ class Map extends Camera {
 
     /**
      * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
-     * mouse button or with the Control key pressed. Find more details and examples using `dragRotate` 
+     * mouse button or with the Control key pressed. Find more details and examples using `dragRotate`
      * in the {@link DragRotateHandler} section.
      */
     dragRotate: DragRotateHandler;
@@ -646,7 +646,6 @@ class Map extends Camera {
      * map.getMaxZoom();
      */
     getMaxZoom() { return this.transform.maxZoom; }
-
 
     /**
      * Returns the state of `renderWorldCopies`. If `true`, multiple copies of the world will be rendered side by side
