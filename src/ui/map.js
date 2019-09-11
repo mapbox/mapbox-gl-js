@@ -203,7 +203,11 @@ const defaultOptions = {
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A [`fitBounds`](#map#fitbounds) options object to use _only_ when fitting the initial `bounds` provided above.
- * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered side by side when the map is zoomed out far enough that a single representation of the world does not fill the map's entire container.
+ * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
+ * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire 
+ * container, there will be blank space beyond 180 and -180 degrees longitude.
+ * - Features that cross 180 and -180 degrees longitude will be cut in two (with one portion on the right edge of the
+ * map and the other on the left edge of the map) at every zoom level.
  * @param {number} [options.maxTileCacheSize=null]  The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
  * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
  *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana' and 'Hangul Syllables' ranges.
@@ -276,44 +280,44 @@ class Map extends Camera {
     _requestManager: RequestManager;
 
     /**
-     * The map's `ScrollZoomHandler`, which implements zooming in and out with a scroll wheel or trackpad.
+     * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
      * Find more details and examples using `scrollZoom` in the {@link ScrollZoomHandler} section.
      */
     scrollZoom: ScrollZoomHandler;
 
     /**
-     * The map's `BoxZoomHandler`, which implements zooming using a drag gesture with the Shift key pressed.
+     * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
      * Find more details and examples using `boxZoom` in the {@link BoxZoomHandler} section.
      */
     boxZoom: BoxZoomHandler;
 
     /**
-     * The map's `DragRotateHandler`, which implements rotating the map while dragging with the right
+     * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
      * mouse button or with the Control key pressed. Find more details and examples using `dragRotate` 
      * in the {@link DragRotateHandler} section.
      */
     dragRotate: DragRotateHandler;
 
     /**
-     * The map's `DragPanHandler`, which implements dragging the map with a mouse or touch gesture.
+     * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
      * Find more details and examples using `dragPan` in the {@link DragPanHandler} section.
      */
     dragPan: DragPanHandler;
 
     /**
-     * The map's `KeyboardHandler`, which allows the user to zoom, rotate, and pan the map using keyboard
+     * The map's {@link KeyboardHandler}, which allows the user to zoom, rotate, and pan the map using keyboard
      * shortcuts. Find more details and examples using `keyboard` in the {@link KeyboardHandler} section.
      */
     keyboard: KeyboardHandler;
 
     /**
-     * The map's `DoubleClickZoomHandler`, which allows the user to zoom by double clicking.
+     * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
      * Find more details and examples using `doubleClickZoom` in the {@link DoubleClickZoomHandler} section.
      */
     doubleClickZoom: DoubleClickZoomHandler;
 
     /**
-     * The map's `TouchZoomRotateHandler`, which allows the user to zoom or rotate the map with touch gestures.
+     * The map's {@link TouchZoomRotateHandler}, which allows the user to zoom or rotate the map with touch gestures.
      * Find more details and examples using `touchZoomRotate` in the {@link TouchZoomRotateHandler} section.
      */
     touchZoomRotate: TouchZoomRotateHandler;
@@ -499,7 +503,7 @@ class Map extends Camera {
      * `container` element.
      *
      * Checks if the map container size changed and updates the map if it has changed.
-     * This method must be called after the map's `container` is resized by another script
+     * This method must be called after the map's `container` is resized programmatically
      * or when the map is shown after being initially hidden with CSS.
      *
      * @param eventData Additional properties to be passed to `movestart`, `move`, `resize`, and `moveend`
@@ -532,7 +536,7 @@ class Map extends Camera {
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
      * @example
-     * map.getBounds();
+     * var bounds = map.getBounds();
      */
     getBounds(): LngLatBounds {
         return this.transform.getBounds();
@@ -541,7 +545,7 @@ class Map extends Camera {
     /**
      * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
      * @example
-     * map.getMaxBounds();
+     * var maxBounds = map.getMaxBounds();
      */
     getMaxBounds(): LngLatBounds | null {
         return this.transform.getMaxBounds();
@@ -562,8 +566,8 @@ class Map extends Camera {
      * @example
      * // Define bounds that conform to the `LngLatBoundsLike` object.
      * var bounds = [
-     *   [-74.04728, 40.68392], // Southwest coordinates
-     *   [-73.91058, 40.87764]  // Northeast coordinates
+     *   [-74.04728, 40.68392], // [west, south]
+     *   [-73.91058, 40.87764]  // [east, north]
      * ];
      * // Set the map's max bounds.
      * map.setMaxBounds(bounds);
