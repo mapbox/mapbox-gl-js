@@ -608,7 +608,7 @@ class Map extends Camera {
      *
      * @returns {number} minZoom
      * @example
-     * map.getMinZoom();
+     * var minZoom = map.getMinZoom();
      */
     getMinZoom() { return this.transform.minZoom; }
 
@@ -643,7 +643,7 @@ class Map extends Camera {
      *
      * @returns {number} maxZoom
      * @example
-     * map.getMaxZoom();
+     * var maxZoom = map.getMaxZoom();
      */
     getMaxZoom() { return this.transform.maxZoom; }
 
@@ -653,7 +653,7 @@ class Map extends Camera {
      *
      * @returns {boolean} renderWorldCopies
      * @example
-     * map.getRenderWorldCopies();
+     * var worldCopiesRendered = map.getRenderWorldCopies();
      */
     getRenderWorldCopies() { return this.transform.renderWorldCopies; }
 
@@ -705,7 +705,7 @@ class Map extends Camera {
     /**
      * Returns true if the map is panning, zooming, rotating, or pitching due to a camera animation or user gesture.
      * @example
-     * map.isMoving();
+     * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
         return this._moving ||
@@ -717,7 +717,7 @@ class Map extends Camera {
     /**
      * Returns true if the map is zooming due to a camera animation or user gesture.
      * @example
-     * map.isZooming();
+     * var isZooming = map.isZooming();
      */
     isZooming(): boolean {
         return this._zooming ||
