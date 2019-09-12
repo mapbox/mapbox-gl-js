@@ -332,6 +332,48 @@ export default class Popup extends Evented {
         return this;
     }
 
+    /**
+     * Adds class to container element
+     *
+     * @param {...string} classNames non empty string
+     *
+     * @example
+     * let popup = new mapboxgl.Popup()
+     * popup.addClassName('some', 'classes')
+     */
+    addClassName(...classNames: Array<string>) {
+        this._container.classList.add(...classNames);
+    }
+
+    /**
+     * Removes class from container element
+     *
+     * @param {...string} classNames non empty string
+     *
+     * @example
+     * let popup = new mapboxgl.Popup()
+     * popup.removeClassName('some', 'classes')
+     */
+    removeClassName(...classNames: Array<string>) {
+        this._container.classList.remove(...classNames);
+    }
+
+    /**
+     * When only one argument is present toggle the class value
+     *
+     * @param {string} className non empty string
+     * @param {boolean} [force] force add or remove class. Removes class if false, adds class if true
+     *
+     * @returns {boolean} if the class was removed return false, if class was added, then return true
+     *
+     * @example
+     * let popup = new mapboxgl.Popup()
+     * popup.toggleClassName('toggleClass')
+     */
+    toggleClassName(className: string, force?: boolean) {
+        return this._container.classList.toggle(className, force);
+    }
+
     _createContent() {
         if (this._content) {
             DOM.remove(this._content);
@@ -359,8 +401,7 @@ export default class Popup extends Evented {
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
             if (this.options.className) {
-                this.options.className.split(' ').forEach(name =>
-                    this._container.classList.add(name));
+                this._container.classList.add(...this.options.className.split(' ').filter(name => !!name));
             }
 
         }
