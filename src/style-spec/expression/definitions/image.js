@@ -31,8 +31,6 @@ export default class ImageExpression implements Expression {
 
     evaluate(ctx: EvaluationContext) {
         const evaluatedImageName = this.input.evaluate(ctx);
-        console.log('evaluate', this.input, ctx, evaluatedImageName);
-        console.log('is it available?', ctx.availableImages.indexOf(evaluatedImageName));
         if (ctx.availableImages.indexOf(evaluatedImageName) > -1) {
             return evaluatedImageName;
         }

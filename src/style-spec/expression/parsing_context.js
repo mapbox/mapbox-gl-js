@@ -121,8 +121,9 @@ class ParsingContext {
 
                 // If an expression's arguments are all literals, we can evaluate
                 // it immediately and replace it with a literal value in the
-                // parsed/compiled result.
-                if (!(parsed instanceof Literal) && isConstant(parsed)) {
+                // parsed/compiled result. Expressions that expect an image should
+                // not be resolved here so we can later get the available images.
+                if (!(parsed instanceof Literal) && (parsed.type.kind !== 'image') && isConstant(parsed)) {
                     const ec = new EvaluationContext();
                     try {
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));

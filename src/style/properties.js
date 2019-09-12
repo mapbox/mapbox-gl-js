@@ -105,8 +105,8 @@ export class PropertyValue<T, R> {
         return this.expression.kind === 'source' || this.expression.kind === 'composite';
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters): R {
-        return this.property.possiblyEvaluate(this, parameters);
+    possiblyEvaluate(parameters: EvaluationParameters, availableImages: Array<string>): R {
+        return this.property.possiblyEvaluate(this, parameters, availableImages);
     }
 }
 
@@ -385,10 +385,10 @@ export class Layout<Props: Object> {
         return result;
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters): PossiblyEvaluated<Props> {
+    possiblyEvaluate(parameters: EvaluationParameters, availableImages: Array<string>): PossiblyEvaluated<Props> {
         const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
         for (const property of Object.keys(this._values)) {
-            result._values[property] = this._values[property].possiblyEvaluate(parameters);
+            result._values[property] = this._values[property].possiblyEvaluate(parameters, availableImages);
         }
         return result;
     }
@@ -542,9 +542,9 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         this.overrides = overrides;
     }
 
-    possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters): PossiblyEvaluatedPropertyValue<T> {
+    possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters, availableImages: Array<string>): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters)}, parameters);
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, null, null, availableImages)}, parameters);
         } else {
             return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
         }
