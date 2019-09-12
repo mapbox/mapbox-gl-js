@@ -58,44 +58,16 @@ export function getIconQuads(anchor: Anchor,
     // on one edge in some cases.
     const border = 1;
 
-    const size = layout.get('text-size').evaluate(feature, {}) / 24;
-    const stretchX = layout.get('icon-text-fit') === 'width' || layout.get('icon-text-fit') === 'both';
-    const stretchY = layout.get('icon-text-fit') === 'height' || layout.get('icon-text-fit') === 'both';
+    // Expand the box to respect the 1 pixel border in the atlas image.
+    const iconWidth = shapedIcon.right - shapedIcon.left;
+    const expandX = (iconWidth * image.paddedRect.w / (image.paddedRect.w - 2 * border) - iconWidth) / 2;
+    const left = shapedIcon.left - expandX;
+    const right = shapedIcon.right + expandX;
 
-    let left, right;
-    if (shapedText && stretchX) {
-        // Stretched horizontally
-        const padL = layout.get('icon-text-fit-padding')[3];
-        const padR = layout.get('icon-text-fit-padding')[1];
-        const textLeft = shapedText.left * size;
-        const textRight = shapedText.right * size;
-        const textWidth = textRight - textLeft;
-        // Expand the box to respect the 1 pixel border in the atlas image.
-        const expandX = (textWidth * image.paddedRect.w / (image.paddedRect.w - 2 * border) - textWidth) / 2;
-        left = textLeft - expandX - padL;
-        right = textRight + expandX + padR;
-    } else {
-        // Normal icon size mode
-        left = shapedIcon.left - border / image.pixelRatio;
-        right = shapedIcon.right + border / image.pixelRatio;
-    }
-
-    let top, bottom;
-    if (shapedText && stretchY) {
-        // Stretched vertically
-        const padT = layout.get('icon-text-fit-padding')[0];
-        const padB = layout.get('icon-text-fit-padding')[2];
-        const textTop = shapedText.top * size;
-        const textBottom = shapedText.bottom * size;
-        const textHeight = textBottom - textTop;
-        // Expand the box to respect the 1 pixel border in the atlas image.
-        const expandY = (textHeight * image.paddedRect.h / (image.paddedRect.h - 2 * border) - textHeight) / 2;
-        top = textTop - expandY - padT;
-        bottom = textBottom + expandY + padB;
-    } else {
-        top = shapedIcon.top - border / image.pixelRatio;
-        bottom = shapedIcon.bottom + border / image.pixelRatio;
-    }
+    const iconHeight = shapedIcon.bottom - shapedIcon.top;
+    const expandY = (iconHeight * image.paddedRect.h / (image.paddedRect.h - 2 * border) - iconHeight) / 2;
+    const top = shapedIcon.top - expandY;
+    const bottom = shapedIcon.bottom + expandY;
 
     const tl = new Point(left, top);
     const tr = new Point(right, top);
