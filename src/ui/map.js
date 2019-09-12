@@ -656,6 +656,7 @@ class Map extends Camera {
      * @returns {boolean} renderWorldCopies
      * @example
      * var worldCopiesRendered = map.getRenderWorldCopies();
+     * @see [Render world copies](https://docs.mapbox.com/mapbox-gl-js/example/render-world-copies/)
      */
     getRenderWorldCopies() { return this.transform.renderWorldCopies; }
 
@@ -672,6 +673,7 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @example
      * map.setRenderWorldCopies(true);
+     * @see [Render world copies](https://docs.mapbox.com/mapbox-gl-js/example/render-world-copies/)
      */
     setRenderWorldCopies(renderWorldCopies?: ?boolean) {
         this.transform.renderWorldCopies = renderWorldCopies;
