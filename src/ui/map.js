@@ -648,9 +648,11 @@ class Map extends Camera {
     getMaxZoom() { return this.transform.maxZoom; }
 
     /**
-     * Returns the state of `renderWorldCopies`. If `true`, multiple copies of the world will be rendered side by side
-     * when the map is zoomed out far enough that a single representation of the world does not fill the map's entire container.
-     *
+     * Returns the state of `renderWorldCopies`. If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
+     * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
+     * container, there will be blank space beyond 180 and -180 degrees longitude.
+     * - Features that cross 180 and -180 degrees longitude will be cut in two (with one portion on the right edge of the
+     * map and the other on the left edge of the map) at every zoom level.
      * @returns {boolean} renderWorldCopies
      * @example
      * var worldCopiesRendered = map.getRenderWorldCopies();
@@ -660,8 +662,12 @@ class Map extends Camera {
     /**
      * Sets the state of `renderWorldCopies`.
      *
-     * @param {boolean} renderWorldCopies If `true`, multiple copies of the world will be rendered side by side when
-     * the map is zoomed out far enough that a single representation of the world does not fill the map's entire container.
+     * @param {boolean} renderWorldCopies If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
+     * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
+     * container, there will be blank space beyond 180 and -180 degrees longitude.
+     * - Features that cross 180 and -180 degrees longitude will be cut in two (with one portion on the right edge of the
+     * map and the other on the left edge of the map) at every zoom level.
+     *
      * `undefined` is treated as `true`, `null` is treated as `false`.
      * @returns {Map} `this`
      * @example
