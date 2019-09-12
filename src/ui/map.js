@@ -1144,9 +1144,29 @@ class Map extends Camera {
      * {@link CanvasSourceOptions}.
      * @fires source.add
      * @returns {Map} `this`
-     * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
-     * @see [Style circles using data-driven styling](https://www.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/)
-     * @see [Set a point after Geocoder result](https://www.mapbox.com/mapbox-gl-js/example/point-from-geocoder-result/)
+     * @example
+     * map.addSource('my-data', {
+     *   type: 'vector',
+     *   url: 'mapbox://myusername.tilesetid'
+     * });
+     * @example
+     * map.addSource('my-data', {
+     *   "type": "geojson",
+     *   "data": {
+     *     "type": "Feature",
+     *     "geometry": {
+     *       "type": "Point",
+     *       "coordinates": [-77.0323, 38.9131]
+     *     },
+     *     "properties": {
+     *       "title": "Mapbox DC",
+     *       "marker-symbol": "monument"
+     *     }
+     *   }
+     * });
+     * @see Vector source: [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
+     * @see GeoJSON source: [Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
+     * @see Raster DEM source: [Add hillshading](https://docs.mapbox.com/mapbox-gl-js/example/hillshade/)
      */
     addSource(id: string, source: SourceSpecification) {
         this.style.addSource(id, source);
@@ -1158,6 +1178,8 @@ class Map extends Camera {
      *
      * @param {string} id The ID of the source to be checked.
      * @returns {boolean} A Boolean indicating whether the source is loaded.
+     * @example
+     * map.isSourceLoaded('bathymetry-data');
      */
     isSourceLoaded(id: string) {
         const source = this.style && this.style.sourceCaches[id];
@@ -1173,6 +1195,8 @@ class Map extends Camera {
      * the style are loaded.
      *
      * @returns {boolean} A Boolean indicating whether all tiles are loaded.
+     * @example
+     * map.areTilesLoaded();
      */
 
     areTilesLoaded() {
@@ -1205,6 +1229,8 @@ class Map extends Camera {
      *
      * @param {string} id The ID of the source to remove.
      * @returns {Map} `this`
+     * @example
+     * map.removeSource('bathymetry-data')
      */
     removeSource(id: string) {
         this.style.removeSource(id);
@@ -1217,6 +1243,8 @@ class Map extends Camera {
      * @param {string} id The ID of the source to get.
      * @returns {?Object} The style source with the specified ID, or `undefined`
      *   if the ID corresponds to no existing sources.
+     * @example
+     * var sourceId = map.getSource('points');
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
      * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
