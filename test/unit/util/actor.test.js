@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Actor from '../../../src/util/actor';
 import WebWorker from '../../../src/util/web_worker';
 
@@ -14,8 +14,8 @@ test('Actor', (t) => {
 
         const worker = new WebWorker();
 
-        const m1 = new Actor(worker, {}, 'map-1');
-        const m2 = new Actor(worker, {}, 'map-2');
+        const m1 = new Actor(worker, {}, 1);
+        const m2 = new Actor(worker, {}, 2);
 
         t.plan(4);
         m1.send('test', { value: 1729 }, (err, response) => {
@@ -40,15 +40,15 @@ test('Actor', (t) => {
 
         new Actor(worker, {
             test () { t.end(); }
-        }, 'map-1');
+        }, 1);
         new Actor(worker, {
             test () {
                 t.fail();
                 t.end();
             }
-        }, 'map-2');
+        }, 2);
 
-        workerActor.send('test', {}, () => {}, 'map-1');
+        workerActor.send('test', {}, () => {}, 1);
     });
 
     t.test('#remove unbinds event listener', (t) => {

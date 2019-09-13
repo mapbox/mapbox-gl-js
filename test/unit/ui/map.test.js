@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { extend } from '../../../src/util/util';
 import window from '../../../src/util/window';
 import Map from '../../../src/ui/map';
@@ -7,11 +7,8 @@ import LngLat from '../../../src/geo/lng_lat';
 import Tile from '../../../src/source/tile';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 import { Event, ErrorEvent } from '../../../src/util/evented';
-import simulate from 'mapbox-gl-js-test/simulate_interaction';
-
-import fixed from 'mapbox-gl-js-test/fixed';
-const fixedNum = fixed.Num;
-const fixedLngLat = fixed.LngLat;
+import simulate from '../../util/simulate_interaction';
+import {fixedLngLat, fixedNum} from '../../util/fixed';
 
 function createStyleSource() {
     return {
@@ -50,6 +47,15 @@ test('Map', (t) => {
                 container: 'anElementIdWhichDoesNotExistInTheDocument'
             });
         }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' not found"), 'throws on invalid map container id');
+        t.end();
+    });
+
+    t.test('bad map-specific token breaks map', (t) => {
+        const container = window.document.createElement('div');
+        Object.defineProperty(container, 'offsetWidth', {value: 512});
+        Object.defineProperty(container, 'offsetHeight', {value: 512});
+        createMap(t, {accessToken:'notAToken'});
+        t.error();
         t.end();
     });
 
@@ -527,7 +533,6 @@ test('Map', (t) => {
             t.end();
         });
 
-
         t.test('listen to window resize event', (t) => {
             window.addEventListener = function(type) {
                 if (type === 'resize') {
@@ -883,7 +888,6 @@ test('Map', (t) => {
         t.end();
 
     });
-
 
     t.test('#removeControl', (t) => {
         const map = createMap(t);
@@ -1485,6 +1489,26 @@ test('Map', (t) => {
     });
 
     t.test('#removeFeatureState', (t) => {
+
+        t.test('accepts "0" id', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true, 'click': true});
+                map.removeFeatureState({ source: 'geojson', id: 0}, 'hover');
+                const fState = map.getFeatureState({ source: 'geojson', id: 0});
+                t.equal(fState.hover, undefined);
+                t.equal(fState.click, true);
+                t.end();
+            });
+        });
         t.test('remove specific state property', (t) => {
             const map = createMap(t, {
                 style: {
@@ -1518,6 +1542,27 @@ test('Map', (t) => {
                 map.removeFeatureState({ source: 'geojson', id: 1});
 
                 const fState = map.getFeatureState({ source: 'geojson', id: 1});
+                t.equal(fState.hover, undefined);
+                t.equal(fState.foo, undefined);
+
+                t.end();
+            });
+        });
+        t.test('remove properties for zero-based feature IDs.', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: 0}, {'hover': true, 'foo': true});
+                map.removeFeatureState({ source: 'geojson', id: 0});
+
+                const fState = map.getFeatureState({ source: 'geojson', id: 0});
                 t.equal(fState.hover, undefined);
                 t.equal(fState.foo, undefined);
 

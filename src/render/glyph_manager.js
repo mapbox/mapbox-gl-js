@@ -8,7 +8,7 @@ import { asyncAll } from '../util/util';
 import { AlphaImage } from '../util/image';
 
 import type {StyleGlyph} from '../style/style_glyph';
-import type {RequestTransformFunction} from '../ui/map';
+import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 
 type Entry = {
@@ -19,7 +19,7 @@ type Entry = {
 };
 
 class GlyphManager {
-    requestTransform: RequestTransformFunction;
+    requestManager: RequestManager;
     localIdeographFontFamily: ?string;
     entries: {[string]: Entry};
     url: ?string;
@@ -28,8 +28,8 @@ class GlyphManager {
     static loadGlyphRange: typeof loadGlyphRange;
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestTransform: RequestTransformFunction, localIdeographFontFamily: ?string) {
-        this.requestTransform = requestTransform;
+    constructor(requestManager: RequestManager, localIdeographFontFamily: ?string) {
+        this.requestManager = requestManager;
         this.localIdeographFontFamily = localIdeographFontFamily;
         this.entries = {};
     }
@@ -64,6 +64,7 @@ class GlyphManager {
 
             glyph = this._tinySDF(entry, stack, id);
             if (glyph) {
+                entry.glyphs[id] = glyph;
                 callback(null, {stack, id, glyph});
                 return;
             }
@@ -77,11 +78,13 @@ class GlyphManager {
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
-                GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestTransform,
+                GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestManager,
                     (err, response: ?{[number]: StyleGlyph | null}) => {
                         if (response) {
                             for (const id in response) {
-                                entry.glyphs[+id] = response[+id];
+                                if (!this._doesCharSupportLocalGlyph(+id)) {
+                                    entry.glyphs[+id] = response[+id];
+                                }
                             }
                         }
                         for (const cb of requests) {
@@ -118,13 +121,23 @@ class GlyphManager {
         });
     }
 
+    _doesCharSupportLocalGlyph(id: number): boolean {
+        /* eslint-disable new-cap */
+        return !!this.localIdeographFontFamily &&
+            (isChar['CJK Unified Ideographs'](id) ||
+                isChar['Hangul Syllables'](id) ||
+                isChar['Hiragana'](id) ||
+                isChar['Katakana'](id));
+        /* eslint-enable new-cap */
+    }
+
     _tinySDF(entry: Entry, stack: string, id: number): ?StyleGlyph {
         const family = this.localIdeographFontFamily;
         if (!family) {
             return;
         }
 
-        if (!isChar['CJK Unified Ideographs'](id) && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
+        if (!this._doesCharSupportLocalGlyph(id)) {
             return;
         }
 

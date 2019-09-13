@@ -1,11 +1,11 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import window from '../../../src/util/window';
 import { createMap as globalCreateMap } from '../../util';
 import Marker from '../../../src/ui/marker';
 import Popup from '../../../src/ui/popup';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
-import simulate from 'mapbox-gl-js-test/simulate_interaction';
+import simulate from '../../util/simulate_interaction';
 
 function createMap(t) {
     const container = window.document.createElement('div');
@@ -424,8 +424,8 @@ test('Marker with draggable:true moves to new position in response to a mouse-tr
     simulate.mouseup(el);
 
     const endPos = map.project(marker.getLngLat());
-    t.equal(Math.floor(endPos.x), startPos.x + 10);
-    t.equal(Math.floor(endPos.y), startPos.y + 10);
+    t.equal(Math.round(endPos.x), startPos.x + 10);
+    t.equal(Math.round(endPos.y), startPos.y + 10);
 
     map.remove();
     t.end();

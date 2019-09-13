@@ -124,19 +124,19 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
     const sizes = {};
 
-    if (bucket.textSizeData.functionType === 'composite') {
-        const {min, max} = bucket.textSizeData.zoomRange;
+    if (bucket.textSizeData.kind === 'composite') {
+        const {minZoom, maxZoom} = bucket.textSizeData;
         sizes.compositeTextSizes = [
-            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(min)),
-            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(max))
+            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(minZoom)),
+            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(maxZoom))
         ];
     }
 
-    if (bucket.iconSizeData.functionType === 'composite') {
-        const {min, max} = bucket.iconSizeData.zoomRange;
+    if (bucket.iconSizeData.kind === 'composite') {
+        const {minZoom, maxZoom} = bucket.iconSizeData;
         sizes.compositeIconSizes = [
-            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(min)),
-            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(max))
+            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(minZoom)),
+            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(maxZoom))
         ];
     }
 
@@ -147,7 +147,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const lineHeight = layout.get('text-line-height') * ONE_EM;
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const keepUpright = layout.get('text-keep-upright');
-
 
     for (const feature of bucket.features) {
         const fontstack = layout.get('text-font').evaluate(feature, {}).join(',');
@@ -188,6 +187,16 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 layout.get('text-max-width').evaluate(feature, {}) * ONE_EM :
                 0;
 
+            const addVerticalShapingForPointLabelIfNeeded = () => {
+                if (bucket.allowVerticalPlacement && allowsVerticalWritingMode(unformattedText)) {
+                    // Vertical POI label placement is meant to be used for scripts that support vertical
+                    // writing mode, thus, default left justification is used. If Latin
+                    // scripts would need to be supported, this should take into account other justifications.
+                    shapedTextOrientations.vertical = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor,
+                                                                'left', spacingIfAllowed, textOffset, WritingMode.vertical, true);
+                }
+            };
+
             // If this layer uses text-variable-anchor, generate shapings for all justification possibilities.
             if (!textAlongLine && variableTextAnchor) {
                 const justifications = textJustify === "auto" ?
@@ -206,24 +215,32 @@ export function performSymbolLayout(bucket: SymbolBucket,
                         // If using text-variable-anchor for the layer, we use a center anchor for all shapings and apply
                         // the offsets for the anchor in the placement step.
                         const shaping = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, 'center',
-                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal);
+                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false);
                         if (shaping) {
                             shapedTextOrientations.horizontal[justification] = shaping;
                             singleLine = shaping.lineCount === 1;
                         }
                     }
                 }
+
+                addVerticalShapingForPointLabelIfNeeded();
             } else {
                 if (textJustify === "auto") {
                     textJustify = getAnchorJustification(textAnchor);
                 }
+
+                // Horizontal point or line label.
                 const shaping = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
-                                          textOffset, WritingMode.horizontal);
+                                          textOffset, WritingMode.horizontal, false);
                 if (shaping) shapedTextOrientations.horizontal[textJustify] = shaping;
 
+                // Vertical point label (if allowVerticalPlacement is enabled).
+                addVerticalShapingForPointLabelIfNeeded();
+
+                // Verticalized line label.
                 if (allowsVerticalWritingMode(unformattedText) && textAlongLine && keepUpright) {
                     shapedTextOrientations.vertical = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify,
-                                                                spacingIfAllowed, textOffset, WritingMode.vertical);
+                                                                spacingIfAllowed, textOffset, WritingMode.vertical, false);
                 }
             }
 
@@ -406,19 +423,19 @@ function addTextVertices(bucket: SymbolBucket,
                          glyphPositionMap: {[string]: {[number]: GlyphPosition}},
                          sizes: Sizes) {
     const glyphQuads = getGlyphQuads(anchor, shapedText, textOffset,
-                            layer, textAlongLine, feature, glyphPositionMap);
+                            layer, textAlongLine, feature, glyphPositionMap, bucket.allowVerticalPlacement);
 
     const sizeData = bucket.textSizeData;
     let textSizeData = null;
 
-    if (sizeData.functionType === 'source') {
+    if (sizeData.kind === 'source') {
         textSizeData = [
             SIZE_PACK_FACTOR * layer.layout.get('text-size').evaluate(feature, {})
         ];
         if (textSizeData[0] > MAX_PACKED_SIZE) {
             warnOnce(`${bucket.layerIds[0]}: Value for "text-size" is >= 256. Reduce your "text-size".`);
         }
-    } else if (sizeData.functionType === 'composite') {
+    } else if (sizeData.kind === 'composite') {
         textSizeData = [
             SIZE_PACK_FACTOR * sizes.compositeTextSizes[0].evaluate(feature, {}),
             SIZE_PACK_FACTOR * sizes.compositeTextSizes[1].evaluate(feature, {})
@@ -458,7 +475,6 @@ function getDefaultHorizontalShaping(horizontalShaping: {[TextJustify]: Shaping}
     return null;
 }
 
-
 /**
  * Add a single label & icon placement.
  *
@@ -487,7 +503,7 @@ function addSymbol(bucket: SymbolBucket,
                    sizes: Sizes) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
-    let textCollisionFeature, iconCollisionFeature;
+    let textCollisionFeature, iconCollisionFeature, verticalTextCollisionFeature;
 
     let numIconVertices = 0;
     let numHorizontalGlyphVertices = 0;
@@ -495,6 +511,13 @@ function addSymbol(bucket: SymbolBucket,
     const placedTextSymbolIndices = {};
     let key = murmur3('');
     const radialTextOffset = (layer.layout.get('text-radial-offset').evaluate(feature, {}) || 0) * ONE_EM;
+
+    if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
+        const textRotation = layer.layout.get('text-rotate').evaluate(feature, {});
+        const verticalTextRotation = textRotation + 90.0;
+        const verticalShaping = shapedTextOrientations.vertical;
+        verticalTextCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
+    }
 
     for (const justification: any in shapedTextOrientations.horizontal) {
         const shaping = shapedTextOrientations.horizontal[justification];
@@ -528,6 +551,9 @@ function addSymbol(bucket: SymbolBucket,
     const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
     const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
 
+    const verticalTextBoxStartIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
+    const verticalTextBoxEndIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
+
     if (shapedIcon) {
         const iconQuads = getIconQuads(anchor, shapedIcon, layer,
                             iconAlongLine, getDefaultHorizontalShaping(shapedTextOrientations.horizontal),
@@ -540,14 +566,14 @@ function addSymbol(bucket: SymbolBucket,
         const sizeData = bucket.iconSizeData;
         let iconSizeData = null;
 
-        if (sizeData.functionType === 'source') {
+        if (sizeData.kind === 'source') {
             iconSizeData = [
                 SIZE_PACK_FACTOR * layer.layout.get('icon-size').evaluate(feature, {})
             ];
             if (iconSizeData[0] > MAX_PACKED_SIZE) {
                 warnOnce(`${bucket.layerIds[0]}: Value for "icon-size" is >= 256. Reduce your "icon-size".`);
             }
-        } else if (sizeData.functionType === 'composite') {
+        } else if (sizeData.kind === 'composite') {
             iconSizeData = [
                 SIZE_PACK_FACTOR * sizes.compositeIconSizes[0].evaluate(feature, {}),
                 SIZE_PACK_FACTOR * sizes.compositeIconSizes[1].evaluate(feature, {})
@@ -587,6 +613,8 @@ function addSymbol(bucket: SymbolBucket,
         key,
         textBoxStartIndex,
         textBoxEndIndex,
+        verticalTextBoxStartIndex,
+        verticalTextBoxEndIndex,
         iconBoxStartIndex,
         iconBoxEndIndex,
         featureIndex,

@@ -17,7 +17,6 @@ type Rect = {
     h: number
 };
 
-
 export class ImagePosition {
     paddedRect: Rect;
     pixelRatio: number;

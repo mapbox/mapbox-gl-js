@@ -10,7 +10,6 @@ import CullFaceMode from './cull_face_mode';
 import { deepEqual } from '../util/util';
 import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, BlendEquation, CullFace, CullFaceSide, FrontFace, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY } from './value';
 
-
 import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
 import type {
     StructArray,
@@ -23,7 +22,6 @@ type ClearArgs = {
     depth?: number,
     stencil?: number
 };
-
 
 class Context {
     gl: WebGLRenderingContext;
@@ -115,7 +113,36 @@ class Context {
         if (this.extTextureHalfFloat) {
             gl.getExtension('OES_texture_half_float_linear');
         }
+    }
 
+    setDefault() {
+        this.unbindVAO();
+
+        this.clearColor.setDefault();
+        this.clearDepth.setDefault();
+        this.clearStencil.setDefault();
+        this.colorMask.setDefault();
+        this.depthMask.setDefault();
+        this.stencilMask.setDefault();
+        this.stencilFunc.setDefault();
+        this.stencilOp.setDefault();
+        this.stencilTest.setDefault();
+        this.depthRange.setDefault();
+        this.depthTest.setDefault();
+        this.depthFunc.setDefault();
+        this.blend.setDefault();
+        this.blendFunc.setDefault();
+        this.blendColor.setDefault();
+        this.blendEquation.setDefault();
+        this.cullFace.setDefault();
+        this.cullFaceSide.setDefault();
+        this.frontFace.setDefault();
+        this.program.setDefault();
+        this.activeTexture.setDefault();
+        this.bindFramebuffer.setDefault();
+        this.pixelStoreUnpack.setDefault();
+        this.pixelStoreUnpackPremultiplyAlpha.setDefault();
+        this.pixelStoreUnpackFlipY.setDefault();
     }
 
     setDirty() {

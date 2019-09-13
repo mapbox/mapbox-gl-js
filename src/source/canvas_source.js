@@ -111,6 +111,7 @@ class CanvasSource extends ImageSource {
      */
 
     load() {
+        this._loaded = true;
         if (!this.canvas) {
             this.canvas = (this.options.canvas instanceof window.HTMLCanvasElement) ?
                 this.options.canvas :
@@ -130,7 +131,10 @@ class CanvasSource extends ImageSource {
         };
 
         this.pause = function() {
-            this._playing = false;
+            if (this._playing) {
+                this.prepare();
+                this._playing = false;
+            }
         };
 
         this._finishLoading();

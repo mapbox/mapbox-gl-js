@@ -1,7 +1,8 @@
-#pragma mapbox: define highp float weight
-
 uniform highp float u_intensity;
+
 varying vec2 v_extrude;
+
+#pragma mapbox: define highp float weight
 
 // Gaussian kernel coefficient: 1 / sqrt(2 * PI)
 #define GAUSS_COEF 0.3989422804014327

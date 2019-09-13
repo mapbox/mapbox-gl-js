@@ -5,8 +5,6 @@ import Point from '@mapbox/point-geometry';
 import { mat4, vec4 } from 'gl-matrix';
 import * as symbolSize from './symbol_size';
 import { addDynamicAttributes } from '../data/bucket/symbol_bucket';
-import properties from '../style/style_layer/symbol_style_layer_properties';
-const symbolLayoutProperties = properties.layout;
 
 import type Painter from '../render/painter';
 import type Transform from '../geo/transform';
@@ -141,8 +139,7 @@ function updateLineLabels(bucket: SymbolBucket,
                           keepUpright: boolean) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
-    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom,
-        symbolLayoutProperties.properties[isText ? 'text-size' : 'icon-size']);
+    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom);
 
     const clippingBuffer = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];
 
@@ -303,7 +300,6 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
             const b = (projectedVertex.signedDistanceFromCamera > 0) ?
                 projectedVertex.point :
                 projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix);
-
 
             const orientationChange = requiresOrientationChange(symbol.writingMode, a, b, aspectRatio);
             if (orientationChange) {

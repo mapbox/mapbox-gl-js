@@ -1,0 +1,138 @@
+{
+  "positionedGlyphs": [
+    {
+      "glyph": 19977,
+      "x": -63,
+      "y": -41,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": -42,
+      "y": -41,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": -21,
+      "y": -41,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": 0,
+      "y": -41,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": 21,
+      "y": -41,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": 42,
+      "y": -41,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": -63,
+      "y": -17,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": -42,
+      "y": -17,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": -21,
+      "y": -17,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": 0,
+      "y": -17,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": 21,
+      "y": -17,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": 42,
+      "y": -17,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": -21,
+      "y": 7,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    },
+    {
+      "glyph": 19977,
+      "x": 0,
+      "y": 7,
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test",
+      "sectionIndex": 0
+    }
+  ],
+  "text": "三三​三三​三三​三三三三三三​三三",
+  "top": -36,
+  "bottom": 36,
+  "left": -63,
+  "right": 63,
+  "writingMode": 1,
+  "yOffset": -17,
+  "lineCount": 3
+}

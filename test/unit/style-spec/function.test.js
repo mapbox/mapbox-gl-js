@@ -1,7 +1,8 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { createFunction } from '../../../src/style-spec/function';
 import Color from '../../../src/style-spec/util/color';
 import Formatted from '../../../src/style-spec/expression/types/formatted';
+import { equalWithPrecision } from '../../util';
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {
@@ -38,7 +39,7 @@ test('exponential function', (t) => {
             }
         }).evaluate;
 
-        t.equalWithPrecision(f({zoom: 2}), 30 / 9, 1e-6);
+        equalWithPrecision(t, f({zoom: 2}), 30 / 9, 1e-6);
 
         t.end();
     });
@@ -52,11 +53,11 @@ test('exponential function', (t) => {
             type: 'number'
         }).evaluate;
 
-        t.equalWithPrecision(f({zoom: 0}), 2, 1e-6);
-        t.equalWithPrecision(f({zoom: 1}), 2, 1e-6);
-        t.equalWithPrecision(f({zoom: 2}), 30 / 9, 1e-6);
-        t.equalWithPrecision(f({zoom: 3}), 6, 1e-6);
-        t.equalWithPrecision(f({zoom: 4}), 6, 1e-6);
+        equalWithPrecision(t, f({zoom: 0}), 2, 1e-6);
+        equalWithPrecision(t, f({zoom: 1}), 2, 1e-6);
+        equalWithPrecision(t, f({zoom: 2}), 30 / 9, 1e-6);
+        equalWithPrecision(t, f({zoom: 3}), 6, 1e-6);
+        equalWithPrecision(t, f({zoom: 4}), 6, 1e-6);
 
         t.end();
     });
@@ -163,15 +164,15 @@ test('exponential function', (t) => {
             type: 'number'
         }).evaluate;
 
-        t.equalWithPrecision(f({zoom: 2}), 100, 1e-6);
-        t.equalWithPrecision(f({zoom: 20}), 133.9622641509434, 1e-6);
-        t.equalWithPrecision(f({zoom: 607}), 400, 1e-6);
-        t.equalWithPrecision(f({zoom: 680}), 410.7352941176471, 1e-6);
-        t.equalWithPrecision(f({zoom: 4927}), 1000, 1e-6); //86
-        t.equalWithPrecision(f({zoom: 7300}), 14779.590419993057, 1e-6);
-        t.equalWithPrecision(f({zoom: 10000}), 99125.30371398819, 1e-6);
-        t.equalWithPrecision(f({zoom: 20000}), 3360628.527166095, 1e-6);
-        t.equalWithPrecision(f({zoom: 40000}), 10000000, 1e-6);
+        equalWithPrecision(t, f({zoom: 2}), 100, 1e-6);
+        equalWithPrecision(t, f({zoom: 20}), 133.9622641509434, 1e-6);
+        equalWithPrecision(t, f({zoom: 607}), 400, 1e-6);
+        equalWithPrecision(t, f({zoom: 680}), 410.7352941176471, 1e-6);
+        equalWithPrecision(t, f({zoom: 4927}), 1000, 1e-6); //86
+        equalWithPrecision(t, f({zoom: 7300}), 14779.590419993057, 1e-6);
+        equalWithPrecision(t, f({zoom: 10000}), 99125.30371398819, 1e-6);
+        equalWithPrecision(t, f({zoom: 20000}), 3360628.527166095, 1e-6);
+        equalWithPrecision(t, f({zoom: 40000}), 10000000, 1e-6);
 
         t.end();
     });
@@ -201,9 +202,9 @@ test('exponential function', (t) => {
         }).evaluate;
 
         t.deepEqual(f({zoom: 0}), new Color(0, 0, 0, 1));
-        t.equalWithPrecision(f({zoom: 5}).r, 0, 1e-6);
-        t.equalWithPrecision(f({zoom: 5}).g, 0.444, 1e-3);
-        t.equalWithPrecision(f({zoom: 5}).b, 0.444, 1e-3);
+        equalWithPrecision(t, f({zoom: 5}).r, 0, 1e-6);
+        equalWithPrecision(t, f({zoom: 5}).g, 0.444, 1e-3);
+        equalWithPrecision(t, f({zoom: 5}).b, 0.444, 1e-3);
 
         t.end();
     });
@@ -439,7 +440,6 @@ test('exponential function', (t) => {
 
         t.end();
     });
-
 
     t.test('zoom-and-property function, no default', (t) => {
         // This can happen for fill-outline-color, where the spec has no default.
@@ -730,7 +730,6 @@ test('categorical function', (t) => {
 
         t.end();
     });
-
 
     t.test('string spec default', (t) => {
         const f = createFunction({

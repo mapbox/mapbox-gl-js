@@ -64,7 +64,9 @@ export function charAllowsIdeographicBreaking(char: number) {
 }
 
 // The following logic comes from
-// <http://www.unicode.org/Public/vertical/revision-17/VerticalOrientation-17.txt>.
+// <http://www.unicode.org/Public/12.0.0/ucd/VerticalOrientation.txt>.
+// Keep it synchronized with
+// <http://www.unicode.org/Public/UCD/latest/ucd/VerticalOrientation.txt>.
 // The data file denotes with “U” or “Tu” any codepoint that may be drawn
 // upright in vertical text but does not distinguish between upright and
 // “neutral” characters.
@@ -265,6 +267,14 @@ export function charHasNeutralVerticalOrientation(char: number) {
 export function charHasRotatedVerticalOrientation(char: number) {
     return !(charHasUprightVerticalOrientation(char) ||
              charHasNeutralVerticalOrientation(char));
+}
+
+export function charInComplexShapingScript(char: number) {
+    return isChar['Arabic'](char) ||
+           isChar['Arabic Supplement'](char) ||
+           isChar['Arabic Extended-A'](char) ||
+           isChar['Arabic Presentation Forms-A'](char) ||
+           isChar['Arabic Presentation Forms-B'](char);
 }
 
 export function charInSupportedScript(char: number, canRenderRTL: boolean) {

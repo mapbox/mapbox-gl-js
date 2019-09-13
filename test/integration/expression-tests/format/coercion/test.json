@@ -22,17 +22,20 @@
           {
             "text": "a",
             "scale": null,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           },
           {
             "text": "1",
             "scale": null,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           },
           {
             "text": "true",
             "scale": null,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           }
         ]
       }

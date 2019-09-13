@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../../util/test';
 import config from '../../../../src/util/config';
 import AttributionControl from '../../../../src/ui/control/attribution_control';
 import { createMap as globalCreateMap } from '../../../util';
@@ -118,6 +118,7 @@ test('AttributionControl has the correct edit map link', (t) => {
         map.addLayer({ id: '1', type: 'fill', source: '1' });
         map.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                t.equal(attribution._editLink.rel, 'noopener nofollow');
                 t.equal(attribution._editLink.href, 'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0', 'edit link contains map location data');
                 map.setZoom(2);
                 t.equal(attribution._editLink.href, 'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2', 'edit link updates on mapmove');
@@ -187,7 +188,6 @@ test('AttributionControl in compact mode shows custom attribution if customAttri
     t.equal(attributionControl._innerContainer.innerHTML, 'Custom string');
     t.end();
 });
-
 
 test('AttributionControl shows all custom attributions if customAttribution array of strings is provided', (t) => {
     const map = createMap(t);

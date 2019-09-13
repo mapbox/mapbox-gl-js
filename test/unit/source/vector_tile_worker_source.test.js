@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import perf from '../../../src/util/performance';
@@ -174,7 +174,6 @@ test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTil
 
     t.end();
 });
-
 
 test('VectorTileWorkerSource provides resource timing information', (t) => {
     const rawTileData = fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));

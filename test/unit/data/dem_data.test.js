@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import DEMData from '../../../src/data/dem_data';
 import { RGBAImage } from '../../../src/util/image';
 import { serialize, deserialize } from '../../../src/util/web_worker_transfer';
@@ -10,7 +10,6 @@ function createMockImage(height, width) {
     }
     return new RGBAImage({height, width}, pixels);
 }
-
 
 test('DEMData', (t) => {
     t.test('constructor', (t) => {
@@ -43,7 +42,6 @@ test('DEMData', (t) => {
 
     t.end();
 });
-
 
 test('DEMData#backfillBorder', (t) => {
     const dem0 = new DEMData(0, createMockImage(4, 4));
@@ -127,7 +125,6 @@ test('DEMData#backfillBorder', (t) => {
         dem0.backfillBorder(dem1, 1, -1);
         t.true(dem0.get(4, -1) === dem1.get(0, 3), 'backfills neighbor -1, 1');
 
-
         t.end();
     });
 
@@ -161,7 +158,6 @@ test('DEMData#backfillBorder', (t) => {
 
         t.end();
     });
-
 
     t.end();
 });

@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import fs from 'fs';
 import path from 'path';
 import Protobuf from 'pbf';
@@ -93,7 +93,6 @@ test('classifyRings + maxRings', (t) => {
         }
         return geometry;
     }
-
 
     t.test('maxRings=undefined', (t) => {
         const geometry = sortRings(classifyRings(createGeometry()));

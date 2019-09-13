@@ -1,7 +1,7 @@
 import mapboxgl from '../../src';
 import accessToken from '../lib/access_token';
-import styleLocations from '../lib/style_locations';
-
+import locationsWithTileID from '../lib/locations_with_tile_id';
+import styleBenchmarkLocations from '@mapbox/gazetteer/mapbox-streets/style-benchmark-locations.json';
 import Layout from '../benchmarks/layout';
 import LayoutDDS from '../benchmarks/layout_dds';
 import SymbolLayout from '../benchmarks/symbol_layout';
@@ -15,11 +15,13 @@ import Validate from '../benchmarks/style_validate';
 import StyleLayerCreate from '../benchmarks/style_layer_create';
 import QueryPoint from '../benchmarks/query_point';
 import QueryBox from '../benchmarks/query_box';
-import {FunctionCreate, FunctionEvaluate, FunctionConvert, ExpressionCreate, ExpressionEvaluate} from '../benchmarks/expressions';
+import {FunctionCreate, FunctionEvaluate, ExpressionCreate, ExpressionEvaluate} from '../benchmarks/expressions';
 import FilterCreate from '../benchmarks/filter_create';
 import FilterEvaluate from '../benchmarks/filter_evaluate';
 
 import getWorkerPool from '../../src/util/global_worker_pool';
+
+const styleLocations = locationsWithTileID(styleBenchmarkLocations.features);
 
 mapboxgl.accessToken = accessToken;
 
@@ -45,7 +47,6 @@ register('Validate', new Validate(style));
 register('StyleLayerCreate', new StyleLayerCreate(style));
 register('FunctionCreate', new FunctionCreate(style));
 register('FunctionEvaluate', new FunctionEvaluate(style));
-register('FunctionConvert', new FunctionConvert(style));
 register('ExpressionCreate', new ExpressionCreate(style));
 register('ExpressionEvaluate', new ExpressionEvaluate(style));
 register('WorkerTransfer', new WorkerTransfer(style));

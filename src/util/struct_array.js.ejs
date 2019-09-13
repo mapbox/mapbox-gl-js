@@ -46,7 +46,7 @@ for (const {name, member, component} of components) {
     const componentAccess = `this._structArray.${member.view}[${index}]`;
 -%>
     get <%=name%>() { return <%=componentAccess%>; }
-    set <%=name%>(x) { <%=componentAccess%> = x; }
+    set <%=name%>(x: number) { <%=componentAccess%> = x; }
 <%
 }
 // Special case used for the CollisionBoxArray type
@@ -61,7 +61,6 @@ if (hasAnchorPoint) {
 <%=StructTypeClass%>.prototype.size = <%=size%>;
 
 export type <%=StructTypeClass.replace('Struct', '')%> = <%=StructTypeClass%>;
-
 <%
 } // end 'if (includeStructAccessors)'
 -%>

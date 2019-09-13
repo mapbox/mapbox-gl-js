@@ -1,10 +1,11 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import assert from 'assert';
 import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
 import { extend } from '../../../src/util/util';
+import { RequestManager } from '../../../src/util/mapbox';
 import { Event, Evented } from '../../../src/util/evented';
 import window from '../../../src/util/window';
 import {
@@ -47,10 +48,7 @@ class StubMap extends Evented {
     constructor() {
         super();
         this.transform = new Transform();
-    }
-
-    _transformRequest(url) {
-        return { url };
+        this._requestManager = new RequestManager();
     }
 
     _getMapId() {
@@ -125,7 +123,7 @@ test('Style#loadURL', (t) => {
 
     t.test('transforms style URL before request', (t) => {
         const map = new StubMap();
-        const spy = t.spy(map, '_transformRequest');
+        const spy = t.spy(map._requestManager, 'transformRequest');
 
         const style = new Style(map);
         style.loadURL('style.json');
@@ -324,7 +322,7 @@ test('Style#loadJSON', (t) => {
         window.useFakeXMLHttpRequest();
 
         const map = new StubMap();
-        const transformSpy = t.spy(map, '_transformRequest');
+        const transformSpy = t.spy(map._requestManager, 'transformRequest');
         const style = new Style(map);
 
         style.on('style.load', () => {
@@ -2044,6 +2042,29 @@ test('Style#query*Features', (t) => {
     t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
         t.deepEqual(style.queryRenderedFeatures([{x: 0, y: 0}], {filter: 7}, transform), []);
         t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
+        t.end();
+    });
+
+    t.test('querySourceFeatures not raise validation errors if validation was disabled', (t) => {
+        let errors = 0;
+        t.stub(style, 'fire').callsFake((event) => {
+            if (event.error) {
+                console.log(event.error.message);
+                errors++;
+            }
+        });
+        style.queryRenderedFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
+        t.equals(errors, 0);
+        t.end();
+    });
+
+    t.test('querySourceFeatures not raise validation errors if validation was disabled', (t) => {
+        let errors = 0;
+        t.stub(style, 'fire').callsFake((event) => {
+            if (event.error) errors++;
+        });
+        style.querySourceFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
+        t.equals(errors, 0);
         t.end();
     });
 

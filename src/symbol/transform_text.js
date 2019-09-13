@@ -21,7 +21,6 @@ function transformText(text: string, layer: SymbolStyleLayer, feature: Feature) 
     return text;
 }
 
-
 export default function(text: Formatted, layer: SymbolStyleLayer, feature: Feature): Formatted {
     text.sections.forEach(section => {
         section.text = transformText(section.text, layer, feature);

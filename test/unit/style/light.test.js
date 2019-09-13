@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Light from '../../../src/style/light';
 import styleSpec from '../../../src/style-spec/reference/latest';
 import Color from '../../../src/style-spec/util/color';
@@ -79,7 +79,6 @@ test('Light#setLight', (t) => {
         t.deepEqual(lightSpy.args[0][2], {});
         t.end();
     });
-
 
     t.test('respects validation option', (t) => {
         const light = new Light({});

@@ -274,6 +274,8 @@ class Painter {
     }
 
     stencilModeFor3D(): StencilMode {
+        this.currentStencilSource = undefined;
+
         if (this.nextStencilID + 1 > 256) {
             this.clearStencil();
         }
@@ -434,7 +436,9 @@ class Painter {
             }
         }
 
-        this.setCustomLayerDefaults();
+        // Set defaults for most GL values so that anyone using the state after the render
+        // encounters more expected values.
+        this.context.setDefault();
     }
 
     setupOffscreenDepthRenderbuffer(): void {

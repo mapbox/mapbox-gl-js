@@ -26,6 +26,7 @@ class DragPanHandler {
     _state: 'disabled' | 'enabled' | 'pending' | 'active';
     _startPos: Point;
     _mouseDownPos: Point;
+    _prevPos: Point;
     _lastPos: Point;
     _startTouch: ?Array<Point>;
     _lastTouch: ?Array<Point>;
@@ -152,7 +153,7 @@ class DragPanHandler {
         window.addEventListener('blur', this._onBlur);
 
         this._state = 'pending';
-        this._startPos = this._mouseDownPos = this._lastPos = DOM.mousePos(this._el, e);
+        this._startPos = this._mouseDownPos = this._prevPos = this._lastPos = DOM.mousePos(this._el, e);
         this._startTouch = this._lastTouch = e.touches ? DOM.touchPos(this._el, e) : null;
         this._inertia = [[browser.now(), this._startPos]];
     }
@@ -219,11 +220,11 @@ class DragPanHandler {
         if (!this.isActive()) return; // It's possible for the dragstart event to trigger a disable() call (#2419) so we must account for that
 
         const tr = this._map.transform;
-        tr.setLocationAtPoint(tr.pointLocation(this._startPos), this._lastPos);
+        tr.setLocationAtPoint(tr.pointLocation(this._prevPos), this._lastPos);
         this._fireEvent('drag', e);
         this._fireEvent('move', e);
 
-        this._startPos = this._lastPos;
+        this._prevPos = this._lastPos;
         delete this._lastMoveEvent;
     }
 
@@ -333,6 +334,7 @@ class DragPanHandler {
         }
         delete this._lastMoveEvent;
         delete this._startPos;
+        delete this._prevPos;
         delete this._mouseDownPos;
         delete this._lastPos;
         delete this._startTouch;

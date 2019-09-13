@@ -94,7 +94,7 @@ class AttributionControl {
         const params = [
             {key: "owner", value: this.styleOwner},
             {key: "id", value: this.styleId},
-            {key: "access_token", value: config.ACCESS_TOKEN}
+            {key: "access_token", value: this._map._requestManager._customAccessToken || config.ACCESS_TOKEN}
         ];
 
         if (editLink) {
@@ -105,7 +105,7 @@ class AttributionControl {
                 return acc;
             }, `?`);
             editLink.href = `${config.FEEDBACK_URL}/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
-            editLink.rel = "noopener";
+            editLink.rel = "noopener nofollow";
         }
     }
 

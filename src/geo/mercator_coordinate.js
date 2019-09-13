@@ -4,11 +4,15 @@ import LngLat from '../geo/lng_lat';
 import type {LngLatLike} from '../geo/lng_lat';
 
 /*
+ * The circumference of the world in meters at the equator.
+ */
+const circumferenceAtEquator = 2 * Math.PI * 6378137;
+
+/*
  * The circumference of the world in meters at the given latitude.
  */
 function circumferenceAtLatitude(latitude: number) {
-    const circumference = 2 * Math.PI * 6378137;
-    return circumference * Math.cos(latitude * Math.PI / 180);
+    return circumferenceAtEquator * Math.cos(latitude * Math.PI / 180);
 }
 
 export function mercatorXfromLng(lng: number) {
@@ -34,6 +38,19 @@ export function latFromMercatorY(y: number) {
 
 export function altitudeFromMercatorZ(z: number, y: number) {
     return z * circumferenceAtLatitude(latFromMercatorY(y));
+}
+
+/**
+ * Determine the Mercator scale factor for a given latitude, see
+ * https://en.wikipedia.org/wiki/Mercator_projection#Scale_factor
+ *
+ * At the equator the scale factor will be 1, which increases at higher latitudes.
+ *
+ * @param {number} lat Latitude
+ * @returns {number} scale factor
+ */
+export function mercatorScale(lat: number) {
+    return 1 / Math.cos(lat * Math.PI / 180);
 }
 
 /**
@@ -113,6 +130,20 @@ class MercatorCoordinate {
     toAltitude() {
         return altitudeFromMercatorZ(this.z, this.y);
     }
+
+    /**
+     * Returns the distance of 1 meter in `MercatorCoordinate` units at this latitude.
+     *
+     * For coordinates in real world units using meters, this naturally provides the scale
+     * to transform into `MercatorCoordinate`s.
+     *
+     * @returns {number} Distance of 1 meter in `MercatorCoordinate` units.
+     */
+    meterInMercatorCoordinateUnits() {
+        // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude
+        return 1 / circumferenceAtEquator * mercatorScale(latFromMercatorY(this.y));
+    }
+
 }
 
 export default MercatorCoordinate;

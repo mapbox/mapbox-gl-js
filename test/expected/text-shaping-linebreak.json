@@ -6,7 +6,8 @@
       "y": -29,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     },
     {
       "glyph": 98,
@@ -14,7 +15,8 @@
       "y": -29,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     },
     {
       "glyph": 99,
@@ -22,7 +24,8 @@
       "y": -29,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     },
     {
       "glyph": 100,
@@ -30,7 +33,8 @@
       "y": -29,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     },
     {
       "glyph": 101,
@@ -38,7 +42,8 @@
       "y": -29,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     },
     {
       "glyph": 97,
@@ -46,7 +51,8 @@
       "y": -5,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     },
     {
       "glyph": 98,
@@ -54,7 +60,8 @@
       "y": -5,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     },
     {
       "glyph": 99,
@@ -62,7 +69,8 @@
       "y": -5,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     },
     {
       "glyph": 100,
@@ -70,7 +78,8 @@
       "y": -5,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     },
     {
       "glyph": 101,
@@ -78,7 +87,8 @@
       "y": -5,
       "vertical": false,
       "scale": 1,
-      "fontStack": "Test"
+      "fontStack": "Test",
+      "sectionIndex": 0
     }
   ],
   "text": "abcde abcde",
@@ -87,5 +97,6 @@
   "left": -32.5,
   "right": 32.5,
   "writingMode": 1,
+  "yOffset": -17,
   "lineCount": 2
 }

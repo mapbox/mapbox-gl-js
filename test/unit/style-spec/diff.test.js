@@ -1,7 +1,7 @@
-import { test as t } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import diffStyles from '../../../src/style-spec/diff';
 
-t('diff', (t) => {
+test('diff', (t) => {
 
     t.deepEqual(diffStyles({
         layers: [{ id: 'a' }]
@@ -18,7 +18,6 @@ t('diff', (t) => {
     }), [
         { command: 'setStyle', args: [{ version: 8, layers: [{ id: 'a' }] }] }
     ], 'version change');
-
 
     t.deepEqual(diffStyles({
         layers: [{ id: 'a' }]

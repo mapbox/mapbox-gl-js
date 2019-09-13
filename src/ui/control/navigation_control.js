@@ -8,12 +8,14 @@ import type Map from '../map';
 
 type Options = {
     showCompass?: boolean,
-    showZoom?: boolean
+    showZoom?: boolean,
+    visualizePitch?: boolean
 };
 
 const defaultOptions: Options = {
     showCompass: true,
-    showZoom: true
+    showZoom: true,
+    visualizePitch: false
 };
 
 /**
@@ -23,6 +25,7 @@ const defaultOptions: Options = {
  * @param {Object} [options]
  * @param {Boolean} [options.showCompass=true] If `true` the compass button is included.
  * @param {Boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
+ * @param {Boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating X-axis of compass.
  * @example
  * var nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');
@@ -56,19 +59,36 @@ class NavigationControl {
             bindAll([
                 '_rotateCompassArrow'
             ], this);
-            this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset bearing to north', () => this._map.resetNorth());
+            this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset bearing to north', () => {
+                if (this.options.visualizePitch) {
+                    this._map.resetNorthPitch();
+                } else {
+                    this._map.resetNorth();
+                }
+            });
             this._compassArrow = DOM.create('span', 'mapboxgl-ctrl-compass-arrow', this._compass);
         }
     }
 
     _updateZoomButtons() {
         const zoom = this._map.getZoom();
-        this._zoomInButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMaxZoom());
-        this._zoomOutButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMinZoom());
+        if (zoom === this._map.getMaxZoom()) {
+            this._zoomInButton.classList.add('mapboxgl-ctrl-icon-disabled');
+        } else {
+            this._zoomInButton.classList.remove('mapboxgl-ctrl-icon-disabled');
+        }
+        if (zoom === this._map.getMinZoom()) {
+            this._zoomOutButton.classList.add('mapboxgl-ctrl-icon-disabled');
+        } else {
+            this._zoomOutButton.classList.remove('mapboxgl-ctrl-icon-disabled');
+        }
     }
 
     _rotateCompassArrow() {
-        const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+        const rotate = this.options.visualizePitch ?
+            `scale(${1 / Math.pow(Math.cos(this._map.transform.pitch * (Math.PI / 180)), 0.5)}) rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)` :
+            `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+
         this._compassArrow.style.transform = rotate;
     }
 
@@ -79,10 +99,14 @@ class NavigationControl {
             this._updateZoomButtons();
         }
         if (this.options.showCompass) {
+            if (this.options.visualizePitch) {
+                this._map.on('pitch', this._rotateCompassArrow);
+            }
             this._map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
             this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
             DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
+            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, { passive: false });
             this._handler.enable();
         }
         return this._container;
@@ -94,8 +118,12 @@ class NavigationControl {
             this._map.off('zoom', this._updateZoomButtons);
         }
         if (this.options.showCompass) {
+            if (this.options.visualizePitch) {
+                this._map.off('pitch', this._rotateCompassArrow);
+            }
             this._map.off('rotate', this._rotateCompassArrow);
             DOM.removeEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
+            DOM.removeEventListener(this._compass, 'touchstart', this._handler.onMouseDown, { passive: false });
             this._handler.disable();
             delete this._handler;
         }

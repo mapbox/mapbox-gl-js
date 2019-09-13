@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import TileCache from '../../../src/source/tile_cache';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 
@@ -64,7 +64,6 @@ test('TileCache - expiry', (t) => {
         t.equal(removed, tileA2);
         t.end();
     });
-
 
     cache.add(idB, tileB, 0);
     cache.getAndRemove(idB);

@@ -535,9 +535,11 @@ export class DataConstantProperty<T> implements Property<T, T> {
  */
 export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
     specification: StylePropertySpecification;
+    overrides: ?Object;
 
-    constructor(specification: StylePropertySpecification) {
+    constructor(specification: StylePropertySpecification, overrides?: Object) {
         this.specification = specification;
+        this.overrides = overrides;
     }
 
     possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters): PossiblyEvaluatedPropertyValue<T> {
@@ -612,7 +614,6 @@ export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFa
             return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
         }
     }
-
 
     evaluate(value: PossiblyEvaluatedValue<?CrossFaded<T>>, globals: EvaluationParameters, feature: Feature, featureState: FeatureState): ?CrossFaded<T> {
         if (value.kind === 'source') {
@@ -716,6 +717,7 @@ export class Properties<Props: Object> {
     defaultTransitionablePropertyValues: TransitionablePropertyValues<Props>;
     defaultTransitioningPropertyValues: TransitioningPropertyValues<Props>;
     defaultPossiblyEvaluatedValues: PossiblyEvaluatedPropertyValues<Props>;
+    overridableProperties: Array<string>;
 
     constructor(properties: Props) {
         this.properties = properties;
@@ -723,9 +725,13 @@ export class Properties<Props: Object> {
         this.defaultTransitionablePropertyValues = ({}: any);
         this.defaultTransitioningPropertyValues = ({}: any);
         this.defaultPossiblyEvaluatedValues = ({}: any);
+        this.overridableProperties = ([]: any);
 
         for (const property in properties) {
             const prop = properties[property];
+            if (prop.specification.overridable) {
+                this.overridableProperties.push(property);
+            }
             const defaultPropertyValue = this.defaultPropertyValues[property] =
                 new PropertyValue(prop, undefined);
             const defaultTransitionablePropertyValue = this.defaultTransitionablePropertyValues[property] =

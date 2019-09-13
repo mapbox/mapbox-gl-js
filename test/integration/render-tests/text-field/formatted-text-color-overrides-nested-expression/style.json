@@ -37,6 +37,7 @@
       "layout": {
         "text-field": [
           "match", ["get", "case"],
+            "false", "error",
             "one", ["format", "Green", { "text-color": "green" }, "\n", {}, "Turquoise", {}],
             "default"
         ],

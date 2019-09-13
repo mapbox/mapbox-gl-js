@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Tile from '../../../src/source/tile';
 import GeoJSONWrapper from '../../../src/source/geojson_wrapper';
 import { OverscaledTileID } from '../../../src/source/tile_id';
@@ -17,7 +17,6 @@ test('querySourceFeatures', (t) => {
         geometry: [0, 0],
         tags: { oneway: true }
     }];
-
 
     t.test('geojson tile', (t) => {
         const tile = new Tile(new OverscaledTileID(3, 0, 2, 1, 2));
@@ -142,8 +141,8 @@ test('Tile#setMask', (t) => {
         const a = new OverscaledTileID(1, 0, 1, 0, 0);
         const b = new OverscaledTileID(1, 0, 1, 1, 1);
         const mask = {};
-        mask[a.id] = a;
-        mask[b.id] = b;
+        mask[a.key] = a;
+        mask[b.key] = b;
         tile.setMask(mask, context);
         t.deepEqual(tile.mask, mask);
         t.end();
@@ -159,12 +158,12 @@ test('Tile#setMask', (t) => {
         const e = new OverscaledTileID(3, 0, 3, 6, 7);
         const f = new OverscaledTileID(3, 0, 3, 7, 6);
         const mask = {};
-        mask[a.id] = a;
-        mask[b.id] = b;
-        mask[c.id] = c;
-        mask[d.id] = d;
-        mask[e.id] = e;
-        mask[f.id] = f;
+        mask[a.key] = a;
+        mask[b.key] = b;
+        mask[c.key] = c;
+        mask[d.key] = d;
+        mask[e.key] = e;
+        mask[f.key] = f;
         tile.setMask(mask, context);
         t.deepEqual(tile.mask, mask);
         t.end();

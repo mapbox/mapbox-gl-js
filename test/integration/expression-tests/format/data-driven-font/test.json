@@ -23,7 +23,8 @@
           {
             "text": "a",
             "scale": 1.5,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           }
         ]
       },
@@ -32,7 +33,8 @@
           {
             "text": "a",
             "scale": 0.5,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           }
         ]
       }

@@ -40,7 +40,6 @@ const VALIDATORS = {
     'formatted': validateFormatted
 };
 
-
 // Main recursive validation function. Tracks:
 //
 // - key: string representing location of validation in style tree. Used only

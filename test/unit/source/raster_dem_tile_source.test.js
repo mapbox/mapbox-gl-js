@@ -1,14 +1,15 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
 import window from '../../../src/util/window';
 import { OverscaledTileID } from '../../../src/source/tile_id';
+import { RequestManager } from '../../../src/util/mapbox';
 
 function createSource(options, transformCallback) {
     const source = new RasterDEMTileSource('id', options, { send() {} }, options.eventedParent);
     source.onAdd({
         transform: { angle: 0, pitch: 0, showCollisionBoxes: false },
         _getMapId: () => 1,
-        _transformRequest: transformCallback ? transformCallback : (url) => { return { url }; }
+        _requestManager: new RequestManager(transformCallback)
     });
 
     source.on('error', (e) => {
@@ -17,7 +18,6 @@ function createSource(options, transformCallback) {
 
     return source;
 }
-
 
 test('RasterTileSource', (t) => {
     t.beforeEach((callback) => {
@@ -59,7 +59,7 @@ test('RasterTileSource', (t) => {
             bounds: [-47, -7, -45, -5]
         }));
         const source = createSource({ url: "/source.json" });
-        const transformSpy = t.spy(source.map, '_transformRequest');
+        const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {

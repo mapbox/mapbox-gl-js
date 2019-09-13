@@ -1,6 +1,6 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { createMap } from '../../util';
-import simulate from 'mapbox-gl-js-test/simulate_interaction';
+import simulate, { window } from '../../util/simulate_interaction';
 
 test('Map#on adds a non-delegated event listener', (t) => {
     const map = createMap(t);
@@ -581,6 +581,22 @@ test(`Map#on mousedown does not fire subsequent click event if mouse position ch
 
     simulate.drag(canvas, {clientX: 100, clientY: 100}, {clientX: 100, clientY: 104});
     t.ok(click.notCalled);
+
+    map.remove();
+    t.end();
+});
+
+test(`Map#on click fires subsequent click event if there is no corresponding mousedown/mouseup event`, (t) => {
+    const map = createMap(t, { clickTolerance: 4 });
+
+    const click = t.spy();
+    map.on('click', click);
+    const canvas = map.getCanvas();
+
+    const MouseEvent = window(canvas).MouseEvent;
+    const event = new MouseEvent('click', {bubbles: true, clientX: 100, clientY: 100});
+    canvas.dispatchEvent(event);
+    t.ok(click.called);
 
     map.remove();
     t.end();

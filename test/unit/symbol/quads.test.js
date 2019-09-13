@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import { getIconQuads } from '../../../src/symbol/quads';
 import Anchor from '../../../src/symbol/anchor';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
@@ -37,7 +37,8 @@ test('getIconQuads', (t) => {
                 br: { x: 9, y: 7 },
                 tex: {  x: 0, y: 0, w: 17, h: 13 },
                 writingMode: null,
-                glyphOffset: [0, 0]
+                glyphOffset: [0, 0],
+                sectionIndex: 0
             }]);
         t.end();
     });
@@ -55,7 +56,8 @@ test('getIconQuads', (t) => {
                 br: { x: 9, y: 7 },
                 tex: { x: 0, y: 0, w: 17, h: 13 },
                 writingMode: null,
-                glyphOffset: [0, 0]
+                glyphOffset: [0, 0],
+                sectionIndex: 0
             }]);
         t.end();
     });

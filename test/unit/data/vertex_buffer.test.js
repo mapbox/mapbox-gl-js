@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import VertexBuffer from '../../../src/gl/vertex_buffer';
 import { StructArrayLayout3i6 } from '../../../src/data/array_types';
 import Context from '../../../src/gl/context';
@@ -50,7 +50,6 @@ test('VertexBuffer', (t) => {
         ]);
         t.end();
     });
-
 
     t.end();
 });

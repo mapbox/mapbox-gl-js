@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import Hash from '../../../src/ui/hash';
 import window from '../../../src/util/window';
 import { createMap as globalCreateMap } from '../../util';
@@ -16,7 +16,6 @@ test('hash', (t) => {
         Object.defineProperty(container, 'clientHeight', {value: 512});
         return globalCreateMap(t, {container});
     }
-
 
     t.test('#addTo', (t) => {
         const map = createMap(t);

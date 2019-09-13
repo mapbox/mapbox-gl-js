@@ -21,7 +21,7 @@ export default class CollatorExpression implements Expression {
         this.diacriticSensitive = diacriticSensitive;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
         if (args.length !== 2)
             return context.error(`Expected one argument.`);
 

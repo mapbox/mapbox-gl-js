@@ -9,7 +9,6 @@ import type {Bucket} from '../data/bucket';
 import type FeatureIndex from '../data/feature_index';
 import type {CollisionBoxArray} from '../data/array_types';
 import type DEMData from '../data/dem_data';
-import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type { StyleGlyph } from '../style/style_glyph';
 import type { StyleImage } from '../style/style_image';
 
@@ -58,7 +57,7 @@ export type WorkerDEMTileCallback = (err: ?Error, result: ?DEMData) => void;
  * the WebWorkers. In addition to providing a custom
  * {@link WorkerSource#loadTile}, any other methods attached to a `WorkerSource`
  * implementation may also be targeted by the {@link Source} via
- * `dispatcher.send('source-type.methodname', params, callback)`.
+ * `dispatcher.getActor().send('source-type.methodname', params, callback)`.
  *
  * @see {@link Map#addSourceType}
  * @private

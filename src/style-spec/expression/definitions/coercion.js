@@ -37,7 +37,7 @@ class Coercion implements Expression {
         this.args = args;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
         if (args.length < 2)
             return context.error(`Expected at least one argument.`);
 
@@ -114,7 +114,7 @@ class Coercion implements Expression {
 
     serialize() {
         if (this.type.kind === 'formatted') {
-            return new FormatExpression([{text: this.args[0], scale: null, font: null}]).serialize();
+            return new FormatExpression([{text: this.args[0], scale: null, font: null, textColor: null}]).serialize();
         }
         const serialized = [`to-${this.type.kind}`];
         this.eachChild(child => { serialized.push(child.serialize()); });

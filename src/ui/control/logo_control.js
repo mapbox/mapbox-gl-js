@@ -29,10 +29,10 @@ class LogoControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl');
         const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
         anchor.target = "_blank";
-        anchor.rel = "noopener";
+        anchor.rel = "noopener nofollow";
         anchor.href = "https://www.mapbox.com/";
         anchor.setAttribute("aria-label", "Mapbox logo");
-        anchor.setAttribute("rel", "noopener");
+        anchor.setAttribute("rel", "noopener nofollow");
         this._container.appendChild(anchor);
         this._container.style.display = 'none';
 
@@ -88,6 +88,5 @@ class LogoControl {
     }
 
 }
-
 
 export default LogoControl;

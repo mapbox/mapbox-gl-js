@@ -1,7 +1,6 @@
-import { test } from 'mapbox-gl-js-test';
+import { test } from '../../util/test';
 import updateTileMasks from '../../../src/render/tile_mask';
 import { OverscaledTileID } from '../../../src/source/tile_id';
-
 
 test('computeTileMasks', (t) => {
     class Tile {

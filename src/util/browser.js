@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 
 import window from './window';
 import type { Cancelable } from '../types/cancelable';
@@ -19,6 +19,8 @@ const cancel = window.cancelAnimationFrame ||
 
 let linkEl;
 
+let reducedMotionQuery: MediaQueryList;
+
 /**
  * @private
  */
@@ -29,7 +31,7 @@ const exported = {
      */
     now,
 
-    frame(fn: Function): Cancelable {
+    frame(fn: () => void): Cancelable {
         const frame = raf(fn);
         return { cancel: () => cancel(frame) };
     },
@@ -53,7 +55,16 @@ const exported = {
     },
 
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
-    get devicePixelRatio() { return window.devicePixelRatio; }
+
+    get devicePixelRatio() { return window.devicePixelRatio; },
+    get prefersReducedMotion(): boolean {
+        if (!window.matchMedia) return false;
+        //Lazily initialize media query
+        if (reducedMotionQuery == null) {
+            reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        }
+        return reducedMotionQuery.matches;
+    },
 };
 
 export default exported;
