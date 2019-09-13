@@ -295,7 +295,7 @@ class DragPanHandler {
             }
             this._unbind();
             this._deactivate();
-            if (e instanceof TouchEvent && e.touches.length > 1) {
+            if (e instanceof window.TouchEvent && e.touches.length > 1) {
                 // If there are multiple fingers touching, reattach touchend listener in case
                 // all but one finger is removed and we need to restart a drag on touchend
                 DOM.addEventListener(window.document, 'touchend', this._onTouchEnd);
