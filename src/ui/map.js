@@ -1361,6 +1361,7 @@ class Map extends Camera {
      * 
      * @param id The ID of the image.
      *
+     * @returns {Boolean}  A Boolean indicating whether the image exists.
      * @example
      * // Check if an image with the ID 'cat' exists in 
      * // the style's sprite.
