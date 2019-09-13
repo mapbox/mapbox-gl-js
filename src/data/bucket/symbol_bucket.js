@@ -402,7 +402,7 @@ class SymbolBucket implements Bucket {
                 // Expression evaluation will automatically coerce to Formatted
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
-                const resolvedTokens = layer.getValueAndResolveTokens('text-field', feature);
+                const resolvedTokens = layer.getValueAndResolveTokens('text-field', feature, availableImages);
                 text = transformText(resolvedTokens instanceof Formatted ?
                     resolvedTokens :
                     Formatted.fromString(resolvedTokens),

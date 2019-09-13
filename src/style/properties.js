@@ -105,7 +105,7 @@ export class PropertyValue<T, R> {
         return this.expression.kind === 'source' || this.expression.kind === 'composite';
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters, availableImages: Array<string>): R {
+    possiblyEvaluate(parameters: EvaluationParameters, availableImages?: Array<string>): R {
         return this.property.possiblyEvaluate(this, parameters, availableImages);
     }
 }
@@ -385,7 +385,7 @@ export class Layout<Props: Object> {
         return result;
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters, availableImages: Array<string>): PossiblyEvaluated<Props> {
+    possiblyEvaluate(parameters: EvaluationParameters, availableImages?: Array<string>): PossiblyEvaluated<Props> {
         const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
         for (const property of Object.keys(this._values)) {
             result._values[property] = this._values[property].possiblyEvaluate(parameters, availableImages);
@@ -453,7 +453,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
         }
     }
 
-    evaluate(feature: Feature, featureState: FeatureState, availableImages: Array<string>): T {
+    evaluate(feature: Feature, featureState: FeatureState, availableImages?: Array<string>): T {
         return this.property.evaluate(this.value, this.parameters, feature, featureState, availableImages);
     }
 }
@@ -542,7 +542,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         this.overrides = overrides;
     }
 
-    possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters, availableImages: Array<string>): PossiblyEvaluatedPropertyValue<T> {
+    possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, null, null, availableImages)}, parameters);
         } else {
@@ -577,7 +577,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         }
     }
 
-    evaluate(value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, feature: Feature, featureState: FeatureState, availableImages: Array<string>): T {
+    evaluate(value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, feature: Feature, featureState: FeatureState, availableImages?: Array<string>): T {
         if (value.kind === 'constant') {
             return value.value;
         } else {

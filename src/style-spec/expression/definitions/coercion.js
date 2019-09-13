@@ -7,6 +7,7 @@ import {Color, toString as valueToString, validateRGBA} from '../values';
 import RuntimeError from '../runtime_error';
 import Formatted from '../types/formatted';
 import FormatExpression from '../definitions/format';
+import ImageExpression from '../definitions/image';
 import Image from '../types/image';
 
 import type {Expression} from '../expression';

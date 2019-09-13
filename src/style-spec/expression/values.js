@@ -39,13 +39,13 @@ export function isValue(mixed: mixed): boolean {
         return true;
     } else if (typeof mixed === 'number') {
         return true;
-    } else if (typeof mixed === 'image') {
-        return true;
     } else if (mixed instanceof Color) {
         return true;
     } else if (mixed instanceof Collator) {
         return true;
     } else if (mixed instanceof Formatted) {
+        return true;
+    } else if (mixed instanceof Image) {
         return true;
     } else if (Array.isArray(mixed)) {
         for (const item of mixed) {
@@ -75,14 +75,14 @@ export function typeOf(value: Value): Type {
         return BooleanType;
     } else if (typeof value === 'number') {
         return NumberType;
-    } else if (typeof value === 'image') {
-        return ImageType;
     } else if (value instanceof Color) {
         return ColorType;
     } else if (value instanceof Collator) {
         return CollatorType;
     } else if (value instanceof Formatted) {
         return FormattedType;
+    } else if (value instanceof Image) {
+        return ImageType;
     } else if (Array.isArray(value)) {
         const length = value.length;
         let itemType: ?Type;

@@ -1,8 +1,6 @@
 // @flow
 
-import { ValueType, ImageType, StringType } from '../types';
-import Image from '../types/image';
-import { toString } from '../values';
+import { ImageType, StringType } from '../types';
 
 import type { Expression } from '../expression';
 import type EvaluationContext from '../evaluation_context';

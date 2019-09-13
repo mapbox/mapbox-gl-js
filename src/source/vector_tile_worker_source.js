@@ -168,7 +168,7 @@ class VectorTileWorkerSource implements WorkerSource {
             } else if (workerTile.status === 'done') {
                 // if there was no vector tile data on the initial load, don't try and re-parse tile
                 if (workerTile.vectorTile) {
-                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done);
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, done);
                 } else {
                     done();
                 }

@@ -137,11 +137,11 @@ export class ZoomConstantExpression<Kind: EvaluationKind> {
         this.isStateDependent = kind !== ('constant': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages: Array<string>, formattedSection?: FormattedSection): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, availableImages, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages: Array<string>, formattedSection?: FormattedSection): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
         return this._styleExpression.evaluate(globals, feature, featureState, availableImages, formattedSection);
     }
 }
