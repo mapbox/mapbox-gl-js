@@ -4,7 +4,6 @@ import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from '../../../util/simulate_interaction';
 
-
 function createMap(t, clickTolerance) {
     t.stub(Map.prototype, '_detectMissingCSS');
     return new Map({ container: DOM.create('div', '', window.document.body), clickTolerance: clickTolerance || 0 });
@@ -776,7 +775,6 @@ test('DragPanHandler does not begin a touch drag on multi-finger touch event if 
     t.end();
 });
 
-
 test('DragPanHandler starts a drag on a multi-finger no-zoom touch, and continues if it becomes a single-finger touch', (t) => {
     const map = createMap(t);
 
@@ -898,7 +896,6 @@ test('DragPanHandler stops/starts touch-triggered drag appropriately when transi
     map.remove();
     t.end();
 });
-
 
 test('DragPanHandler fires dragstart, drag, dragend events in response to multi-touch pan', (t) => {
     const map = createMap(t);
