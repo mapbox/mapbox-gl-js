@@ -1179,7 +1179,7 @@ class Map extends Camera {
      * @param {string} id The ID of the source to be checked.
      * @returns {boolean} A Boolean indicating whether the source is loaded.
      * @example
-     * map.isSourceLoaded('bathymetry-data');
+     * var sourceLoaded = map.isSourceLoaded('bathymetry-data');
      */
     isSourceLoaded(id: string) {
         const source = this.style && this.style.sourceCaches[id];
@@ -1196,7 +1196,7 @@ class Map extends Camera {
      *
      * @returns {boolean} A Boolean indicating whether all tiles are loaded.
      * @example
-     * map.areTilesLoaded();
+     * var tilesLoaded = map.areTilesLoaded();
      */
 
     areTilesLoaded() {
@@ -1230,7 +1230,7 @@ class Map extends Camera {
      * @param {string} id The ID of the source to remove.
      * @returns {Map} `this`
      * @example
-     * map.removeSource('bathymetry-data')
+     * map.removeSource('bathymetry-data');
      */
     removeSource(id: string) {
         this.style.removeSource(id);
