@@ -1268,7 +1268,7 @@ class Map extends Camera {
      * @param options
      * @param options.pixelRatio The ratio of pixels in the image to physical pixels on the screen
      * @param options.sdf Whether the image should be interpreted as an SDF image
-     * 
+     *
      * @example
      * // If the style's sprite does not already contain an image with ID 'cat',
      * // add the image 'cat-icon.png' to the style's sprite with the ID 'cat'.
@@ -1315,13 +1315,13 @@ class Map extends Camera {
      * [`background-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-background-background-pattern),
      * [`fill-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-fill-fill-pattern),
      * or [`line-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-line-line-pattern).
-     * 
+     *
      * @param id The ID of the image.
      * @param image The image as an `HTMLImageElement`, `ImageData`, or object with `width`, `height`, and `data`
      * properties with the same format as `ImageData`.
      *
      * @example
-     * // If an image with the ID 'cat' already exists in the style's sprite, 
+     * // If an image with the ID 'cat' already exists in the style's sprite,
      * // replace that image with a new image, 'other-cat-icon.png'.
      * if (map.hasImage('cat')) map.updateImage('cat', './other-cat-icon.png');
      */
@@ -1358,12 +1358,12 @@ class Map extends Camera {
      * Check whether or not an image with a specific ID exists in the style. This checks both images
      * in the style's original [sprite](https://docs.mapbox.com/help/glossary/sprite/) and any images
      * that have been added at runtime using {@link addImage}.
-     * 
+     *
      * @param id The ID of the image.
      *
-     * @returns {Boolean}  A Boolean indicating whether the image exists.
+     * @returns {boolean}  A Boolean indicating whether the image exists.
      * @example
-     * // Check if an image with the ID 'cat' exists in 
+     * // Check if an image with the ID 'cat' exists in
      * // the style's sprite.
      * var catIconExists = map.hasImage('cat');
      */
@@ -1382,9 +1382,9 @@ class Map extends Camera {
      * that have been added at runtime using {@link addImage}.
      *
      * @param id The ID of the image.
-     * 
+     *
      * @example
-     * // If an image with the ID 'cat' exists in 
+     * // If an image with the ID 'cat' exists in
      * // the style's sprite, remove it.
      * if (map.hasImage('cat')) map.removeImage('cat');
      */
@@ -1406,7 +1406,7 @@ class Map extends Camera {
      *   // Add the loaded image to the style's sprite with the ID 'kitten'.
      *   map.addImage('kitten', image);
      * });
-     * 
+     *
      * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url: string, callback: Function) {
@@ -1422,7 +1422,7 @@ class Map extends Camera {
     *
     * @example
     * var allImages = map.listImages();
-    * 
+    *
     */
     listImages() {
         return this.style.listImages();
