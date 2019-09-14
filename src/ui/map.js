@@ -1429,16 +1429,37 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a [Mapbox style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
+     * Adds a [Mapbox style layer](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers)
      * to the map's style.
      *
-     * A layer defines styling for data from a specified source.
+     * A layer defines how data from a specified source will be styled. Read more about layer types
+     * and available paint and layout properties in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
      *
      * @param {Object | CustomLayerInterface} layer The style layer to add, conforming to the Mapbox Style Specification's
-     *   [layer definition](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
+     *   [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
      * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
+     *
      * @returns {Map} `this`
+     *
+     * @example
+     * // Add a circle layer with a vector source.
+     * map.addLayer({
+     *   id: 'points-of-interest',
+     *   source: {
+     *     type: 'vector',
+     *     url: 'mapbox://mapbox.mapbox-streets-v8'
+     *   },
+     *   'source-layer': 'poi_label',
+     *   type: 'circle',
+     *   paint: {
+     *     // Mapbox Style Specification paint properties
+     *   },
+     *   layout: {
+     *     // Mapbox Style Specification layout properties
+     *   }
+     * });
+     *
      * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
      * @see [Add a vector tile source](https://www.mapbox.com/mapbox-gl-js/example/vector-source/)
      * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
@@ -1455,6 +1476,10 @@ class Map extends Camera {
      * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
      * @returns {Map} `this`
+     *
+     * @example
+     * // Move a layer with ID 'label' before the layer with ID 'waterways'.
+     * map.moveLayer('label', 'waterways');
      */
     moveLayer(id: string, beforeId?: string) {
         this.style.moveLayer(id, beforeId);
@@ -1462,12 +1487,16 @@ class Map extends Camera {
     }
 
     /**
-     * Removes the layer with the given id from the map's style.
+     * Removes the layer with the given ID from the map's style.
      *
      * If no such layer exists, an `error` event is fired.
      *
      * @param {string} id id of the layer to remove
      * @fires error
+     *
+     * @example
+     * // If a layer with ID 'state-data' exists, remove it.
+     * if (map.getLayer('state-data')) map.removeLayer('state-data');
      */
     removeLayer(id: string) {
         this.style.removeLayer(id);
@@ -1480,11 +1509,40 @@ class Map extends Camera {
      * @param {string} id The ID of the layer to get.
      * @returns {?Object} The layer with the specified ID, or `undefined`
      *   if the ID corresponds to no existing layers.
+     *
+     * @example
+     * var stateDataLayer = map.getLayer('state-data');
+     *
      * @see [Filter symbols by toggling a list](https://www.mapbox.com/mapbox-gl-js/example/filter-markers/)
      * @see [Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
     getLayer(id: string) {
         return this.style.getLayer(id);
+    }
+
+    /**
+     * Sets the zoom extent for the specified style layer. The zoom extent includes the
+     * [minimum zoom level](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-minzoom)
+     * and [maximum zoom level](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-maxzoom))
+     * at which the layer will be rendered.
+     *
+     * Note: For style layers using vector sources, style layers cannot be rendered at zoom levels lower than the
+     * minimum zoom level of the _source layer_ because the data does not exist at that zoom level. If the minimum
+     * zoom level of the source layer is higher than the minimum zoom level defined in the style layer, the style
+     * layer will not be rendered at all zoom levels in the zoom range.
+     *
+     * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
+     * @param {number} minzoom The minimum zoom to set (0-24).
+     * @param {number} maxzoom The maximum zoom to set (0-24).
+     * @returns {Map} `this`
+     *
+     * @example
+     * map.setLayerZoomRange('my-layer', 2, 5);
+     *
+     */
+    setLayerZoomRange(layerId: string, minzoom: number, maxzoom: number) {
+        this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
+        return this._update(true);
     }
 
     /**
@@ -1499,27 +1557,13 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
+     *
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this.style.setFilter(layerId, filter, options);
-        return this._update(true);
-    }
-
-    /**
-     * Sets the zoom extent for the specified style layer.
-     *
-     * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
-     * @param {number} minzoom The minimum zoom to set (0-24).
-     * @param {number} maxzoom The maximum zoom to set (0-24).
-     * @returns {Map} `this`
-     * @example
-     * map.setLayerZoomRange('my-layer', 2, 5);
-     */
-    setLayerZoomRange(layerId: string, minzoom: number, maxzoom: number) {
-        this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
         return this._update(true);
     }
 
