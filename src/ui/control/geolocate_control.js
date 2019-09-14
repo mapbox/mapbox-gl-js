@@ -156,6 +156,7 @@ class GeolocateControl extends Evented {
             this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
 
             this.fire(new Event('outofmaxbounds', position));
+            this._updateMarker()
             this._finish();
             
             return;
