@@ -463,6 +463,7 @@ function addTextVertices(bucket: SymbolBucket,
                          placementTypes: Array<'vertical' | 'center' | 'left' | 'right'>,
                          placedTextSymbolIndices: {[string]: number},
                          glyphPositionMap: {[string]: {[number]: GlyphPosition}},
+                         placedIconIndex: number,
                          sizes: Sizes) {
     const glyphQuads = getGlyphQuads(anchor, shapedText, textOffset,
                             layer, textAlongLine, feature, glyphPositionMap, bucket.allowVerticalPlacement);
@@ -497,7 +498,8 @@ function addTextVertices(bucket: SymbolBucket,
         writingMode,
         anchor,
         lineArray.lineStartIndex,
-        lineArray.lineLength);
+        lineArray.lineLength,
+        placedIconIndex);
 
     // The placedSymbolArray is used at render time in drawTileSymbols
     // These indices allow access to the array at collision detection time
@@ -550,6 +552,7 @@ function addSymbol(bucket: SymbolBucket,
     let numIconVertices = 0;
     let numHorizontalGlyphVertices = 0;
     let numVerticalGlyphVertices = 0;
+    let placedIconSymbolIndex = -1;
     const placedTextSymbolIndices = {};
     let key = murmur3('');
 
@@ -569,41 +572,10 @@ function addSymbol(bucket: SymbolBucket,
         verticalTextCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
     }
 
-    for (const justification: any in shapedTextOrientations.horizontal) {
-        const shaping = shapedTextOrientations.horizontal[justification];
-
-        if (!textCollisionFeature) {
-            key = murmur3(shaping.text);
-            const textRotate = layer.layout.get('text-rotate').evaluate(feature, {});
-            // As a collision approximation, we can use either the vertical or any of the horizontal versions of the feature
-            // We're counting on all versions having similar dimensions
-            textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, textRotate);
-        }
-
-        const singleLine = shaping.lineCount === 1;
-        numHorizontalGlyphVertices += addTextVertices(
-            bucket, anchor, shaping, layer, textAlongLine, feature, textOffset, lineArray,
-            shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly,
-            singleLine ? (Object.keys(shapedTextOrientations.horizontal): any) : [justification],
-            placedTextSymbolIndices, glyphPositionMap, sizes);
-
-        if (singleLine) {
-            break;
-        }
-    }
-
-    if (shapedTextOrientations.vertical) {
-        numVerticalGlyphVertices += addTextVertices(
-            bucket, anchor, shapedTextOrientations.vertical, layer, textAlongLine, feature,
-            textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, glyphPositionMap, sizes);
-    }
-
-    const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
-    const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
-
-    const verticalTextBoxStartIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
-    const verticalTextBoxEndIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
-
+    //Place icon first, so text can have a reference it its index in the placed symbol array.
+    //Text symbols can lazily shift at render-time because of variable anchor placement.
+    //If the style specifies an `icon-text-fit` then the icon would have to shift along with it.
+    // For more info check `updateVariableAnchors` in `draw_symbol.js` .
     if (shapedIcon) {
         const iconQuads = getIconQuads(anchor, shapedIcon, layer,
                             iconAlongLine, getDefaultHorizontalShaping(shapedTextOrientations.horizontal),
@@ -643,8 +615,47 @@ function addSymbol(bucket: SymbolBucket,
             false,
             anchor,
             lineArray.lineStartIndex,
-            lineArray.lineLength);
+            lineArray.lineLength,
+            // The icon itself does not have an associated symbol since the text isnt placed yet
+            -1);
+
+        placedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
     }
+
+    for (const justification: any in shapedTextOrientations.horizontal) {
+        const shaping = shapedTextOrientations.horizontal[justification];
+
+        if (!textCollisionFeature) {
+            key = murmur3(shaping.text);
+            const textRotate = layer.layout.get('text-rotate').evaluate(feature, {});
+            // As a collision approximation, we can use either the vertical or any of the horizontal versions of the feature
+            // We're counting on all versions having similar dimensions
+            textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, textRotate);
+        }
+
+        const singleLine = shaping.lineCount === 1;
+        numHorizontalGlyphVertices += addTextVertices(
+            bucket, anchor, shaping, layer, textAlongLine, feature, textOffset, lineArray,
+            shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly,
+            singleLine ? (Object.keys(shapedTextOrientations.horizontal): any) : [justification],
+            placedTextSymbolIndices, glyphPositionMap, placedIconSymbolIndex, sizes);
+
+        if (singleLine) {
+            break;
+        }
+    }
+
+    if (shapedTextOrientations.vertical) {
+        numVerticalGlyphVertices += addTextVertices(
+            bucket, anchor, shapedTextOrientations.vertical, layer, textAlongLine, feature,
+            textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, glyphPositionMap, placedIconSymbolIndex, sizes);
+    }
+
+    const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
+    const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
+
+    const verticalTextBoxStartIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
+    const verticalTextBoxEndIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
 
     const iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
     const iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
@@ -660,6 +671,7 @@ function addSymbol(bucket: SymbolBucket,
         placedTextSymbolIndices.center >= 0 ? placedTextSymbolIndices.center : -1,
         placedTextSymbolIndices.left >= 0 ? placedTextSymbolIndices.left : -1,
         placedTextSymbolIndices.vertical || -1,
+        placedIconSymbolIndex,
         key,
         textBoxStartIndex,
         textBoxEndIndex,

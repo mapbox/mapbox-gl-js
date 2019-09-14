@@ -547,7 +547,8 @@ class SymbolBucket implements Bucket {
                writingMode: any,
                labelAnchor: Anchor,
                lineStartIndex: number,
-               lineLength: number) {
+               lineLength: number,
+               associatedIconIndex: number) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
@@ -627,7 +628,9 @@ class SymbolBucket implements Bucket {
             0,
             (false: any),
             // The crossTileID is only filled/used on the foreground for dynamic text anchors
-            0);
+            0,
+            associatedIconIndex
+        );
     }
 
     _addCollisionDebugVertex(layoutVertexArray: StructArray, collisionVertexArray: StructArray, point: Point, anchorX: number, anchorY: number, extrude: Point) {
