@@ -73,7 +73,8 @@ export const placement = createLayout([
     {type: 'Uint8', name: 'writingMode'},
     {type: 'Uint8', name: 'placedOrientation'},
     {type: 'Uint8', name: 'hidden'},
-    {type: 'Uint32', name: 'crossTileID'}
+    {type: 'Uint32', name: 'crossTileID'},
+    {type: 'Int16', name: 'associatedIconIndex'}
 ]);
 
 export const symbolInstance = createLayout([
@@ -83,6 +84,7 @@ export const symbolInstance = createLayout([
     {type: 'Int16', name: 'centerJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'leftJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'verticalPlacedTextSymbolIndex'},
+    {type: 'Int16', name: 'placedIconSymbolIndex'},
     {type: 'Uint16', name: 'key'},
     {type: 'Uint16', name: 'textBoxStartIndex'},
     {type: 'Uint16', name: 'textBoxEndIndex'},
