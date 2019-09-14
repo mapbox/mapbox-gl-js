@@ -48,6 +48,27 @@ test('GeolocateControl error event', (t) => {
     geolocation.sendError({code: 2, message: 'error message'});
 });
 
+test('GeolocateControl outofmaxbounds event', (t) => {
+    t.plan(4);
+
+    const map = createMap(t);
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+    map.setMaxBounds([[0, 0], [10, 10]]);
+
+    const click = new window.Event('click');
+
+    geolocate.on('outofmaxbounds', (position) => {
+        t.equal(position.coords.latitude, 10, 'geolocate position latitude');
+        t.equal(position.coords.longitude, 20, 'geolocate position longitude');
+        t.equal(position.coords.accuracy, 3, 'geolocate position accuracy');
+        t.equal(position.timestamp, 4, 'geolocate timestamp');
+        t.end();
+    });
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 3, timestamp: 4});
+});
+
 test('GeolocateControl geolocate event', (t) => {
     t.plan(4);
 
