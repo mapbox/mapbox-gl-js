@@ -149,11 +149,37 @@ class GeolocateControl extends Evented {
         );
     }
 
-    _onSuccess(position: Position) {
-        if (this._isOutOfMapMaxBounds(position)) {
+    _goToErrorState() {
+        switch (this._watchState) {
+        case 'WAITING_ACTIVE':
             this._watchState = 'ACTIVE_ERROR';
             this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
             this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
+            break;
+        case 'ACTIVE_LOCK':
+            this._watchState = 'ACTIVE_ERROR';
+            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+            // turn marker grey
+            break;
+        case 'BACKGROUND':
+            this._watchState = 'BACKGROUND_ERROR';
+            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background-error');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+            // turn marker grey
+            break;
+        case 'ACTIVE_ERROR':
+            break;
+        default:
+            assert(false, `Unexpected watchState ${this._watchState}`);
+        }
+    }
+
+    _onSuccess(position: Position) {
+        if (this._isOutOfMapMaxBounds(position)) {
+            this._goToErrorState();
 
             this.fire(new Event('outofmaxbounds', position));
             this._updateMarker();
@@ -242,31 +268,7 @@ class GeolocateControl extends Evented {
                     this._clearWatch();
                 }
             } else {
-                switch (this._watchState) {
-                case 'WAITING_ACTIVE':
-                    this._watchState = 'ACTIVE_ERROR';
-                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
-                    break;
-                case 'ACTIVE_LOCK':
-                    this._watchState = 'ACTIVE_ERROR';
-                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
-                    // turn marker grey
-                    break;
-                case 'BACKGROUND':
-                    this._watchState = 'BACKGROUND_ERROR';
-                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background-error');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
-                    // turn marker grey
-                    break;
-                case 'ACTIVE_ERROR':
-                    break;
-                default:
-                    assert(false, `Unexpected watchState ${this._watchState}`);
-                }
+                this._goToErrorState();
             }
         }
 
