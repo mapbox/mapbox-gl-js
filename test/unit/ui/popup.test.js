@@ -531,6 +531,30 @@ test('Pointer-tracked popup is tagged with right class', (t) => {
     t.end();
 });
 
+test('Pointer-tracked popup with content set later is tagged with right class ', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .trackPointer()
+        .addTo(map);
+
+    popup.setText("Test");
+
+    t.equal(popup._container.classList.value.includes('mapboxgl-popup-track-pointer'), true);
+    t.end();
+});
+
+test('Pointer-tracked popup that is set afterwards is tagged with right class ', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .addTo(map);
+
+    popup.setText("Test");
+    popup.trackPointer();
+
+    t.equal(popup._container.classList.value.includes('mapboxgl-popup-track-pointer'), true);
+    t.end();
+});
+
 test('Pointer-tracked popup can be repositioned with setLngLat', (t) => {
     const map = createMap(t);
     const popup = new Popup()
@@ -540,6 +564,7 @@ test('Pointer-tracked popup can be repositioned with setLngLat', (t) => {
         .addTo(map);
 
     t.deepEqual(popup._pos, map.project([0, 0]));
+    t.equal(popup._container.classList.value.includes('mapboxgl-popup-track-pointer'), false);
     t.end();
 });
 
