@@ -146,7 +146,7 @@ class GeolocateControl extends Evented {
             coordinates.longitude > bounds.getEast() ||
             coordinates.latitude < bounds.getSouth() ||
             coordinates.latitude > bounds.getNorth()
-        )
+        );
     }
 
     _onSuccess(position: Position) {
@@ -156,9 +156,9 @@ class GeolocateControl extends Evented {
             this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
 
             this.fire(new Event('outofmaxbounds', position));
-            this._updateMarker()
+            this._updateMarker();
             this._finish();
-            
+
             return;
         }
 
