@@ -41,6 +41,7 @@
             "one", ["format", "Green", { "text-color": "green" }, "\n", {}, "Turquoise", {}],
             "default"
         ],
+        "text-offset": [0, -1.4],
         "text-font": [
           "Open Sans Semibold",
           "Arial Unicode MS Bold"
@@ -49,6 +50,32 @@
       },
       "paint": {
         "text-color": "turquoise"
+      }
+    },
+    {
+      "id": "text-case",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-size": 12,
+        "text-offset": [0, 1.4],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-field": [
+          "case", ["!=", ["get", "case"], "one"],
+          [
+            "case", ["==", ["get", "case"], "one"],
+              "",
+              ["format", "Should", { "text-color": "red" }, "Not", {}, "See", {}]
+          ],
+          [
+            "case", ["==", ["get", "case"], "two"],
+              "",
+              ["format", "Red", { "text-color": "red" }, "\n", {}, "Black", {}]
+          ]
+        ]
       }
     }
   ]
