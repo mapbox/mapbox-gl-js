@@ -143,7 +143,7 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
                 addDynamicAttributes(dynamicTextLayoutVertexArray, shiftedAnchor, angle);
             }
             if (updateTextFitIcon && symbol.associatedIconIndex >= 0) {
-                placedTextShifts[symbol.associatedIconIndex] = {index: s, shiftedAnchor};
+                placedTextShifts[symbol.associatedIconIndex] = shiftedAnchor;
             }
         }
     }
@@ -154,15 +154,14 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
         for (let i = 0; i < placedIcons.length; i++) {
             const placedIcon = placedIcons.get(i);
             if (placedIcon.hidden || (!placedIcon.placedOrientation && bucket.allowVerticalPlacement)) {
-                symbolProjection.hideGlyphs(placedIcon.numGlyphs, bucket.icon.dynamicLayoutVertexArray);
+                symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
             } else {
-                const placedShift = placedTextShifts[i];
-                if (!placedShift) {
-                    symbolProjection.hideGlyphs(placedIcon.numGlyphs, bucket.icon.dynamicLayoutVertexArray);
+                const shiftedAnchor = placedTextShifts[i];
+                if (!shiftedAnchor) {
+                    symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
                 } else {
-                    const {index, shiftedAnchor} = placedShift;
                     for (let g = 0; g < placedIcon.numGlyphs; g++) {
-                        addDynamicAttributes(bucket.icon.dynamicLayoutVertexArray, shiftedAnchor, 0);
+                        addDynamicAttributes(dynamicIconLayoutVertexArray, shiftedAnchor, 0);
                     }
                 }
             }
@@ -278,7 +277,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         }
 
         const matrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),
-            uLabelPlaneMatrix = (alongLine || (isText && variablePlacement)) ? identityMat4 : labelPlaneMatrix,
+            uLabelPlaneMatrix = (alongLine || variablePlacement) ? identityMat4 : labelPlaneMatrix,
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
 
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;
