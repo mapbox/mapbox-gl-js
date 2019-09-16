@@ -1,5 +1,6 @@
 // @flow
 
+import assert from 'assert';
 import {
     charHasUprightVerticalOrientation,
     charAllowsIdeographicBreaking,
@@ -11,9 +12,7 @@ import ONE_EM from './one_em';
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {ImagePosition} from '../render/image_atlas';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import Formatted from '../style-spec/expression/types/formatted';
-import type {Feature} from '../style-spec/expression';
 
 const WritingMode = {
     horizontal: 1,
@@ -21,7 +20,7 @@ const WritingMode = {
     horizontalOnly: 3
 };
 
-export {shapeText, shapeIcon, getAnchorAlignment, WritingMode};
+export {shapeText, shapeIcon, fitIconToText, getAnchorAlignment, WritingMode};
 
 // The position of a glyph relative to the text's anchor point.
 export type PositionedGlyph = {
@@ -573,63 +572,56 @@ export type PositionedIcon = {
     right: number
 };
 
-function shapeIcon(image: ImagePosition,
-                   layout: $PropertyType<SymbolStyleLayer, 'layout'>,
-                   shapedText: Shaping | null,
-                   feature: Feature) : PositionedIcon {
-    const textFit = layout.get('icon-text-fit');
-    const stretchWidth : boolean = textFit === 'width' || textFit === 'both';
-    const stretchHeight : boolean = textFit === 'height' || textFit === 'both';
+function shapeIcon(image: ImagePosition, iconOffset: [number, number], iconAnchor: SymbolAnchor): PositionedIcon {
+    const {horizontalAlign, verticalAlign} = getAnchorAlignment(iconAnchor);
+    const dx = iconOffset[0];
+    const dy = iconOffset[1];
+    const x1 = dx - image.displaySize[0] * horizontalAlign;
+    const x2 = x1 + image.displaySize[0];
+    const y1 = dy - image.displaySize[1] * verticalAlign;
+    const y2 = y1 + image.displaySize[1];
+    return {image, top: y1, bottom: y2, left: x1, right: x2};
+}
+
+function fitIconToText(shapedIcon: PositionedIcon, shapedText: Shaping,
+                       textFit: string,
+                       padding: [ number, number, number, number ],
+                       iconOffset: [ number, number ], fontScale: number): PositionedIcon {
+    assert(textFit !== 'none');
+    assert(Array.isArray(padding) && padding.length === 4);
+    assert(Array.isArray(iconOffset) && iconOffset.length === 2);
+
+    const image = shapedIcon.image;
+
+    // We don't respect the icon-anchor, because icon-text-fit is set. Instead,
+    // the icon will be centered on the text, then stretched in the given
+    // dimensions.
+
+    const textLeft = shapedText.left * fontScale;
+    const textRight = shapedText.right * fontScale;
 
     let top, right, bottom, left;
-    if (shapedText && (stretchWidth || stretchHeight)) {
-        // We don't respect the icon-anchor, because icon-text-fit is set. Instead, the icon will be
-        // centered on the text, then stretched in the given dimensions.
-        const size = layout.get('text-size').evaluate(feature, {}) / 24;
-        const padding = layout.get('icon-text-fit-padding');
-
-        const textLeft = shapedText.left * size;
-        const textRight = shapedText.right * size;
-        if (stretchWidth) {
-            // Stretched horizontally to the text width
-            left = textLeft - padding[3];
-            right = textRight + padding[1];
-        } else {
-            // Centered on the text
-            left = (textLeft + textRight - image.displaySize[0]) / 2;
-            right = left + image.displaySize[0];
-        }
-
-        const textTop = shapedText.top * size;
-        const textBottom = shapedText.bottom * size;
-        if (stretchHeight) {
-            // Stretched vertically to the text height
-            top = textTop - padding[0];
-            bottom = textBottom + padding[2];
-        } else {
-            // Centered on the text
-            top = (textTop + textBottom - image.displaySize[1]) / 2;
-            bottom = top + image.displaySize[1];
-        }
+    if (textFit === 'width' || textFit === 'both') {
+        // Stretched horizontally to the text width
+        left = iconOffset[0] + textLeft - padding[3];
+        right = iconOffset[0] + textRight + padding[1];
     } else {
-        // No icon-text-fit. We're going to respect the icon-anchor alignment.
-        const iconAnchor = layout.get('icon-anchor').evaluate(feature, {});
-        const { horizontalAlign, verticalAlign } = getAnchorAlignment(iconAnchor);
-
-        left = -image.displaySize[0] * horizontalAlign;
+        // Centered on the text
+        left = iconOffset[0] + (textLeft + textRight - image.displaySize[0]) / 2;
         right = left + image.displaySize[0];
-        top = -image.displaySize[1] * verticalAlign;
+    }
+
+    const textTop = shapedText.top * fontScale;
+    const textBottom = shapedText.bottom * fontScale;
+    if (textFit === 'height' || textFit === 'both') {
+        // Stretched vertically to the text height
+        top = iconOffset[1] + textTop - padding[0];
+        bottom = iconOffset[1] + textBottom + padding[2];
+    } else {
+        // Centered on the text
+        top = iconOffset[1] + (textTop + textBottom - image.displaySize[1]) / 2;
         bottom = top + image.displaySize[1];
     }
 
-    // Finally, apply the icon offset in all cases.
-    const [offsetX, offsetY] = layout.get('icon-offset').evaluate(feature, {});
-
-    return {
-        image,
-        top: top + offsetY,
-        right: right + offsetX,
-        bottom: bottom + offsetY,
-        left: left + offsetX
-    };
+    return {image, top, right, bottom, left};
 }
