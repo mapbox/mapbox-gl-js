@@ -333,7 +333,7 @@ export default class Popup extends Evented {
     }
 
     /**
-     * Adds class to container element
+     * Adds class to container element. Wrapper around ClassList.add
      *
      * @param {...string} classNames non empty string
      *
@@ -346,7 +346,7 @@ export default class Popup extends Evented {
     }
 
     /**
-     * Removes class from container element
+     * Removes class from container element. Wrapper around ClassList.remove
      *
      * @param {...string} classNames non empty string
      *
@@ -359,7 +359,7 @@ export default class Popup extends Evented {
     }
 
     /**
-     * When only one argument is present toggle the class value
+     * When only one argument is present toggle the class value. Wrapper around ClassList.toggle
      *
      * @param {string} className non empty string
      * @param {boolean} [force] force add or remove class. Removes class if false, adds class if true
