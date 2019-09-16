@@ -44,21 +44,19 @@ export type SymbolQuad = {
  * Create the quads used for rendering an icon.
  * @private
  */
-export function getIconQuads(anchor: Anchor,
+export function getIconQuads(
                       shapedIcon: PositionedIcon,
-                      layer: SymbolStyleLayer,
-                      alongLine: boolean,
-                      shapedText: Shaping | null,
-                      feature: Feature): Array<SymbolQuad> {
+                      iconRotate: number): Array<SymbolQuad> {
     const image = shapedIcon.image;
-    const layout = layer.layout;
 
     // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
     // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
     // on one edge in some cases.
     const border = 1;
 
-    // Expand the box to respect the 1 pixel border in the atlas image.
+    // Expand the box to respect the 1 pixel border in the atlas image. We're using `image.paddedRect - border`
+    // instead of image.displaySize because we only pad with one pixel for retina images as well, and the
+    // displaySize uses the logical dimensions, not the physical pixel dimensions.
     const iconWidth = shapedIcon.right - shapedIcon.left;
     const expandX = (iconWidth * image.paddedRect.w / (image.paddedRect.w - 2 * border) - iconWidth) / 2;
     const left = shapedIcon.left - expandX;
@@ -74,7 +72,7 @@ export function getIconQuads(anchor: Anchor,
     const br = new Point(right, bottom);
     const bl = new Point(left, bottom);
 
-    const angle = layer.layout.get('icon-rotate').evaluate(feature, {}) * Math.PI / 180;
+    const angle = iconRotate * Math.PI / 180;
 
     if (angle) {
         const sin = Math.sin(angle),
