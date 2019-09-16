@@ -149,7 +149,7 @@ class GeolocateControl extends Evented {
         );
     }
 
-    _goToErrorState() {
+    _setErrorState() {
         switch (this._watchState) {
         case 'WAITING_ACTIVE':
             this._watchState = 'ACTIVE_ERROR';
@@ -179,7 +179,7 @@ class GeolocateControl extends Evented {
 
     _onSuccess(position: Position) {
         if (this._isOutOfMapMaxBounds(position)) {
-            this._goToErrorState();
+            this._setErrorState();
 
             this.fire(new Event('outofmaxbounds', position));
             this._updateMarker();
@@ -268,7 +268,7 @@ class GeolocateControl extends Evented {
                     this._clearWatch();
                 }
             } else {
-                this._goToErrorState();
+                this._setErrorState();
             }
         }
 
