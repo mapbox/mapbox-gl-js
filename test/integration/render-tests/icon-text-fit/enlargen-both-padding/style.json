@@ -3,7 +3,8 @@
   "metadata": {
     "test": {
       "width": 150,
-      "height": 64
+      "height": 64,
+      "allowed": 0.005
     }
   },
   "sources": {
