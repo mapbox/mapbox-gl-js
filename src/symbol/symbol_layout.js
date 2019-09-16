@@ -289,11 +289,11 @@ export function performSymbolLayout(bucket: SymbolBucket,
         }
 
         let shapedIcon;
-        if (feature.icon) {
-            const image = imageMap[feature.icon];
+        if (feature.icon && feature.icon.name) {
+            const image = imageMap[feature.icon.name];
             if (image) {
                 shapedIcon = shapeIcon(
-                    imagePositions[feature.icon],
+                    imagePositions[feature.icon.name],
                     layout.get('icon-offset').evaluate(feature, {}),
                     layout.get('icon-anchor').evaluate(feature, {}));
                 if (bucket.sdfIcons === undefined) {

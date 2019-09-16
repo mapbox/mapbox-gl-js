@@ -158,7 +158,7 @@ class VectorTileWorkerSource implements WorkerSource {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;
-                    workerTile.parse(workerTile.vectorTile, vtSource.layerIndex, vtSource.actor, reloadCallback);
+                    workerTile.parse(workerTile.vectorTile, vtSource.layerIndex, this.availableImages, vtSource.actor, reloadCallback);
                 }
                 callback(err, data);
             };

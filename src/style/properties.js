@@ -67,7 +67,7 @@ export type CrossFaded<T> = {
  */
 export interface Property<T, R> {
     specification: StylePropertySpecification;
-    possiblyEvaluate(value: PropertyValue<T, R>, parameters: EvaluationParameters): R;
+    possiblyEvaluate(value: PropertyValue<T, R>, parameters: EvaluationParameters, availableImages?: Array<string>): R;
     interpolate(a: R, b: R, t: number): R;
 }
 
@@ -544,7 +544,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
 
     possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, null, null, availableImages)}, parameters);
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, (null: any), {}, availableImages)}, parameters);
         } else {
             return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
         }

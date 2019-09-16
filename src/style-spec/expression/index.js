@@ -162,12 +162,12 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
         this.interpolationType = interpolationType;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, formattedSection);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, availableImages, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection): any {
-        return this._styleExpression.evaluate(globals, feature, featureState, formattedSection);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluate(globals, feature, featureState, availableImages, formattedSection);
     }
 
     interpolationFactor(input: number, lower: number, upper: number): number {
@@ -181,18 +181,18 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
 
 export type ConstantExpression = {
     kind: 'constant',
-    +evaluate: (globals: GlobalProperties, feature?: Feature) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>) => any,
 }
 
 export type SourceExpression = {
     kind: 'source',
     isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
 };
 
 export type CameraExpression = {
     kind: 'camera',
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>,
     interpolationType: ?InterpolationType
@@ -201,7 +201,7 @@ export type CameraExpression = {
 export type CompositeExpression = {
     kind: 'composite',
     isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, formattedSection?: FormattedSection) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>,
     interpolationType: ?InterpolationType

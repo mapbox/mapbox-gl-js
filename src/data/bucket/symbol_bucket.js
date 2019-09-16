@@ -378,7 +378,7 @@ class SymbolBucket implements Bucket {
         const hasText =
             (textField.value.kind !== 'constant' || textField.value.value.toString().length > 0) &&
             (textFont.value.kind !== 'constant' || textFont.value.value.length > 0);
-        const hasIcon = iconImage.value.kind !== 'constant' || iconImage.value.value && iconImage.value.value.length > 0;
+        const hasIcon = iconImage.value.kind !== 'constant' || iconImage.value.value && iconImage.value.value.toString().length > 0;
         const symbolSortKey = layout.get('symbol-sort-key');
 
         this.features = [];
@@ -409,7 +409,7 @@ class SymbolBucket implements Bucket {
                     layer, feature);
             }
 
-            let icon;
+            let icon: Image | void;
             if (hasIcon) {
                 // Expression evaluation will automatically coerce to Image
                 // but plain string token evaluation skips that pathway so do the
@@ -444,7 +444,7 @@ class SymbolBucket implements Bucket {
             this.features.push(symbolFeature);
 
             if (icon) {
-                icons[icon] = true;
+                icons[icon.name] = true;
             }
 
             if (text) {

@@ -9,7 +9,7 @@ import type { Type } from '../types';
 
 export default class ImageExpression implements Expression {
     type: Type;
-    input: string;
+    input: Expression;
 
     constructor(input: Expression) {
         this.type = ImageType;
@@ -29,7 +29,7 @@ export default class ImageExpression implements Expression {
 
     evaluate(ctx: EvaluationContext) {
         const evaluatedImageName = this.input.evaluate(ctx);
-        if (ctx.availableImages.indexOf(evaluatedImageName) > -1) {
+        if (ctx.availableImages && ctx.availableImages.indexOf(evaluatedImageName) > -1) {
             return evaluatedImageName;
         }
 
