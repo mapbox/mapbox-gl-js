@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "pixelRatio": 2,
       "width": 200,
       "height": 150
     }
@@ -51,7 +52,7 @@
       }
     }
   },
-  "sprite": "local://sprites/icon-text-fit",
+  "sprite": "local://sprites/icon-text-fit-1x",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -68,7 +69,6 @@
         "text-ignore-placement": true,
         "icon-image": "small-box",
         "icon-text-fit": "both",
-        "icon-text-fit-padding": [ 2, 4, 6, 8 ],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
@@ -87,7 +87,6 @@
         "text-ignore-placement": true,
         "icon-image": "small-box",
         "icon-text-fit": "both",
-        "icon-text-fit-padding": [ 2, 4, 6, 8 ],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
@@ -106,7 +105,6 @@
         "text-ignore-placement": true,
         "icon-image": "small-box",
         "icon-text-fit": "both",
-        "icon-text-fit-padding": [ 2, 4, 6, 8 ],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
@@ -125,7 +123,6 @@
         "text-ignore-placement": true,
         "icon-image": "small-box",
         "icon-text-fit": "both",
-        "icon-text-fit-padding": [ 2, 4, 6, 8 ],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
@@ -144,7 +141,6 @@
         "text-ignore-placement": true,
         "icon-image": "small-box",
         "icon-text-fit": "both",
-        "icon-text-fit-padding": [ 2, 4, 6, 8 ],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
@@ -163,7 +159,6 @@
         "text-ignore-placement": true,
         "icon-image": "small-box",
         "icon-text-fit": "both",
-        "icon-text-fit-padding": [ 2, 4, 6, 8 ],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
@@ -182,7 +177,6 @@
         "text-ignore-placement": true,
         "icon-image": "small-box",
         "icon-text-fit": "both",
-        "icon-text-fit-padding": [ 2, 4, 6, 8 ],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
@@ -201,7 +195,6 @@
         "text-ignore-placement": true,
         "icon-image": "small-box",
         "icon-text-fit": "both",
-        "icon-text-fit-padding": [ 2, 4, 6, 8 ],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
@@ -220,7 +213,6 @@
         "text-ignore-placement": true,
         "icon-image": "small-box",
         "icon-text-fit": "both",
-        "icon-text-fit-padding": [ 2, 4, 6, 8 ],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
