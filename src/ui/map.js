@@ -1527,7 +1527,7 @@ class Map extends Camera {
      * at which the layer will be rendered.
      *
      * Note: For style layers using vector sources, style layers cannot be rendered at zoom levels lower than the
-     * minimum zoom level of the _source layer_ because the data does not exist at that zoom level. If the minimum
+     * minimum zoom level of the _source layer_ because the data does not exist at those zoom levels. If the minimum
      * zoom level of the source layer is higher than the minimum zoom level defined in the style layer, the style
      * layer will not be rendered at all zoom levels in the zoom range.
      *
