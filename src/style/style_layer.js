@@ -202,7 +202,7 @@ class StyleLayer extends Evented {
             (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, availableImages);
         }
 
-        (this: any).paint = this._transitioningPaint.possiblyEvaluate(parameters);
+        (this: any).paint = this._transitioningPaint.possiblyEvaluate(parameters, availableImages);
     }
 
     serialize() {

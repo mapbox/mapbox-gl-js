@@ -5,6 +5,7 @@ import assert from 'assert';
 import Color from '../util/color';
 import Collator from './types/collator';
 import Formatted from './types/formatted';
+import Image from './types/image';
 import { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, FormattedType, ImageType, array } from './types';
 
 import type {Type} from './types';
