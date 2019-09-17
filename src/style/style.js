@@ -1192,6 +1192,8 @@ class Style extends Evented {
         }
         this.crossTileSymbolIndex.pruneUnusedLayers(this._order);
 
+        console.log('map._zooming', this.map._zooming);
+
         // Anything that changes our "in progress" layer and tile indices requires us
         // to start over. When we start over, we do a full placement instead of incremental
         // to prevent starvation.
@@ -1199,6 +1201,15 @@ class Style extends Evented {
         // Also force full placement when fadeDuration === 0 to ensure that newly loaded
         // tiles will fully display symbols in their first frame
         const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0;
+
+        // if (this.pauseablePlacement) {
+        //   console.log('current placement done?', this.pauseablePlacement.isDone());
+        //   if (!this.placement.stillRecent(browser.now(), transform.zoom)) {
+        //     console.log('should update placement', browser.now(), transform.zoom);
+        //   } else {
+        //     console.log('should not update placement', browser.now(), transform.zoom);
+        //   }
+        // }
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
             this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement);

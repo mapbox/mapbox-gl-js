@@ -481,6 +481,7 @@ export class Placement {
     }
 
     commit(now: number, zoom: number): void {
+        console.log('committing at', now, zoom);
         this.commitTime = now;
 
         const prevPlacement = this.prevPlacement;
@@ -722,6 +723,7 @@ export class Placement {
     }
 
     stillRecent(now: number, zoom: number) {
+        // if (this.zoomAdjustment(zoom) > 0) return now - this.commitTime <= 100;
         return this.commitTime + this.fadeDuration * (1 - this.zoomAdjustment(zoom))  > now;
     }
 
