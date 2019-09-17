@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #buttons {
+          position: absolute;
+          border-radius: 4px;
+          background: rgba(255,255,255,0.85);
+          top: 10px;
+          left: 10px;
+          padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id='map'></div>
+<div id='buttons'>
+  <button id='zoom' onclick="zoomOut();">zoom out</button>
+  <button id='zoom' onclick="zoomIn();">zoom in</button>
+</div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+const CENTER = { lng: -74.0009917133583, lat: 40.72092299699548 };
+
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12,
+    center: [CENTER.lng, CENTER.lat],
+    style: 'mapbox://styles/mapbox/streets-v10',
+    fadeDuration: 300,
+    hash: false
+});
+
+
+
+function zoomOut() {
+    map.setCenter(CENTER).setZoom(15);
+    window.setTimeout(() => {
+        map.setCenter(CENTER).zoomTo(12, { duration: 500 });
+    }, 2500);
+}
+
+function zoomIn() {
+    map.setCenter(CENTER).setZoom(12);
+    window.setTimeout(() => {
+        map.setCenter(CENTER).zoomTo(15, { duration: 500 });
+    }, 2500);
+}
+
+
+</script>
+</body>
+</html>
