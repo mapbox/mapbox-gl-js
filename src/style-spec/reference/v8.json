@@ -2804,6 +2804,15 @@
           }
         }
       },
+      "image": {
+        "doc": "Returns `image` type for use in `icon-image` and `*-pattern` entries. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.4.0"
+          }
+        }
+      },
       "number-format": {
         "doc": "Converts the input number into a string representation using the providing formatting rules. If set, the `locale` argument specifies the locale to use, as a BCP 47 language tag. If set, the `currency` argument specifies an ISO 4217 code to use for currency-style formatting. If set, the `min-fraction-digits` and `max-fraction-digits` arguments specify the minimum and maximum number of fractional digits to include.",
         "group": "Types",
