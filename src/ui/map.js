@@ -1144,9 +1144,29 @@ class Map extends Camera {
      * {@link CanvasSourceOptions}.
      * @fires source.add
      * @returns {Map} `this`
-     * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
-     * @see [Style circles using data-driven styling](https://www.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/)
-     * @see [Set a point after Geocoder result](https://www.mapbox.com/mapbox-gl-js/example/point-from-geocoder-result/)
+     * @example
+     * map.addSource('my-data', {
+     *   type: 'vector',
+     *   url: 'mapbox://myusername.tilesetid'
+     * });
+     * @example
+     * map.addSource('my-data', {
+     *   "type": "geojson",
+     *   "data": {
+     *     "type": "Feature",
+     *     "geometry": {
+     *       "type": "Point",
+     *       "coordinates": [-77.0323, 38.9131]
+     *     },
+     *     "properties": {
+     *       "title": "Mapbox DC",
+     *       "marker-symbol": "monument"
+     *     }
+     *   }
+     * });
+     * @see Vector source: [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
+     * @see GeoJSON source: [Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
+     * @see Raster DEM source: [Add hillshading](https://docs.mapbox.com/mapbox-gl-js/example/hillshade/)
      */
     addSource(id: string, source: SourceSpecification) {
         this.style.addSource(id, source);
@@ -1158,6 +1178,8 @@ class Map extends Camera {
      *
      * @param {string} id The ID of the source to be checked.
      * @returns {boolean} A Boolean indicating whether the source is loaded.
+     * @example
+     * var sourceLoaded = map.isSourceLoaded('bathymetry-data');
      */
     isSourceLoaded(id: string) {
         const source = this.style && this.style.sourceCaches[id];
@@ -1173,6 +1195,8 @@ class Map extends Camera {
      * the style are loaded.
      *
      * @returns {boolean} A Boolean indicating whether all tiles are loaded.
+     * @example
+     * var tilesLoaded = map.areTilesLoaded();
      */
 
     areTilesLoaded() {
@@ -1205,6 +1229,8 @@ class Map extends Camera {
      *
      * @param {string} id The ID of the source to remove.
      * @returns {Map} `this`
+     * @example
+     * map.removeSource('bathymetry-data');
      */
     removeSource(id: string) {
         this.style.removeSource(id);
@@ -1217,6 +1243,8 @@ class Map extends Camera {
      * @param {string} id The ID of the source to get.
      * @returns {?Object} The style source with the specified ID, or `undefined`
      *   if the ID corresponds to no existing sources.
+     * @example
+     * var sourceObject = map.getSource('points');
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
      * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
@@ -1226,19 +1254,28 @@ class Map extends Camera {
     }
 
     /**
-     * Add an image to the style. This image can be used in `icon-image`,
-     * `background-pattern`, `fill-pattern`, and `line-pattern`. An
-     * {@link Map#error} event will be fired if there is not enough space in the
-     * sprite to add this image.
+     * Add an image to the style. This image can be displayed on the map like any other icon in the style's
+     * [sprite](https://docs.mapbox.com/help/glossary/sprite/) using the image's ID with
+     * [`icon-image`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layout-symbol-icon-image),
+     * [`background-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-background-background-pattern),
+     * [`fill-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-fill-fill-pattern),
+     * or [`line-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-line-line-pattern).
+     * A {@link Map#error} event will be fired if there is not enough space in the sprite to add this image.
      *
-     * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
-     * @see [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
      * @param id The ID of the image.
      * @param image The image as an `HTMLImageElement`, `ImageData`, or object with `width`, `height`, and `data`
      * properties with the same format as `ImageData`.
      * @param options
      * @param options.pixelRatio The ratio of pixels in the image to physical pixels on the screen
      * @param options.sdf Whether the image should be interpreted as an SDF image
+     *
+     * @example
+     * // If the style's sprite does not already contain an image with ID 'cat',
+     * // add the image 'cat-icon.png' to the style's sprite with the ID 'cat'.
+     * if (!map.hasImage('cat')) map.addImage('cat', './cat-icon.png');
+     *
+     * @see Use `HTMLImageElement`: [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
+     * @see Use `ImageData`: [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
      */
     addImage(id: string,
              image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface,
@@ -1272,12 +1309,21 @@ class Map extends Camera {
     }
 
     /**
-     * Update an existing style image. This image can be used in `icon-image`,
-     * `background-pattern`, `fill-pattern`, and `line-pattern`.
+     * Update an existing image in a style. This image can be displayed on the map like any other icon in the style's
+     * [sprite](https://docs.mapbox.com/help/glossary/sprite/) using the image's ID with
+     * [`icon-image`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layout-symbol-icon-image),
+     * [`background-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-background-background-pattern),
+     * [`fill-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-fill-fill-pattern),
+     * or [`line-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-line-line-pattern).
      *
      * @param id The ID of the image.
      * @param image The image as an `HTMLImageElement`, `ImageData`, or object with `width`, `height`, and `data`
      * properties with the same format as `ImageData`.
+     *
+     * @example
+     * // If an image with the ID 'cat' already exists in the style's sprite,
+     * // replace that image with a new image, 'other-cat-icon.png'.
+     * if (map.hasImage('cat')) map.updateImage('cat', './other-cat-icon.png');
      */
     updateImage(id: string,
         image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface) {
@@ -1309,9 +1355,17 @@ class Map extends Camera {
     }
 
     /**
-     * Define whether the image has been added or not
+     * Check whether or not an image with a specific ID exists in the style. This checks both images
+     * in the style's original [sprite](https://docs.mapbox.com/help/glossary/sprite/) and any images
+     * that have been added at runtime using {@link addImage}.
      *
      * @param id The ID of the image.
+     *
+     * @returns {boolean}  A Boolean indicating whether the image exists.
+     * @example
+     * // Check if an image with the ID 'cat' exists in
+     * // the style's sprite.
+     * var catIconExists = map.hasImage('cat');
      */
     hasImage(id: string): boolean {
         if (!id) {
@@ -1323,20 +1377,36 @@ class Map extends Camera {
     }
 
     /**
-     * Remove an image from the style (such as one used by `icon-image` or `background-pattern`).
+     * Remove an image from a style. This can be an image from the style's original
+     * [sprite](https://docs.mapbox.com/help/glossary/sprite/) or any images
+     * that have been added at runtime using {@link addImage}.
      *
      * @param id The ID of the image.
+     *
+     * @example
+     * // If an image with the ID 'cat' exists in
+     * // the style's sprite, remove it.
+     * if (map.hasImage('cat')) map.removeImage('cat');
      */
     removeImage(id: string) {
         this.style.removeImage(id);
     }
 
     /**
-     * Load an image from an external URL for use with `Map#addImage`. External
+     * Load an image from an external URL to be used with `Map#addImage`. External
      * domains must support [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
      *
      * @param {string} url The URL of the image file. Image file must be in png, webp, or jpg format.
      * @param {Function} callback Expecting `callback(error, data)`. Called when the image has loaded or with an error argument if there is an error.
+     *
+     * @example
+     * // Load an image from an external URL.
+     * map.loadImage('http://placekitten.com/50/50', function(error, image) {
+     *   if (error) throw error;
+     *   // Add the loaded image to the style's sprite with the ID 'kitten'.
+     *   map.addImage('kitten', image);
+     * });
+     *
      * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url: string, callback: Function) {
@@ -1344,9 +1414,14 @@ class Map extends Camera {
     }
 
     /**
-    * Returns an Array of strings containing the names of all sprites/images currently available in the map
+    * Returns an Array of strings containing the IDs of all images currently available in the map.
+    * This includes both images from the style's original [sprite](https://docs.mapbox.com/help/glossary/sprite/)
+    * and any images that have been added at runtime using {@link addImage}.
     *
-    * @returns {Array<string>} An Array of strings containing the names of all sprites/images currently available in the map
+    * @returns {Array<string>} An Array of strings containing the names of all sprites/images currently available in the map.
+    *
+    * @example
+    * var allImages = map.listImages();
     *
     */
     listImages() {
@@ -1354,16 +1429,37 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a [Mapbox style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
+     * Adds a [Mapbox style layer](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers)
      * to the map's style.
      *
-     * A layer defines styling for data from a specified source.
+     * A layer defines how data from a specified source will be styled. Read more about layer types
+     * and available paint and layout properties in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
      *
      * @param {Object | CustomLayerInterface} layer The style layer to add, conforming to the Mapbox Style Specification's
-     *   [layer definition](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
+     *   [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
      * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
+     *
      * @returns {Map} `this`
+     *
+     * @example
+     * // Add a circle layer with a vector source.
+     * map.addLayer({
+     *   id: 'points-of-interest',
+     *   source: {
+     *     type: 'vector',
+     *     url: 'mapbox://mapbox.mapbox-streets-v8'
+     *   },
+     *   'source-layer': 'poi_label',
+     *   type: 'circle',
+     *   paint: {
+     *     // Mapbox Style Specification paint properties
+     *   },
+     *   layout: {
+     *     // Mapbox Style Specification layout properties
+     *   }
+     * });
+     *
      * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
      * @see [Add a vector tile source](https://www.mapbox.com/mapbox-gl-js/example/vector-source/)
      * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
@@ -1380,6 +1476,10 @@ class Map extends Camera {
      * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
      * @returns {Map} `this`
+     *
+     * @example
+     * // Move a layer with ID 'label' before the layer with ID 'waterways'.
+     * map.moveLayer('label', 'waterways');
      */
     moveLayer(id: string, beforeId?: string) {
         this.style.moveLayer(id, beforeId);
@@ -1387,12 +1487,16 @@ class Map extends Camera {
     }
 
     /**
-     * Removes the layer with the given id from the map's style.
+     * Removes the layer with the given ID from the map's style.
      *
      * If no such layer exists, an `error` event is fired.
      *
      * @param {string} id id of the layer to remove
      * @fires error
+     *
+     * @example
+     * // If a layer with ID 'state-data' exists, remove it.
+     * if (map.getLayer('state-data')) map.removeLayer('state-data');
      */
     removeLayer(id: string) {
         this.style.removeLayer(id);
@@ -1405,11 +1509,40 @@ class Map extends Camera {
      * @param {string} id The ID of the layer to get.
      * @returns {?Object} The layer with the specified ID, or `undefined`
      *   if the ID corresponds to no existing layers.
+     *
+     * @example
+     * var stateDataLayer = map.getLayer('state-data');
+     *
      * @see [Filter symbols by toggling a list](https://www.mapbox.com/mapbox-gl-js/example/filter-markers/)
      * @see [Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
     getLayer(id: string) {
         return this.style.getLayer(id);
+    }
+
+    /**
+     * Sets the zoom extent for the specified style layer. The zoom extent includes the
+     * [minimum zoom level](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-minzoom)
+     * and [maximum zoom level](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-maxzoom))
+     * at which the layer will be rendered.
+     *
+     * Note: For style layers using vector sources, style layers cannot be rendered at zoom levels lower than the
+     * minimum zoom level of the _source layer_ because the data does not exist at those zoom levels. If the minimum
+     * zoom level of the source layer is higher than the minimum zoom level defined in the style layer, the style
+     * layer will not be rendered at all zoom levels in the zoom range.
+     *
+     * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
+     * @param {number} minzoom The minimum zoom to set (0-24).
+     * @param {number} maxzoom The maximum zoom to set (0-24).
+     * @returns {Map} `this`
+     *
+     * @example
+     * map.setLayerZoomRange('my-layer', 2, 5);
+     *
+     */
+    setLayerZoomRange(layerId: string, minzoom: number, maxzoom: number) {
+        this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
+        return this._update(true);
     }
 
     /**
@@ -1424,27 +1557,13 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
+     *
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this.style.setFilter(layerId, filter, options);
-        return this._update(true);
-    }
-
-    /**
-     * Sets the zoom extent for the specified style layer.
-     *
-     * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
-     * @param {number} minzoom The minimum zoom to set (0-24).
-     * @param {number} maxzoom The maximum zoom to set (0-24).
-     * @returns {Map} `this`
-     * @example
-     * map.setLayerZoomRange('my-layer', 2, 5);
-     */
-    setLayerZoomRange(layerId: string, minzoom: number, maxzoom: number) {
-        this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
         return this._update(true);
     }
 
