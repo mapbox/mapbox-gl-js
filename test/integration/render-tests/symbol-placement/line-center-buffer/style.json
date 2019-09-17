@@ -45,7 +45,8 @@
         "text-font": [
           "Open Sans Semibold",
           "Arial Unicode MS Bold"
-        ]
+        ],
+        "text-max-width": 0
       }
     },
     {

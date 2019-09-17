@@ -224,7 +224,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 "center" :
                 layout.get('text-justify').evaluate(feature, {});
 
-            const maxWidth = layout.get('symbol-placement') === 'point' ?
+            const symbolPlacement = layout.get('symbol-placement');
+            const maxWidth = symbolPlacement === 'point' ?
                 layout.get('text-max-width').evaluate(feature, {}) * ONE_EM :
                 0;
 
@@ -234,7 +235,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                     // writing mode, thus, default left justification is used. If Latin
                     // scripts would need to be supported, this should take into account other justifications.
                     shapedTextOrientations.vertical = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor,
-                                                                'left', spacingIfAllowed, textOffset, WritingMode.vertical, true);
+                                                                'left', spacingIfAllowed, textOffset, WritingMode.vertical, true, symbolPlacement);
                 }
             };
 
@@ -256,7 +257,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                         // If using text-variable-anchor for the layer, we use a center anchor for all shapings and apply
                         // the offsets for the anchor in the placement step.
                         const shaping = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, 'center',
-                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false);
+                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false, symbolPlacement);
                         if (shaping) {
                             shapedTextOrientations.horizontal[justification] = shaping;
                             singleLine = shaping.lineCount === 1;
@@ -272,7 +273,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
                 // Horizontal point or line label.
                 const shaping = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
-                                          textOffset, WritingMode.horizontal, false);
+                                          textOffset, WritingMode.horizontal, false, symbolPlacement);
                 if (shaping) shapedTextOrientations.horizontal[textJustify] = shaping;
 
                 // Vertical point label (if allowVerticalPlacement is enabled).
@@ -281,7 +282,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 // Verticalized line label.
                 if (allowsVerticalWritingMode(unformattedText) && textAlongLine && keepUpright) {
                     shapedTextOrientations.vertical = shapeText(text, glyphMap, fontstack, maxWidth, lineHeight, textAnchor, textJustify,
-                                                                spacingIfAllowed, textOffset, WritingMode.vertical, false);
+                                                                spacingIfAllowed, textOffset, WritingMode.vertical, false, symbolPlacement);
                 }
             }
 
