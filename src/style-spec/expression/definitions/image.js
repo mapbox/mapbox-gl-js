@@ -48,6 +48,6 @@ export default class ImageExpression implements Expression {
     }
 
     serialize() {
-        return ["image", this.input];
+        return ["image", this.input.serialize()];
     }
 }
