@@ -55,6 +55,17 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
+    const variablePlacement = layer.layout.get('text-variable-anchor');
+
+    //Compute variable-offsets before painting since icons and text data positioning
+    //depend on each other in this case.
+    if (variablePlacement) {
+        updateVariableAnchors(coords, painter, layer, sourceCache,
+            layer.layout.get('text-rotation-alignment'),
+            layer.layout.get('text-pitch-alignment'),
+            variableOffsets
+        );
+    }
 
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
         drawLayerSymbols(painter, sourceCache, layer, coords, false,
@@ -63,7 +74,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
             layer.layout.get('icon-rotation-alignment'),
             layer.layout.get('icon-pitch-alignment'),
             layer.layout.get('icon-keep-upright'),
-            stencilMode, colorMode, variableOffsets
+            stencilMode, colorMode
         );
     }
 
@@ -74,7 +85,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
             layer.layout.get('text-rotation-alignment'),
             layer.layout.get('text-pitch-alignment'),
             layer.layout.get('text-keep-upright'),
-            stencilMode, colorMode, variableOffsets
+            stencilMode, colorMode
         );
     }
 
@@ -97,7 +108,36 @@ function calculateVariableRenderShift(anchor, width, height, textOffset, textBox
     );
 }
 
-function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
+function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlignment, pitchAlignment, variableOffsets) {
+    const tr = painter.transform;
+    const rotateWithMap = rotationAlignment === 'map';
+    const pitchWithMap = pitchAlignment === 'map';
+
+    for (const coord of coords) {
+        const tile = sourceCache.getTile(coord);
+        const bucket: SymbolBucket = (tile.getBucket(layer): any);
+        if (!bucket) continue;
+        const buffers = bucket.text;
+        if (!buffers || !buffers.segments.get().length) continue;
+
+        const sizeData = bucket.textSizeData;
+        const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+
+        const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
+        const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
+
+        if (size) {
+            const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
+            updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
+                                  tr, labelPlaneMatrix, coord.posMatrix, tileScale, size, updateTextFitIcon);
+
+        }
+    }
+
+}
+
+function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
                                transform, labelPlaneMatrix, posMatrix, tileScale, size, updateTextFitIcon) {
     const placedSymbols = bucket.text.placedSymbolArray;
     const dynamicTextLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
@@ -195,7 +235,7 @@ function updateVerticalLabels(bucket) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-                          rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode, variableOffsets) {
+                          rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode) {
 
     const context = painter.context;
     const gl = context.gl;
@@ -268,11 +308,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
-        } else if (isText && size && variablePlacement) {
-            const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
-            updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                                  tr, labelPlaneMatrix, coord.posMatrix, tileScale, size, updateTextFitIcon);
-        } else if (isText && size && bucket.allowVerticalPlacement) {
+        } else if (isText && size && bucket.allowVerticalPlacement && !variablePlacement) {
             updateVerticalLabels(bucket);
         }
 
