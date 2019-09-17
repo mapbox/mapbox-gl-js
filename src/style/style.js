@@ -1200,7 +1200,8 @@ class Style extends Evented {
         // We need to restart placement to keep layer indices in sync.
         // Also force full placement when fadeDuration === 0 to ensure that newly loaded
         // tiles will fully display symbols in their first frame
-        const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0;
+        const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0 || this.map._zooming ;
+
 
         // if (this.pauseablePlacement) {
         //   console.log('current placement done?', this.pauseablePlacement.isDone());
