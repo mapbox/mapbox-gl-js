@@ -2805,7 +2805,7 @@
         }
       },
       "image": {
-        "doc": "Returns `image` type for use in `icon-image` and `*-pattern` entries. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
+        "doc": "Returns an `image` type for use in `icon-image` and `*-pattern` entries. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {

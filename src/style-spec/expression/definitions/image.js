@@ -22,7 +22,7 @@ export default class ImageExpression implements Expression {
         }
 
         const name = context.parse(args[1], 1, StringType);
-        if (!name) return context.error(`No icon name provided.`);
+        if (!name) return context.error(`No image name provided.`);
 
         return new ImageExpression(name);
     }
