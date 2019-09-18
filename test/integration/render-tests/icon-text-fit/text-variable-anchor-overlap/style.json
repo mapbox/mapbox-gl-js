@@ -10,7 +10,7 @@
     13.417,
     52.502
   ],
-  "zoom": 14,
+  "zoom": 16,
   "sources": {
     "mapbox": {
       "type": "vector",
@@ -38,6 +38,8 @@
       "layout": {
         "text-variable-anchor": ["left", "right", "bottom", "top"],
         "text-field": "{name}",
+        "text-allow-overlap": true,
+        "icon-allow-overlap": true,
         "text-font": [
           "Open Sans Semibold",
           "Arial Unicode MS Bold"
