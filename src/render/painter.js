@@ -508,10 +508,12 @@ class Painter {
      *
      * @returns true if a needed image is missing and rendering needs to be skipped.
      */
-    isPatternMissing(image: ?CrossFaded<string>): boolean {
+    isPatternMissing(image: ?CrossFaded<Image>): boolean {
         if (!image) return false;
-        const imagePosA = this.imageManager.getPattern(image.from);
-        const imagePosB = this.imageManager.getPattern(image.to);
+        const to = image.to.toString();
+        const from = image.from.toString();
+        const imagePosA = this.imageManager.getPattern(from);
+        const imagePosB = this.imageManager.getPattern(to);
         return !imagePosA || !imagePosB;
     }
 
