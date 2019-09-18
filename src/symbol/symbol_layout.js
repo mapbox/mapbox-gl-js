@@ -572,7 +572,7 @@ function addSymbol(bucket: SymbolBucket,
         verticalTextCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
     }
 
-    //Place icon first, so text can have a reference it its index in the placed symbol array.
+    //Place icon first, so text can have a reference to its index in the placed symbol array.
     //Text symbols can lazily shift at render-time because of variable anchor placement.
     //If the style specifies an `icon-text-fit` then the icon would have to shift along with it.
     // For more info check `updateVariableAnchors` in `draw_symbol.js` .
