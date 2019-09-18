@@ -8,7 +8,7 @@ import RuntimeError from '../runtime_error';
 import Formatted from '../types/formatted';
 import FormatExpression from '../definitions/format';
 import ImageExpression from '../definitions/image';
-import Image from '../types/image';
+import ResolvedImage from '../types/resolved_image';
 
 import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -102,7 +102,7 @@ class Coercion implements Expression {
             // created by properties that expect the 'formatted' type.
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'image') {
-            return Image.fromString(valueToString(this.args[0].evaluate(ctx)));
+            return ResolvedImage.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else {
             return valueToString(this.args[0].evaluate(ctx));
         }

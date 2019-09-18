@@ -1,6 +1,6 @@
 // @flow
 
-export default class Image {
+export default class ResolvedImage {
     name: string;
 
     constructor(name: string) {
@@ -11,8 +11,8 @@ export default class Image {
         return this.name;
     }
 
-    static fromString(imageName: string): Image {
-        return new Image(imageName);
+    static fromString(imageName: string): ResolvedImage {
+        return new ResolvedImage(imageName);
     }
 
     serialize(): Array<mixed> {

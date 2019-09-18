@@ -6,7 +6,7 @@ import getType from '../util/get_type';
 import * as interpolate from '../util/interpolate';
 import Interpolate from '../expression/definitions/interpolate';
 import Formatted from '../expression/types/formatted';
-import Image from '../expression/types/image';
+import ResolvedImage from '../expression/types/resolved_image';
 import {supportsInterpolation} from '../util/properties';
 import {findStopLessThanOrEqualTo} from '../expression/stops';
 
@@ -203,7 +203,7 @@ function evaluateIdentityFunction(parameters, propertySpec, input) {
     } else if (propertySpec.type === 'formatted') {
         input = Formatted.fromString(input.toString());
     } else if (propertySpec.type === 'image') {
-        input = Image.fromString(input.toString());
+        input = ResolvedImage.fromString(input.toString());
     } else if (getType(input) !== propertySpec.type && (propertySpec.type !== 'enum' || !propertySpec.values[input])) {
         input = undefined;
     }

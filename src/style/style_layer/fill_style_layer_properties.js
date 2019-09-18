@@ -17,7 +17,7 @@ import type Color from '../../style-spec/util/color';
 
 import type Formatted from '../../style-spec/expression/types/formatted';
 
-import type Image from '../../style-spec/expression/types/image';
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
 
 export type LayoutProps = {|
     "fill-sort-key": DataDrivenProperty<number>,
@@ -34,7 +34,7 @@ export type PaintProps = {|
     "fill-outline-color": DataDrivenProperty<Color>,
     "fill-translate": DataConstantProperty<[number, number]>,
     "fill-translate-anchor": DataConstantProperty<"map" | "viewport">,
-    "fill-pattern": CrossFadedDataDrivenProperty<Image>,
+    "fill-pattern": CrossFadedDataDrivenProperty<ResolvedImage>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
