@@ -160,10 +160,7 @@ class DragPanHandler {
 
     _touchesMatch(lastTouch: ?Array<Point>, thisTouch: ?Array<Point>) {
         if (!lastTouch || !thisTouch || lastTouch.length !== thisTouch.length) return false;
-        for (let i = 0; i < lastTouch.length; i++) {
-            if (!lastTouch[i].equals(thisTouch[i])) return false;
-        }
-        return true;
+        return lastTouch.every((pos, i) => thisTouch[i] === pos);
     }
 
     _onMove(e: MouseEvent | TouchEvent) {
