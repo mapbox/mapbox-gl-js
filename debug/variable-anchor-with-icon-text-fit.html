@@ -17,7 +17,6 @@
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='access_token_generated.js'></script>
 <script>
-mapboxgl.accessToken = 'pk.eyJ1IjoiYXJpbmRhbTE5OTMiLCJhIjoiY2p0bnU2dmtoMHp4ZTN5cGxmZXJpa3BpdiJ9._9GLi1K1ERIMzwpzWSL-PA';
 var places = {
     "type": "FeatureCollection",
     "features": [{
@@ -102,14 +101,14 @@ var style = {
             data: places,
         }
     },
-    sprite: 'mapbox://sprites/tristen/cjwurvssn93s01cny9t91anji/a3zx8crhca28a1j1ljgwyyo1z',
+    sprite: 'mapbox://sprites/mapbox/streets-v11',
     glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     layers: [{
         id: 'foo',
         type: 'symbol',
         source: 'places',
         layout: {
-            'icon-image': 'fill-light-blue',
+            'icon-image': 'rectangle-orange-6',
             'text-field': ['get', 'description'],
             'text-size': 12.5,
             'text-variable-anchor': ['left', 'right', 'bottom', 'top'],
