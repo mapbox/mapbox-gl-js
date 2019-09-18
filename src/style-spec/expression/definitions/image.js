@@ -22,7 +22,7 @@ export default class ImageExpression implements Expression {
         }
 
         const name = context.parse(args[1], 1, StringType);
-        if (!name) return null;
+        if (!name) return context.error(`No icon name provided.`);
 
         return new ImageExpression(name);
     }
@@ -42,8 +42,7 @@ export default class ImageExpression implements Expression {
     }
 
     possibleOutputs() {
-        // Technically the combinatoric set of all children
-        // Usually, this.text will be undefined anyway
+        // The output of image is determined by the list of available images in the evaluation context
         return [undefined];
     }
 
