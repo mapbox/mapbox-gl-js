@@ -67,8 +67,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
-            const posTo = tile.imageAtlas.patternPositions[constantPattern.to];
-            const posFrom = tile.imageAtlas.patternPositions[constantPattern.from];
+            const posTo = tile.imageAtlas.patternPositions[(constantPattern: any).to];
+            const posFrom = tile.imageAtlas.patternPositions[(constantPattern: any).from];
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
