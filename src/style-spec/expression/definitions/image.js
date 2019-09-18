@@ -1,11 +1,11 @@
 // @flow
 
-import { ImageType, StringType } from '../types';
+import {ImageType, StringType} from '../types';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
-import type { Type } from '../types';
+import type {Type} from '../types';
 
 export default class ImageExpression implements Expression {
     type: Type;

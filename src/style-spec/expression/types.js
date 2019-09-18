@@ -34,17 +34,17 @@ export type ArrayType = {
     N: ?number
 }
 
-export const NullType = { kind: 'null' };
-export const NumberType = { kind: 'number' };
-export const StringType = { kind: 'string' };
-export const BooleanType = { kind: 'boolean' };
-export const ColorType = { kind: 'color' };
-export const ObjectType = { kind: 'object' };
-export const ValueType = { kind: 'value' };
-export const ErrorType = { kind: 'error' };
-export const CollatorType = { kind: 'collator' };
-export const FormattedType = { kind: 'formatted' };
-export const ImageType = { kind: 'image' };
+export const NullType = {kind: 'null'};
+export const NumberType = {kind: 'number'};
+export const StringType = {kind: 'string'};
+export const BooleanType = {kind: 'boolean'};
+export const ColorType = {kind: 'color'};
+export const ObjectType = {kind: 'object'};
+export const ValueType = {kind: 'value'};
+export const ErrorType = {kind: 'error'};
+export const CollatorType = {kind: 'collator'};
+export const FormattedType = {kind: 'formatted'};
+export const ImageType = {kind: 'image'};
 
 export function array(itemType: Type, N: ?number): ArrayType {
     return {

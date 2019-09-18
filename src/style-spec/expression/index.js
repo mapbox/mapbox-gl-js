@@ -350,7 +350,7 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
     return result;
 }
 
-import { ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ImageType, array } from './types';
+import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ImageType, array} from './types';
 
 function getExpectedType(spec: StylePropertySpecification): Type {
     const types = {

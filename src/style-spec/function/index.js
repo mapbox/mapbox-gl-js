@@ -7,8 +7,8 @@ import * as interpolate from '../util/interpolate';
 import Interpolate from '../expression/definitions/interpolate';
 import Formatted from '../expression/types/formatted';
 import Image from '../expression/types/image';
-import { supportsInterpolation } from '../util/properties';
-import { findStopLessThanOrEqualTo } from '../expression/stops';
+import {supportsInterpolation} from '../util/properties';
+import {findStopLessThanOrEqualTo} from '../expression/stops';
 
 export function isFunction(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
