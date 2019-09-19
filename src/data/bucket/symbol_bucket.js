@@ -378,7 +378,10 @@ class SymbolBucket implements Bucket {
         const hasText =
             (textField.value.kind !== 'constant' || textField.value.value.toString().length > 0) &&
             (textFont.value.kind !== 'constant' || textFont.value.value.length > 0);
-        const hasIcon = iconImage.value.kind !== 'constant' || iconImage.property.specification.type === 'image' || iconImage.value.value && iconImage.value.value.toString().length > 0;
+        // debugger;
+        console.log('iconImage', iconImage);
+        const hasIcon = iconImage.value.kind !== 'constant' || !!iconImage.value.value;
+        console.log('hasIcon', hasIcon);
         const symbolSortKey = layout.get('symbol-sort-key');
 
         this.features = [];
@@ -415,9 +418,11 @@ class SymbolBucket implements Bucket {
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
                 const resolvedTokens = layer.getValueAndResolveTokens('icon-image', feature, availableImages);
+                console.log('resolveTokens', resolvedTokens instanceof ResolvedImage, resolvedTokens);
                 icon = resolvedTokens instanceof ResolvedImage ?
                     resolvedTokens :
-                    ResolvedImage.fromString(resolvedTokens);
+                    typeof resolvedTokens === 'string'? ResolvedImage.fromString({name: resolvedTokens, available: false}) : ResolvedImage.fromString(resolvedTokens);
+                console.log('icon', icon);
             }
 
             if (!text && !icon) {

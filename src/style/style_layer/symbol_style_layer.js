@@ -94,25 +94,28 @@ class SymbolStyleLayer extends StyleLayer {
 
     getValueAndResolveTokens(name: *, feature: Feature, availableImages: Array<string>) {
         const value = this.layout.get(name).evaluate(feature, {}, availableImages);
+        console.log('value', value);
         const unevaluated = this._unevaluatedLayout._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value)) {
             return resolveTokens(feature.properties, value);
         }
 
-        if (!value && unevaluated.property.specification.type === 'image') {
-            const unevaluatedValue = unevaluated.value;
-            if (Array.isArray(unevaluatedValue)) {
-                for (let i = 0; i < unevaluatedValue.length; i++) {
-                    if (unevaluatedValue[i] === 'image') {
-                        return unevaluatedValue[1];
-                    } else if (Array.isArray(unevaluatedValue[i]) && unevaluatedValue[i][0] === 'image') {
-                        return unevaluatedValue[i][1];
-                    }
-                }
-            }
+        // debugger;
+        // if (unevaluated.property.specification.type === 'image' && !value.available) {
 
-            return unevaluated.value;
-        }
+            // const unevaluatedValue = unevaluated.value;
+            // if (Array.isArray(unevaluatedValue)) {
+            //     for (let i = 0; i < unevaluatedValue.length; i++) {
+            //         if (unevaluatedValue[i] === 'image') {
+            //             return unevaluatedValue[1];
+            //         } else if (Array.isArray(unevaluatedValue[i]) && unevaluatedValue[i][0] === 'image') {
+            //             return unevaluatedValue[i][1];
+            //         }
+            //     }
+            // }
+            //
+            // return unevaluated.value;
+        // }
 
         return value;
     }
