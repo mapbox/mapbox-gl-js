@@ -378,7 +378,7 @@ class SymbolBucket implements Bucket {
         const hasText =
             (textField.value.kind !== 'constant' || textField.value.value.toString().length > 0) &&
             (textFont.value.kind !== 'constant' || textFont.value.value.length > 0);
-        const hasIcon = iconImage.value.kind !== 'constant' || iconImage.value.value && iconImage.value.value.toString().length > 0;
+        const hasIcon = iconImage.value.kind !== 'constant' || iconImage.property.specification.type === 'image' || iconImage.value.value && iconImage.value.value.toString().length > 0;
         const symbolSortKey = layout.get('symbol-sort-key');
 
         this.features = [];
