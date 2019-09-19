@@ -17,7 +17,6 @@ import {
 } from '../properties';
 
 import {
-    createExpression,
     isExpression,
     StyleExpression,
     ZoomConstantExpression,
@@ -96,7 +95,6 @@ class SymbolStyleLayer extends StyleLayer {
     getValueAndResolveTokens(name: *, feature: Feature, availableImages: Array<string>) {
         const value = this.layout.get(name).evaluate(feature, {}, availableImages);
         const unevaluated = this._unevaluatedLayout._values[name];
-        // debugger;
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value)) {
             return resolveTokens(feature.properties, value);
         }
