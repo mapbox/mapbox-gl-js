@@ -36,6 +36,7 @@ import {getSizeData} from '../../symbol/symbol_size';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
+import ResolvedImage from '../../style-spec/expression/types/resolved_image';
 
 import type {
     Bucket,
@@ -76,7 +77,7 @@ export type CollisionArrays = {
 export type SymbolFeature = {|
     sortKey: number | void,
     text: Formatted | void,
-    icon: string | void,
+    icon: ResolvedImage | void,
     index: number,
     sourceLayerIndex: number,
     geometry: Array<Array<Point>>,
@@ -377,7 +378,7 @@ class SymbolBucket implements Bucket {
         const hasText =
             (textField.value.kind !== 'constant' || textField.value.value.toString().length > 0) &&
             (textFont.value.kind !== 'constant' || textFont.value.value.length > 0);
-        const hasIcon = iconImage.value.kind !== 'constant' || iconImage.value.value && iconImage.value.value.length > 0;
+        const hasIcon = iconImage.value.kind !== 'constant' || iconImage.value.value && iconImage.value.value.toString().length > 0;
         const symbolSortKey = layout.get('symbol-sort-key');
 
         this.features = [];
@@ -388,6 +389,7 @@ class SymbolBucket implements Bucket {
 
         const icons = options.iconDependencies;
         const stacks = options.glyphDependencies;
+        const availableImages = options.availableImages;
         const globalProperties = new EvaluationParameters(this.zoom);
 
         for (const {feature, index, sourceLayerIndex} of features) {
@@ -400,16 +402,22 @@ class SymbolBucket implements Bucket {
                 // Expression evaluation will automatically coerce to Formatted
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
-                const resolvedTokens = layer.getValueAndResolveTokens('text-field', feature);
+                const resolvedTokens = layer.getValueAndResolveTokens('text-field', feature, availableImages);
                 text = transformText(resolvedTokens instanceof Formatted ?
                     resolvedTokens :
                     Formatted.fromString(resolvedTokens),
                     layer, feature);
             }
 
-            let icon;
+            let icon: ResolvedImage | void;
             if (hasIcon) {
-                icon = layer.getValueAndResolveTokens('icon-image', feature);
+                // Expression evaluation will automatically coerce to Image
+                // but plain string token evaluation skips that pathway so do the
+                // conversion here.
+                const resolvedTokens = layer.getValueAndResolveTokens('icon-image', feature, availableImages);
+                icon = resolvedTokens instanceof ResolvedImage ?
+                    resolvedTokens :
+                    ResolvedImage.fromString(resolvedTokens);
             }
 
             if (!text && !icon) {
@@ -436,7 +444,7 @@ class SymbolBucket implements Bucket {
             this.features.push(symbolFeature);
 
             if (icon) {
-                icons[icon] = true;
+                icons[icon.name] = true;
             }
 
             if (text) {

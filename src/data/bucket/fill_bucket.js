@@ -83,7 +83,7 @@ class FillBucket implements Bucket {
 
             const geometry = loadGeometry(feature);
             const sortKey = fillSortKey ?
-                fillSortKey.evaluate(feature, {}) :
+                fillSortKey.evaluate(feature, {}, options.availableImages) :
                 undefined;
 
             const bucketFeature: BucketFeature = {
