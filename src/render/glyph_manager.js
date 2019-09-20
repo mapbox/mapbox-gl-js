@@ -37,9 +37,11 @@ export const SDF_SCALE = 2;
 type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.
     glyphs: {[id: number]: StyleGlyph | null},
-    requests: {[range: number]: Array<Callback<{[_: number]: StyleGlyph | null}>>},
+    requests: {[range: number]: Array<Callback<{glyphs: {[number]: StyleGlyph | null}, ascender?: number, descender?: number}>>},
     ranges: {[range: number]: boolean | null},
-    tinySDF?: TinySDF
+    tinySDF?: TinySDF,
+    ascender?: number,
+    descender?: number
 };
 
 export const LocalGlyphMode = {
@@ -55,7 +57,7 @@ class GlyphManager {
     entries: {[_: string]: Entry};
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
-    localGlyphs: {[_: string]: {[id: number]: StyleGlyph | null}};
+    localGlyphs: {[_: string]: {glyphs: {[id: number]: StyleGlyph | null}, ascender: ?number, descender: ?number}};
     url: ?string;
 
     // exposed as statics to enable stubbing in unit tests
@@ -80,7 +82,7 @@ class GlyphManager {
         this.url = url;
     }
 
-    getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {[id: number]: ?StyleGlyph}}>) {
+    getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
         const all = [];
 
         for (const stack in glyphs) {
@@ -89,37 +91,39 @@ class GlyphManager {
             }
         }
 
-        asyncAll(all, ({stack, id}, callback: Callback<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
+        asyncAll(all, ({stack, id}, fnCallback: Callback<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
             let entry = this.entries[stack];
             if (!entry) {
                 entry = this.entries[stack] = {
                     glyphs: {},
                     requests: {},
-                    ranges: {}
+                    ranges: {},
+                    ascender: undefined,
+                    descender: undefined
                 };
             }
 
             let glyph = entry.glyphs[id];
             if (glyph !== undefined) {
-                callback(null, {stack, id, glyph});
+                fnCallback(null, {stack, id, glyph});
                 return;
             }
 
             glyph = this._tinySDF(entry, stack, id);
             if (glyph) {
                 entry.glyphs[id] = glyph;
-                callback(null, {stack, id, glyph});
+                fnCallback(null, {stack, id, glyph});
                 return;
             }
 
             const range = Math.floor(id / 256);
             if (range * 256 > 65535) {
-                callback(new Error('glyphs > 65535 not supported'));
+                fnCallback(new Error('glyphs > 65535 not supported'));
                 return;
             }
 
             if (entry.ranges[range]) {
-                callback(null, {stack, id, glyph});
+                fnCallback(null, {stack, id, glyph});
                 return;
             }
 
@@ -127,11 +131,13 @@ class GlyphManager {
             if (!requests) {
                 requests = entry.requests[range] = [];
                 GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestManager,
-                    (err, response: ?{[_: number]: StyleGlyph | null}) => {
+                    (err, response: ?{glyphs: {[_: number]: StyleGlyph | null}, ascender?: number, descender?: number}) => {
                         if (response) {
-                            for (const id in response) {
+                            entry.ascender = response.ascender;
+                            entry.descender = response.descender;
+                            for (const id in response.glyphs) {
                                 if (!this._doesCharSupportLocalGlyph(+id)) {
-                                    entry.glyphs[+id] = response[+id];
+                                    entry.glyphs[+id] = response.glyphs[+id];
                                 }
                             }
                             entry.ranges[range] = true;
@@ -143,11 +149,11 @@ class GlyphManager {
                     });
             }
 
-            requests.push((err, result: ?{[_: number]: StyleGlyph | null}) => {
+            requests.push((err, result: ?{glyphs: {[_: number]: StyleGlyph | null}, ascender?: number, descender?: number}) => {
                 if (err) {
-                    callback(err);
+                    fnCallback(err);
                 } else if (result) {
-                    callback(null, {stack, id, glyph: result[id] || null});
+                    fnCallback(null, {stack, id, glyph: result.glyphs[id] || null});
                 }
             });
         }, (err, glyphs: ?Array<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
@@ -158,11 +164,15 @@ class GlyphManager {
 
                 for (const {stack, id, glyph} of glyphs) {
                     // Clone the glyph so that our own copy of its ArrayBuffer doesn't get transferred.
-                    (result[stack] || (result[stack] = {}))[id] = glyph && {
+                    if (result[stack] === undefined) result[stack] = {};
+                    if (result[stack].glyphs === undefined) result[stack].glyphs = {};
+                    result[stack].glyphs[id] = glyph && {
                         id: glyph.id,
                         bitmap: glyph.bitmap.clone(),
                         metrics: glyph.metrics
                     };
+                    result[stack].ascender = this.entries[stack].ascender;
+                    result[stack].descender = this.entries[stack].descender;
                 }
 
                 callback(null, result);
@@ -181,7 +191,9 @@ class GlyphManager {
             (isChar['CJK Unified Ideographs'](id) ||
                 isChar['Hangul Syllables'](id) ||
                 isChar['Hiragana'](id) ||
-                isChar['Katakana'](id));
+                isChar['Katakana'](id)) ||
+                // gl-native parity: Extend Ideographs rasterization range to include CJK symbols and punctuations
+                isChar['CJK Symbols and Punctuation'](id);
             /* eslint-enable new-cap */
         }
     }

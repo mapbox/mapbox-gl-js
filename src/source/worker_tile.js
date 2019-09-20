@@ -163,7 +163,7 @@ class WorkerTile {
         lineAtlas.trim();
 
         let error: ?Error;
-        let glyphMap: ?{[_: string]: {[_: number]: ?StyleGlyph}};
+        let glyphMap: ?{[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}};
         let iconMap: ?{[_: string]: StyleImage};
         let patternMap: ?{[_: string]: StyleImage};
         const taskMetadata = {type: 'maybePrepare', isSymbolTile: this.isSymbolTile, zoom: this.zoom};
