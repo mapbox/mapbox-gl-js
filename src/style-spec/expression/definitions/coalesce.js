@@ -9,7 +9,6 @@ import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type {Value} from '../values';
 import type {Type} from '../types';
-import type ImageExpression from './image';
 
 class Coalesce implements Expression {
     type: Type;
