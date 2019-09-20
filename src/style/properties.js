@@ -599,7 +599,9 @@ export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFa
         if (value.value === undefined) {
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: undefined}, parameters);
         } else if (value.expression.kind === 'constant') {
-            const constantValue = value.expression.evaluate(parameters, (null: any), {}, availableImages);
+            const evaluatedValue = value.expression.evaluate(parameters, (null: any), {}, availableImages);
+            const isImageExpression = value.property.specification.type === 'image';
+            const constantValue = isImageExpression && typeof evaluatedValue !== 'string' ? evaluatedValue.name : evaluatedValue;
             const constant = this._calculate(constantValue, constantValue, constantValue, parameters);
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: constant}, parameters);
         } else if (value.expression.kind === 'camera') {
