@@ -9,6 +9,7 @@ import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type {Value} from '../values';
 import type {Type} from '../types';
+import type ImageExpression from './image';
 
 class Coalesce implements Expression {
     type: Type;
@@ -60,7 +61,7 @@ class Coalesce implements Expression {
             result = arg.evaluate(ctx);
 
             if (arg.type.kind === 'image' && !result.available) {
-                if (!requestedImageName) requestedImageName = arg.input.value;
+                if (!requestedImageName) requestedImageName = arg.evaluate(ctx).name;
                 result = null;
                 if (argCount === this.args.length) {
                     result = requestedImageName;
