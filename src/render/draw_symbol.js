@@ -178,8 +178,9 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             for (let g = 0; g < symbol.numGlyphs; g++) {
                 addDynamicAttributes(dynamicTextLayoutVertexArray, shiftedAnchor, angle);
             }
+            //Only offset horizontal text icons
             if (updateTextFitIcon && symbol.associatedIconIndex >= 0) {
-                placedTextShifts[symbol.associatedIconIndex] = shiftedAnchor;
+                placedTextShifts[symbol.associatedIconIndex] = {shiftedAnchor, angle};
             }
         }
     }
@@ -189,15 +190,15 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
         const placedIcons = bucket.icon.placedSymbolArray;
         for (let i = 0; i < placedIcons.length; i++) {
             const placedIcon = placedIcons.get(i);
-            if (placedIcon.hidden || (!placedIcon.placedOrientation && bucket.allowVerticalPlacement)) {
+            if (placedIcon.hidden) {
                 symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
             } else {
-                const shiftedAnchor = placedTextShifts[i];
-                if (!shiftedAnchor) {
+                const shift = placedTextShifts[i];
+                if (!shift) {
                     symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
                 } else {
                     for (let g = 0; g < placedIcon.numGlyphs; g++) {
-                        addDynamicAttributes(dynamicIconLayoutVertexArray, shiftedAnchor, 0);
+                        addDynamicAttributes(dynamicIconLayoutVertexArray, shift.shiftedAnchor, shift.angle);
                     }
                 }
             }
