@@ -1,6 +1,6 @@
 // @flow
 
-import {parseCacheControl} from './util';
+import {warnOnce, parseCacheControl} from './util';
 import window from './window';
 
 import type Dispatcher from './dispatcher';
@@ -61,8 +61,8 @@ export function cachePut(request: Request, response: Response, requestTime: numb
         const clonedResponse = new window.Response(body, options);
 
         window.caches.open(CACHE_NAME)
-          .catch(e => warnOnce(e.message))
-          .then(cache => cache.put(stripQueryParameters(request.url), clonedResponse));
+            .catch(e => warnOnce(e.message))
+            .then(cache => cache.put(stripQueryParameters(request.url), clonedResponse));
     });
 }
 
