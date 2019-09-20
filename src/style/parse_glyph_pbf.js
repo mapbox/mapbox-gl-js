@@ -7,9 +7,9 @@ const border = 3;
 
 import type {StyleGlyph} from './style_glyph.js';
 
-var count = 0;
-var ascender = 0.0;
-var descender = 0.0;
+let count = 0;
+let ascender = 0.0;
+let descender = 0.0;
 
 function readFontstacks(tag: number, glyphs: Array<StyleGlyph>, pbf: Protobuf) {
     if (tag === 1) {
