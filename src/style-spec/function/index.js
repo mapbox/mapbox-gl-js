@@ -203,7 +203,7 @@ function evaluateIdentityFunction(parameters, propertySpec, input) {
     } else if (propertySpec.type === 'formatted') {
         input = Formatted.fromString(input.toString());
     } else if (propertySpec.type === 'image') {
-        input = ResolvedImage.fromString(input.toString());
+        input = ResolvedImage.fromString({name: input.toString(), available: false});
     } else if (getType(input) !== propertySpec.type && (propertySpec.type !== 'enum' || !propertySpec.values[input])) {
         input = undefined;
     }
