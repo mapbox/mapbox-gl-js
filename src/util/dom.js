@@ -105,7 +105,7 @@ DOM.suppressClick = function() {
 
 DOM.mousePos = function (el: HTMLElement, e: MouseEvent | window.TouchEvent | Touch) {
     const rect = el.getBoundingClientRect();
-    const t = DOM.isTouchEvent(e) ? e.touches[0] : e;
+    const t = window.TouchEvent && (e instanceof window.TouchEvent) ? e.touches[0] : e;
     return new Point(
         t.clientX - rect.left - el.clientLeft,
         t.clientY - rect.top - el.clientTop
@@ -140,13 +140,5 @@ DOM.mouseButton = function (e: MouseEvent) {
 DOM.remove = function(node: HTMLElement) {
     if (node.parentNode) {
         node.parentNode.removeChild(node);
-    }
-};
-
-DOM.isTouchEvent = function(e: FocusEvent | MouseEvent | TouchEvent): boolean {
-    if (window.TouchEvent) {
-        return e instanceof window.TouchEvent;
-    } else {
-        return false;
     }
 };
