@@ -55,7 +55,6 @@ class Coalesce implements Expression {
         let result = null;
         let argCount = 0;
         let requestedImageName;
-        // debugger;
         for (const arg of this.args) {
             argCount++;
             result = arg.evaluate(ctx);

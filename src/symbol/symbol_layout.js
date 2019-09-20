@@ -289,7 +289,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
         }
 
         let shapedIcon;
-        console.log('feature', feature);
         if (feature.icon && feature.icon.name) {
             const image = imageMap[feature.icon.name];
             if (image) {

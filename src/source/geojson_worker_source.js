@@ -264,6 +264,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         if (params.request) {
             getJSON(params.request, callback);
         } else if (typeof params.data === 'string') {
+            console.log('params.data', JSON.parse(params.data));
             try {
                 return callback(null, JSON.parse(params.data));
             } catch (e) {
