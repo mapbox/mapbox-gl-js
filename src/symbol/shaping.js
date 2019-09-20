@@ -568,7 +568,7 @@ function shapeLines(shaping: Shaping,
                     layoutTextSizeThisZoom: number) {
 
     let x = 0;
-    let y = SHAPING_DEFAULT_OFFSET;
+    let y = 0;
 
     let maxLineLength = 0;
     let maxLineHeight = 0;
@@ -690,6 +690,8 @@ function shapeLines(shaping: Shaping,
     const height = y - SHAPING_DEFAULT_OFFSET;
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(textAnchor);
     align(shaping.positionedLines, justify, horizontalAlign, verticalAlign, maxLineLength, maxLineHeight, lineHeight, height, lines.length);
+    // Calculate the bounding box
+    const height = y;
 
     shaping.top += -verticalAlign * height;
     shaping.bottom = shaping.top + height;

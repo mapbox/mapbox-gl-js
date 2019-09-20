@@ -7,9 +7,20 @@ const border = 3;
 
 import type {StyleGlyph} from './style_glyph.js';
 
+var count = 0;
+var ascender = 0.0;
+var descender = 0.0;
+
 function readFontstacks(tag: number, glyphs: Array<StyleGlyph>, pbf: Protobuf) {
     if (tag === 1) {
+        count = 0;
+        ascender = 0.0;
+        descender = 0.0;
         pbf.readMessage(readFontstack, glyphs);
+        for (let i = glyphs.length - count; i <= glyphs.length - 1; ++i) {
+            glyphs[i].metrics.ascender = ascender;
+            glyphs[i].metrics.descender = descender;
+        }
     }
 }
 
@@ -22,8 +33,13 @@ function readFontstack(tag: number, glyphs: Array<StyleGlyph>, pbf: Protobuf) {
                 width: width + 2 * border,
                 height: height + 2 * border
             }, bitmap),
-            metrics: {width, height, left, top, advance}
+            metrics: {width, height, left, top, advance, ascender, descender}
         });
+        ++count;
+    } else if (tag === 4) {
+        ascender = pbf.readDouble();
+    } else if (tag === 5) {
+        descender = pbf.readDouble();
     }
 }
 
