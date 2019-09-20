@@ -61,8 +61,8 @@ export function cachePut(request: Request, response: Response, requestTime: numb
         const clonedResponse = new window.Response(body, options);
 
         window.caches.open(CACHE_NAME)
-            .catch(e => warnOnce(e.message))
-            .then(cache => cache.put(stripQueryParameters(request.url), clonedResponse));
+            .then(cache => cache.put(stripQueryParameters(request.url), clonedResponse))
+            .catch(e => warnOnce(e.message));
     });
 }
 
@@ -77,7 +77,6 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
     const strippedURL = stripQueryParameters(request.url);
 
     window.caches.open(CACHE_NAME)
-        .catch(callback)
         .then(cache => {
             // manually strip URL instead of `ignoreSearch: true` because of a known
             // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431
@@ -95,7 +94,9 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
 
                     callback(null, response, fresh);
                 });
-        });
+        })
+        .catch(callback);
+
 }
 
 function isFresh(response) {
