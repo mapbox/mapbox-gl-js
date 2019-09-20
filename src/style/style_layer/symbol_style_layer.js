@@ -103,18 +103,18 @@ class SymbolStyleLayer extends StyleLayer {
         // debugger;
         // if (unevaluated.property.specification.type === 'image' && !value.available) {
 
-            // const unevaluatedValue = unevaluated.value;
-            // if (Array.isArray(unevaluatedValue)) {
-            //     for (let i = 0; i < unevaluatedValue.length; i++) {
-            //         if (unevaluatedValue[i] === 'image') {
-            //             return unevaluatedValue[1];
-            //         } else if (Array.isArray(unevaluatedValue[i]) && unevaluatedValue[i][0] === 'image') {
-            //             return unevaluatedValue[i][1];
-            //         }
-            //     }
-            // }
-            //
-            // return unevaluated.value;
+        // const unevaluatedValue = unevaluated.value;
+        // if (Array.isArray(unevaluatedValue)) {
+        //     for (let i = 0; i < unevaluatedValue.length; i++) {
+        //         if (unevaluatedValue[i] === 'image') {
+        //             return unevaluatedValue[1];
+        //         } else if (Array.isArray(unevaluatedValue[i]) && unevaluatedValue[i][0] === 'image') {
+        //             return unevaluatedValue[i][1];
+        //         }
+        //     }
+        // }
+        //
+        // return unevaluated.value;
         // }
 
         return value;
