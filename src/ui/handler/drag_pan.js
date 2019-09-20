@@ -154,7 +154,7 @@ class DragPanHandler {
 
         this._state = 'pending';
         this._startPos = this._mouseDownPos = this._prevPos = this._lastPos = DOM.mousePos(this._el, e);
-        this._startTouch = this._lastTouch = e instanceof window.TouchEvent ? DOM.touchPos(this._el, e) : null;
+        this._startTouch = this._lastTouch = (window.TouchEvent && e instanceof window.TouchEvent) ? DOM.touchPos(this._el, e) : null;
         this._inertia = [[browser.now(), this._startPos]];
     }
 
@@ -166,7 +166,7 @@ class DragPanHandler {
     _onMove(e: MouseEvent | TouchEvent) {
         e.preventDefault();
 
-        const touchPos = e instanceof window.TouchEvent ? DOM.touchPos(this._el, e) : null;
+        const touchPos = (window.TouchEvent && e instanceof window.TouchEvent) ? DOM.touchPos(this._el, e) : null;
         const pos = DOM.mousePos(this._el, e);
 
         const matchesLastPos = touchPos ? this._touchesMatch(this._lastTouch, touchPos) : this._lastPos.equals(pos);
@@ -293,7 +293,7 @@ class DragPanHandler {
             }
             this._unbind();
             this._deactivate();
-            if (e instanceof window.TouchEvent && e.touches.length > 1) {
+            if ((window.TouchEvent && e instanceof window.TouchEvent) && e.touches.length > 1) {
                 // If there are multiple fingers touching, reattach touchend listener in case
                 // all but one finger is removed and we need to restart a drag on touchend
                 DOM.addEventListener(window.document, 'touchend', this._onTouchEnd);
