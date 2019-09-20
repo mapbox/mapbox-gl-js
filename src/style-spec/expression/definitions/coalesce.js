@@ -53,11 +53,19 @@ class Coalesce implements Expression {
 
     evaluate(ctx: EvaluationContext) {
         let result = null;
+        let argCount = 0;
+        let requestedImageName;
+        // debugger;
         for (const arg of this.args) {
+            argCount++;
             result = arg.evaluate(ctx);
 
             if (arg.type.kind === 'image' && !result.available) {
+                if (!requestedImageName) requestedImageName = arg.input.value;
                 result = null;
+                if (argCount === this.args.length) {
+                    result = requestedImageName;
+                }
             }
 
             if (result !== null) break;
