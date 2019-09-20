@@ -247,6 +247,8 @@ class GlyphManager {
                 top: top / SDF_SCALE - baselineAdjustment,
                 advance: advance / SDF_SCALE,
                 localGlyph: true
+                ascender: 0.0,
+                descender: 0.0
             }
         };
         return glyph;
