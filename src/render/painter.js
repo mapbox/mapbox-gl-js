@@ -62,6 +62,7 @@ import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
+import type ResolvedImage from '../style-spec/expression/types/resolved_image';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 
@@ -508,10 +509,10 @@ class Painter {
      *
      * @returns true if a needed image is missing and rendering needs to be skipped.
      */
-    isPatternMissing(image: ?CrossFaded<string>): boolean {
+    isPatternMissing(image: ?CrossFaded<ResolvedImage>): boolean {
         if (!image) return false;
-        const imagePosA = this.imageManager.getPattern(image.from);
-        const imagePosB = this.imageManager.getPattern(image.to);
+        const imagePosA = this.imageManager.getPattern(image.from.toString());
+        const imagePosB = this.imageManager.getPattern(image.to.toString());
         return !imagePosA || !imagePosB;
     }
 

@@ -270,7 +270,8 @@ class GeolocateControl extends Evented {
             `${className}-icon ${className}-geolocate`,
             this._container);
         this._geolocateButton.type = 'button';
-        this._geolocateButton.setAttribute('aria-label', 'Geolocate');
+        this._geolocateButton.title = 'Find my location';
+        this._geolocateButton.setAttribute('aria-label', 'Find my location');
 
         if (this.options.trackUserLocation) {
             this._geolocateButton.setAttribute('aria-pressed', 'false');
@@ -295,7 +296,8 @@ class GeolocateControl extends Evented {
         // the watch mode to background watch, so that the marker is updated but not the camera.
         if (this.options.trackUserLocation) {
             this._map.on('movestart', (event) => {
-                if (!event.geolocateSource && this._watchState === 'ACTIVE_LOCK') {
+                const fromResize = event.originalEvent && event.originalEvent.type === 'resize';
+                if (!event.geolocateSource && this._watchState === 'ACTIVE_LOCK' && !fromResize) {
                     this._watchState = 'BACKGROUND';
                     this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
                     this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');

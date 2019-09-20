@@ -69,8 +69,8 @@ class LineStyleLayer extends StyleLayer {
         this.gradientTexture = null;
     }
 
-    recalculate(parameters: EvaluationParameters) {
-        super.recalculate(parameters);
+    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+        super.recalculate(parameters, availableImages);
 
         (this.paint._values: any)['line-floorwidth'] =
             lineFloorwidthProperty.possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);

@@ -28,8 +28,8 @@ class FillStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    recalculate(parameters: EvaluationParameters) {
-        super.recalculate(parameters);
+    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+        super.recalculate(parameters, availableImages);
 
         const outlineColor = this.paint._values['fill-outline-color'];
         if (outlineColor.value.kind === 'constant' && outlineColor.value.value === undefined) {

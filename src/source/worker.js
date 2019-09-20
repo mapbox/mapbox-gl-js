@@ -30,6 +30,7 @@ export default class Worker {
     self: WorkerGlobalScopeInterface;
     actor: Actor;
     layerIndexes: { [string]: StyleLayerIndex };
+    availableImages: { [string]: Array<string> };
     workerSourceTypes: { [string]: Class<WorkerSource> };
     workerSources: { [string]: { [string]: { [string]: WorkerSource } } };
     demWorkerSources: { [string]: { [string]: RasterDEMTileWorkerSource } };
@@ -40,6 +41,7 @@ export default class Worker {
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
+        this.availableImages = {};
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
@@ -69,6 +71,11 @@ export default class Worker {
 
     setReferrer(mapID: string, referrer: string) {
         this.referrer = referrer;
+    }
+
+    setImages(mapId: string, images: Array<string>, callback: WorkerTileCallback) {
+        this.availableImages[mapId] = images;
+        callback();
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
@@ -157,6 +164,16 @@ export default class Worker {
         }
     }
 
+    getAvailableImages(mapId: string) {
+        let availableImages = this.availableImages[mapId];
+
+        if (!availableImages) {
+            availableImages = [];
+        }
+
+        return availableImages;
+    }
+
     getLayerIndex(mapId: string) {
         let layerIndexes = this.layerIndexes[mapId];
         if (!layerIndexes) {
@@ -179,8 +196,7 @@ export default class Worker {
                     this.actor.send(type, data, callback, mapId);
                 }
             };
-
-            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId));
+            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId), this.getAvailableImages(mapId));
         }
 
         return this.workerSources[mapId][type][source];

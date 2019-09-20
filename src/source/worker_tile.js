@@ -60,7 +60,7 @@ class WorkerTile {
         this.returnDependencies = !!params.returnDependencies;
     }
 
-    parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
+    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
         this.status = 'parsing';
         this.data = data;
 
@@ -76,7 +76,8 @@ class WorkerTile {
             featureIndex,
             iconDependencies: {},
             patternDependencies: {},
-            glyphDependencies: {}
+            glyphDependencies: {},
+            availableImages
         };
 
         const layerFamilies = layerIndex.familiesBySource[this.source];
@@ -106,7 +107,7 @@ class WorkerTile {
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.visibility === 'none') continue;
 
-                recalculateLayers(family, this.zoom);
+                recalculateLayers(family, this.zoom, availableImages);
 
                 const bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
@@ -180,13 +181,13 @@ class WorkerTile {
                 for (const key in buckets) {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
-                        recalculateLayers(bucket.layers, this.zoom);
+                        recalculateLayers(bucket.layers, this.zoom, availableImages);
                         performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, iconMap, imageAtlas.iconPositions, this.showCollisionBoxes);
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||
                          bucket instanceof FillExtrusionBucket)) {
-                        recalculateLayers(bucket.layers, this.zoom);
+                        recalculateLayers(bucket.layers, this.zoom, availableImages);
                         bucket.addFeatures(options, imageAtlas.patternPositions);
                     }
                 }
@@ -208,11 +209,11 @@ class WorkerTile {
     }
 }
 
-function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
+function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number, availableImages: Array<string>) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
     const parameters = new EvaluationParameters(zoom);
     for (const layer of layers) {
-        layer.recalculate(parameters);
+        layer.recalculate(parameters, availableImages);
     }
 }
 

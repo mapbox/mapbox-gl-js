@@ -1,0 +1,14 @@
+{
+  "expression": ["number", ["get", "icon"]],
+  "propertySpec": {
+    "type": "image"
+  },
+  "expected": {
+    "compiled": {
+        "result": "error",
+        "errors": [
+          {"key": "", "error": "Expected image but found number instead."}
+        ]
+    }
+  }
+}

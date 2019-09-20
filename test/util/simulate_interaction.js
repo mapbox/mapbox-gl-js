@@ -63,7 +63,8 @@ events.magicWheelZoomDelta = 4.000244140625;
 [ 'touchstart', 'touchend', 'touchmove', 'touchcancel' ].forEach((event) => {
     events[event] = function (target, options) {
         // Should be using Touch constructor here, but https://github.com/jsdom/jsdom/issues/2152.
-        options = Object.assign({bubbles: true, touches: [{clientX: 0, clientY: 0}]}, options);
+        const defaultTouches = event.endsWith('end') || event.endsWith('cancel') ? [] : [{clientX: 0, clientY: 0}];
+        options = Object.assign({bubbles: true, touches: defaultTouches}, options);
         const TouchEvent = window(target).TouchEvent;
         target.dispatchEvent(new TouchEvent(event, options));
     };

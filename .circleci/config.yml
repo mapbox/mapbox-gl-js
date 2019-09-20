@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@0.1.16
 
 workflows:
   version: 2
@@ -26,6 +28,14 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - collect-stats:
+          requires:
+            - build
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: master
       - test-flow:
           requires:
             - prepare
@@ -89,7 +99,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: circleci/node:10.16-stretch-browsers
+    - image: circleci/node:10.16-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -100,7 +110,7 @@ jobs:
       - restore_cache:
           keys:
             - v3-yarn-{{ checksum "yarn.lock" }}
-      - run: npm install -g yarn & yarn install
+      - run: yarn
       - save_cache:
           key: v3-yarn-{{ checksum "yarn.lock" }}
           paths:
@@ -134,6 +144,8 @@ jobs:
       - attach_workspace:
           at: .
       - run: yarn run build-prod-min
+      - run: yarn run build-prod
+      - run: yarn run build-csp
       - run: yarn run build-dev
       - run: yarn run build-css
       - run: yarn run build-style-spec
@@ -150,6 +162,19 @@ jobs:
       - attach_workspace:
           at: .
       - run: node build/check-bundle-size.js "dist/mapbox-gl.js" "GL JS - Minified"
+
+  collect-stats:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Collect performance stats
+          command: node bench/gl-stats.js
+      - aws-cli/install
+      - run:
+          name: Upload performance stats
+          command: aws s3 cp data.json.gz s3://mapbox-loading-dock/raw/gl_js.perf_metrics_staging/ci/`git show -s --date=short --format=%cd-%h HEAD`.json.gz
 
   test-flow:
     <<: *defaults
@@ -200,6 +225,7 @@ jobs:
       - run:
           name: Build
           command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
+      - aws-cli/install
       - run:
           name: Upload benchmark
           command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js
@@ -212,6 +238,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - aws-cli/install
       - run:
           name: Deploy release
           command: |

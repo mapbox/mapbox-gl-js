@@ -117,7 +117,7 @@ class ImageManager extends Evented {
 
     getImages(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
-        // (i.e. if they've been addeded via runtime styling), then notify the requestor immediately.
+        // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
         // dependencies are still unavailable, we'll just assume they are permanently missing.
         let hasAllDependencies = true;
