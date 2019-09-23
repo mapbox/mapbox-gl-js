@@ -92,12 +92,14 @@ function buildArtifactsCi() {
 // that resolves when all of them have had their first run.
 function buildArtifactsDev() {
     return buildTape().then(() => {
-        // A promise that resolves on the first build og fixtures.json
+        // A promise that resolves on the first build of fixtures.json
         return new Promise((resolve, reject) => {
             fixtureWatcher = chokidar.watch(fixturePath);
             let needsRebuild = false;
             fixtureWatcher.on('ready', () => {
                 generateFixtureJson(fixturePath);
+
+                //Throttle calls to `generateFxitureJson` to run every 2s
                 setInterval(() => {
                     if (needsRebuild) {
                         generateFixtureJson(fixturePath);
@@ -105,6 +107,7 @@ function buildArtifactsDev() {
                     }
                 }, fixtureBuildInterval);
 
+                //Flag needs rebuild when anything changes
                 fixtureWatcher.on('all', () => {
                     needsRebuild = true;
                 });
@@ -124,16 +127,10 @@ function buildArtifactsDev() {
 
                 watcher.on('event', (e) => {
                     if (e.code === 'START') {
-                        notifier.notify({
-                            title: 'Query Tests',
-                            message: `${name} bundle started`,
-                        });
+                        notify('Query Tests', `${name} bundle started`);
                     }
                     if (e.code === 'END') {
-                        notifier.notify({
-                            title: 'Query Tests',
-                            message: `${name} bundle finished`,
-                        });
+                        notify('Query Tests', `${name} bundle finished`);
                         resolve();
                     }
                     if (e.code === 'FATAL') {
@@ -149,4 +146,10 @@ function buildArtifactsDev() {
             startRollupWatcher('query-suite', rollupTestConfig),
         ]);
     });
+}
+
+function notify(title, message) {
+    if (!process.env.DISABLE_BUILD_NOTIFICATIONS) {
+        notifier.notify({title, message});
+    }
 }
