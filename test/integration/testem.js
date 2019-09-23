@@ -27,7 +27,7 @@ module.exports =  {
         "dist/mapbox-gl-dev.js",
         "test/integration/dist/query-test.js"
     ],
-    "launch_in_dev": [ "Chrome" ],
+    "launch_in_dev": [],
     "launch_in_ci": [ "Chrome" ],
     "browser_args": {
         "Chrome": {
