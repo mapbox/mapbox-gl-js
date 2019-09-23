@@ -578,6 +578,21 @@ function shapeLines(shaping: Shaping,
         textJustify === 'left' ? 0 : 0.5;
 
     let lineIndex = 0;
+    let hasBaseline = false;
+    for (const line of lines) {
+        line.trim();
+        for (let i = 0; i < line.length(); i++) {
+            const section = line.getSection(i);
+            const codePoint = line.getCharCode(i);
+
+            const positions = glyphMap[section.fontStack];
+            const glyph = positions && positions[codePoint];
+            if (!glyph) continue;
+            hasBaseline = glyph.metrics.ascender !== 0 && glyph.metrics.descender !== 0;
+            if (!hasBaseline) break;
+        }
+        if (!hasBaseline) break;
+    }
     for (const line of lines) {
         line.trim();
 
