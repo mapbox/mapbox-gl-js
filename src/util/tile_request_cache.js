@@ -81,7 +81,6 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
             // manually strip URL instead of `ignoreSearch: true` because of a known
             // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431
             cache.match(strippedURL)
-                .catch(callback)
                 .then(response => {
                     const fresh = isFresh(response);
 
@@ -93,7 +92,8 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
                     }
 
                     callback(null, response, fresh);
-                });
+                })
+                .catch(callback);
         })
         .catch(callback);
 
