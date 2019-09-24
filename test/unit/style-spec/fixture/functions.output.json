@@ -195,7 +195,7 @@
     "message": "layers[54].paint.heatmap-color: zoom functions not supported",
     "line": 960
   },
-  {                                                                                                                     
+  {
     "message": "layers[55].layout.line-join: \"feature-state\" data expressions are not supported with layout properties.",
     "line": 968
   },
