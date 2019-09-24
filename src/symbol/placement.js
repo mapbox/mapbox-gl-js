@@ -237,7 +237,7 @@ export class Placement {
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
                            textBoxScale: number, rotateWithMap: boolean,
                            pitchWithMap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroup: CollisionGroup,
-                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ box: Array<number>, offscreen: boolean }  {
+                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ shift: Point, placedGlyphBoxes: { box: Array<number>, offscreen: boolean } }  {
 
         const textOffset = [symbolInstance.textOffset0, symbolInstance.textOffset1];
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textBoxScale);
@@ -274,7 +274,7 @@ export class Placement {
                 this.placedOrientations[symbolInstance.crossTileID] = orientation;
             }
 
-            return placedGlyphBoxes;
+            return {shift, placedGlyphBoxes};
         }
     }
 
@@ -308,6 +308,7 @@ export class Placement {
 
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
+        const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
 
         if (!bucket.collisionArrays && collisionBoxArray) {
@@ -326,6 +327,7 @@ export class Placement {
             let placeText = false;
             let placeIcon = false;
             let offscreen = true;
+            let shift = null;
 
             let placed = {box: null, offscreen: null};
             let placedVertical = {box: null, offscreen: null};
@@ -426,14 +428,18 @@ export class Placement {
                         for (let i = 0; i < placementAttempts; ++i) {
                             const anchor = anchors[i % anchors.length];
                             const allowOverlap = (i >= anchors.length);
-                            placedBox = this.attemptAnchorPlacement(
+                            const result = this.attemptAnchorPlacement(
                                 anchor, collisionTextBox, width, height,
                                 textBoxScale, rotateWithMap, pitchWithMap, textPixelRatio, posMatrix,
                                 collisionGroup, allowOverlap, symbolInstance, bucket, orientation);
 
-                            if (placedBox && placedBox.box && placedBox.box.length) {
-                                placeText = true;
-                                break;
+                            if (result) {
+                                placedBox = result.placedGlyphBoxes;
+                                if (placedBox && placedBox.box && placedBox.box.length) {
+                                    placeText = true;
+                                    shift = result.shift;
+                                    break;
+                                }
                             }
                         }
 
@@ -508,7 +514,14 @@ export class Placement {
                 iconFeatureIndex = collisionArrays.iconFeatureIndex;
             }
             if (collisionArrays.iconBox) {
-                placedIconBoxes = this.collisionIndex.placeCollisionBox(collisionArrays.iconBox,
+
+                const iconBox = hasIconTextFit && shift ?
+                    shiftVariableCollisionBox(
+                        collisionArrays.iconBox, shift.x, shift.y,
+                        rotateWithMap, pitchWithMap, this.transform.angle) :
+                    collisionArrays.iconBox;
+
+                placedIconBoxes = this.collisionIndex.placeCollisionBox(iconBox,
                         layout.get('icon-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
                 placeIcon = placedIconBoxes.box.length > 0;
                 offscreen = offscreen && placedIconBoxes.offscreen;
@@ -709,6 +722,7 @@ export class Placement {
         const variablePlacement = layout.get('text-variable-anchor');
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
+        const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         // If allow-overlap is true, we can show symbols before placement runs on them
         // But we have to wait for placement if we potentially depend on a paired icon/text
         // with allow-overlap: false.
@@ -802,8 +816,8 @@ export class Placement {
                 bucket.hasTextCollisionBoxData() || bucket.hasTextCollisionCircleData()) {
                 const collisionArrays = bucket.collisionArrays[s];
                 if (collisionArrays) {
+                    let shift = new Point(0, 0);
                     if (collisionArrays.textBox) {
-                        let shift = new Point(0, 0);
                         let used = true;
                         if (variablePlacement) {
                             const variableOffset = this.variableOffsets[crossTileID];
@@ -832,7 +846,9 @@ export class Placement {
                     }
 
                     if (collisionArrays.iconBox) {
-                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, false);
+                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, false,
+                            hasIconTextFit ? shift.x : 0,
+                            hasIconTextFit ? shift.y : 0);
                     }
 
                     const textCircles = collisionArrays.textCircles;
