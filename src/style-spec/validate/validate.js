@@ -51,7 +51,6 @@ const VALIDATORS = {
 //   scalar value.
 // - valueSpec: current spec being evaluated. Tracks value.
 // - styleSpec: current full spec being evaluated.
-// - mapboxApiSupported: If true, assert that style can be uploaded to the Mapbox Styles API.
 
 export default function validate(options) {
     const value = options.value;

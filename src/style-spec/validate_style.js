@@ -1,8 +1,7 @@
 
 import validateStyleMin from './validate_style.min';
-import ParsingError from './error/parsing_error';
-import jsonlint from '@mapbox/jsonlint-lines-primitives';
 import {v8} from './style-spec';
+import readStyle from './read_style';
 
 /**
  * Validate a Mapbox GL style against the style specification.
@@ -24,12 +23,10 @@ import {v8} from './style-spec';
  */
 
 export default function validateStyle(style, styleSpec = v8, options) {
-    if (style instanceof String || typeof style === 'string' || style instanceof Buffer) {
-        try {
-            style = jsonlint.parse(style.toString());
-        } catch (e) {
-            return [new ParsingError(e)];
-        }
+    try {
+        style = readStyle(style);
+    } catch (e) {
+        return [e];
     }
 
     return validateStyleMin(style, styleSpec, options);

@@ -35,7 +35,6 @@ function getSourceErrors(source: Object): Array<?Error> {
      * Inlined sources are not supported by the Mapbox Styles API, so only
      * "type", "url", and "tileSize" properties are valid
      */
-
     const sourceKeys = ['type', 'url', 'tileSize'];
     errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
 
@@ -134,11 +133,10 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?Error> {
     return errors;
 }
 
-function validateMapboxApiSupported(options: Object): Array<?Error> {
-    const value = options.value;
-    const specKeys = Object.keys(options.styleSpec.$root);
-
-    return getRootErrors(value, specKeys).concat(getSourcesErrors(value.source));
+// Main validation function. Has identical interface to standard validate.js but
+// performs additional validation on the top level object. See validate.js for
+// options documentation.
+export default function validateMapboxApiSupported(style: Object, spec: Object): Array<?Error> {
+    const specKeys = Object.keys(spec.$root);
+    return getRootErrors(style, specKeys).concat(getSourcesErrors(style.source));
 }
-
-export default validateMapboxApiSupported;
