@@ -3,93 +3,142 @@ import ValidationError from '../error/validation_error';
 
 const SUPPORTED_SPEC_VERSION = 8;
 const MAX_SOURCES_IN_STYLE = 15;
-const SOURCE_KEYS = ['type', 'url', 'tileSize'];
 
-function validateKeys(obj: Object, keys: Array<*>, errors: Array<?Error>, path: ?string): void {
+function isValid(value: ?string, regex: RegExp): boolean {
+    if (!value) return true;
+    return !!value.match(regex);
+}
+
+function getSourcesCount(sources: { [string]: { url: string } }) {
+    return Object.keys(sources).reduce((count, key) => {
+        const source = sources[key];
+        return count + source.url.replace('mapbox://', '').split(',').length;
+    }, 0);
+}
+
+function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<?Error> {
     const allowed = new Set(keys);
+    const errors = [];
     Object.keys(obj).forEach(k => {
         if (!allowed.has(k)) {
             const prop = path ? `${path}.${k}` : k;
             errors.push(new ValidationError(prop, null, `Unsupported property "${prop}"`));
         }
     });
+    return errors;
 }
 
-function isValidSpriteURL(url: string): boolean {
-    const validPattern = /^mapbox:\/\/sprites\/([^/]*)\/([^/]*)\/([^/]*)?$/;
-    return !!url.match(validPattern);
+function getSourceErrors(source: Object): Array<?Error> {
+    const errors = [];
+
+    /*
+     * Inlined sources are not supported by the Mapbox Styles API, so only
+     * "type", "url", and "tileSize" properties are valid
+     */
+
+    const sourceKeys = ['type', 'url', 'tileSize'];
+    errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
+
+    if (!source.url) {
+        errors.push(new ValidationError('sources', null, 'Source must include url'));
+    }
+
+    /*
+     * "sprite" is optional. If present, valid examples:
+     * mapbox://mapbox.abcd1234
+     * mapbox://penny.abcd1234
+     * mapbox://mapbox.abcd1234,penny.abcd1234
+     */
+    const sourceUrlPattern = /^mapbox:\/\/([^/]*)$/;
+    if (!isValid(source.url, sourceUrlPattern)) {
+        errors.push(new ValidationError('sources', null, 'Style must reference sources hosted by Mapbox'));
+    }
+
+    return errors;
 }
 
-function isValidGlyphsURL(url: string): boolean {
-    const validPattern = /^mapbox:\/\/fonts\/([^/]*)\/{fontstack}\/{range}.pbf$/;
-    return !!url.match(validPattern);
-}
+function getSourcesErrors(sources: Object): Array<?Error> {
+    const errors = [];
 
-function validateSource(sources: Object, errors: Array<?Error>): void {
-    const count = Object.keys(sources).reduce((count, key) => {
-        const source = sources[key];
-        return count + source.url.replace('mapbox://', '').split(',').length;
-    }, 0);
-
-    if (count > MAX_SOURCES_IN_STYLE) {
+    if (getSourcesCount(sources) > MAX_SOURCES_IN_STYLE) {
         errors.push(new ValidationError('sources', null, `Styles must contain ${MAX_SOURCES_IN_STYLE} or fewer sources`));
     }
 
-    for (const q in sources) {
-        if (!sources[q].url) {
-            errors.push(new ValidationError('sources', null, 'Source must include url'));
-        }
+    Object.keys(sources).forEach((s: string) => {
+        const sourceErrors = getSourceErrors(sources[s]);
+        errors.push(...sourceErrors);
+    });
 
-        if (sources[q].url.indexOf('mapbox://') !== 0) {
-            errors.push(new ValidationError('sources.url', null, 'Style must reference sources hosted by Mapbox'));
-        }
-
-        validateKeys(sources[q], SOURCE_KEYS, errors, 'source');
-    }
-
+    return errors;
 }
 
-function validate(style: Object, errors: Array<?Error>): void {
-    if (style.version !== SUPPORTED_SPEC_VERSION) {
-        errors.push(new ValidationError('version', null, `style version must be ${SUPPORTED_SPEC_VERSION}`));
-    }
+function getRootErrors(style: Object, specKeys: Array<any>): Array<?Error> {
+    const errors = [];
 
-    if (style.sprite && !isValidGlyphsURL(style.glyphs)) {
-        errors.push(new ValidationError('glyphs', null, 'Styles must reference glyphs hosted by Mapbox'));
-    }
-
-    if (style.sprite && !isValidSpriteURL(style.sprite)) {
-        errors.push(new ValidationError('sprite', null, 'Styles must reference sprites hosted by Mapbox'));
-    }
-
-    if (style.visibility && style.visibility.match(/^(public|private)/)) {
-        errors.push(new ValidationError('visibility', null, 'Style visibility must be public or private'));
-    }
-}
-
-function validateRootKeys(value: Object, specKeys: Array<any>, errors: Array<?Error>): void {
+    /*
+     * The following keys are optional but fully managed by the Mapbox Styles
+     * API. Values on stylesheet on POST or PATCH will be ignored: "owner",
+     * "id", "cacheControl", "draft", "created", "modified"
+     *
+     * The following keys are optional. The Mapbox Styles API respects value on
+     * stylesheet on PATCH, but ignores the value on POST: "visibility"
+     */
     const optionalRootProperties = [
         'owner',
         'id',
         'cacheControl',
-        'visibility',
         'draft',
         'created',
-        'modified'
+        'modified',
+        'visibility'
     ];
-    validateKeys(value, [...specKeys, ...optionalRootProperties], errors);
-}
 
-function validateMapboxApiSupported(options: Object) {
-    const value = options.value;
-    const specKeys = Object.keys(options.styleSpec.$root);
-    const errors = [];
+    const allowedKeyErrors = getAllowedKeyErrors(style, [...specKeys, ...optionalRootProperties]);
+    errors.push(...allowedKeyErrors);
 
-    validateRootKeys(value, specKeys, errors);
-    validateSource(value.source, errors);
-    validate(value, errors);
+    if (style.version !== SUPPORTED_SPEC_VERSION) {
+        errors.push(new ValidationError('version', null, `style version must be ${SUPPORTED_SPEC_VERSION}`));
+    }
+
+    /*
+     * "glyphs" is optional. If present, valid examples:
+     * mapbox://fonts/penny/{fontstack}/{range}.pbf
+     * mapbox://fonts/mapbox/{fontstack}/{range}.pbf
+     */
+    const glyphUrlPattern = /^mapbox:\/\/fonts\/([^/]*)\/{fontstack}\/{range}.pbf$/;
+    if (!isValid(style.glyphs, glyphUrlPattern)) {
+        errors.push(new ValidationError('glyphs', null, 'Styles must reference glyphs hosted by Mapbox'));
+    }
+
+    /*
+     * "sprite" is optional. If present, valid examples:
+     * mapbox://sprites/penny/abcd1234
+     * mapbox://sprites/mapbox/abcd1234/draft
+     * mapbox://sprites/cyrus/abcd1234/abcd1234
+     */
+    const spriteUrlPattern = /^mapbox:\/\/sprites\/([^/]*)\/([^/]*)\/?([^/]*)?$/;
+    if (!isValid(style.sprite, spriteUrlPattern)) {
+        errors.push(new ValidationError('sprite', null, 'Styles must reference sprites hosted by Mapbox'));
+    }
+
+    /*
+     * "visibility" is optional. If present, valid examples:
+     * "private"
+     * "public"
+     */
+    const visibilityPattern = /^(public|private)/;
+    if (!isValid(style.visibility, visibilityPattern)) {
+        errors.push(new ValidationError('visibility', null, 'Style visibility must be public or private'));
+    }
 
     return errors;
+}
+
+function validateMapboxApiSupported(options: Object): Array<?Error> {
+    const value = options.value;
+    const specKeys = Object.keys(options.styleSpec.$root);
+
+    return getRootErrors(value, specKeys).concat(getSourcesErrors(value.source));
 }
 
 export default validateMapboxApiSupported;
