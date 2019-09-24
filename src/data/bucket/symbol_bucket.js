@@ -419,9 +419,13 @@ class SymbolBucket implements Bucket {
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
                 const resolvedTokens = layer.getValueAndResolveTokens('icon-image', feature, availableImages);
-                icon = resolvedTokens instanceof ResolvedImage ?
-                    resolvedTokens :
-                    !resolvedTokens || typeof resolvedTokens === 'string' ? ResolvedImage.fromString({name: resolvedTokens, available: false}) : ResolvedImage.fromString(resolvedTokens);
+                if (resolvedTokens instanceof ResolvedImage) {
+                    icon = resolvedTokens;
+                } else if (!resolvedTokens || typeof resolvedTokens === 'string') {
+                    icon = ResolvedImage.fromString({name: resolvedTokens, available: false});
+                } else {
+                    icon = ResolvedImage.fromString(resolvedTokens);
+                }
             }
 
             if (!text && !icon) {
