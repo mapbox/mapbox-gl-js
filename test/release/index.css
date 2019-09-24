@@ -64,6 +64,7 @@ section#container {
 }
 
 section#container iframe {
-    flex-grow : 1;
+    flex-grow:1;
+    height:100%;
     border:0;
 }

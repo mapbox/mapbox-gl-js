@@ -1,7 +1,8 @@
 /* eslint-env browser */
+/* eslint-disable prefer-arrow-callback,prefer-template */
 const mapboxgl = {};
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     const jsProdMin = document.createElement("a");
     jsProdMin.href = "/dist/mapbox-gl.js";
     const css = document.createElement("a");
@@ -37,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         page: pages[0]
     };
 
-    location.hash.substr(1).split('&').forEach((param) => {
+    location.hash.substr(1).split('&').forEach(function (param) {
         const entry = param.split('=', 2);
         params[entry[0]] = entry[1];
     });
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (index < 0) index = 0;
 
     let req;
+    let url;
     let metadata;
 
     function load() {
@@ -61,68 +63,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
         req = new XMLHttpRequest();
         req.addEventListener("load", loadedMetadata);
-        req.responseType = 'json';
-        req.open("GET", `/test/release/${page}.json`);
+        url = '/test/release/' + page + '.json';
+        req.open("GET", url);
         req.send();
 
         function loadedMetadata() {
             if (req.status !== 200) {
-                container.innerText = `Failed to load ${req.responseURL}: ${req.statusText}`;
+                container.innerText = 'Failed to load ' + url + ': ' + req.statusText;
                 return;
             }
-            metadata = req.response;
+            metadata = JSON.parse(req.response);
             titleElement.innerText = metadata.title;
 
             req = new XMLHttpRequest();
             req.addEventListener("load", loadedHTML);
-            req.open("GET", metadata.url ? metadata.url : `/test/release/${page}.html`);
+            url = metadata.url ? metadata.url : '/test/release/' + page + '.html';
+            req.open("GET", url);
             req.send();
         }
 
         function loadedHTML() {
             if (req.status !== 200) {
-                container.innerText = `Failed to load ${req.responseURL}: ${req.statusText}`;
+                container.innerText = 'Failed to load ' + url + ': ' + req.statusText;
                 return;
             }
             const iframe = document.createElement('iframe');
             container.appendChild(iframe);
-            const url = URL.createObjectURL(new Blob([
-                '<!DOCTYPE html>\n',
-                '<html>\n',
-                '<head>\n',
-                '    <title>Mapbox GL JS debug page</title>\n',
-                '    <meta charset="utf-8">\n',
-                '    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">\n',
-                `    <script src="${jsProdMin.href}"><\/script>\n`,
-                `    <script>mapboxgl.accessToken = "${mapboxgl.accessToken}";<\/script>\n`,
-                `    <link rel="stylesheet" href="${css.href}" />\n`,
-                '    <style>\n',
-                '        body { margin: 0; padding: 0; }\n',
-                '        html, body, #map { height: 100%; }\n',
-                '    </style>\n',
-                '</head>\n',
-                '<body>\n',
+            const iframeDoc = iframe.contentWindow.document.open("text/html", "replace");
+            iframeDoc.write([
+                '<!DOCTYPE html>',
+                '<html>',
+                '<head>',
+                '    <title>Mapbox GL JS debug page</title>',
+                '    <meta charset="utf-8">',
+                '    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">',
+                '    <script src="' + jsProdMin.href + '"><\/script>',
+                '    <script>mapboxgl.accessToken = "' + mapboxgl.accessToken + '";<\/script>',
+                '    <link rel="stylesheet" href="' + css.href + '" />',
+                '    <style>',
+                '        body { margin: 0; padding: 0; }',
+                '        html, body, #map { height: 100%; }',
+                '    </style>',
+                '</head>',
+                '<body>',
                 req.response,
-                '</body>\n',
-                '</html>' ], {type: 'text/html'}));
-
-            iframe.src = url;
+                '</body>',
+                '</html>' ].join(''));
+            iframeDoc.close();
         }
 
         prevButton.disabled = index === 0;
         nextButton.disabled = index + 1 === pages.length;
 
-        location.hash = `page=${page}`;
+        location.hash = 'page=' + page;
     }
 
-    prevButton.addEventListener('click', () => {
+    prevButton.addEventListener('click', function() {
         if (index > 0) {
             index--;
             load();
         }
     });
 
-    nextButton.addEventListener('click', () => {
+    nextButton.addEventListener('click', function() {
         if (index + 1 <= pages.length) {
             index++;
             load();
