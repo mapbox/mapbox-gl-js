@@ -1,5 +1,5 @@
 import {test} from '../../util/test';
-import { cacheGet, cachePut } from '../../../src/util/tile_request_cache';
+import {cacheGet, cachePut} from '../../../src/util/tile_request_cache';
 import window from '../../../src/util/window';
 import sinon from 'sinon';
 
@@ -19,11 +19,11 @@ test('tile_request_cache', (t) => {
 
         let result;
         try {
-          result = cachePut({url:''});
-          t.pass('should return successfully');
-          t.notOk(result, 'should return null');
+            result = cachePut({url:''});
+            t.pass('should return successfully');
+            t.notOk(result, 'should return null');
         } catch (e) {
-          t.ifError(e, 'should not result in error');
+            t.ifError(e, 'should not result in error');
         }
         t.end();
     });
@@ -62,9 +62,9 @@ test('tile_request_cache', (t) => {
 
     t.test('cacheGet, happy path', (t) => {
         const fakeResponse = {
-          headers: { get: sinon.stub() },
-          clone: sinon.stub(),
-          body: 'yay'
+            headers: {get: sinon.stub()},
+            clone: sinon.stub(),
+            body: 'yay'
         };
         fakeResponse.headers.get.withArgs('Expires').returns('2300-01-01');
         fakeResponse.headers.get.withArgs('Cache-Control').returns(null);
