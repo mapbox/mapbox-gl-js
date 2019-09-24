@@ -23,13 +23,15 @@ import readStyle from './read_style';
  */
 
 export default function validateStyle(style, styleSpec = v8, options) {
+    let s = style;
+
     try {
-        style = readStyle(style);
+        s = readStyle(s);
     } catch (e) {
         return [e];
     }
 
-    return validateStyleMin(style, styleSpec, options);
+    return validateStyleMin(s, styleSpec, options);
 }
 
 export const source = validateStyleMin.source;

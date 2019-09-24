@@ -2,12 +2,14 @@ import ParsingError from './error/parsing_error';
 import jsonlint from '@mapbox/jsonlint-lines-primitives';
 
 export default function readStyle(style) {
-    if (style instanceof String || typeof style === 'string' || style instanceof Buffer) {
+    let s = style;
+    if (s instanceof String || typeof s === 'string' || s instanceof Buffer) {
         try {
-            style = jsonlint.parse(style.toString());
+            s = jsonlint.parse(s.toString());
         } catch (e) {
             throw new ParsingError(e);
         }
     }
-    return style;
+
+    return s;
 }

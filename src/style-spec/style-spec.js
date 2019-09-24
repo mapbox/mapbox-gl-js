@@ -76,7 +76,7 @@ import convertFunction from './function/convert';
 import {eachSource, eachLayer, eachProperty} from './visit';
 
 import validate from './validate_style';
-import validateMapboxApiSupported from './validate_style_mapbox_api_supported';
+import validateMapboxApiSupported from './validate_mapbox_api_supported';
 
 const expression = {
     StyleExpression,
