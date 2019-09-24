@@ -1,18 +1,25 @@
 // @flow
 
+export type ResolvedImageOptions = {
+    name: string,
+    available: boolean
+};
+
 export default class ResolvedImage {
     name: string;
+    available: boolean;
 
-    constructor(name: string) {
-        this.name = name;
+    constructor(options: ResolvedImageOptions) {
+        this.name = options.name;
+        this.available = options.available;
     }
 
     toString(): string {
         return this.name;
     }
 
-    static fromString(imageName: string): ResolvedImage {
-        return new ResolvedImage(imageName);
+    static fromString(options: ResolvedImageOptions): ResolvedImage {
+        return new ResolvedImage(options);
     }
 
     serialize(): Array<mixed> {

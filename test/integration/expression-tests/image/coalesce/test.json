@@ -14,7 +14,7 @@
       "type": "image"
     },
     "outputs": [
-      "monument-15"
+      {"name":"monument-15","available":true}
     ],
     "serialized": [
       "coalesce",

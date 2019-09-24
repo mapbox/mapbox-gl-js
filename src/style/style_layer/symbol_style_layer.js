@@ -95,7 +95,7 @@ class SymbolStyleLayer extends StyleLayer {
     getValueAndResolveTokens(name: *, feature: Feature, availableImages: Array<string>) {
         const value = this.layout.get(name).evaluate(feature, {}, availableImages);
         const unevaluated = this._unevaluatedLayout._values[name];
-        if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value)) {
+        if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
             return resolveTokens(feature.properties, value);
         }
 
