@@ -1,0 +1,69 @@
+html, body {
+    margin:0;
+    padding:0;
+    height:100%;
+    width:100%;
+    position: fixed;
+}
+
+body {
+    font-family:"Open Sans", sans-serif;
+}
+
+nav#top {
+    height:60px;
+    background:#4264fb;
+    display:flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    color:white;
+    overflow: hidden;
+}
+
+#logo {
+    margin:10px;
+    display:flex;
+}
+
+#title {
+    flex-grow:1;
+    font-size:20px;
+    display:flex;
+    align-items:center;
+    padding:4px 20px;
+    line-height:0.9em;
+    text-overflow:ellipsis;
+}
+
+#buttons {
+    width:120px;
+    display:flex;
+}
+
+#buttons button {
+    width:60px;
+    height:60px;
+    border:0;
+    background:none;
+    color:white;
+}
+
+#buttons button path {
+    fill:white;
+}
+
+#buttons button:disabled {
+    opacity:0.25;
+}
+
+section#container {
+    height:calc(100% - 60px);
+    max-height:768px;
+    display:flex;
+    background-color:#CCC;
+}
+
+section#container iframe {
+    flex-grow : 1;
+    border:0;
+}
