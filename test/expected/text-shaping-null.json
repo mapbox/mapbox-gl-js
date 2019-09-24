@@ -57,6 +57,7 @@
   "text": "hi\u0000",
   "top": -12,
   "bottom": 12,
+  "hasBaseline": false,
   "left": -10,
   "right": 10,
   "writingMode": 1,

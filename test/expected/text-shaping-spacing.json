@@ -129,6 +129,7 @@
   "text": "abcde",
   "top": -12,
   "bottom": 12,
+  "hasBaseline": false,
   "left": -38.5,
   "right": 38.5,
   "writingMode": 1,
