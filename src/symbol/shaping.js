@@ -59,7 +59,7 @@ export type Shaping = {
     iconsInText: boolean,
     verticalizable: boolean
     yOffset: number,
-    hasBaseline: Boolean,
+    hasBaseline: boolean,
 };
 
 function isEmpty(positionedLines: Array<PositionedLine>) {

@@ -254,6 +254,7 @@
   "text": "abcde abcde",
   "top": -24,
   "bottom": 24,
+  "hasBaseline": false,
   "left": -32.5,
   "right": 32.5,
   "writingMode": 1,
