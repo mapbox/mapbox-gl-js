@@ -328,6 +328,7 @@ export function getGlyphQuads(anchor: Anchor,
             const minFontScaleX = 0;
             const minFontScaleY = 0;
             quads.push({tl, tr, bl, br, tex: textureRect, writingMode: shaping.writingMode, glyphOffset, sectionIndex: positionedGlyph.sectionIndex, isSDF, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY});
+
         }
     }
 

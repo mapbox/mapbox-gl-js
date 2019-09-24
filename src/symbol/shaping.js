@@ -58,6 +58,8 @@ export type Shaping = {
     text: string,
     iconsInText: boolean,
     verticalizable: boolean
+    yOffset: number,
+    hasBaseline: Boolean,
 };
 
 function isEmpty(positionedLines: Array<PositionedLine>) {
@@ -307,6 +309,9 @@ function shapeText(text: Formatted,
         writingMode,
         iconsInText: false,
         verticalizable: false
+        lineCount: lines.length,
+        yOffset: -17, // the y offset *should* be part of the font metadata
+        hasBaseline: false
     };
 
     shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSizeThisZoom);
@@ -619,6 +624,21 @@ function shapeLines(shaping: Shaping,
             let imageName = null;
             let verticalAdvance = ONE_EM;
             const vertical = !(writingMode === WritingMode.horizontal ||
+
+            const positions = glyphMap[section.fontStack];
+            const glyph = positions && positions[codePoint];
+            if (!glyph) continue;
+
+            // In order to make different fonts aligned, they must share a general baseline that starts from the midline
+            // of each font face.  Baseline offset is the vertical distance from font face's baseline to its top most
+            // position, which is the half size of the sum (ascender + descender). Since glyph's position is counted
+            // from the top left corner, the negative shift is needed. So different fonts shares the same baseline but
+            // with different offset shift. If font's baseline is not applicable, fall back to use a default baseline
+            // offset, see shaping.yOffset. Since we're laying out at 24 points, we need also calculate how much it will
+            // move when we scale up or down.
+            const baselineOffset = (hasBaseline ? ((-glyph.metrics.ascender + glyph.metrics.descender) / 2 * section.scale) : shaping.yOffset) + (lineMaxScale - section.scale) * 24;
+
+            if (writingMode === WritingMode.horizontal ||
                 // Don't verticalize glyphs that have no upright orientation if vertical placement is disabled.
                 (!allowVerticalPlacement && !charHasUprightVerticalOrientation(codePoint)) ||
                 // If vertical placement is enabled, don't verticalize glyphs that
@@ -712,6 +732,7 @@ function shapeLines(shaping: Shaping,
     shaping.bottom = shaping.top + height;
     shaping.left += -horizontalAlign * maxLineLength;
     shaping.right = shaping.left + maxLineLength;
+    shaping.hasBaseline = hasBaseline;
 }
 
 // justify right = 1, left = 0, center = 0.5
