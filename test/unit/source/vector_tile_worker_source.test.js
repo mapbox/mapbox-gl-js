@@ -7,8 +7,10 @@ import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_sourc
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import perf from '../../../src/util/performance';
 
+const actor = {send: () => {}};
+
 test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
 
     source.loadTile({
         source: 'source',
@@ -33,7 +35,7 @@ test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
 });
 
 test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
 
     source.loaded = {
         '0': {}
@@ -52,7 +54,7 @@ test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
 });
 
 test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
     const parse = t.spy();
 
     source.loaded = {
@@ -74,7 +76,7 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) =
 });
 
 test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progress', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
     const parse = t.spy();
 
     source.loaded = {
@@ -108,7 +110,7 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
 
 test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) => {
     // https://github.com/mapbox/mapbox-gl-js/issues/6308
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
     const parse = t.spy();
 
     source.loaded = {
@@ -156,7 +158,7 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
 });
 
 test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTile data but does call callback', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex(), []);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
     const parse = t.spy();
 
     source.loaded = {
@@ -215,7 +217,7 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
         type: 'fill'
     }]);
 
-    const source = new VectorTileWorkerSource(null, layerIndex, [], loadVectorData);
+    const source = new VectorTileWorkerSource(actor, layerIndex, [], loadVectorData);
 
     t.stub(perf, 'getEntriesByName').callsFake(() => { return [ exampleResourceTiming ]; });
 
@@ -250,7 +252,7 @@ test('VectorTileWorkerSource provides resource timing information (fallback meth
         type: 'fill'
     }]);
 
-    const source = new VectorTileWorkerSource(null, layerIndex, [], loadVectorData);
+    const source = new VectorTileWorkerSource(actor, layerIndex, [], loadVectorData);
 
     const sampleMarks = [100, 350];
     const marks = {};

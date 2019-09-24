@@ -53,8 +53,21 @@ class Coalesce implements Expression {
 
     evaluate(ctx: EvaluationContext) {
         let result = null;
+        let argCount = 0;
+        let requestedImageName;
         for (const arg of this.args) {
+            argCount++;
             result = arg.evaluate(ctx);
+            // we need to keep track of the first requested image in a coalesce statement
+            // if coalesce can't find a valid image, we return the first image name so styleimagemissing can fire
+            if (arg.type.kind === 'image' && !result.available) {
+                if (!requestedImageName) requestedImageName = arg.evaluate(ctx).name;
+                result = null;
+                if (argCount === this.args.length) {
+                    result = requestedImageName;
+                }
+            }
+
             if (result !== null) break;
         }
         return result;
