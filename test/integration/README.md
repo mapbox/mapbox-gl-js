@@ -103,7 +103,8 @@ to the end of the url will only run the tests that contain `circle-pitch` in the
 
 ### Build Notifications
 
-The terminal window can be very noisy with both the build and the test servers runnign in the same session. So the server will use platform notifications to inform when the build has finished. If this behaviour is annoying, it can be disabled using by setting the following env-var
+The terminal window can be very noisy with both the build and the test servers running in the same session.
+So the server uses platform notifications to inform when the build has finished. If this behaviour is annoying, it can be disabled by setting the following env-var
 ```
 DISABLE_BUILD_NOTIFICATIONS=true
 ```

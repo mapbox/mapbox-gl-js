@@ -6,6 +6,9 @@ const localizeURLs = require('./localize-urls');
 
 const OUTPUT_FILE = 'fixtures.json';
 
+exports.generateFixtureJson = generateFixtureJson;
+exports.getAllFixtureGlobs = getAllFixtureGlobs;
+
 /**
  * Analyzes the contents of the specified `directory` ,and inlines
  * the contents into a single json file which can then be imported and built into a bundle
@@ -14,10 +17,10 @@ const OUTPUT_FILE = 'fixtures.json';
  * @param {string} directory
  * @param {boolean} includeImages
  */
-module.exports = function (directory, includeImages = false) {
-    const basePath = directory;
-    const jsonPaths = path.join(basePath, '/**/*.json');
-    const imagePaths = path.join(basePath, '/**/*.png');
+function generateFixtureJson(directory, includeImages = false) {
+    const globs = getAllFixtureGlobs(directory);
+    const jsonPaths = globs[0];
+    const imagePaths = globs[1];
     //Extract the filedata into a flat dictionary
     const allFiles = {};
     let allPaths = glob.sync(jsonPaths);
@@ -79,7 +82,14 @@ module.exports = function (directory, includeImages = false) {
             resolve();
         });
     });
-};
+}
+
+function getAllFixtureGlobs(basePath) {
+    const jsonPaths = path.join(basePath, '/**/*.json');
+    const imagePaths = path.join(basePath, '/**/*.png');
+
+    return [jsonPaths, imagePaths];
+}
 
 function parseJsonFromFile(filePath) {
     return JSON.parse(fs.readFileSync(filePath, {encoding: 'utf8'}));

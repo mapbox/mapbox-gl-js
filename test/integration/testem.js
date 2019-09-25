@@ -2,7 +2,7 @@
 /* eslint-disable import/no-commonjs */
 /* eslint-disable flowtype/require-valid-file-annotation */
 require = require("esm")(module);
-const generateFixtureJson = require('./lib/generate-fixture-json');
+const {generateFixtureJson, getAllFixtureGlobs} = require('./lib/generate-fixture-json');
 const createServer = require('./lib/server');
 const buildTape = require('../../build/test/build-tape');
 const runAll = require('npm-run-all');
@@ -94,12 +94,12 @@ function buildArtifactsDev() {
     return buildTape().then(() => {
         // A promise that resolves on the first build of fixtures.json
         return new Promise((resolve, reject) => {
-            fixtureWatcher = chokidar.watch(fixturePath);
+            fixtureWatcher = chokidar.watch(getAllFixtureGlobs(fixturePath));
             let needsRebuild = false;
             fixtureWatcher.on('ready', () => {
                 generateFixtureJson(fixturePath);
 
-                //Throttle calls to `generateFxitureJson` to run every 2s
+                //Throttle calls to `generateFixtureJson` to run every 2s
                 setInterval(() => {
                     if (needsRebuild) {
                         generateFixtureJson(fixturePath);
@@ -122,7 +122,7 @@ function buildArtifactsDev() {
         //returns a promise that resolves when the first bundle has finished
         function startRollupWatcher(name, config) {
             return new Promise((resolve, reject) => {
-                const watcher = rollup.watch(config);
+                const watcher = rollup.watch(silenceWarnings(config));
                 rollupWatchers[name] = watcher;
 
                 watcher.on('event', (e) => {
@@ -146,6 +146,19 @@ function buildArtifactsDev() {
             startRollupWatcher('query-suite', rollupTestConfig),
         ]);
     });
+}
+
+function silenceWarnings(config) {
+    function addEmptyWarningHandler(configObj) {
+        configObj["onwarn"] = function() {};
+        return configObj;
+    }
+
+    if (Array.isArray(config)) {
+        return config.map(addEmptyWarningHandler);
+    } else {
+        return addEmptyWarningHandler(config);
+    }
 }
 
 function notify(title, message) {
