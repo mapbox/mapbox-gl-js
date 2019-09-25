@@ -54,7 +54,7 @@ function getMergeBase() {
         return github.pullRequests.get({
             owner: 'mapbox',
             repo: 'mapbox-gl-js',
-            number
+            pull_number: number
         }).then(({data}) => {
             const base = data.base.ref;
             const head = process.env['CIRCLE_SHA1'];
