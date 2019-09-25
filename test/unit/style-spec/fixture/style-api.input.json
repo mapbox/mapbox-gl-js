@@ -1,0 +1,60 @@
+{
+    "version": 8,
+    "name": "A style downloaded from the Mapbox Style API",
+    "metadata": {
+        "mapbox:groups": {
+            "12345": {
+                "name": "Group Name"
+            }
+        }
+    },
+    "center": [
+      14.426503189484833,
+      50.09094961077264
+    ],
+    "zoom": 16.860293861712215,
+    "bearing": 0,
+    "pitch": 0,
+    "sources": {
+        "mapbox": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v8"
+        },
+        "custom": {
+            "type": "vector",
+            "url": "mapbox://cyrus.1234abcd"
+        },
+        "raster": {
+          "type": "raster",
+          "url": "mapbox://cyrus.5678efgh",
+          "tileSize": 256
+        }
+    },
+    "sprite": "mapbox://sprites/cyrus/abcd1234/draft",
+    "glyphs": "mapbox://fonts/cyrus/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "brown"
+            }
+        },
+        {
+            "id": "water",
+            "type": "fill",
+            "source": "mapbox",
+            "source-layer": "water",
+            "paint": {
+                "fill-color": "blue"
+            }
+        }
+    ],
+    "created": "2019-09-12T16:52:30.329Z",
+    "id": "abcd1234",
+    "modified": "2019-09-23T23:54:44.322Z",
+    "owner": "Cyrus",
+    "visibility": "private",
+    "cacheControl": "s-max-age=200",
+    "draft": true
+}

@@ -14,5 +14,13 @@
   {
     "message": "layers[8].layout.text-field[1]: Expected array<string> but found number instead.",
     "line": 126
+  },
+  {
+    "message": "glyphs: Styles must reference glyphs hosted by Mapbox",
+    "line": 24
+  },
+  {
+    "message": "source.data: Unsupported property \"data\"",
+    "line": 6
   }
 ]

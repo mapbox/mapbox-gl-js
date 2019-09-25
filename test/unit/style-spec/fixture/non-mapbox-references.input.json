@@ -1,0 +1,16 @@
+{
+  "version": 8,
+  "glyphs": "https://example.com/{fontstack}/{range}",
+  "sprite": "https://example.com/",
+  "sources": {
+    "vector1": {
+      "type": "vector",
+      "url": "example://abcd.1234"
+    },
+    "vector2": {
+      "type": "vector",
+      "url": "https://example.com/tilejson.json"
+    }
+  },
+  "layers": []
+}
