@@ -4,7 +4,6 @@
 * Add `image` expression operator to determine image availability ([#8684](https://github.com/mapbox/mapbox-gl-js/pull/8684))
 * Enable `text-offset` with variable label placement ([#8642](https://github.com/mapbox/mapbox-gl-js/pull/8642))
 
-
 ## 🍏 Improvements
 * Faster loading and better look of raster terrain ([#8694](https://github.com/mapbox/mapbox-gl-js/pull/8694))
 * Improved code documentation aroud resizing and *RenderedWorldCopies and more ([#8748](https://github.com/mapbox/mapbox-gl-js/pull/8748), [#8754](https://github.com/mapbox/mapbox-gl-js/pull/8754))
@@ -20,6 +19,8 @@
 * Respect newline characters when text-max-width is set to zero ([#8706](https://github.com/mapbox/mapbox-gl-js/pull/8706))
 * Update earcut to v2.2.0 to fix polygon tesselation errors ([#8772](https://github.com/mapbox/mapbox-gl-js/pull/8772))
 * Fix icon-fit with variable label placement ([#8755](https://github.com/mapbox/mapbox-gl-js/pull/8755))
+* Icons stretched with `icon-text-fit` are now sized correctly ([#8741](https://github.com/mapbox/mapbox-gl-js/pull/8741))
+* Collision detection for icons with `icon-text-fit` now works correctly ([#8741](https://github.com/mapbox/mapbox-gl-js/pull/8741))
 
 
 ## 1.3.1
