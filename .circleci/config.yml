@@ -151,6 +151,10 @@ jobs:
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
       - run: yarn run test-build
+      - store_artifacts:
+          path: "dist"
+      - store_artifacts:
+          path: "test/release"
       - persist_to_workspace:
           root: .
           paths:
