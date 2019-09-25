@@ -12,9 +12,6 @@ import readStyle from './read_style';
  *     or `Buffer` is provided, the returned errors will contain line numbers.
  * @param {Object} [styleSpec] The style specification to validate against.
  *     If omitted, the spec version is inferred from the stylesheet.
- * @param {Object} options
- * @param {boolean} [options.mapboxApiSupported] If true, assert that
- * style can be uploaded to the Mapbox Styles API.
  * @returns {Array<ValidationError|ParsingError>}
  * @example
  *   var validate = require('mapbox-gl-style-spec').validate;
@@ -22,7 +19,7 @@ import readStyle from './read_style';
  *   var errors = validate(style);
  */
 
-export default function validateStyle(style, styleSpec = v8, options) {
+export default function validateStyle(style, styleSpec = v8) {
     let s = style;
 
     try {
@@ -31,7 +28,7 @@ export default function validateStyle(style, styleSpec = v8, options) {
         return [e];
     }
 
-    return validateStyleMin(s, styleSpec, options);
+    return validateStyleMin(s, styleSpec);
 }
 
 export const source = validateStyleMin.source;

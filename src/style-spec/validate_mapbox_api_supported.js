@@ -14,9 +14,9 @@ function isValid(value: ?string, regex: RegExp): boolean {
     return !!value.match(regex);
 }
 
-function getSourceCount(source: Object) {
+function getSourceCount(source: Object): number {
     if (source.url) {
-        return source.url.replace('mapbox://', '').split(',').length;
+        return source.url.split(',').length;
     } else {
         return 0;
     }
@@ -134,7 +134,7 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
      * "private"
      * "public"
      */
-    const visibilityPattern = /^(public|private)/;
+    const visibilityPattern = /^(public|private)$/;
     if (!isValid(style.visibility, visibilityPattern)) {
         errors.push(new ValidationError('visibility', style.visibility, 'Style visibility must be public or private'));
     }
@@ -160,9 +160,8 @@ export default function validateMapboxApiSupported(style: Object): Array<?Valida
         return [e];
     }
 
-    let errors = validateStyle(s, v8);
-
-    errors = errors.concat(getRootErrors(s, Object.keys(v8.$root)));
+    let errors = validateStyle(s, v8)
+        .concat(getRootErrors(s, Object.keys(v8.$root)));
 
     if (s.sources) {
         errors = errors.concat(getSourcesErrors(s.sources));
