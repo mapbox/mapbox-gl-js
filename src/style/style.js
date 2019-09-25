@@ -1215,7 +1215,7 @@ class Style extends Evented {
             this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles);
 
             if (this.pauseablePlacement.isDone()) {
-                this.placement = this.pauseablePlacement.commit(browser.now(), transform.zoom);
+                this.placement = this.pauseablePlacement.commit(browser.now());
                 placementCommitted = true;
             }
 
