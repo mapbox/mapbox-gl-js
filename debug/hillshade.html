@@ -64,77 +64,29 @@
 <script src='access_token_generated.js'></script>
 <script>
 
+var style = {
+    version: 8,
+    center: [-119.5591, 37.715],
+    zoom: 9,
+    sources: {
+        dem: {
+            type: 'raster-dem',
+            url: "mapbox://mapbox.terrain-rgb",
+        }
+    },
+    layers: [{
+        id: 'dem',
+        type: 'hillshade',
+        source: 'dem'
+    }]
+};
+
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/cjaudgl840gn32rnrepcb9b9g', // the outdoors-v10 style but without Hillshade layers
+    style: style, // the outdoors-v10 style but without Hillshade layers
     center: [-119.5591, 37.715],
     zoom: 9
 });
-
-map.on('load', function () {
-
-    map.addSource('mapbox-dem', {
-        "type": "raster-dem",
-        "url": "mapbox://mapbox.terrain-rgb",
-        "tileSize": 256
-    });
-    map.addLayer({
-        "id": "Mapbox data",
-        "source": "mapbox-dem",
-        "type": "hillshade"
-    // insert below waterway-river-canal-shadow;
-    // where hillshading sits in the Mapbox Outdoors style
-    }, 'waterway-river-canal-shadow');
-
-    map.addSource('terrarium-dem', {
-        "type": "raster-dem",
-        "encoding": "terrarium",
-        "tiles": [
-            "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"
-        ],
-        "tileSize": 128,
-        "maxzoom": 15
-    });
-    map.addLayer({
-        "id": "Terrarium data",
-        "source": "terrarium-dem",
-        "type": "hillshade",
-        "layout": {
-            "visibility": "none"
-        }
-    // insert below waterway-river-canal-shadow;
-    // where hillshading sits in the Mapbox Outdoors style
-    }, 'waterway-river-canal-shadow');
-
-});
-
-var toggleableLayerIds = ['Mapbox data', 'Terrarium data'];
-
-for (var i = 0; i < toggleableLayerIds.length; i++) {
-    var id = toggleableLayerIds[i];
-
-    var link = document.createElement('a');
-    link.href = '#';
-    link.className = (i === 0) ? 'active' : '';
-    link.textContent = id;
-
-    link.onclick = function (e) {
-        var clickedLayer = this.textContent;
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (this.className === '') {
-            var activeLayer = document.getElementsByClassName('active')[0];
-            activeLayer.className = '';
-            map.setLayoutProperty(activeLayer.textContent, 'visibility', 'none');
-            this.className = 'active';
-            map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
-        }
-    };
-
-    var layers = document.getElementById('menu');
-    layers.appendChild(link);
-}
 
 </script>
 </body>
