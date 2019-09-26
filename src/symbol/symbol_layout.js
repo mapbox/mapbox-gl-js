@@ -378,8 +378,14 @@ function addFeature(bucket: SymbolBucket,
         textRepeatDistance = symbolMinDistance / 2;
 
     const iconTextFit = layout.get('icon-text-fit');
+    let verticallyShapedIcon;
     // Adjust shaped icon size when icon-text-fit is used.
     if (shapedIcon && iconTextFit !== 'none') {
+        if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
+            console.log("HERERERE");
+            verticallyShapedIcon = fitIconToText(shapedIcon, shapedTextOrientations.vertical, iconTextFit,
+                layout.get('icon-text-fit-padding'), iconOffset, fontScale);
+        }
         if (defaultHorizontalShaping) {
             shapedIcon = fitIconToText(shapedIcon, defaultHorizontalShaping, iconTextFit,
                                        layout.get('icon-text-fit-padding'), iconOffset, fontScale);
@@ -394,7 +400,7 @@ function addFeature(bucket: SymbolBucket,
             return;
         }
 
-        addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, bucket.layers[0],
+        addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, verticallyShapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex, bucket.index,
             textBoxScale, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
@@ -538,6 +544,7 @@ function addSymbol(bucket: SymbolBucket,
                    line: Array<Point>,
                    shapedTextOrientations: any,
                    shapedIcon: PositionedIcon | void,
+                   verticallyShapedIcon: PositionedIcon | void,
                    layer: SymbolStyleLayer,
                    collisionBoxArray: CollisionBoxArray,
                    featureIndex: number,
@@ -556,12 +563,14 @@ function addSymbol(bucket: SymbolBucket,
                    sizes: Sizes) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
-    let textCollisionFeature, iconCollisionFeature, verticalTextCollisionFeature;
+    let textCollisionFeature, iconCollisionFeature, verticalTextCollisionFeature, verticalIconCollisionFeature;
 
     let numIconVertices = 0;
+    let numVerticalIconVertices = 0;
     let numHorizontalGlyphVertices = 0;
     let numVerticalGlyphVertices = 0;
     let placedIconSymbolIndex = -1;
+    let verticalPlacedIconSymbolIndex = -1;
     const placedTextSymbolIndices = {};
     let key = murmur3('');
 
@@ -579,6 +588,10 @@ function addSymbol(bucket: SymbolBucket,
         const verticalTextRotation = textRotation + 90.0;
         const verticalShaping = shapedTextOrientations.vertical;
         verticalTextCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
+
+        if (verticallyShapedIcon) {
+            verticalIconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconBoxScale, iconPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
+        }
     }
 
     //Place icon first, so text can have a reference to its index in the placed symbol array.
@@ -588,6 +601,7 @@ function addSymbol(bucket: SymbolBucket,
     if (shapedIcon) {
         const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {});
         const iconQuads = getIconQuads(shapedIcon, iconRotate);
+        const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate) : undefined;
         iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, /*align boxes to line*/false, bucket.overscaling, iconRotate);
 
         numIconVertices = iconQuads.length * 4;
@@ -627,6 +641,27 @@ function addSymbol(bucket: SymbolBucket,
             -1);
 
         placedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
+
+        if (verticalIconQuads) {
+            console.log("ADD VERTICAL ICON", verticalIconQuads, verticallyShapedIcon);
+            numVerticalIconVertices = verticalIconQuads.length * 4;
+
+            bucket.addSymbols(
+                bucket.icon,
+                verticalIconQuads,
+                iconSizeData,
+                iconOffset,
+                iconAlongLine,
+                feature,
+                false,
+                anchor,
+                lineArray.lineStartIndex,
+                lineArray.lineLength,
+                // The icon itself does not have an associated symbol since the text isnt placed yet
+                -1);
+
+            verticalPlacedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
+        }
     }
 
     for (const justification: any in shapedTextOrientations.horizontal) {
@@ -655,7 +690,7 @@ function addSymbol(bucket: SymbolBucket,
     if (shapedTextOrientations.vertical) {
         numVerticalGlyphVertices += addTextVertices(
             bucket, anchor, shapedTextOrientations.vertical, layer, textAlongLine, feature,
-            textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, glyphPositionMap, placedIconSymbolIndex, sizes);
+            textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, glyphPositionMap, verticalPlacedIconSymbolIndex, sizes);
     }
 
     const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
@@ -666,6 +701,9 @@ function addSymbol(bucket: SymbolBucket,
 
     const iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
     const iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
+
+    const verticalIconBoxStartIndex = verticalIconCollisionFeature ? verticalIconCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
+    const verticalIconBoxEndIndex = verticalIconCollisionFeature ? verticalIconCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
 
     if (bucket.glyphOffsetArray.length >= SymbolBucket.MAX_GLYPHS) warnOnce(
         "Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907"
@@ -679,6 +717,7 @@ function addSymbol(bucket: SymbolBucket,
         placedTextSymbolIndices.left >= 0 ? placedTextSymbolIndices.left : -1,
         placedTextSymbolIndices.vertical || -1,
         placedIconSymbolIndex,
+        verticalPlacedIconSymbolIndex,
         key,
         textBoxStartIndex,
         textBoxEndIndex,
@@ -686,10 +725,13 @@ function addSymbol(bucket: SymbolBucket,
         verticalTextBoxEndIndex,
         iconBoxStartIndex,
         iconBoxEndIndex,
+        verticalIconBoxStartIndex,
+        verticalIconBoxEndIndex,
         featureIndex,
         numHorizontalGlyphVertices,
         numVerticalGlyphVertices,
         numIconVertices,
+        numVerticalIconVertices,
         0,
         textBoxScale,
         textOffset0,

@@ -17,7 +17,6 @@ import type Color from '../../style-spec/util/color';
 
 import type Formatted from '../../style-spec/expression/types/formatted';
 
-import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
 
 
 export type PaintProps = {|
@@ -25,7 +24,7 @@ export type PaintProps = {|
     "fill-extrusion-color": DataDrivenProperty<Color>,
     "fill-extrusion-translate": DataConstantProperty<[number, number]>,
     "fill-extrusion-translate-anchor": DataConstantProperty<"map" | "viewport">,
-    "fill-extrusion-pattern": CrossFadedDataDrivenProperty<ResolvedImage>,
+    "fill-extrusion-pattern": CrossFadedDataDrivenProperty<Image>,
     "fill-extrusion-height": DataDrivenProperty<number>,
     "fill-extrusion-base": DataDrivenProperty<number>,
     "fill-extrusion-vertical-gradient": DataConstantProperty<boolean>,

@@ -208,9 +208,9 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
     bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicTextLayoutVertexArray);
 }
 
-function updateVerticalLabels(bucket) {
-    const placedSymbols = bucket.text.placedSymbolArray;
-    const dynamicLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
+function updateVerticalLabels(bucket, textOrIcon) {
+    const placedSymbols = textOrIcon.placedSymbolArray;
+    const dynamicLayoutVertexArray = textOrIcon.dynamicLayoutVertexArray;
     dynamicLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
@@ -228,7 +228,7 @@ function updateVerticalLabels(bucket) {
             }
         }
     }
-    bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
+    textOrIcon.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
@@ -306,7 +306,11 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (alongLine) {
             symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
         } else if (isText && size && bucket.allowVerticalPlacement && !variablePlacement) {
-            updateVerticalLabels(bucket);
+            updateVerticalLabels(bucket, bucket.text);
+            if (updateTextFitIcon) {
+                console.log("HERE");
+                updateVerticalLabels(bucket, bucket.icon);
+            }
         }
 
         const matrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),

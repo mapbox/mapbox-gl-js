@@ -332,7 +332,8 @@ export class Placement {
             let shift = null;
 
             let placed = {box: null, offscreen: null};
-            let placedVertical = {box: null, offscreen: null};
+            let placedVerticalText = {box: null, offscreen: null};
+            let placedVerticalIcon = {box: null, offscreen: null};
 
             let placedGlyphBoxes = null;
             let placedGlyphCircles = null;
@@ -340,6 +341,7 @@ export class Placement {
             let textFeatureIndex = 0;
             let verticalTextFeatureIndex = 0;
             let iconFeatureIndex = 0;
+            let verticalIconFeatureIndex = 0;
 
             if (collisionArrays.textFeatureIndex) {
                 textFeatureIndex = collisionArrays.textFeatureIndex;
@@ -369,7 +371,7 @@ export class Placement {
                         for (const placementMode of bucket.writingModes) {
                             if (placementMode === WritingMode.vertical) {
                                 placed = placeVerticalFn();
-                                placedVertical = placed;
+                                placedVerticalText = placed;
                             } else {
                                 placed = placeHorizontalFn();
                             }
@@ -515,17 +517,26 @@ export class Placement {
             if (collisionArrays.iconFeatureIndex) {
                 iconFeatureIndex = collisionArrays.iconFeatureIndex;
             }
+
             if (collisionArrays.iconBox) {
 
-                const iconBox = hasIconTextFit && shift ?
-                    shiftVariableCollisionBox(
-                        collisionArrays.iconBox, shift.x, shift.y,
-                        rotateWithMap, pitchWithMap, this.transform.angle) :
-                    collisionArrays.iconBox;
-
-                placedIconBoxes = this.collisionIndex.placeCollisionBox(iconBox,
+                const placeIconFeature = iconBox => {
+                    const shiftedIconBox = hasIconTextFit && shift ?
+                        shiftVariableCollisionBox(
+                            iconBox, shift.x, shift.y,
+                            rotateWithMap, pitchWithMap, this.transform.angle) :
+                        iconBox;
+                    return this.collisionIndex.placeCollisionBox(shiftedIconBox,
                         layout.get('icon-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
-                placeIcon = placedIconBoxes.box.length > 0;
+                };
+
+                if (placedVerticalText && placedVerticalText.box && placedVerticalText.box.length && collisionArrays.verticalIconBox) {
+                    placedIconBoxes = placeIconFeature(collisionArrays.verticalIconBox);
+                    placeIcon = placedVerticalIcon = placedIconBoxes.box.length > 0;
+                } else {
+                    placedIconBoxes = placeIconFeature(collisionArrays.iconBox);
+                    placeIcon = placedIconBoxes.box.length > 0;
+                }
                 offscreen = offscreen && placedIconBoxes.offscreen;
             }
 
@@ -543,7 +554,7 @@ export class Placement {
             }
 
             if (placeText && placedGlyphBoxes && placedGlyphBoxes.box) {
-                if (placedVertical && placedVertical.box && verticalTextFeatureIndex) {
+                if (placedVerticalText && placedVerticalText.box && verticalTextFeatureIndex) {
                     this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
                         bucket.bucketInstanceId, verticalTextFeatureIndex, collisionGroup.ID);
                 } else {
@@ -763,6 +774,10 @@ export class Placement {
             const hasText = numHorizontalGlyphVertices > 0 || numVerticalGlyphVertices > 0;
             const hasIcon = symbolInstance.numIconVertices > 0;
 
+            const placedOrientation = this.placedOrientations[symbolInstance.crossTileID];
+            const verticalHidden = (placedOrientation === WritingMode.horizontal || placedOrientation === WritingMode.horizontalOnly) ? 1 : 0;
+            const horizontalHidden = placedOrientation === WritingMode.vertical ? 1 : 0;
+
             if (hasText) {
                 const packedOpacity = packOpacity(opacityState.text);
                 // Vertical text fades in/out on collision the same way as corresponding
@@ -776,9 +791,6 @@ export class Placement {
                 // symbol instances appropriately so that symbols from buckets that have yet to be placed
                 // offset appropriately.
                 const symbolHidden = opacityState.text.isHidden() ? 1 : 0;
-                const placedOrientation = this.placedOrientations[symbolInstance.crossTileID];
-                const verticalHidden = (placedOrientation === WritingMode.horizontal || placedOrientation === WritingMode.horizontalOnly) ? 1 : 0;
-                const horizontalHidden = placedOrientation === WritingMode.vertical ? 1 : 0;
                 [
                     symbolInstance.rightJustifiedTextSymbolIndex,
                     symbolInstance.centerJustifiedTextSymbolIndex,
@@ -807,11 +819,22 @@ export class Placement {
 
             if (hasIcon) {
                 const packedOpacity = packOpacity(opacityState.icon);
-                for (let i = 0; i < symbolInstance.numIconVertices / 4; i++) {
-                    bucket.icon.opacityVertexArray.emplaceBack(packedOpacity);
+
+                if (symbolInstance.placedIconSymbolIndex >= 0) {
+                    for (let i = 0; i < symbolInstance.numIconVertices / 4; i++) {
+                        bucket.icon.opacityVertexArray.emplaceBack(packedOpacity);
+                    }
+                    bucket.icon.placedSymbolArray.get(symbolInstance.placedIconSymbolIndex).hidden =
+                        (opacityState.icon.isHidden(): any);
                 }
-                bucket.icon.placedSymbolArray.get(s).hidden =
-                    (opacityState.icon.isHidden(): any);
+
+                if (symbolInstance.verticalPlacedIconSymbolIndex >= 0) {
+                    for (let i = 0; i < symbolInstance.numVerticalIconVertices / 4; i++) {
+                        bucket.icon.opacityVertexArray.emplaceBack(packedOpacity);
+                    bucket.icon.placedSymbolArray.get(symbolInstance.verticalPlacedIconSymbolIndex).hidden =
+                        (opacityState.icon.isHidden(): any);
+                    }
+                }
             }
 
             if (bucket.hasIconCollisionBoxData() || bucket.hasIconCollisionCircleData() ||
@@ -819,7 +842,7 @@ export class Placement {
                 const collisionArrays = bucket.collisionArrays[s];
                 if (collisionArrays) {
                     let shift = new Point(0, 0);
-                    if (collisionArrays.textBox) {
+                    if (collisionArrays.textBox || collisionArrays.verticalTextBox) {
                         let used = true;
                         if (variablePlacement) {
                             const variableOffset = this.variableOffsets[crossTileID];
@@ -844,11 +867,24 @@ export class Placement {
                             }
                         }
 
-                        updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used, shift.x, shift.y);
+                        if (collisionArrays.textBox) {
+                            updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used || horizontalHidden, shift.x, shift.y);
+                        }
+                        if (collisionArrays.verticalTextBox) {
+                            updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used || verticalHidden, shift.x, shift.y);
+                        }
                     }
 
+                    const verticalIconUsed = !verticalHidden && collisionArrays.verticalIconBox;
+
                     if (collisionArrays.iconBox) {
-                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, false,
+                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, verticalIconUsed,
+                            hasIconTextFit ? shift.x : 0,
+                            hasIconTextFit ? shift.y : 0);
+                    }
+
+                    if (collisionArrays.verticalIconBox) {
+                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, !verticalIconUsed,
                             hasIconTextFit ? shift.x : 0,
                             hasIconTextFit ? shift.y : 0);
                     }
