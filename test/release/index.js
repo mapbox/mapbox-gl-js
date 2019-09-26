@@ -68,9 +68,9 @@ const versions = {
     'latest': {}
 };
 
-for (const version in mapboxglVersions) {
+Object.keys(mapboxglVersions).forEach(function(version) {
     versions[version] = mapboxglVersions[version];
-}
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     const jsLatest = document.createElement("a");
@@ -120,7 +120,8 @@ document.addEventListener('DOMContentLoaded', function() {
         versionItem.classList.remove('active');
         titleItem.classList[titleItem.classList.contains('active') ? 'remove' : 'add']('active');
     });
-    for (const page in pages) {
+
+    Object.keys(pages).forEach(function(page) {
         const item = document.createElement('a');
         item.classList.add('dropdown-item');
         const metadata = pages[page];
@@ -135,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
             load();
         });
         titleDropdown.appendChild(item);
-    }
+    });
 
     if (!(params.version in versions)) {
         params.version = 'latest';
@@ -146,7 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
         titleItem.classList.remove('active');
         versionItem.classList[versionItem.classList.contains('active') ? 'remove' : 'add']('active');
     });
-    for (const version in versions) {
+
+    Object.keys(versions).forEach(function(version) {
         const item = document.createElement('a');
         item.classList.add('dropdown-item');
         const metadata = versions[version];
@@ -161,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
             load();
         });
         versionDropdown.appendChild(item);
-    }
+    });
 
     let req;
     let url;
