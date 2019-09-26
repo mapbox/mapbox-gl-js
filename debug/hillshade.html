@@ -98,7 +98,27 @@ var path = [
     {lng: -105.31075800716485, lat: 40.1366906580524},
     {lng: -103.02750079963539, lat: 38.88519174774137},
     {lng: -103.66218740954224, lat: 35.3648673525539},
-    {lng: -104.68370819819933, lat: 33.43567800528078}
+    {lng: -104.68370819819933, lat: 33.43567800528078},
+    {lng: -108.33781496444715, lat: 34.06448079797764},
+    {lng: -110.22945138099254, lat: 29.69519132128434},
+    {lng: -119.66179230186526, lat: 35.612177335315295},
+    {lng: -117.30732938601739, lat: 43.473387750395915},
+    {lng: -110.03716662936529, lat: 43.81756160413346},
+    {lng: -113.65550619396038, lat: 47.82861807986802},
+    {lng: -119.02887489742398, lat: 51.756525041839325},
+    {lng: -125.41069329612208, lat: 54.95208483279262},
+    {lng: -132.29045382553568, lat: 57.14873165102449},
+    {lng: -139.643943373335, lat: 59.29674052804697},
+    {lng: -146.98487949183402, lat: 62.30486246180462},
+    {lng: -142.81458548438457, lat: 65.08895710789358},
+    {lng: -136.00142974853566, lat: 65.37639894004226},
+    {lng: -122.75136921741273, lat: 67.222759717164},
+    {lng: -117.64867384668207, lat: 68.50817985010406},
+    {lng: -124.49126144487354, lat: 61.87725660905829},
+    {lng: -114.32017222083084, lat: 58.379952357890346},
+    {lng: -129.49068506271783, lat: 51.23978508960798},
+    {lng: -132.43988296713468, lat: 54.75484195315076},
+    {lng: -132.79309267208737, lat: 59.36483159957248}
 ];
 
 map.on('load', () => {
@@ -112,6 +132,38 @@ map.on('load', () => {
     }
     startPan();
 });
+
+var glObjectCounters = window.glObjectCounters = {
+    buffer: 0,
+    texture: 0
+};
+
+const createBuffer = WebGLRenderingContext.prototype.createBuffer;
+WebGLRenderingContext.prototype.createBuffer = function() {
+    glObjectCounters.buffer++;
+    return createBuffer.apply(this, arguments);
+};
+
+const deleteBuffer = WebGLRenderingContext.prototype.deleteBuffer;
+WebGLRenderingContext.prototype.deleteBuffer = function() {
+    glObjectCounters.buffer--;
+    return deleteBuffer.apply(this, arguments);
+};
+
+const createTexture = WebGLRenderingContext.prototype.createTexture;
+WebGLRenderingContext.prototype.createTexture = function() {
+    glObjectCounters.texture++;
+    return createTexture.apply(this, arguments);
+};
+
+const deleteTexture = WebGLRenderingContext.prototype.deleteTexture;
+WebGLRenderingContext.prototype.deleteTexture = function() {
+    glObjectCounters.texture--;
+    return deleteTexture.apply(this, arguments);
+};
+
+
+
 </script>
 </body>
 </html>
