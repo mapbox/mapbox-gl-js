@@ -383,7 +383,9 @@ class SourceCache extends Evented {
                 return tile;
             }
             if (this._cache.has(parent)) {
-                return this._cache.get(parent);
+                const cachedTile = this._cache.get(parent);
+                if (this.getSource().type === 'raster-dem') cachedTile.needsHillshadePrepare = true;
+                return cachedTile;
             }
         }
     }
@@ -647,6 +649,7 @@ class SourceCache extends Evented {
 
         tile = this._cache.getAndRemove(tileID);
         if (tile) {
+            if (this.getSource().type === 'raster-dem') tile.needsHillshadePrepare = true;
             this._setTileReloadTimer(tileID.key, tile);
             // set the tileID because the cached tile could have had a different wrap value
             tile.tileID = tileID;
@@ -709,6 +712,14 @@ class SourceCache extends Evented {
             return;
 
         if (tile.hasData() && tile.state !== 'reloading') {
+            if (tile.demTexture) {
+                this.map.painter.saveTileTexture(tile.demTexture);
+                tile.demTexture = null;
+                if (tile.fbo) {
+                    tile.fbo.destroy();
+                    delete tile.fbo;
+                }
+            }
             this._cache.add(tile.tileID, tile, tile.getExpiryTimeout());
         } else {
             tile.aborted = true;

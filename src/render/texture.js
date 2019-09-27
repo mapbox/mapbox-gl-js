@@ -41,6 +41,7 @@ class Texture {
     filter: ?TextureFilter;
     wrap: ?TextureWrap;
     useMipmap: boolean;
+    premultiply: boolean;
 
     constructor(context: Context, image: TextureImage, format: TextureFormat, options: ?{ premultiply?: boolean, useMipmap?: boolean }) {
         this.context = context;
@@ -56,6 +57,7 @@ class Texture {
         const {gl} = context;
 
         this.useMipmap = Boolean(options && options.useMipmap);
+        this.premultiply = Boolean(options && options.premultiply);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         context.pixelStoreUnpackFlipY.set(false);
@@ -109,6 +111,10 @@ class Texture {
 
     isSizePowerOfTwo() {
         return this.size[0] === this.size[1] && (Math.log(this.size[0]) / Math.LN2) % 1 === 0;
+    }
+
+    get hashKey(): string {
+        return `${this.size[0]}.${this.premultiply ? 1 : 0}.${this.useMipmap ? 1 : 0}`;
     }
 
     destroy() {

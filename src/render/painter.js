@@ -491,16 +491,16 @@ class Painter {
     }
 
     saveTileTexture(texture: Texture) {
-        const textures = this._tileTextures[texture.size[0]];
+        const textures = this._tileTextures[texture.hashKey];
         if (!textures) {
-            this._tileTextures[texture.size[0]] = [texture];
+            this._tileTextures[texture.hashKey] = [texture];
         } else {
             textures.push(texture);
         }
     }
 
-    getTileTexture(size: number) {
-        const textures = this._tileTextures[size];
+    getTileTexture(key: string) {
+        const textures = this._tileTextures[key];
         return textures && textures.length > 0 ? textures.pop() : null;
     }
 

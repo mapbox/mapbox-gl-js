@@ -77,7 +77,7 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
         context.activeTexture.set(gl.TEXTURE1);
 
         context.pixelStoreUnpackPremultiplyAlpha.set(false);
-        tile.demTexture = tile.demTexture || painter.getTileTexture(textureStride);
+        tile.demTexture = tile.demTexture || painter.getTileTexture(`${textureStride}.0.0`);
         if (tile.demTexture) {
             const demTexture = tile.demTexture;
             demTexture.update(pixelData, {premultiply: false});
@@ -90,9 +90,8 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
         context.activeTexture.set(gl.TEXTURE0);
 
         let fbo = tile.fbo;
-
         if (!fbo) {
-            const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
+            const renderTexture = painter.getTileTexture(`${tileSize}.0.0`) || new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
             renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
             fbo = tile.fbo = context.createFramebuffer(tileSize, tileSize);

@@ -135,7 +135,8 @@ map.on('load', () => {
 
 var glObjectCounters = window.glObjectCounters = {
     buffer: 0,
-    texture: 0
+    texture: 0,
+    frameBuffer: 0
 };
 
 const createBuffer = WebGLRenderingContext.prototype.createBuffer;
@@ -160,6 +161,18 @@ const deleteTexture = WebGLRenderingContext.prototype.deleteTexture;
 WebGLRenderingContext.prototype.deleteTexture = function() {
     glObjectCounters.texture--;
     return deleteTexture.apply(this, arguments);
+};
+
+const createFramebuffer = WebGLRenderingContext.prototype.createFramebuffer;
+WebGLRenderingContext.prototype.createFramebuffer = function() {
+    glObjectCounters.frameBuffer++;
+    return createFramebuffer.apply(this, arguments);
+};
+
+const deleteFramebuffer = WebGLRenderingContext.prototype.deleteFramebuffer;
+WebGLRenderingContext.prototype.deleteFramebuffer = function() {
+    glObjectCounters.frameBuffer--;
+    return deleteFramebuffer.apply(this, arguments);
 };
 
 
