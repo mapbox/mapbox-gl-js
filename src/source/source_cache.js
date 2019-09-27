@@ -384,7 +384,9 @@ class SourceCache extends Evented {
             }
             if (this._cache.has(parent)) {
                 const cachedTile = this._cache.get(parent);
-                if (this.getSource().type === 'raster-dem') cachedTile.needsHillshadePrepare = true;
+                if (cachedTile && this.getSource().type === 'raster-dem') {
+                    cachedTile.needsHillshadePrepare = true;
+                }
                 return cachedTile;
             }
         }

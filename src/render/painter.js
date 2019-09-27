@@ -84,7 +84,7 @@ type PainterOptions = {
 class Painter {
     context: Context;
     transform: Transform;
-    _tileTextures: { [number]: Array<Texture> };
+    _tileTextures: { [string]: Array<Texture> };
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration: ProgramConfiguration;
