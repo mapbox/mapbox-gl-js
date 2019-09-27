@@ -1,3 +1,7 @@
+## 1.3.2
+
+- Fix a SecurityError in Firefox >= 69 when accessing the cache [#8780](https://github.com/mapbox/mapbox-gl-js/pull/8780)
+
 ## 1.3.1
 
 - Fix a race condition that produced an error when a map was removed while reloading a source. [#8711](https://github.com/mapbox/mapbox-gl-js/pull/8711)
