@@ -37,9 +37,16 @@ export const SDF_SCALE = 2;
 type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.
     glyphs: {[id: number]: StyleGlyph | null},
+<<<<<<< HEAD
     requests: {[range: number]: Array<Callback<{[_: number]: StyleGlyph | null}>>},
     ranges: {[range: number]: boolean | null},
     tinySDF?: TinySDF
+=======
+    requests: {[range: number]: Array<Callback<{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}>>},
+    tinySDF?: TinySDF,
+    ascender: number,
+    descender: number
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
 };
 
 export const LocalGlyphMode = {
@@ -80,7 +87,7 @@ class GlyphManager {
         this.url = url;
     }
 
-    getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {[id: number]: ?StyleGlyph}}>) {
+    getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}}>) {
         const all = [];
 
         for (const stack in glyphs) {
@@ -95,7 +102,12 @@ class GlyphManager {
                 entry = this.entries[stack] = {
                     glyphs: {},
                     requests: {},
+<<<<<<< HEAD
                     ranges: {}
+=======
+                    ascender: 0,
+                    descender: 0
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                 };
             }
 
@@ -127,11 +139,17 @@ class GlyphManager {
             if (!requests) {
                 requests = entry.requests[range] = [];
                 GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestManager,
+<<<<<<< HEAD
                     (err, response: ?{[_: number]: StyleGlyph | null}) => {
+=======
+                    (err, response: ?{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}) => {
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                         if (response) {
-                            for (const id in response) {
+                            entry.ascender = response.ascender;
+                            entry.descender = response.descender;
+                            for (const id in response.glyphs) {
                                 if (!this._doesCharSupportLocalGlyph(+id)) {
-                                    entry.glyphs[+id] = response[+id];
+                                    entry.glyphs[+id] = response.glyphs[+id];
                                 }
                             }
                             entry.ranges[range] = true;
@@ -143,11 +161,15 @@ class GlyphManager {
                     });
             }
 
+<<<<<<< HEAD
             requests.push((err, result: ?{[_: number]: StyleGlyph | null}) => {
+=======
+            requests.push((err, result: ?{glyphs: {[number]: StyleGlyph | null}, ascender: number, descender: number}) => {
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                 if (err) {
                     callback(err);
                 } else if (result) {
-                    callback(null, {stack, id, glyph: result[id] || null});
+                    callback(null, {stack, id, glyph: result.glyphs[id] || null});
                 }
             });
         }, (err, glyphs: ?Array<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
@@ -158,11 +180,15 @@ class GlyphManager {
 
                 for (const {stack, id, glyph} of glyphs) {
                     // Clone the glyph so that our own copy of its ArrayBuffer doesn't get transferred.
-                    (result[stack] || (result[stack] = {}))[id] = glyph && {
+                    if (result[stack] === undefined) result[stack] = {};
+                    if (result[stack].glyphs === undefined) result[stack].glyphs = {};
+                    result[stack].glyphs[id] = glyph && {
                         id: glyph.id,
                         bitmap: glyph.bitmap.clone(),
                         metrics: glyph.metrics
                     };
+                    result[stack].ascender = this.entries[stack].ascender;
+                    result[stack].descender = this.entries[stack].descender;
                 }
 
                 callback(null, result);
@@ -241,6 +267,7 @@ class GlyphManager {
                 height: sdfHeight
             }, data),
             metrics: {
+<<<<<<< HEAD
                 width: width / SDF_SCALE,
                 height: height / SDF_SCALE,
                 left: left / SDF_SCALE,
@@ -249,6 +276,13 @@ class GlyphManager {
                 localGlyph: true
                 ascender: 0.0,
                 descender: 0.0
+=======
+                width: 24,
+                height: 24,
+                left: 0,
+                top: -8,
+                advance: 24
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
             }
         };
         return glyph;

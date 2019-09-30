@@ -141,6 +141,10 @@ class TaggedString {
         return this.sections[this.sectionIndex[index]];
     }
 
+    getSections(): Array<{ scale: number, fontStack: string }> {
+        return this.sections;
+    }
+
     getSectionIndex(index: number): number {
         return this.sectionIndex[index];
     }
@@ -240,9 +244,13 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
 }
 
 function shapeText(text: Formatted,
+<<<<<<< HEAD
                    glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
                    glyphPositions: {[_: string]: {[_: number]: GlyphPosition}},
                    imagePositions: {[_: string]: ImagePosition},
+=======
+                   glyphMaps: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}},
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                    defaultFontStack: string,
                    maxWidth: number,
                    lineHeight: number,
@@ -269,7 +277,11 @@ function shapeText(text: Formatted,
         lines = [];
         const untaggedLines =
             processBidirectionalText(logicalInput.toString(),
+<<<<<<< HEAD
                                      determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, symbolPlacement, layoutTextSize));
+=======
+                                     determineLineBreaks(logicalInput, spacing, maxWidth, glyphMaps, symbolPlacement));
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
         for (const line of untaggedLines) {
             const taggedLine = new TaggedString();
             taggedLine.text = line;
@@ -286,7 +298,11 @@ function shapeText(text: Formatted,
         const processedLines =
             processStyledBidirectionalText(logicalInput.text,
                                            logicalInput.sectionIndex,
+<<<<<<< HEAD
                                            determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, symbolPlacement, layoutTextSize));
+=======
+                                           determineLineBreaks(logicalInput, spacing, maxWidth, glyphMaps, symbolPlacement));
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
         for (const line of processedLines) {
             const taggedLine = new TaggedString();
             taggedLine.text = line[0];
@@ -295,7 +311,11 @@ function shapeText(text: Formatted,
             lines.push(taggedLine);
         }
     } else {
+<<<<<<< HEAD
         lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, symbolPlacement, layoutTextSize));
+=======
+        lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphMaps, symbolPlacement));
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
     }
 
     const positionedLines = [];
@@ -314,8 +334,13 @@ function shapeText(text: Formatted,
         hasBaseline: false
     };
 
+<<<<<<< HEAD
     shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSizeThisZoom);
     if (isEmpty(positionedLines)) return false;
+=======
+    shapeLines(shaping, glyphMaps, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement);
+    if (!positionedGlyphs.length) return false;
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
 
     return shaping;
 }
@@ -373,14 +398,26 @@ function getGlyphAdvance(codePoint: number,
 function determineAverageLineWidth(logicalInput: TaggedString,
                                    spacing: number,
                                    maxWidth: number,
+<<<<<<< HEAD
                                    glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
                                    imagePositions: {[_: string]: ImagePosition},
                                    layoutTextSize: number) {
+=======
+                                   glyphMap: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}}) {
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
     let totalWidth = 0;
 
     for (let index = 0; index < logicalInput.length(); index++) {
         const section = logicalInput.getSection(index);
+<<<<<<< HEAD
         totalWidth += getGlyphAdvance(logicalInput.getCharCode(index), section, glyphMap, imagePositions, spacing, layoutTextSize);
+=======
+        const positions = glyphMap[section.fontStack];
+        const glyph = positions && positions.glyphs[logicalInput.getCharCode(index)];
+        if (!glyph)
+            continue;
+        totalWidth += glyph.metrics.advance * section.scale + spacing;
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
     }
 
     const lineCount = Math.max(1, Math.ceil(totalWidth / maxWidth));
@@ -477,10 +514,15 @@ function leastBadBreaks(lastLineBreak: ?Break): Array<number> {
 function determineLineBreaks(logicalInput: TaggedString,
                              spacing: number,
                              maxWidth: number,
+<<<<<<< HEAD
                              glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
                              imagePositions: {[_: string]: ImagePosition},
                              symbolPlacement: string,
                              layoutTextSize: number): Array<number> {
+=======
+                             glyphMap: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}},
+                             symbolPlacement: string): Array<number> {
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
     if (symbolPlacement !== 'point')
         return [];
 
@@ -497,7 +539,15 @@ function determineLineBreaks(logicalInput: TaggedString,
     for (let i = 0; i < logicalInput.length(); i++) {
         const section = logicalInput.getSection(i);
         const codePoint = logicalInput.getCharCode(i);
+<<<<<<< HEAD
         if (!whitespace[codePoint]) currentX += getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
+=======
+        const positions = glyphMap[section.fontStack];
+        const glyph = positions && positions.glyphs[codePoint];
+
+        if (glyph && !whitespace[codePoint])
+            currentX += glyph.metrics.advance * section.scale + spacing;
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
         // surrounding spaces.
@@ -560,9 +610,13 @@ function getAnchorAlignment(anchor: SymbolAnchor) {
 }
 
 function shapeLines(shaping: Shaping,
+<<<<<<< HEAD
                     glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
                     glyphPositions: {[_: string]: {[_: number]: GlyphPosition}},
                     imagePositions: {[_: string]: ImagePosition},
+=======
+                    glyphMap: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}},
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                     lines: Array<TaggedString>,
                     lineHeight: number,
                     textAnchor: SymbolAnchor,
@@ -585,19 +639,16 @@ function shapeLines(shaping: Shaping,
     let lineIndex = 0;
     let hasBaseline = false;
     for (const line of lines) {
-        line.trim();
-        for (let i = 0; i < line.length(); i++) {
-            const section = line.getSection(i);
-            const codePoint = line.getCharCode(i);
-
+        const sections = line.getSections();
+        for (const section of sections) {
             const positions = glyphMap[section.fontStack];
-            const glyph = positions && positions[codePoint];
-            if (!glyph) continue;
-            hasBaseline = glyph.metrics.ascender !== 0 && glyph.metrics.descender !== 0;
+            if (!positions) continue;
+            hasBaseline = positions.ascender !== 0 && positions.descender !== 0;
             if (!hasBaseline) break;
         }
         if (!hasBaseline) break;
     }
+
     for (const line of lines) {
         line.trim();
 
@@ -626,17 +677,17 @@ function shapeLines(shaping: Shaping,
             const vertical = !(writingMode === WritingMode.horizontal ||
 
             const positions = glyphMap[section.fontStack];
-            const glyph = positions && positions[codePoint];
+            const glyph = positions && positions.glyphs[codePoint];
             if (!glyph) continue;
 
             // In order to make different fonts aligned, they must share a general baseline that starts from the midline
             // of each font face.  Baseline offset is the vertical distance from font face's baseline to its top most
             // position, which is the half size of the sum (ascender + descender). Since glyph's position is counted
-            // from the top left corner, the negative shift is needed. So different fonts shares the same baseline but
+            // from the top left corner, the negative shift is needed. So different fonts share the same baseline but
             // with different offset shift. If font's baseline is not applicable, fall back to use a default baseline
             // offset, see shaping.yOffset. Since we're laying out at 24 points, we need also calculate how much it will
             // move when we scale up or down.
-            const baselineOffset = (hasBaseline ? ((-glyph.metrics.ascender + glyph.metrics.descender) / 2 * section.scale) : shaping.yOffset) + (lineMaxScale - section.scale) * 24;
+            const baselineOffset = (hasBaseline ? ((-positions.ascender + positions.descender) / 2 * section.scale) : shaping.yOffset) + (lineMaxScale - section.scale) * 24;
 
             if (writingMode === WritingMode.horizontal ||
                 // Don't verticalize glyphs that have no upright orientation if vertical placement is disabled.
@@ -737,6 +788,10 @@ function shapeLines(shaping: Shaping,
 
 // justify right = 1, left = 0, center = 0.5
 function justifyLine(positionedGlyphs: Array<PositionedGlyph>,
+<<<<<<< HEAD
+=======
+                     glyphMap: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}},
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                      start: number,
                      end: number,
                      justify: 1 | 0 | 0.5,
@@ -745,12 +800,24 @@ function justifyLine(positionedGlyphs: Array<PositionedGlyph>,
         return;
 
     const lastPositionedGlyph = positionedGlyphs[end];
+<<<<<<< HEAD
     const lastAdvance = lastPositionedGlyph.metrics.advance * lastPositionedGlyph.scale;
     const lineIndent = (positionedGlyphs[end].x + lastAdvance) * justify;
 
     for (let j = start; j <= end; j++) {
         positionedGlyphs[j].x -= lineIndent;
         positionedGlyphs[j].y += lineOffset;
+=======
+    const positions = glyphMap[lastPositionedGlyph.fontStack];
+    const glyph = positions && positions.glyphs[lastPositionedGlyph.glyph];
+    if (glyph) {
+        const lastAdvance = glyph.metrics.advance * lastPositionedGlyph.scale;
+        const lineIndent = (positionedGlyphs[end].x + lastAdvance) * justify;
+
+        for (let j = start; j <= end; j++) {
+            positionedGlyphs[j].x -= lineIndent;
+        }
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
     }
 }
 

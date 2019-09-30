@@ -1723,7 +1723,11 @@ class Style extends Evented {
         setDependencies(this._symbolSourceCaches[params.source]);
     }
 
+<<<<<<< HEAD
     getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {[_: number]: ?StyleGlyph}}>) {
+=======
+    getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}}>) {
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
         this.glyphManager.getGlyphs(params.stacks, callback);
     }
 
