@@ -64,118 +64,77 @@
 <script src='access_token_generated.js'></script>
 <script>
 
-var style = {
-    version: 8,
-    center: [-119.5591, 37.715],
-    zoom: 9,
-    sources: {
-        dem: {
-            type: 'raster-dem',
-            url: "mapbox://mapbox.terrain-rgb",
-        }
-    },
-    layers: [{
-        id: 'dem',
-        type: 'hillshade',
-        source: 'dem'
-    }]
-};
-
 var map = new mapboxgl.Map({
     container: 'map',
-    style: style, // the outdoors-v10 style but without Hillshade layers
+    style: 'mapbox://styles/mapbox/cjaudgl840gn32rnrepcb9b9g', // the outdoors-v10 style but without Hillshade layers
     center: [-119.5591, 37.715],
     zoom: 9
 });
 
-var path = [
-    {lng: -118.65547451171739, lat: 36.90015417785963},
-    {lng: -116.56297976786698, lat: 35.49784318595604},
-    {lng: -114.71233711449253, lat: 37.88067634314285},
-    {lng: -113.03910603745703, lat: 39.59502021008271},
-    {lng: -111.19176233765234, lat: 42.48467754557757},
-    {lng: -107.32869471070501, lat: 41.28316234985962},
-    {lng: -105.31075800716485, lat: 40.1366906580524},
-    {lng: -103.02750079963539, lat: 38.88519174774137},
-    {lng: -103.66218740954224, lat: 35.3648673525539},
-    {lng: -104.68370819819933, lat: 33.43567800528078},
-    {lng: -108.33781496444715, lat: 34.06448079797764},
-    {lng: -110.22945138099254, lat: 29.69519132128434},
-    {lng: -119.66179230186526, lat: 35.612177335315295},
-    {lng: -117.30732938601739, lat: 43.473387750395915},
-    {lng: -110.03716662936529, lat: 43.81756160413346},
-    {lng: -113.65550619396038, lat: 47.82861807986802},
-    {lng: -119.02887489742398, lat: 51.756525041839325},
-    {lng: -125.41069329612208, lat: 54.95208483279262},
-    {lng: -132.29045382553568, lat: 57.14873165102449},
-    {lng: -139.643943373335, lat: 59.29674052804697},
-    {lng: -146.98487949183402, lat: 62.30486246180462},
-    {lng: -142.81458548438457, lat: 65.08895710789358},
-    {lng: -136.00142974853566, lat: 65.37639894004226},
-    {lng: -122.75136921741273, lat: 67.222759717164},
-    {lng: -117.64867384668207, lat: 68.50817985010406},
-    {lng: -124.49126144487354, lat: 61.87725660905829},
-    {lng: -114.32017222083084, lat: 58.379952357890346},
-    {lng: -129.49068506271783, lat: 51.23978508960798},
-    {lng: -132.43988296713468, lat: 54.75484195315076},
-    {lng: -132.79309267208737, lat: 59.36483159957248}
-];
+map.on('load', function () {
 
-map.on('load', () => {
-    let idx = 0;
-    const startPan = () => {
-        map.flyTo({ center: path[idx]});
-        idx++;
-        if(idx < path.length){
-            setTimeout(startPan, 3000);
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 256
+    });
+    map.addLayer({
+        "id": "Mapbox data",
+        "source": "mapbox-dem",
+        "type": "hillshade"
+    // insert below waterway-river-canal-shadow;
+    // where hillshading sits in the Mapbox Outdoors style
+    }, 'waterway-river-canal-shadow');
+
+    map.addSource('terrarium-dem', {
+        "type": "raster-dem",
+        "encoding": "terrarium",
+        "tiles": [
+            "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"
+        ],
+        "tileSize": 128,
+        "maxzoom": 15
+    });
+    map.addLayer({
+        "id": "Terrarium data",
+        "source": "terrarium-dem",
+        "type": "hillshade",
+        "layout": {
+            "visibility": "none"
         }
-    }
-    startPan();
+    // insert below waterway-river-canal-shadow;
+    // where hillshading sits in the Mapbox Outdoors style
+    }, 'waterway-river-canal-shadow');
+
 });
 
-var glObjectCounters = window.glObjectCounters = {
-    buffer: 0,
-    texture: 0,
-    frameBuffer: 0
-};
+var toggleableLayerIds = ['Mapbox data', 'Terrarium data'];
 
-const createBuffer = WebGLRenderingContext.prototype.createBuffer;
-WebGLRenderingContext.prototype.createBuffer = function() {
-    glObjectCounters.buffer++;
-    return createBuffer.apply(this, arguments);
-};
+for (var i = 0; i < toggleableLayerIds.length; i++) {
+    var id = toggleableLayerIds[i];
 
-const deleteBuffer = WebGLRenderingContext.prototype.deleteBuffer;
-WebGLRenderingContext.prototype.deleteBuffer = function() {
-    glObjectCounters.buffer--;
-    return deleteBuffer.apply(this, arguments);
-};
+    var link = document.createElement('a');
+    link.href = '#';
+    link.className = (i === 0) ? 'active' : '';
+    link.textContent = id;
 
-const createTexture = WebGLRenderingContext.prototype.createTexture;
-WebGLRenderingContext.prototype.createTexture = function() {
-    glObjectCounters.texture++;
-    return createTexture.apply(this, arguments);
-};
+    link.onclick = function (e) {
+        var clickedLayer = this.textContent;
+        e.preventDefault();
+        e.stopPropagation();
 
-const deleteTexture = WebGLRenderingContext.prototype.deleteTexture;
-WebGLRenderingContext.prototype.deleteTexture = function() {
-    glObjectCounters.texture--;
-    return deleteTexture.apply(this, arguments);
-};
+        if (this.className === '') {
+            var activeLayer = document.getElementsByClassName('active')[0];
+            activeLayer.className = '';
+            map.setLayoutProperty(activeLayer.textContent, 'visibility', 'none');
+            this.className = 'active';
+            map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+        }
+    };
 
-const createFramebuffer = WebGLRenderingContext.prototype.createFramebuffer;
-WebGLRenderingContext.prototype.createFramebuffer = function() {
-    glObjectCounters.frameBuffer++;
-    return createFramebuffer.apply(this, arguments);
-};
-
-const deleteFramebuffer = WebGLRenderingContext.prototype.deleteFramebuffer;
-WebGLRenderingContext.prototype.deleteFramebuffer = function() {
-    glObjectCounters.frameBuffer--;
-    return deleteFramebuffer.apply(this, arguments);
-};
-
-
+    var layers = document.getElementById('menu');
+    layers.appendChild(link);
+}
 
 </script>
 </body>

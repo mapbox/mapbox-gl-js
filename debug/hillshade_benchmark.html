@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+
+<style>
+    #menu {
+        background: #fff;
+        position: absolute;
+        z-index: 1;
+        top: 10px;
+        right: 10px;
+        border-radius: 3px;
+        width: 120px;
+        border: 1px solid rgba(0,0,0,0.4);
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    #menu a {
+        font-size: 13px;
+        color: #404040;
+        display: block;
+        margin: 0;
+        padding: 0;
+        padding: 10px;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(0,0,0,0.25);
+        text-align: center;
+    }
+
+    #menu a:last-child {
+        border: none;
+    }
+
+    #menu a:hover {
+        background-color: #f8f8f8;
+        color: #404040;
+    }
+
+    #menu a.active {
+        background-color: #3887be;
+        color: #ffffff;
+    }
+
+    #menu a.active:hover {
+        background: #3074a4;
+    }
+</style>
+
+<nav id="menu"></nav>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='access_token_generated.js'></script>
+<script>
+
+var style = {
+    version: 8,
+    center: [-119.5591, 37.715],
+    zoom: 9,
+    sources: {
+        dem: {
+            type: 'raster-dem',
+            url: "mapbox://mapbox.terrain-rgb",
+        }
+    },
+    layers: [{
+        id: 'dem',
+        type: 'hillshade',
+        source: 'dem'
+    }]
+};
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: style, // the outdoors-v10 style but without Hillshade layers
+    center: [-119.5591, 37.715],
+    zoom: 9
+});
+
+var path = [
+    {lng: -118.65547451171739, lat: 36.90015417785963},
+    {lng: -116.56297976786698, lat: 35.49784318595604},
+    {lng: -114.71233711449253, lat: 37.88067634314285},
+    {lng: -113.03910603745703, lat: 39.59502021008271},
+    {lng: -111.19176233765234, lat: 42.48467754557757},
+    {lng: -107.32869471070501, lat: 41.28316234985962},
+    {lng: -105.31075800716485, lat: 40.1366906580524},
+    {lng: -103.02750079963539, lat: 38.88519174774137},
+    {lng: -103.66218740954224, lat: 35.3648673525539},
+    {lng: -104.68370819819933, lat: 33.43567800528078},
+    {lng: -108.33781496444715, lat: 34.06448079797764},
+    {lng: -110.22945138099254, lat: 29.69519132128434},
+    {lng: -119.66179230186526, lat: 35.612177335315295}
+];
+
+map.on('load', () => {
+    let idx = 0;
+    const startPan = () => {
+        map.flyTo({ center: path[idx]});
+        idx++;
+        if(idx < path.length){
+            setTimeout(startPan, 3000);
+        }
+    }
+    startPan();
+});
+
+var glObjectCounters = window.glObjectCounters = {
+    buffer: 0,
+    texture: 0,
+    frameBuffer: 0
+};
+
+const createBuffer = WebGLRenderingContext.prototype.createBuffer;
+WebGLRenderingContext.prototype.createBuffer = function() {
+    glObjectCounters.buffer++;
+    return createBuffer.apply(this, arguments);
+};
+
+const deleteBuffer = WebGLRenderingContext.prototype.deleteBuffer;
+WebGLRenderingContext.prototype.deleteBuffer = function() {
+    glObjectCounters.buffer--;
+    return deleteBuffer.apply(this, arguments);
+};
+
+const createTexture = WebGLRenderingContext.prototype.createTexture;
+WebGLRenderingContext.prototype.createTexture = function() {
+    glObjectCounters.texture++;
+    return createTexture.apply(this, arguments);
+};
+
+const deleteTexture = WebGLRenderingContext.prototype.deleteTexture;
+WebGLRenderingContext.prototype.deleteTexture = function() {
+    glObjectCounters.texture--;
+    return deleteTexture.apply(this, arguments);
+};
+
+const createFramebuffer = WebGLRenderingContext.prototype.createFramebuffer;
+WebGLRenderingContext.prototype.createFramebuffer = function() {
+    glObjectCounters.frameBuffer++;
+    return createFramebuffer.apply(this, arguments);
+};
+
+const deleteFramebuffer = WebGLRenderingContext.prototype.deleteFramebuffer;
+WebGLRenderingContext.prototype.deleteFramebuffer = function() {
+    glObjectCounters.frameBuffer--;
+    return deleteFramebuffer.apply(this, arguments);
+};
+
+
+
+</script>
+</body>
+</html>
