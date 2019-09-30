@@ -286,7 +286,7 @@ export function filterObject(input: Object, iterator: Function, context?: Object
 }
 
 import deepEqual from '../style-spec/util/deep_equal';
-export { deepEqual };
+export {deepEqual};
 
 /**
  * Deeply clones two objects.

@@ -2,19 +2,19 @@
 
 import FeatureIndex from '../data/feature_index';
 
-import { performSymbolLayout } from '../symbol/symbol_layout';
-import { CollisionBoxArray } from '../data/array_types';
+import {performSymbolLayout} from '../symbol/symbol_layout';
+import {CollisionBoxArray} from '../data/array_types';
 import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import LineBucket from '../data/bucket/line_bucket';
 import FillBucket from '../data/bucket/fill_bucket';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
-import { warnOnce, mapObject, values } from '../util/util';
+import {warnOnce, mapObject, values} from '../util/util';
 import assert from 'assert';
 import ImageAtlas from '../render/image_atlas';
 import GlyphAtlas from '../render/glyph_atlas';
 import EvaluationParameters from '../style/evaluation_parameters';
-import { OverscaledTileID } from './tile_id';
+import {OverscaledTileID} from './tile_id';
 
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
@@ -60,7 +60,7 @@ class WorkerTile {
         this.returnDependencies = !!params.returnDependencies;
     }
 
-    parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
+    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
         this.status = 'parsing';
         this.data = data;
 
@@ -76,7 +76,8 @@ class WorkerTile {
             featureIndex,
             iconDependencies: {},
             patternDependencies: {},
-            glyphDependencies: {}
+            glyphDependencies: {},
+            availableImages
         };
 
         const layerFamilies = layerIndex.familiesBySource[this.source];
@@ -95,7 +96,7 @@ class WorkerTile {
             const features = [];
             for (let index = 0; index < sourceLayer.length; index++) {
                 const feature = sourceLayer.feature(index);
-                features.push({ feature, index, sourceLayerIndex });
+                features.push({feature, index, sourceLayerIndex});
             }
 
             for (const family of layerFamilies[sourceLayerId]) {
@@ -106,7 +107,7 @@ class WorkerTile {
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.visibility === 'none') continue;
 
-                recalculateLayers(family, this.zoom);
+                recalculateLayers(family, this.zoom, availableImages);
 
                 const bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
@@ -180,13 +181,13 @@ class WorkerTile {
                 for (const key in buckets) {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
-                        recalculateLayers(bucket.layers, this.zoom);
+                        recalculateLayers(bucket.layers, this.zoom, availableImages);
                         performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, iconMap, imageAtlas.iconPositions, this.showCollisionBoxes);
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||
                          bucket instanceof FillExtrusionBucket)) {
-                        recalculateLayers(bucket.layers, this.zoom);
+                        recalculateLayers(bucket.layers, this.zoom, availableImages);
                         bucket.addFeatures(options, imageAtlas.patternPositions);
                     }
                 }
@@ -208,11 +209,11 @@ class WorkerTile {
     }
 }
 
-function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
+function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number, availableImages: Array<string>) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
     const parameters = new EvaluationParameters(zoom);
     for (const layer of layers) {
-        layer.recalculate(parameters);
+        layer.recalculate(parameters, availableImages);
     }
 }
 

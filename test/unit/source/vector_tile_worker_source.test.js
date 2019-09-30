@@ -2,19 +2,21 @@ import fs from 'fs';
 import path from 'path';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import perf from '../../../src/util/performance';
 
+const actor = {send: () => {}};
+
 test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
 
     source.loadTile({
         source: 'source',
         uid: 0,
-        tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
-        request: { url: 'http://localhost:2900/abort' }
+        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+        request: {url: 'http://localhost:2900/abort'}
     }, (err, res) => {
         t.false(err);
         t.false(res);
@@ -33,7 +35,7 @@ test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
 });
 
 test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
 
     source.loaded = {
         '0': {}
@@ -52,7 +54,7 @@ test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
 });
 
 test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
     const parse = t.spy();
 
     source.loaded = {
@@ -64,17 +66,17 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) =
     };
 
     const callback = t.spy();
-    source.reloadTile({ uid: 0 }, callback);
+    source.reloadTile({uid: 0}, callback);
     t.equal(parse.callCount, 1);
 
-    parse.firstCall.args[3]();
+    parse.firstCall.args[4]();
     t.equal(callback.callCount, 1);
 
     t.end();
 });
 
 test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progress', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
     const parse = t.spy();
 
     source.loaded = {
@@ -87,19 +89,19 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
 
     const callback1 = t.spy();
     const callback2 = t.spy();
-    source.reloadTile({ uid: 0 }, callback1);
+    source.reloadTile({uid: 0}, callback1);
     t.equal(parse.callCount, 1);
 
     source.loaded[0].status = 'parsing';
-    source.reloadTile({ uid: 0 }, callback2);
+    source.reloadTile({uid: 0}, callback2);
     t.equal(parse.callCount, 1);
 
-    parse.firstCall.args[3]();
+    parse.firstCall.args[4]();
     t.equal(parse.callCount, 2);
     t.equal(callback1.callCount, 1);
     t.equal(callback2.callCount, 0);
 
-    parse.secondCall.args[3]();
+    parse.secondCall.args[4]();
     t.equal(callback1.callCount, 1);
     t.equal(callback2.callCount, 1);
 
@@ -108,7 +110,7 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
 
 test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) => {
     // https://github.com/mapbox/mapbox-gl-js/issues/6308
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
     const parse = t.spy();
 
     source.loaded = {
@@ -122,32 +124,32 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
     const callback1 = t.spy();
     const callback2 = t.spy();
     const callback3 = t.spy();
-    source.reloadTile({ uid: 0 }, callback1);
+    source.reloadTile({uid: 0}, callback1);
     t.equal(parse.callCount, 1);
 
     source.loaded[0].status = 'parsing';
-    source.reloadTile({ uid: 0 }, callback2);
+    source.reloadTile({uid: 0}, callback2);
     t.equal(parse.callCount, 1);
 
-    parse.firstCall.args[3]();
+    parse.firstCall.args[4]();
     t.equal(parse.callCount, 2);
     t.equal(callback1.callCount, 1);
     t.equal(callback2.callCount, 0);
     t.equal(callback3.callCount, 0);
 
-    source.reloadTile({ uid: 0 }, callback3);
+    source.reloadTile({uid: 0}, callback3);
     t.equal(parse.callCount, 2);
     t.equal(callback1.callCount, 1);
     t.equal(callback2.callCount, 0);
     t.equal(callback3.callCount, 0);
 
-    parse.secondCall.args[3]();
+    parse.secondCall.args[4]();
     t.equal(parse.callCount, 3);
     t.equal(callback1.callCount, 1);
     t.equal(callback2.callCount, 1);
     t.equal(callback3.callCount, 0);
 
-    parse.thirdCall.args[3]();
+    parse.thirdCall.args[4]();
     t.equal(callback1.callCount, 1);
     t.equal(callback2.callCount, 1);
     t.equal(callback3.callCount, 1);
@@ -156,7 +158,7 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
 });
 
 test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTile data but does call callback', (t) => {
-    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
     const parse = t.spy();
 
     source.loaded = {
@@ -168,7 +170,7 @@ test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTil
 
     const callback = t.spy();
 
-    source.reloadTile({ uid: 0 }, callback);
+    source.reloadTile({uid: 0}, callback);
     t.ok(parse.notCalled);
     t.ok(callback.calledOnce);
 
@@ -215,15 +217,15 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
         type: 'fill'
     }]);
 
-    const source = new VectorTileWorkerSource(null, layerIndex, loadVectorData);
+    const source = new VectorTileWorkerSource(actor, layerIndex, [], loadVectorData);
 
     t.stub(perf, 'getEntriesByName').callsFake(() => { return [ exampleResourceTiming ]; });
 
     source.loadTile({
         source: 'source',
         uid: 0,
-        tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
-        request: { url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true }
+        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+        request: {url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true}
     }, (err, res) => {
         t.false(err);
         t.deepEquals(res.resourceTiming[0], exampleResourceTiming, 'resourceTiming resp is expected');
@@ -250,7 +252,7 @@ test('VectorTileWorkerSource provides resource timing information (fallback meth
         type: 'fill'
     }]);
 
-    const source = new VectorTileWorkerSource(null, layerIndex, loadVectorData);
+    const source = new VectorTileWorkerSource(actor, layerIndex, [], loadVectorData);
 
     const sampleMarks = [100, 350];
     const marks = {};
@@ -276,11 +278,11 @@ test('VectorTileWorkerSource provides resource timing information (fallback meth
     source.loadTile({
         source: 'source',
         uid: 0,
-        tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
-        request: { url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true }
+        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+        request: {url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true}
     }, (err, res) => {
         t.false(err);
-        t.deepEquals(res.resourceTiming[0], {"duration": 250, "entryType": "measure", "name": "http://localhost:2900/faketile.pbf", "startTime": 100 }, 'resourceTiming resp is expected');
+        t.deepEquals(res.resourceTiming[0], {"duration": 250, "entryType": "measure", "name": "http://localhost:2900/faketile.pbf", "startTime": 100}, 'resourceTiming resp is expected');
         t.end();
     });
 });

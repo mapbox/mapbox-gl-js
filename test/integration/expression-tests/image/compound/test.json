@@ -1,0 +1,22 @@
+{
+  "expression": [
+    "image",
+    ["get", "icon"]
+  ],
+  "inputs": [[{}, {"properties": {"icon": "monument-15"}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "image"
+    },
+    "outputs": [
+      {"name":"monument-15","available":true}
+    ],
+    "serialized": [
+        "image",
+        ["string", ["get", "icon"]]
+    ]
+  }
+}

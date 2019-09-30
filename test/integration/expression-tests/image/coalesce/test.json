@@ -1,0 +1,26 @@
+{
+  "expression": ["coalesce", ["image", "foo"], ["image", "bar"], ["image", "monument-15"]],
+  "propertySpec": {
+    "type": "image"
+  },
+  "inputs": [
+    [{}, {}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "image"
+    },
+    "outputs": [
+      {"name":"monument-15","available":true}
+    ],
+    "serialized": [
+      "coalesce",
+      ["image", "foo"],
+      ["image", "bar"],
+      ["image", "monument-15"]
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import Wrapper from '../../../src/source/geojson_wrapper';
 
 test('geojsonwrapper', (t) => {
@@ -7,7 +7,7 @@ test('geojsonwrapper', (t) => {
         const features = [{
             type: 2,
             geometry: [[[0, 0], [10, 10]]],
-            tags: { hello: 'world' }
+            tags: {hello: 'world'}
         }];
 
         const wrap = new Wrapper(features);

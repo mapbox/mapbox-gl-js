@@ -8,7 +8,7 @@ const isBuiltin = require('is-builtin-module');
 const Linter = require('eslint').Linter;
 const rollup = require('rollup');
 
-import { test } from '../util/test';
+import {test} from '../util/test';
 import rollupConfig from '../../src/style-spec/rollup.config';
 
 // some paths

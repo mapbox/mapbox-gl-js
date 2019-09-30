@@ -1,6 +1,6 @@
 // @flow
 
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 
 import throttle from '../../../src/util/throttle';
 

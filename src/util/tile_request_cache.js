@@ -1,6 +1,6 @@
 // @flow
 
-import { warnOnce, parseCacheControl } from './util';
+import {warnOnce, parseCacheControl} from './util';
 import window from './window';
 
 import type Dispatcher from './dispatcher';
@@ -92,8 +92,7 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
                     }
 
                     callback(null, response, fresh);
-                })
-                .catch(callback);
+                });
         })
         .catch(callback);
 

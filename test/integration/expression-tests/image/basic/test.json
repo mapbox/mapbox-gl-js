@@ -1,0 +1,27 @@
+{
+  "expression": [
+    "image",
+    "monument-15"
+  ],
+  "inputs": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "image"
+    },
+    "outputs": [
+      {"name":"monument-15","available":true}
+    ],
+    "serialized": [
+      "image",
+      "monument-15"
+    ]
+  }
+}

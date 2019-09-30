@@ -1,6 +1,6 @@
 // @flow
 
-import { number as interpolate } from '../style-spec/util/interpolate';
+import {number as interpolate} from '../style-spec/util/interpolate';
 
 import Anchor from '../symbol/anchor';
 import checkMaxAngle from './check_max_angle';
@@ -8,7 +8,7 @@ import checkMaxAngle from './check_max_angle';
 import type Point from '@mapbox/point-geometry';
 import type {Shaping, PositionedIcon} from './shaping';
 
-export { getAnchors, getCenterAnchor };
+export {getAnchors, getCenterAnchor};
 
 function getLineLength(line: Array<Point>): number {
     let lineLength = 0;

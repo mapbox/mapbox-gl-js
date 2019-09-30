@@ -1,6 +1,6 @@
 // @flow
 
-import { uniqueId, asyncAll } from './util';
+import {uniqueId, asyncAll} from './util';
 import Actor from './actor';
 import assert from 'assert';
 

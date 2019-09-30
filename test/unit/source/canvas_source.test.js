@@ -1,8 +1,8 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import CanvasSource from '../../../src/source/canvas_source';
 import Transform from '../../../src/geo/transform';
-import { Event, Evented } from '../../../src/util/evented';
-import { extend } from '../../../src/util/util';
+import {Event, Evented} from '../../../src/util/evented';
+import {extend} from '../../../src/util/util';
 import window from '../../../src/util/window';
 
 function createSource(options) {
@@ -17,7 +17,7 @@ function createSource(options) {
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
     }, options);
 
-    const source = new CanvasSource('id', options, { send() {} }, options.eventedParent);
+    const source = new CanvasSource('id', options, {send() {}}, options.eventedParent);
 
     source.canvas = c;
 
@@ -61,24 +61,24 @@ test('CanvasSource', (t) => {
 
     t.test('self-validates', (t) => {
         const stub = t.stub(console, 'error');
-        createSource({ coordinates: [] });
+        createSource({coordinates: []});
         t.ok(stub.called, 'should error when `coordinates` array parameter has incorrect number of elements');
         stub.resetHistory();
 
-        createSource({ coordinates: 'asdf' });
+        createSource({coordinates: 'asdf'});
         t.ok(stub.called, 'should error with non-array `coordinates` parameter');
         stub.resetHistory();
 
-        createSource({ animate: 8 });
+        createSource({animate: 8});
         t.ok(stub.called, 'should error with non-boolean `animate` parameter');
         stub.resetHistory();
 
-        createSource({ canvas: {} });
+        createSource({canvas: {}});
         t.ok(stub.called, 'should error with non-string/non-Canvas `canvas` parameter');
         stub.resetHistory();
 
         const canvasEl = window.document.createElement('canvas');
-        createSource({ canvas: canvasEl });
+        createSource({canvas: canvasEl});
         t.notOk(stub.called, 'should not error with HTMLCanvasElement');
         stub.resetHistory();
 

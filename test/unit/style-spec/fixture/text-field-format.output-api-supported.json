@@ -1,0 +1,26 @@
+[
+  {
+    "message": "layers[0].layout.text-field: Expected at least two arguments.",
+    "line": 31
+  },
+  {
+    "message": "layers[4].layout.text-field[1]: Expected number but found string instead.",
+    "line": 78
+  },
+  {
+    "message": "layers[5].layout.text-field[1][0]: Unknown expression \"Helvetica\". If you wanted a literal array, use [\"literal\", [...]].",
+    "line": 90
+  },
+  {
+    "message": "layers[8].layout.text-field[1]: Expected array<string> but found number instead.",
+    "line": 126
+  },
+  {
+    "message": "glyphs: Styles must reference glyphs hosted by Mapbox",
+    "line": 24
+  },
+  {
+    "message": "source.data: Unsupported property \"data\"",
+    "line": 6
+  }
+]

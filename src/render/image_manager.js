@@ -2,13 +2,13 @@
 
 import potpack from 'potpack';
 
-import { Event, Evented } from '../util/evented';
-import { RGBAImage } from '../util/image';
-import { ImagePosition } from './image_atlas';
+import {Event, Evented} from '../util/evented';
+import {RGBAImage} from '../util/image';
+import {ImagePosition} from './image_atlas';
 import Texture from './texture';
 import assert from 'assert';
 import {renderStyleImage} from '../style/style_image';
-import { warnOnce } from '../util/util';
+import {warnOnce} from '../util/util';
 
 import type {StyleImage} from '../style/style_image';
 import type Context from '../gl/context';
@@ -117,7 +117,7 @@ class ImageManager extends Evented {
 
     getImages(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
-        // (i.e. if they've been addeded via runtime styling), then notify the requestor immediately.
+        // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
         // dependencies are still unavailable, we'll just assume they are permanently missing.
         let hasAllDependencies = true;
@@ -140,7 +140,7 @@ class ImageManager extends Evented {
 
         for (const id of ids) {
             if (!this.images[id]) {
-                this.fire(new Event('styleimagemissing', { id }));
+                this.fire(new Event('styleimagemissing', {id}));
             }
             const image = this.images[id];
             if (image) {
@@ -225,13 +225,13 @@ class ImageManager extends Evented {
             const w = src.width;
             const h = src.height;
 
-            RGBAImage.copy(src, dst, { x: 0, y: 0 }, { x, y }, { width: w, height: h });
+            RGBAImage.copy(src, dst, {x: 0, y: 0}, {x, y}, {width: w, height: h});
 
             // Add 1 pixel wrapped padding on each side of the image.
-            RGBAImage.copy(src, dst, { x: 0, y: h - 1 }, { x, y: y - 1 }, { width: w, height: 1 }); // T
-            RGBAImage.copy(src, dst, { x: 0, y:     0 }, { x, y: y + h }, { width: w, height: 1 }); // B
-            RGBAImage.copy(src, dst, { x: w - 1, y: 0 }, { x: x - 1, y }, { width: 1, height: h }); // L
-            RGBAImage.copy(src, dst, { x: 0,     y: 0 }, { x: x + w, y }, { width: 1, height: h }); // R
+            RGBAImage.copy(src, dst, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}); // T
+            RGBAImage.copy(src, dst, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}); // B
+            RGBAImage.copy(src, dst, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}); // L
+            RGBAImage.copy(src, dst, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}); // R
         }
 
         this.dirty = true;

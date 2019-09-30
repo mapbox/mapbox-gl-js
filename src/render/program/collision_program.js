@@ -46,4 +46,4 @@ const collisionUniformValues = (
     };
 };
 
-export { collisionUniforms, collisionUniformValues };
+export {collisionUniforms, collisionUniformValues};

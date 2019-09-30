@@ -11,9 +11,9 @@ export type Result<T, E> =
     | {| result: 'error', value: E |};
 
 export function success<T, E>(value: T): Result<T, E> {
-    return { result: 'success', value };
+    return {result: 'success', value};
 }
 
 export function error<T, E>(value: E): Result<T, E> {
-    return { result: 'error', value };
+    return {result: 'error', value};
 }

@@ -4,16 +4,16 @@ import Point from '@mapbox/point-geometry';
 
 import StyleLayer from '../style_layer';
 import LineBucket from '../../data/bucket/line_bucket';
-import { RGBAImage } from '../../util/image';
-import { polygonIntersectsBufferedMultiLine } from '../../util/intersection_tests';
-import { getMaximumPaintValue, translateDistance, translate } from '../query_utils';
+import {RGBAImage} from '../../util/image';
+import {polygonIntersectsBufferedMultiLine} from '../../util/intersection_tests';
+import {getMaximumPaintValue, translateDistance, translate} from '../query_utils';
 import properties from './line_style_layer_properties';
-import { extend } from '../../util/util';
+import {extend} from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
 import renderColorRamp from '../../util/color_ramp';
-import { Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty } from '../properties';
+import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties';
 
-import type { FeatureState } from '../../style-spec/expression';
+import type {FeatureState} from '../../style-spec/expression';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
 import type Transform from '../../geo/transform';
@@ -69,8 +69,8 @@ class LineStyleLayer extends StyleLayer {
         this.gradientTexture = null;
     }
 
-    recalculate(parameters: EvaluationParameters) {
-        super.recalculate(parameters);
+    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+        super.recalculate(parameters, availableImages);
 
         (this.paint._values: any)['line-floorwidth'] =
             lineFloorwidthProperty.possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);

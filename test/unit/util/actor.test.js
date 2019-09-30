@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import Actor from '../../../src/util/actor';
 import WebWorker from '../../../src/util/web_worker';
 
@@ -18,13 +18,13 @@ test('Actor', (t) => {
         const m2 = new Actor(worker, {}, 2);
 
         t.plan(4);
-        m1.send('test', { value: 1729 }, (err, response) => {
+        m1.send('test', {value: 1729}, (err, response) => {
             t.error(err);
-            t.same(response, { value: 1729 });
+            t.same(response, {value: 1729});
         });
-        m2.send('test', { value: 4104 }, (err, response) => {
+        m2.send('test', {value: 4104}, (err, response) => {
             t.error(err);
-            t.same(response, { value: 4104 });
+            t.same(response, {value: 4104});
         });
     });
 

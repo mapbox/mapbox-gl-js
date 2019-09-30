@@ -1,10 +1,10 @@
 // @flow
 
 import DOM from '../../util/dom';
-import { bezier, bindAll } from '../../util/util';
+import {bezier, bindAll} from '../../util/util';
 import window from '../../util/window';
 import browser from '../../util/browser';
-import { Event } from '../../util/evented';
+import {Event} from '../../util/evented';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
@@ -112,6 +112,16 @@ class TouchZoomRotateHandler {
         this._rotationDisabled = false;
     }
 
+    /**
+     * Returns true if the handler is enabled and has detected the start of a zoom/rotate gesture.
+     *
+     * @returns {boolean}
+     * @memberof TouchZoomRotateHandler
+     */
+    isActive(): boolean {
+        return this.isEnabled() && !!this._gestureIntent;
+    }
+
     onStart(e: TouchEvent) {
         if (!this.isEnabled()) return;
         if (e.touches.length !== 2) return;
@@ -161,8 +171,8 @@ class TouchZoomRotateHandler {
             }
 
             if (this._gestureIntent) {
-                this._map.fire(new Event(`${this._gestureIntent}start`, { originalEvent: e }));
-                this._map.fire(new Event('movestart', { originalEvent: e }));
+                this._map.fire(new Event(`${this._gestureIntent}start`, {originalEvent: e}));
+                this._map.fire(new Event('movestart', {originalEvent: e}));
                 this._startVec = vec;
             }
         }
@@ -197,7 +207,6 @@ class TouchZoomRotateHandler {
         }
 
         tr.zoom = tr.scaleZoom(this._startScale * scale);
-
         tr.setLocationAtPoint(this._startAround, aroundPoint);
 
         this._map.fire(new Event(gestureIntent, {originalEvent: this._lastTouchEvent}));
@@ -225,7 +234,7 @@ class TouchZoomRotateHandler {
 
         if (!gestureIntent) return;
 
-        this._map.fire(new Event(`${gestureIntent}end`, { originalEvent: e }));
+        this._map.fire(new Event(`${gestureIntent}end`, {originalEvent: e}));
 
         this._drainInertiaBuffer();
 
@@ -233,7 +242,7 @@ class TouchZoomRotateHandler {
             map = this._map;
 
         if (inertia.length < 2) {
-            map.snapToNorth({}, { originalEvent: e });
+            map.snapToNorth({}, {originalEvent: e});
             return;
         }
 
@@ -246,7 +255,7 @@ class TouchZoomRotateHandler {
             p = last[2];
 
         if (scaleDuration === 0 || lastScale === firstScale) {
-            map.snapToNorth({}, { originalEvent: e });
+            map.snapToNorth({}, {originalEvent: e});
             return;
         }
 
@@ -274,7 +283,7 @@ class TouchZoomRotateHandler {
             easing: inertiaEasing,
             around: this._aroundCenter ? map.getCenter() : map.unproject(p),
             noMoveStart: true
-        }, { originalEvent: e });
+        }, {originalEvent: e});
     }
 
     _drainInertiaBuffer() {

@@ -1,8 +1,8 @@
 
 import extend from '../util/extend';
-import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
-import { isExpression } from '../expression';
-import { isFunction } from '../function';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
+import {isExpression} from '../expression';
+import {isFunction} from '../function';
 
 import validateFunction from './validate_function';
 import validateExpression from './validate_expression';
@@ -19,6 +19,7 @@ import validateSource from './validate_source';
 import validateLight from './validate_light';
 import validateString from './validate_string';
 import validateFormatted from './validate_formatted';
+import validateImage from './validate_image';
 
 const VALIDATORS = {
     '*'() {
@@ -37,7 +38,8 @@ const VALIDATORS = {
     'source': validateSource,
     'light': validateLight,
     'string': validateString,
-    'formatted': validateFormatted
+    'formatted': validateFormatted,
+    'image': validateImage
 };
 
 // Main recursive validation function. Tracks:

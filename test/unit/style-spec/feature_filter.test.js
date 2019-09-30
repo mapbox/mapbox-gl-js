@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import createFilter from '../../../src/style-spec/feature_filter';
 import convertFilter from '../../../src/style-spec/feature_filter/convert';
 
@@ -26,12 +26,12 @@ test('filter', t => {
     });
 
     t.test('expression, collator comparison', (t) => {
-        const caseSensitive = createFilter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': true }]]);
+        const caseSensitive = createFilter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', {'case-sensitive': true}]]);
         t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'b'}}), false);
         t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'A'}}), false);
         t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'a'}}), true);
 
-        const caseInsensitive = createFilter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': false }]]);
+        const caseInsensitive = createFilter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', {'case-sensitive': false}]]);
         t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'b'}}), false);
         t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'A'}}), true);
         t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'a'}}), true);

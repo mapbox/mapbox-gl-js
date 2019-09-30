@@ -1,7 +1,7 @@
 // @flow
 
 import DOM from '../../util/dom';
-import { extend, bindAll } from '../../util/util';
+import {extend, bindAll} from '../../util/util';
 import DragRotateHandler from '../handler/drag_rotate';
 
 import type Map from '../map';
@@ -52,18 +52,18 @@ class NavigationControl {
             bindAll([
                 '_updateZoomButtons'
             ], this);
-            this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom in', () => this._map.zoomIn());
-            this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom out', () => this._map.zoomOut());
+            this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom in', (e) => this._map.zoomIn({}, {originalEvent: e}));
+            this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom out', (e) => this._map.zoomOut({}, {originalEvent: e}));
         }
         if (this.options.showCompass) {
             bindAll([
                 '_rotateCompassArrow'
             ], this);
-            this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset bearing to north', () => {
+            this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset bearing to north', (e) => {
                 if (this.options.visualizePitch) {
-                    this._map.resetNorthPitch();
+                    this._map.resetNorthPitch({}, {originalEvent: e});
                 } else {
-                    this._map.resetNorth();
+                    this._map.resetNorth({}, {originalEvent: e});
                 }
             });
             this._compassArrow = DOM.create('span', 'mapboxgl-ctrl-compass-arrow', this._compass);
@@ -106,7 +106,7 @@ class NavigationControl {
             this._rotateCompassArrow();
             this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
             DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
-            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, { passive: false });
+            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, {passive: false});
             this._handler.enable();
         }
         return this._container;
@@ -123,7 +123,7 @@ class NavigationControl {
             }
             this._map.off('rotate', this._rotateCompassArrow);
             DOM.removeEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
-            DOM.removeEventListener(this._compass, 'touchstart', this._handler.onMouseDown, { passive: false });
+            DOM.removeEventListener(this._compass, 'touchstart', this._handler.onMouseDown, {passive: false});
             this._handler.disable();
             delete this._handler;
         }

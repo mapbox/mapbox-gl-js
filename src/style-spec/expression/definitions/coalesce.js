@@ -2,13 +2,13 @@
 
 import assert from 'assert';
 
-import { checkSubtype, ValueType } from '../types';
+import {checkSubtype, ValueType} from '../types';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Value } from '../values';
-import type { Type } from '../types';
+import type {Value} from '../values';
+import type {Type} from '../types';
 
 class Coalesce implements Expression {
     type: Type;
@@ -53,8 +53,21 @@ class Coalesce implements Expression {
 
     evaluate(ctx: EvaluationContext) {
         let result = null;
+        let argCount = 0;
+        let requestedImageName;
         for (const arg of this.args) {
+            argCount++;
             result = arg.evaluate(ctx);
+            // we need to keep track of the first requested image in a coalesce statement
+            // if coalesce can't find a valid image, we return the first image name so styleimagemissing can fire
+            if (arg.type.kind === 'image' && !result.available) {
+                if (!requestedImageName) requestedImageName = arg.evaluate(ctx).name;
+                result = null;
+                if (argCount === this.args.length) {
+                    result = requestedImageName;
+                }
+            }
+
             if (result !== null) break;
         }
         return result;

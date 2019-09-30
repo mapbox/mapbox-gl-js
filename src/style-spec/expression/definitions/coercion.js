@@ -7,12 +7,14 @@ import {Color, toString as valueToString, validateRGBA} from '../values';
 import RuntimeError from '../runtime_error';
 import Formatted from '../types/formatted';
 import FormatExpression from '../definitions/format';
+import ImageExpression from '../definitions/image';
+import ResolvedImage from '../types/resolved_image';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Value } from '../values';
-import type { Type } from '../types';
+import type {Value} from '../values';
+import type {Type} from '../types';
 
 const types = {
     'to-boolean': BooleanType,
@@ -99,6 +101,9 @@ class Coercion implements Expression {
             // There is no explicit 'to-formatted' but this coercion can be implicitly
             // created by properties that expect the 'formatted' type.
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
+        } else if (this.type.kind === 'image') {
+            const name = valueToString(this.args[0].evaluate(ctx));
+            return ResolvedImage.fromString({name, available: false});
         } else {
             return valueToString(this.args[0].evaluate(ctx));
         }
@@ -116,6 +121,11 @@ class Coercion implements Expression {
         if (this.type.kind === 'formatted') {
             return new FormatExpression([{text: this.args[0], scale: null, font: null, textColor: null}]).serialize();
         }
+
+        if (this.type.kind === 'image') {
+            return new ImageExpression(this.args[0]).serialize();
+        }
+
         const serialized = [`to-${this.type.kind}`];
         this.eachChild(child => { serialized.push(child.serialize()); });
         return serialized;

@@ -1,10 +1,10 @@
 // @flow
 
-import { Event, ErrorEvent, Evented } from '../util/evented';
+import {Event, ErrorEvent, Evented} from '../util/evented';
 
-import { extend } from '../util/util';
+import {extend} from '../util/util';
 import EXTENT from '../data/extent';
-import { ResourceType } from '../util/ajax';
+import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 
 import type {Source} from './source';
@@ -152,7 +152,7 @@ class GeoJSONSource extends Evented implements Source {
                 return;
             }
 
-            const data: Object = { dataType: 'source', sourceDataType: 'metadata' };
+            const data: Object = {dataType: 'source', sourceDataType: 'metadata'};
             if (this._collectResourceTiming && this._resourceTiming && (this._resourceTiming.length > 0)) {
                 data.resourceTiming = this._resourceTiming;
                 this._resourceTiming = [];
@@ -184,7 +184,7 @@ class GeoJSONSource extends Evented implements Source {
                 return;
             }
 
-            const data: Object = { dataType: 'source', sourceDataType: 'content' };
+            const data: Object = {dataType: 'source', sourceDataType: 'content'};
             if (this._collectResourceTiming && this._resourceTiming && (this._resourceTiming.length > 0)) {
                 data.resourceTiming = this._resourceTiming;
                 this._resourceTiming = [];
@@ -203,7 +203,7 @@ class GeoJSONSource extends Evented implements Source {
      * @returns {GeoJSONSource} this
      */
     getClusterExpansionZoom(clusterId: number, callback: Callback<number>) {
-        this.actor.send('geojson.getClusterExpansionZoom', { clusterId, source: this.id }, callback);
+        this.actor.send('geojson.getClusterExpansionZoom', {clusterId, source: this.id}, callback);
         return this;
     }
 
@@ -215,7 +215,7 @@ class GeoJSONSource extends Evented implements Source {
      * @returns {GeoJSONSource} this
      */
     getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>) {
-        this.actor.send('geojson.getClusterChildren', { clusterId, source: this.id }, callback);
+        this.actor.send('geojson.getClusterChildren', {clusterId, source: this.id}, callback);
         return this;
     }
 
@@ -273,7 +273,7 @@ class GeoJSONSource extends Evented implements Source {
             // message queue. Waiting instead for the 'coalesce' to round-trip
             // through the foreground just means we're throttling the worker
             // to run at a little less than full-throttle.
-            this.actor.send(`${this.type}.coalesce`, { source: options.source }, null);
+            this.actor.send(`${this.type}.coalesce`, {source: options.source}, null);
             callback(err);
         });
     }
@@ -325,12 +325,12 @@ class GeoJSONSource extends Evented implements Source {
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
-        this.actor.send('removeTile', { uid: tile.uid, type: this.type, source: this.id });
+        this.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
     }
 
     onRemove() {
         this._removed = true;
-        this.actor.send('removeSource', { type: this.type, source: this.id });
+        this.actor.send('removeSource', {type: this.type, source: this.id});
     }
 
     serialize() {

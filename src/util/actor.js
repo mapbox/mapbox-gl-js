@@ -1,7 +1,7 @@
 // @flow
 
-import { bindAll } from './util';
-import { serialize, deserialize } from './web_worker_transfer';
+import {bindAll} from './util';
+import {serialize, deserialize} from './web_worker_transfer';
 import ThrottledInvoker from './throttled_invoker';
 
 import type {Transferable} from '../types/transferable';

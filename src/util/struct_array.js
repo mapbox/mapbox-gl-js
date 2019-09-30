@@ -239,4 +239,4 @@ function align(offset: number, size: number): number {
     return Math.ceil(offset / size) * size;
 }
 
-export { StructArray, Struct, viewTypes, createLayout };
+export {StructArray, Struct, viewTypes, createLayout};

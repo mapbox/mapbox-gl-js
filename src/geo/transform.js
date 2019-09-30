@@ -4,14 +4,14 @@ import LngLat from './lng_lat';
 import LngLatBounds from './lng_lat_bounds';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from './mercator_coordinate';
 import Point from '@mapbox/point-geometry';
-import { wrap, clamp } from '../util/util';
+import {wrap, clamp} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import tileCover from '../util/tile_cover';
-import { UnwrappedTileID } from '../source/tile_id';
+import {UnwrappedTileID} from '../source/tile_id';
 import EXTENT from '../data/extent';
-import { vec4, mat4, mat2 } from 'gl-matrix';
+import {vec4, mat4, mat2} from 'gl-matrix';
 
-import type { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
+import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 
 /**
  * A single transform, generally used for a single tile to be

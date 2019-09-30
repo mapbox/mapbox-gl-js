@@ -1,6 +1,6 @@
 // @flow
 
-import { bgPatternUniformValues } from './pattern';
+import {bgPatternUniformValues} from './pattern';
 import {
     Uniform1i,
     Uniform1f,
@@ -8,7 +8,7 @@ import {
     UniformColor,
     UniformMatrix4f
 } from '../uniform_binding';
-import { extend } from '../../util/util';
+import {extend} from '../../util/util';
 
 import type Painter from '../painter';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
@@ -17,6 +17,7 @@ import type Color from '../../style-spec/util/color';
 import type {CrossFaded} from '../../style/properties';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters';
 import type {OverscaledTileID} from '../../source/tile_id';
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
 
 export type BackgroundUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -83,7 +84,7 @@ const backgroundPatternUniformValues = (
     matrix: Float32Array,
     opacity: number,
     painter: Painter,
-    image: CrossFaded<string>,
+    image: CrossFaded<ResolvedImage>,
     tile: {tileID: OverscaledTileID, tileSize: number},
     crossfade: CrossfadeParameters
 ): UniformValues<BackgroundPatternUniformsType> => extend(

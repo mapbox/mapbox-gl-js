@@ -1,6 +1,6 @@
 
-import { test } from '../../../util/test';
-import { createMap } from '../../../util';
+import {test} from '../../../util/test';
+import {createMap} from '../../../util';
 import ScaleControl from '../../../../src/ui/control/scale_control';
 
 test('ScaleControl appears in bottom-left by default', (t) => {
@@ -37,7 +37,7 @@ test('ScaleControl should change unit of distance after calling setUnit', (t) =>
 test('ScaleControl should respect the maxWidth regardless of the unit and actual scale', (t) => {
     const map = createMap(t);
     const maxWidth = 100;
-    const scale = new ScaleControl({ maxWidth, unit: 'nautical' });
+    const scale = new ScaleControl({maxWidth, unit: 'nautical'});
     const selector = '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale';
     map.addControl(scale);
     map.setZoom(12.5);

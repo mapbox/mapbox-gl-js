@@ -1,6 +1,6 @@
 // @flow
 
-import { endsWith, filterObject } from '../util/util';
+import {endsWith, filterObject} from '../util/util';
 
 import styleSpec from '../style-spec/reference/latest';
 import {
@@ -9,11 +9,11 @@ import {
     validatePaintProperty,
     emitValidationErrors
 } from './validate_style';
-import { Evented } from '../util/evented';
-import { Layout, Transitionable, Transitioning, Properties, PossiblyEvaluatedPropertyValue } from './properties';
-import { supportsPropertyExpression } from '../style-spec/util/properties';
+import {Evented} from '../util/evented';
+import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluatedPropertyValue} from './properties';
+import {supportsPropertyExpression} from '../style-spec/util/properties';
 
-import type { FeatureState } from '../style-spec/expression';
+import type {FeatureState} from '../style-spec/expression';
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter} from '../style-spec/feature_filter';
@@ -193,16 +193,16 @@ class StyleLayer extends Evented {
         return this._transitioningPaint.hasTransition();
     }
 
-    recalculate(parameters: EvaluationParameters) {
+    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
         if (parameters.getCrossfadeParameters) {
             this._crossfadeParameters = parameters.getCrossfadeParameters();
         }
 
         if (this._unevaluatedLayout) {
-            (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters);
+            (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, availableImages);
         }
 
-        (this: any).paint = this._transitioningPaint.possiblyEvaluate(parameters);
+        (this: any).paint = this._transitioningPaint.possiblyEvaluate(parameters, availableImages);
     }
 
     serialize() {

@@ -1,13 +1,13 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import SourceCache from '../../../src/source/source_cache';
 import {setType} from '../../../src/source/source';
 import Tile from '../../../src/source/tile';
-import { OverscaledTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
-import { Event, ErrorEvent, Evented } from '../../../src/util/evented';
-import { extend } from '../../../src/util/util';
+import {Event, ErrorEvent, Evented} from '../../../src/util/evented';
+import {extend} from '../../../src/util/util';
 import browser from '../../../src/util/browser';
 
 // Add a mocked source type for use in these tests
@@ -301,7 +301,7 @@ test('SourceCache#removeTile', (t) => {
                 callback();
             }
         });
-        sourceCache.map = { painter: { crossTileSymbolIndex: "", tileExtentVAO: {} } };
+        sourceCache.map = {painter: {crossTileSymbolIndex: "", tileExtentVAO: {}}};
 
         sourceCache._addTile(tileID);
 
@@ -335,7 +335,7 @@ test('SourceCache / Source lifecycle', (t) => {
     });
 
     t.test('forward error event', (t) => {
-        const sourceCache = createSourceCache({ error: 'Error loading source' }).on('error', (err) => {
+        const sourceCache = createSourceCache({error: 'Error loading source'}).on('error', (err) => {
             t.equal(err.error, 'Error loading source');
             t.end();
         });
@@ -350,7 +350,7 @@ test('SourceCache / Source lifecycle', (t) => {
     });
 
     t.test('loaded() true after source error', (t) => {
-        const sourceCache = createSourceCache({ error: 'Error loading source' }).on('error', () => {
+        const sourceCache = createSourceCache({error: 'Error loading source'}).on('error', () => {
             t.ok(sourceCache.loaded());
             t.end();
         });
@@ -1226,7 +1226,7 @@ test('SourceCache#tilesIn', (t) => {
         tr.width = 512;
         tr.height = 512;
         tr._calcMatrices();
-        const sourceCache = createSourceCache({ noLoad: true });
+        const sourceCache = createSourceCache({noLoad: true});
         sourceCache.transform = tr;
         sourceCache.onAdd();
         t.same(sourceCache.tilesIn([
@@ -1420,7 +1420,7 @@ test('SourceCache#getIds (ascending order by zoom level)', (t) => {
     const sourceCache = createSourceCache({});
     sourceCache.transform = new Transform();
     for (let i = 0; i < ids.length; i++) {
-        sourceCache._tiles[ids[i].key] = { tileID: ids[i] };
+        sourceCache._tiles[ids[i].key] = {tileID: ids[i]};
     }
     t.deepEqual(sourceCache.getIds(), [
         new OverscaledTileID(0, 0, 0, 0, 0).key,
@@ -1477,7 +1477,7 @@ test('SourceCache#findLoadedParent', (t) => {
 
 test('SourceCache#reload', (t) => {
     t.test('before loaded', (t) => {
-        const sourceCache = createSourceCache({ noLoad: true });
+        const sourceCache = createSourceCache({noLoad: true});
         sourceCache.onAdd();
 
         t.doesNotThrow(() => {
@@ -1496,7 +1496,7 @@ test('SourceCache reloads expiring tiles', (t) => {
 
         const expiryDate = new Date();
         expiryDate.setMilliseconds(expiryDate.getMilliseconds() + 50);
-        const sourceCache = createSourceCache({ expires: expiryDate });
+        const sourceCache = createSourceCache({expires: expiryDate});
 
         sourceCache._reloadTile = (id, state) => {
             t.equal(state, 'expired');

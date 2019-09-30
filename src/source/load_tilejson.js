@@ -1,8 +1,8 @@
 // @flow
 
-import { pick, extend } from '../util/util';
+import {pick, extend} from '../util/util';
 
-import { getJSON, ResourceType } from '../util/ajax';
+import {getJSON, ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 
 import type {RequestManager} from '../util/mapbox';

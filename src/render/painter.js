@@ -2,19 +2,19 @@
 
 import browser from '../util/browser';
 
-import { mat4 } from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache';
 import EXTENT from '../data/extent';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import SegmentVector from '../data/segment';
-import { RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray } from '../data/array_types';
+import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import posAttributes from '../data/pos_attributes';
 import ProgramConfiguration from '../data/program_configuration';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import * as shaders from '../shaders';
 import Program from './program';
-import { programUniforms } from './program/program_uniforms';
+import {programUniforms} from './program/program_uniforms';
 import Context from '../gl/context';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
@@ -22,7 +22,7 @@ import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import Texture from './texture';
 import updateTileMasks from './tile_mask';
-import { clippingMaskUniformValues } from './program/clipping_mask_program';
+import {clippingMaskUniformValues} from './program/clipping_mask_program';
 import Color from '../style-spec/util/color';
 import symbol from './draw_symbol';
 import circle from './draw_circle';
@@ -62,6 +62,7 @@ import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
+import type ResolvedImage from '../style-spec/expression/types/resolved_image';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 
@@ -211,7 +212,7 @@ class Painter {
         this.quadTriangleIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
 
         const gl = this.context.gl;
-        this.stencilClearMode = new StencilMode({ func: gl.ALWAYS, mask: 0 }, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
+        this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
     }
 
     /*
@@ -266,7 +267,7 @@ class Painter {
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
-                new StencilMode({ func: gl.ALWAYS, mask: 0 }, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
+                new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
                 ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.posMatrix),
                 '$clipping', this.tileExtentBuffer,
                 this.quadTriangleIndexBuffer, this.tileExtentSegments);
@@ -282,12 +283,12 @@ class Painter {
 
         const id = this.nextStencilID++;
         const gl = this.context.gl;
-        return new StencilMode({ func: gl.NOTEQUAL, mask: 0xFF }, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+        return new StencilMode({func: gl.NOTEQUAL, mask: 0xFF}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     stencilModeForClipping(tileID: OverscaledTileID): StencilMode {
         const gl = this.context.gl;
-        return new StencilMode({ func: gl.EQUAL, mask: 0xFF }, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
+        return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     colorModeForRenderPass(): $ReadOnly<ColorMode> {
@@ -393,7 +394,7 @@ class Painter {
         this.context.bindFramebuffer.set(null);
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        this.context.clear({ color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1 });
+        this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
@@ -508,10 +509,10 @@ class Painter {
      *
      * @returns true if a needed image is missing and rendering needs to be skipped.
      */
-    isPatternMissing(image: ?CrossFaded<string>): boolean {
+    isPatternMissing(image: ?CrossFaded<ResolvedImage>): boolean {
         if (!image) return false;
-        const imagePosA = this.imageManager.getPattern(image.from);
-        const imagePosB = this.imageManager.getPattern(image.to);
+        const imagePosA = this.imageManager.getPattern(image.from.toString());
+        const imagePosB = this.imageManager.getPattern(image.to.toString());
         return !imagePosA || !imagePosB;
     }
 

@@ -16,6 +16,7 @@ import type {CrossFaded} from '../../style/properties';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters';
 import type {UniformValues} from '../uniform_binding';
 import type Tile from '../../source/tile';
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
 
 type BackgroundPatternUniformsType = {|
     'u_image': Uniform1i,
@@ -68,11 +69,11 @@ function patternUniformValues(crossfade: CrossfadeParameters, painter: Painter,
     };
 }
 
-function bgPatternUniformValues(image: CrossFaded<string>, crossfade: CrossfadeParameters, painter: Painter,
+function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, crossfade: CrossfadeParameters, painter: Painter,
         tile: {tileID: OverscaledTileID, tileSize: number}
 ): UniformValues<BackgroundPatternUniformsType> {
-    const imagePosA = painter.imageManager.getPattern(image.from);
-    const imagePosB = painter.imageManager.getPattern(image.to);
+    const imagePosA = painter.imageManager.getPattern(image.from.toString());
+    const imagePosB = painter.imageManager.getPattern(image.to.toString());
     assert(imagePosA && imagePosB);
     const {width, height} = painter.imageManager.getPixelSize();
 
@@ -100,4 +101,4 @@ function bgPatternUniformValues(image: CrossFaded<string>, crossfade: CrossfadeP
         'u_pixel_coord_lower': [pixelX & 0xFFFF, pixelY & 0xFFFF]
     };
 }
-export { bgPatternUniformValues, patternUniformValues };
+export {bgPatternUniformValues, patternUniformValues};

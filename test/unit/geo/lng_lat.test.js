@@ -1,4 +1,4 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import LngLat from '../../../src/geo/lng_lat';
 
 test('LngLat', (t) => {
@@ -39,10 +39,10 @@ test('LngLat', (t) => {
     });
 
     t.test('#wrap', (t) => {
-        t.deepEqual(new LngLat(0, 0).wrap(), { lng: 0, lat: 0 });
-        t.deepEqual(new LngLat(10, 20).wrap(), { lng: 10, lat: 20 });
-        t.deepEqual(new LngLat(360, 0).wrap(), { lng: 0, lat: 0 });
-        t.deepEqual(new LngLat(190, 0).wrap(), { lng: -170, lat: 0 });
+        t.deepEqual(new LngLat(0, 0).wrap(), {lng: 0, lat: 0});
+        t.deepEqual(new LngLat(10, 20).wrap(), {lng: 10, lat: 20});
+        t.deepEqual(new LngLat(360, 0).wrap(), {lng: 0, lat: 0});
+        t.deepEqual(new LngLat(190, 0).wrap(), {lng: -170, lat: 0});
         t.end();
     });
 

@@ -1,6 +1,6 @@
 // @flow
 
-import { MapMouseEvent, MapTouchEvent, MapWheelEvent } from '../ui/events';
+import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../ui/events';
 import DOM from '../util/dom';
 import type Map from './map';
 import scrollZoom from './handler/scroll_zoom';

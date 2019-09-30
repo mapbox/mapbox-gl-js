@@ -18,7 +18,7 @@ function upgrade(z, x, y, path, callback) {
 function createExtent1024(callback) {
     console.log('Creating extent1024');
     const buffer = fs.readFileSync('14-8802-5374.mvt');
-    const vt = new mapnik.VectorTile(14, 8802, 5374, { tileSize: 1024 });
+    const vt = new mapnik.VectorTile(14, 8802, 5374, {tileSize: 1024});
     vt.addData(buffer, {validate: true}, (err) => {
         if (err) throw err;
         fs.writeFileSync('extent1024-14-8802-5374.mvt', vt.getDataSync());

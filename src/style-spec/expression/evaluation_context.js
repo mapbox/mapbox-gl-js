@@ -1,8 +1,8 @@
 // @flow
 
-import { Color } from './values';
-import type { FormattedSection } from './types/formatted';
-import type { GlobalProperties, Feature, FeatureState } from './index';
+import {Color} from './values';
+import type {FormattedSection} from './types/formatted';
+import type {GlobalProperties, Feature, FeatureState} from './index';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
@@ -11,6 +11,7 @@ class EvaluationContext {
     feature: ?Feature;
     featureState: ?FeatureState;
     formattedSection: ?FormattedSection;
+    availableImages: ?Array<string>;
 
     _parseColorCache: {[string]: ?Color};
 
@@ -20,6 +21,7 @@ class EvaluationContext {
         this.featureState = null;
         this.formattedSection = null;
         this._parseColorCache = {};
+        this.availableImages = null;
     }
 
     id() {

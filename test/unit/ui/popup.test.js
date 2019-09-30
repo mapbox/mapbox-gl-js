@@ -1,6 +1,6 @@
-import { test } from '../../util/test';
+import {test} from '../../util/test';
 import window from '../../../src/util/window';
-import { createMap as globalCreateMap } from '../../util';
+import {createMap as globalCreateMap} from '../../util';
 import Popup from '../../../src/ui/popup';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
@@ -14,7 +14,7 @@ function createMap(t, options) {
     const container = window.document.createElement('div');
     Object.defineProperty(container, 'clientWidth', {value: options.width || containerWidth});
     Object.defineProperty(container, 'clientHeight', {value: options.height || containerHeight});
-    return globalCreateMap(t, { container });
+    return globalCreateMap(t, {container});
 }
 
 test('Popup#getElement returns a .mapboxgl-popup element', (t) => {
@@ -396,7 +396,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
 test('Popup automatically anchors to top if its bottom offset would push it off-screen', (t) => {
     const map = createMap(t);
     const point = new Point(containerWidth / 2, containerHeight / 2);
-    const options = { offset: {
+    const options = {offset: {
         'bottom': [0, -25],
         'top': [0, 0]
     }};
@@ -531,6 +531,30 @@ test('Pointer-tracked popup is tagged with right class', (t) => {
     t.end();
 });
 
+test('Pointer-tracked popup with content set later is tagged with right class ', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .trackPointer()
+        .addTo(map);
+
+    popup.setText("Test");
+
+    t.equal(popup._container.classList.value.includes('mapboxgl-popup-track-pointer'), true);
+    t.end();
+});
+
+test('Pointer-tracked popup that is set afterwards is tagged with right class ', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .addTo(map);
+
+    popup.setText("Test");
+    popup.trackPointer();
+
+    t.equal(popup._container.classList.value.includes('mapboxgl-popup-track-pointer'), true);
+    t.end();
+});
+
 test('Pointer-tracked popup can be repositioned with setLngLat', (t) => {
     const map = createMap(t);
     const popup = new Popup()
@@ -540,6 +564,7 @@ test('Pointer-tracked popup can be repositioned with setLngLat', (t) => {
         .addTo(map);
 
     t.deepEqual(popup._pos, map.project([0, 0]));
+    t.equal(popup._container.classList.value.includes('mapboxgl-popup-track-pointer'), false);
     t.end();
 });
 

@@ -179,7 +179,7 @@ export default function (directory, implementation, options, run) {
         const unsuccessful = tests.filter(test =>
             test.status === 'failed' || test.status === 'errored');
 
-        const resultsShell = resultsTemplate({ unsuccessful, tests, stats, shuffle: options.shuffle, seed: options.seed })
+        const resultsShell = resultsTemplate({unsuccessful, tests, stats, shuffle: options.shuffle, seed: options.seed})
             .split('<!-- results go here -->');
 
         const p = path.join(directory, options.recycleMap ? 'index-recycle-map.html' : 'index.html');
@@ -188,7 +188,7 @@ export default function (directory, implementation, options, run) {
         const q = queue(1);
         q.defer(write, out, resultsShell[0]);
         for (const test of tests) {
-            q.defer(write, out, itemTemplate({ r: test, hasFailedTests: unsuccessful.length > 0 }));
+            q.defer(write, out, itemTemplate({r: test, hasFailedTests: unsuccessful.length > 0}));
         }
         q.defer(write, out, resultsShell[1]);
         q.await(() => {

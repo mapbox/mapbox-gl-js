@@ -1,11 +1,11 @@
-import { test } from '../../../util/test';
+import {test} from '../../../util/test';
 import migrate from '../../../../src/style-spec/migrate/v9';
 
 test('deref layers', (t) => {
     const input = {
         version: 8,
         sources: {
-            a: { type: 'vector', tiles: [ 'http://dev/null' ] }
+            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
         },
         layers: [{
             id: 'parent',
@@ -21,7 +21,7 @@ test('deref layers', (t) => {
     t.deepEqual(migrate(input), {
         version: 9,
         sources: {
-            a: { type: 'vector', tiles: [ 'http://dev/null' ] }
+            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
         },
         layers: [{
             id: 'parent',
@@ -43,7 +43,7 @@ test('declass style', (t) => {
     const input = {
         version: 8,
         sources: {
-            a: { type: 'vector', tiles: [ 'http://dev/null' ] }
+            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
         },
         layers: [{
             id: 'a',
@@ -62,7 +62,7 @@ test('declass style', (t) => {
     t.deepEqual(migrate(input), {
         version: 9,
         sources: {
-            a: { type: 'vector', tiles: [ 'http://dev/null' ] }
+            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
         },
         layers: [{
             id: 'a',

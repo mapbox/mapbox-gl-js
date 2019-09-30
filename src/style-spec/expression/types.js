@@ -10,6 +10,7 @@ export type ValueTypeT = { kind: 'value' };
 export type ErrorTypeT = { kind: 'error' };
 export type CollatorTypeT = { kind: 'collator' };
 export type FormattedTypeT = { kind: 'formatted' };
+export type ImageTypeT = { kind: 'image' };
 
 export type EvaluationKind = 'constant' | 'source' | 'camera' | 'composite';
 
@@ -24,7 +25,8 @@ export type Type =
     ArrayType | // eslint-disable-line no-use-before-define
     ErrorTypeT |
     CollatorTypeT |
-    FormattedTypeT
+    FormattedTypeT |
+    ImageTypeT
 
 export type ArrayType = {
     kind: 'array',
@@ -32,16 +34,17 @@ export type ArrayType = {
     N: ?number
 }
 
-export const NullType = { kind: 'null' };
-export const NumberType = { kind: 'number' };
-export const StringType = { kind: 'string' };
-export const BooleanType = { kind: 'boolean' };
-export const ColorType = { kind: 'color' };
-export const ObjectType = { kind: 'object' };
-export const ValueType = { kind: 'value' };
-export const ErrorType = { kind: 'error' };
-export const CollatorType = { kind: 'collator' };
-export const FormattedType = { kind: 'formatted' };
+export const NullType = {kind: 'null'};
+export const NumberType = {kind: 'number'};
+export const StringType = {kind: 'string'};
+export const BooleanType = {kind: 'boolean'};
+export const ColorType = {kind: 'color'};
+export const ObjectType = {kind: 'object'};
+export const ValueType = {kind: 'value'};
+export const ErrorType = {kind: 'error'};
+export const CollatorType = {kind: 'collator'};
+export const FormattedType = {kind: 'formatted'};
+export const ImageType = {kind: 'image'};
 
 export function array(itemType: Type, N: ?number): ArrayType {
     return {
@@ -70,7 +73,8 @@ const valueMemberTypes = [
     ColorType,
     FormattedType,
     ObjectType,
-    array(ValueType)
+    array(ValueType),
+    ImageType
 ];
 
 /**
