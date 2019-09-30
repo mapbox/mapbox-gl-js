@@ -167,12 +167,14 @@ export class Placement {
     variableOffsets: {[CrossTileID]: VariableOffset };
     placedOrientations: {[CrossTileID]: number };
     commitTime: number;
+    prevZoomAdjustment: number;
     lastPlacementChangeTime: number;
     stale: boolean;
     fadeDuration: number;
     retainedQueryData: {[number]: RetainedQueryData};
     collisionGroups: CollisionGroups;
     prevPlacement: ?Placement;
+    zoomAtLastRecencyCheck: number;
 
     constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement) {
         this.transform = transform.clone();
@@ -636,13 +638,13 @@ export class Placement {
 
     commit(now: number): void {
         this.commitTime = now;
+        this.zoomAtLastRecencyCheck = this.transform.zoom;
 
         const prevPlacement = this.prevPlacement;
         let placementChanged = false;
 
-        const increment = (prevPlacement && this.fadeDuration !== 0) ?
-            (this.commitTime - prevPlacement.commitTime) / this.fadeDuration :
-            1;
+        this.prevZoomAdjustment = prevPlacement ? prevPlacement.zoomAdjustment(this.transform.zoom) : 0;
+        const increment = prevPlacement ? prevPlacement.symbolFadeChange(now) : 1;
 
         const prevOpacities = prevPlacement ? prevPlacement.opacities : {};
         const prevOffsets = prevPlacement ? prevPlacement.variableOffsets : {};
@@ -893,7 +895,15 @@ export class Placement {
     symbolFadeChange(now: number) {
         return this.fadeDuration === 0 ?
             1 :
-            (now - this.commitTime) / this.fadeDuration;
+            ((now - this.commitTime) / this.fadeDuration + this.prevZoomAdjustment);
+    }
+
+    zoomAdjustment(zoom: number) {
+        // When zooming out quickly, labels can overlap each other. This
+        // adjustment is used to reduce the interval between placement calculations
+        // and to reduce the fade duration when zooming out quickly. Discovering the
+        // collisions more quickly and fading them more quickly reduces the unwanted effect.
+        return Math.max(0, (this.transform.zoom - zoom) / 1.5);
     }
 
     hasTransitions(now: number) {
@@ -901,8 +911,16 @@ export class Placement {
             now - this.lastPlacementChangeTime < this.fadeDuration;
     }
 
-    stillRecent(now: number) {
-        return this.commitTime + this.fadeDuration > now;
+    stillRecent(now: number, zoom: number) {
+        // The adjustment makes placement more frequent when zooming.
+        // This condition applies the adjustment only after the map has
+        // stopped zooming. This avoids adding extra jank while zooming.
+        const durationAdjustment = this.zoomAtLastRecencyCheck === zoom ?
+            (1 - this.zoomAdjustment(zoom)) :
+            1;
+        this.zoomAtLastRecencyCheck = zoom;
+
+        return this.commitTime + this.fadeDuration * durationAdjustment > now;
     }
 
     setStale() {
