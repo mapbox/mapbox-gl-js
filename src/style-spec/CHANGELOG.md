@@ -1,3 +1,8 @@
+## 13.9.0
+
+* Add `image` expression operator to determine image availability ([#8684](https://github.com/mapbox/mapbox-gl-js/pull/8684))
+* Add a style-spec function to validate that styles are compatible with the Mapbox API ([#8663](https://github.com/mapbox/mapbox-gl-js/pull/8663))
+
 ## 13.8.0
 
 - Introduce `text-writing-mode` symbol layer property to allow placing point labels vertically. [#8399](https://github.com/mapbox/mapbox-gl-js/pull/8399)

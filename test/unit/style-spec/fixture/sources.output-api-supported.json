@@ -38,5 +38,61 @@
   {
     "message": "sources.cluster-properties.state.map: \"zoom\" and \"feature-state\" expressions are not supported with cluster properties.",
     "line": 50
+  },
+  {
+    "message": "source.tiles: Unsupported property \"tiles\"",
+    "line": 12
+  },
+  {
+    "message": "sources[2]: Style must reference sources hosted by Mapbox",
+    "line": 11
+  },
+  {
+    "message": "source.foo: Unsupported property \"foo\"",
+    "line": 17
+  },
+  {
+    "message": "sources[3]: Style must reference sources hosted by Mapbox",
+    "line": 16
+  },
+  {
+    "message": "source.urls: Unsupported property \"urls\"",
+    "line": 21
+  },
+  {
+    "message": "source.coordinates: Unsupported property \"coordinates\"",
+    "line": 22
+  },
+  {
+    "message": "source.urls: Unsupported property \"urls\"",
+    "line": 28
+  },
+  {
+    "message": "source.urls: Unsupported property \"urls\"",
+    "line": 32
+  },
+  {
+    "message": "source.coordinates: Unsupported property \"coordinates\"",
+    "line": 33
+  },
+  {
+    "message": "source.canvas: Unsupported property \"canvas\"",
+    "line": 39
+  },
+  {
+    "message": "source.coordinates: Unsupported property \"coordinates\"",
+    "line": 40
+  },
+  {
+    "message": "source.data: Unsupported property \"data\"",
+    "line": 46
+  },
+  {
+    "message": "source.cluster: Unsupported property \"cluster\"",
+    "line": 47
+  },
+  {
+    "message": "source.clusterProperties: Unsupported property \"clusterProperties\"",
+    "line": 48
   }
 ]
