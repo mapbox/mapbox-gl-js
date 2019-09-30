@@ -2,6 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 
+<<<<<<< HEAD
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf.js';
 
 import type Anchor from './anchor.js';
@@ -13,6 +14,16 @@ import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type {Feature} from '../style-spec/expression/index.js';
 import type {StyleImage} from '../style/style_image.js';
 import ONE_EM from './one_em.js';
+=======
+import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
+
+import type Anchor from './anchor';
+import type {PositionedIcon, Shaping} from './shaping';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
+import type {Feature} from '../style-spec/expression';
+import type {GlyphPositionData} from '../render/glyph_atlas';
+import ONE_EM from './one_em';
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
 
 /**
  * A textured quad for rendering a single icon or glyph.
@@ -227,10 +238,12 @@ export function getGlyphQuads(anchor: Anchor,
                        alongLine: boolean,
                        feature: Feature,
                        imageMap: {[_: string]: StyleImage},
+                       positions: {[string]: GlyphPositionData},
                        allowVerticalPlacement: boolean): Array<SymbolQuad> {
 
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
     const quads = [];
+
 
     for (const line of shaping.positionedLines) {
         for (const positionedGlyph of line.positionedGlyphs) {
@@ -328,7 +341,6 @@ export function getGlyphQuads(anchor: Anchor,
             const minFontScaleX = 0;
             const minFontScaleY = 0;
             quads.push({tl, tr, bl, br, tex: textureRect, writingMode: shaping.writingMode, glyphOffset, sectionIndex: positionedGlyph.sectionIndex, isSDF, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY});
-
         }
     }
 

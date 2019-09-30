@@ -10,6 +10,7 @@ import {warnOnce, degToRad} from '../util/util.js';
 import {
     allowsVerticalWritingMode,
     allowsLetterSpacing
+<<<<<<< HEAD
 } from '../util/script_detection.js';
 import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility.js';
 import classifyRings from '../util/classify_rings.js';
@@ -28,6 +29,26 @@ import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type {ImagePosition} from '../render/image_atlas.js';
 import type {GlyphPosition} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
+=======
+} from '../util/script_detection';
+import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility';
+import classifyRings from '../util/classify_rings';
+import EXTENT from '../data/extent';
+import SymbolBucket from '../data/bucket/symbol_bucket';
+import EvaluationParameters from '../style/evaluation_parameters';
+import {SIZE_PACK_FACTOR} from './symbol_size';
+import ONE_EM from './one_em';
+
+import type {Shaping, PositionedIcon, TextJustify} from './shaping';
+import type {CollisionBoxArray} from '../data/array_types';
+import type {SymbolFeature} from '../data/bucket/symbol_bucket';
+import type {StyleImage} from '../style/style_image';
+import type {StyleGlyph} from '../style/style_glyph';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
+import type {ImagePosition} from '../render/image_atlas';
+import type {GlyphPositionData} from '../render/glyph_atlas';
+import type {PossiblyEvaluatedPropertyValue} from '../style/properties';
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
 
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
@@ -147,6 +168,7 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
+<<<<<<< HEAD
                              glyphMap: {[_: string]: {[number]: ?StyleGlyph}},
                              glyphPositions: {[_: string]: {[number]: GlyphPosition}},
                              imageMap: {[_: string]: StyleImage},
@@ -154,6 +176,13 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              showCollisionBoxes: boolean,
                              canonical: CanonicalTileID,
                              tileZoom: number) {
+=======
+                             glyphMap: {[string]: {glyphs: {[number]: ?StyleGlyph}, ascender: number, descender: number}},
+                             glyphPositions: {[string]: GlyphPositionData},
+                             imageMap: {[string]: StyleImage},
+                             imagePositions: {[string]: ImagePosition},
+                             showCollisionBoxes: boolean) {
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
     bucket.createArrays();
 
     const tileSize = 512 * bucket.overscaling;
@@ -354,7 +383,11 @@ function addFeature(bucket: SymbolBucket,
                     feature: SymbolFeature,
                     shapedTextOrientations: any,
                     shapedIcon: PositionedIcon | void,
+<<<<<<< HEAD
                     imageMap: {[_: string]: StyleImage},
+=======
+                    glyphPositionMap: {[string]: GlyphPositionData},
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                     sizes: Sizes,
                     layoutTextSize: number,
                     layoutIconSize: number,
@@ -485,7 +518,12 @@ function addTextVertices(bucket: SymbolBucket,
                          lineArray: {lineStartIndex: number, lineLength: number},
                          writingMode: number,
                          placementTypes: Array<'vertical' | 'center' | 'left' | 'right'>,
+<<<<<<< HEAD
                          placedTextSymbolIndices: {[_: string]: number},
+=======
+                         placedTextSymbolIndices: {[string]: number},
+                         glyphPositionMap: {[string]: GlyphPositionData},
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
                          placedIconIndex: number,
                          sizes: Sizes,
                          canonical: CanonicalTileID) {
@@ -634,10 +672,15 @@ function addSymbol(bucket: SymbolBucket,
                    iconAlongLine: boolean,
                    iconOffset: [number, number],
                    feature: SymbolFeature,
+<<<<<<< HEAD
                    sizes: Sizes,
                    isSDFIcon: boolean,
                    canonical: CanonicalTileID,
                    layoutTextSize: number) {
+=======
+                   glyphPositionMap: {[string]: GlyphPositionData},
+                   sizes: Sizes) {
+>>>>>>> Move ascender/descender to font level attributes, remove non-necessary pbf files
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
     let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;

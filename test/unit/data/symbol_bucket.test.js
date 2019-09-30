@@ -20,7 +20,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 const feature = vt.layers.place_label.feature(10);
-const glyphs = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fontstack-glyphs.json')));
+const glyphData = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fontstack-glyphs.json')));
 
 /*eslint new-cap: 0*/
 const collisionBoxArray = new CollisionBoxArray();
@@ -29,7 +29,7 @@ transform.width = 100;
 transform.height = 100;
 transform.cameraToCenterDistance = 100;
 
-const stacks = {'Test': glyphs};
+const stacks = {'Test': glyphData};
 
 function bucketSetup(text = 'abcde') {
     return createSymbolBucket('test', 'Test', text, collisionBoxArray);
@@ -88,7 +88,7 @@ test('SymbolBucket integer overflow', (t) => {
 
     bucket.populate([{feature}], options);
     const fakeGlyph = {rect: {w: 10, h: 10}, metrics: {left: 10, top: 10, advance: 10}};
-    performSymbolLayout(bucket, stacks, {'Test': {97: fakeGlyph, 98: fakeGlyph, 99: fakeGlyph, 100: fakeGlyph, 101: fakeGlyph, 102: fakeGlyph}});
+    performSymbolLayout(bucket, stacks, {'Test': {glyphPositionMap: {97: fakeGlyph, 98: fakeGlyph, 99: fakeGlyph, 100: fakeGlyph, 101: fakeGlyph, 102: fakeGlyph}, ascender: 0, descender: 0}});
 
     t.ok(console.warn.calledOnce);
     t.ok(console.warn.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));
