@@ -44,58 +44,35 @@ export type SymbolQuad = {
  * Create the quads used for rendering an icon.
  * @private
  */
-export function getIconQuads(anchor: Anchor,
+export function getIconQuads(
                       shapedIcon: PositionedIcon,
-                      layer: SymbolStyleLayer,
-                      alongLine: boolean,
-                      shapedText: Shaping | null,
-                      feature: Feature): Array<SymbolQuad> {
+                      iconRotate: number): Array<SymbolQuad> {
     const image = shapedIcon.image;
-    const layout = layer.layout;
 
     // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
     // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
     // on one edge in some cases.
     const border = 1;
 
-    const top = shapedIcon.top - border / image.pixelRatio;
-    const left = shapedIcon.left - border / image.pixelRatio;
-    const bottom = shapedIcon.bottom + border / image.pixelRatio;
-    const right = shapedIcon.right + border / image.pixelRatio;
-    let tl, tr, br, bl;
+    // Expand the box to respect the 1 pixel border in the atlas image. We're using `image.paddedRect - border`
+    // instead of image.displaySize because we only pad with one pixel for retina images as well, and the
+    // displaySize uses the logical dimensions, not the physical pixel dimensions.
+    const iconWidth = shapedIcon.right - shapedIcon.left;
+    const expandX = (iconWidth * image.paddedRect.w / (image.paddedRect.w - 2 * border) - iconWidth) / 2;
+    const left = shapedIcon.left - expandX;
+    const right = shapedIcon.right + expandX;
 
-    // text-fit mode
-    if (layout.get('icon-text-fit') !== 'none' && shapedText) {
-        const iconWidth = (right - left),
-            iconHeight = (bottom - top),
-            size = layout.get('text-size').evaluate(feature, {}) / 24,
-            textLeft = shapedText.left * size,
-            textRight = shapedText.right * size,
-            textTop = shapedText.top * size,
-            textBottom = shapedText.bottom * size,
-            textWidth = textRight - textLeft,
-            textHeight = textBottom - textTop,
-            padT = layout.get('icon-text-fit-padding')[0],
-            padR = layout.get('icon-text-fit-padding')[1],
-            padB = layout.get('icon-text-fit-padding')[2],
-            padL = layout.get('icon-text-fit-padding')[3],
-            offsetY = layout.get('icon-text-fit') === 'width' ? (textHeight - iconHeight) * 0.5 : 0,
-            offsetX = layout.get('icon-text-fit') === 'height' ? (textWidth - iconWidth) * 0.5 : 0,
-            width = layout.get('icon-text-fit') === 'width' || layout.get('icon-text-fit') === 'both' ? textWidth : iconWidth,
-            height = layout.get('icon-text-fit') === 'height' || layout.get('icon-text-fit') === 'both' ? textHeight : iconHeight;
-        tl = new Point(textLeft + offsetX - padL,         textTop + offsetY - padT);
-        tr = new Point(textLeft + offsetX + padR + width, textTop + offsetY - padT);
-        br = new Point(textLeft + offsetX + padR + width, textTop + offsetY + padB + height);
-        bl = new Point(textLeft + offsetX - padL,         textTop + offsetY + padB + height);
-    // Normal icon size mode
-    } else {
-        tl = new Point(left, top);
-        tr = new Point(right, top);
-        br = new Point(right, bottom);
-        bl = new Point(left, bottom);
-    }
+    const iconHeight = shapedIcon.bottom - shapedIcon.top;
+    const expandY = (iconHeight * image.paddedRect.h / (image.paddedRect.h - 2 * border) - iconHeight) / 2;
+    const top = shapedIcon.top - expandY;
+    const bottom = shapedIcon.bottom + expandY;
 
-    const angle = layer.layout.get('icon-rotate').evaluate(feature, {}) * Math.PI / 180;
+    const tl = new Point(left, top);
+    const tr = new Point(right, top);
+    const br = new Point(right, bottom);
+    const bl = new Point(left, bottom);
+
+    const angle = iconRotate * Math.PI / 180;
 
     if (angle) {
         const sin = Math.sin(angle),

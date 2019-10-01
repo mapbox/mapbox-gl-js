@@ -167,12 +167,14 @@ export class Placement {
     variableOffsets: {[CrossTileID]: VariableOffset };
     placedOrientations: {[CrossTileID]: number };
     commitTime: number;
+    prevZoomAdjustment: number;
     lastPlacementChangeTime: number;
     stale: boolean;
     fadeDuration: number;
     retainedQueryData: {[number]: RetainedQueryData};
     collisionGroups: CollisionGroups;
     prevPlacement: ?Placement;
+    zoomAtLastRecencyCheck: number;
 
     constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement) {
         this.transform = transform.clone();
@@ -237,7 +239,7 @@ export class Placement {
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
                            textBoxScale: number, rotateWithMap: boolean,
                            pitchWithMap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroup: CollisionGroup,
-                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ box: Array<number>, offscreen: boolean }  {
+                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ shift: Point, placedGlyphBoxes: { box: Array<number>, offscreen: boolean } }  {
 
         const textOffset = [symbolInstance.textOffset0, symbolInstance.textOffset1];
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textBoxScale);
@@ -274,7 +276,7 @@ export class Placement {
                 this.placedOrientations[symbolInstance.crossTileID] = orientation;
             }
 
-            return placedGlyphBoxes;
+            return {shift, placedGlyphBoxes};
         }
     }
 
@@ -308,6 +310,7 @@ export class Placement {
 
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
+        const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
 
         if (!bucket.collisionArrays && collisionBoxArray) {
@@ -326,6 +329,7 @@ export class Placement {
             let placeText = false;
             let placeIcon = false;
             let offscreen = true;
+            let shift = null;
 
             let placed = {box: null, offscreen: null};
             let placedVertical = {box: null, offscreen: null};
@@ -426,14 +430,18 @@ export class Placement {
                         for (let i = 0; i < placementAttempts; ++i) {
                             const anchor = anchors[i % anchors.length];
                             const allowOverlap = (i >= anchors.length);
-                            placedBox = this.attemptAnchorPlacement(
+                            const result = this.attemptAnchorPlacement(
                                 anchor, collisionTextBox, width, height,
                                 textBoxScale, rotateWithMap, pitchWithMap, textPixelRatio, posMatrix,
                                 collisionGroup, allowOverlap, symbolInstance, bucket, orientation);
 
-                            if (placedBox && placedBox.box && placedBox.box.length) {
-                                placeText = true;
-                                break;
+                            if (result) {
+                                placedBox = result.placedGlyphBoxes;
+                                if (placedBox && placedBox.box && placedBox.box.length) {
+                                    placeText = true;
+                                    shift = result.shift;
+                                    break;
+                                }
                             }
                         }
 
@@ -508,7 +516,14 @@ export class Placement {
                 iconFeatureIndex = collisionArrays.iconFeatureIndex;
             }
             if (collisionArrays.iconBox) {
-                placedIconBoxes = this.collisionIndex.placeCollisionBox(collisionArrays.iconBox,
+
+                const iconBox = hasIconTextFit && shift ?
+                    shiftVariableCollisionBox(
+                        collisionArrays.iconBox, shift.x, shift.y,
+                        rotateWithMap, pitchWithMap, this.transform.angle) :
+                    collisionArrays.iconBox;
+
+                placedIconBoxes = this.collisionIndex.placeCollisionBox(iconBox,
                         layout.get('icon-allow-overlap'), textPixelRatio, posMatrix, collisionGroup.predicate);
                 placeIcon = placedIconBoxes.box.length > 0;
                 offscreen = offscreen && placedIconBoxes.offscreen;
@@ -623,13 +638,13 @@ export class Placement {
 
     commit(now: number): void {
         this.commitTime = now;
+        this.zoomAtLastRecencyCheck = this.transform.zoom;
 
         const prevPlacement = this.prevPlacement;
         let placementChanged = false;
 
-        const increment = (prevPlacement && this.fadeDuration !== 0) ?
-            (this.commitTime - prevPlacement.commitTime) / this.fadeDuration :
-            1;
+        this.prevZoomAdjustment = prevPlacement ? prevPlacement.zoomAdjustment(this.transform.zoom) : 0;
+        const increment = prevPlacement ? prevPlacement.symbolFadeChange(now) : 1;
 
         const prevOpacities = prevPlacement ? prevPlacement.opacities : {};
         const prevOffsets = prevPlacement ? prevPlacement.variableOffsets : {};
@@ -709,6 +724,7 @@ export class Placement {
         const variablePlacement = layout.get('text-variable-anchor');
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
+        const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         // If allow-overlap is true, we can show symbols before placement runs on them
         // But we have to wait for placement if we potentially depend on a paired icon/text
         // with allow-overlap: false.
@@ -802,8 +818,8 @@ export class Placement {
                 bucket.hasTextCollisionBoxData() || bucket.hasTextCollisionCircleData()) {
                 const collisionArrays = bucket.collisionArrays[s];
                 if (collisionArrays) {
+                    let shift = new Point(0, 0);
                     if (collisionArrays.textBox) {
-                        let shift = new Point(0, 0);
                         let used = true;
                         if (variablePlacement) {
                             const variableOffset = this.variableOffsets[crossTileID];
@@ -832,7 +848,9 @@ export class Placement {
                     }
 
                     if (collisionArrays.iconBox) {
-                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, false);
+                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, false,
+                            hasIconTextFit ? shift.x : 0,
+                            hasIconTextFit ? shift.y : 0);
                     }
 
                     const textCircles = collisionArrays.textCircles;
@@ -877,7 +895,15 @@ export class Placement {
     symbolFadeChange(now: number) {
         return this.fadeDuration === 0 ?
             1 :
-            (now - this.commitTime) / this.fadeDuration;
+            ((now - this.commitTime) / this.fadeDuration + this.prevZoomAdjustment);
+    }
+
+    zoomAdjustment(zoom: number) {
+        // When zooming out quickly, labels can overlap each other. This
+        // adjustment is used to reduce the interval between placement calculations
+        // and to reduce the fade duration when zooming out quickly. Discovering the
+        // collisions more quickly and fading them more quickly reduces the unwanted effect.
+        return Math.max(0, (this.transform.zoom - zoom) / 1.5);
     }
 
     hasTransitions(now: number) {
@@ -885,8 +911,16 @@ export class Placement {
             now - this.lastPlacementChangeTime < this.fadeDuration;
     }
 
-    stillRecent(now: number) {
-        return this.commitTime + this.fadeDuration > now;
+    stillRecent(now: number, zoom: number) {
+        // The adjustment makes placement more frequent when zooming.
+        // This condition applies the adjustment only after the map has
+        // stopped zooming. This avoids adding extra jank while zooming.
+        const durationAdjustment = this.zoomAtLastRecencyCheck === zoom ?
+            (1 - this.zoomAdjustment(zoom)) :
+            1;
+        this.zoomAtLastRecencyCheck = zoom;
+
+        return this.commitTime + this.fadeDuration * durationAdjustment > now;
     }
 
     setStale() {
