@@ -12,14 +12,14 @@ import type Tile from './tile';
  */
 class TileCache {
     max: number;
-    data: {[key: number | string]: Array<{ value: Tile, timeout: ?TimeoutID}>};
+    data: {[key: number | string]: Array<{ value: any, timeout: ?TimeoutID}>};
     order: Array<number>;
     onRemove: (element: Tile) => void;
     /**
      * @param {number} max number of permitted values
      * @param {Function} onRemove callback called with items when they expire
      */
-    constructor(max: number, onRemove: (element: Tile) => void) {
+    constructor(max: number, onRemove: (element: any) => void) {
         this.max = max;
         this.onRemove = onRemove;
         this.reset();
@@ -55,7 +55,7 @@ class TileCache {
      * @returns {TileCache} this cache
      * @private
      */
-    add(tileID: OverscaledTileID, data: Tile, expiryTimeout: number | void) {
+    add(tileID: OverscaledTileID, data: any, expiryTimeout: number | void) {
         const key = tileID.wrapped().key;
         if (this.data[key] === undefined) {
             this.data[key] = [];
@@ -102,7 +102,7 @@ class TileCache {
      * @returns {*} the data, or null if it isn't found
      * @private
      */
-    getAndRemove(tileID: OverscaledTileID): ?Tile {
+    getAndRemove(tileID: OverscaledTileID): ?any {
         if (!this.has(tileID)) { return null; }
         return this._getAndRemoveByKey(tileID.wrapped().key);
     }
@@ -110,7 +110,7 @@ class TileCache {
     /*
      * Get and remove the value with the specified key.
      */
-    _getAndRemoveByKey(key: number): ?Tile {
+    _getAndRemoveByKey(key: number): ?any {
         const data = this.data[key].shift();
         if (data.timeout) clearTimeout(data.timeout);
 
@@ -130,7 +130,7 @@ class TileCache {
      * @returns {*} the data, or null if it isn't found
      * @private
      */
-    get(tileID: OverscaledTileID): ?Tile {
+    get(tileID: OverscaledTileID): ?any {
         if (!this.has(tileID)) { return null; }
 
         const data = this.data[tileID.wrapped().key][0];
@@ -145,7 +145,7 @@ class TileCache {
      * @returns {TileCache} this cache
      * @private
      */
-    remove(tileID: OverscaledTileID, value: ?{ value: Tile, timeout: ?TimeoutID}) {
+    remove(tileID: OverscaledTileID, value: ?{ value: any, timeout: ?TimeoutID}) {
         if (!this.has(tileID)) { return this; }
         const key = tileID.wrapped().key;
 

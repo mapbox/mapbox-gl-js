@@ -111,6 +111,9 @@ map.on('load', () => {
         idx++;
         if(idx < path.length){
             setTimeout(startPan, 3000);
+        }else{
+            console.log(glObjectCounters);
+            console.log(`Total texture uploads: ${totalTextureUploadCalls}`);
         }
     }
     startPan();
@@ -121,6 +124,8 @@ var glObjectCounters = window.glObjectCounters = {
     texture: 0,
     frameBuffer: 0
 };
+
+var totalTextureUploadCalls = 0;
 
 const createBuffer = WebGLRenderingContext.prototype.createBuffer;
 WebGLRenderingContext.prototype.createBuffer = function() {
@@ -152,10 +157,16 @@ WebGLRenderingContext.prototype.createFramebuffer = function() {
     return createFramebuffer.apply(this, arguments);
 };
 
-const deleteFramebuffer = WebGLRenderingContext.prototype.deleteFramebuffer;
-WebGLRenderingContext.prototype.deleteFramebuffer = function() {
-    glObjectCounters.frameBuffer--;
-    return deleteFramebuffer.apply(this, arguments);
+const texImage2D = WebGLRenderingContext.prototype.texImage2D;
+WebGLRenderingContext.prototype.texImage2D = function() {
+    totalTextureUploadCalls++;
+    return texImage2D.apply(this, arguments);
+};
+
+const texSubImage2D = WebGLRenderingContext.prototype.texSubImage2D;
+WebGLRenderingContext.prototype.texSubImage2D = function() {
+    totalTextureUploadCalls++;
+    return texSubImage2D.apply(this, arguments);
 };
 
 
