@@ -132,7 +132,6 @@ WebGLRenderingContext.prototype.createBuffer = function() {
     glObjectCounters.buffer++;
     return createBuffer.apply(this, arguments);
 };
-
 const deleteBuffer = WebGLRenderingContext.prototype.deleteBuffer;
 WebGLRenderingContext.prototype.deleteBuffer = function() {
     glObjectCounters.buffer--;
@@ -144,7 +143,6 @@ WebGLRenderingContext.prototype.createTexture = function() {
     glObjectCounters.texture++;
     return createTexture.apply(this, arguments);
 };
-
 const deleteTexture = WebGLRenderingContext.prototype.deleteTexture;
 WebGLRenderingContext.prototype.deleteTexture = function() {
     glObjectCounters.texture--;
@@ -156,13 +154,17 @@ WebGLRenderingContext.prototype.createFramebuffer = function() {
     glObjectCounters.frameBuffer++;
     return createFramebuffer.apply(this, arguments);
 };
+const deleteFramebuffer = WebGLRenderingContext.prototype.deleteFramebuffer;
+WebGLRenderingContext.prototype.deleteFramebuffer = function() {
+    glObjectCounters.frameBuffer--;
+    return deleteFramebuffer.apply(this, arguments);
+};
 
 const texImage2D = WebGLRenderingContext.prototype.texImage2D;
 WebGLRenderingContext.prototype.texImage2D = function() {
     totalTextureUploadCalls++;
     return texImage2D.apply(this, arguments);
 };
-
 const texSubImage2D = WebGLRenderingContext.prototype.texSubImage2D;
 WebGLRenderingContext.prototype.texSubImage2D = function() {
     totalTextureUploadCalls++;
