@@ -561,7 +561,8 @@ class Transform {
         this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize]);
 
         // scale vertically to meters per pixel (inverse of ground resolution):
-        mat4.scale(m, m, [1, 1, mercatorZfromAltitude(1, this.center.lat) * this.worldSize, 1]);
+        const latForExtrusionScaling = clamp((this.zoom - 1) / 8, 0, 1) * this.center.lat;
+        mat4.scale(m, m, [1, 1, mercatorZfromAltitude(1, latForExtrusionScaling) * this.worldSize, 1]);
 
         this.projMatrix = m;
 
