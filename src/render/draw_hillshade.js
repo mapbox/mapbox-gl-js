@@ -25,6 +25,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
+    painter.setTextureCacheSize('dem', Math.floor(tileIDs.length * 1.2));
 
     for (const tileID of tileIDs) {
         const tile = sourceCache.getTile(tileID);
@@ -42,7 +43,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
 function renderHillshade(painter, tile, layer, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
-    const fbo = tile.fbo;
+    const fbo = painter.getFboForTile('dem', tile.tileID);
     if (!fbo) return;
 
     const program = painter.useProgram('hillshade');
@@ -71,32 +72,16 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
     const dem = tile.dem;
     if (dem && dem.data) {
         const tileSize = dem.dim;
-        const textureStride = dem.stride;
-
         const pixelData = dem.getPixels();
         context.activeTexture.set(gl.TEXTURE1);
 
         context.pixelStoreUnpackPremultiplyAlpha.set(false);
-        tile.demTexture = tile.demTexture || painter.getTileTexture(`${textureStride}.0.0`);
-        if (tile.demTexture) {
-            const demTexture = tile.demTexture;
-            demTexture.update(pixelData, {premultiply: false});
-            demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-        } else {
-            tile.demTexture = new Texture(context, pixelData, gl.RGBA, {premultiply: false});
-            tile.demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-        }
 
+        const demTexture = painter.getOrCreateTextureForTile('dem', tile.tileID, pixelData);
+        demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         context.activeTexture.set(gl.TEXTURE0);
 
-        let fbo = tile.fbo;
-        if (!fbo) {
-            const renderTexture = painter.getTileTexture(`${tileSize}.0.0`) || new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
-            renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-
-            fbo = tile.fbo = context.createFramebuffer(tileSize, tileSize);
-            fbo.colorAttachment.set(renderTexture.texture);
-        }
+        const fbo = painter.getOrCreateFboForTile('dem', tile.tileID, tileSize);
 
         context.bindFramebuffer.set(fbo.framebuffer);
         context.viewport.set([0, 0, tileSize, tileSize]);

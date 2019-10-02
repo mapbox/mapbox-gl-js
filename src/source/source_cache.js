@@ -714,14 +714,6 @@ class SourceCache extends Evented {
             return;
 
         if (tile.hasData() && tile.state !== 'reloading') {
-            if (tile.demTexture) {
-                this.map.painter.saveTileTexture(tile.demTexture);
-                tile.demTexture = null;
-                if (tile.fbo) {
-                    tile.fbo.destroy();
-                    delete tile.fbo;
-                }
-            }
             this._cache.add(tile.tileID, tile, tile.getExpiryTimeout());
         } else {
             tile.aborted = true;

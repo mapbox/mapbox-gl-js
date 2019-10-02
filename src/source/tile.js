@@ -87,8 +87,6 @@ class Tile {
     needsHillshadePrepare: ?boolean;
     request: ?Cancelable;
     texture: any;
-    fbo: ?Framebuffer;
-    demTexture: ?Texture;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;

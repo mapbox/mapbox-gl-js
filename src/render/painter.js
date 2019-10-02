@@ -4,6 +4,7 @@ import browser from '../util/browser';
 
 import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache';
+import TileCache from '../source/tile_cache';
 import EXTENT from '../data/extent';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import SegmentVector from '../data/segment';
@@ -21,6 +22,7 @@ import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import Texture from './texture';
+import Framebuffer from '../gl/framebuffer';
 import updateTileMasks from './tile_mask';
 import {clippingMaskUniformValues} from './program/clipping_mask_program';
 import Color from '../style-spec/util/color';
@@ -65,6 +67,7 @@ import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type ResolvedImage from '../style-spec/expression/types/resolved_image';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
+export type TileTextureType = 'dem';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -85,6 +88,8 @@ class Painter {
     context: Context;
     transform: Transform;
     _tileTextures: { [string]: Array<Texture> };
+    _tileTextureCache: { [TileTextureType]: TileCache}
+    _tileFboCache: { [TileTextureType]: TileCache}
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration: ProgramConfiguration;
@@ -125,6 +130,12 @@ class Painter {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
+        this._tileTextureCache = {
+            dem: new TileCache(8, (texture: Texture) => texture.destroy())
+        };
+        this._tileFboCache = {
+            dem: new TileCache(8, (fbo: Framebuffer) => fbo.destroy())
+        };
 
         this.setup();
 
@@ -502,6 +513,51 @@ class Painter {
     getTileTexture(key: string) {
         const textures = this._tileTextures[key];
         return textures && textures.length > 0 ? textures.pop() : null;
+    }
+
+    setTextureCacheSize(type: TileTextureType, target: number) {
+        const textureCache = this._tileTextureCache[type];
+        textureCache.setMaxSize(target);
+        const fboCache = this._tileFboCache[type];
+        fboCache.setMaxSize(target);
+    }
+
+    getOrCreateTextureForTile(type: TileTextureType, tileID: OverscaledTileID, image: TextureImage): Texture {
+        const context = this.context;
+        const textureCache = this._tileTextureCache[type];
+
+        const cachedTexture = textureCache.get(tileID);
+        if (cachedTexture) {
+            return cachedTexture;
+        } else {
+            const newTexture = new Texture(context, image, context.gl.RGBA, {premultiply: false});
+            textureCache.add(tileID, newTexture);
+            return newTexture;
+        }
+    }
+
+    getOrCreateFboForTile(type: TileTextureType, tileID: OverscaledTileID, size: number): Framebuffer {
+        const context = this.context;
+        const fboCache = this._tileFboCache[type];
+
+        const cachedFbo = fboCache.get(tileID);
+        if (cachedFbo) {
+            return cachedFbo;
+        } else {
+            const renderTexture = new Texture(context, {width: size, height: size, data: null}, context.gl.RGBA);
+            renderTexture.bind(context.gl.LINEAR, context.gl.CLAMP_TO_EDGE);
+            const fbo = context.createFramebuffer(size, size);
+            fbo.colorAttachment.set(renderTexture.texture);
+
+            fboCache.add(tileID, fbo);
+            return fbo;
+        }
+    }
+
+    getFboForTile(type: TileTextureType, tileID: OverscaledTileID): ?Framebuffer {
+        const fboCache = this._tileFboCache[type];
+        const cachedFbo = fboCache.get(tileID);
+        return cachedFbo;
     }
 
     /**
