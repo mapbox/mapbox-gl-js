@@ -15,38 +15,8 @@
 <div id='map'></div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
+<script src='access_token_generated.js'></script>
 <script>
-var glObjectCounters = window.glObjectCounters = {
-    buffer: 0,
-    texture: 0
-};
-
-
-const createBuffer = WebGLRenderingContext.prototype.createBuffer;
-WebGLRenderingContext.prototype.createBuffer = function() {
-    glObjectCounters.buffer++;
-    return createBuffer.apply(this, arguments);
-};
-
-const deleteBuffer = WebGLRenderingContext.prototype.deleteBuffer;
-WebGLRenderingContext.prototype.deleteBuffer = function() {
-    glObjectCounters.buffer--;
-    return deleteBuffer.apply(this, arguments);
-};
-
-const createTexture = WebGLRenderingContext.prototype.createTexture;
-WebGLRenderingContext.prototype.createTexture = function() {
-    glObjectCounters.texture++;
-    return createTexture.apply(this, arguments);
-};
-
-const deleteTexture = WebGLRenderingContext.prototype.deleteTexture;
-WebGLRenderingContext.prototype.deleteTexture = function() {
-    glObjectCounters.texture--;
-    return deleteTexture.apply(this, arguments);
-};
-
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
