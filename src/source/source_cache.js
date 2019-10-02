@@ -383,11 +383,7 @@ class SourceCache extends Evented {
                 return tile;
             }
             if (this._cache.has(parent)) {
-                const cachedTile = this._cache.get(parent);
-                if (cachedTile && this.getSource().type === 'raster-dem') {
-                    cachedTile.needsHillshadePrepare = true;
-                }
-                return cachedTile;
+                return this._cache.get(parent);
             }
         }
     }
@@ -651,7 +647,6 @@ class SourceCache extends Evented {
 
         tile = this._cache.getAndRemove(tileID);
         if (tile) {
-            if (this.getSource().type === 'raster-dem') tile.needsHillshadePrepare = true;
             this._setTileReloadTimer(tileID.key, tile);
             // set the tileID because the cached tile could have had a different wrap value
             tile.tileID = tileID;
