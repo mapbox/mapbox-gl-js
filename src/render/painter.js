@@ -471,7 +471,6 @@ class Painter {
         // may be dominated by the cost of uploading vertices to the GPU.
         // To instrument that, we'd need to pass the layerTimers object down into the bucket
         // uploading logic.
-        let renderLayerStart = 0;
         let layerTimer = this.gpuTimers[layer.id];
         if (!layerTimer) {
             layerTimer = this.gpuTimers[layer.id] = {

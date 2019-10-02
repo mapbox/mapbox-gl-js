@@ -115,7 +115,7 @@ class Context {
             gl.getExtension('OES_texture_half_float_linear');
         }
 
-        this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');;
+        this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
     }
 
     setDefault() {
