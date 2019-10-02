@@ -87,7 +87,7 @@ type PainterOptions = {
 class Painter {
     context: Context;
     transform: Transform;
-    _tileTextures: { [string]: Array<Texture> };
+    _tileTextures: { [number]: Array<Texture> };
     _tileTextureCache: { [TileTextureType]: TileCache}
     _tileFboCache: { [TileTextureType]: TileCache}
     numSublayers: number;
@@ -502,16 +502,16 @@ class Painter {
     }
 
     saveTileTexture(texture: Texture) {
-        const textures = this._tileTextures[texture.hashKey];
+        const textures = this._tileTextures[texture.size[0]];
         if (!textures) {
-            this._tileTextures[texture.hashKey] = [texture];
+            this._tileTextures[texture.size[0]] = [texture];
         } else {
             textures.push(texture);
         }
     }
 
-    getTileTexture(key: string) {
-        const textures = this._tileTextures[key];
+    getTileTexture(size: number) {
+        const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
     }
 
