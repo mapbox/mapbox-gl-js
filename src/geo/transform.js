@@ -403,7 +403,9 @@ class Transform {
         const pitchInRadians = pitch * (Math.PI / 180);
         const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
         const pixelAltitude = Math.abs(Math.cos(pitchInRadians) * cameraToCenterDistance);
-        const metersInWorldAtLat = (2 * Math.PI * 6378137 * Math.abs(Math.cos(lat * (Math.PI / 180))));
+        // mercator circumference of the world in meters at the equator
+        const circumferenceAtEquator = 2 * Math.PI * 6378137;
+        const metersInWorldAtLat = (circumferenceAtEquator * Math.abs(Math.cos(lat * (Math.PI / 180))));
         const worldsize = pixelAltitude / altitude * metersInWorldAtLat;
 
         const latOffset = Math.tan(pitchInRadians) * cameraToCenterDistance;
