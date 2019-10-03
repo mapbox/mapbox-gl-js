@@ -25,7 +25,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
-    painter.setTextureCacheSize('dem', Math.floor(tileIDs.length * 1.2));
+    painter.setTextureCacheSize('dem', Math.floor(tileIDs.length * 5));
 
     for (const tileID of tileIDs) {
         const tile = sourceCache.getTile(tileID);
@@ -77,11 +77,12 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
 
         context.pixelStoreUnpackPremultiplyAlpha.set(false);
 
-        const demTexture = painter.getOrCreateTextureForTile('dem', tile.tileID, pixelData);
+        // Force a texture re-upload if new data was downloaded, this is typically triggered by a DEM backfill from a neighboring tile.
+        const demTexture = painter.getOrCreateTextureForTile('dem', tile, pixelData, !!tile.borderBackfillDirty);
         demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         context.activeTexture.set(gl.TEXTURE0);
 
-        const fbo = painter.getOrCreateFboForTile('dem', tile.tileID, tileSize);
+        const fbo = painter.getOrCreateFboForTile('dem', tile, tileSize);
 
         context.bindFramebuffer.set(fbo.framebuffer);
         context.viewport.set([0, 0, tileSize, tileSize]);
@@ -93,5 +94,6 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
             painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
 
         tile.needsHillshadePrepare = false;
+        tile.borderBackfillDirty = false;
     }
 }

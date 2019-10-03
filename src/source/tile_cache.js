@@ -179,6 +179,14 @@ class TileCache {
 
         return this;
     }
+
+    growMaxSize(max: number): TileCache {
+        if (max > this.max) {
+            this.max = max;
+        }
+
+        return this;
+    }
 }
 
 export default TileCache;

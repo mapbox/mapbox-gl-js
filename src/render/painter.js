@@ -68,6 +68,10 @@ import type ResolvedImage from '../style-spec/expression/types/resolved_image';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 export type TileTextureType = 'dem';
+export type TileTextureData = {
+    tile: Tile,
+    texture: Texture | Framebuffer
+}
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -131,10 +135,10 @@ class Painter {
         this.transform = transform;
         this._tileTextures = {};
         this._tileTextureCache = {
-            dem: new TileCache(8, (texture: Texture) => texture.destroy())
+            dem: new TileCache(8, unloadTexture)
         };
         this._tileFboCache = {
-            dem: new TileCache(8, (fbo: Framebuffer) => fbo.destroy())
+            dem: new TileCache(8, unloadTexture)
         };
 
         this.setup();
@@ -517,47 +521,57 @@ class Painter {
 
     setTextureCacheSize(type: TileTextureType, target: number) {
         const textureCache = this._tileTextureCache[type];
-        textureCache.setMaxSize(target);
+        textureCache.growMaxSize(target);
         const fboCache = this._tileFboCache[type];
-        fboCache.setMaxSize(target);
+        fboCache.growMaxSize(target);
     }
 
-    getOrCreateTextureForTile(type: TileTextureType, tileID: OverscaledTileID, image: TextureImage): Texture {
+    getOrCreateTextureForTile(type: TileTextureType, tile: Tile, image: TextureImage, forceReupload: boolean): Texture {
+        const tileID = tile.tileID;
         const context = this.context;
         const textureCache = this._tileTextureCache[type];
 
-        const cachedTexture = textureCache.get(tileID);
-        if (cachedTexture) {
-            return cachedTexture;
+        const cachedData = textureCache.get(tileID);
+        if (cachedData) {
+            const texture = cachedData.texture;
+            if (forceReupload) {
+                texture.update(image, {premultiply: false});
+            }
+            return texture;
         } else {
             const newTexture = new Texture(context, image, context.gl.RGBA, {premultiply: false});
-            textureCache.add(tileID, newTexture);
+            textureCache.add(tileID, {tile, texture: newTexture});
             return newTexture;
         }
     }
 
-    getOrCreateFboForTile(type: TileTextureType, tileID: OverscaledTileID, size: number): Framebuffer {
+    getOrCreateFboForTile(type: TileTextureType, tile: Tile, size: number): Framebuffer {
+        const tileID = tile.tileID;
         const context = this.context;
         const fboCache = this._tileFboCache[type];
 
-        const cachedFbo = fboCache.get(tileID);
-        if (cachedFbo) {
-            return cachedFbo;
+        const cachedData = fboCache.get(tileID);
+        if (cachedData) {
+            return cachedData.texture;
         } else {
             const renderTexture = new Texture(context, {width: size, height: size, data: null}, context.gl.RGBA);
             renderTexture.bind(context.gl.LINEAR, context.gl.CLAMP_TO_EDGE);
             const fbo = context.createFramebuffer(size, size);
             fbo.colorAttachment.set(renderTexture.texture);
 
-            fboCache.add(tileID, fbo);
+            fboCache.add(tileID, {tile, texture: fbo});
             return fbo;
         }
     }
 
     getFboForTile(type: TileTextureType, tileID: OverscaledTileID): ?Framebuffer {
         const fboCache = this._tileFboCache[type];
-        const cachedFbo = fboCache.get(tileID);
-        return cachedFbo;
+        const cachedData = fboCache.get(tileID);
+        if (cachedData) {
+            return cachedData.texture;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -609,6 +623,11 @@ class Painter {
         this.context.viewport.set([0, 0, this.width, this.height]);
         this.context.blendEquation.set(gl.FUNC_ADD);
     }
+}
+
+function unloadTexture(data: TileTextureData) {
+    data.texture.destroy();
+    data.tile.needsHillshadePrepare = true;
 }
 
 export default Painter;

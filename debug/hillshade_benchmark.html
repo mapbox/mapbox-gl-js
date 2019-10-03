@@ -125,7 +125,7 @@ var glObjectCounters = window.glObjectCounters = {
     frameBuffer: 0
 };
 
-var totalTextureUploadCalls = 0;
+var totalTextureUploadCalls = window.totalTextureUploadCalls = 0;
 
 const createBuffer = WebGLRenderingContext.prototype.createBuffer;
 WebGLRenderingContext.prototype.createBuffer = function() {
