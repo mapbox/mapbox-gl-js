@@ -382,12 +382,12 @@ class Transform {
         const altitude = Math.cos(pitch) * this.cameraToCenterDistance;
         const latOffset = Math.tan(pitch) * this.cameraToCenterDistance;
         const latPosPointInPixels = this.centerPoint.add(new Point(0, latOffset));
-        const latLong = this.pointLocation(latPosPointInPixels);
-        const verticalScaleConstant = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(latLong.lat * (Math.PI / 180))));
+        const lngLat = this.pointLocation(latPosPointInPixels);
+        const verticalScaleConstant = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(lngLat.lat * (Math.PI / 180))));
         const altitudeInMeters = altitude / verticalScaleConstant;
         const pitchInDegrees = pitch * (180 / Math.PI);
 
-        return { lng: latLong.lng, lat: latLong.lat, altitude: altitudeInMeters, pitch: pitchInDegrees, bearing: this.bearing };
+        return { lng: lngLat.lng, lat: lngLat.lat, altitude: altitudeInMeters, pitch: pitchInDegrees, bearing: this.bearing };
     }
 
     /**
@@ -402,16 +402,15 @@ class Transform {
         const pixelAltitude = Math.abs(Math.cos(pitchInRadians) * cameraToCenterDistance);
         const metersInWorldAtLat = (2 * Math.PI * 6378137 * Math.abs(Math.cos(lat * (Math.PI / 180))));
         const worldsize = pixelAltitude / altitude * metersInWorldAtLat;
-        const zoom = Math.log(worldsize / this.tileSize) / Math.LN2;
 
         const latOffset = Math.tan(pitchInRadians) * cameraToCenterDistance;
         const newPixelPoint = new Point(this.width / 2, this.height / 2 + latOffset);
-        const newLongLat = new LngLat(lng, lat);
+        const newLngLat = new LngLat(lng, lat);
 
-        this.zoom = zoom;
+        this.zoom = Math.log(worldsize / this.tileSize) / Math.LN2;
         this.pitch = pitch;
         this.bearing = bearing;
-        this.setLocationAtPoint(newLongLat, newPixelPoint);
+        this.setLocationAtPoint(newLngLat, newPixelPoint);
     }
 
     /**
