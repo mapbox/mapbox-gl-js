@@ -382,7 +382,11 @@ class Transform {
         const altitude = Math.cos(pitch) * this.cameraToCenterDistance;
         const latOffset = Math.tan(pitch) * this.cameraToCenterDistance;
         const lngLat = this.pointLocation(this.centerPoint.add(new Point(0, latOffset)));
-        const verticalScaleConstant = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(lngLat.lat * (Math.PI / 180))));
+
+        // mercator circumference of the world in meters at the equator
+        const circumferenceAtEquator = 2 * Math.PI * 6378137;
+
+        const verticalScaleConstant = this.worldSize / (circumferenceAtEquator * Math.abs(Math.cos(lngLat.lat * (Math.PI / 180))));
         const altitudeInMeters = altitude / verticalScaleConstant;
         const pitchInDegrees = pitch * (180 / Math.PI);
 
