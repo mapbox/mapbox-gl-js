@@ -403,7 +403,7 @@ class Transform {
      * @param {number} [cameraPosition.bearing] Camera bearing in degrees counter-clockwise from north
      */
     setCameraPosition(cameraPosition: { lng: number, lat: number, altitude: number, pitch: number, bearing: number }) {
-        const {lng, lat, altitude, pitch, bearing} = camPos;
+        const {lng, lat, altitude, pitch, bearing} = cameraPosition;
 
         const pitchInRadians = pitch * (Math.PI / 180);
         const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
