@@ -1,6 +1,5 @@
 // @flow
 
-import Texture from './texture';
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
@@ -25,7 +24,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
-    painter.setTextureCacheSize('dem', Math.floor(tileIDs.length * 5));
+    painter.setTextureCacheSize('dem', Math.floor(tileIDs.length * 2.5));
 
     for (const tileID of tileIDs) {
         const tile = sourceCache.getTile(tileID);

@@ -65,6 +65,7 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type ResolvedImage from '../style-spec/expression/types/resolved_image';
+import type {TextureImage} from './texture';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 export type TileTextureType = 'dem';
