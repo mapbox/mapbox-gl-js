@@ -375,7 +375,7 @@ class Transform {
 
     /**
      * Get the latitude and longitude under the camera, the altitude of the camera in meters, bearing & pitch
-     * @returns {Object} containing longitude, latitude, altitude and pitch(in degrees)
+     * @returns {Object} containing longitude, latitude, altitude and pitch (in degrees)
      */
     getCameraPosition(): { lng: number, lat: number, altitude: number, pitch: number, bearing: number } {
         const pitch = this._pitch;
@@ -395,9 +395,14 @@ class Transform {
 
     /**
      * Set camera position to desired latitude, longitude, altitude, pitch (in degrees) and bearing
-     * @param {Object} camPos Object containing the latitude and longitude under the camera, the altitude in meters, bearing & pitch
+     * @param {Object} cameraPosition Object containing the latitude and longitude under the camera, the altitude in meters, bearing & pitch
+     * @param {number} [cameraPosition.lng] Camera longitude
+     * @param {number} [cameraPosition.lat] Camera latitude
+     * @param {number} [cameraPosition.altitude] Camera altitude in meters
+     * @param {number} [cameraPosition.pitch] Camera pitch in degrees away from the plane of the screen
+     * @param {number} [cameraPosition.bearing] Camera bearing in degrees counter-clockwise from north
      */
-    setCameraPosition(camPos: { lng: number, lat: number, altitude: number, pitch: number, bearing: number }) {
+    setCameraPosition(cameraPosition: { lng: number, lat: number, altitude: number, pitch: number, bearing: number }) {
         const {lng, lat, altitude, pitch, bearing} = camPos;
 
         const pitchInRadians = pitch * (Math.PI / 180);
