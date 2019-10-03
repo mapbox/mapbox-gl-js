@@ -98,7 +98,7 @@ test('transform', (t) => {
             bearing: 0
         });
 
-        t.deepEqual(transform.center, { lng: 20, lat: 20 });
+        t.deepEqual(transform.center, {lng: 20, lat: 20});
         t.equal(transform.zoom, 14.166460609951343);
         t.equal(transform.pitch, 0);
         t.equal(transform.bearing, 0);

@@ -390,7 +390,7 @@ class Transform {
         const altitudeInMeters = altitude / verticalScaleConstant;
         const pitchInDegrees = pitch * (180 / Math.PI);
 
-        return { lng: lngLat.lng, lat: lngLat.lat, altitude: altitudeInMeters, pitch: pitchInDegrees, bearing: this.bearing };
+        return {lng: lngLat.lng, lat: lngLat.lat, altitude: altitudeInMeters, pitch: pitchInDegrees, bearing: this.bearing};
     }
 
     /**
@@ -398,7 +398,7 @@ class Transform {
      * @param {Object} camPos Object containing the latitude and longitude under the camera, the altitude in meters, bearing & pitch
      */
     setCameraPosition(camPos: { lng: number, lat: number, altitude: number, pitch: number, bearing: number }) {
-        const { lng, lat, altitude, pitch, bearing } = camPos;
+        const {lng, lat, altitude, pitch, bearing} = camPos;
 
         const pitchInRadians = pitch * (Math.PI / 180);
         const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
