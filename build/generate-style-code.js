@@ -33,7 +33,7 @@ global.flowType = function (property) {
         case 'formatted':
             return `Formatted`;
         case 'image':
-            return `Image`;
+            return `ResolvedImage`;
         case 'array':
             if (property.length) {
                 return `[${new Array(property.length).fill(flowType({type: property.value})).join(', ')}]`;
