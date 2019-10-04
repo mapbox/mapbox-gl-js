@@ -76,7 +76,7 @@ export default class Marker extends Evented {
         this._color = options && options.color || '#3FB1CE';
         this._draggable = options && options.draggable || false;
         this._state = 'inactive';
-	this._bearing = options && options.bearing;
+        this._bearing = options && options.bearing;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
