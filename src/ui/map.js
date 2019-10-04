@@ -159,8 +159,8 @@ const defaultOptions = {
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
  * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
- * @param {number} [options.minPitch=0] The minimum pitch of the map (0-90).
- * @param {number} [options.maxPitch=60] The maximum pitch of the map (0-90).
+ * @param {number} [options.minPitch=0] The minimum pitch of the map (0-60).
+ * @param {number} [options.maxPitch=60] The maximum pitch of the map (0-60).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
@@ -667,7 +667,7 @@ class Map extends Camera {
      * If the map's current pitch is lower than the new minimum,
      * the map will ease to the new minimum.
      *
-     * @param {number | null | undefined} minPitch The minimum pitch to set (0-90).
+     * @param {number | null | undefined} minPitch The minimum pitch to set (0-60).
      *   If `null` or `undefined` is provided, the function removes the current minimum pitch (i.e. sets it to 0).
      * @returns {Map} `this`
      */
