@@ -32,6 +32,7 @@ type Options = {
  * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
+ * @param {number} [options.bearing] The direction the marker will point, also making the marker flat on the plane.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -348,9 +349,9 @@ export default class Marker extends Evented {
 
         this._pos = this._map.project(this._lngLat)._add(this._offset);
 	
-	const rotation = typeof this._bearing !== 'undefined' ? `rotateX(${this._map.getPitch()}deg) rotateZ(${this._bearing - this._map.getBearing()}deg)` : "";
+        const rotation = typeof this._bearing !== 'undefined' ? `rotateX(${this._map.getPitch()}deg) rotateZ(${this._bearing - this._map.getBearing()}deg)` : "";
         
-	// because rounding the coordinates at every `move` event causes stuttered zooming
+        // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
         if (!e || e.type === "moveend") {
@@ -498,15 +499,15 @@ export default class Marker extends Evented {
      */
     setBearing(newBearing: number) {
         this._bearing = newBearing || 0;
-	this._update();
-	return this;
+        this._update();
+        return this;
     }
 
     /**
      * Returns the current bearing
      * @returns {number}
      */
-    isDraggable() {
+    getBearing() {
         return this._bearing;
     }
 }
