@@ -597,9 +597,8 @@ function fitIconToText(shapedIcon: PositionedIcon, shapedText: Shaping,
     // the icon will be centered on the text, then stretched in the given
     // dimensions.
 
-    const rotateForVertical = shapedText.writingMode === 2;
-    const textLeft = (rotateForVertical ? -shapedText.bottom : shapedText.left) * fontScale;
-    const textRight = (rotateForVertical ? -shapedText.top : shapedText.right) * fontScale;
+    const textLeft = shapedText.left * fontScale;
+    const textRight = shapedText.right * fontScale;
 
     let top, right, bottom, left;
     if (textFit === 'width' || textFit === 'both') {
@@ -612,8 +611,8 @@ function fitIconToText(shapedIcon: PositionedIcon, shapedText: Shaping,
         right = left + image.displaySize[0];
     }
 
-    const textTop = (rotateForVertical ? -shapedText.right : shapedText.top) * fontScale;
-    const textBottom = (rotateForVertical ? -shapedText.left : shapedText.bottom) * fontScale;
+    const textTop = shapedText.top * fontScale;
+    const textBottom = shapedText.bottom * fontScale;
     if (textFit === 'height' || textFit === 'both') {
         // Stretched vertically to the text height
         top = iconOffset[1] + textTop - padding[0];

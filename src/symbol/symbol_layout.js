@@ -589,7 +589,7 @@ function addSymbol(bucket: SymbolBucket,
         verticalTextCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
 
         if (verticallyShapedIcon) {
-            verticalIconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconBoxScale, iconPadding, textAlongLine, bucket.overscaling, textRotation);
+            verticalIconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconBoxScale, iconPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
         }
     }
 
@@ -642,7 +642,6 @@ function addSymbol(bucket: SymbolBucket,
         placedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
 
         if (verticalIconQuads) {
-            console.log("ADD VERTICAL ICON", verticalIconQuads, verticallyShapedIcon);
             numVerticalIconVertices = verticalIconQuads.length * 4;
 
             bucket.addSymbols(
@@ -652,7 +651,7 @@ function addSymbol(bucket: SymbolBucket,
                 iconOffset,
                 iconAlongLine,
                 feature,
-                false,
+                WritingMode.vertical,
                 anchor,
                 lineArray.lineStartIndex,
                 lineArray.lineLength,

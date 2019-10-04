@@ -824,7 +824,7 @@ export class Placement {
             if (hasIcon) {
                 const packedOpacity = packOpacity(opacityState.icon);
 
-                const useHorizontal = !(hasIconTextFit && symbolInstance.verticalPlacedIconSymbolIndex) || verticalHidden;
+                const useHorizontal = !(hasIconTextFit && symbolInstance.verticalPlacedIconSymbolIndex && horizontalHidden);
 
                 if (symbolInstance.placedIconSymbolIndex >= 0) {
                     const horizontalOpacity = useHorizontal ? packedOpacity : PACKED_HIDDEN_OPACITY;
@@ -883,7 +883,7 @@ export class Placement {
                         }
                     }
 
-                    const verticalIconUsed = !verticalHidden && collisionArrays.verticalIconBox;
+                    const verticalIconUsed = Boolean(!verticalHidden && collisionArrays.verticalIconBox);
 
                     if (collisionArrays.iconBox) {
                         updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, verticalIconUsed,
@@ -972,7 +972,7 @@ export class Placement {
     }
 }
 
-function updateCollisionVertices(collisionVertexArray: CollisionVertexArray, placed: boolean, notUsed: boolean, shiftX?: number, shiftY?: number) {
+function updateCollisionVertices(collisionVertexArray: CollisionVertexArray, placed: boolean, notUsed: boolean | number, shiftX?: number, shiftY?: number) {
     collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0, shiftX || 0, shiftY || 0);
     collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0, shiftX || 0, shiftY || 0);
     collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0, shiftX || 0, shiftY || 0);
