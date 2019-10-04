@@ -19,7 +19,8 @@ type Options = {
     offset?: PointLike,
     anchor?: Anchor,
     color?: string,
-    draggable?: boolean
+    draggable?: boolean,
+    bearing?: number
 };
 
 /**
@@ -51,6 +52,8 @@ export default class Marker extends Evented {
     _draggable: boolean;
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
     _positionDelta: ?number;
+    _pitch: ?number;
+    _bearing: ?number;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -72,6 +75,7 @@ export default class Marker extends Evented {
         this._color = options && options.color || '#3FB1CE';
         this._draggable = options && options.draggable || false;
         this._state = 'inactive';
+	this._bearing = options && options.bearing;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -343,15 +347,17 @@ export default class Marker extends Evented {
         }
 
         this._pos = this._map.project(this._lngLat)._add(this._offset);
-
-        // because rounding the coordinates at every `move` event causes stuttered zooming
+	
+	const rotation = typeof this._bearing !== 'undefined' ? `rotateX(${this._map.getPitch()}deg) rotateZ(${this._bearing - this._map.getBearing()}deg)` : "";
+        
+	// because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
         if (!e || e.type === "moveend") {
             this._pos = this._pos.round();
         }
 
-        DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px)`);
+        DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${rotation}`);
     }
 
     /**
@@ -483,5 +489,24 @@ export default class Marker extends Evented {
      */
     isDraggable() {
         return this._draggable;
+    }
+
+    /**
+     * Sets the `bearing` property for pointing the marker in a particular direction
+     * @param {number} [newBearing=0] Sets the direction the marker is pointing
+     * @returns {Marker} `this`
+     */
+    setBearing(newBearing: number) {
+        this._bearing = newBearing || 0;
+	this._update();
+	return this;
+    }
+
+    /**
+     * Returns the current bearing
+     * @returns {number}
+     */
+    isDraggable() {
+        return this._bearing;
     }
 }
