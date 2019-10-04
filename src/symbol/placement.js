@@ -782,9 +782,13 @@ export class Placement {
                 const packedOpacity = packOpacity(opacityState.text);
                 // Vertical text fades in/out on collision the same way as corresponding
                 // horizontal text. Switch between vertical/horizontal should be instantaneous
-                const opacityEntryCount = (numHorizontalGlyphVertices + numVerticalGlyphVertices) / 4;
-                for (let i = 0; i < opacityEntryCount; i++) {
-                    bucket.text.opacityVertexArray.emplaceBack(packedOpacity);
+                const horizontalOpacity = horizontalHidden ? PACKED_HIDDEN_OPACITY : packedOpacity;
+                for (let i = 0; i < numHorizontalGlyphVertices / 4; i++) {
+                    bucket.text.opacityVertexArray.emplaceBack(horizontalOpacity);
+                }
+                const verticalOpacity = verticalHidden ? PACKED_HIDDEN_OPACITY : packedOpacity;
+                for (let i = 0; i < numVerticalGlyphVertices / 4; i++) {
+                    bucket.text.opacityVertexArray.emplaceBack(verticalOpacity);
                 }
                 // If this label is completely faded, mark it so that we don't have to calculate
                 // its position at render time. If this layer has variable placement, shift the various
@@ -995,3 +999,5 @@ function packOpacity(opacityState: OpacityState): number {
         opacityBits * shift9 + targetBit * shift8 +
         opacityBits * shift1 + targetBit;
 }
+
+const PACKED_HIDDEN_OPACITY = 0;
