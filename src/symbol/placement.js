@@ -333,7 +333,6 @@ export class Placement {
 
             let placed = {box: null, offscreen: null};
             let placedVerticalText = {box: null, offscreen: null};
-            let placedVerticalIcon = {box: null, offscreen: null};
 
             let placedGlyphBoxes = null;
             let placedGlyphCircles = null;
@@ -341,7 +340,6 @@ export class Placement {
             let textFeatureIndex = 0;
             let verticalTextFeatureIndex = 0;
             let iconFeatureIndex = 0;
-            let verticalIconFeatureIndex = 0;
 
             if (collisionArrays.textFeatureIndex) {
                 textFeatureIndex = collisionArrays.textFeatureIndex;
@@ -532,7 +530,7 @@ export class Placement {
 
                 if (placedVerticalText && placedVerticalText.box && placedVerticalText.box.length && collisionArrays.verticalIconBox) {
                     placedIconBoxes = placeIconFeature(collisionArrays.verticalIconBox);
-                    placeIcon = placedVerticalIcon = placedIconBoxes.box.length > 0;
+                    placeIcon = placedIconBoxes.box.length > 0;
                 } else {
                     placedIconBoxes = placeIconFeature(collisionArrays.iconBox);
                     placeIcon = placedIconBoxes.box.length > 0;
