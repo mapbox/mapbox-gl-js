@@ -824,20 +824,24 @@ export class Placement {
             if (hasIcon) {
                 const packedOpacity = packOpacity(opacityState.icon);
 
+                const useHorizontal = !(hasIconTextFit && symbolInstance.verticalPlacedIconSymbolIndex) || verticalHidden;
+
                 if (symbolInstance.placedIconSymbolIndex >= 0) {
+                    const horizontalOpacity = useHorizontal ? packedOpacity : PACKED_HIDDEN_OPACITY;
                     for (let i = 0; i < symbolInstance.numIconVertices / 4; i++) {
-                        bucket.icon.opacityVertexArray.emplaceBack(packedOpacity);
+                        bucket.icon.opacityVertexArray.emplaceBack(horizontalOpacity);
                     }
                     bucket.icon.placedSymbolArray.get(symbolInstance.placedIconSymbolIndex).hidden =
                         (opacityState.icon.isHidden(): any);
                 }
 
                 if (symbolInstance.verticalPlacedIconSymbolIndex >= 0) {
+                    const verticalOpacity = !useHorizontal ? packedOpacity : PACKED_HIDDEN_OPACITY;
                     for (let i = 0; i < symbolInstance.numVerticalIconVertices / 4; i++) {
-                        bucket.icon.opacityVertexArray.emplaceBack(packedOpacity);
+                        bucket.icon.opacityVertexArray.emplaceBack(verticalOpacity);
+                    }
                     bucket.icon.placedSymbolArray.get(symbolInstance.verticalPlacedIconSymbolIndex).hidden =
                         (opacityState.icon.isHidden(): any);
-                    }
                 }
             }
 

@@ -382,7 +382,6 @@ function addFeature(bucket: SymbolBucket,
     // Adjust shaped icon size when icon-text-fit is used.
     if (shapedIcon && iconTextFit !== 'none') {
         if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
-            console.log("HERERERE");
             verticallyShapedIcon = fitIconToText(shapedIcon, shapedTextOrientations.vertical, iconTextFit,
                 layout.get('icon-text-fit-padding'), iconOffset, fontScale);
         }
@@ -590,7 +589,7 @@ function addSymbol(bucket: SymbolBucket,
         verticalTextCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
 
         if (verticallyShapedIcon) {
-            verticalIconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconBoxScale, iconPadding, textAlongLine, bucket.overscaling, verticalTextRotation);
+            verticalIconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconBoxScale, iconPadding, textAlongLine, bucket.overscaling, textRotation);
         }
     }
 
