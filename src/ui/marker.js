@@ -348,9 +348,9 @@ export default class Marker extends Evented {
         }
 
         this._pos = this._map.project(this._lngLat)._add(this._offset);
-	
-        const rotation = typeof this._bearing !== 'undefined' ? `rotateX(${this._map.getPitch()}deg) rotateZ(${this._bearing - this._map.getBearing()}deg)` : "";
-        
+
+        const rotation = this._bearing !== undefined ? `rotateX(${this._map.getPitch()}deg) rotateZ(${this._bearing - this._map.getBearing()}deg)` : "";
+
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
