@@ -20,7 +20,9 @@ type Options = {
     anchor?: Anchor,
     color?: string,
     draggable?: boolean,
-    bearing?: number
+    rotate?: number,
+    rotation_alignment?: string,
+    pitch_alignment?: string
 };
 
 /**
@@ -32,7 +34,9 @@ type Options = {
  * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
- * @param {number} [options.bearing] The direction the marker will point, also making the marker flat on the plane.
+ * @param {number} [options.rotate=0]
+ * @param {string} [options.pitch_alignment="auto"]
+ * @param {string} [options.rotation_alignment="auto"]
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -53,8 +57,9 @@ export default class Marker extends Evented {
     _draggable: boolean;
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
     _positionDelta: ?number;
-    _pitch: ?number;
-    _bearing: ?number;
+    _rotate: ?number;
+    _pitch_alignment: ?string;
+    _rotation_alignment: ?string;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -76,7 +81,9 @@ export default class Marker extends Evented {
         this._color = options && options.color || '#3FB1CE';
         this._draggable = options && options.draggable || false;
         this._state = 'inactive';
-        this._bearing = options && options.bearing;
+        this._rotate = options && options.rotate || 0;
+	this._pitch_alignment = options && options.pitch_alignment || "auto";
+	this._rotation_alignment = options && options.rotation_alignment || "auto";
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -349,7 +356,23 @@ export default class Marker extends Evented {
 
         this._pos = this._map.project(this._lngLat)._add(this._offset);
 
-        const rotation = this._bearing !== undefined ? `rotateX(${this._map.getPitch()}deg) rotateZ(${this._bearing - this._map.getBearing()}deg)` : "";
+        var rotation = "";
+	if(this._rotation_alignment == "viewport" || this._rotation_alignment == "auto"){
+            rotation = `rotateZ(${this._rotate}deg)`;
+        } else if(this._rotation_alignment == "map"){
+            rotation = `rotateZ(${this._rotate - this._map.getBearing()}deg)`;
+        } else {
+            console.log("Invalid 'rotation_alignment' setting: " + this._rotation_alignment);
+        }
+
+        var pitch = "";
+        if(this._pitch_alignment == "viewport" || this._pitch_alignment == "auto"){
+            pitch = "rotateX(0deg)";
+        } else if(this._pitch_alignment == "map"){
+            pitch = `rotateX(${this._map.getPitch()}deg)`;
+        } else {
+            console.log("Invalid 'pitch_alignment' setting: " + this._pitch_alignment)
+        }
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
@@ -358,7 +381,7 @@ export default class Marker extends Evented {
             this._pos = this._pos.round();
         }
 
-        DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${rotation}`);
+        DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
     }
 
     /**
