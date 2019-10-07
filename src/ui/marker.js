@@ -35,8 +35,8 @@ type Options = {
  * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
  * @param {number} [options.rotate=0]
- * @param {string} [options.pitchAlignment="auto"]
- * @param {string} [options.rotationAlignment="auto"]
+ * @param {string} [options.pitchAlignment='auto']
+ * @param {string} [options.rotationAlignment='auto']
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -82,8 +82,8 @@ export default class Marker extends Evented {
         this._draggable = options && options.draggable || false;
         this._state = 'inactive';
         this._rotate = options && options.rotate || 0;
-        this._pitchAlignment = options && options.pitchAlignment || "auto";
-	this._rotation_alignment = options && options.rotation_alignment || "auto";
+        this._pitchAlignment = options && options.pitchAlignment || 'auto';
+        this._rotationAlignment = options && options.rotationAlignment || 'auto';
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -357,16 +357,16 @@ export default class Marker extends Evented {
         this._pos = this._map.project(this._lngLat)._add(this._offset);
 
         let rotation = "";
-        if (this._rotationAlignment == "viewport" || this._rotationAlignment == "auto") {
+        if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
             rotation = `rotateZ(${this._rotate}deg)`;
-        } else if (this._rotationAlignment == "map") {
+        } else if (this._rotationAlignment === "map") {
             rotation = `rotateZ(${this._rotate - this._map.getBearing()}deg)`;
         }
 
         let pitch = "";
-        if (this._pitchAlignment == "viewport" || this._pitchAlignment == "auto") {
+        if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
             pitch = "rotateX(0deg)";
-        } else if (this._pitchAlignment == "map") {
+        } else if (this._pitchAlignment === "map") {
             pitch = `rotateX(${this._map.getPitch()}deg)`;
         }
 
@@ -535,7 +535,7 @@ export default class Marker extends Evented {
      * @param {string} [newAlignment='auto'] Sets the reference for marker rotations
      * @returns {Marker} `this`
      */
-    setRotationAlignment(newAlignment: number) {
+    setRotationAlignment(newAlignment: string) {
         this._rotationAlignment = newAlignment || 'auto';
         this._update();
         return this;
