@@ -440,7 +440,7 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a {@link IControl} to the map, calling `control.onAdd(this)`.
+     * Adds an {@link IControl} to the map, calling `control.onAdd(this)`.
      *
      * @param {IControl} control The {@link IControl} to add.
      * @param {string} [position] position on the map to which the control will be added.
@@ -2169,7 +2169,7 @@ function removeNode(node) {
 }
 
 /**
- * Interface for interactive controls added to the map. This is an
+ * Interface for interactive controls added to the map. This is a
  * specification for implementers to model: it is not
  * an exported method or class.
  *
