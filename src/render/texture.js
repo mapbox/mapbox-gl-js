@@ -49,6 +49,9 @@ class Texture {
         this.update(image, options);
     }
 
+    get width(): number { return this.size[0]; }
+    get height(): number { return this.size[1]; }
+
     update(image: TextureImage, options: ?{premultiply?: boolean, useMipmap?: boolean}, position?: { x: number, y: number }) {
         const {width, height} = image;
         const resize = (!this.size || this.size[0] !== width || this.size[1] !== height) && !position;

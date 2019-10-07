@@ -13,7 +13,7 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
-import type Context from '../gl/context';
+
 import type Framebuffer from '../gl/framebuffer';
 import type Tile from '../source/tile';
 
@@ -32,7 +32,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
 
     for (const tileID of tileIDs) {
         const tile = sourceCache.getTile(tileID);
-        if (tile.needsHillshadePrepare && painter.renderPass === 'offscreen') {
+        if (painter.renderPass === 'offscreen') {
             prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stencilMode, colorMode);
             continue;
         } else if (painter.renderPass === 'translucent') {
@@ -85,7 +85,7 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
         demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         context.activeTexture.set(gl.TEXTURE0);
 
-        const fbo = tile.hillshadeFbo || initHillshadeFbo(tile, context, tileSize);
+        const fbo = tile.hillshadeFbo || getHillshadeFbo(tile, painter, tileSize);
 
         context.bindFramebuffer.set(fbo.framebuffer);
         context.viewport.set([0, 0, tileSize, tileSize]);
@@ -96,16 +96,20 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
             layer.id, painter.rasterBoundsBuffer,
             painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
 
-        tile.needsHillshadePrepare = false;
         tile.borderBackfillDirty = false;
     }
 }
 
-function initHillshadeFbo(tile: Tile, context: Context, size: number): Framebuffer {
-    const renderTexture = new Texture(context, {width: size, height: size, data: null}, context.gl.RGBA);
-    renderTexture.bind(context.gl.LINEAR, context.gl.CLAMP_TO_EDGE);
-    const fbo = context.createFramebuffer(size, size);
-    fbo.colorAttachment.set(renderTexture.texture);
+function getHillshadeFbo(tile: Tile, painter: Painter, size: number): Framebuffer {
+    const context = painter.context;
+
+    let fbo = painter.getTileFbo(size);
+    if (!fbo) {
+        const renderTexture = new Texture(context, {width: size, height: size, data: null}, context.gl.RGBA);
+        renderTexture.bind(context.gl.LINEAR, context.gl.CLAMP_TO_EDGE);
+        fbo = context.createFramebuffer(size, size);
+        fbo.colorAttachment.set(renderTexture.texture);
+    }
 
     tile.hillshadeFbo = fbo;
     return fbo;

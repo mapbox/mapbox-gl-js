@@ -36,6 +36,7 @@ import type Transform from '../geo/transform';
 import type {LayerFeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
 import type {FilterSpecification} from '../style-spec/types';
+import type Painter from '../render/painter';
 import type Framebuffer from '../gl/framebuffer';
 
 export type TileState =
@@ -84,7 +85,6 @@ class Tile {
     maskedBoundsBuffer: ?VertexBuffer;
     maskedIndexBuffer: ?IndexBuffer;
     segments: ?SegmentVector;
-    needsHillshadePrepare: ?boolean;
     borderBackfillDirty: ?boolean;
     hillshadeFbo: ?Framebuffer;
     request: ?Cancelable;
@@ -223,6 +223,17 @@ class Tile {
 
         this.latestFeatureIndex = null;
         this.state = 'unloaded';
+    }
+
+    /**
+     * Invoken when the tile is moved offscreen
+     * @private
+     */
+    onRemove(painter: Painter) {
+        if (this.hillshadeFbo) {
+            painter.saveTileFbo(this.hillshadeFbo);
+            this.hillshadeFbo = null;
+        }
     }
 
     unloadDEMData() {

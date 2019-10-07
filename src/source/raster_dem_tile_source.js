@@ -78,7 +78,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
             if (dem) {
                 tile.dem = dem;
-                tile.needsHillshadePrepare = true;
                 tile.state = 'loaded';
                 callback(null);
             }
@@ -117,10 +116,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
     unloadTile(tile: Tile) {
         if (tile.dem) delete tile.dem;
-        if (tile.hillshadeFbo) {
-            tile.hillshadeFbo.destroy();
-            delete tile.hillshadeFbo;
-        }
         delete tile.neighboringTiles;
         tile.clearMask();
         tile.state = 'unloaded';

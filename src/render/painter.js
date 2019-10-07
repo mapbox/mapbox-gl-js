@@ -92,6 +92,7 @@ class Painter {
     context: Context;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
+    _tileFboPool: { [number]: Array<Framebuffer> };
     _tileDemCache: TileCache;
     numSublayers: number;
     depthEpsilon: number;
@@ -133,7 +134,8 @@ class Painter {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
-        this._tileDemCache = new TileCache(8, unloadTexture);
+        this._tileFboPool = {};
+        this._tileDemCache = new TileCache(8, (data: TileTextureData) => data.texture.destroy());
 
         this.setup();
         // Within each layer there are multiple distinct z-planes that can be drawn to.
@@ -499,17 +501,31 @@ class Painter {
     }
 
     saveTileTexture(texture: Texture) {
-        const textures = this._tileTextures[texture.size[0]];
+        const textures = this._tileTextures[texture.width];
         if (!textures) {
-            this._tileTextures[texture.size[0]] = [texture];
+            this._tileTextures[texture.width] = [texture];
         } else {
             textures.push(texture);
         }
     }
 
-    getTileTexture(size: number) {
+    getTileTexture(size: number): ?Texture {
         const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
+    }
+
+    saveTileFbo(fbo: Framebuffer) {
+        const fbos = this._tileFboPool[fbo.width];
+        if (!fbos) {
+            this._tileFboPool[fbo.width] = [fbo];
+        } else {
+            fbos.push(fbo);
+        }
+    }
+
+    getTileFbo(size: number): Framebuffer | null {
+        const fbos = this._tileFboPool[size];
+        return fbos && fbos.length > 0 ? fbos.pop() : null;
     }
 
     setDemTextureCacheSize(target: number) {
@@ -584,11 +600,6 @@ class Painter {
         this.context.viewport.set([0, 0, this.width, this.height]);
         this.context.blendEquation.set(gl.FUNC_ADD);
     }
-}
-
-function unloadTexture(data: TileTextureData) {
-    data.texture.destroy();
-    data.tile.needsHillshadePrepare = true;
 }
 
 export default Painter;
