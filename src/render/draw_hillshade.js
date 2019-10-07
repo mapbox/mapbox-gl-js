@@ -3,6 +3,7 @@
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
+import Texture from './texture';
 import {
     hillshadeUniformValues,
     hillshadeUniformPrepareValues
@@ -12,6 +13,9 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
+import type Context from '../gl/context';
+import type Framebuffer from '../gl/framebuffer';
+import type Tile from '../source/tile';
 
 export default drawHillshade;
 
@@ -24,7 +28,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
-    painter.setTextureCacheSize('dem', Math.floor(tileIDs.length * 2.5));
+    painter.setDemTextureCacheSize(Math.floor(tileIDs.length));
 
     for (const tileID of tileIDs) {
         const tile = sourceCache.getTile(tileID);
@@ -42,7 +46,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
 function renderHillshade(painter, tile, layer, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
-    const fbo = painter.getFboForTile('dem', tile.tileID);
+    const fbo = tile.hillshadeFbo;
     if (!fbo) return;
 
     const program = painter.useProgram('hillshade');
@@ -77,11 +81,11 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
         context.pixelStoreUnpackPremultiplyAlpha.set(false);
 
         // Force a texture re-upload if new data was downloaded, this is typically triggered by a DEM backfill from a neighboring tile.
-        const demTexture = painter.getOrCreateTextureForTile('dem', tile, pixelData, !!tile.borderBackfillDirty);
+        const demTexture = painter.getOrCreateDemTextureForTile(tile, pixelData, !!tile.borderBackfillDirty);
         demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         context.activeTexture.set(gl.TEXTURE0);
 
-        const fbo = painter.getOrCreateFboForTile('dem', tile, tileSize);
+        const fbo = tile.hillshadeFbo || initHillshadeFbo(tile, context, tileSize);
 
         context.bindFramebuffer.set(fbo.framebuffer);
         context.viewport.set([0, 0, tileSize, tileSize]);
@@ -95,4 +99,14 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
         tile.needsHillshadePrepare = false;
         tile.borderBackfillDirty = false;
     }
+}
+
+function initHillshadeFbo(tile: Tile, context: Context, size: number): Framebuffer {
+    const renderTexture = new Texture(context, {width: size, height: size, data: null}, context.gl.RGBA);
+    renderTexture.bind(context.gl.LINEAR, context.gl.CLAMP_TO_EDGE);
+    const fbo = context.createFramebuffer(size, size);
+    fbo.colorAttachment.set(renderTexture.texture);
+
+    tile.hillshadeFbo = fbo;
+    return fbo;
 }

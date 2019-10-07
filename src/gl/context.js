@@ -200,7 +200,7 @@ class Context {
         return rbo;
     }
 
-    createFramebuffer(width: number, height: number) {
+    createFramebuffer(width: number, height: number): Framebuffer {
         return new Framebuffer(this, width, height);
     }
 

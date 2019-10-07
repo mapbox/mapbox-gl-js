@@ -36,6 +36,7 @@ import type Transform from '../geo/transform';
 import type {LayerFeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
 import type {FilterSpecification} from '../style-spec/types';
+import type Framebuffer from '../gl/framebuffer';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -85,6 +86,7 @@ class Tile {
     segments: ?SegmentVector;
     needsHillshadePrepare: ?boolean;
     borderBackfillDirty: ?boolean;
+    hillshadeFbo: ?Framebuffer;
     request: ?Cancelable;
     texture: any;
     refreshedUponExpiration: boolean;

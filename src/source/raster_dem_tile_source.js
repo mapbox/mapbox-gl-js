@@ -117,6 +117,10 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
     unloadTile(tile: Tile) {
         if (tile.dem) delete tile.dem;
+        if (tile.hillshadeFbo) {
+            tile.hillshadeFbo.destroy();
+            delete tile.hillshadeFbo;
+        }
         delete tile.neighboringTiles;
         tile.clearMask();
         tile.state = 'unloaded';

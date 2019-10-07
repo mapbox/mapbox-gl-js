@@ -83,7 +83,7 @@ var style = {
 
 var map = new mapboxgl.Map({
     container: 'map',
-    style: style, // the outdoors-v10 style but without Hillshade layers
+    style, // the outdoors-v10 style but without Hillshade layers
     center: [-119.5591, 37.715],
     zoom: 9
 });
@@ -107,15 +107,15 @@ var path = [
 map.on('load', () => {
     let idx = 0;
     const startPan = () => {
-        map.flyTo({ center: path[idx]});
+        map.flyTo({center: path[idx]});
         idx++;
-        if(idx < path.length){
+        if (idx < path.length) {
             setTimeout(startPan, 3000);
-        }else{
+        } else {
             console.log(glObjectCounters);
             console.log(`Total texture uploads: ${totalTextureUploadCalls}`);
         }
-    }
+    };
     startPan();
 });
 
@@ -170,8 +170,6 @@ WebGLRenderingContext.prototype.texSubImage2D = function() {
     totalTextureUploadCalls++;
     return texSubImage2D.apply(this, arguments);
 };
-
-
 
 </script>
 </body>

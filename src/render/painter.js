@@ -68,11 +68,10 @@ import type ResolvedImage from '../style-spec/expression/types/resolved_image';
 import type {TextureImage} from './texture';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
-export type TileTextureType = 'dem';
 export type TileTextureData = {
     tile: Tile,
     texture: Texture | Framebuffer
-}
+};
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -93,8 +92,7 @@ class Painter {
     context: Context;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
-    _tileTextureCache: { [TileTextureType]: TileCache}
-    _tileFboCache: { [TileTextureType]: TileCache}
+    _tileDemCache: TileCache;
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration: ProgramConfiguration;
@@ -135,15 +133,9 @@ class Painter {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
-        this._tileTextureCache = {
-            dem: new TileCache(8, unloadTexture)
-        };
-        this._tileFboCache = {
-            dem: new TileCache(8, unloadTexture)
-        };
+        this._tileDemCache = new TileCache(8, unloadTexture);
 
         this.setup();
-
         // Within each layer there are multiple distinct z-planes that can be drawn to.
         // This is implemented using the WebGL depth buffer.
         this.numSublayers = SourceCache.maxUnderzooming + SourceCache.maxOverzooming + 1;
@@ -520,17 +512,14 @@ class Painter {
         return textures && textures.length > 0 ? textures.pop() : null;
     }
 
-    setTextureCacheSize(type: TileTextureType, target: number) {
-        const textureCache = this._tileTextureCache[type];
-        textureCache.growMaxSize(target);
-        const fboCache = this._tileFboCache[type];
-        fboCache.growMaxSize(target);
+    setDemTextureCacheSize(target: number) {
+        this._tileDemCache.growMaxSize(target);
     }
 
-    getOrCreateTextureForTile(type: TileTextureType, tile: Tile, image: TextureImage, forceReupload: boolean): Texture {
+    getOrCreateDemTextureForTile(tile: Tile, image: TextureImage, forceReupload: boolean): Texture {
         const tileID = tile.tileID;
         const context = this.context;
-        const textureCache = this._tileTextureCache[type];
+        const textureCache = this._tileDemCache;
 
         const cachedData = textureCache.get(tileID);
         if (cachedData) {
@@ -543,35 +532,6 @@ class Painter {
             const newTexture = new Texture(context, image, context.gl.RGBA, {premultiply: false});
             textureCache.add(tileID, {tile, texture: newTexture});
             return newTexture;
-        }
-    }
-
-    getOrCreateFboForTile(type: TileTextureType, tile: Tile, size: number): Framebuffer {
-        const tileID = tile.tileID;
-        const context = this.context;
-        const fboCache = this._tileFboCache[type];
-
-        const cachedData = fboCache.get(tileID);
-        if (cachedData) {
-            return cachedData.texture;
-        } else {
-            const renderTexture = new Texture(context, {width: size, height: size, data: null}, context.gl.RGBA);
-            renderTexture.bind(context.gl.LINEAR, context.gl.CLAMP_TO_EDGE);
-            const fbo = context.createFramebuffer(size, size);
-            fbo.colorAttachment.set(renderTexture.texture);
-
-            fboCache.add(tileID, {tile, texture: fbo});
-            return fbo;
-        }
-    }
-
-    getFboForTile(type: TileTextureType, tileID: OverscaledTileID): ?Framebuffer {
-        const fboCache = this._tileFboCache[type];
-        const cachedData = fboCache.get(tileID);
-        if (cachedData) {
-            return cachedData.texture;
-        } else {
-            return null;
         }
     }
 
