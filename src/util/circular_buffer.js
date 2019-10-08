@@ -1,4 +1,10 @@
 // @flow
+/**
+ * An implementation of a circular buffer, with wraparound indexing for implementing object pools.
+ *
+ * @class CircularBuffer
+ * @private
+ */
 export class CircularBuffer<T> {
     _arr: Array<?T>;
     _capacity: number;
@@ -7,7 +13,6 @@ export class CircularBuffer<T> {
     _evictcb: Function;
 
     /**
-     * An implementation of a circular buffer, with wraparound indexing for implementing object pools.
      * @param {number} [capacity=50]
      * @param {(elem: T) => void} evictcb
      * @private
@@ -63,7 +68,7 @@ export class CircularBuffer<T> {
      * Retuns the number of lelements currently in the buffer
      *
      * @readonly
-     * @type {number}
+     * @type {number}``
      * @private
      */
     get count(): number {

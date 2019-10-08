@@ -193,7 +193,7 @@ class TileCache {
      * @returns {TileCache}
      * @private
      */
-    setMaxSizeDeffered(max: number): TileCache {
+    setMaxSizeDeferred(max: number): TileCache {
         if (max > this.max) {
             this.max = max;
             this._shrinkTarget = null;

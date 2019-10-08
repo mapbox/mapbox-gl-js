@@ -532,7 +532,7 @@ class Painter {
     }
 
     setDemTextureCacheSize(target: number) {
-        this._tileDemCache.setMaxSizeDeffered(target);
+        this._tileDemCache.setMaxSizeDeferred(target);
         this._tileDemCache.shrinkTick(2);
     }
 
