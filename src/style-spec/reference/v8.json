@@ -1291,8 +1291,8 @@
       "property-type": "data-constant"
     },
     "icon-image": {
-      "type": "image",
-      "doc": "Name of image in sprite to use for drawing an image background.",
+      "type": "resolved-image",
+      "doc": "Name of image in sprite to use for drawing an image background. If a plain `string` is provided, it will be treated as a `resolved-image`.",
       "tokens": true,
       "sdk-support": {
         "basic functionality": {
@@ -2805,7 +2805,7 @@
         }
       },
       "image": {
-        "doc": "Returns an `image` type for use in `icon-image` and `*-pattern` entries. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
+        "doc": "Returns a `resolved-image` type for use in `icon-image` and `*-pattern` entries. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -3797,7 +3797,7 @@
       "property-type": "data-constant"
     },
     "fill-pattern": {
-      "type": "image",
+      "type": "resolved-image",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -3943,7 +3943,7 @@
       "property-type": "data-constant"
     },
     "fill-extrusion-pattern": {
-      "type": "image",
+      "type": "resolved-image",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing images on extruded fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -4332,7 +4332,7 @@
       "property-type": "cross-faded"
     },
     "line-pattern": {
-      "type": "image",
+      "type": "resolved-image",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image lines. For seamless patterns, image width must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -5712,7 +5712,7 @@
       "property-type": "data-constant"
     },
     "background-pattern": {
-      "type": "image",
+      "type": "resolved-image",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing an image background. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
