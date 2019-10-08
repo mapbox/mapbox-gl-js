@@ -3,6 +3,10 @@
 import {OverscaledTileID} from './tile_id';
 import type Tile from './tile';
 
+// When shrinking the cache-size over time, start shrinking only when
+// the target size is below 70% of the current size.
+const DEFFERED_SHRINK_THRESHOLD = 0.7;
+
 /**
  * A [least-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)
  * with hash lookup made possible by keeping a list of keys in parallel to
@@ -14,6 +18,7 @@ class TileCache {
     max: number;
     data: {[key: number | string]: Array<{ value: any, timeout: ?TimeoutID}>};
     order: Array<number>;
+    _shrinkTarget: ?number;
     onRemove: (element: Tile) => void;
     /**
      * @param {number} max number of permitted values
@@ -180,12 +185,38 @@ class TileCache {
         return this;
     }
 
-    growMaxSize(max: number): TileCache {
+    /**
+     * Grows the size of the cache instantly, but defers size shrinking.
+     * The cache then shrinks by a fixed budget everytime `shrinkTick()`is called
+     *
+     * @param {number} max
+     * @returns {TileCache}
+     * @private
+     */
+    setMaxSizeDeffered(max: number): TileCache {
         if (max > this.max) {
             this.max = max;
+            this._shrinkTarget = null;
+        } else {
+            this._shrinkTarget = max;
         }
 
         return this;
+    }
+
+    /**
+     * Call at appropriate intervals based on the usage of `setMaxSizeDeffered()`.
+     *
+     * @param {number} shrinkSize
+     * @memberof TileCache
+     */
+    shrinkTick(shrinkSize: number) {
+        if (this._shrinkTarget && this._shrinkTarget / this.order.length < DEFFERED_SHRINK_THRESHOLD) {
+            for (let itr = 0; itr < shrinkSize; itr++) {
+                const removedData = this._getAndRemoveByKey(this.order[0]);
+                if (removedData) this.onRemove(removedData);
+            }
+        }
     }
 }
 

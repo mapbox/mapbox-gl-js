@@ -709,7 +709,7 @@ class SourceCache extends Evented {
             return;
 
         if (tile.hasData() && tile.state !== 'reloading') {
-            tile.onRemove(this.map.painter);
+            tile.onRemove(this.map ? this.map.painter : null);
             this._cache.add(tile.tileID, tile, tile.getExpiryTimeout());
         } else {
             tile.aborted = true;

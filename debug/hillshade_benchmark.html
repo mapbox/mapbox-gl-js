@@ -128,47 +128,47 @@ var glObjectCounters = window.glObjectCounters = {
 var totalTextureUploadCalls = window.totalTextureUploadCalls = 0;
 
 const createBuffer = WebGLRenderingContext.prototype.createBuffer;
-WebGLRenderingContext.prototype.createBuffer = function() {
+WebGLRenderingContext.prototype.createBuffer = function(...args) {
     glObjectCounters.buffer++;
-    return createBuffer.apply(this, arguments);
+    return createBuffer.apply(this, args);
 };
 const deleteBuffer = WebGLRenderingContext.prototype.deleteBuffer;
-WebGLRenderingContext.prototype.deleteBuffer = function() {
+WebGLRenderingContext.prototype.deleteBuffer = function(...args) {
     glObjectCounters.buffer--;
-    return deleteBuffer.apply(this, arguments);
+    return deleteBuffer.apply(this, args);
 };
 
 const createTexture = WebGLRenderingContext.prototype.createTexture;
-WebGLRenderingContext.prototype.createTexture = function() {
+WebGLRenderingContext.prototype.createTexture = function(...args) {
     glObjectCounters.texture++;
-    return createTexture.apply(this, arguments);
+    return createTexture.apply(this, args);
 };
 const deleteTexture = WebGLRenderingContext.prototype.deleteTexture;
-WebGLRenderingContext.prototype.deleteTexture = function() {
+WebGLRenderingContext.prototype.deleteTexture = function(...args) {
     glObjectCounters.texture--;
-    return deleteTexture.apply(this, arguments);
+    return deleteTexture.apply(this, args);
 };
 
 const createFramebuffer = WebGLRenderingContext.prototype.createFramebuffer;
-WebGLRenderingContext.prototype.createFramebuffer = function() {
+WebGLRenderingContext.prototype.createFramebuffer = function(...args) {
     glObjectCounters.frameBuffer++;
-    return createFramebuffer.apply(this, arguments);
+    return createFramebuffer.apply(this, args);
 };
 const deleteFramebuffer = WebGLRenderingContext.prototype.deleteFramebuffer;
-WebGLRenderingContext.prototype.deleteFramebuffer = function() {
+WebGLRenderingContext.prototype.deleteFramebuffer = function(...args) {
     glObjectCounters.frameBuffer--;
-    return deleteFramebuffer.apply(this, arguments);
+    return deleteFramebuffer.apply(this, args);
 };
 
 const texImage2D = WebGLRenderingContext.prototype.texImage2D;
-WebGLRenderingContext.prototype.texImage2D = function() {
+WebGLRenderingContext.prototype.texImage2D = function(...args) {
     totalTextureUploadCalls++;
-    return texImage2D.apply(this, arguments);
+    return texImage2D.apply(this, args);
 };
 const texSubImage2D = WebGLRenderingContext.prototype.texSubImage2D;
-WebGLRenderingContext.prototype.texSubImage2D = function() {
+WebGLRenderingContext.prototype.texSubImage2D = function(...args) {
     totalTextureUploadCalls++;
-    return texSubImage2D.apply(this, arguments);
+    return texSubImage2D.apply(this, args);
 };
 
 </script>

@@ -229,8 +229,8 @@ class Tile {
      * Invoken when the tile is moved offscreen
      * @private
      */
-    onRemove(painter: Painter) {
-        if (this.hillshadeFbo) {
+    onRemove(painter: ?Painter) {
+        if (this.hillshadeFbo && painter) {
             painter.saveTileFbo(this.hillshadeFbo);
             this.hillshadeFbo = null;
         }

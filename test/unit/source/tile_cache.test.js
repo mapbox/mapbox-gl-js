@@ -136,3 +136,20 @@ test('TileCache#setMaxSize', (t) => {
     t.equal(numRemoved, 3);
     t.end();
 });
+
+test('TileCache#setMaxSizeDeffered', (t) => {
+    let numRemoved = 0;
+    const cache = new TileCache(10, () => {
+        numRemoved++;
+    });
+    cache.add(idA, tileA);
+    cache.add(idB, tileB);
+    cache.add(idC, tileC);
+    t.equal(numRemoved, 0);
+    cache.setMaxSizeDeffered(1);
+    // Dont shrink instantly
+    t.equal(numRemoved, 0);
+    cache.shrinkTick(1);
+    t.equal(numRemoved, 1);
+    t.end();
+});

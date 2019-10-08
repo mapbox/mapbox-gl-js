@@ -1,6 +1,7 @@
 // @flow
 
 import browser from '../util/browser';
+import {CircularBuffer} from '../util/circular_buffer';
 
 import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache';
@@ -92,7 +93,7 @@ class Painter {
     context: Context;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
-    _tileFboPool: { [number]: Array<Framebuffer> };
+    _tileFboPool: { [number]: CircularBuffer<Framebuffer> };
     _tileDemCache: TileCache;
     numSublayers: number;
     depthEpsilon: number;
@@ -515,21 +516,24 @@ class Painter {
     }
 
     saveTileFbo(fbo: Framebuffer) {
-        const fbos = this._tileFboPool[fbo.width];
-        if (!fbos) {
-            this._tileFboPool[fbo.width] = [fbo];
-        } else {
-            fbos.push(fbo);
+        // Lazily initialize a buffer
+        if (!this._tileFboPool[fbo.width]) {
+            const buf = new CircularBuffer(10, (evicted: Framebuffer) => evicted.destroy());
+            this._tileFboPool[fbo.width] = buf;
         }
+
+        const pool = this._tileFboPool[fbo.width];
+        pool.push(fbo);
     }
 
-    getTileFbo(size: number): Framebuffer | null {
+    getTileFbo(size: number): ?Framebuffer {
         const fbos = this._tileFboPool[size];
-        return fbos && fbos.length > 0 ? fbos.pop() : null;
+        return fbos ? fbos.pop() : null;
     }
 
     setDemTextureCacheSize(target: number) {
-        this._tileDemCache.growMaxSize(target);
+        this._tileDemCache.setMaxSizeDeffered(target);
+        this._tileDemCache.shrinkTick(2);
     }
 
     getOrCreateDemTextureForTile(tile: Tile, image: TextureImage, forceReupload: boolean): Texture {
