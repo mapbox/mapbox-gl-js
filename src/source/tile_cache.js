@@ -205,7 +205,7 @@ class TileCache {
     }
 
     /**
-     * Call at appropriate intervals based on the usage of `setMaxSizeDeffered()`.
+     * Call at appropriate intervals based on the usage of `setMaxSizeDeferred()`.
      *
      * @param {number} shrinkSize
      * @memberof TileCache

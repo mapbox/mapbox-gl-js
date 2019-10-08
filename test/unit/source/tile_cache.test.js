@@ -137,7 +137,7 @@ test('TileCache#setMaxSize', (t) => {
     t.end();
 });
 
-test('TileCache#setMaxSizeDeffered', (t) => {
+test('TileCache#setMaxSizeDeferred', (t) => {
     let numRemoved = 0;
     const cache = new TileCache(10, () => {
         numRemoved++;
@@ -146,7 +146,7 @@ test('TileCache#setMaxSizeDeffered', (t) => {
     cache.add(idB, tileB);
     cache.add(idC, tileC);
     t.equal(numRemoved, 0);
-    cache.setMaxSizeDeffered(1);
+    cache.setMaxSizeDeferred(1);
     // Dont shrink instantly
     t.equal(numRemoved, 0);
     cache.shrinkTick(1);
