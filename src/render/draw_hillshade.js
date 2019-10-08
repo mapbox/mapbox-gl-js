@@ -73,7 +73,9 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
     const context = painter.context;
     const gl = context.gl;
     const dem = tile.dem;
-    if (dem && dem.data) {
+    // We need to update the fbo for the hillshade texture if its not present or the border got backfilled
+    const needsFboUpdate = !tile.hillshadeFbo || !!tile.borderBackfillDirty;
+    if (dem && dem.data && needsFboUpdate) {
         const tileSize = dem.dim;
         const pixelData = dem.getPixels();
         context.activeTexture.set(gl.TEXTURE1);
