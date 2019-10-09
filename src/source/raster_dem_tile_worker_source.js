@@ -23,7 +23,7 @@ class RasterDEMTileWorkerSource {
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const {uid, encoding, rawImageData} = params;
         let imagePixels = rawImageData;
-        if (true) {
+        if (rawImageData instanceof ImageBitmap) {
             this.offcreenCanvas.width = rawImageData.width;
             this.offcreenCanvas.height = rawImageData.height;
             this.offcreenCanvasContext.drawImage(rawImageData, 0, 0, rawImageData.width, rawImageData.height);
