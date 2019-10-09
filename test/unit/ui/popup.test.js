@@ -506,13 +506,11 @@ test('Popup adds classes from className option, methods for class manipulations 
     t.ok(popupContainer.classList.contains('some'));
     t.ok(popupContainer.classList.contains('classes'));
 
-    popup.addClassName('addedClass', 'addedMoreClass');
+    popup.addClassName('addedClass');
     t.ok(popupContainer.classList.contains('addedClass'));
-    t.ok(popupContainer.classList.contains('addedMoreClass'));
 
-    popup.removeClassName('addedClass', 'addedMoreClass');
+    popup.removeClassName('addedClass');
     t.ok(!popupContainer.classList.contains('addedClass'));
-    t.ok(!popupContainer.classList.contains('addedMoreClass'));
 
     popup.toggleClassName('toggle');
     t.ok(popupContainer.classList.contains('toggle'));
