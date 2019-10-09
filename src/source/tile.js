@@ -331,8 +331,8 @@ class Tile {
         // don't redo buffer work if the mask is the same;
         if (deepEqual(this.mask, mask)) return;
 
-        this.mask = mask;
         this.clearMask();
+        this.mask = mask;
 
         // We want to render the full tile, and keeping the segments/vertices/indices empty means
         // using the global shared buffers for covering the entire tile.
