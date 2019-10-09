@@ -1,3 +1,9 @@
+## 1.4.1
+
+## 🐞 Bug Fixes
+* Fix the way that `coalesce` handles the `image` operator so available images are rendered properly ([#8839](https://github.com/mapbox/mapbox-gl-js/pull/8839))
+* Do not emit the `styleimagemissing` event for an empty string value ([#8840](https://github.com/mapbox/mapbox-gl-js/pull/8840))
+
 ## 1.4.0
 
 ## ✨ Features
@@ -6,7 +12,7 @@
 
 ## 🍏 Improvements
 * Faster loading and better look of raster terrain ([#8694](https://github.com/mapbox/mapbox-gl-js/pull/8694))
-* Improved code documentation aroud resizing and *RenderedWorldCopies and more ([#8748](https://github.com/mapbox/mapbox-gl-js/pull/8748), [#8754](https://github.com/mapbox/mapbox-gl-js/pull/8754))
+* Improved code documentation around resizing and {get/set}RenderedWorldCopies and more ([#8748](https://github.com/mapbox/mapbox-gl-js/pull/8748), [#8754](https://github.com/mapbox/mapbox-gl-js/pull/8754))
 * Improve single vs. multi-touch zoom & pan interaction (#7196) ([#8100](https://github.com/mapbox/mapbox-gl-js/pull/8100))
 
 ## 🐞 Bug fixes
@@ -24,6 +30,8 @@
 
 
 ## 1.3.1
+
+## 🐞 Bug Fixes
 
 - Fix a race condition that produced an error when a map was removed while reloading a source. [#8711](https://github.com/mapbox/mapbox-gl-js/pull/8711)
 - Fix a race condition were `render` event was sometimes not fired after `load` event in IE11. [#8708](https://github.com/mapbox/mapbox-gl-js/pull/8708)
