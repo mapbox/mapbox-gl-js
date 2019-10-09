@@ -318,6 +318,8 @@ class Tile {
             this.maskedIndexBuffer.destroy();
             delete this.maskedIndexBuffer;
         }
+
+        delete this.mask;
     }
 
     setMask(mask: Mask, context: Context) {
