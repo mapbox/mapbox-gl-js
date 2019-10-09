@@ -54,7 +54,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
-                const rawImageData = browser.getImageData(img, 1);
+                const transfer = window.ImageBitmap && img instanceof window.ImageBitmap && browser.supportsOffscreenCanvas();
+                const rawImageData = transfer ? img : browser.getImageData(img, 1);
                 const params = {
                     uid: tile.uid,
                     coord: tile.tileID,

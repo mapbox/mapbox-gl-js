@@ -28,6 +28,8 @@ const ResourceType = {
 };
 export {ResourceType};
 
+const supportsImageBitmap = typeof window.createImageBitmap == 'function';
+
 if (typeof Object.freeze == 'function') {
     Object.freeze(ResourceType);
 }
@@ -258,6 +260,30 @@ function sameOrigin(url) {
 
 const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
 
+function arrayBufferToImage(data: ArrayBuffer, callback: (err: ?Error, image: ?HTMLImageElement) => void, cacheControl: ?string, expires: ?string) {
+    const img: HTMLImageElement = new window.Image();
+    const URL = window.URL || window.webkitURL;
+    img.onload = () => {
+        callback(null, img);
+        URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
+    const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
+    (img: any).cacheControl = cacheControl;
+    (img: any).expires = expires;
+    img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+}
+
+function arrayBufferToImageBitmap(data: ArrayBuffer, callback: (err: ?Error, image: ?ImageBitmap) => void, cacheControl: ?string, expires: ?string) {
+    const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
+    window.createImageBitmap(blob).then((imgBitmap) => {
+        callback(null, imgBitmap);
+    }).catch((e) => {
+        console.log(e);
+        callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
+    });
+}
+
 let imageQueue, numImageRequests;
 export const resetImageRequestQueue = () => {
     imageQueue = [];
@@ -265,7 +291,7 @@ export const resetImageRequestQueue = () => {
 };
 resetImageRequestQueue();
 
-export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
+export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement | ImageBitmap>): Cancelable {
     // limit concurrent image loads to help with raster sources performance on big screens
     if (numImageRequests >= config.MAX_PARALLEL_IMAGE_REQUESTS) {
         const queued = {
@@ -303,17 +329,11 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         if (err) {
             callback(err);
         } else if (data) {
-            const img: HTMLImageElement = new window.Image();
-            const URL = window.URL || window.webkitURL;
-            img.onload = () => {
-                callback(null, img);
-                URL.revokeObjectURL(img.src);
-            };
-            img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
-            const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
-            (img: any).cacheControl = cacheControl;
-            (img: any).expires = expires;
-            img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+            if (supportsImageBitmap) {
+                arrayBufferToImageBitmap(data, callback, cacheControl, expires);
+            } else {
+                arrayBufferToImage(data, callback, cacheControl, expires);
+            }
         }
     });
 

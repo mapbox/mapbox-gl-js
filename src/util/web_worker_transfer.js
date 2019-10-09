@@ -128,7 +128,7 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
         return input;
     }
 
-    if (input instanceof ArrayBuffer) {
+    if (input instanceof ArrayBuffer || window.ImageBitmap && input instanceof window.ImageBitmap) {
         if (transferables) {
             transferables.push(input);
         }
@@ -219,6 +219,7 @@ export function deserialize(input: Serialized): mixed {
         input instanceof Date ||
         input instanceof RegExp ||
         input instanceof ArrayBuffer ||
+        input instanceof ImageBitmap ||
         ArrayBuffer.isView(input) ||
         input instanceof ImageData) {
         return input;

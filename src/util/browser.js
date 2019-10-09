@@ -56,6 +56,10 @@ const exported = {
 
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
 
+    supportsOffscreenCanvas(): boolean {
+        return !!window.OffscreenCanvas;
+    },
+
     get devicePixelRatio() { return window.devicePixelRatio; },
     get prefersReducedMotion(): boolean {
         if (!window.matchMedia) return false;
