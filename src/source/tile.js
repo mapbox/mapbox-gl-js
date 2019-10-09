@@ -236,12 +236,6 @@ class Tile {
         }
     }
 
-    unloadDEMData() {
-        this.dem = null;
-        this.neighboringTiles = null;
-        this.state = 'unloaded';
-    }
-
     getBucket(layer: StyleLayer) {
         return this.buckets[layer.id];
     }
