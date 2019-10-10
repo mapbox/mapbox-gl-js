@@ -19,6 +19,7 @@ import type Formatted from '../../style-spec/expression/types/formatted';
 
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
 
+
 export type PaintProps = {|
     "fill-extrusion-opacity": DataConstantProperty<number>,
     "fill-extrusion-color": DataDrivenProperty<Color>,
