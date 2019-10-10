@@ -1768,6 +1768,33 @@ test('Style#setLayerZoomRange', (t) => {
         });
     });
 
+    t.test('does not reload raster source', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "raster": {
+                    type: "raster",
+                    tiles: ['http://tiles.server']
+                }
+            },
+            "layers": [{
+                "id": "raster",
+                "type": "raster",
+                "source": "raster"
+            }]
+        });
+
+        style.on('style.load', () => {
+            t.spy(style, '_reloadSource');
+
+            style.setLayerZoomRange('raster', 5, 12);
+            style.update(0);
+            t.notOk(style._reloadSource.called, '_reloadSource should not be called for raster source');
+            t.end();
+        });
+    });
+
     t.end();
 });
 
