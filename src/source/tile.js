@@ -226,7 +226,7 @@ class Tile {
     }
 
     /**
-     * Invoken when the tile is moved offscreen
+     * Invoked when the tile is moved offscreen
      * @private
      */
     onRemove(painter: ?Painter) {

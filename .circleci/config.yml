@@ -192,14 +192,14 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: npm run test-unit
+      - run: yarn run test-unit
 
   test-render:
     <<: *defaults
     steps:
       - attach_workspace:
           at: .
-      - run: npm run test-render
+      - run: yarn run test-render
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
@@ -208,7 +208,9 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: npm run test-query
+      - run: yarn run test-query
+      - store_test_results:
+          path: test/integration/query-tests
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
 
