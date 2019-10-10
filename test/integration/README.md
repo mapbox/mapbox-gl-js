@@ -6,7 +6,7 @@ These integration tests verify the correctness and consistency of [mapbox-gl-js]
 Tests are contained in a directory tree, generally organized by [style specification](https://github.com/mapbox/mapbox-gl-style-spec)
 property: `background-color`, `line-width`, etc., with a second level of directories below that for individual tests. For example, the test for specifying a literal `circle-radius` value lives in [`test/integration/render-tests/circle-radius/literal/`](https://github.com/mapbox/mapbox-gl-js/tree/master/test/integration/render-tests/circle-radius/literal).
 
-Within a leaf directory is a `style.json` file (e.g. [`circle-radius/literal/style.json`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/integration/render-tests/circle-radius/literal/style.json)), which contains the minimal style needed for the given test case. The style can specify the map size, center, bearing, and pitch, and additional test metadata (e.g. output image dimensions). 
+Within a leaf directory is a `style.json` file (e.g. [`circle-radius/literal/style.json`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/integration/render-tests/circle-radius/literal/style.json)), which contains the minimal style needed for the given test case. The style can specify the map size, center, bearing, and pitch, and additional test metadata (e.g. output image dimensions).
 
 The expected output for a given test case is in `expected.png`, e.g. [`circle-radius/literal/expected.png`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/integration/render-tests/circle-radius/literal/expected.png).
 
@@ -22,14 +22,14 @@ To run the entire integration test suite (both render or query tests), from with
 yarn run test-suite
 ```
 
-To run only the render/query tests: 
+To run only the render/query tests:
 
 ```
 yarn run test-render
 ```
-or 
+or
 ```
-yarn run test-query
+yarn run test-query-node
 ```
 
 ### Running specific tests
@@ -72,6 +72,44 @@ or
 open ./test/integration/query-tests/index.html
 ```
 
+## Running tests in the browser
+
+Query tests can be run in the browser, the server for serving up the test page and test fixtures starts when you run
+```
+yarn run start
+```
+OR
+```
+yarn run start-debug
+```
+
+If you want to run only the test server run:
+```
+yarn run watch-query
+```
+
+Then open the following url in the browser of your choice to start running the tests.
+```
+http://localhost:7357/
+```
+
+### Running specific tests
+
+A filter can be specified by using the `filter` query param in the url. E.g, adding
+```
+?filter=circle-pitch
+```
+to the end of the url will only run the tests that contain `circle-pitch` in the name.
+
+### Build Notifications
+
+The terminal window can be very noisy with both the build and the test servers running in the same session.
+So the server uses platform notifications to inform when the build has finished. If this behaviour is annoying, it can be disabled by setting the following env-var
+```
+DISABLE_BUILD_NOTIFICATIONS=true
+```
+
+
 ## Writing new tests
 
 _Note: Expected results are always generated with the **js** implementation. This is merely for consistency and does not
@@ -88,7 +126,7 @@ To add a new render test:
    ```
    The test will appear to fail, but you'll now see a new `expected.png` in the test directory.
 
-4. Manually inspect `expected.png` to verify it looks as expected, and optionally run the test again without the update flag (`yarn run test-render <property-name>/<new-test-name>`) to watch it pass (enjoy that dopamine kick!) 
+4. Manually inspect `expected.png` to verify it looks as expected, and optionally run the test again without the update flag (`yarn run test-render <property-name>/<new-test-name>`) to watch it pass (enjoy that dopamine kick!)
 
 5. Commit the new `style.json` and `expected.png` :rocket:
 

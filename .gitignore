@@ -17,6 +17,9 @@ test/integration/**/index*.html
 test/integration/**/actual.png
 test/integration/**/actual.json
 test/integration/**/diff.png
+test/integration/**/test-results.xml
+test/integration/dist/**/*.js
+test/integration/dist/**/*.json
 .eslintcache
 src/style-spec/dist/index.js
 _batfish_site
