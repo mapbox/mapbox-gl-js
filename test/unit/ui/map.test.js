@@ -893,6 +893,20 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('throw on maxPitch greater than valid maxPitch at init', (t) => {
+        t.throws(() => {
+            createMap(t, {maxPitch: 90});
+        }, new Error(`maxPitch must be less than or equal to 60`));
+        t.end();
+    });
+
+    t.test('throw on minPitch less than valid minPitch at init', (t) => {
+        t.throws(() => {
+            createMap(t, {minPitch: -10});
+        }, new Error(`minPitch must be greater than or equal to 0`));
+        t.end();
+    });
+
     t.test('#remove', (t) => {
         const map = createMap(t);
         t.equal(map.getContainer().childNodes.length, 3);

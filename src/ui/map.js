@@ -102,6 +102,7 @@ type MapOptions = {
 const defaultMinZoom = 0;
 const defaultMaxZoom = 22;
 
+// the default values, but also the valid range
 const defaultMinPitch = 0;
 const defaultMaxPitch = 60;
 
@@ -342,6 +343,14 @@ class Map extends Camera {
 
         if (options.minPitch != null && options.maxPitch != null && options.minPitch > options.maxPitch) {
             throw new Error(`maxPitch must be greater than or equal to minPitch`);
+        }
+
+        if (options.minPitch != null && options.minPitch < defaultMinPitch) {
+            throw new Error(`minPitch must be greater than or equal to ${defaultMinPitch}`);
+        }
+
+        if (options.maxPitch != null && options.maxPitch > defaultMaxPitch) {
+            throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
         }
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
@@ -675,6 +684,10 @@ class Map extends Camera {
 
         minPitch = minPitch === null || minPitch === undefined ? defaultMinPitch : minPitch;
 
+        if (minPitch < defaultMinPitch) {
+            throw new Error(`minPitch must be greater than or equal to ${defaultMinPitch}`);
+        }
+
         if (minPitch >= defaultMinPitch && minPitch <= this.transform.maxPitch) {
             this.transform.minPitch = minPitch;
             this._update();
@@ -705,6 +718,10 @@ class Map extends Camera {
     setMaxPitch(maxPitch?: ?number) {
 
         maxPitch = maxPitch === null || maxPitch === undefined ? defaultMaxPitch : maxPitch;
+
+        if (maxPitch > defaultMaxPitch) {
+            throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
+        }
 
         if (maxPitch >= this.transform.minPitch) {
             this.transform.maxPitch = maxPitch;
