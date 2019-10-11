@@ -811,10 +811,85 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('throw on maxZoom smaller than minZoom at init with falsey maxZoom', (t) => {
+    t.test('#setMinPitch', (t) => {
+        const map = createMap(t, {pitch: 20});
+        map.setMinZoom(10);
+        map.setPitch(0);
+        t.equal(map.getPitch(), 10);
+        t.end();
+    });
+
+    t.test('unset minPitch', (t) => {
+        const map = createMap(t, {minPitch: 20});
+        map.setMinPitch(null);
+        map.setPitch(0);
+        t.equal(map.getPitch(), 0);
+        t.end();
+    });
+
+    t.test('#getMinPitch', (t) => {
+        const map = createMap(t, {pitch: 0});
+        t.equal(map.getMinPitch(), 0, 'returns default value');
+        map.setMinPitch(10);
+        t.equal(map.getMinPitch(), 10, 'returns custom value');
+        t.end();
+    });
+
+    t.test('ignore minPitchs over maxPitch', (t) => {
+        const map = createMap(t, {pitch: 0, maxPitch: 10});
         t.throws(() => {
-            createMap(t, {minZoom:1, maxZoom:0});
-        }, new Error(`maxZoom must be greater than or equal to minZoom`));
+            map.setMinPitch(20);
+        });
+        map.setPitch(0);
+        t.equal(map.getPitch(), 0);
+        t.end();
+    });
+
+    t.test('#setMaxPitch', (t) => {
+        const map = createMap(t, {pitch: 0});
+        map.setMaxPitch(10);
+        map.setPitch(20);
+        t.equal(map.getPitch(), 10);
+        t.end();
+    });
+
+    t.test('unset maxPitch', (t) => {
+        const map = createMap(t, {maxPitch:10});
+        map.setMaxPitch(null);
+        map.setPitch(20);
+        t.equal(map.getPitch(), 20);
+        t.end();
+    });
+
+    t.test('#getMaxPitch', (t) => {
+        const map = createMap(t, {pitch: 0});
+        t.equal(map.getMaxPitch(), 60, 'returns default value');
+        map.setMaxPitch(10);
+        t.equal(map.getMaxPitch(), 10, 'returns custom value');
+        t.end();
+    });
+
+    t.test('ignore maxPitchs over minPitch', (t) => {
+        const map = createMap(t, {minPitch:10});
+        t.throws(() => {
+            map.setMaxPitch(0);
+        });
+        map.setPitch(10);
+        t.equal(map.getPitch(), 10);
+        t.end();
+    });
+
+    t.test('throw on maxPitch smaller than minPitch at init', (t) => {
+        t.throws(() => {
+            createMap(t, {minPitch: 10, maxPitch: 5});
+        }, new Error(`maxPitch must be greater than or equal to minPitch`));
+        t.end();
+    });
+
+    t.test('throw on maxPitch smaller than minPitch at init with falsey maxPitch', (t) => {
+        t.throws(() => {
+            createMap(t, {minPitch: 1, maxPitch: 0});
+        }, new Error(`maxPitch must be greater than or equal to minPitch`));
         t.end();
     });
 
