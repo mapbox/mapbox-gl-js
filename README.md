@@ -1,5 +1,27 @@
 > This repository is a fork of `mapbox/mapbox-gl-js`, adding support for CGCS2000.
 
+接天地图瓦片：
+
+```js
+tianditu: {
+  type: 'raster',
+  tiles: ['http://t0.tianditu.gov.cn/DataServer?T=vec_c&x={x}&y={y}&l={z}'],
+  tileSize: 256
+}
+```
+
+接ArcGIS发布的EPSG:4326瓦片：
+
+```
+arcgis: {
+  type: 'raster',
+  tiles: ['https://wi.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+  tileSize: 256,
+  zoomOffset: -1
+}
+```
+
+
 [<img width="400" alt="Mapbox" src="https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/assets/logo.png">](https://www.mapbox.com/)
 
 **Mapbox GL JS** is a JavaScript library for interactive, customizable vector maps on the web. It takes map styles that conform to the
