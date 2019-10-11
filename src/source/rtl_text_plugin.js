@@ -3,7 +3,7 @@
 import {Event, Evented} from '../util/evented';
 import browser from '../util/browser';
 
-let status = {
+const status = {
     unavailable: 'unavailable',
     loading: 'loading',
     loaded: 'loaded',
@@ -23,7 +23,7 @@ let _completionCallback;
 
 export const getRTLTextPluginStatus = function () {
     return pluginStatus;
-}
+};
 
 export const registerForPluginAvailability = function(
     callback: (args: {pluginURL: string, completionCallback: CompletionCallback}) => void
