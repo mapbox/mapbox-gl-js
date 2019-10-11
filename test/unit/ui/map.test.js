@@ -811,6 +811,13 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('throw on maxZoom smaller than minZoom at init with falsey maxZoom', (t) => {
+        t.throws(() => {
+            createMap(t, {minZoom:1, maxZoom:0});
+        }, new Error(`maxZoom must be greater than or equal to minZoom`));
+        t.end();
+    });
+
     t.test('#setMinPitch', (t) => {
         const map = createMap(t, {pitch: 20});
         map.setMinPitch(10);
