@@ -674,7 +674,7 @@ class Map extends Camera {
     /**
      * Sets or clears the map's minimum pitch.
      * If the map's current pitch is lower than the new minimum,
-     * the map will ease to the new minimum.
+     * the map will pitch to the new minimum.
      *
      * @param {number | null | undefined} minPitch The minimum pitch to set (0-60).
      *   If `null` or `undefined` is provided, the function removes the current minimum pitch (i.e. sets it to 0).
@@ -709,7 +709,7 @@ class Map extends Camera {
     /**
      * Sets or clears the map's maximum pitch.
      * If the map's current pitch is higher than the new maximum,
-     * the map will zoom to the new maximum.
+     * the map will pitch to the new maximum.
      *
      * @param {number | null | undefined} maxPitch The maximum pitch to set.
      *   If `null` or `undefined` is provided, the function removes the current maximum pitch (sets it to 60).
