@@ -21,10 +21,9 @@ type ErrorCallback = (error: Error) => void;
 
 let _completionCallback;
 
-const updatePluginStatus = (status) => {
-    console.log('status', status);
-    evented.fire(new Event('pluginStatusUpdated', {status}));
-};
+export const getRTLTextPluginStatus = function () {
+    return pluginStatus;
+}
 
 export const registerForPluginAvailability = function(
     callback: (args: {pluginURL: string, completionCallback: CompletionCallback}) => void
@@ -38,7 +37,7 @@ export const registerForPluginAvailability = function(
 };
 
 export const clearRTLTextPlugin = function() {
-    updatePluginStatus(status.unavailable);
+    pluginStatus = status.unavailable;
     pluginRequested = false;
     pluginURL = null;
 };
@@ -47,7 +46,7 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
     if (pluginRequested) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }
-    updatePluginStatus(status.loading);
+    pluginStatus = status.loading;
     pluginRequested = true;
 
     pluginURL = browser.resolveURL(url);
@@ -55,7 +54,7 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
         if (error) {
             // Clear loaded state to allow retries
             clearRTLTextPlugin();
-            updatePluginStatus(status.error);
+            pluginStatus = status.error;
             if (callback) {
                 callback(error);
             }
@@ -64,7 +63,7 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
             foregroundLoadComplete = true;
         }
     };
-    updatePluginStatus(status.loaded);
+    pluginStatus = status.loaded;
     evented.fire(new Event('pluginAvailable', {pluginURL, completionCallback: _completionCallback}));
 };
 

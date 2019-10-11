@@ -17,7 +17,6 @@
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
 <script>
-
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 16.5,
@@ -26,16 +25,11 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-map.on('pluginStatusUpdated', function (status) {
-    console.log('status updated!', status);
-});
-
-map.on('pluginAvailable', function (data) {
-    console.log('pluginAvailable', data);
-});
-
-mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
-
+setTimeout(function() {
+    if (['loading', 'loaded'].indexOf(mapboxgl.getRTLTextPluginStatus()) === -1) {
+        mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
+    }
+}, 2000);
 </script>
 </body>
 </html>
