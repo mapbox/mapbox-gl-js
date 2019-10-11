@@ -813,7 +813,7 @@ test('Map', (t) => {
 
     t.test('#setMinPitch', (t) => {
         const map = createMap(t, {pitch: 20});
-        map.setMinZoom(10);
+        map.setMinPitch(10);
         map.setPitch(0);
         t.equal(map.getPitch(), 10);
         t.end();
