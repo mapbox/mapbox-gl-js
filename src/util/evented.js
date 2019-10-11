@@ -60,6 +60,9 @@ export class Evented {
      * @returns {Object} `this`
      */
     on(type: *, listener: Listener): this {
+        if (type === 'pluginStatusUpdated') {
+            console.log('on', type, listener);
+        }
         this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
@@ -105,6 +108,10 @@ export class Evented {
         }
 
         const type = event.type;
+
+        if (type === 'pluginStatusUpdated') {
+            console.log('fire', type, event);
+        }
 
         if (this.listens(type)) {
             (event: any).target = this;

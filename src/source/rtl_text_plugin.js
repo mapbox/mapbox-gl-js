@@ -3,6 +3,13 @@
 import {Event, Evented} from '../util/evented';
 import browser from '../util/browser';
 
+let status = {
+    unavailable: 'unavailable',
+    loading: 'loading',
+    loaded: 'loaded',
+    error: 'error'
+};
+let pluginStatus = status.unavailable;
 let pluginRequested = false;
 let pluginURL = null;
 let foregroundLoadComplete = false;
@@ -13,6 +20,11 @@ type CompletionCallback = (error?: Error) => void;
 type ErrorCallback = (error: Error) => void;
 
 let _completionCallback;
+
+const updatePluginStatus = (status) => {
+    console.log('status', status);
+    evented.fire(new Event('pluginStatusUpdated', {status}));
+};
 
 export const registerForPluginAvailability = function(
     callback: (args: {pluginURL: string, completionCallback: CompletionCallback}) => void
@@ -26,6 +38,7 @@ export const registerForPluginAvailability = function(
 };
 
 export const clearRTLTextPlugin = function() {
+    updatePluginStatus(status.unavailable);
     pluginRequested = false;
     pluginURL = null;
 };
@@ -34,12 +47,15 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
     if (pluginRequested) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }
+    updatePluginStatus(status.loading);
     pluginRequested = true;
+
     pluginURL = browser.resolveURL(url);
     _completionCallback = (error?: Error) => {
         if (error) {
             // Clear loaded state to allow retries
             clearRTLTextPlugin();
+            updatePluginStatus(status.error);
             if (callback) {
                 callback(error);
             }
@@ -48,6 +64,7 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
             foregroundLoadComplete = true;
         }
     };
+    updatePluginStatus(status.loaded);
     evented.fire(new Event('pluginAvailable', {pluginURL, completionCallback: _completionCallback}));
 };
 
