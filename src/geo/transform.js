@@ -61,8 +61,8 @@ class Transform {
         this._minZoom = minZoom || 0;
         this._maxZoom = maxZoom || 22;
 
-        this._minPitch = typeof minPitch === "undefined" ? 0 : minPitch;
-        this._maxPitch = typeof maxPitch === "undefined" ? 60 : maxPitch;
+        this._minPitch = minPitch === undefined ? 0 : minPitch;
+        this._maxPitch = maxPitch === undefined ? 60 : maxPitch;
 
         this.setMaxBounds();
 
