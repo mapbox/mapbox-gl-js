@@ -28,7 +28,7 @@ test('transform', (t) => {
         t.deepEqual(transform.center, {lng: 0, lat: 0});
         t.equal(transform.maxZoom, 10);
         t.equal(transform.minPitch = 10, 10);
-        t.equal(transform.minPitch = 10, 10);
+        t.equal(transform.maxPitch = 10, 10);
         t.equal(transform.size.equals(new Point(500, 500)), true);
         t.equal(transform.centerPoint.equals(new Point(250, 250)), true);
         t.equal(transform.scaleZoom(0), -Infinity);
