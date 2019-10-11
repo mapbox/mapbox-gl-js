@@ -48,7 +48,6 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
     }
     pluginStatus = status.loading;
     pluginRequested = true;
-
     pluginURL = browser.resolveURL(url);
     _completionCallback = (error?: Error) => {
         if (error) {
