@@ -123,7 +123,6 @@
     "start-debug": "run-p build-token watch-css watch-query start-server",
     "start-bench": "run-p build-token watch-benchmarks start-server",
     "start-release": "run-s build-token build-prod-min build-css print-release-url start-server",
-    "start-docs": "run-s build-prod-min build-css build-docs && NODE_OPTIONS=\"--max_old_space_size=2048\" DEPLOY_ENV=local batfish start",
     "lint": "eslint --cache --ignore-path .gitignore src test bench debug/*.html",
     "lint-docs": "documentation lint src/index.js",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
