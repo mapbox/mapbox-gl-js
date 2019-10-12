@@ -303,6 +303,7 @@ class SymbolBucket implements Bucket {
     writingModes: Array<number>;
     allowVerticalPlacement: boolean;
     hasPaintOverrides: boolean;
+    hasRTLText: boolean;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -315,6 +316,7 @@ class SymbolBucket implements Bucket {
         this.sourceLayerIndex = options.sourceLayerIndex;
         this.hasPattern = false;
         this.hasPaintOverrides = false;
+        this.hasRTLText = false;
 
         const layer = this.layers[0];
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
@@ -407,10 +409,11 @@ class SymbolBucket implements Bucket {
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
                 const resolvedTokens = layer.getValueAndResolveTokens('text-field', feature, availableImages);
-                text = transformText(resolvedTokens instanceof Formatted ?
-                    resolvedTokens :
-                    Formatted.fromString(resolvedTokens),
-                    layer, feature);
+                const formattedText = Formatted.factory(resolvedTokens);
+                if (formattedText.containsRTLText()) {
+                    this.hasRTLText = true;
+                }
+                text = transformText(formattedText, layer, feature);
             }
 
             let icon: ResolvedImage | void;

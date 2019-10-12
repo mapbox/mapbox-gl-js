@@ -55,7 +55,8 @@ export const plugin: {
     applyArabicShaping: ?Function,
     processBidirectionalText: ?(string, Array<number>) => Array<string>,
     processStyledBidirectionalText: ?(string, Array<number>, Array<number>) => Array<[string, Array<number>]>,
-    isLoaded: () => boolean
+    isLoaded: () => boolean,
+    isLoading: () => boolean
 } = {
     applyArabicShaping: null,
     processBidirectionalText: null,
@@ -63,5 +64,9 @@ export const plugin: {
     isLoaded() {
         return foregroundLoadComplete ||       // Foreground: loaded if the completion callback returned successfully
             plugin.applyArabicShaping != null; // Background: loaded if the plugin functions have been compiled
+    },
+    isLoading() {
+        return pluginRequested &&
+        plugin.applyArabicShaping == null;
     }
 };
