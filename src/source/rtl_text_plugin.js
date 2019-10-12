@@ -30,7 +30,7 @@ export const clearRTLTextPlugin = function() {
     pluginURL = null;
 };
 
-export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
+export const setRTLTextPlugin = function(url: string, callback: ?ErrorCallback) {
     if (pluginRequested) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }

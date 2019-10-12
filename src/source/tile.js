@@ -96,7 +96,7 @@ class Tile {
 
     symbolFadeHoldUntil: ?number;
     hasSymbolBuckets: boolean;
-    hasRTLText: Boolean;
+    hasRTLText: boolean;
 
     /**
      * @param {OverscaledTileID} tileID
