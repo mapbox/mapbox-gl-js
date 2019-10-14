@@ -10,7 +10,6 @@ const status = {
     error: 'error'
 };
 let pluginStatus = status.unavailable;
-let pluginRequested = false;
 let pluginURL = null;
 let foregroundLoadComplete = false;
 
@@ -38,16 +37,14 @@ export const registerForPluginAvailability = function(
 
 export const clearRTLTextPlugin = function() {
     pluginStatus = status.unavailable;
-    pluginRequested = false;
     pluginURL = null;
 };
 
 export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
-    if (pluginRequested) {
+    if (pluginStatus === status.loading || pluginStatus === status.loaded) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }
     pluginStatus = status.loading;
-    pluginRequested = true;
     pluginURL = browser.resolveURL(url);
     _completionCallback = (error?: Error) => {
         if (error) {
