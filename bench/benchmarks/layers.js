@@ -220,3 +220,22 @@ export class LayerSymbol extends LayerBenchmark {
         });
     }
 }
+
+export class LayerSymbolWithIcons extends LayerBenchmark {
+    constructor() {
+        super();
+
+        this.layerStyle = Object.assign({}, style, {
+            layers: generateLayers({
+                'id': 'symbollayer',
+                'type': 'symbol',
+                'source': 'composite',
+                'source-layer': 'poi_label',
+                'layout': {
+                    'icon-image': 'dot-11',
+                    'text-field': ['format', ['get', 'name_en'], ['image', 'dot-11']]
+                }
+            })
+        });
+    }
+}

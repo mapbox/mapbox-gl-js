@@ -1,49 +1,124 @@
 {
-  "positionedGlyphs": [
+  "positionedLines": [
     {
-      "glyph": 97,
-      "x": -38.5,
-      "y": -17,
-      "vertical": false,
-      "scale": 1,
-      "fontStack": "Test",
-      "sectionIndex": 0
-    },
-    {
-      "glyph": 98,
-      "x": -22.5,
-      "y": -17,
-      "vertical": false,
-      "scale": 1,
-      "fontStack": "Test",
-      "sectionIndex": 0
-    },
-    {
-      "glyph": 99,
-      "x": -5.5,
-      "y": -17,
-      "vertical": false,
-      "scale": 1,
-      "fontStack": "Test",
-      "sectionIndex": 0
-    },
-    {
-      "glyph": 100,
-      "x": 8.5,
-      "y": -17,
-      "vertical": false,
-      "scale": 1,
-      "fontStack": "Test",
-      "sectionIndex": 0
-    },
-    {
-      "glyph": 101,
-      "x": 25.5,
-      "y": -17,
-      "vertical": false,
-      "scale": 1,
-      "fontStack": "Test",
-      "sectionIndex": 0
+      "positionedGlyphs": [
+        {
+          "glyph": 97,
+          "imageName": null,
+          "x": -38.5,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 11,
+            "height": 15,
+            "left": 1,
+            "top": -12,
+            "advance": 13
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 98,
+          "imageName": null,
+          "x": -22.5,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 12,
+            "height": 20,
+            "left": 2,
+            "top": -7,
+            "advance": 14
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 99,
+          "imageName": null,
+          "x": -5.5,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 10,
+            "height": 15,
+            "left": 1,
+            "top": -12,
+            "advance": 11
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 100,
+          "imageName": null,
+          "x": 8.5,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 12,
+            "height": 20,
+            "left": 1,
+            "top": -7,
+            "advance": 14
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 101,
+          "imageName": null,
+          "x": 25.5,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 12,
+            "height": 15,
+            "left": 1,
+            "top": -12,
+            "advance": 13
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        }
+      ],
+      "lineOffset": 0
     }
   ],
   "text": "abcde",
@@ -52,6 +127,6 @@
   "left": -38.5,
   "right": 38.5,
   "writingMode": 1,
-  "yOffset": -17,
-  "lineCount": 1
+  "iconsInText": false,
+  "verticalizable": false
 }

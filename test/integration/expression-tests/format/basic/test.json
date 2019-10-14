@@ -40,24 +40,28 @@
         "sections": [
           {
             "text": "a",
+            "image": null,
             "scale": null,
             "fontStack": null,
             "textColor": null
           },
           {
             "text": "b",
+            "image": null,
             "scale": 2,
             "fontStack": null,
             "textColor": null
           },
           {
             "text": "c",
+            "image": null,
             "scale": null,
             "fontStack": "a,b",
             "textColor": null
           },
           {
             "text": "d",
+            "image": null,
             "scale": null,
             "fontStack": null,
             "textColor": {"r":0,"g":1,"b":0,"a":1}
