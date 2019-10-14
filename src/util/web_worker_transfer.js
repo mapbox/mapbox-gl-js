@@ -100,6 +100,11 @@ for (const name in expressions) {
     register(`Expression_${name}`, expressions[name]);
 }
 
+function isArrayBuffer(val: any): boolean {
+    return val && typeof ArrayBuffer !== 'undefined' &&
+           (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
+}
+
 /**
  * Serialize the given object for transfer to or from a web worker.
  *
@@ -128,9 +133,9 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
         return input;
     }
 
-    if (input instanceof ArrayBuffer) {
+    if (isArrayBuffer(input)) {
         if (transferables) {
-            transferables.push(input);
+            transferables.push(((input: any): ArrayBuffer));
         }
         return input;
     }
@@ -218,7 +223,7 @@ export function deserialize(input: Serialized): mixed {
         input instanceof String ||
         input instanceof Date ||
         input instanceof RegExp ||
-        input instanceof ArrayBuffer ||
+        isArrayBuffer(input) ||
         ArrayBuffer.isView(input) ||
         input instanceof ImageData) {
         return input;
