@@ -56,10 +56,9 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
             }
         } else {
             // Called once for each worker
-            foregroundLoadComplete = true;
+            pluginStatus = status.loaded;
         }
     };
-    pluginStatus = status.loaded;
     evented.fire(new Event('pluginAvailable', {pluginURL, completionCallback: _completionCallback}));
 };
 
@@ -73,7 +72,7 @@ export const plugin: {
     processBidirectionalText: null,
     processStyledBidirectionalText: null,
     isLoaded() {
-        return foregroundLoadComplete ||       // Foreground: loaded if the completion callback returned successfully
+        return pluginStatus.loaded ||       // Foreground: loaded if the completion callback returned successfully
             plugin.applyArabicShaping != null; // Background: loaded if the plugin functions have been compiled
     }
 };
