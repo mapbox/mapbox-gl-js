@@ -20,7 +20,8 @@ import {evaluateVariableOffset} from '../symbol/symbol_layout';
 
 import {
     symbolIconUniformValues,
-    symbolSDFUniformValues
+    symbolSDFUniformValues,
+    symbolTextAndIconUniformValues
 } from './program/symbol_program';
 
 import type Painter from './painter';
@@ -43,7 +44,9 @@ type SymbolTileRenderState = {
         buffers: SymbolBuffers,
         uniformValues: any,
         atlasTexture: Texture,
+        atlasTextureIcon: Texture | null,
         atlasInterpolation: any,
+        atlasInterpolationIcon: any,
         isSDF: boolean,
         hasHalo: boolean
     }
@@ -208,6 +211,16 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
     bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicTextLayoutVertexArray);
 }
 
+function getSymbolProgramName(isSDF: boolean, isText: boolean, bucket: SymbolBucket) {
+    if (bucket.iconsInText && isText) {
+        return 'symbolTextAndIcon';
+    } else if (isSDF) {
+        return 'symbolSDF';
+    } else {
+        return 'symbolIcon';
+    }
+}
+
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
                           rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode) {
 
@@ -244,28 +257,33 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const isSDF = isText || bucket.sdfIcons;
 
         const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
+        const transformed = pitchWithMap || tr.pitch !== 0;
 
         if (!program) {
-            program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
+            program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration);
             size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
         }
 
-        context.activeTexture.set(gl.TEXTURE0);
-
         let texSize: [number, number];
+        let texSizeIcon: [number, number] = [0, 0];
         let atlasTexture;
         let atlasInterpolation;
+        let atlasTextureIcon = null;
+        let atlasInterpolationIcon;
         if (isText) {
             atlasTexture = tile.glyphAtlasTexture;
             atlasInterpolation = gl.LINEAR;
             texSize = tile.glyphAtlasTexture.size;
-
+            if (bucket.iconsInText) {
+                texSizeIcon = tile.imageAtlasTexture.size;
+                atlasTextureIcon = tile.imageAtlasTexture;
+                const zoomDependentSize = sizeData.kind === 'composite' || sizeData.kind === 'camera';
+                atlasInterpolationIcon = transformed || painter.options.rotating || painter.options.zooming || zoomDependentSize ? gl.LINEAR : gl.NEAREST;
+            }
         } else {
             const iconScaled = layer.layout.get('icon-size').constantOr(0) !== 1 || bucket.iconsNeedLinear;
-            const iconTransformed = pitchWithMap || tr.pitch !== 0;
-
             atlasTexture = tile.imageAtlasTexture;
-            atlasInterpolation = isSDF || painter.options.rotating || painter.options.zooming || iconScaled || iconTransformed ?
+            atlasInterpolation = isSDF || painter.options.rotating || painter.options.zooming || iconScaled || transformed ?
                 gl.LINEAR :
                 gl.NEAREST;
             texSize = tile.imageAtlasTexture.size;
@@ -292,10 +310,15 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         let uniformValues;
         if (isSDF) {
-            uniformValues = symbolSDFUniformValues(sizeData.kind,
+            if (!bucket.iconsInText) {
+                uniformValues = symbolSDFUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
                 uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true);
-
+            } else {
+                uniformValues = symbolTextAndIconUniformValues(sizeData.kind,
+                size, rotateInShader, pitchWithMap, painter, matrix,
+                uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon);
+            }
         } else {
             uniformValues = symbolIconUniformValues(sizeData.kind,
                 size, rotateInShader, pitchWithMap, painter, matrix,
@@ -307,7 +330,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             buffers,
             uniformValues,
             atlasTexture,
+            atlasTextureIcon,
             atlasInterpolation,
+            atlasInterpolationIcon,
             isSDF,
             hasHalo
         };
@@ -337,7 +362,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
 
+        context.activeTexture.set(gl.TEXTURE0);
         state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
+        if (state.atlasTextureIcon) {
+            context.activeTexture.set(gl.TEXTURE1);
+            if (state.atlasTextureIcon) {
+                state.atlasTextureIcon.bind(state.atlasInterpolationIcon, gl.CLAMP_TO_EDGE);
+            }
+        }
 
         if (state.isSDF) {
             const uniformValues = ((state.uniformValues: any): UniformValues<SymbolSDFUniformsType>);
