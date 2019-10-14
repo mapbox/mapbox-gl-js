@@ -33,6 +33,10 @@ class DragRotateHandler {
     _startPos: Point;
     _prevPos: Point;
     _lastPos: Point;
+    _prevPitch: number;
+    _lastPitch: number;
+    _prevBearing: number;
+    _lastBearing: number;
     _startTime: number;
     _lastMoveEvent: MouseEvent;
     _inertia: Array<[number, number]>;
@@ -167,6 +171,8 @@ class DragRotateHandler {
         this._inertia = [[browser.now(), this._map.getBearing()]];
         this._startPos = this._prevPos = this._lastPos = DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
+        this._prevPitch = this._lastPitch = this._map.getPitch();
+        this._prevBearing = this._lastBearing = this._map.getBearing();
 
         e.preventDefault();
     }
@@ -179,6 +185,8 @@ class DragRotateHandler {
 
         this._lastMoveEvent = e;
         this._lastPos = pos;
+        this._lastPitch = this._map.getPitch();
+        this._lastBearing = this._map.getBearing();
 
         if (this._state === 'pending') {
             this._state = 'active';
@@ -215,11 +223,16 @@ class DragRotateHandler {
 
         tr.bearing = bearing;
         if (this._pitchWithRotate) {
-            this._fireEvent('pitch', e);
+            if (this._lastPitch !== this._prevPitch) {
+                this._fireEvent('pitch', e);
+            }
             tr.pitch = pitch;
         }
 
-        this._fireEvent('rotate', e);
+        if (this._prevBearing !== this._lastBearing) {
+            this._fireEvent('rotate', e);
+        }
+
         this._fireEvent('move', e);
 
         delete this._lastMoveEvent;
@@ -292,6 +305,10 @@ class DragRotateHandler {
         delete this._startPos;
         delete this._prevPos;
         delete this._lastPos;
+        delete this._prevPitch;
+        delete this._lastPitch;
+        delete this._prevBearing;
+        delete this._lastBearing;
     }
 
     _inertialRotate(e: MouseEvent) {
