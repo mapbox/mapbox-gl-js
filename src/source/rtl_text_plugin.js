@@ -11,7 +11,6 @@ const status = {
 };
 let pluginStatus = status.unavailable;
 let pluginURL = null;
-let foregroundLoadComplete = false;
 
 export const evented = new Evented();
 
@@ -72,7 +71,7 @@ export const plugin: {
     processBidirectionalText: null,
     processStyledBidirectionalText: null,
     isLoaded() {
-        return pluginStatus.loaded ||       // Foreground: loaded if the completion callback returned successfully
+        return pluginStatus === status.loaded ||       // Foreground: loaded if the completion callback returned successfully
             plugin.applyArabicShaping != null; // Background: loaded if the plugin functions have been compiled
     }
 };
