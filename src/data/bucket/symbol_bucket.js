@@ -68,10 +68,12 @@ export type CollisionArrays = {
     textBox?: SingleCollisionBox;
     verticalTextBox?: SingleCollisionBox;
     iconBox?: SingleCollisionBox;
+    verticalIconBox?: SingleCollisionBox;
     textCircles?: Array<number>;
     textFeatureIndex?: number;
     verticalTextFeatureIndex?: number;
     iconFeatureIndex?: number;
+    verticalIconFeatureIndex?: number;
 };
 
 export type SymbolFeature = {|
@@ -711,12 +713,18 @@ class SymbolBucket implements Bucket {
             this.addDebugCollisionBoxes(symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance, true);
             this.addDebugCollisionBoxes(symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance, true);
             this.addDebugCollisionBoxes(symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance, false);
+            this.addDebugCollisionBoxes(symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex, symbolInstance, false);
         }
     }
 
     // These flat arrays are meant to be quicker to iterate over than the source
     // CollisionBoxArray
-    _deserializeCollisionBoxesForSymbol(collisionBoxArray: CollisionBoxArray, textStartIndex: number, textEndIndex: number, verticalTextStartIndex: number, verticalTextEndIndex: number, iconStartIndex: number, iconEndIndex: number): CollisionArrays {
+    _deserializeCollisionBoxesForSymbol(collisionBoxArray: CollisionBoxArray,
+        textStartIndex: number, textEndIndex: number,
+        verticalTextStartIndex: number, verticalTextEndIndex: number,
+        iconStartIndex: number, iconEndIndex: number,
+        verticalIconStartIndex: number, verticalIconEndIndex: number): CollisionArrays {
+
         const collisionArrays = {};
         for (let k = textStartIndex; k < textEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
@@ -750,6 +758,15 @@ class SymbolBucket implements Bucket {
                 break; // Only one box allowed per instance
             }
         }
+        for (let k = verticalIconStartIndex; k < verticalIconEndIndex; k++) {
+            // An icon can only have one box now, so this indexing is a bit vestigial...
+            const box: CollisionBox = (collisionBoxArray.get(k): any);
+            if (box.radius === 0) {
+                collisionArrays.verticalIconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY};
+                collisionArrays.verticalIconFeatureIndex = box.featureIndex;
+                break; // Only one box allowed per instance
+            }
+        }
         return collisionArrays;
     }
 
@@ -764,7 +781,9 @@ class SymbolBucket implements Bucket {
                 symbolInstance.verticalTextBoxStartIndex,
                 symbolInstance.verticalTextBoxEndIndex,
                 symbolInstance.iconBoxStartIndex,
-                symbolInstance.iconBoxEndIndex
+                symbolInstance.iconBoxEndIndex,
+                symbolInstance.verticalIconBoxStartIndex,
+                symbolInstance.verticalIconBoxEndIndex
             ));
         }
     }
@@ -800,6 +819,15 @@ class SymbolBucket implements Bucket {
         for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
             this.text.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
             this.text.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
+        }
+    }
+
+    addIndicesForPlacedIconSymbol(placedIconSymbolIndex: number) {
+        const placedIcon = this.icon.placedSymbolArray.get(placedIconSymbolIndex);
+        if (placedIcon.numGlyphs) {
+            const vertexIndex = placedIcon.vertexStartIndex;
+            this.icon.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+            this.icon.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
         }
     }
 
@@ -870,11 +898,12 @@ class SymbolBucket implements Bucket {
                 this.addIndicesForPlacedTextSymbol(symbolInstance.verticalPlacedTextSymbolIndex);
             }
 
-            const placedIcon = this.icon.placedSymbolArray.get(i);
-            if (placedIcon.numGlyphs) {
-                const vertexIndex = placedIcon.vertexStartIndex;
-                this.icon.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
-                this.icon.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
+            if (symbolInstance.placedIconSymbolIndex >= 0) {
+                this.addIndicesForPlacedIconSymbol(symbolInstance.placedIconSymbolIndex);
+            }
+
+            if (symbolInstance.verticalPlacedIconSymbolIndex >= 0) {
+                this.addIndicesForPlacedIconSymbol(symbolInstance.verticalPlacedIconSymbolIndex);
             }
         }
 
