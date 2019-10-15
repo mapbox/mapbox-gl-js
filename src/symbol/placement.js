@@ -239,7 +239,7 @@ export class Placement {
     attemptAnchorPlacement(anchor: TextAnchor, textBox: SingleCollisionBox, width: number, height: number,
                            textBoxScale: number, rotateWithMap: boolean,
                            pitchWithMap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroup: CollisionGroup,
-                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number): ?{ shift: Point, placedGlyphBoxes: { box: Array<number>, offscreen: boolean } }  {
+                           textAllowOverlap: boolean, symbolInstance: SymbolInstance, bucket: SymbolBucket, orientation: number, iconBox: ?SingleCollisionBox): ?{ shift: Point, placedGlyphBoxes: { box: Array<number>, offscreen: boolean } }  {
 
         const textOffset = [symbolInstance.textOffset0, symbolInstance.textOffset1];
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textBoxScale);
@@ -249,6 +249,15 @@ export class Placement {
                 textBox, shift.x, shift.y,
                 rotateWithMap, pitchWithMap, this.transform.angle),
             textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
+
+        if (iconBox) {
+            const placedIconBoxes = this.collisionIndex.placeCollisionBox(
+                shiftVariableCollisionBox(
+                    iconBox, shift.x, shift.y,
+                    rotateWithMap, pitchWithMap, this.transform.angle),
+                textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
+            if (placedIconBoxes.box.length === 0) return;
+        }
 
         if (placedGlyphBoxes.box.length > 0) {
             let prevAnchor;
@@ -420,10 +429,12 @@ export class Placement {
                         }
                     }
 
-                    const placeBoxForVariableAnchors = (collisionTextBox, orientation) => {
+                    const placeBoxForVariableAnchors = (collisionTextBox, collisionIconBox, orientation) => {
                         const width = collisionTextBox.x2 - collisionTextBox.x1;
                         const height = collisionTextBox.y2 - collisionTextBox.y1;
                         const textBoxScale = symbolInstance.textBoxScale;
+
+                        const variableIconBox = hasIconTextFit && !iconAllowOverlap ? collisionIconBox : null;
 
                         let placedBox: ?{ box: Array<number>, offscreen: boolean }  = {box: [], offscreen: false};
                         const placementAttempts = textAllowOverlap ? anchors.length * 2 : anchors.length;
@@ -433,7 +444,7 @@ export class Placement {
                             const result = this.attemptAnchorPlacement(
                                 anchor, collisionTextBox, width, height,
                                 textBoxScale, rotateWithMap, pitchWithMap, textPixelRatio, posMatrix,
-                                collisionGroup, allowOverlap, symbolInstance, bucket, orientation);
+                                collisionGroup, allowOverlap, symbolInstance, bucket, orientation, variableIconBox);
 
                             if (result) {
                                 placedBox = result.placedGlyphBoxes;
@@ -449,14 +460,14 @@ export class Placement {
                     };
 
                     const placeHorizontal = () => {
-                        return placeBoxForVariableAnchors(textBox, WritingMode.horizontal);
+                        return placeBoxForVariableAnchors(textBox, collisionArrays.iconBox, WritingMode.horizontal);
                     };
 
                     const placeVertical = () => {
                         const verticalTextBox = collisionArrays.verticalTextBox;
                         const wasPlaced = placed && placed.box && placed.box.length;
                         if (bucket.allowVerticalPlacement && !wasPlaced && symbolInstance.numVerticalGlyphVertices > 0 && verticalTextBox) {
-                            return placeBoxForVariableAnchors(verticalTextBox, WritingMode.vertical);
+                            return placeBoxForVariableAnchors(verticalTextBox, collisionArrays.verticalIconBox, WritingMode.vertical);
                         }
                         return {box: null, offscreen: null};
                     };
