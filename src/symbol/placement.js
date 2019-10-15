@@ -748,6 +748,12 @@ export class Placement {
             bucket.deserializeCollisionBoxes(collisionBoxArray);
         }
 
+        const addOpacities = (iconOrText, numVertices: number, opacity: number) => {
+            for (let i = 0; i < numVertices / 4; i++) {
+                iconOrText.opacityVertexArray.emplaceBack(opacity);
+            }
+        };
+
         for (let s = 0; s < bucket.symbolInstances.length; s++) {
             const symbolInstance = bucket.symbolInstances.get(s);
             const {
@@ -773,38 +779,35 @@ export class Placement {
             const hasIcon = symbolInstance.numIconVertices > 0;
 
             const placedOrientation = this.placedOrientations[symbolInstance.crossTileID];
-            const verticalHidden = (placedOrientation === WritingMode.horizontal || placedOrientation === WritingMode.horizontalOnly) ? 1 : 0;
-            const horizontalHidden = placedOrientation === WritingMode.vertical ? 1 : 0;
+            const horizontalHidden = placedOrientation === WritingMode.vertical;
+            const verticalHidden = placedOrientation === WritingMode.horizontal || placedOrientation === WritingMode.horizontalOnly;
 
             if (hasText) {
                 const packedOpacity = packOpacity(opacityState.text);
                 // Vertical text fades in/out on collision the same way as corresponding
                 // horizontal text. Switch between vertical/horizontal should be instantaneous
                 const horizontalOpacity = horizontalHidden ? PACKED_HIDDEN_OPACITY : packedOpacity;
-                for (let i = 0; i < numHorizontalGlyphVertices / 4; i++) {
-                    bucket.text.opacityVertexArray.emplaceBack(horizontalOpacity);
-                }
+                addOpacities(bucket.text, numHorizontalGlyphVertices, horizontalOpacity);
                 const verticalOpacity = verticalHidden ? PACKED_HIDDEN_OPACITY : packedOpacity;
-                for (let i = 0; i < numVerticalGlyphVertices / 4; i++) {
-                    bucket.text.opacityVertexArray.emplaceBack(verticalOpacity);
-                }
+                addOpacities(bucket.text, numVerticalGlyphVertices, verticalOpacity);
+
                 // If this label is completely faded, mark it so that we don't have to calculate
                 // its position at render time. If this layer has variable placement, shift the various
                 // symbol instances appropriately so that symbols from buckets that have yet to be placed
                 // offset appropriately.
-                const symbolHidden = opacityState.text.isHidden() ? 1 : 0;
+                const symbolHidden = opacityState.text.isHidden();
                 [
                     symbolInstance.rightJustifiedTextSymbolIndex,
                     symbolInstance.centerJustifiedTextSymbolIndex,
                     symbolInstance.leftJustifiedTextSymbolIndex
                 ].forEach(index => {
                     if (index >= 0) {
-                        bucket.text.placedSymbolArray.get(index).hidden = symbolHidden || horizontalHidden;
+                        bucket.text.placedSymbolArray.get(index).hidden = Number(symbolHidden || horizontalHidden);
                     }
                 });
 
                 if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
-                    bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).hidden = symbolHidden || verticalHidden;
+                    bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).hidden = Number(symbolHidden || verticalHidden);
                 }
 
                 const prevOffset = this.variableOffsets[symbolInstance.crossTileID];
@@ -826,18 +829,14 @@ export class Placement {
 
                 if (symbolInstance.placedIconSymbolIndex >= 0) {
                     const horizontalOpacity = useHorizontal ? packedOpacity : PACKED_HIDDEN_OPACITY;
-                    for (let i = 0; i < symbolInstance.numIconVertices / 4; i++) {
-                        bucket.icon.opacityVertexArray.emplaceBack(horizontalOpacity);
-                    }
+                    addOpacities(bucket.icon, symbolInstance.numIconVertices, horizontalOpacity);
                     bucket.icon.placedSymbolArray.get(symbolInstance.placedIconSymbolIndex).hidden =
                         (opacityState.icon.isHidden(): any);
                 }
 
                 if (symbolInstance.verticalPlacedIconSymbolIndex >= 0) {
                     const verticalOpacity = !useHorizontal ? packedOpacity : PACKED_HIDDEN_OPACITY;
-                    for (let i = 0; i < symbolInstance.numVerticalIconVertices / 4; i++) {
-                        bucket.icon.opacityVertexArray.emplaceBack(verticalOpacity);
-                    }
+                    addOpacities(bucket.icon, symbolInstance.numVerticalIconVertices, verticalOpacity);
                     bucket.icon.placedSymbolArray.get(symbolInstance.verticalPlacedIconSymbolIndex).hidden =
                         (opacityState.icon.isHidden(): any);
                 }
