@@ -5,6 +5,9 @@
     "declaration-block-semicolon-newline-after": "always-multi-line",
     "block-opening-brace-space-before": "always-multi-line",
     "declaration-block-single-line-max-declarations": 3,
-    "selector-class-pattern": "mapboxgl-[a-z-]+"
+    "selector-class-pattern": "mapboxgl-[a-z-]+",
+    "at-rule-no-unknown": [true, {
+      "ignoreAtRules": ["svg-load"]
+    }]
   }
 }

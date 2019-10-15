@@ -30,7 +30,6 @@ const defaultOptions: Options = {
     trackUserLocation: false,
     showUserLocation: true
 };
-const className = 'mapboxgl-ctrl';
 
 let supportsGeolocation;
 
@@ -116,7 +115,7 @@ class GeolocateControl extends Evented {
 
     onAdd(map: Map) {
         this._map = map;
-        this._container = DOM.create('div', `${className} ${className}-group`);
+        this._container = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
         checkGeolocationSupport(this._setupUI);
         return this._container;
     }
@@ -291,9 +290,8 @@ class GeolocateControl extends Evented {
 
     _setupUI(supported: boolean) {
         this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
-        this._geolocateButton = DOM.create('button',
-            `${className}-icon ${className}-geolocate`,
-            this._container);
+        this._geolocateButton = DOM.create('button', `mapboxgl-ctrl-geolocate`, this._container);
+        DOM.create('span', `mapboxgl-ctrl-icon`, this._geolocateButton).setAttribute('aria-hidden', true);
         this._geolocateButton.type = 'button';
         this._geolocateButton.title = 'Find my location';
         this._geolocateButton.setAttribute('aria-label', 'Find my location');
