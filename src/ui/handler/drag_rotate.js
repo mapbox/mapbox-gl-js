@@ -213,13 +213,19 @@ class DragRotateHandler {
         this._drainInertiaBuffer();
         inertia.push([browser.now(), this._map._normalizeBearing(bearing, last[1])]);
 
+        const prevBearing = tr.bearing;
         tr.bearing = bearing;
         if (this._pitchWithRotate) {
-            this._fireEvent('pitch', e);
+            const prevPitch = tr.pitch;
             tr.pitch = pitch;
+            if (tr.pitch !== prevPitch) {
+                this._fireEvent('pitch', e);
+            }
         }
 
-        this._fireEvent('rotate', e);
+        if (tr.bearing !== prevBearing) {
+            this._fireEvent('rotate', e);
+        }
         this._fireEvent('move', e);
 
         delete this._lastMoveEvent;
