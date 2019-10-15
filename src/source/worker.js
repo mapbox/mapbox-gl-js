@@ -59,6 +59,7 @@ export default class Worker {
             this.workerSourceTypes[name] = WorkerSource;
         };
 
+        // This is invoked by the RTL text plugin when the download via the `importScripts` call has finished, and the code has been parsed.
         this.self.registerRTLTextPlugin = (rtlTextPlugin: {applyArabicShaping: Function, processBidirectionalText: Function, processStyledBidirectionalText?: Function}) => {
             if (globalRTLTextPlugin.isLoaded()) {
                 throw new Error('RTL text plugin already registered.');

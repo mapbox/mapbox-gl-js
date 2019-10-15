@@ -37,6 +37,7 @@ import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
 import ResolvedImage from '../../style-spec/expression/types/resolved_image';
+import {plugin as globalRTLTextPlugin} from '../../source/rtl_text_plugin';
 
 import type {
     Bucket,
@@ -413,7 +414,9 @@ class SymbolBucket implements Bucket {
                 if (formattedText.containsRTLText()) {
                     this.hasRTLText = true;
                 }
-                text = transformText(formattedText, layer, feature);
+                if (this.hasRTLText && globalRTLTextPlugin.isLoaded() || !this.hasRTLText) {
+                    text = transformText(formattedText, layer, feature);
+                }
             }
 
             let icon: ResolvedImage | void;
