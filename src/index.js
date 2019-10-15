@@ -19,7 +19,7 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
 import config from './util/config';
-import {setRTLTextPlugin} from './source/rtl_text_plugin';
+import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
 
@@ -27,6 +27,7 @@ const exported = {
     version,
     supported,
     setRTLTextPlugin,
+    getRTLTextPluginStatus,
     Map,
     NavigationControl,
     GeolocateControl,
@@ -161,6 +162,16 @@ const exported = {
  * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
  * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
  */
+
+/**
+  * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
+  * The status can be `unavailable` (i.e. not requested or removed), `loading`, `loaded` or `error`.
+  * If the status is `loaded` and the plugin is requested again, an error will be thrown.
+  *
+  * @function getRTLTextPluginStatus
+  * @example
+  * const pluginStatus = mapboxgl.getRTLTextPluginStatus();
+  */
 
 export default exported;
 

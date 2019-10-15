@@ -137,7 +137,57 @@ class GeolocateControl extends Evented {
         this._map = (undefined: any);
     }
 
+    _isOutOfMapMaxBounds(position: Position) {
+        const bounds = this._map.getMaxBounds();
+        const coordinates = position.coords;
+
+        return bounds && (
+            coordinates.longitude < bounds.getWest() ||
+            coordinates.longitude > bounds.getEast() ||
+            coordinates.latitude < bounds.getSouth() ||
+            coordinates.latitude > bounds.getNorth()
+        );
+    }
+
+    _setErrorState() {
+        switch (this._watchState) {
+        case 'WAITING_ACTIVE':
+            this._watchState = 'ACTIVE_ERROR';
+            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
+            break;
+        case 'ACTIVE_LOCK':
+            this._watchState = 'ACTIVE_ERROR';
+            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+            // turn marker grey
+            break;
+        case 'BACKGROUND':
+            this._watchState = 'BACKGROUND_ERROR';
+            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background-error');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+            // turn marker grey
+            break;
+        case 'ACTIVE_ERROR':
+            break;
+        default:
+            assert(false, `Unexpected watchState ${this._watchState}`);
+        }
+    }
+
     _onSuccess(position: Position) {
+        if (this._isOutOfMapMaxBounds(position)) {
+            this._setErrorState();
+
+            this.fire(new Event('outofmaxbounds', position));
+            this._updateMarker();
+            this._finish();
+
+            return;
+        }
+
         if (this.options.trackUserLocation) {
             // keep a record of the position so that if the state is BACKGROUND and the user
             // clicks the button, we can move to ACTIVE_LOCK immediately without waiting for
@@ -218,31 +268,7 @@ class GeolocateControl extends Evented {
                     this._clearWatch();
                 }
             } else {
-                switch (this._watchState) {
-                case 'WAITING_ACTIVE':
-                    this._watchState = 'ACTIVE_ERROR';
-                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
-                    break;
-                case 'ACTIVE_LOCK':
-                    this._watchState = 'ACTIVE_ERROR';
-                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
-                    // turn marker grey
-                    break;
-                case 'BACKGROUND':
-                    this._watchState = 'BACKGROUND_ERROR';
-                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background-error');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
-                    // turn marker grey
-                    break;
-                case 'ACTIVE_ERROR':
-                    break;
-                default:
-                    assert(false, `Unexpected watchState ${this._watchState}`);
-                }
+                this._setErrorState();
             }
         }
 
@@ -453,6 +479,16 @@ export default GeolocateControl;
  * @memberof GeolocateControl
  * @instance
  * @property {PositionError} data The returned [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
+ *
+ */
+
+/**
+ * Fired on each Geolocation API position update which returned as success but user position is out of map maxBounds.
+ *
+ * @event outofmaxbounds
+ * @memberof GeolocateControl
+ * @instance
+ * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
  *
  */
 
