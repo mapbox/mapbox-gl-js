@@ -802,12 +802,12 @@ export class Placement {
                     symbolInstance.leftJustifiedTextSymbolIndex
                 ].forEach(index => {
                     if (index >= 0) {
-                        bucket.text.placedSymbolArray.get(index).hidden = Number(symbolHidden || horizontalHidden);
+                        bucket.text.placedSymbolArray.get(index).hidden = symbolHidden || horizontalHidden ? 1 : 0;
                     }
                 });
 
                 if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
-                    bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).hidden = Number(symbolHidden || verticalHidden);
+                    bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).hidden = symbolHidden || verticalHidden ? 1 : 0;
                 }
 
                 const prevOffset = this.variableOffsets[symbolInstance.crossTileID];
