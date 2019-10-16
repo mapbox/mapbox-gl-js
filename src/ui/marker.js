@@ -190,6 +190,34 @@ export default class Marker extends Evented {
         });
         applyAnchorClass(this._element, this._anchor, 'marker');
 
+        // pan the map to contain the Marker on focus
+        this._element.addEventListener('focusin', (e) => {
+            const top = this._pos.y - (this._element.offsetHeight / 2)
+            const left = this._pos.x - (this._element.offsetWidth / 2)
+            const bottom = this._pos.y + (this._element.offsetHeight / 2)
+            const right = this._pos.x + (this._element.offsetWidth / 2)
+
+            let panX = 0;
+            let panY = 0;
+
+            if (bottom > this._map._canvas.clientHeight) {
+                panY = bottom - this._map._canvas.clientHeight;
+            } else if (top < 0) {
+                panY = top
+            }
+
+            if (right > this._map._canvas.clientWidth) {
+                panX = right - this._map._canvas.clientWidth;
+            } else if (left < 0) {
+                panX = left
+            }
+            console.log(top, left, bottom,right, panX, panY)
+
+            this._map.panBy([panX, panY], {
+                animate: false
+            });
+        });
+
         this._popup = null;
     }
 
