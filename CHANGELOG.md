@@ -8,16 +8,16 @@
 ## 🍏 Improvements
 * `icon-text-fit` now properly respects `text-writing-mode`:`vertical` ([#8835](https://github.com/mapbox/mapbox-gl-js/pull/8835))
 * GeolocateControl emits an `outofmaxbounds` and cancels the geolocate `flyTo` if the user is outside of `map.maxBounds` ([#8756](https://github.com/mapbox/mapbox-gl-js/pull/8756)) (h/t [MoradiDavijani](https://github.com/MoradiDavijani))
-* Symbol's fade faster when zooming out quickly reducing overlap. ([#8628](https://github.com/mapbox/mapbox-gl-js/pull/8628))
+* Symbols fade faster when zooming out quickly, reducing overlap. ([#8628](https://github.com/mapbox/mapbox-gl-js/pull/8628))
 * Reduce memory usage on mouseenter event in vector tile layer's with large strings. ( [#8863](https://github.com/mapbox/mapbox-gl-js/pull/8863))
 * Improved icon density for `text-variable-anchor` by trying additional placements when icon gets collided out. ([#8803](https://github.com/mapbox/mapbox-gl-js/pull/8803))
 
 ## 🐞 Bug Fixes
 
 * Fix opacity interpolation for composition expressions. ([#8818](https://github.com/mapbox/mapbox-gl-js/pull/8818))
-* Fix `styleimagemissing` compatibility issues with `image` expression. ([#8839](https://github.com/mapbox/mapbox-gl-js/pull/8839) and [#8775](https://github.com/mapbox/mapbox-gl-js/pull/8775))
 * Fix rotate and pitch events being fired at the same time. ([#8872](https://github.com/mapbox/mapbox-gl-js/pull/8872))
 * Fix memory leaks w.r.t tile loading and map removal.([#8813](https://github.com/mapbox/mapbox-gl-js/pull/8813) and [#8850](https://github.com/mapbox/mapbox-gl-js/pull/8850))
+* Fix web-worker transfer of `ArrayBuffers` in environments where `instanceof ArrayBuffer` fails.(e.g `cypress`) ([#8868](https://github.com/mapbox/mapbox-gl-js/pull/8868))
 
 ## 1.4.1
 
