@@ -9,7 +9,7 @@ import TileBounds from './tile_bounds';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
-import {plugin as rtlTextPlugin, setRTLTextPlugin} from './rtl_text_plugin';
+import {plugin as rtlTextPlugin, getRTLTextPluginStatus, downloadRTLTextPlugin} from './rtl_text_plugin';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -158,10 +158,9 @@ class VectorTileSource extends Evented implements Source {
                 const plugin = rtlTextPlugin;
                 if (!plugin.isLoading() &&
                     !plugin.isLoaded() &&
-                    this.map != null &&
-                    this.map._rtlTextPluginURL
+                    getRTLTextPluginStatus() === 'available'
                 ) {
-                    setRTLTextPlugin(this.map._rtlTextPluginURL);
+                    downloadRTLTextPlugin();
                 }
             }
 

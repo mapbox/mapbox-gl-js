@@ -415,7 +415,11 @@ class SymbolBucket implements Bucket {
                     this.hasRTLText = true;
                 }
 
-                if (this.hasRTLText && globalRTLTextPlugin.isLoaded() || !this.hasRTLText) {
+                if (
+                    this.hasRTLText && globalRTLTextPlugin.isLoaded() || // Use the rtlText plugin shape text
+                    !this.hasRTLText || // non-rtl terxt so can proceed safely
+                    !globalRTLTextPlugin.isAvailableInWorker() // We-doent intend to async-load the rtl text plugin, so proceed with incorrect shaping
+                ) {
                     text = transformText(formattedText, layer, feature);
                 }
             }

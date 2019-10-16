@@ -152,13 +152,19 @@ export default class Worker {
         }
     }
 
-    loadRTLTextPlugin(map: string, pluginURL: string, callback: Callback<void>) {
+    loadRTLTextPlugin(map: string, pluginData: Object, callback: Callback<void>) {
         try {
-            if (!globalRTLTextPlugin.isLoaded()) {
-                this.self.importScripts(pluginURL);
-                callback(globalRTLTextPlugin.isLoaded() ?
-                    null :
-                    new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`));
+            const {pluginURL, lazy} = pluginData;
+            if (pluginURL) {
+                if (!globalRTLTextPlugin.isLoaded()) {
+                    this.self.importScripts(pluginURL);
+                    callback(globalRTLTextPlugin.isLoaded() ?
+                        null :
+                        new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`));
+                }
+            } else if (lazy) {
+                // Set the state of the rtl text plugin in worker scope, to load the plugin if necessary.
+                globalRTLTextPlugin.markWorkerAvailable();
             }
         } catch (e) {
             callback(e.toString());

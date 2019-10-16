@@ -154,9 +154,11 @@ class Style extends Evented {
 
         const self = this;
         this._rtlTextPluginCallback = Style.registerForPluginAvailability((args) => {
-            self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginURL, args.completionCallback);
-            for (const id in self.sourceCaches) {
-                self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
+            self.dispatcher.broadcast('loadRTLTextPlugin', {pluginURL: args.pluginURL, lazy: args.lazy}, args.completionCallback);
+            if (args.pluginURL) {
+                for (const id in self.sourceCaches) {
+                    self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
+                }
             }
         });
 
