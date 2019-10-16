@@ -34,9 +34,9 @@ type Options = {
  * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
- * @param {number} [options.rotatation=0] The rotation angle of the marker (in degrees), relative to it's respective {@link Marker#rotationAlignment} setting.
- * @param {string} [options.pitchAlignment='auto'] The pitch alignment for the marker, allowing it to stay flat on the map or to stay vertical relative to the viewport.
- * @param {string} [options.rotationAlignment='auto'] The rotation alignment for the marker, allowing for rotations relative to either the viewport or the map.
+ * @param {number} [options.rotation=0] The rotation angle of the marker (clockwise, in degrees), relative to its respective {@link Marker#rotationAlignment} setting.
+ * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker`'s pitch relative to the map, `viewport` aligns the `Marker`'s pitch relative to the viewport.
+ * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, `viewport` aligns the `Marker`'s rotation relative to the viewport.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
