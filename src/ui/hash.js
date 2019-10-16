@@ -18,7 +18,7 @@ class Hash {
     _hashName: ?string;
 
     constructor(hashName: ?string) {
-        this._hashName = hashName;
+        this._hashName = hashName && encodeURIComponent(hashName);
         bindAll([
             '_getCurrentHash',
             '_onHashChange',
@@ -78,18 +78,19 @@ class Hash {
         if (bearing || pitch) hash += (`/${Math.round(bearing * 10) / 10}`);
         if (pitch) hash += (`/${Math.round(pitch)}`);
 
-        if (this._hashName && !mapFeedback) {
+        if (this._hashName) {
+            const hashName = this._hashName;
             let found = false;
             const parts = window.location.hash.slice(1).split('&').map(part => {
                 const key = part.split('=')[0];
-                if (key === this._hashName) {
+                if (key === hashName) {
                     found = true;
                     return `${key}=${hash}`;
                 }
                 return part;
             }).filter(a => a);
             if (!found) {
-                parts.push(`${this._hashName || ''}=${hash}`);
+                parts.push(`${hashName}=${hash}`);
             }
             return `#${parts.join('&')}`;
         }
@@ -98,6 +99,7 @@ class Hash {
     }
 
     _getCurrentHash() {
+        // Get the current hash from location, stripped from its number sign
         const hash = window.location.hash.replace('#', '');
         if (this._hashName) {
             // Split the parameter-styled hash into parts and find the value we need
