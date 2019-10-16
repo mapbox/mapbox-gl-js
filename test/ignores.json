@@ -14,7 +14,5 @@
   "render-tests/fill-extrusion-pattern/tile-buffer": "https://github.com/mapbox/mapbox-gl-js/issues/4403",
   "render-tests/symbol-sort-key/text-ignore-placement": "skip - text drawn over icons",
   "render-tests/text-variable-anchor/remember-last-placement": "skip - not sure this is correct behavior",
-  "render-tests/text-writing-mode/point_label/cjk-variable-anchors-vertical-horizontal-mode-icon-text-fit": "https://github.com/mapbox/mapbox-gl-js/issues/8583",
-  "render-tests/text-writing-mode/point_label/mixed-multiline-vertical-horizontal-mode-icon-text-fit": "https://github.com/mapbox/mapbox-gl-js/issues/8583",
   "render-tests/icon-image/icon-sdf-non-sdf-one-layer": "skip - render sdf icon and normal icon in one layer"
 }

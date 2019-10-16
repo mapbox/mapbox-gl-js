@@ -176,7 +176,9 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             map.style.sourceCaches[operation[1]].pause();
             applyOperations(map, operations.slice(1), callback);
         } else {
-            map[operation[0]](...operation.slice(1));
+            if (typeof map[operation[0]] === 'function') {
+                map[operation[0]](...operation.slice(1));
+            }
             applyOperations(map, operations.slice(1), callback);
         }
     }
