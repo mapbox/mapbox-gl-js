@@ -204,7 +204,7 @@ test('ajax', (t) => {
             }
         };
 
-        getImage({url: ''}, () => { t.end() });
+        getImage({url: ''}, () => { t.end(); });
 
         window.server.respond();
     });
