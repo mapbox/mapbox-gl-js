@@ -190,15 +190,31 @@ test('ajax', (t) => {
         resetImageRequestQueue();
 
         window.server.respondWith((request) => {
-            t.ok(request.requestHeaders.accept.includes('image/webp'), 'accepts header contains image/webp')
+            t.ok(request.requestHeaders.accept.includes('image/webp'), 'accepts header contains image/webp');
+            request.respond(200, {'Content-Type': 'image/webp'}, '');
         });
 
         // mock webp support
         webpSupported.supported = true
 
-        getImage({url: ''}, () => t.fail);
+        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
+        const jsdomImage = window.Image;
+        window.Image = class {
+            set src(src) {
+                setTimeout(() => this.onload());
+            }
+        };
 
-        t.end();
+        function callback(err) {
+            if (err) return;
+
+            window.Image = jsdomImage;
+            t.end();
+        }
+
+        getImage({url: ''}, callback);
+
+        window.server.respond();
     });
 
     t.end();
