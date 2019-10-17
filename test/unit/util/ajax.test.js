@@ -8,6 +8,7 @@ import {
 } from '../../../src/util/ajax';
 import window from '../../../src/util/window';
 import config from '../../../src/util/config';
+import webpSupported from '../../../src/util/webp_supported';
 
 test('ajax', (t) => {
     t.beforeEach(callback => {
@@ -183,6 +184,29 @@ test('ajax', (t) => {
         t.equals(queuedRequest.aborted, true);
 
         t.end();
+    });
+
+    t.test('getImage sends accept/webp when supported', (t) => {
+        resetImageRequestQueue();
+
+        window.server.respondWith((request) => {
+            t.ok(request.requestHeaders.accept.includes('image/webp'), 'accepts header contains image/webp');
+            request.respond(200, {'Content-Type': 'image/webp'}, '');
+        });
+
+        // mock webp support
+        webpSupported.supported = true;
+
+        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
+        window.Image = class {
+            set src(src) {
+                setTimeout(() => this.onload());
+            }
+        };
+
+        getImage({url: ''}, () => { t.end(); });
+
+        window.server.respond();
     });
 
     t.end();
