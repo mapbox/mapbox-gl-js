@@ -8,6 +8,7 @@ import {
 } from '../../../src/util/ajax';
 import window from '../../../src/util/window';
 import config from '../../../src/util/config';
+import webpSupported from '../../../src/util/webp_supported';
 
 test('ajax', (t) => {
     t.beforeEach(callback => {
@@ -181,6 +182,21 @@ test('ajax', (t) => {
         t.equals(queuedRequest.aborted, undefined);
         queued.cancel();
         t.equals(queuedRequest.aborted, true);
+
+        t.end();
+    });
+
+    t.test('getImage sends accept/webp when supported', (t) => {
+        resetImageRequestQueue();
+
+        window.server.respondWith((request) => {
+            t.ok(request.requestHeaders.accept.includes('image/webp'), 'accepts header contains image/webp')
+        });
+
+        // mock webp support
+        webpSupported.supported = true
+
+        getImage({url: ''}, () => t.fail);
 
         t.end();
     });
