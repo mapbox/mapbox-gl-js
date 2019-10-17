@@ -1,22 +1,22 @@
 ## 1.5.0-beta.1
 
 ## ✨ Features
-* GeolocateControl displays a `disabled` icon if user denies geolocation permission. [#8871](https://github.com/mapbox/mapbox-gl-js/pull/8871))
-* Add `mapboxgl.getRTLTextPluginStatus()` to query the current status of the `rtl-text-plugin` ([#8864](https://github.com/mapbox/mapbox-gl-js/pull/8864))
-* `hash` Map option can now be set as a string which sets the map hash to a custom query parameter. ([#8603](https://github.com/mapbox/mapbox-gl-js/pull/8603)) (h/t [SebCorbin](https://github.com/SebCorbin))
+* Add disabled icon to GeolocateControl if user denies geolocation permission. [#8871](https://github.com/mapbox/mapbox-gl-js/pull/8871))
+* Add `outofmaxbounds` event to GeolocateControl, which is emitted when the user is outside of `map.maxBounds` ([#8756](https://github.com/mapbox/mapbox-gl-js/pull/8756)) (h/t [MoradiDavijani](https://github.com/MoradiDavijani))
+* Add `mapboxgl.getRTLTextPluginStatus()` to query the current status of the `rtl-text-plugin` to make it easier to allow clearing the plugin when necessary. (ref. [#7869](https://github.com/mapbox/mapbox-gl-js/issues/7869)) ([#8864](https://github.com/mapbox/mapbox-gl-js/pull/8864))
+* Allow `hash` Map option to be set as a string, which sets the map hash in the url to a custom query parameter. ([#8603](https://github.com/mapbox/mapbox-gl-js/pull/8603)) (h/t [SebCorbin](https://github.com/SebCorbin))
 
 ## 🍏 Improvements
-* `icon-text-fit` now properly respects `text-writing-mode`:`vertical` ([#8835](https://github.com/mapbox/mapbox-gl-js/pull/8835))
-* GeolocateControl emits an `outofmaxbounds` and cancels the geolocate `flyTo` if the user is outside of `map.maxBounds` ([#8756](https://github.com/mapbox/mapbox-gl-js/pull/8756)) (h/t [MoradiDavijani](https://github.com/MoradiDavijani))
-* Symbols fade faster when zooming out quickly, reducing overlap. ([#8628](https://github.com/mapbox/mapbox-gl-js/pull/8628))
+* Fade symbols faster when zooming out quickly, reducing overlap. ([#8628](https://github.com/mapbox/mapbox-gl-js/pull/8628))
 * Reduce memory usage for vector tiles that contain long strings in feature properties. ( [#8863](https://github.com/mapbox/mapbox-gl-js/pull/8863))
-* Improved icon density for `text-variable-anchor` by trying additional placements when icon gets collided out. ([#8803](https://github.com/mapbox/mapbox-gl-js/pull/8803))
+* Improved icon density for `text-variable-anchor` by trying additional placements when the icon associated with the text using `icon-text-fit` gets collided out. ([#8803](https://github.com/mapbox/mapbox-gl-js/pull/8803))
 
 ## 🐞 Bug Fixes
 
+* Fix `icon-text-fit` not properly respecting vertical labels. ([#8835](https://github.com/mapbox/mapbox-gl-js/pull/8835))
 * Fix opacity interpolation for composition expressions. ([#8818](https://github.com/mapbox/mapbox-gl-js/pull/8818))
 * Fix rotate and pitch events being fired at the same time. ([#8872](https://github.com/mapbox/mapbox-gl-js/pull/8872))
-* Fix memory leaks w.r.t tile loading and map removal.([#8813](https://github.com/mapbox/mapbox-gl-js/pull/8813) and [#8850](https://github.com/mapbox/mapbox-gl-js/pull/8850))
+* Fix memory leaks that occured during tile loading and map removal.([#8813](https://github.com/mapbox/mapbox-gl-js/pull/8813) and [#8850](https://github.com/mapbox/mapbox-gl-js/pull/8850))
 * Fix web-worker transfer of `ArrayBuffers` in environments where `instanceof ArrayBuffer` fails.(e.g `cypress`) ([#8868](https://github.com/mapbox/mapbox-gl-js/pull/8868))
 
 ## 1.4.1
