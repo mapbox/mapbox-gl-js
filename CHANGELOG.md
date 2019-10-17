@@ -9,7 +9,7 @@
 * `icon-text-fit` now properly respects `text-writing-mode`:`vertical` ([#8835](https://github.com/mapbox/mapbox-gl-js/pull/8835))
 * GeolocateControl emits an `outofmaxbounds` and cancels the geolocate `flyTo` if the user is outside of `map.maxBounds` ([#8756](https://github.com/mapbox/mapbox-gl-js/pull/8756)) (h/t [MoradiDavijani](https://github.com/MoradiDavijani))
 * Symbols fade faster when zooming out quickly, reducing overlap. ([#8628](https://github.com/mapbox/mapbox-gl-js/pull/8628))
-* Reduce memory usage on mouseenter event in vector tile layer's with large strings. ( [#8863](https://github.com/mapbox/mapbox-gl-js/pull/8863))
+* Reduce memory usage for vector tiles that contain long strings in feature properties. ( [#8863](https://github.com/mapbox/mapbox-gl-js/pull/8863))
 * Improved icon density for `text-variable-anchor` by trying additional placements when icon gets collided out. ([#8803](https://github.com/mapbox/mapbox-gl-js/pull/8803))
 
 ## 🐞 Bug Fixes
