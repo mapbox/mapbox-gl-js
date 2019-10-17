@@ -195,24 +195,16 @@ test('ajax', (t) => {
         });
 
         // mock webp support
-        webpSupported.supported = true
+        webpSupported.supported = true;
 
         // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
-        const jsdomImage = window.Image;
         window.Image = class {
             set src(src) {
                 setTimeout(() => this.onload());
             }
         };
 
-        function callback(err) {
-            if (err) return;
-
-            window.Image = jsdomImage;
-            t.end();
-        }
-
-        getImage({url: ''}, callback);
+        getImage({url: ''}, () => { t.end() });
 
         window.server.respond();
     });
