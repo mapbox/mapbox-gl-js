@@ -41,17 +41,17 @@ var map = window.map = new mapboxgl.Map({
 
 document.getElementById('loadSync').onclick = function() {
     mapboxgl.setRTLTextPlugin(pluginURL);
-}
+};
 
 document.getElementById('loadAsync').onclick = function() {
-    mapboxgl.setRTLTextPlugin(pluginURL, function(err){
-        if(err){
+    mapboxgl.setRTLTextPlugin(pluginURL, function(err) {
+        if (err) {
             throw err;
         } else {
             console.log('rtl-text-plugin loaded successfully');
         }
     }, true);
-}
+};
 
 setInterval(function() {
     document.getElementById('pluginStatus').innerHTML = mapboxgl.getRTLTextPluginStatus();
