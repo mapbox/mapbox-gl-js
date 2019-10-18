@@ -1,7 +1,7 @@
 // @flow
 
 import window from './window';
-import {extend, warnOnce} from './util';
+import {extend, warnOnce, isWorker} from './util';
 import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox';
 import config from './config';
 import assert from 'assert';
@@ -72,16 +72,11 @@ class AJAXError extends Error {
     }
 }
 
-function isWorker() {
-    return typeof WorkerGlobalScope !== 'undefined' && typeof self !== 'undefined' &&
-           self instanceof WorkerGlobalScope;
-}
-
 // Ensure that we're sending the correct referrer from blob URL worker bundles.
 // For files loaded from the local file system, `location.origin` will be set
 // to the string(!) "null" (Firefox), or "file://" (Chrome, Safari, Edge, IE),
 // and we will set an empty referrer. Otherwise, we're using the document's URL.
-/* global self, WorkerGlobalScope */
+/* global self */
 export const getReferrer = isWorker() ?
     () => self.worker && self.worker.referrer :
     () => (window.location.protocol === 'blob:' ? window.parent : window).location.href;

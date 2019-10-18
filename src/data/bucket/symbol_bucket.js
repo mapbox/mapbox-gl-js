@@ -37,7 +37,7 @@ import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
 import ResolvedImage from '../../style-spec/expression/types/resolved_image';
-import {plugin as globalRTLTextPlugin} from '../../source/rtl_text_plugin';
+import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin';
 
 import type {
     Bucket,
@@ -414,11 +414,10 @@ class SymbolBucket implements Bucket {
                 if (formattedText.containsRTLText()) {
                     this.hasRTLText = true;
                 }
-
                 if (
-                    this.hasRTLText && globalRTLTextPlugin.isLoaded() || // Use the rtlText plugin shape text
-                    !this.hasRTLText || // non-rtl terxt so can proceed safely
-                    !globalRTLTextPlugin.isAvailableInWorker() // We-doent intend to async-load the rtl text plugin, so proceed with incorrect shaping
+                    !this.hasRTLText || // non-rtl text so can proceed safely
+                    getRTLTextPluginStatus() === 'unavailable' || // We don't intend to lazy-load the rtl text plugin, so proceed with incorrect shaping
+                    this.hasRTLText && globalRTLTextPlugin.isParsed() // Use the rtlText plugin shape text
                 ) {
                     text = transformText(formattedText, layer, feature);
                 }

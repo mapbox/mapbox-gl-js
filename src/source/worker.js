@@ -22,6 +22,7 @@ import type {
 import type {WorkerGlobalScopeInterface} from '../util/web_worker';
 import type {Callback} from '../types/callback';
 import type {LayerSpecification} from '../style-spec/types';
+import type {PluginState} from './rtl_text_plugin';
 
 /**
  * @private
@@ -61,7 +62,7 @@ export default class Worker {
 
         // This is invoked by the RTL text plugin when the download via the `importScripts` call has finished, and the code has been parsed.
         this.self.registerRTLTextPlugin = (rtlTextPlugin: {applyArabicShaping: Function, processBidirectionalText: Function, processStyledBidirectionalText?: Function}) => {
-            if (globalRTLTextPlugin.isLoaded()) {
+            if (globalRTLTextPlugin.isParsed()) {
                 throw new Error('RTL text plugin already registered.');
             }
             globalRTLTextPlugin['applyArabicShaping'] = rtlTextPlugin.applyArabicShaping;
@@ -152,19 +153,19 @@ export default class Worker {
         }
     }
 
-    loadRTLTextPlugin(map: string, pluginData: Object, callback: Callback<void>) {
+    syncRTLPluginState(map: string, state: PluginState, callback: Callback<boolean>) {
         try {
-            const {pluginURL, lazy} = pluginData;
-            if (pluginURL) {
-                if (!globalRTLTextPlugin.isLoaded()) {
-                    this.self.importScripts(pluginURL);
-                    callback(globalRTLTextPlugin.isLoaded() ?
-                        null :
-                        new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`));
-                }
-            } else if (lazy) {
-                // Set the state of the rtl text plugin in worker scope, to load the plugin if necessary.
-                globalRTLTextPlugin.markWorkerAvailable();
+            globalRTLTextPlugin.setState(state);
+            const {blob, host} = globalRTLTextPlugin.getURLs();
+            if (
+                globalRTLTextPlugin.isLoaded() &&
+                !globalRTLTextPlugin.isParsed() &&
+                blob != null && host != null // Not possible when `isLoaded` is true, but keeps flow happy
+            ) {
+                this.self.importScripts(blob);
+                const complete = globalRTLTextPlugin.isParsed();
+                const error = complete ? undefined : new Error(`RTL Text Plugin failed to import scripts from ${host}`);
+                callback(error, complete);
             }
         } catch (e) {
             callback(e.toString());

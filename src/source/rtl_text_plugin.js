@@ -4,119 +4,96 @@ import {Event, Evented} from '../util/evented';
 import {getArrayBuffer} from '../util/ajax';
 import browser from '../util/browser';
 import window from '../util/window';
+import assert from 'assert';
+import {isWorker} from '../util/util';
 
 const status = {
     unavailable: 'unavailable', // Not loaded
     available: 'available', // Host url specified, but we havent started loading yet
     loading: 'loading', // request in-flight
-    downloaded: 'downloaded', //plugin loaded and cached on main-thread and pluginBlobURL for worker is generated
     loaded: 'loaded',
     error: 'error'
 };
+export type PluginState = {
+    pluginStatus: $Values<typeof status>;
+    pluginURL: ?string,
+    pluginBlobURL: ?string
+};
+
+type ErrorCallback = (error: ?Error) => void;
+type PluginStateSyncCallback = (state: PluginState) => void;
+let _completionCallback = null;
+
+//Variables defining the current state of the plugin
 let pluginStatus = status.unavailable;
 let pluginURL = null;
 let pluginBlobURL = null;
-let lazy = null;
 
-// store `pluginAvailable` that have occurred before the `registerPluginAvailability` bind
-// so we can flush all the state updates to the workers
-let eventQueue = [];
-let _pluginAvailableCb = null;
+export const triggerPluginCompletionEvent = function(error: ?Error) {
+    if (_completionCallback) {
+        _completionCallback(error);
+    }
+};
 
-let _workerAvailable = false;
+function sendPluginStateToWorker() {
+    evented.fire(new Event('pluginStateChange', {pluginStatus, pluginURL, pluginBlobURL}));
+}
 
 export const evented = new Evented();
-evented.on('pluginAvailable', (args) => {
-    if (!_pluginAvailableCb) {
-        eventQueue.push(args);
-    } else {
-        _pluginAvailableCb(args);
-    }
-});
-
-type CompletionCallback = (error?: Error) => void;
-type ErrorCallback = (error: Error) => void;
-type PluginAvailableCallback = (args: {pluginURL: ?string, lazy: ?boolean, completionCallback: CompletionCallback}) => void;
-
-let _completionCallback;
 
 export const getRTLTextPluginStatus = function () {
     return pluginStatus;
 };
 
-export const registerForPluginAvailability = function(callback: PluginAvailableCallback) {
-    for (const event of eventQueue) {
-        callback(event);
-    }
-    eventQueue = [];
-
-    _pluginAvailableCb = callback;
+export const registerForPluginStateChange = function(callback: PluginStateSyncCallback) {
+    // Do an initial sync of the state
+    callback({pluginStatus, pluginURL, pluginBlobURL});
+    // Listen for all future state changes
+    evented.on('pluginStateChange', callback);
     return callback;
 };
 
 export const clearRTLTextPlugin = function() {
     pluginStatus = status.unavailable;
     pluginURL = null;
+    if (pluginBlobURL) {
+        const URL = window.URL || window.webkitURL;
+        URL.revokeObjectURL(pluginBlobURL);
+    }
     pluginBlobURL = null;
-    lazy = null;
 };
 
-export const setRTLTextPlugin = function(url: string, callback: ?ErrorCallback, lazyLoad: ?boolean) {
+export const setRTLTextPlugin = function(url: string, callback: ?ErrorCallback, lazy: boolean = false) {
     if (pluginStatus === status.available || pluginStatus === status.loading || pluginStatus === status.loaded) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }
     pluginURL = browser.resolveURL(url);
-    lazy = !!lazyLoad;
     pluginStatus = status.available;
-    _completionCallback = (error?: Error) => {
-        if (error) {
-            // Clear loaded state to allow retries
-            clearRTLTextPlugin();
-            pluginStatus = status.error;
-            if (callback) {
-                callback(error);
-            }
-        } else {
-            // Called once for each worker
-            if (!lazy) {
-                pluginStatus = status.loaded;
-            }
-        }
-    };
+    _completionCallback = callback;
+    sendPluginStateToWorker();
 
-    if (lazy) {
-        // Inform the worker-threads that we intend to load the plugin lazily later,
-        // This is so the workers can skip RTL text parsing.
-        evented.fire(new Event('pluginAvailable', {
-            pluginURL: null,
-            lazy,
-            completionCallback: _completionCallback
-        }));
-    } else {
+    //Start downloading the plugin immediately if not intending to lazy-load
+    if (!lazy) {
         downloadRTLTextPlugin();
     }
 };
 
 export const downloadRTLTextPlugin = function() {
-    if (pluginStatus !== status.available) {
+    if (pluginStatus !== status.available || !pluginURL) {
         throw new Error('rtl-text-plugin cannot be downloaded unless a pluginURL is specified');
     }
     pluginStatus = status.loading;
-
+    sendPluginStateToWorker();
     if (pluginURL) {
         getArrayBuffer({url: pluginURL}, (error, data) => {
-            if (error || !data) {
-                throw error;
+            if (error) {
+                triggerPluginCompletionEvent(error);
             } else {
                 const rtlBlob = new window.Blob([data], {type: 'application/javascript'});
                 const URL = window.URL || window.webkitURL;
                 pluginBlobURL = URL.createObjectURL(rtlBlob);
-                pluginStatus = status.downloaded;
-                evented.fire(new Event('pluginAvailable', {
-                    pluginURL: pluginBlobURL,
-                    lazy,
-                    completionCallback: _completionCallback
-                }));
+                pluginStatus = status.loaded;
+                sendPluginStateToWorker();
             }
         });
     }
@@ -128,8 +105,9 @@ export const plugin: {
     processStyledBidirectionalText: ?(string, Array<number>, Array<number>) => Array<[string, Array<number>]>,
     isLoaded: () => boolean,
     isLoading: () => boolean,
-    markWorkerAvailable: () => void,
-    isAvailableInWorker: () => boolean
+    setState: (state: PluginState) => void,
+    isParsed: () => boolean,
+    getURLs: () => { blob: ?string, host: ?string }
 } = {
     applyArabicShaping: null,
     processBidirectionalText: null,
@@ -141,10 +119,28 @@ export const plugin: {
     isLoading() { // Main Thread Only: query the loading status, this function does not return the correct value in the worker context.
         return pluginStatus === status.loading;
     },
-    markWorkerAvailable() { // Worker thread only: this tells the worker threads that the plugin is available on the Main thread
-        _workerAvailable = true;
+    setState(state: PluginState) { // Worker thread only: this tells the worker threads that the plugin is available on the Main thread
+        if (!isWorker()) {
+            throw new Error('Cannot set the state of the rtl-text-plugin when not in the web-worker context');
+        }
+
+        pluginStatus = state.pluginStatus;
+        pluginURL = state.pluginURL;
+        pluginBlobURL = state.pluginBlobURL;
     },
-    isAvailableInWorker() {
-        return !!_workerAvailable;
+    isParsed(): boolean {
+        assert(isWorker(), 'rtl-text-plugin is only parsed on the worker-threads');
+
+        return plugin.applyArabicShaping != null &&
+            plugin.processBidirectionalText != null &&
+            plugin.processStyledBidirectionalText != null;
+    },
+    getURLs(): { blob: ?string, host: ?string } {
+        assert(isWorker(), 'rtl-text-plugin urls can only be queried from the worker threads');
+
+        return {
+            blob: pluginBlobURL,
+            host: pluginURL,
+        };
     }
 };
