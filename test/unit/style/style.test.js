@@ -4,7 +4,7 @@ import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
-import {extend, isWorker} from '../../../src/util/util';
+import {extend} from '../../../src/util/util';
 import {RequestManager} from '../../../src/util/mapbox';
 import {Event, Evented} from '../../../src/util/evented';
 import window from '../../../src/util/window';
