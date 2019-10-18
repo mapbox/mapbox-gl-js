@@ -165,7 +165,11 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: node build/check-bundle-size.js "dist/mapbox-gl.js" "GL JS - Minified"
+      - run:
+          name: Check bundle size
+          command: |
+            node build/check-bundle-size.js "dist/mapbox-gl.js" "JS"
+            node build/check-bundle-size.js "dist/mapbox-gl.css" "CSS"
 
   collect-stats:
     <<: *defaults
