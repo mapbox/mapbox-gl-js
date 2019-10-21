@@ -889,7 +889,7 @@ test('camera', (t) => {
             camera.easeTo({center: [100, 0], zoom: 3.2, bearing: 90, duration: 1000});
         });
 
-        t.test('annimation occurs when prefers-reduced-motion: reduce is set but overiden by essential: true', (t) => {
+        t.test('animation occurs when prefers-reduced-motion: reduce is set but overridden by essential: true', (t) => {
             const camera = createCamera();
             const stub = t.stub(browser, 'prefersReducedMotion');
             stub.get(() => true);
