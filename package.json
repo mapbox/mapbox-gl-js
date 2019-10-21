@@ -100,7 +100,6 @@
     "testem": "^2.17.0"
   },
   "browser": {
-    "./src/shaders/index.js": "./src/shaders/shaders.js",
     "./src/util/window.js": "./src/util/browser/window.js",
     "./src/util/web_worker.js": "./src/util/browser/web_worker.js"
   },
