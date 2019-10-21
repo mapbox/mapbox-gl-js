@@ -48,6 +48,7 @@
     "benchmark": "^2.1.4",
     "browserify": "^16.2.3",
     "chokidar": "^3.0.2",
+    "cssnano": "^4.1.10",
     "d3": "^4.12.0",
     "documentation": "~12.1.1",
     "ejs": "^2.5.7",
