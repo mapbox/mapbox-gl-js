@@ -2,13 +2,17 @@
 
 import DOM from '../../util/dom';
 
-import {bindAll, warnOnce} from '../../util/util';
+import {extend, bindAll, warnOnce} from '../../util/util';
 import window from '../../util/window';
+
+// $FlowFixMe: Flow doesn't know about our SVG plugin for rollup
+import fullscreenSVG from './fullscreen_icon.svg';
 
 import type Map from '../map';
 
 type Options = {
-    container?: HTMLElement
+    container?: HTMLElement,
+    iconSVG?: string,
 };
 
 /**
@@ -17,6 +21,7 @@ type Options = {
  * @implements {IControl}
  * @param {Object} [options]
  * @param {HTMLElement} [options.container] `container` is the [compatible DOM element](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullScreen#Compatible_elements) which should be made full screen. By default, the map container element will be made full screen.
+ * @param {string} [options.iconSVG=undefined] If set, this SVG is used instead of the default fullscreen icon.
  *
  * @example
  * map.addControl(new mapboxgl.FullscreenControl({container: document.querySelector('body')}));
@@ -25,6 +30,7 @@ type Options = {
 
 class FullscreenControl {
     _map: Map;
+    options: Options;
     _controlContainer: HTMLElement;
     _fullscreen: boolean;
     _fullscreenchange: string;
@@ -34,9 +40,10 @@ class FullscreenControl {
 
     constructor(options: Options) {
         this._fullscreen = false;
-        if (options && options.container) {
-            if (options.container instanceof window.HTMLElement) {
-                this._container = options.container;
+        this.options = extend({}, options);
+        if (this.options.container) {
+            if (this.options.container instanceof window.HTMLElement) {
+                this._container = this.options.container;
             } else {
                 warnOnce('Full screen control \'container\' must be a DOM element.');
             }
@@ -88,8 +95,13 @@ class FullscreenControl {
     _setupUI() {
         const button = this._fullscreenButton = DOM.create('button', (`${this._className}-icon ${this._className}-fullscreen`), this._controlContainer);
         button.type = 'button';
+        const fullscreenIcon = new window.DOMParser().parseFromString(this.options.iconSVG || fullscreenSVG, 'text/xml');
+        if (fullscreenIcon.firstChild) {
+            button.appendChild(fullscreenIcon.firstChild);
+        }
         this._updateTitle();
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
+        this._fullscreenButton.setAttribute('aria-pressed', 'false');
         window.document.addEventListener(this._fullscreenchange, this._changeIcon);
     }
 
@@ -129,14 +141,18 @@ class FullscreenControl {
             } else if (window.document.webkitCancelFullScreen) {
                 (window.document: any).webkitCancelFullScreen();
             }
-        } else if (this._container.requestFullscreen) {
-            this._container.requestFullscreen();
-        } else if ((this._container: any).mozRequestFullScreen) {
-            (this._container: any).mozRequestFullScreen();
-        } else if ((this._container: any).msRequestFullscreen) {
-            (this._container: any).msRequestFullscreen();
-        } else if ((this._container: any).webkitRequestFullscreen) {
-            (this._container: any).webkitRequestFullscreen();
+            this._fullscreenButton.setAttribute('aria-pressed', 'false');
+        } else {
+            if (this._container.requestFullscreen) {
+                this._container.requestFullscreen();
+            } else if ((this._container: any).mozRequestFullScreen) {
+                (this._container: any).mozRequestFullScreen();
+            } else if ((this._container: any).msRequestFullscreen) {
+                (this._container: any).msRequestFullscreen();
+            } else if ((this._container: any).webkitRequestFullscreen) {
+                (this._container: any).webkitRequestFullscreen();
+            }
+            this._fullscreenButton.setAttribute('aria-pressed', 'true');
         }
     }
 }

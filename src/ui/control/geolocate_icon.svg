@@ -1,0 +1,5 @@
+<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 4C9 4 9 5 9 5v.1A5 5 0 005.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 009 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 003.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0011 5.1V5s0-1-1-1zm0 2.5c1.92 0 3.5 1.58 3.5 3.5s-1.58 3.5-3.5 3.5-3.5-1.58-3.5-3.5S8.08 6.5 10 6.5z"/>
+    <circle class="mapboxgl-ctrl-geolocate-dot" cx="10" cy="10" r="2"/>
+    <path class="mapboxgl-ctrl-geolocate-stroke" d="M14 5l1 1-9 9-1-1 9-9z" fill="none"/>
+</svg>

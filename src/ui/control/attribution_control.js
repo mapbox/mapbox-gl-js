@@ -1,14 +1,18 @@
 // @flow
 
 import DOM from '../../util/dom';
+import window from '../../util/window';
 import {bindAll} from '../../util/util';
 import config from '../../util/config';
 
+// $FlowFixMe: Flow doesn't know about our SVG plugin for rollup
+import attribSVG from './attrib_icon.svg';
 import type Map from '../map';
 
 type Options = {
     compact?: boolean,
-    customAttribution?: string | Array<string>
+    customAttribution?: string | Array<string>,
+    iconSVG?: string,
 };
 
 /**
@@ -18,6 +22,7 @@ type Options = {
  * @param {Object} [options]
  * @param {boolean} [options.compact] If `true` force a compact attribution that shows the full attribution on mouse hover, or if `false` force the full attribution control. The default is a responsive attribution that collapses when the map is less than 640 pixels wide.
  * @param {string | Array<string>} [options.customAttribution] String or strings to show in addition to any other attributions.
+ * @param {string} [options.iconSVG=undefined] If set, this SVG is used instead of the default attribution icon.
  * @example
  * var map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.AttributionControl({
@@ -54,6 +59,11 @@ class AttributionControl {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
         this._innerContainer = DOM.create('div', 'mapboxgl-ctrl-attrib-inner', this._container);
+        const wrapper = DOM.create('div', 'mapboxgl-ctrl-attrib-icon', this._container);
+        const attribIcon = new window.DOMParser().parseFromString(this.options.iconSVG || attribSVG, 'text/xml');
+        if (attribIcon.firstChild) {
+            wrapper.appendChild(attribIcon.firstChild);
+        }
 
         if (compact) {
             this._container.classList.add('mapboxgl-compact');

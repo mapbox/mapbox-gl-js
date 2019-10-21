@@ -1,4 +1,5 @@
 // @flow
+/* global DOMParser */
 
 import DOM from '../../util/dom';
 import {extend, bindAll} from '../../util/util';
@@ -6,10 +7,19 @@ import DragRotateHandler from '../handler/drag_rotate';
 
 import type Map from '../map';
 
+// $FlowFixMe: Flow doesn't know about our SVG plugin for rollup
+import zoomInSVG from './zoom-in_icon.svg';
+// $FlowFixMe: Flow doesn't know about our SVG plugin for rollup
+import zoomOutSVG from './zoom-out_icon.svg';
+// $FlowFixMe: Flow doesn't know about our SVG plugin for rollup
+import compassSVG from './compass_icon.svg';
+
 type Options = {
     showCompass?: boolean,
     showZoom?: boolean,
-    visualizePitch?: boolean
+    visualizePitch?: boolean,
+    zoomInSVG?: string,
+    zoomOutSVG?: string,
 };
 
 const defaultOptions: Options = {
@@ -26,6 +36,8 @@ const defaultOptions: Options = {
  * @param {Boolean} [options.showCompass=true] If `true` the compass button is included.
  * @param {Boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
  * @param {Boolean} [options.visualizePitch=false] If `true` the pitch is visualized by rotating X-axis of compass.
+ * @param {string} [options.zoomInSVG=undefined] If set, this SVG is used instead of the default zoom-in icon.
+ * @param {string} [options.zoomOutSVG=undefined] If set, this SVG is used instead of the default zoom-out icon.
  * @example
  * var nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');
@@ -36,10 +48,10 @@ class NavigationControl {
     _map: Map;
     options: Options;
     _container: HTMLElement;
-    _zoomInButton: HTMLElement;
-    _zoomOutButton: HTMLElement;
-    _compass: HTMLElement;
-    _compassArrow: HTMLElement;
+    _zoomInButton: HTMLButtonElement;
+    _zoomOutButton: HTMLButtonElement;
+    _compass: HTMLButtonElement;
+    _compassArrow: Node;
     _handler: DragRotateHandler;
 
     constructor(options: Options) {
@@ -53,7 +65,15 @@ class NavigationControl {
                 '_updateZoomButtons'
             ], this);
             this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom in', (e) => this._map.zoomIn({}, {originalEvent: e}));
+            const zoomInIcon = new DOMParser().parseFromString(this.options.zoomInSVG || zoomInSVG, 'text/xml');
+            if (zoomInIcon.firstChild) {
+                this._zoomInButton.appendChild(zoomInIcon.firstChild);
+            }
             this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom out', (e) => this._map.zoomOut({}, {originalEvent: e}));
+            const zoomOutIcon = new DOMParser().parseFromString(this.options.zoomOutSVG || zoomOutSVG, 'text/xml');
+            if (zoomOutIcon.firstChild) {
+                this._zoomOutButton.appendChild(zoomOutIcon.firstChild);
+            }
         }
         if (this.options.showCompass) {
             bindAll([
@@ -66,22 +86,18 @@ class NavigationControl {
                     this._map.resetNorth({}, {originalEvent: e});
                 }
             });
-            this._compassArrow = DOM.create('span', 'mapboxgl-ctrl-compass-arrow', this._compass);
+            const compassIcon = new DOMParser().parseFromString(compassSVG, 'text/xml');
+            if (compassIcon.firstChild) {
+                this._compassArrow = compassIcon.firstChild;
+                this._compass.appendChild(this._compassArrow);
+            }
         }
     }
 
     _updateZoomButtons() {
         const zoom = this._map.getZoom();
-        if (zoom === this._map.getMaxZoom()) {
-            this._zoomInButton.classList.add('mapboxgl-ctrl-icon-disabled');
-        } else {
-            this._zoomInButton.classList.remove('mapboxgl-ctrl-icon-disabled');
-        }
-        if (zoom === this._map.getMinZoom()) {
-            this._zoomOutButton.classList.add('mapboxgl-ctrl-icon-disabled');
-        } else {
-            this._zoomOutButton.classList.remove('mapboxgl-ctrl-icon-disabled');
-        }
+        this._zoomInButton.disabled = zoom === this._map.getMaxZoom();
+        this._zoomOutButton.disabled = zoom === this._map.getMinZoom();
     }
 
     _rotateCompassArrow() {
@@ -89,7 +105,7 @@ class NavigationControl {
             `scale(${1 / Math.pow(Math.cos(this._map.transform.pitch * (Math.PI / 180)), 0.5)}) rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)` :
             `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
 
-        this._compassArrow.style.transform = rotate;
+        ((this._compassArrow: any): HTMLElement).style.transform = rotate;
     }
 
     onAdd(map: Map) {

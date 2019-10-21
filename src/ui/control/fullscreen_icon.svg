@@ -1,0 +1,18 @@
+<svg viewBox="0 0 29 29" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <path id="expand" d="M7.5 5C5.75 5 5 5.75 5 7.5V13h1l1.5-3 5.5 4 1-1-4-5.5L13 6V5H7.5z"/>
+        <use id="shrink" xlink:href="#expand" transform="rotate(180 9 9)"/>
+    </defs>
+    <g class="mapboxgl-ctrl-fullscreen-expand">
+        <use xlink:href="#expand"/>
+        <use xlink:href="#expand" transform="rotate(90 14.5 14.5)"/>
+        <use xlink:href="#expand" transform="rotate(180 14.5 14.5)"/>
+        <use xlink:href="#expand" transform="rotate(-90 14.5 14.5)"/>
+    </g>
+    <g fill="none" class="mapboxgl-ctrl-fullscreen-shrink">
+        <use xlink:href="#shrink"/>
+        <use xlink:href="#shrink" transform="rotate(90 14.5 14.5)"/>
+        <use xlink:href="#shrink" transform="rotate(180 14.5 14.5)"/>
+        <use xlink:href="#shrink" transform="rotate(-90 14.5 14.5)"/>
+    </g>
+</svg>

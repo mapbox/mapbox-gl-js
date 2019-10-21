@@ -1,13 +1,15 @@
 
+/* eslint-disable flowtype/require-valid-file-annotation */
 import flowRemoveTypes from '@mapbox/flow-remove-types';
 import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from 'rollup-plugin-json';
-import { terser } from 'rollup-plugin-terser';
+import svgo from 'rollup-plugin-svgo';
+import {terser} from 'rollup-plugin-terser';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
-import { createFilter } from 'rollup-pluginutils';
+import {createFilter} from 'rollup-pluginutils';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
@@ -17,6 +19,15 @@ export const plugins = (minified, production) => [
     minifyStyleSpec(),
     json(),
     glsl('./src/shaders/*.glsl', production),
+    svgo({
+        plugins: [{
+            removeViewBox: false
+        }, {
+            removeDimensions: false
+        }, {
+            cleanupIDs: false
+        }]
+    }),
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
     minified ? terser() : false,
     production ? unassert() : false,

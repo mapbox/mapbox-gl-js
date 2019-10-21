@@ -11,4 +11,7 @@ function loadFile(module, filename) {
 }
 
 // $FlowFixMe: Flow doesn't know about require.extensions
+require.extensions['.svg'] = loadFile;
+
+// $FlowFixMe: Flow doesn't know about require.extensions
 require.extensions['.glsl'] = loadFile;

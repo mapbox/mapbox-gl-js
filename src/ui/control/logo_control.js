@@ -1,9 +1,12 @@
 // @flow
 
 import DOM from '../../util/dom';
+import window from '../../util/window';
 
 import {bindAll} from '../../util/util';
 
+// $FlowFixMe: Flow doesn't know about our SVG plugin for rollup
+import logoSVG from './logo_icon.svg';
 import type Map from '../map';
 
 /**
@@ -33,6 +36,10 @@ class LogoControl {
         anchor.href = "https://www.mapbox.com/";
         anchor.setAttribute("aria-label", "Mapbox logo");
         anchor.setAttribute("rel", "noopener nofollow");
+        const logoIcon = new window.DOMParser().parseFromString(logoSVG, 'text/xml');
+        if (logoIcon.firstChild) {
+            anchor.appendChild(logoIcon.firstChild);
+        }
         this._container.appendChild(anchor);
         this._container.style.display = 'none';
 
