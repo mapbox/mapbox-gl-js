@@ -86,7 +86,7 @@ class DragPanHandler {
      *
      * @param {Object} [options]
      * @param {number} [options.linearity=0] factor used to scale the drag velocity
-     * @param {(t: number) => number} [options.easing=bezier(0, 0, 0.3, 1)] easing function applled to `map.panTo` when applying the drag.
+     * @param {Function} [options.easing=bezier(0, 0, 0.3, 1)] easing function applled to `map.panTo` when applying the drag.
      * @param {number} [options.maxSpeed=1400] the maximum value of the drag velocity.
      * @param {number} [options.deceleration=2500] the rate at which the speed reduces after the pan ends.
      *
