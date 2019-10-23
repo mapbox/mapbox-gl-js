@@ -3,10 +3,15 @@ import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from '../../../util/simulate_interaction';
+import DragPanHandler from '../../../../src/ui/handler/drag_pan';
 
-function createMap(t, clickTolerance) {
+function createMap(t, clickTolerance, dragPan) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({container: DOM.create('div', '', window.document.body), clickTolerance: clickTolerance || 0});
+    return new Map({
+        container: DOM.create('div', '', window.document.body),
+        clickTolerance: clickTolerance || 0,
+        dragPan: dragPan || true
+    });
 }
 
 test('DragPanHandler fires dragstart, drag, and dragend events at appropriate times in response to a mouse-triggered drag', (t) => {
@@ -933,5 +938,20 @@ test('DragPanHandler fires dragstart, drag, dragend events in response to multi-
     t.equal(dragend.callCount, 1);
 
     map.remove();
+    t.end();
+});
+
+test('DragPanHander#enable gets called with dragPan map option parameters', (t) => {
+    const enableSpy = t.spy(DragPanHandler.prototype, 'enable');
+    const customParams = {
+        linearity: 0.5,
+        easing: (t) => t,
+        maxSpeed: 1500,
+        deceleration: 1900
+    };
+    const map = createMap(t, null, customParams);
+
+    t.ok(enableSpy.calledWith(customParams));
+    t.deepEqual(map.dragPan._inertiaOptions, customParams);
     t.end();
 });
