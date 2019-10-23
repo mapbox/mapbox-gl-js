@@ -9,7 +9,7 @@ import {isWorker} from '../util/util';
 
 const status = {
     unavailable: 'unavailable', // Not loaded
-    available: 'available', // Host url specified, but we havent started loading yet
+    available: 'available', // The plugin URL has been specified, but loading has been deferred
     loading: 'loading', // request in-flight
     loaded: 'loaded',
     error: 'error'
