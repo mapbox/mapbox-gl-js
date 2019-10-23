@@ -120,9 +120,7 @@ export const plugin: {
         return pluginStatus === status.loading;
     },
     setState(state: PluginState) { // Worker thread only: this tells the worker threads that the plugin is available on the Main thread
-        if (!isWorker()) {
-            throw new Error('Cannot set the state of the rtl-text-plugin when not in the web-worker context');
-        }
+        assert(isWorker(), 'Cannot set the state of the rtl-text-plugin when not in the web-worker context');
 
         pluginStatus = state.pluginStatus;
         pluginURL = state.pluginURL;
