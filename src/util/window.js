@@ -76,6 +76,15 @@ function restore(): Window {
 
     window.URL.revokeObjectURL = function () {};
 
+    window.fakeWorkerPresence = function() {
+        global.WorkerGlobalScope = function() {};
+        global.self = new global.WorkerGlobalScope();
+    };
+    window.clearFakeWorkerPresence = function() {
+        global.WorkerGlobalScope = undefined;
+        global.self = undefined;
+    };
+
     window.restore = restore;
 
     window.ImageData = window.ImageData || function() { return false; };

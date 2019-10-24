@@ -29,8 +29,9 @@ import getWorkerPool from '../util/global_worker_pool';
 import deref from '../style-spec/deref';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff';
 import {
-    registerForPluginAvailability,
-    evented as rtlTextPluginEvented
+    registerForPluginStateChange,
+    evented as rtlTextPluginEvented,
+    triggerPluginCompletionEvent
 } from '../source/rtl_text_plugin';
 import PauseablePlacement from './pauseable_placement';
 import ZoomHistory from './zoom_history';
@@ -129,7 +130,7 @@ class Style extends Evented {
     // exposed to allow stubbing by unit tests
     static getSourceType: typeof getSourceType;
     static setSourceType: typeof setSourceType;
-    static registerForPluginAvailability: typeof registerForPluginAvailability;
+    static registerForPluginStateChange: typeof registerForPluginStateChange;
 
     constructor(map: Map, options: StyleOptions = {}) {
         super();
@@ -153,11 +154,24 @@ class Style extends Evented {
         this.dispatcher.broadcast('setReferrer', getReferrer());
 
         const self = this;
-        this._rtlTextPluginCallback = Style.registerForPluginAvailability((args) => {
-            self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginURL, args.completionCallback);
-            for (const id in self.sourceCaches) {
-                self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
-            }
+        this._rtlTextPluginCallback = Style.registerForPluginStateChange((event) => {
+            const state = {
+                pluginStatus: event.pluginStatus,
+                pluginURL: event.pluginURL,
+                pluginBlobURL: event.pluginBlobURL
+            };
+            self.dispatcher.broadcast('syncRTLPluginState', state, (err, results) => {
+                triggerPluginCompletionEvent(err);
+                if (results) {
+                    const allComplete = results.every((elem) => elem);
+                    if (allComplete) {
+                        for (const id in self.sourceCaches) {
+                            self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
+                        }
+                    }
+                }
+
+            });
         });
 
         this.on('data', (event) => {
@@ -1144,7 +1158,7 @@ class Style extends Evented {
             this._spriteRequest.cancel();
             this._spriteRequest = null;
         }
-        rtlTextPluginEvented.off('pluginAvailable', this._rtlTextPluginCallback);
+        rtlTextPluginEvented.off('pluginStateChange', this._rtlTextPluginCallback);
         for (const layerId in this._layers) {
             const layer: StyleLayer = this._layers[layerId];
             layer.setEventedParent(null);
@@ -1272,6 +1286,6 @@ class Style extends Evented {
 
 Style.getSourceType = getSourceType;
 Style.setSourceType = setSourceType;
-Style.registerForPluginAvailability = registerForPluginAvailability;
+Style.registerForPluginStateChange = registerForPluginStateChange;
 
 export default Style;
