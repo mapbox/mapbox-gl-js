@@ -37,7 +37,7 @@ function validSchema(k, t, obj, ref, version, kind) {
         'visibility-enum',
         'property-type',
         'formatted',
-        'image'
+        'resolvedImage'
     ]);
     const keys = [
         'default',
