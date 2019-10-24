@@ -3799,7 +3799,7 @@
     "fill-pattern": {
       "type": "resolvedImage",
       "transition": true,
-      "doc": "WHY ISNT THIS WORKING",
+      "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
