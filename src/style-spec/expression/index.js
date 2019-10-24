@@ -360,7 +360,7 @@ function getExpectedType(spec: StylePropertySpecification): Type {
         enum: StringType,
         boolean: BooleanType,
         formatted: FormattedType,
-        image: ResolvedImageType
+        resolvedImage: ResolvedImageType
     };
 
     if (spec.type === 'array') {

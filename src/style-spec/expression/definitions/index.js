@@ -39,7 +39,7 @@ import {
 import CollatorExpression from './collator';
 import NumberFormat from './number_format';
 import FormatExpression from './format';
-import Image from './image';
+import ImageExpression from './image';
 import Length from './length';
 
 import type {Varargs} from '../compound_expression';
@@ -60,7 +60,7 @@ const expressions: ExpressionRegistry = {
     'coalesce': Coalesce,
     'collator': CollatorExpression,
     'format': FormatExpression,
-    'image': Image,
+    'image': ImageExpression,
     'interpolate': Interpolate,
     'interpolate-hcl': Interpolate,
     'interpolate-lab': Interpolate,
