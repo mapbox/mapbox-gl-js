@@ -9,11 +9,12 @@ import {isWorker} from '../util/util';
 
 const status = {
     unavailable: 'unavailable', // Not loaded
-    available: 'available', // The plugin URL has been specified, but loading has been deferred
+    deferred: 'deferred', // The plugin URL has been specified, but loading has been deferred
     loading: 'loading', // request in-flight
     loaded: 'loaded',
     error: 'error'
 };
+
 export type PluginState = {
     pluginStatus: $Values<typeof status>;
     pluginURL: ?string,
@@ -57,29 +58,28 @@ export const clearRTLTextPlugin = function() {
     pluginStatus = status.unavailable;
     pluginURL = null;
     if (pluginBlobURL) {
-        const URL = window.URL || window.webkitURL;
-        URL.revokeObjectURL(pluginBlobURL);
+        window.URL.revokeObjectURL(pluginBlobURL);
     }
     pluginBlobURL = null;
 };
 
-export const setRTLTextPlugin = function(url: string, callback: ?ErrorCallback, lazy: boolean = false) {
-    if (pluginStatus === status.available || pluginStatus === status.loading || pluginStatus === status.loaded) {
+export const setRTLTextPlugin = function(url: string, callback: ?ErrorCallback, deferred: boolean = false) {
+    if (pluginStatus === status.deferred || pluginStatus === status.loading || pluginStatus === status.loaded) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }
     pluginURL = browser.resolveURL(url);
-    pluginStatus = status.available;
+    pluginStatus = status.deferred;
     _completionCallback = callback;
     sendPluginStateToWorker();
 
     //Start downloading the plugin immediately if not intending to lazy-load
-    if (!lazy) {
+    if (!deferred) {
         downloadRTLTextPlugin();
     }
 };
 
 export const downloadRTLTextPlugin = function() {
-    if (pluginStatus !== status.available || !pluginURL) {
+    if (pluginStatus !== status.deferred || !pluginURL) {
         throw new Error('rtl-text-plugin cannot be downloaded unless a pluginURL is specified');
     }
     pluginStatus = status.loading;
@@ -90,8 +90,7 @@ export const downloadRTLTextPlugin = function() {
                 triggerPluginCompletionEvent(error);
             } else {
                 const rtlBlob = new window.Blob([data], {type: 'application/javascript'});
-                const URL = window.URL || window.webkitURL;
-                pluginBlobURL = URL.createObjectURL(rtlBlob);
+                pluginBlobURL = window.URL.createObjectURL(rtlBlob);
                 pluginStatus = status.loaded;
                 sendPluginStateToWorker();
             }

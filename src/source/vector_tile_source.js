@@ -158,7 +158,7 @@ class VectorTileSource extends Evented implements Source {
                 const plugin = rtlTextPlugin;
                 if (!plugin.isLoading() &&
                     !plugin.isLoaded() &&
-                    getRTLTextPluginStatus() === 'available'
+                    getRTLTextPluginStatus() === 'deferred'
                 ) {
                     downloadRTLTextPlugin();
                 }

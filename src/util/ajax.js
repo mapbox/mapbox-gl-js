@@ -299,16 +299,15 @@ export const getImage = function(requestParameters: RequestParameters, callback:
             callback(err);
         } else if (data) {
             const img: HTMLImageElement = new window.Image();
-            const URL = window.URL || window.webkitURL;
             img.onload = () => {
                 callback(null, img);
-                URL.revokeObjectURL(img.src);
+                window.URL.revokeObjectURL(img.src);
             };
             img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
             const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
             (img: any).cacheControl = cacheControl;
             (img: any).expires = expires;
-            img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+            img.src = data.byteLength ? window.URL.createObjectURL(blob) : transparentPngUrl;
         }
     });
 
