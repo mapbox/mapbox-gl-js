@@ -73,7 +73,7 @@ test('Style', (t) => {
 
         setRTLTextPlugin("/plugin.js",);
         t.ok(style.dispatcher.broadcast.calledWith('syncRTLPluginState', {
-            pluginStatus: 'available',
+            pluginStatus: 'deferred',
             pluginURL: "/plugin.js",
             pluginBlobURL: null
         }));
