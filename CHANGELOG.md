@@ -1,4 +1,4 @@
-## 1.5.0-beta.1
+## 1.5.0
 
 ## ✨ Features
 * Add disabled icon to GeolocateControl if user denies geolocation permission. [#8871](https://github.com/mapbox/mapbox-gl-js/pull/8871))
