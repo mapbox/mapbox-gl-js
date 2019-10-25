@@ -101,9 +101,8 @@ class Coercion implements Expression {
             // There is no explicit 'to-formatted' but this coercion can be implicitly
             // created by properties that expect the 'formatted' type.
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
-        } else if (this.type.kind === 'image') {
-            const name = this.args[0].evaluate(ctx);
-            return typeof name === 'string' ? ResolvedImage.fromString({name, available: false}) : name;
+        } else if (this.type.kind === 'resolvedImage') {
+            return ResolvedImage.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else {
             return valueToString(this.args[0].evaluate(ctx));
         }
@@ -122,7 +121,7 @@ class Coercion implements Expression {
             return new FormatExpression([{text: this.args[0], scale: null, font: null, textColor: null}]).serialize();
         }
 
-        if (this.type.kind === 'image') {
+        if (this.type.kind === 'resolvedImage') {
             return new ImageExpression(this.args[0]).serialize();
         }
 

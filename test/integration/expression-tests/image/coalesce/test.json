@@ -1,7 +1,7 @@
 {
   "expression": ["coalesce", ["image", "foo"], ["image", "bar"], ["image", "monument-15"]],
   "propertySpec": {
-    "type": "image"
+    "type": "resolvedImage"
   },
   "inputs": [
     [{}, {}]
@@ -11,7 +11,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "image"
+      "type": "resolvedImage"
     },
     "outputs": [
       {"name":"monument-15","available":true}
