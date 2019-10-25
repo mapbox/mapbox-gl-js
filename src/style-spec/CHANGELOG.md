@@ -1,3 +1,8 @@
+## 13.9.1
+
+### ✨ Improvement
+* Rename `Image` type to `ResolvedImage`, to better represent the result of an `image` expression evaluation. ([#8901](https://github.com/mapbox/mapbox-gl-js/pull/8901))
+
 ## 13.9.0
 
 * Add `image` expression operator to determine image availability ([#8684](https://github.com/mapbox/mapbox-gl-js/pull/8684))
