@@ -202,8 +202,8 @@ function evaluateIdentityFunction(parameters, propertySpec, input) {
         input = Color.parse(input);
     } else if (propertySpec.type === 'formatted') {
         input = Formatted.fromString(input.toString());
-    } else if (propertySpec.type === 'image') {
-        input = ResolvedImage.fromString({name: input.toString(), available: false});
+    } else if (propertySpec.type === 'resolvedImage') {
+        input = ResolvedImage.fromString(input.toString());
     } else if (getType(input) !== propertySpec.type && (propertySpec.type !== 'enum' || !propertySpec.values[input])) {
         input = undefined;
     }
