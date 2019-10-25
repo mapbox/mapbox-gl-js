@@ -39,7 +39,7 @@ const VALIDATORS = {
     'light': validateLight,
     'string': validateString,
     'formatted': validateFormatted,
-    'image': validateImage
+    'resolvedImage': validateImage
 };
 
 // Main recursive validation function. Tracks:

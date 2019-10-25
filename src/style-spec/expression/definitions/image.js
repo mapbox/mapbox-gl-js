@@ -1,6 +1,7 @@
 // @flow
 
-import {ImageType, StringType} from '../types';
+import {ResolvedImageType, StringType} from '../types';
+import ResolvedImage from '../types/resolved_image';
 
 import type {Expression} from '../expression';
 import type EvaluationContext from '../evaluation_context';
@@ -12,7 +13,7 @@ export default class ImageExpression implements Expression {
     input: Expression;
 
     constructor(input: Expression) {
-        this.type = ImageType;
+        this.type = ResolvedImageType;
         this.input = input;
     }
 
@@ -35,7 +36,7 @@ export default class ImageExpression implements Expression {
             available = true;
         }
 
-        return {name: evaluatedImageName, available};
+        return new ResolvedImage({name: evaluatedImageName, available});
     }
 
     eachChild(fn: (Expression) => void) {

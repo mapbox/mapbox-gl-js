@@ -1,13 +1,13 @@
 {
   "expression": ["number", ["get", "icon"]],
   "propertySpec": {
-    "type": "image"
+    "type": "resolvedImage"
   },
   "expected": {
     "compiled": {
         "result": "error",
         "errors": [
-          {"key": "", "error": "Expected image but found number instead."}
+          {"key": "", "error": "Expected resolvedImage but found number instead."}
         ]
     }
   }
