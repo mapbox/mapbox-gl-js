@@ -6,10 +6,10 @@ const {template} = require('lodash');
 const generateResultHTML = template(`
 <div class="test <%- r.status %>">
     <h2><span class="label" style="background: <%- r.color %>"><%- r.status %></span> <%- r.name %></h2>
-    <% if (r.status !== 'errored') { %>
+    <% if (r.actual) { %>
         <img src="<%- r.actual %>">
     <% } %>
-    <% if (r.error) { %><p style="color: red"><strong>Error:</strong> <%- r.error.message %></p><% } %>
+    <% if (r.error) { %><p style="color: red"><strong>Error:</strong> <pre><%- r.error %></pre></p><% } %>
     <% if (r.difference) { %>
         <pre><%- r.difference.trim() %></pre>
     <% } %>

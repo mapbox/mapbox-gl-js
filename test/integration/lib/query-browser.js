@@ -49,6 +49,16 @@ function testFunc(t) {
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions
     });
     map.repaint = true;
+
+    //helper method that finishes this test
+    const finishTest  = function() {
+        //Cleanup WebGL context
+        map.remove();
+        delete map.painter.context.gl;
+        document.body.removeChild(container);
+        t.end();
+    };
+
     map.once('load', () => {
         //3. Run the operations on the map
         applyOperations(map, options.operations, () => {
@@ -75,11 +85,17 @@ function testFunc(t) {
                 testMetaData['difference'] = generateDiffLog(expected, actual);
                 t.fail(JSON.stringify(testMetaData));
             }
-            //Cleanup WebGL context
-            map.remove();
-            delete map.painter.context.gl;
-            document.body.removeChild(container);
-            t.end();
+            finishTest();
         });
+    });
+
+    map.once('error', (e) => {
+        const testMetaData = {
+            name: t.name,
+            actual: null,
+            error: `${e.error.message}\n${e.error.stack}`
+        };
+        t.fail(JSON.stringify(testMetaData));
+        finishTest();
     });
 }
