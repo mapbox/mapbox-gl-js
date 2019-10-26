@@ -2607,7 +2607,7 @@
         }
       },
       "in": {
-        "doc": "Determines whether an item exists in an array.",
+        "doc": "Determines whether an item exists in an array or a substring exists in a string.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {

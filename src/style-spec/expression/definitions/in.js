@@ -10,7 +10,6 @@ import type EvaluationContext from '../evaluation_context';
 import type {Type} from '../types';
 import type {Value} from '../values';
 
-// haystack should only be able to be a string or an array
 function isComparableType(type: Type) {
     return type.kind === 'boolean' ||
            type.kind === 'string' ||
@@ -53,7 +52,7 @@ class In implements Expression {
         if (!needle || !haystack) return null;
 
         if (!isComparableType(needle.type)) {
-            return context.error(`Expected first argument to be of type boolean, string, number or null, but found ${toString(needle.type)}`);
+            return context.error(`Expected first argument to be of type boolean, string, number or null, but found ${toString(needle.type)} instead`);
         }
 
         return new In(needle, haystack);
