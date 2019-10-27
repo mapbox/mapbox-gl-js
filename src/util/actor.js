@@ -22,6 +22,7 @@ class Actor {
     target: any;
     parent: any;
     mapId: ?number;
+    isWorker: boolean;
     callbacks: { number: any };
     name: string;
     tasks: { number: any };
@@ -33,6 +34,7 @@ class Actor {
         this.target = target;
         this.parent = parent;
         this.mapId = mapId;
+        this.isWorker = typeof mapId !== 'number';
         this.callbacks = {};
         this.tasks = {};
         this.taskQueue = [];
@@ -107,7 +109,7 @@ class Actor {
                 cancel();
             }
         } else {
-            // Store the tasks that we need to process before actually processing them. This
+            // In workers, store the tasks that we need to process before actually processing them. This
             // is necessary because we want to keep receiving messages, and in particular,
             // <cancel> messages. Some tasks may take a while in the worker thread, so before
             // executing the next task in our queue, postMessage preempts this and <cancel>
@@ -115,7 +117,13 @@ class Actor {
             // process() flow to one at a time.
             this.tasks[id] = data;
             this.taskQueue.push(id);
-            this.invoker.trigger();
+            if (this.isWorker) {
+                this.invoker.trigger();
+            } else {
+                // In the main thread, process messages immediately so that other work does not slip in
+                // between getting partial data back from workers.
+                this.process();
+            }
         }
     }
 

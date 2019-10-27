@@ -43,8 +43,8 @@ function crossWithAngle(angle) {
     return {
         "type": "FeatureCollection",
         "features": [
-            line(angle, radius),
-            line(angle, radius + Math.PI / 2)
+            line(angle - Math.PI / 4, radius),
+            line(angle + Math.PI / 4, radius)
         ]
     };
 }
@@ -63,6 +63,16 @@ map.on('load', function () {
         "paint": {
             "line-width": 4,
             "line-color": "#007cbf"
+        }
+    });
+
+    map.addLayer({
+        "id": "dot",
+        "source": "lines",
+        "type": "circle",
+        "paint": {
+            "circle-radius": 10,
+            "circle-color": "#007cbf"
         }
     });
 
