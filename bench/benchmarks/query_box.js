@@ -30,6 +30,9 @@ export default class QueryBox extends Benchmark {
         }))
             .then(maps => {
                 this.maps = maps;
+            })
+            .catch(error => {
+                console.error(error);
             });
     }
 

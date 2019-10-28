@@ -96,6 +96,7 @@ class Tile {
 
     symbolFadeHoldUntil: ?number;
     hasSymbolBuckets: boolean;
+    hasRTLText: boolean;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -110,6 +111,7 @@ class Tile {
         this.expirationTime = null;
         this.queryPadding = 0;
         this.hasSymbolBuckets = false;
+        this.hasRTLText = false;
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -180,6 +182,19 @@ class Tile {
                     bucket.justReloaded = true;
                 } else {
                     break;
+                }
+            }
+        }
+
+        this.hasRTLText = false;
+        if (this.hasSymbolBuckets) {
+            for (const id in this.buckets) {
+                const bucket = this.buckets[id];
+                if (bucket instanceof SymbolBucket) {
+                    if (bucket.hasRTLText) {
+                        this.hasRTLText = true;
+                        break;
+                    }
                 }
             }
         }

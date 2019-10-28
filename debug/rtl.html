@@ -8,16 +8,29 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #buttons {
+            position: absolute;
+            background: white;
+            top: 0px;
+            left: 0px;
+            padding: 10px;
+        }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
+<div id="buttons">
+    <button id="loadSync">Load rtlTextPlugin Sync</button><br>
+    <button id="loadAsync">Load rtlTextPlugin Async</button><br>
+    Plugin Status:<br>
+    <span id="pluginStatus"></span>
+</div>
 
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
 <script>
-mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
+var pluginURL = 'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js';
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 16.5,
@@ -26,11 +39,23 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-setTimeout(function() {
-    if (['loading', 'loaded'].indexOf(mapboxgl.getRTLTextPluginStatus()) === -1) {
-        mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
-    }
-}, 2000);
+document.getElementById('loadSync').onclick = function() {
+    mapboxgl.setRTLTextPlugin(pluginURL);
+};
+
+document.getElementById('loadAsync').onclick = function() {
+    mapboxgl.setRTLTextPlugin(pluginURL, function(err) {
+        if (err) {
+            throw err;
+        } else {
+            console.log('rtl-text-plugin loaded successfully');
+        }
+    }, true);
+};
+
+setInterval(function() {
+    document.getElementById('pluginStatus').innerHTML = mapboxgl.getRTLTextPluginStatus();
+}, 400);
 </script>
 </body>
 </html>

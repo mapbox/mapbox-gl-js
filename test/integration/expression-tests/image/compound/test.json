@@ -9,7 +9,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "image"
+      "type": "resolvedImage"
     },
     "outputs": [
       {"name":"monument-15","available":true}

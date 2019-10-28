@@ -18,8 +18,8 @@ export default class ResolvedImage {
         return this.name;
     }
 
-    static fromString(options: ResolvedImageOptions): ResolvedImage {
-        return new ResolvedImage(options);
+    static fromString(name: string): ResolvedImage {
+        return new ResolvedImage({name, available: false});
     }
 
     serialize(): Array<mixed> {

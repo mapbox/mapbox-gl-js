@@ -6,7 +6,7 @@ import Color from '../util/color';
 import Collator from './types/collator';
 import Formatted from './types/formatted';
 import ResolvedImage from './types/resolved_image';
-import {NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, FormattedType, ImageType, array} from './types';
+import {NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, FormattedType, ResolvedImageType, array} from './types';
 
 import type {Type} from './types';
 
@@ -83,7 +83,7 @@ export function typeOf(value: Value): Type {
     } else if (value instanceof Formatted) {
         return FormattedType;
     } else if (value instanceof ResolvedImage) {
-        return ImageType;
+        return ResolvedImageType;
     } else if (Array.isArray(value)) {
         const length = value.length;
         let itemType: ?Type;
