@@ -158,18 +158,18 @@ const defaultOptions = {
  * where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use one of the following
  * [the predefined Mapbox styles](https://www.mapbox.com/maps/):
  *
- *  * `mapbox://styles/mapbox/streets-v10`
- *  * `mapbox://styles/mapbox/outdoors-v10`
- *  * `mapbox://styles/mapbox/light-v9`
- *  * `mapbox://styles/mapbox/dark-v9`
+ *  * `mapbox://styles/mapbox/streets-v11`
+ *  * `mapbox://styles/mapbox/outdoors-v11`
+ *  * `mapbox://styles/mapbox/light-v10`
+ *  * `mapbox://styles/mapbox/dark-v10`
  *  * `mapbox://styles/mapbox/satellite-v9`
- *  * `mapbox://styles/mapbox/satellite-streets-v10`
- *  * `mapbox://styles/mapbox/navigation-preview-day-v2`
- *  * `mapbox://styles/mapbox/navigation-preview-night-v2`
- *  * `mapbox://styles/mapbox/navigation-guidance-day-v2`
- *  * `mapbox://styles/mapbox/navigation-guidance-night-v2`
+ *  * `mapbox://styles/mapbox/satellite-streets-v11`
+ *  * `mapbox://styles/mapbox/navigation-preview-day-v4`
+ *  * `mapbox://styles/mapbox/navigation-preview-night-v4`
+ *  * `mapbox://styles/mapbox/navigation-guidance-day-v4`
+ *  * `mapbox://styles/mapbox/navigation-guidance-night-v4`
  *
- * Tilesets hosted with Mapbox can be style-optimized if you append `?optimize=true` to the end of your style URL, like `mapbox://styles/mapbox/streets-v9?optimize=true`.
+ * Tilesets hosted with Mapbox can be style-optimized if you append `?optimize=true` to the end of your style URL, like `mapbox://styles/mapbox/streets-v11?optimize=true`.
  * Learn more about style-optimized vector tiles in our [API documentation](https://www.mapbox.com/api-documentation/maps/#retrieve-tiles).
  *
  * @param {(boolean|string)} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
