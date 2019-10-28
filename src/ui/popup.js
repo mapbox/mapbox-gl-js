@@ -346,9 +346,9 @@ export default class Popup extends Evented {
     }
 
     /**
-     * Removes class from container element.
+     * Removes a CSS class from the popup container element.
      *
-     * @param {string} className non empty string
+     * @param {string} className Non-empty string with CSS class name to remove from popup container 
      *
      * @example
      * let popup = new mapboxgl.Popup()
@@ -359,9 +359,9 @@ export default class Popup extends Evented {
     }
 
     /**
-     * When only one argument is present toggle the class value.
+     * Add or remove the given CSS class on the popup container, depending on whether the container currently has that class.
      *
-     * @param {string} className non empty string
+     * @param {string} className Non-empty string with CSS class name to add/remove
      *
      * @returns {boolean} if the class was removed return false, if class was added, then return true
      *
