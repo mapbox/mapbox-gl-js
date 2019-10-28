@@ -1036,9 +1036,14 @@ class Map extends Camera {
     }
 
     /**
-     * Updates the map's Mapbox style object with a new value. If a style already is set and options.diff is true,
-     * this compares the style against the map's current state and performs only the changes necessary to make
-     * the map style match the desired state.
+     * Updates the map's Mapbox style object with a new value.
+     *
+     * If a style is already set when this is used and options.diff is set to true, the map renderer will attempt to compare the given style
+     * against the map's current state and perform only the changes necessary to make the map style match the desired state. Changes in sprites
+     * (images used for icons and patterns) and glyphs (fonts for label text) **cannot** be diffed. If the sprites or fonts used in the current
+     * style and the given style are different in any way, the map renderer will force a full update, removing the current style and building
+     * the given one from scratch.
+     *
      *
      * @param style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
@@ -1051,6 +1056,10 @@ class Map extends Camera {
      *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
      *   Forces a full update.
      * @returns {Map} `this`
+     *
+     * @example
+     * map.setStyle("mapbox://styles/mapbox/streets-v11");
+     *
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
@@ -1122,6 +1131,10 @@ class Map extends Camera {
      * Returns the map's Mapbox style object, which can be used to recreate the map's style.
      *
      * @returns {Object} The map's style object.
+     *
+     * @example
+     * var styleJson = map.getStyle();
+     *
      */
     getStyle() {
         if (this.style) {
@@ -1133,6 +1146,9 @@ class Map extends Camera {
      * Returns a Boolean indicating whether the map's style is fully loaded.
      *
      * @returns {boolean} A Boolean indicating whether the style is fully loaded.
+     *
+     * @example
+     * var styleLoadStatus = map.isStyleLoaded();
      */
     isStyleLoaded() {
         if (!this.style) return warnOnce('There is no style added to the map.');
