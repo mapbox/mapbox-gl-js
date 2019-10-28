@@ -658,8 +658,8 @@ class Camera extends Evented {
      * details not specified in `options`.
      *
      * Note: The transition will happen instantly if the user has enabled
-     * the `reduced motion` accesibility feature enabled in their operating system, unless options includes
-     * `essential: true`.
+     * the `reduced motion` accesibility feature enabled in their operating system,
+     * unless 'options' includes `essential: true`.
      *
      * @memberof Map#
      * @param options Options describing the destination and animation of the transition.
@@ -815,7 +815,8 @@ class Camera extends Evented {
      * the user maintain her bearings even after traversing a great distance.
      *
      * Note: The animation will be skipped, and this will behave equivalently to `jumpTo`
-     * if the user has the `reduced motion` accesibility feature enabled in their operating system.
+     * if the user has the `reduced motion` accesibility feature enabled in their operating system,
+     * unless 'options' includes `essential: true`.
      *
      * @memberof Map#
      * @param {Object} options Options describing the destination and animation of the transition.
