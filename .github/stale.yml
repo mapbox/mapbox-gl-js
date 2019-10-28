@@ -1,0 +1,18 @@
+# Configuration for probot-stale - https://github.com/probot/stale
+
+exemptMilestones: true
+
+staleLabel: archived
+
+exemptLabels:
+  - "DO NOT MERGE"
+
+pulls:
+  daysUntilStale: 30
+  daysUntilClose: -1
+  markComment: false
+  closeComment: >
+    Thanks for your contribution, but this PR has not had any activity for a month and has been automatically
+    detected as stale and is being closed.
+    Please feel free to reopen if you have any additional progress to share :), all automatically closed PR's can be searched
+    for using the "archived" tag.
