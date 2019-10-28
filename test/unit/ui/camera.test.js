@@ -924,7 +924,6 @@ test('camera', (t) => {
             camera.easeTo({center: [100, 0], zoom: 3.2, bearing: 90, duration: 1000});
         });
 
-
         t.end();
     });
 
