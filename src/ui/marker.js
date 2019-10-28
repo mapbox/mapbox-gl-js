@@ -36,7 +36,7 @@ type Options = {
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
  * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective {@link Marker#rotationAlignment} setting. A positive value will rotate the marker clockwise.
  * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
- * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewwport`.
+ * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewport`.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -512,7 +512,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Sets the `rotation` property for the marker.
+     * Sets the `rotation` property of the marker.
      * @param {number} [rotation=0] The rotation angle of the marker (clockwise, in degrees), relative to its respective {@link Marker#rotationAlignment} setting.
      * @returns {Marker} `this`
      */
