@@ -649,7 +649,8 @@ export type MapEvent =
 
     /**
      * Fired immediately after all necessary resources have been downloaded
-     * and the first visually complete rendering of the map has occurred.
+     * and the first visually complete rendering of the map has occurred. This will not fire if your style
+     * is empty, meaning it does not contain any sources or layers.
      *
      * @event load
      * @memberof Map

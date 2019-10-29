@@ -100,6 +100,11 @@ type MapOptions = {
 const defaultMinZoom = 0;
 const defaultMaxZoom = 22;
 const defaultOptions = {
+    style: {
+        version: 8,
+        sources: {},
+        layers: []
+    },
     center: [0, 0],
     zoom: 0,
     bearing: 0,
@@ -150,7 +155,7 @@ const defaultOptions = {
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
  * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
- * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
+ * @param {Object|string} [options.style={version: 8, sources: {}, layers: []}] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
  *
@@ -1881,14 +1886,19 @@ class Map extends Camera {
     /**
      * Returns a Boolean indicating whether the map is fully loaded.
      *
-     * Returns `false` if the style is not yet fully loaded,
+     * Returns `false` if the style is not yet fully loaded, or
+     * if the loaded style doesn't have any sources or layers,
      * or if there has been a change to the sources or style that
      * has not yet fully loaded.
      *
      * @returns {boolean} A Boolean indicating whether the map is fully loaded.
      */
     loaded() {
-        return !this._styleDirty && !this._sourcesDirty && !!this.style && this.style.loaded();
+        return !this._styleDirty &&
+            !this._sourcesDirty &&
+            !!this.style &&
+            this.style.loaded() &&
+            (this.style.hasSources() || this.style.hasLayers());
     }
 
     /**

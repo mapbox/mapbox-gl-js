@@ -531,6 +531,26 @@ class Style extends Evented {
     }
 
     /**
+     * Returns true if the currently loaded style has any sources.
+     *
+     * @returns {boolean}
+     * @private
+     */
+    hasSources(): boolean {
+        return Object.keys(this.sourceCaches).length > 0;
+    }
+
+    /**
+     * Returns true if the currently loaded style has any layers.
+     *
+     * @returns {boolean}
+     * @private
+     */
+    hasLayers(): boolean {
+        return Object.keys(this._layers).length > 0;
+    }
+
+    /**
      * Remove a source from this stylesheet, given its id.
      * @param {string} id id of the source to remove
      * @throws {Error} if no source is found with the given ID

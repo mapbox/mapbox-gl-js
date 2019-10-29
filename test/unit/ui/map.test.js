@@ -2,7 +2,7 @@ import {test} from '../../util/test';
 import {extend} from '../../../src/util/util';
 import window from '../../../src/util/window';
 import Map from '../../../src/ui/map';
-import {createMap} from '../../util';
+import {createMap, createStyle} from '../../util';
 import LngLat from '../../../src/geo/lng_lat';
 import Tile from '../../../src/source/tile';
 import {OverscaledTileID} from '../../../src/source/tile_id';
@@ -21,13 +21,16 @@ function createStyleSource() {
 }
 
 test('Map', (t) => {
+    const warn = console.warn;
     t.beforeEach((callback) => {
         window.useFakeXMLHttpRequest();
+        console.warn = (_) => {};
         callback();
     });
 
     t.afterEach((callback) => {
         window.restore();
+        console.warn = warn;
         callback();
     });
 
@@ -159,7 +162,7 @@ test('Map', (t) => {
         });
 
         t.test('sets up event forwarding', (t) => {
-            createMap(t, {}, (error, map) => {
+            createMap(t, {style: createStyle()}, (error, map) => {
                 t.error(error);
 
                 const events = [];
@@ -184,7 +187,7 @@ test('Map', (t) => {
         });
 
         t.test('fires *data and *dataloading events', (t) => {
-            createMap(t, {}, (error, map) => {
+            createMap(t, {style: createStyle()}, (error, map) => {
                 t.error(error);
 
                 const events = [];
@@ -235,7 +238,7 @@ test('Map', (t) => {
             t.equal(map.transform.zoom, 0.6983039737971012, 'map transform is constrained');
             t.ok(map.transform.unmodified, 'map transform is not modified');
             map.setStyle(createStyle());
-            map.on('style.load', () => {
+            map.once('load', () => {
                 t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({lng: -73.9749, lat: 40.7736}));
                 t.equal(fixedNum(map.transform.zoom), 12.5);
                 t.equal(fixedNum(map.transform.bearing), 29);
@@ -351,9 +354,9 @@ test('Map', (t) => {
 
             map.on('load', () => {
                 map.addSource('geojson', createStyleSource());
-                t.deepEqual(map.getStyle(), extend(createStyle(), {
-                    sources: {geojson: createStyleSource()}
-                }));
+                const expected = createStyle();
+                expected.sources.geojson = createStyleSource();
+                t.deepEqual(map.getStyle(), expected);
                 t.end();
             });
         });
@@ -381,9 +384,9 @@ test('Map', (t) => {
 
             map.on('load', () => {
                 map.addLayer(layer);
-                t.deepEqual(map.getStyle(), extend(createStyle(), {
-                    layers: [layer]
-                }));
+                const expected = createStyle();
+                expected.layers.push(layer);
+                t.deepEqual(map.getStyle(), expected);
                 t.end();
             });
         });
@@ -401,10 +404,10 @@ test('Map', (t) => {
             map.on('load', () => {
                 map.addSource('fill', source);
                 map.addLayer(layer);
-                t.deepEqual(map.getStyle(), extend(createStyle(), {
-                    sources: {fill: source},
-                    layers: [layer]
-                }));
+                const expected = createStyle();
+                expected.sources.fill = createStyleSource();
+                expected.layers.push(layer);
+                t.deepEqual(map.getStyle(), expected);
                 t.end();
             });
         });
@@ -919,9 +922,8 @@ test('Map', (t) => {
     });
 
     t.test('#listImages', (t) => {
-        const map = createMap(t);
-
-        map.on('load', () => {
+        createMap(t, {style: createStyle()}, (error, map) => {
+            t.error(error);
             t.equals(map.listImages().length, 0);
 
             map.addImage('img', {width: 1, height: 1, data: new Uint8Array(4)});
@@ -944,7 +946,7 @@ test('Map', (t) => {
     t.test('#queryRenderedFeatures', (t) => {
 
         t.test('if no arguments provided', (t) => {
-            createMap(t, {}, (err, map) => {
+            createMap(t, {}, null,  (err, map) => {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
@@ -960,7 +962,7 @@ test('Map', (t) => {
         });
 
         t.test('if only "geometry" provided', (t) => {
-            createMap(t, {}, (err, map) => {
+            createMap(t, {}, null, (err, map) => {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
@@ -977,7 +979,7 @@ test('Map', (t) => {
         });
 
         t.test('if only "params" provided', (t) => {
-            createMap(t, {}, (err, map) => {
+            createMap(t, {}, null, (err, map) => {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
@@ -993,7 +995,7 @@ test('Map', (t) => {
         });
 
         t.test('if both "geometry" and "params" provided', (t) => {
-            createMap(t, {}, (err, map) => {
+            createMap(t, {}, null, (err, map) => {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
@@ -1009,7 +1011,7 @@ test('Map', (t) => {
         });
 
         t.test('if "geometry" with unwrapped coords provided', (t) => {
-            createMap(t, {}, (err, map) => {
+            createMap(t, {}, null, (err, map) => {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
@@ -2012,15 +2014,3 @@ test('Map', (t) => {
 
     t.end();
 });
-
-function createStyle() {
-    return {
-        version: 8,
-        center: [-73.9749, 40.7736],
-        zoom: 12.5,
-        bearing: 29,
-        pitch: 50,
-        sources: {},
-        layers: []
-    };
-}

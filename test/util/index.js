@@ -2,7 +2,40 @@ import window from '../../src/util/window';
 import Map from '../../src/ui/map';
 import {extend} from '../../src/util/util';
 
-export function createMap(t, options, callback) {
+export function createStyle() {
+    return {
+        version: 8,
+        center: [-73.9749, 40.7736],
+        zoom: 12.5,
+        bearing: 29,
+        pitch: 50,
+        sources: {
+            mock: {
+                type: 'geojson',
+                data:{
+                    type: "FeatureCollection",
+                    features: [
+                        {
+                            type: "Feature",
+                            properties: {},
+                            geometry: {
+                                type: "Point",
+                                coordinates: [ 0, 0 ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        layers: [{
+            id: 'mock-point',
+            source: 'mock',
+            type: 'symbol'
+        }]
+    };
+}
+
+export function createMap(t, options, callback, styleLoadCallback) {
     const container = window.document.createElement('div');
 
     Object.defineProperty(container, 'clientWidth', {value: 200, configurable: true});
@@ -24,6 +57,9 @@ export function createMap(t, options, callback) {
 
     if (callback) map.on('load', () => {
         callback(null, map);
+    });
+    if (styleLoadCallback) map.on('style.load', () => {
+        styleLoadCallback(null, map);
     });
 
     return map;
