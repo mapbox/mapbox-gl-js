@@ -555,7 +555,7 @@ export default class Marker extends Evented {
      * @returns {Marker} `this`
      */
     setPitchAlignment(alignment: string) {
-        this._pitchAlignment = alignment && alignment === 'auto' ? this._rotationAlignment : alignment;
+        this._pitchAlignment = alignment && alignment !== 'auto' ? alignment : this._rotationAlignment;
         this._update();
         return this;
     }
