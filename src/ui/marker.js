@@ -83,7 +83,7 @@ export default class Marker extends Evented {
         this._state = 'inactive';
         this._rotation = options && options.rotation || 0;
         this._rotationAlignment = options && options.rotationAlignment || 'auto';
-        this._pitchAlignment = options && options.pitchAlignment || this._rotationAlignment;
+        this._pitchAlignment = options && options.pitchAlignment && options.pitchAlignment !== 'auto' ?  options.pitchAlignment : this._rotationAlignment;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -551,11 +551,11 @@ export default class Marker extends Evented {
 
     /**
      * Sets the `pitchAlignment` property of the marker.
-     * @param {string} [alignment='auto'] Sets the `pitchAlignment` property of the marker.
+     * @param {string} [alignment] Sets the `pitchAlignment` property of the marker. If alignment is 'auto', it will automatically match `rotationAlignment`.
      * @returns {Marker} `this`
      */
     setPitchAlignment(alignment: string) {
-        this._pitchAlignment = alignment || this._rotationAlignment;
+        this._pitchAlignment = alignment && alignment === 'auto' ? this._rotationAlignment : alignment;
         this._update();
         return this;
     }
