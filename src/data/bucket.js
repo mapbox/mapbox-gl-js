@@ -23,7 +23,8 @@ export type PopulateParameters = {
     featureIndex: FeatureIndex,
     iconDependencies: {},
     patternDependencies: {},
-    glyphDependencies: {}
+    glyphDependencies: {},
+    availableImages: Array<string>
 }
 
 export type IndexedFeature = {

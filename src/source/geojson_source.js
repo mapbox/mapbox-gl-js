@@ -325,6 +325,7 @@ class GeoJSONSource extends Evented implements Source {
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
+        tile.clearMask();
         this.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
     }
 

@@ -6,6 +6,8 @@ export type ColorSpecification = string;
 
 export type FormattedSpecification = string;
 
+export type ResolvedImageSpecification = string;
+
 export type FilterSpecification =
     | ['has', string]
     | ['!has', string]
@@ -166,7 +168,7 @@ export type FillLayerSpecification = {|
         "fill-outline-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-translate"?: PropertyValueSpecification<[number, number]>,
         "fill-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
-        "fill-pattern"?: DataDrivenPropertyValueSpecification<string>
+        "fill-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>
     |}
 |}
 
@@ -197,7 +199,7 @@ export type LineLayerSpecification = {|
         "line-offset"?: DataDrivenPropertyValueSpecification<number>,
         "line-blur"?: DataDrivenPropertyValueSpecification<number>,
         "line-dasharray"?: PropertyValueSpecification<Array<number>>,
-        "line-pattern"?: DataDrivenPropertyValueSpecification<string>,
+        "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "line-gradient"?: ExpressionSpecification
     |}
 |}
@@ -224,7 +226,7 @@ export type SymbolLayerSpecification = {|
         "icon-size"?: DataDrivenPropertyValueSpecification<number>,
         "icon-text-fit"?: PropertyValueSpecification<"none" | "width" | "height" | "both">,
         "icon-text-fit-padding"?: PropertyValueSpecification<[number, number, number, number]>,
-        "icon-image"?: DataDrivenPropertyValueSpecification<string>,
+        "icon-image"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "icon-rotate"?: DataDrivenPropertyValueSpecification<number>,
         "icon-padding"?: PropertyValueSpecification<number>,
         "icon-keep-upright"?: PropertyValueSpecification<boolean>,
@@ -339,7 +341,7 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-extrusion-translate"?: PropertyValueSpecification<[number, number]>,
         "fill-extrusion-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
-        "fill-extrusion-pattern"?: DataDrivenPropertyValueSpecification<string>,
+        "fill-extrusion-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "fill-extrusion-height"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-base"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-vertical-gradient"?: PropertyValueSpecification<boolean>
@@ -403,7 +405,7 @@ export type BackgroundLayerSpecification = {|
     |},
     "paint"?: {|
         "background-color"?: PropertyValueSpecification<ColorSpecification>,
-        "background-pattern"?: PropertyValueSpecification<string>,
+        "background-pattern"?: PropertyValueSpecification<ResolvedImageSpecification>,
         "background-opacity"?: PropertyValueSpecification<number>
     |}
 |}

@@ -1,5 +1,6 @@
 module.exports = {
     plugins: [
-        require('postcss-inline-svg')
+        require('postcss-inline-svg'),
+        require('cssnano')
     ]
 }

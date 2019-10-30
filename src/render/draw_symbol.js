@@ -55,6 +55,17 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
+    const variablePlacement = layer.layout.get('text-variable-anchor');
+
+    //Compute variable-offsets before painting since icons and text data positioning
+    //depend on each other in this case.
+    if (variablePlacement) {
+        updateVariableAnchors(coords, painter, layer, sourceCache,
+            layer.layout.get('text-rotation-alignment'),
+            layer.layout.get('text-pitch-alignment'),
+            variableOffsets
+        );
+    }
 
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
         drawLayerSymbols(painter, sourceCache, layer, coords, false,
@@ -63,7 +74,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
             layer.layout.get('icon-rotation-alignment'),
             layer.layout.get('icon-pitch-alignment'),
             layer.layout.get('icon-keep-upright'),
-            stencilMode, colorMode, variableOffsets
+            stencilMode, colorMode
         );
     }
 
@@ -74,7 +85,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
             layer.layout.get('text-rotation-alignment'),
             layer.layout.get('text-pitch-alignment'),
             layer.layout.get('text-keep-upright'),
-            stencilMode, colorMode, variableOffsets
+            stencilMode, colorMode
         );
     }
 
@@ -97,19 +108,48 @@ function calculateVariableRenderShift(anchor, width, height, textOffset, textBox
     );
 }
 
-function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                               transform, labelPlaneMatrix, posMatrix, tileScale, size) {
+function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlignment, pitchAlignment, variableOffsets) {
+    const tr = painter.transform;
+    const rotateWithMap = rotationAlignment === 'map';
+    const pitchWithMap = pitchAlignment === 'map';
+
+    for (const coord of coords) {
+        const tile = sourceCache.getTile(coord);
+        const bucket: SymbolBucket = (tile.getBucket(layer): any);
+        if (!bucket || !bucket.text || !bucket.text.segments.get().length) continue;
+
+        const sizeData = bucket.textSizeData;
+        const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+
+        const pixelToTileScale = pixelsToTileUnits(tile, 1, painter.transform.zoom);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelToTileScale);
+        const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
+
+        if (size) {
+            const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
+            updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
+                                  tr, labelPlaneMatrix, coord.posMatrix, tileScale, size, updateTextFitIcon);
+        }
+    }
+}
+
+function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
+                               transform, labelPlaneMatrix, posMatrix, tileScale, size, updateTextFitIcon) {
     const placedSymbols = bucket.text.placedSymbolArray;
-    const dynamicLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
-    dynamicLayoutVertexArray.clear();
+    const dynamicTextLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
+    const dynamicIconLayoutVertexArray = bucket.icon.dynamicLayoutVertexArray;
+    const placedTextShifts = {};
+
+    dynamicTextLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol: any = placedSymbols.get(s);
         const skipOrientation = bucket.allowVerticalPlacement && !symbol.placedOrientation;
         const variableOffset = (!symbol.hidden && symbol.crossTileID && !skipOrientation) ? variableOffsets[symbol.crossTileID] : null;
+
         if (!variableOffset) {
             // These symbols are from a justification that is not being used, or a label that wasn't placed
             // so we don't need to do the extra math to figure out what incremental shift to apply.
-            symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
+            symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicTextLayoutVertexArray);
         } else  {
             const tileAnchor = new Point(symbol.anchorX, symbol.anchorY);
             const projectedAnchor = symbolProjection.project(tileAnchor, pitchWithMap ? posMatrix : labelPlaneMatrix);
@@ -136,38 +176,40 @@ function updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffs
 
             const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
             for (let g = 0; g < symbol.numGlyphs; g++) {
-                addDynamicAttributes(dynamicLayoutVertexArray, shiftedAnchor, angle);
+                addDynamicAttributes(dynamicTextLayoutVertexArray, shiftedAnchor, angle);
+            }
+            //Only offset horizontal text icons
+            if (updateTextFitIcon && symbol.associatedIconIndex >= 0) {
+                placedTextShifts[symbol.associatedIconIndex] = {shiftedAnchor, angle};
             }
         }
     }
-    bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
-}
 
-function updateVerticalLabels(bucket) {
-    const placedSymbols = bucket.text.placedSymbolArray;
-    const dynamicLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
-    dynamicLayoutVertexArray.clear();
-    for (let s = 0; s < placedSymbols.length; s++) {
-        const symbol: any = placedSymbols.get(s);
-        const shouldHide = symbol.hidden || !symbol.placedOrientation;
-        if (shouldHide) {
-            // These symbols are from an orientation that is not being used, or a label that wasn't placed
-            // so we don't need to do the extra math to figure out what incremental shift to apply.
-            symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
-        } else  {
-            const tileAnchor = new Point(symbol.anchorX, symbol.anchorY);
-            const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
-
-            for (let g = 0; g < symbol.numGlyphs; g++) {
-                addDynamicAttributes(dynamicLayoutVertexArray, tileAnchor, angle);
+    if (updateTextFitIcon) {
+        dynamicIconLayoutVertexArray.clear();
+        const placedIcons = bucket.icon.placedSymbolArray;
+        for (let i = 0; i < placedIcons.length; i++) {
+            const placedIcon = placedIcons.get(i);
+            if (placedIcon.hidden) {
+                symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
+            } else {
+                const shift = placedTextShifts[i];
+                if (!shift) {
+                    symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
+                } else {
+                    for (let g = 0; g < placedIcon.numGlyphs; g++) {
+                        addDynamicAttributes(dynamicIconLayoutVertexArray, shift.shiftedAnchor, shift.angle);
+                    }
+                }
             }
         }
+        bucket.icon.dynamicLayoutVertexBuffer.updateData(dynamicIconLayoutVertexArray);
     }
-    bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
+    bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicTextLayoutVertexArray);
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-                          rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode, variableOffsets) {
+                          rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode) {
 
     const context = painter.context;
     const gl = context.gl;
@@ -233,18 +275,17 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
 
+        const hasVariableAnchors = variablePlacement && bucket.hasTextData();
+        const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&
+            hasVariableAnchors &&
+            bucket.hasIconData();
+
         if (alongLine) {
             symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
-        } else if (isText && size && variablePlacement) {
-            const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
-            updateVariableAnchors(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                                  tr, labelPlaneMatrix, coord.posMatrix, tileScale, size);
-        } else if (isText && size && bucket.allowVerticalPlacement) {
-            updateVerticalLabels(bucket);
         }
 
         const matrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),
-            uLabelPlaneMatrix = (alongLine || (isText && variablePlacement)) ? identityMat4 : labelPlaneMatrix,
+            uLabelPlaneMatrix = (alongLine || (isText && variablePlacement) || updateTextFitIcon) ? identityMat4 : labelPlaneMatrix,
             uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
 
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;

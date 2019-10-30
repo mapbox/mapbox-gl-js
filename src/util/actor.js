@@ -190,6 +190,7 @@ class Actor {
     }
 
     remove() {
+        this.invoker.remove();
         this.target.removeEventListener('message', this.receive, false);
     }
 }

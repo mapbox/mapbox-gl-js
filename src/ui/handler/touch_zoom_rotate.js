@@ -112,6 +112,16 @@ class TouchZoomRotateHandler {
         this._rotationDisabled = false;
     }
 
+    /**
+     * Returns true if the handler is enabled and has detected the start of a zoom/rotate gesture.
+     *
+     * @returns {boolean}
+     * @memberof TouchZoomRotateHandler
+     */
+    isActive(): boolean {
+        return this.isEnabled() && !!this._gestureIntent;
+    }
+
     onStart(e: TouchEvent) {
         if (!this.isEnabled()) return;
         if (e.touches.length !== 2) return;
@@ -197,7 +207,6 @@ class TouchZoomRotateHandler {
         }
 
         tr.zoom = tr.scaleZoom(this._startScale * scale);
-
         tr.setLocationAtPoint(this._startAround, aroundPoint);
 
         this._map.fire(new Event(gestureIntent, {originalEvent: this._lastTouchEvent}));

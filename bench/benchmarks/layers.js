@@ -25,6 +25,8 @@ export class LayerBenchmark extends Benchmark {
             style: this.layerStyle
         }).then(map => {
             this.map = map;
+        }).catch(error => {
+            console.error(error);
         });
     }
 

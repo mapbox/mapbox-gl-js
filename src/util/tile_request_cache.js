@@ -1,6 +1,6 @@
 // @flow
 
-import {parseCacheControl} from './util';
+import {warnOnce, parseCacheControl} from './util';
 import window from './window';
 
 import type Dispatcher from './dispatcher';
@@ -60,7 +60,9 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     prepareBody(response, body => {
         const clonedResponse = new window.Response(body, options);
 
-        window.caches.open(CACHE_NAME).then(cache => cache.put(stripQueryParameters(request.url), clonedResponse));
+        window.caches.open(CACHE_NAME)
+            .then(cache => cache.put(stripQueryParameters(request.url), clonedResponse))
+            .catch(e => warnOnce(e.message));
     });
 }
 
@@ -75,12 +77,10 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
     const strippedURL = stripQueryParameters(request.url);
 
     window.caches.open(CACHE_NAME)
-        .catch(callback)
         .then(cache => {
             // manually strip URL instead of `ignoreSearch: true` because of a known
             // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431
             cache.match(strippedURL)
-                .catch(callback)
                 .then(response => {
                     const fresh = isFresh(response);
 
@@ -92,8 +92,11 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
                     }
 
                     callback(null, response, fresh);
-                });
-        });
+                })
+                .catch(callback);
+        })
+        .catch(callback);
+
 }
 
 function isFresh(response) {

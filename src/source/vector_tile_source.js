@@ -9,6 +9,7 @@ import TileBounds from './tile_bounds';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
+import {plugin as rtlTextPlugin, getRTLTextPluginStatus, downloadRTLTextPlugin} from './rtl_text_plugin';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -153,6 +154,15 @@ class VectorTileSource extends Evented implements Source {
 
             if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);
+            if (tile.hasRTLText) {
+                const plugin = rtlTextPlugin;
+                if (!plugin.isLoading() &&
+                    !plugin.isLoaded() &&
+                    getRTLTextPluginStatus() === 'deferred'
+                ) {
+                    downloadRTLTextPlugin();
+                }
+            }
 
             cacheEntryPossiblyAdded(this.dispatcher);
 
@@ -177,6 +187,7 @@ class VectorTileSource extends Evented implements Source {
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
+        tile.clearMask();
         if (tile.actor) {
             tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id}, undefined);
         }

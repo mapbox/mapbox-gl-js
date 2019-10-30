@@ -1,0 +1,14 @@
+[
+  {
+    "message": "glyphs: \"glyphs\" url must include a \"{fontstack}\" token",
+    "line": 3
+  },
+  {
+    "message": "glyphs: \"glyphs\" url must include a \"{range}\" token",
+    "line": 3
+  },
+  {
+    "message": "glyphs: Styles must reference glyphs hosted by Mapbox",
+    "line": 3
+  }
+]

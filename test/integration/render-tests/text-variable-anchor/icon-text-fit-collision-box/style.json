@@ -4,6 +4,7 @@
     "test": {
       "height": 128,
       "width": 128,
+      "allowed": 0.0075,
       "collisionDebug": true
     }
   },

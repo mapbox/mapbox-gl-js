@@ -48,8 +48,8 @@ class SymbolStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    recalculate(parameters: EvaluationParameters) {
-        super.recalculate(parameters);
+    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+        super.recalculate(parameters, availableImages);
 
         if (this.layout.get('icon-rotation-alignment') === 'auto') {
             if (this.layout.get('symbol-placement') !== 'point') {
@@ -92,10 +92,10 @@ class SymbolStyleLayer extends StyleLayer {
         this._setPaintOverrides();
     }
 
-    getValueAndResolveTokens(name: *, feature: Feature) {
-        const value = this.layout.get(name).evaluate(feature, {});
+    getValueAndResolveTokens(name: *, feature: Feature, availableImages: Array<string>) {
+        const value = this.layout.get(name).evaluate(feature, {}, availableImages);
         const unevaluated = this._unevaluatedLayout._values[name];
-        if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value)) {
+        if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
             return resolveTokens(feature.properties, value);
         }
 

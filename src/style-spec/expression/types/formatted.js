@@ -1,5 +1,6 @@
 // @flow
 
+import {stringContainsRTLText} from "../../../util/script_detection";
 import type Color from '../../util/color';
 
 export class FormattedSection {
@@ -27,8 +28,25 @@ export default class Formatted {
         return new Formatted([new FormattedSection(unformatted, null, null, null)]);
     }
 
+    static factory(text: Formatted | string): Formatted {
+        if (text instanceof Formatted) {
+            return text;
+        } else {
+            return Formatted.fromString(text);
+        }
+    }
+
     toString(): string {
         return this.sections.map(section => section.text).join('');
+    }
+
+    containsRTLText(): boolean {
+        for (const section of this.sections) {
+            if (stringContainsRTLText(section.text)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     serialize(): Array<mixed> {
