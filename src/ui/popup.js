@@ -338,6 +338,47 @@ export default class Popup extends Evented {
         return this;
     }
 
+    /**
+     * Adds a CSS class to the popup container element.
+     *
+     * @param {string} className Non-empty string with CSS class name to add to popup container
+     *
+     * @example
+     * let popup = new mapboxgl.Popup()
+     * popup.addClassName('some-class')
+     */
+    addClassName(className: string) {
+        this._container.classList.add(className);
+    }
+
+    /**
+     * Removes a CSS class from the popup container element.
+     *
+     * @param {string} className Non-empty string with CSS class name to remove from popup container
+     *
+     * @example
+     * let popup = new mapboxgl.Popup()
+     * popup.removeClassName('some-class')
+     */
+    removeClassName(className: string) {
+        this._container.classList.remove(className);
+    }
+
+    /**
+     * Add or remove the given CSS class on the popup container, depending on whether the container currently has that class.
+     *
+     * @param {string} className Non-empty string with CSS class name to add/remove
+     *
+     * @returns {boolean} if the class was removed return false, if class was added, then return true
+     *
+     * @example
+     * let popup = new mapboxgl.Popup()
+     * popup.toggleClassName('toggleClass')
+     */
+    toggleClassName(className: string) {
+        return this._container.classList.toggle(className);
+    }
+
     _createContent() {
         if (this._content) {
             DOM.remove(this._content);
@@ -367,6 +408,7 @@ export default class Popup extends Evented {
                 this.options.className.split(' ').forEach(name =>
                     this._container.classList.add(name));
             }
+
             if (this._trackPointer) {
                 this._container.classList.add('mapboxgl-popup-track-pointer');
             }
