@@ -408,7 +408,7 @@ export default class Popup extends Evented {
                 this.options.className.split(' ').forEach(name =>
                     this._container.classList.add(name));
             }
-          
+
             if (this._trackPointer) {
                 this._container.classList.add('mapboxgl-popup-track-pointer');
             }
