@@ -6,6 +6,7 @@ import {supportsPropertyExpression} from '../style-spec/util/properties';
 import {register, serialize, deserialize} from '../util/web_worker_transfer';
 import {PossiblyEvaluatedPropertyValue} from '../style/properties';
 import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray} from './array_types';
+import {clamp} from '../util/util';
 
 import EvaluationParameters from '../style/evaluation_parameters';
 import FeaturePositionMap from './feature_position_map';
@@ -222,7 +223,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
         const start = paintArray.length;
         paintArray.reserve(newLength);
 
-        const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, formattedSection);
+        const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, [], formattedSection);
 
         if (this.type === 'color') {
             const color = packColor(value);
@@ -326,8 +327,8 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         const start = paintArray.length;
         paintArray.reserve(newLength);
 
-        const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, formattedSection);
-        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, formattedSection);
+        const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, [], formattedSection);
+        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, [], formattedSection);
 
         if (this.type === 'color') {
             const minColor = packColor(min);
@@ -381,10 +382,9 @@ class CompositeExpressionBinder<T> implements Binder<T> {
 
     interpolationFactor(currentZoom: number) {
         if (this.useIntegerZoom) {
-            return this.expression.interpolationFactor(Math.floor(currentZoom), this.zoom, this.zoom + 1);
-        } else {
-            return this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1);
+            currentZoom = Math.floor(currentZoom);
         }
+        return clamp(this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1), 0, 1);
     }
 
     setUniforms(context: Context, uniform: Uniform<*>,

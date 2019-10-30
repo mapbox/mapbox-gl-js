@@ -1,0 +1,10 @@
+[
+  {
+    "message": "constants: constants have been deprecated as of v8",
+    "line": 10
+  },
+  {
+    "message": "Unsupported property \"constants\"",
+    "line": 10
+  }
+]

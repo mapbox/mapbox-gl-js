@@ -48,6 +48,52 @@ test('GeolocateControl error event', (t) => {
     geolocation.sendError({code: 2, message: 'error message'});
 });
 
+test('GeolocateControl outofmaxbounds event in active lock state', (t) => {
+    t.plan(5);
+
+    const map = createMap(t);
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+    map.setMaxBounds([[0, 0], [10, 10]]);
+    geolocate._watchState = 'ACTIVE_LOCK';
+
+    const click = new window.Event('click');
+
+    geolocate.on('outofmaxbounds', (position) => {
+        t.equal(geolocate._watchState, 'ACTIVE_ERROR', 'geolocate state');
+        t.equal(position.coords.latitude, 10, 'geolocate position latitude');
+        t.equal(position.coords.longitude, 20, 'geolocate position longitude');
+        t.equal(position.coords.accuracy, 3, 'geolocate position accuracy');
+        t.equal(position.timestamp, 4, 'geolocate timestamp');
+        t.end();
+    });
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 3, timestamp: 4});
+});
+
+test('GeolocateControl outofmaxbounds event in background state', (t) => {
+    t.plan(5);
+
+    const map = createMap(t);
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+    map.setMaxBounds([[0, 0], [10, 10]]);
+    geolocate._watchState = 'BACKGROUND';
+
+    const click = new window.Event('click');
+
+    geolocate.on('outofmaxbounds', (position) => {
+        t.equal(geolocate._watchState, 'BACKGROUND_ERROR', 'geolocate state');
+        t.equal(position.coords.latitude, 10, 'geolocate position latitude');
+        t.equal(position.coords.longitude, 20, 'geolocate position longitude');
+        t.equal(position.coords.accuracy, 3, 'geolocate position accuracy');
+        t.equal(position.timestamp, 4, 'geolocate timestamp');
+        t.end();
+    });
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 3, timestamp: 4});
+});
+
 test('GeolocateControl geolocate event', (t) => {
     t.plan(4);
 

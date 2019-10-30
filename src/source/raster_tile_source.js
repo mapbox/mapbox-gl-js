@@ -158,6 +158,7 @@ class RasterTileSource extends Evented implements Source {
 
     unloadTile(tile: Tile, callback: Callback<void>) {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
+        tile.clearMask();
         callback();
     }
 

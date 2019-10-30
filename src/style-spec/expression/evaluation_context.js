@@ -11,6 +11,7 @@ class EvaluationContext {
     feature: ?Feature;
     featureState: ?FeatureState;
     formattedSection: ?FormattedSection;
+    availableImages: ?Array<string>;
 
     _parseColorCache: {[string]: ?Color};
 
@@ -20,6 +21,7 @@ class EvaluationContext {
         this.featureState = null;
         this.formattedSection = null;
         this._parseColorCache = {};
+        this.availableImages = null;
     }
 
     id() {

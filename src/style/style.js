@@ -29,8 +29,9 @@ import getWorkerPool from '../util/global_worker_pool';
 import deref from '../style-spec/deref';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff';
 import {
-    registerForPluginAvailability,
-    evented as rtlTextPluginEvented
+    registerForPluginStateChange,
+    evented as rtlTextPluginEvented,
+    triggerPluginCompletionEvent
 } from '../source/rtl_text_plugin';
 import PauseablePlacement from './pauseable_placement';
 import ZoomHistory from './zoom_history';
@@ -129,7 +130,7 @@ class Style extends Evented {
     // exposed to allow stubbing by unit tests
     static getSourceType: typeof getSourceType;
     static setSourceType: typeof setSourceType;
-    static registerForPluginAvailability: typeof registerForPluginAvailability;
+    static registerForPluginStateChange: typeof registerForPluginStateChange;
 
     constructor(map: Map, options: StyleOptions = {}) {
         super();
@@ -153,11 +154,24 @@ class Style extends Evented {
         this.dispatcher.broadcast('setReferrer', getReferrer());
 
         const self = this;
-        this._rtlTextPluginCallback = Style.registerForPluginAvailability((args) => {
-            self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginURL, args.completionCallback);
-            for (const id in self.sourceCaches) {
-                self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
-            }
+        this._rtlTextPluginCallback = Style.registerForPluginStateChange((event) => {
+            const state = {
+                pluginStatus: event.pluginStatus,
+                pluginURL: event.pluginURL,
+                pluginBlobURL: event.pluginBlobURL
+            };
+            self.dispatcher.broadcast('syncRTLPluginState', state, (err, results) => {
+                triggerPluginCompletionEvent(err);
+                if (results) {
+                    const allComplete = results.every((elem) => elem);
+                    if (allComplete) {
+                        for (const id in self.sourceCaches) {
+                            self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
+                        }
+                    }
+                }
+
+            });
         });
 
         this.on('data', (event) => {
@@ -238,6 +252,7 @@ class Style extends Evented {
                 }
 
                 this.imageManager.setLoaded(true);
+                this.dispatcher.broadcast('setImages', this.imageManager.listImages());
                 this.fire(new Event('data', {dataType: 'style'}));
             });
         } else {
@@ -256,7 +271,6 @@ class Style extends Evented {
             layer.setEventedParent(this, {layer: {id: layer.id}});
             this._layers[layer.id] = layer;
         }
-
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
@@ -382,7 +396,7 @@ class Style extends Evented {
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
-            layer.recalculate(parameters);
+            layer.recalculate(parameters, this.imageManager.listImages());
             if (!layer.isHidden(parameters.zoom) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
@@ -939,7 +953,9 @@ class Style extends Evented {
 
     _updateLayer(layer: StyleLayer) {
         this._updatedLayers[layer.id] = true;
-        if (layer.source && !this._updatedSources[layer.source]) {
+        if (layer.source && !this._updatedSources[layer.source] &&
+            //Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
+            this.sourceCaches[layer.source].getSource().type !== 'raster') {
             this._updatedSources[layer.source] = 'reload';
             this.sourceCaches[layer.source].pause();
         }
@@ -1142,10 +1158,17 @@ class Style extends Evented {
             this._spriteRequest.cancel();
             this._spriteRequest = null;
         }
-        rtlTextPluginEvented.off('pluginAvailable', this._rtlTextPluginCallback);
+        rtlTextPluginEvented.off('pluginStateChange', this._rtlTextPluginCallback);
+        for (const layerId in this._layers) {
+            const layer: StyleLayer = this._layers[layerId];
+            layer.setEventedParent(null);
+        }
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].clearTiles();
+            this.sourceCaches[id].setEventedParent(null);
         }
+        this.imageManager.setEventedParent(null);
+        this.setEventedParent(null);
         this.dispatcher.remove();
     }
 
@@ -1200,7 +1223,7 @@ class Style extends Evented {
         // tiles will fully display symbols in their first frame
         const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0;
 
-        if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
+        if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
             this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement);
             this._layerOrderChanged = false;
         }
@@ -1263,6 +1286,6 @@ class Style extends Evented {
 
 Style.getSourceType = getSourceType;
 Style.setSourceType = setSourceType;
-Style.registerForPluginAvailability = registerForPluginAvailability;
+Style.registerForPluginStateChange = registerForPluginStateChange;
 
 export default Style;

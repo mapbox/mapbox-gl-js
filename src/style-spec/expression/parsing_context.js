@@ -112,7 +112,7 @@ class ParsingContext {
                     //
                     if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object' || expected.kind === 'array') && actual.kind === 'value') {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'assert');
-                    } else if ((expected.kind === 'color' || expected.kind === 'formatted') && (actual.kind === 'value' || actual.kind === 'string')) {
+                    } else if ((expected.kind === 'color' || expected.kind === 'formatted' || expected.kind === 'resolvedImage') && (actual.kind === 'value' || actual.kind === 'string')) {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
                     } else if (this.checkSubtype(expected, actual)) {
                         return null;
@@ -121,8 +121,9 @@ class ParsingContext {
 
                 // If an expression's arguments are all literals, we can evaluate
                 // it immediately and replace it with a literal value in the
-                // parsed/compiled result.
-                if (!(parsed instanceof Literal) && isConstant(parsed)) {
+                // parsed/compiled result. Expressions that expect an image should
+                // not be resolved here so we can later get the available images.
+                if (!(parsed instanceof Literal) && (parsed.type.kind !== 'resolvedImage') && isConstant(parsed)) {
                     const ec = new EvaluationContext();
                     try {
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));

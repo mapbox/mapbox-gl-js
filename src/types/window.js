@@ -128,7 +128,6 @@ export interface Window extends EventTarget, IDBEnvironment {
     URL: typeof URL;
     URLSearchParams: typeof URLSearchParams;
     WebGLFramebuffer: typeof WebGLFramebuffer;
-    webkitURL: typeof URL;
     WheelEvent: typeof WheelEvent;
     Worker: typeof Worker;
     XMLHttpRequest: typeof XMLHttpRequest;
