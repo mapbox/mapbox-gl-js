@@ -518,6 +518,14 @@ test('Popup adds classes from className option, methods for class manipulations 
     popup.toggleClassName('toggle');
     t.ok(!popupContainer.classList.contains('toggle'));
 
+    t.throws(() => popup.addClassName('should throw exception'), window.DOMException);
+    t.throws(() => popup.removeClassName('should throw exception'), window.DOMException);
+    t.throws(() => popup.toggleClassName('should throw exception'), window.DOMException);
+
+    t.throws(() => popup.addClassName(''), window.DOMException);
+    t.throws(() => popup.removeClassName(''), window.DOMException);
+    t.throws(() => popup.toggleClassName(''), window.DOMException);
+
     t.end();
 });
 

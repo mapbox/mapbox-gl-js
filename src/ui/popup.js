@@ -348,7 +348,7 @@ export default class Popup extends Evented {
     /**
      * Removes a CSS class from the popup container element.
      *
-     * @param {string} className Non-empty string with CSS class name to remove from popup container 
+     * @param {string} className Non-empty string with CSS class name to remove from popup container
      *
      * @example
      * let popup = new mapboxgl.Popup()
@@ -400,9 +400,8 @@ export default class Popup extends Evented {
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
             if (this.options.className) {
-                this.options.className.split(' ').forEach(name => {
-                    this._container.classList.add(name);
-                });
+                this.options.className.split(' ').forEach(name =>
+                    this._container.classList.add(name));
             }
         }
 
