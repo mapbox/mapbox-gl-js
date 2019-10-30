@@ -339,9 +339,9 @@ export default class Popup extends Evented {
     }
 
     /**
-     * Adds class to container element.
+     * Adds a CSS class to the popup container element.
      *
-     * @param {string} className non empty string
+     * @param {string} className Non-empty string with CSS class name to add to popup container
      *
      * @example
      * let popup = new mapboxgl.Popup()
