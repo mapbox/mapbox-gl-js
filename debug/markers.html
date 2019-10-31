@@ -48,8 +48,8 @@ const spinningMarkers = [];
         var marker = new mapboxgl.Marker({
             color: `rgb(${r}, ${g}, ${b})`,
             draggable: true,
-            rotationAlignment: rotationAlignment,
-            pitchAlignment: pitchAlignment
+            rotationAlignment,
+            pitchAlignment
         })
             .setLngLat([lng, lat])
             .setPopup(popup)
@@ -79,7 +79,7 @@ function spinMarkers() {
         window.requestAnimationFrame(spinMarkers);
     }
 }
-window.requestAnimationFrame(spinMarkers)
+window.requestAnimationFrame(spinMarkers);
 
 map.addControl(new mapboxgl.NavigationControl());
 
