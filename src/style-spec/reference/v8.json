@@ -2606,6 +2606,15 @@
           }
         }
       },
+      "in": {
+        "doc": "Determines whether an item exists in an array or a substring exists in a string.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.6.0"
+          }
+        }
+      },
       "case": {
         "doc": "Selects the first output whose corresponding test condition evaluates to true, or the fallback value otherwise.",
         "group": "Decision",
