@@ -26,6 +26,8 @@ import {Event, ErrorEvent} from '../util/evented';
 import {MapMouseEvent} from './events';
 import TaskQueue from '../util/task_queue';
 import webpSupported from '../util/webp_supported';
+import performance, {PerformanceMarkers, getPerformanceMetrics} from '../util/performance';
+
 import {setCacheLimits} from '../util/tile_request_cache';
 
 import type {PointLike} from '@mapbox/point-geometry';
@@ -44,6 +46,7 @@ import type DragPanHandler from './handler/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
+import type {PerformanceMetrics} from '../util/performance';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
 import type {
@@ -265,6 +268,7 @@ class Map extends Camera {
     _sourcesDirty: ?boolean;
     _placementDirty: ?boolean;
     _loaded: boolean;
+    _contentLoaded: boolean;
     _trackResize: boolean;
     _preserveDrawingBuffer: boolean;
     _failIfMajorPerformanceCaveat: boolean;
@@ -326,6 +330,8 @@ class Map extends Camera {
     touchZoomRotate: TouchZoomRotateHandler;
 
     constructor(options: MapOptions) {
+        performance.mark(PerformanceMarkers.create);
+
         options = extend({}, defaultOptions, options);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
@@ -1993,6 +1999,7 @@ class Map extends Camera {
 
         if (this.loaded() && !this._loaded) {
             this._loaded = true;
+            performance.mark(PerformanceMarkers.load);
             this.fire(new Event('load'));
         }
 
@@ -2012,11 +2019,20 @@ class Map extends Camera {
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
-        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
+        const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty;
+        if (somethingDirty || this._repaint) {
             this.triggerRepaint();
         } else if (!this.isMoving() && this.loaded()) {
             this.fire(new Event('idle'));
         }
+
+        if (this._loaded && !this._contentLoaded && !somethingDirty) {
+            this._contentLoaded = true;
+            performance.mark(PerformanceMarkers.fullLoad);
+            this.fire(new Event('content.load'));
+        }
+
+        performance.frame();
         return this;
     }
 
@@ -2052,7 +2068,13 @@ class Map extends Camera {
         removeNode(this._controlContainer);
         removeNode(this._missingCSSCanary);
         this._container.classList.remove('mapboxgl-map');
+
+        performance.clearMetrics();
         this.fire(new Event('remove'));
+    }
+
+    extractPerformanceMetrics(): PerformanceMetrics {
+        return getPerformanceMetrics();
     }
 
     /**
