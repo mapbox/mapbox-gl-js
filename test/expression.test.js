@@ -13,7 +13,7 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 
 run('js', {ignores, tests}, (fixture) => {
     const spec = Object.assign({}, fixture.propertySpec);
-    let availableImages = [];
+    let availableImages;
 
     if (!spec['property-type']) {
         spec['property-type'] = 'data-driven';
@@ -49,9 +49,8 @@ run('js', {ignores, tests}, (fixture) => {
         for (const input of fixture.inputs || []) {
             try {
                 const feature = {properties: input[1].properties || {}};
-                if (input[2]) {
-                    availableImages = input[2];
-                }
+                availableImages = input[2] || [];
+
                 if ('id' in input[1]) {
                     feature.id = input[1].id;
                 }
