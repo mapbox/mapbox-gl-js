@@ -1,4 +1,3 @@
-// @flow
 
 import flowRemoveTypes from '@mapbox/flow-remove-types';
 import buble from 'rollup-plugin-buble';
