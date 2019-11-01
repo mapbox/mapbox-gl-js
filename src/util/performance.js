@@ -16,13 +16,16 @@ export type PerformanceMetrics = {
 export const PerformanceMarkers = {
     create: 'create',
     load: 'load',
-    fullLoad: 'full-load'
+    fullLoad: 'fullLoad'
 };
 
 let lastFrameTime = null;
 let frameTimes = [];
 
 export const PerformanceUtils = {
+    mark(marker: $Keys<typeof PerformanceMarkers>) {
+        performance.mark(marker);
+    },
     frame() {
         const currTimestamp = performance.now();
         if (lastFrameTime != null) {

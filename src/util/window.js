@@ -87,7 +87,6 @@ function restore(): Window {
 
     window.restore = restore;
 
-    // window.performance = {};
     window.performance.getEntriesByName = function() {};
     window.performance.mark = function() {};
     window.performance.measure = function() {};

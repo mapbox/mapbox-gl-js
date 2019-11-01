@@ -26,7 +26,7 @@ import {Event, ErrorEvent} from '../util/evented';
 import {MapMouseEvent} from './events';
 import TaskQueue from '../util/task_queue';
 import webpSupported from '../util/webp_supported';
-import performance, {PerformanceMarkers, PerformanceUtils} from '../util/performance';
+import {PerformanceMarkers, PerformanceUtils} from '../util/performance';
 
 import {setCacheLimits} from '../util/tile_request_cache';
 
@@ -330,7 +330,7 @@ class Map extends Camera {
     touchZoomRotate: TouchZoomRotateHandler;
 
     constructor(options: MapOptions) {
-        performance.mark(PerformanceMarkers.create);
+        PerformanceUtils.mark(PerformanceMarkers.create);
 
         options = extend({}, defaultOptions, options);
 
@@ -1999,7 +1999,7 @@ class Map extends Camera {
 
         if (this.loaded() && !this._loaded) {
             this._loaded = true;
-            performance.mark(PerformanceMarkers.load);
+            PerformanceUtils.mark(PerformanceMarkers.load);
             this.fire(new Event('load'));
         }
 
@@ -2028,7 +2028,7 @@ class Map extends Camera {
 
         if (this._loaded && !this._contentLoaded && !somethingDirty) {
             this._contentLoaded = true;
-            performance.mark(PerformanceMarkers.fullLoad);
+            PerformanceUtils.mark(PerformanceMarkers.fullLoad);
             this.fire(new Event('content.load'));
         }
 
