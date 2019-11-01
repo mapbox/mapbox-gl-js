@@ -5,11 +5,10 @@
   ],
   "inputs": [
       [
-          {},
+          {"availableImages": ["monument-15"]},
           {
               "properties": {"icon": "monument-15"}
-          },
-          ["monument-15"]
+          }
       ]
   ],
   "expected": {
