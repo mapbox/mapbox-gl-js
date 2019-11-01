@@ -26,7 +26,7 @@ import {Event, ErrorEvent} from '../util/evented';
 import {MapMouseEvent} from './events';
 import TaskQueue from '../util/task_queue';
 import webpSupported from '../util/webp_supported';
-import performance, {PerformanceMarkers, getPerformanceMetrics} from '../util/performance';
+import performance, {PerformanceMarkers, PerformanceUtils} from '../util/performance';
 
 import {setCacheLimits} from '../util/tile_request_cache';
 
@@ -2032,7 +2032,7 @@ class Map extends Camera {
             this.fire(new Event('content.load'));
         }
 
-        performance.frame();
+        PerformanceUtils.frame();
         return this;
     }
 
@@ -2069,12 +2069,12 @@ class Map extends Camera {
         removeNode(this._missingCSSCanary);
         this._container.classList.remove('mapboxgl-map');
 
-        performance.clearMetrics();
+        PerformanceUtils.clearMetrics();
         this.fire(new Event('remove'));
     }
 
     extractPerformanceMetrics(): PerformanceMetrics {
-        return getPerformanceMetrics();
+        return PerformanceUtils.getPerformanceMetrics();
     }
 
     /**
