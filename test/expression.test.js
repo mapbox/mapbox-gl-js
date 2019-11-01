@@ -49,7 +49,7 @@ run('js', {ignores, tests}, (fixture) => {
         for (const input of fixture.inputs || []) {
             try {
                 const feature = {properties: input[1].properties || {}};
-                availableImages = input[0].availableImages;
+                availableImages = input[0].availableImages || [];
 
                 if ('id' in input[1]) {
                     feature.id = input[1].id;
