@@ -3,7 +3,15 @@
     "image",
     ["get", "icon"]
   ],
-  "inputs": [[{}, {"properties": {"icon": "monument-15"}}]],
+  "inputs": [
+      [
+          {},
+          {
+              "properties": {"icon": "monument-15"}
+          },
+          ["monument-15"]
+      ]
+  ],
   "expected": {
     "compiled": {
       "result": "success",

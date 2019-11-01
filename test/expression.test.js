@@ -6,7 +6,6 @@ import {toString} from '../src/style-spec/expression/types';
 import ignores from './ignores.json';
 
 let tests;
-const availableImages = ['monument-15'];
 
 if (process.argv[1] === __filename && process.argv.length > 2) {
     tests = process.argv.slice(2);
@@ -14,6 +13,7 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 
 run('js', {ignores, tests}, (fixture) => {
     const spec = Object.assign({}, fixture.propertySpec);
+    let availableImages = [];
 
     if (!spec['property-type']) {
         spec['property-type'] = 'data-driven';
@@ -49,6 +49,9 @@ run('js', {ignores, tests}, (fixture) => {
         for (const input of fixture.inputs || []) {
             try {
                 const feature = {properties: input[1].properties || {}};
+                if (input[2]) {
+                    availableImages = input[2];
+                }
                 if ('id' in input[1]) {
                     feature.id = input[1].id;
                 }

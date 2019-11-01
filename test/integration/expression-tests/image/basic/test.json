@@ -5,8 +5,9 @@
   ],
   "inputs": [
     [
-      {},
-      {}
+        {},
+        {},
+        ["monument-15"]
     ]
   ],
   "expected": {
