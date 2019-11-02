@@ -341,7 +341,7 @@ class GeolocateControl extends Evented {
      */
     _updateMarkerRotation() {
         if (this._userLocationDotMarker && this._heading) {
-            this._userLocationDotMarker.setRotation(this._heading)
+            this._userLocationDotMarker.setRotation(this._heading);
             this._dotElement.classList.add('mapboxgl-user-location-show-heading');
         } else {
             this._dotElement.classList.remove('mapboxgl-user-location-show-heading');
