@@ -283,7 +283,7 @@ class GeolocateControl extends Evented {
         if (position) {
             this._userLocationDotMarker.setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this._map);
 
-            // TODO consider using position.heading in case this is different to deviceorientation
+            // consider using position.coords.heading in case this is different to deviceorientation
         } else {
             this._userLocationDotMarker.remove();
         }
@@ -296,7 +296,7 @@ class GeolocateControl extends Evented {
      */
     _updateMarkerRotation() {
         if (this._userLocationDotMarker && this._heading) {
-            this._userLocationDotMarker.setRotation(this._heading)
+            this._userLocationDotMarker.setRotation(this._heading);
             this._dotElement.classList.add('mapboxgl-user-location-show-heading');
         } else {
             this._dotElement.classList.remove('mapboxgl-user-location-show-heading');
