@@ -439,6 +439,55 @@ class Map extends Camera {
         return this._mapId;
     }
 
+
+    _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
+        if (type === 'mouseenter' || type === 'mouseover') {
+            let mousein = false;
+            const mousemove = (e) => {
+                const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
+                if (!features.length) {
+                    mousein = false;
+                } else if (!mousein) {
+                    mousein = true;
+                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent, {features}));
+                }
+            };
+            const mouseout = () => {
+                mousein = false;
+            };
+            return {layer: layerId, listener, delegates: {mousemove, mouseout}};
+        } else if (type === 'mouseleave' || type === 'mouseout') {
+            let mousein = false;
+            const mousemove = (e) => {
+                const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
+                if (features.length) {
+                    mousein = true;
+                } else if (mousein) {
+                    mousein = false;
+                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
+                }
+            };
+            const mouseout = (e) => {
+                if (mousein) {
+                    mousein = false;
+                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
+                }
+            };
+            return {layer: layerId, listener, delegates: {mousemove, mouseout}};
+        } else {
+            const delegate = (e) => {
+                const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
+                if (features.length) {
+                    // Here we need to mutate the original event, so that preventDefault works as expected.
+                    e.features = features;
+                    listener.call(this, e);
+                    delete e.features;
+                }
+            };
+            return {layer: layerId, listener, delegates: {[type]: delegate}};
+        }
+    };
+
     /**
      * Adds a {@link IControl} to the map, calling `control.onAdd(this)`.
      *
@@ -776,53 +825,7 @@ class Map extends Camera {
             return super.on(type, layerId);
         }
 
-        const delegatedListener = (() => {
-            if (type === 'mouseenter' || type === 'mouseover') {
-                let mousein = false;
-                const mousemove = (e) => {
-                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
-                    if (!features.length) {
-                        mousein = false;
-                    } else if (!mousein) {
-                        mousein = true;
-                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent, {features}));
-                    }
-                };
-                const mouseout = () => {
-                    mousein = false;
-                };
-                return {layer: layerId, listener, delegates: {mousemove, mouseout}};
-            } else if (type === 'mouseleave' || type === 'mouseout') {
-                let mousein = false;
-                const mousemove = (e) => {
-                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
-                    if (features.length) {
-                        mousein = true;
-                    } else if (mousein) {
-                        mousein = false;
-                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
-                    }
-                };
-                const mouseout = (e) => {
-                    if (mousein) {
-                        mousein = false;
-                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
-                    }
-                };
-                return {layer: layerId, listener, delegates: {mousemove, mouseout}};
-            } else {
-                const delegate = (e) => {
-                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
-                    if (features.length) {
-                        // Here we need to mutate the original event, so that preventDefault works as expected.
-                        e.features = features;
-                        listener.call(this, e);
-                        delete e.features;
-                    }
-                };
-                return {layer: layerId, listener, delegates: {[type]: delegate}};
-            }
-        })();
+        const delegatedListener = this._createDelegatedListener(type, layerId, listener);
 
         this._delegatedListeners = this._delegatedListeners || {};
         this._delegatedListeners[type] = this._delegatedListeners[type] || [];
@@ -881,53 +884,8 @@ class Map extends Camera {
         if (listener === undefined) {
             return super.on(type, layerId);
         }
-        const delegatedListener = (() => {
-            if (type === 'mouseenter' || type === 'mouseover') {
-                let mousein = false;
-                const mousemove = (e) => {
-                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
-                    if (!features.length) {
-                        mousein = false;
-                    } else if (!mousein) {
-                        mousein = true;
-                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent, {features}));
-                    }
-                };
-                const mouseout = () => {
-                    mousein = false;
-                };
-                return {layer: layerId, listener, delegates: {mousemove, mouseout}};
-            } else if (type === 'mouseleave' || type === 'mouseout') {
-                let mousein = false;
-                const mousemove = (e) => {
-                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
-                    if (features.length) {
-                        mousein = true;
-                    } else if (mousein) {
-                        mousein = false;
-                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
-                    }
-                };
-                const mouseout = (e) => {
-                    if (mousein) {
-                        mousein = false;
-                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
-                    }
-                };
-                return {layer: layerId, listener, delegates: {mousemove, mouseout}};
-            } else {
-                const delegate = (e) => {
-                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
-                    if (features.length) {
-                        // Here we need to mutate the original event, so that preventDefault works as expected.
-                        e.features = features;
-                        listener.call(this, e);
-                        delete e.features;
-                    }
-                };
-                return {layer: layerId, listener, delegates: {[type]: delegate}};
-            }
-        })();
+
+        const delegatedListener = this._createDelegatedListener(type, layerId, listener);
 
         this._delegatedListeners = this._delegatedListeners || {};
         this._delegatedListeners[type] = this._delegatedListeners[type] || [];
