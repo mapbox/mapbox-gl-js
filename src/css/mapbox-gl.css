@@ -713,9 +713,10 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     height: 0;
     border-left: 7.5px solid transparent;
     border-bottom: 7.5px solid #1da1f2;
-    transform: translate(0px, -28px) skewY(-20deg);
+    transform: translate(0, -28px) skewY(-20deg);
     position: absolute;
 }
+
 .mapboxgl-user-location-show-heading .mapboxgl-user-location-heading::after {
     content: "";
     width: 0;
