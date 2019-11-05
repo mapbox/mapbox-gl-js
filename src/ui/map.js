@@ -439,7 +439,6 @@ class Map extends Camera {
         return this._mapId;
     }
 
-
     _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
         if (type === 'mouseenter' || type === 'mouseover') {
             let mousein = false;
@@ -486,7 +485,7 @@ class Map extends Camera {
             };
             return {layer: layerId, listener, delegates: {[type]: delegate}};
         }
-    };
+    }
 
     /**
      * Adds a {@link IControl} to the map, calling `control.onAdd(this)`.
