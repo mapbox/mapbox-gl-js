@@ -22,6 +22,23 @@ export const operationHandlers = {
             }
         };
         wait();
+    },
+    contentLoad(map, params, doneCb) {
+        if (map.contentLoaded()) {
+            doneCb();
+        } else {
+            map.once('content.load', doneCb);
+        }
+    },
+    idle(map, params, doneCb) {
+        const idle = function() {
+            if (!map.isMoving()) {
+                doneCb();
+            } else {
+                map.once('render', idle);
+            }
+        };
+        idle();
     }
 };
 

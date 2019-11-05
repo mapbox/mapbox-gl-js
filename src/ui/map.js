@@ -1897,6 +1897,10 @@ class Map extends Camera {
         return !this._styleDirty && !this._sourcesDirty && !!this.style && this.style.loaded();
     }
 
+    contentLoaded(): boolean {
+        return !!this._contentLoaded;
+    }
+
     /**
      * Update this map's style and sources, and re-render the map.
      *
