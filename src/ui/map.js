@@ -1292,7 +1292,10 @@ class Map extends Camera {
      * @example
      * // If the style's sprite does not already contain an image with ID 'cat',
      * // add the image 'cat-icon.png' to the style's sprite with the ID 'cat'.
-     * if (!map.hasImage('cat')) map.addImage('cat', './cat-icon.png');
+     * map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cat_silhouette.svg/400px-Cat_silhouette.svg.png', function(error, image) {
+     *    if (error) throw error;
+     *    if (!map.hasImage('cat')) map.addImage('cat', image);
+     * });
      *
      * @see Use `HTMLImageElement`: [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      * @see Use `ImageData`: [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
