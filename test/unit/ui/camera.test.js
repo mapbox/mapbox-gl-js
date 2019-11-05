@@ -881,6 +881,41 @@ test('camera', (t) => {
             }, 0);
         });
 
+        t.test('animation occurs when prefers-reduced-motion: reduce is set but overridden by essential: true', (t) => {
+            const camera = createCamera();
+            const stubPrefersReducedMotion = t.stub(browser, 'prefersReducedMotion');
+            const stubNow = t.stub(browser, 'now');
+
+            stubPrefersReducedMotion.get(() => true);
+
+            // camera transition expected to take in this range when prefersReducedMotion is set and essential: true,
+            // when a duration of 200 is requested
+            const min = 100;
+            const max = 300;
+
+            let startTime;
+            camera
+                .on('movestart', () => { startTime = browser.now(); })
+                .on('moveend', () => {
+                    const endTime = browser.now();
+                    const timeDiff = endTime - startTime;
+                    t.ok(timeDiff >= min && timeDiff < max, `Camera transition time exceeded expected range( [${min},${max}) ) :${timeDiff}`);
+                    t.end();
+                });
+
+            setTimeout(() => {
+                stubNow.callsFake(() => 0);
+                camera.simulateFrame();
+
+                camera.easeTo({center: [100, 0], zoom: 3.2, bearing: 90, duration: 200, essential: true});
+
+                setTimeout(() => {
+                    stubNow.callsFake(() => 200);
+                    camera.simulateFrame();
+                }, 0);
+            }, 0);
+        });
+
         t.test('duration is 0 when prefers-reduced-motion: reduce is set', (t) => {
             const camera = createCamera();
             const stub = t.stub(browser, 'prefersReducedMotion');
