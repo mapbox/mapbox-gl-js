@@ -130,7 +130,7 @@ test('Enter key on Marker opens a popup that was closed', (t) => {
     // popup not initially open
     t.notOk(marker.getPopup().isOpen());
 
-    simulate.keypress(marker.getElement(), { code: 'Enter' });
+    simulate.keypress(marker.getElement(), {code: 'Enter'});
 
     // popup open after Enter keypress
     t.ok(marker.getPopup().isOpen());
@@ -149,7 +149,7 @@ test('Space key on Marker opens a popup that was closed', (t) => {
     // popup not initially open
     t.notOk(marker.getPopup().isOpen());
 
-    simulate.keypress(marker.getElement(), { code: 'Space' });
+    simulate.keypress(marker.getElement(), {code: 'Space'});
 
     // popup open after Enter keypress
     t.ok(marker.getPopup().isOpen());
