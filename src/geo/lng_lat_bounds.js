@@ -212,7 +212,7 @@ class LngLatBounds {
     /**
     * Check if the point is within the bounding box.
     *
-    * @param {LngLatLike} geographic point to check against.
+    * @param {LngLatLike} lnglat geographic point to check against.
     * @returns {boolean} True if the point is within the bounding box.
     */
     contains(lnglat: LngLatLike) {
