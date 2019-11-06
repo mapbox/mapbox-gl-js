@@ -1,0 +1,23 @@
+{
+    "version": 8,
+    "center": [-122.397218, 37.791459],
+    "zoom": 15,
+    "style-url": "mapbox://styles/mapbox/streets-v11",
+    "metadata": {
+        "test": {
+            "width": 1024,
+            "height": 1024,
+            "operations": [
+                ["contentLoad"],
+                ["flyTo", {
+                    "center": [-122.4556, 37.71272]
+                }],
+                ["idle"],
+                ["flyTo", {
+                    "center": [-122.459915, 37.779474]
+                }],
+                ["idle"]
+            ]
+        }
+    }
+}
