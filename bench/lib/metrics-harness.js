@@ -1,4 +1,6 @@
 /* global mapboxgl:readonly */
+/* eslint-disable import/no-unresolved */
+// fixtures.json is automatically generated before this file gets built
 import suite from '../dist/fixtures.json';
 import {applyOperations} from '../../test/integration/lib/operation-handlers';
 
