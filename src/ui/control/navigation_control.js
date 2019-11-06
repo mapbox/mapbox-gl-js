@@ -110,18 +110,18 @@ class NavigationControl {
                 let pitchDir = 0;
 
                 switch (e.code) {
-                    case 'ArrowLeft':
-                        bearingDir = -1;
-                        break;
-                    case 'ArrowRight':
-                        bearingDir = 1;
-                        break;
-                    case 'ArrowUp':
-                        pitchDir = -1;
-                        break;
-                    case 'ArrowDown':
-                        pitchDir = 1
-                        break;
+                case 'ArrowLeft':
+                    bearingDir = -1;
+                    break;
+                case 'ArrowRight':
+                    bearingDir = 1;
+                    break;
+                case 'ArrowUp':
+                    pitchDir = -1;
+                    break;
+                case 'ArrowDown':
+                    pitchDir = 1;
+                    break;
                 }
 
                 this._map.easeTo({
