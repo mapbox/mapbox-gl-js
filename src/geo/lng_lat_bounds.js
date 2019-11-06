@@ -215,7 +215,7 @@ class LngLatBounds {
     * @returns {boolean} True if the point is within the bounding box.
     */
     contains(lnglat: LngLatLike) {
-        lnglat = lnglat instanceof LngLat ? new LngLat(lnglat.lng, lnglat.lat) : LngLat.convert(lnglat);
+        lnglat = LngLat.convert(lnglat);
 
         const containsLatitude = this._sw.lat <= lnglat.lat && lnglat.lat <= this._ne.lat;
         let containsLongitude = this._sw.lng <= lnglat.lng && lnglat.lng <= this._ne.lng;
