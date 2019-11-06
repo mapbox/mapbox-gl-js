@@ -3,6 +3,7 @@
 import assert from 'assert';
 
 import {checkSubtype, ValueType} from '../types';
+import ResolvedImage from '../types/resolved_image';
 
 import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -60,8 +61,10 @@ class Coalesce implements Expression {
             result = arg.evaluate(ctx);
             // we need to keep track of the first requested image in a coalesce statement
             // if coalesce can't find a valid image, we return the first image name so styleimagemissing can fire
-            if (arg.type.kind === 'resolvedImage' && !result.available) {
-                if (!requestedImageName) requestedImageName = arg.evaluate(ctx).name;
+            if (result && result instanceof ResolvedImage && !result.available) {
+                if (!requestedImageName) {
+                    requestedImageName = result.name;
+                }
                 result = null;
                 if (argCount === this.args.length) {
                     result = requestedImageName;
