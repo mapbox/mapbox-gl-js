@@ -200,6 +200,10 @@ export default class Marker extends Evented {
         this._element.addEventListener('dragstart', (e: DragEvent) => {
             e.preventDefault();
         });
+        this._element.addEventListener('mousedown', (e: MouseEvent) => {
+            // prevent focusing on click
+            e.preventDefault();
+        });
         this._element.addEventListener('focus', () => {
             // revert the default scrolling action of the container
             const el = this._map.getContainer();
