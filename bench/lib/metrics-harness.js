@@ -1,4 +1,3 @@
-// @flow
 /* global mapboxgl:readonly */
 import suite from '../dist/fixtures.json';
 import {applyOperations} from '../../test/integration/lib/operation-handlers';
