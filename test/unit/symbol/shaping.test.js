@@ -141,6 +141,9 @@ test('shaping', (t) => {
 test('shapeIcon', (t) => {
     const imagePosition = new ImagePosition({x: 0, y: 0, w: 22, h: 22}, {pixelRatio: 1, version: 1});
     const image = Object.freeze({
+        content: null,
+        stretchX: null,
+        stretchY: null,
         paddedRect: Object.freeze({x: 0, y: 0, w: 22, h: 22}),
         pixelRatio: 1,
         version: 1

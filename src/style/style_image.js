@@ -8,6 +8,9 @@ export type StyleImage = {
     data: RGBAImage,
     pixelRatio: number,
     sdf: boolean,
+    stretchX: any,
+    stretchY: any,
+    content: any,
     version: number,
     hasRenderCallback?: boolean,
     userImage?: StyleImageInterface
