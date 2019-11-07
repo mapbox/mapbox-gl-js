@@ -120,6 +120,71 @@ test('Marker#togglePopup closes a popup that was open', (t) => {
     t.end();
 });
 
+test('Enter key on Marker opens a popup that was closed', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map)
+        .setPopup(new Popup());
+
+    // popup not initially open
+    t.notOk(marker.getPopup().isOpen());
+
+    simulate.keypress(marker.getElement(), {code: 'Enter'});
+
+    // popup open after Enter keypress
+    t.ok(marker.getPopup().isOpen());
+
+    map.remove();
+    t.end();
+});
+
+test('Space key on Marker opens a popup that was closed', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map)
+        .setPopup(new Popup());
+
+    // popup not initially open
+    t.notOk(marker.getPopup().isOpen());
+
+    simulate.keypress(marker.getElement(), {code: 'Space'});
+
+    // popup open after Enter keypress
+    t.ok(marker.getPopup().isOpen());
+
+    map.remove();
+    t.end();
+});
+
+test('Marker#setPopup sets a tabindex', (t) => {
+    const popup = new Popup();
+    const marker = new Marker()
+        .setPopup(popup);
+    t.equal(marker.getElement().getAttribute('tabindex'), "0");
+    t.end();
+});
+
+test('Marker#setPopup removes tabindex when unset', (t) => {
+    const popup = new Popup();
+    const marker = new Marker()
+        .setPopup(popup)
+        .setPopup();
+    t.notOk(marker.getElement().getAttribute('tabindex'));
+    t.end();
+});
+
+test('Marker#setPopup does not replace existing tabindex', (t) => {
+    const element = window.document.createElement('div');
+    element.setAttribute('tabindex', '5');
+    const popup = new Popup();
+    const marker = new Marker({element})
+        .setPopup(popup);
+    t.equal(marker.getElement().getAttribute('tabindex'), "5");
+    t.end();
+});
+
 test('Marker anchor defaults to center', (t) => {
     const map = createMap(t);
     const marker = new Marker()

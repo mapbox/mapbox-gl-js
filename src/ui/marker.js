@@ -60,6 +60,7 @@ export default class Marker extends Evented {
     _rotation: number;
     _pitchAlignment: string;
     _rotationAlignment: string;
+    _originalTabIndex: ?string; // original tabindex of _element
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -74,7 +75,8 @@ export default class Marker extends Evented {
             '_onMove',
             '_onUp',
             '_addDragHandler',
-            '_onMapClick'
+            '_onMapClick',
+            '_onKeyPress'
         ], this);
 
         this._anchor = options && options.anchor || 'center';
@@ -88,6 +90,7 @@ export default class Marker extends Evented {
         if (!options || !options.element) {
             this._defaultMarker = true;
             this._element = DOM.create('div');
+            this._element.setAttribute('aria-label', 'Map marker');
 
             // create default map marker SVG
             const svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
@@ -197,6 +200,16 @@ export default class Marker extends Evented {
         this._element.addEventListener('dragstart', (e: DragEvent) => {
             e.preventDefault();
         });
+        this._element.addEventListener('mousedown', (e: MouseEvent) => {
+            // prevent focusing on click
+            e.preventDefault();
+        });
+        this._element.addEventListener('focus', () => {
+            // revert the default scrolling action of the container
+            const el = this._map.getContainer();
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+        });
         applyAnchorClass(this._element, this._anchor, 'marker');
 
         this._popup = null;
@@ -292,6 +305,11 @@ export default class Marker extends Evented {
         if (this._popup) {
             this._popup.remove();
             this._popup = null;
+            this._element.removeEventListener('keypress', this._onKeyPress);
+
+            if (!this._originalTabIndex) {
+                this._element.removeAttribute('tabindex');
+            }
         }
 
         if (popup) {
@@ -312,9 +330,27 @@ export default class Marker extends Evented {
             }
             this._popup = popup;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
+
+            this._originalTabIndex = this._element.getAttribute('tabindex');
+            if (!this._originalTabIndex) {
+                this._element.setAttribute('tabindex', '0');
+            }
+            this._element.addEventListener('keypress', this._onKeyPress);
         }
 
         return this;
+    }
+
+    _onKeyPress(e: KeyboardEvent) {
+        const code = e.code;
+        const legacyCode = e.charCode || e.keyCode;
+
+        if (
+            (code === 'Space') || (code === 'Enter') ||
+            (legacyCode === 32) || (legacyCode === 13) // space or enter
+        ) {
+            this.togglePopup();
+        }
     }
 
     _onMapClick(e: MapMouseEvent) {

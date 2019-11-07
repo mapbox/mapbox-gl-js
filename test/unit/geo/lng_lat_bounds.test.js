@@ -172,5 +172,38 @@ test('LngLatBounds', (t) => {
         t.end();
     });
 
+    t.test('contains', (t) => {
+        t.test('point', (t) => {
+            t.test('point is in bounds', (t) => {
+                const llb = new LngLatBounds([-1, -1], [1, 1]);
+                const ll = {lng: 0, lat: 0};
+                t.ok(llb.contains(ll));
+                t.end();
+            });
+
+            t.test('point is not in bounds', (t) => {
+                const llb = new LngLatBounds([-1, -1], [1, 1]);
+                const ll = {lng: 3, lat: 3};
+                t.notOk(llb.contains(ll));
+                t.end();
+            });
+
+            t.test('point is in bounds that spans dateline', (t) => {
+                const llb = new LngLatBounds([190, -10], [170, 10]);
+                const ll = {lng: 180, lat: 0};
+                t.ok(llb.contains(ll));
+                t.end();
+            });
+
+            t.test('point is not in bounds that spans dateline', (t) => {
+                const llb = new LngLatBounds([190, -10], [170, 10]);
+                const ll = {lng: 0, lat: 0};
+                t.notOk(llb.contains(ll));
+                t.end();
+            });
+            t.end();
+        });
+        t.end();
+    });
     t.end();
 });

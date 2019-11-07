@@ -42,7 +42,7 @@ import type {StyleImageInterface} from '../style/style_image';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
 import type DragRotateHandler from './handler/drag_rotate';
-import type DragPanHandler from './handler/drag_pan';
+import type DragPanHandler, {DragPanOptions} from './handler/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
@@ -85,7 +85,7 @@ type MapOptions = {
     maxZoom?: ?number,
     boxZoom?: boolean,
     dragRotate?: boolean,
-    dragPan?: boolean,
+    dragPan?: DragPanOptions,
     keyboard?: boolean,
     doubleClickZoom?: boolean,
     touchZoomRotate?: boolean,
@@ -198,7 +198,7 @@ const defaultOptions = {
  * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
  * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see {@link BoxZoomHandler}).
  * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see {@link DragRotateHandler}).
- * @param {boolean} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled (see {@link DragPanHandler}).
+ * @param {boolean|Object} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled. An `Object` value is passed as options to {@link DragPanHandler#enable}.
  * @param {boolean} [options.keyboard=true] If `true`, keyboard shortcuts are enabled (see {@link KeyboardHandler}).
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean|Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
@@ -1298,7 +1298,10 @@ class Map extends Camera {
      * @example
      * // If the style's sprite does not already contain an image with ID 'cat',
      * // add the image 'cat-icon.png' to the style's sprite with the ID 'cat'.
-     * if (!map.hasImage('cat')) map.addImage('cat', './cat-icon.png');
+     * map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cat_silhouette.svg/400px-Cat_silhouette.svg.png', function(error, image) {
+     *    if (error) throw error;
+     *    if (!map.hasImage('cat')) map.addImage('cat', image);
+     * });
      *
      * @see Use `HTMLImageElement`: [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      * @see Use `ImageData`: [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
@@ -1945,6 +1948,14 @@ class Map extends Camera {
      * @private
      */
     _render() {
+        let gpuTimer, frameStartTime = 0;
+        const extTimerQuery = this.painter.context.extTimerQuery;
+        if (this.listens('gpu-timing-frame')) {
+            gpuTimer = extTimerQuery.createQueryEXT();
+            extTimerQuery.beginQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
+            frameStartTime = browser.now();
+        }
+
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
         this.painter.setBaseState();
@@ -1996,6 +2007,7 @@ class Map extends Camera {
             rotating: this.isRotating(),
             zooming: this.isZooming(),
             moving: this.isMoving(),
+            gpuTiming: !!this.listens('gpu-timing-layer'),
             fadeDuration: this._fadeDuration
         });
 
@@ -2016,6 +2028,33 @@ class Map extends Camera {
             // all tiles held for fading. If we didn't do this, the tiles
             // would just sit in the SourceCaches until the next render
             this.style._releaseSymbolFadeTiles();
+        }
+
+        if (this.listens('gpu-timing-frame')) {
+            const renderCPUTime = browser.now() - frameStartTime;
+            extTimerQuery.endQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
+            setTimeout(() => {
+                const renderGPUTime = extTimerQuery.getQueryObjectEXT(gpuTimer, extTimerQuery.QUERY_RESULT_EXT) / (1000 * 1000);
+                extTimerQuery.deleteQueryEXT(gpuTimer);
+                this.fire(new Event('gpu-timing-frame', {
+                    cpuTime: renderCPUTime,
+                    gpuTime: renderGPUTime
+                }));
+            }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
+        }
+
+        if (this.listens('gpu-timing-layer')) {
+            // Resetting the Painter's per-layer timing queries here allows us to isolate
+            // the queries to individual frames.
+            const frameLayerQueries = this.painter.collectGpuTimers();
+
+            setTimeout(() => {
+                const renderedLayerTimes = this.painter.queryGpuTimers(frameLayerQueries);
+
+                this.fire(new Event('gpu-timing-layer', {
+                    layerTimes: renderedLayerTimes
+                }));
+            }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
         }
 
         // Schedule another render frame if it's needed.

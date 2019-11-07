@@ -27,10 +27,13 @@ const subclasses = {
 };
 
 export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface) {
+    performance.mark(layer.id);
     if (layer.type === 'custom') {
         return new CustomStyleLayer(layer);
     } else {
-        return new subclasses[layer.type](layer);
+        const layerInt = new subclasses[layer.type](layer);
+        performance.measure(`create:${layer.id}`, layer.id);
+        return layerInt;
     }
 }
 

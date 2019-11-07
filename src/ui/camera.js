@@ -55,12 +55,15 @@ export type CameraOptions = {
  *   the initial state and 1 is the final state.
  * @property {PointLike} offset of the target center relative to real map container center at the end of animation.
  * @property {boolean} animate If `false`, no animation will occur.
+ * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
+ *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
  */
 export type AnimationOptions = {
     duration?: number,
     easing?: (number) => number,
     offset?: PointLike,
-    animate?: boolean
+    animate?: boolean,
+    essential?: boolean
 };
 
 /**
@@ -655,7 +658,8 @@ class Camera extends Evented {
      * details not specified in `options`.
      *
      * Note: The transition will happen instantly if the user has enabled
-     * the `reduced motion` accesibility feature enabled in their operating system.
+     * the `reduced motion` accesibility feature enabled in their operating system,
+     * unless 'options' includes `essential: true`.
      *
      * @memberof Map#
      * @param options Options describing the destination and animation of the transition.
@@ -683,7 +687,7 @@ class Camera extends Evented {
             easing: defaultEasing
         }, options);
 
-        if (options.animate === false || browser.prefersReducedMotion) options.duration = 0;
+        if (options.animate === false || (!options.essential && browser.prefersReducedMotion)) options.duration = 0;
 
         const tr = this.transform,
             startZoom = this.getZoom(),
@@ -811,7 +815,8 @@ class Camera extends Evented {
      * the user maintain her bearings even after traversing a great distance.
      *
      * Note: The animation will be skipped, and this will behave equivalently to `jumpTo`
-     * if the user has the `reduced motion` accesibility feature enabled in their operating system.
+     * if the user has the `reduced motion` accesibility feature enabled in their operating system,
+     * unless 'options' includes `essential: true`.
      *
      * @memberof Map#
      * @param {Object} options Options describing the destination and animation of the transition.
@@ -865,7 +870,7 @@ class Camera extends Evented {
      */
     flyTo(options: Object, eventData?: Object) {
         // Fall through to jumpTo if user has set prefers-reduced-motion
-        if (browser.prefersReducedMotion) {
+        if (!options.essential && browser.prefersReducedMotion) {
             const coercedOptions = (pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']): CameraOptions);
             return this.jumpTo(coercedOptions, eventData);
         }
