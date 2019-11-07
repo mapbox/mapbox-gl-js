@@ -92,7 +92,8 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
                     }
 
                     callback(null, response, fresh);
-                });
+                })
+                .catch(callback);
         })
         .catch(callback);
 

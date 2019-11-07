@@ -10,7 +10,7 @@ export type ValueTypeT = { kind: 'value' };
 export type ErrorTypeT = { kind: 'error' };
 export type CollatorTypeT = { kind: 'collator' };
 export type FormattedTypeT = { kind: 'formatted' };
-export type ImageTypeT = { kind: 'image' };
+export type ResolvedImageTypeT = { kind: 'resolvedImage' };
 
 export type EvaluationKind = 'constant' | 'source' | 'camera' | 'composite';
 
@@ -26,7 +26,7 @@ export type Type =
     ErrorTypeT |
     CollatorTypeT |
     FormattedTypeT |
-    ImageTypeT
+    ResolvedImageTypeT
 
 export type ArrayType = {
     kind: 'array',
@@ -44,7 +44,7 @@ export const ValueType = {kind: 'value'};
 export const ErrorType = {kind: 'error'};
 export const CollatorType = {kind: 'collator'};
 export const FormattedType = {kind: 'formatted'};
-export const ImageType = {kind: 'image'};
+export const ResolvedImageType = {kind: 'resolvedImage'};
 
 export function array(itemType: Type, N: ?number): ArrayType {
     return {
@@ -74,7 +74,7 @@ const valueMemberTypes = [
     FormattedType,
     ObjectType,
     array(ValueType),
-    ImageType
+    ResolvedImageType
 ];
 
 /**

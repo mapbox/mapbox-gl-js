@@ -65,7 +65,7 @@ type IControl = {
 /* eslint-enable no-use-before-define */
 
 type MapOptions = {
-    hash?: boolean,
+    hash?: boolean | string,
     interactive?: boolean,
     container: HTMLElement | string,
     bearingSnap?: number,
@@ -172,8 +172,11 @@ const defaultOptions = {
  * Tilesets hosted with Mapbox can be style-optimized if you append `?optimize=true` to the end of your style URL, like `mapbox://styles/mapbox/streets-v9?optimize=true`.
  * Learn more about style-optimized vector tiles in our [API documentation](https://www.mapbox.com/api-documentation/maps/#retrieve-tiles).
  *
- * @param {boolean} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
+ * @param {(boolean|string)} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
  *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
+ *   An additional string may optionally be provided to indicate a parameter-styled hash,
+ *   e.g. http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, where foo
+ *   is a custom parameter and bar is an arbitrary hash distinct from the map hash.
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners will be attached to the map, so it will not respond to interaction.
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
  *   bearing will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
@@ -389,7 +392,8 @@ class Map extends Camera {
 
         bindHandlers(this, options);
 
-        this._hash = options.hash && (new Hash()).addTo(this);
+        const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
+        this._hash = options.hash && (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
             this.jumpTo({
@@ -440,7 +444,7 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a {@link IControl} to the map, calling `control.onAdd(this)`.
+     * Adds an {@link IControl} to the map, calling `control.onAdd(this)`.
      *
      * @param {IControl} control The {@link IControl} to add.
      * @param {string} [position] position on the map to which the control will be added.
@@ -2169,7 +2173,7 @@ function removeNode(node) {
 }
 
 /**
- * Interface for interactive controls added to the map. This is an
+ * Interface for interactive controls added to the map. This is a
  * specification for implementers to model: it is not
  * an exported method or class.
  *

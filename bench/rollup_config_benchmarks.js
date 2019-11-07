@@ -55,7 +55,7 @@ const viewConfig = {
         file: 'bench/benchmarks_view_generated.js',
         format: 'umd',
         indent: false,
-        sourcemap: true
+        sourcemap: false
     },
     plugins: [
         buble({transforms: {dangerousForOf: true}, objectAssign: true}),

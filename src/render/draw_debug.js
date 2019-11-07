@@ -88,6 +88,10 @@ function drawDebugTile(painter, sourceCache, coord) {
     program.draw(context, gl.LINES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         debugUniformValues(posMatrix, Color.black), id,
         debugTextBuffer, debugTextIndexBuffer, debugTextSegment);
+
+    debugTextBuffer.destroy();
+    debugTextIndexBuffer.destroy();
+    debugTextSegment.destroy();
 }
 
 // Font data From Hershey Simplex Font

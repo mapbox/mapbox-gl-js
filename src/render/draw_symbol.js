@@ -208,29 +208,6 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
     bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicTextLayoutVertexArray);
 }
 
-function updateVerticalLabels(bucket) {
-    const placedSymbols = bucket.text.placedSymbolArray;
-    const dynamicLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
-    dynamicLayoutVertexArray.clear();
-    for (let s = 0; s < placedSymbols.length; s++) {
-        const symbol: any = placedSymbols.get(s);
-        const shouldHide = symbol.hidden || !symbol.placedOrientation;
-        if (shouldHide) {
-            // These symbols are from an orientation that is not being used, or a label that wasn't placed
-            // so we don't need to do the extra math to figure out what incremental shift to apply.
-            symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
-        } else  {
-            const tileAnchor = new Point(symbol.anchorX, symbol.anchorY);
-            const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
-
-            for (let g = 0; g < symbol.numGlyphs; g++) {
-                addDynamicAttributes(dynamicLayoutVertexArray, tileAnchor, angle);
-            }
-        }
-    }
-    bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
-}
-
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
                           rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode) {
 
@@ -305,8 +282,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright);
-        } else if (isText && size && bucket.allowVerticalPlacement && !variablePlacement) {
-            updateVerticalLabels(bucket);
         }
 
         const matrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),
