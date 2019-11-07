@@ -18,7 +18,7 @@ test('camera', (t) => {
     function createCamera(options) {
         options = options || {};
 
-        const transform = new Transform(0, 20, options.renderWorldCopies);
+        const transform = new Transform(0, 20, 0, 60, options.renderWorldCopies);
         transform.resize(512, 512);
 
         const camera = attachSimulateFrame(new Camera(transform, {}))
@@ -950,7 +950,7 @@ test('camera', (t) => {
         });
 
         t.test('does not throw when cameras current zoom is above maxzoom and an offset creates infinite zoom out factor', (t) => {
-            const transform = new Transform(0, 20.9999, true);
+            const transform = new Transform(0, 20.9999, 0, 60, true);
             transform.resize(512, 512);
             const camera = attachSimulateFrame(new Camera(transform, {}))
                 .jumpTo({zoom: 21, center:[0, 0]});
@@ -1518,7 +1518,7 @@ test('camera', (t) => {
         });
 
         t.test('respects transform\'s maxZoom', (t) => {
-            const transform = new Transform(2, 10, false);
+            const transform = new Transform(2, 10, 0, 60, false);
             transform.resize(512, 512);
 
             const camera = attachSimulateFrame(new Camera(transform, {}));
@@ -1544,7 +1544,7 @@ test('camera', (t) => {
         });
 
         t.test('respects transform\'s minZoom', (t) => {
-            const transform = new Transform(2, 10, false);
+            const transform = new Transform(2, 10, 0, 60, false);
             transform.resize(512, 512);
 
             const camera = attachSimulateFrame(new Camera(transform, {}));
