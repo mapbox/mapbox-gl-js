@@ -2528,7 +2528,7 @@
   "function_stop": {
     "type": "array",
     "minimum": 0,
-    "maximum": 22,
+    "maximum": 24,
     "value": [
       "number",
       "color"
