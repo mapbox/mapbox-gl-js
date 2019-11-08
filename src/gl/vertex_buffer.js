@@ -35,17 +35,19 @@ class VertexBuffer {
     attributes: $ReadOnlyArray<StructArrayMember>;
     itemSize: number;
     dynamicDraw: ?boolean;
+    resizable: ?boolean;
     context: Context;
     buffer: WebGLBuffer;
 
     /**
      * @param dynamicDraw Whether this buffer will be repeatedly updated.
      */
-    constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean) {
+    constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean, resizable?: boolean) {
         this.length = array.length;
         this.attributes = attributes;
         this.itemSize = array.bytesPerElement;
         this.dynamicDraw = dynamicDraw;
+        this.resizable = resizable;
 
         this.context = context;
         const gl = context.gl;
@@ -63,10 +65,15 @@ class VertexBuffer {
     }
 
     updateData(array: StructArray) {
-        assert(array.length === this.length);
         const gl = this.context.gl;
         this.bind();
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.arrayBuffer);
+        if (array.length === this.length) {
+            assert(this.resizable || this.dynamicDraw);
+            gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.arrayBuffer);
+        } else {
+            assert(this.resizable);
+            gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+        }
     }
 
     enableAttributes(gl: WebGLRenderingContext, program: Program<*>) {

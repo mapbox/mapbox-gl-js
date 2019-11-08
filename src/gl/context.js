@@ -184,12 +184,12 @@ class Context {
         this.pixelStoreUnpackFlipY.dirty = true;
     }
 
-    createIndexBuffer(array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean) {
-        return new IndexBuffer(this, array, dynamicDraw);
+    createIndexBuffer(array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean, resizable?: boolean) {
+        return new IndexBuffer(this, array, dynamicDraw, resizable);
     }
 
-    createVertexBuffer(array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean) {
-        return new VertexBuffer(this, array, attributes, dynamicDraw);
+    createVertexBuffer(array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean, resizable?: boolean) {
+        return new VertexBuffer(this, array, attributes, dynamicDraw, resizable);
     }
 
     createRenderbuffer(storageFormat: number, width: number, height: number) {

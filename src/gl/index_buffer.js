@@ -6,15 +6,19 @@ import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../d
 import type Context from '../gl/context';
 
 class IndexBuffer {
+    length: number;
     context: Context;
     buffer: WebGLBuffer;
     dynamicDraw: boolean;
+    resizable: boolean;
 
-    constructor(context: Context, array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean) {
+    constructor(context: Context, array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean, resizable?: boolean) {
+        this.length = array.length;
         this.context = context;
         const gl = context.gl;
         this.buffer = gl.createBuffer();
         this.dynamicDraw = Boolean(dynamicDraw);
+        this.resizable = Boolean(resizable);
 
         // The bound index buffer is part of vertex array object state. We don't want to
         // modify whatever VAO happens to be currently bound, so make sure the default
@@ -35,12 +39,17 @@ class IndexBuffer {
 
     updateData(array: StructArray) {
         const gl = this.context.gl;
-        assert(this.dynamicDraw);
         // The right VAO will get this buffer re-bound later in VertexArrayObject#bind
         // See https://github.com/mapbox/mapbox-gl-js/issues/5620
         this.context.unbindVAO();
         this.bind();
-        gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, array.arrayBuffer);
+        if (this.length === array.length) {
+            assert(this.dynamicDraw || this.resizable);
+            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, array.arrayBuffer);
+        } else {
+            assert(this.resizable);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+        }
     }
 
     destroy() {
