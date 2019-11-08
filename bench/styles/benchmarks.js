@@ -11,7 +11,7 @@ import QueryBox from '../benchmarks/query_box';
 
 import getWorkerPool from '../../src/util/global_worker_pool';
 
-const locations = locationsWithTileID(benchmark.features);
+const locations = locationsWithTileID(benchmark.styleBenchmarkLocations.features);
 
 mapboxgl.accessToken = accessToken;
 
