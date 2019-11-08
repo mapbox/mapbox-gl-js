@@ -17,6 +17,8 @@ export type ResponseOptions = {
     headers: window.Headers
 };
 
+const cacheRequest = window.caches ? window.caches.open(CACHE_NAME) : null;
+
 let responseConstructorSupportsReadableStream;
 function prepareBody(response: Response, callback) {
     if (responseConstructorSupportsReadableStream === undefined) {
@@ -37,7 +39,7 @@ function prepareBody(response: Response, callback) {
 }
 
 export function cachePut(request: Request, response: Response, requestTime: number) {
-    if (!window.caches) return;
+    if (!cacheRequest) return;
 
     const options: ResponseOptions = {
         status: response.status,
@@ -60,7 +62,7 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     prepareBody(response, body => {
         const clonedResponse = new window.Response(body, options);
 
-        window.caches.open(CACHE_NAME)
+        cacheRequest
             .then(cache => cache.put(stripQueryParameters(request.url), clonedResponse))
             .catch(e => warnOnce(e.message));
     });
@@ -72,11 +74,11 @@ function stripQueryParameters(url: string) {
 }
 
 export function cacheGet(request: Request, callback: (error: ?any, response: ?Response, fresh: ?boolean) => void) {
-    if (!window.caches) return callback(null);
+    if (!cacheRequest) return callback(null);
 
     const strippedURL = stripQueryParameters(request.url);
 
-    window.caches.open(CACHE_NAME)
+    cacheRequest
         .then(cache => {
             // manually strip URL instead of `ignoreSearch: true` because of a known
             // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431
@@ -125,8 +127,8 @@ export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
 
 // runs on worker, see above comment
 export function enforceCacheSizeLimit(limit: number) {
-    if (!window.caches) return;
-    window.caches.open(CACHE_NAME)
+    if (!cacheRequest) return;
+    cacheRequest
         .then(cache => {
             cache.keys().then(keys => {
                 for (let i = 0; i < keys.length - limit; i++) {
