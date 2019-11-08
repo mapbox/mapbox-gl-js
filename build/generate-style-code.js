@@ -32,7 +32,7 @@ global.flowType = function (property) {
             return `Color`;
         case 'formatted':
             return `Formatted`;
-        case 'image':
+        case 'resolvedImage':
             return `ResolvedImage`;
         case 'array':
             if (property.length) {
