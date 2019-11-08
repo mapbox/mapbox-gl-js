@@ -954,10 +954,12 @@
     pirates "^3.0.2"
     vlq "^0.2.1"
 
-"@mapbox/gazetteer@^3.1.2":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/gazetteer/-/gazetteer-3.2.0.tgz#2675cc56853e262ac55384572dacfec13d068c77"
-  integrity sha512-iXstzYyHQCHcdgN0ovVJ6uI0oj0+et/l4b361xSNeJuP9tUgfl61hB5wi+ps94DlpBaTt3SFDx9MKj5lOeBgeA==
+"@mapbox/gazetteer@^4.0.4":
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/@mapbox/gazetteer/-/gazetteer-4.0.4.tgz#511b059d5f2a58e0b4d7ec6c1562c846a888fb82"
+  integrity sha512-XzOaDedR2EAfjlVApDn+cV6Upi8tsa8J6fBRWHxzmG0ekdC03jvqXkOKPS/P4BkUDyBD6bMLMJ8WH5A0iZNmwQ==
+  dependencies:
+    "@mapbox/geojsonhint" "^2.2.0"
 
 "@mapbox/geojson-area@0.2.2":
   version "0.2.2"
@@ -980,6 +982,17 @@
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@mapbox/geojson-types/-/geojson-types-1.0.2.tgz#9aecf642cb00eab1080a57c4f949a65b4a5846d6"
   integrity sha512-e9EBqHHv3EORHrSfbR9DqecPNn+AmuAoQxV6aL8Xu30bJMJR1o8PZLZzpk1Wq7/NfCbuhmakHTPYRhoqLsXRnw==
+
+"@mapbox/geojsonhint@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/geojsonhint/-/geojsonhint-2.2.0.tgz#75ca94706e9a56e6debf4e1c78fabdc67978b883"
+  integrity sha512-8qQYRB+/2z2JsN5s6D0WAnpo69+3V3nvJsSFLwMB1dsaWz1V4oZeuoje9srbYAxxL8PXCwIywfhYa3GxOkBv5Q==
+  dependencies:
+    concat-stream "^1.6.1"
+    jsonlint-lines "1.7.1"
+    minimist "1.2.0"
+    vfile "^4.0.0"
+    vfile-reporter "^5.1.1"
 
 "@mapbox/jsonlint-lines-primitives@^2.0.2":
   version "2.0.2"
@@ -1224,6 +1237,11 @@ JSONStream@^1.0.3:
     jsonparse "^1.2.0"
     through ">=2.2.7 <3"
 
+"JSV@>= 4.0.x":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/JSV/-/JSV-4.0.2.tgz#d077f6825571f82132f9dffaed587b4029feff57"
+  integrity sha1-0Hf2glVx+CEy+d/67Vh7QCn+/1c=
+
 abab@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/abab/-/abab-2.0.2.tgz#a2fba1b122c69a85caa02d10f9270c7219709a9d"
@@ -1362,6 +1380,11 @@ ansi-styles@^3.2.0, ansi-styles@^3.2.1:
   integrity sha512-VT0ZI6kZRdTh8YyJw3SMbYm/u+NqfsAxEpWO0Pf9sq8/e94WxxOpPKx9FR1FlyCtOVDNOQ+8ntlqFxiRc+r5qA==
   dependencies:
     color-convert "^1.9.0"
+
+ansi-styles@~1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-1.0.0.tgz#cb102df1c56f5123eab8b67cd7b98027a0279178"
+  integrity sha1-yxAt8cVvUSPquLZ817mAJ6AnkXg=
 
 ansicolors@~0.2.1:
   version "0.2.1"
@@ -2193,6 +2216,15 @@ chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.0, chalk@^2.4.1, chalk@^2.4
     ansi-styles "^3.2.1"
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
+
+chalk@~0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-0.4.0.tgz#5199a3ddcd0c1efe23bc08c1b027b06176e0c64f"
+  integrity sha1-UZmj3c0MHv4jvAjBsCewYXbgxk8=
+  dependencies:
+    ansi-styles "~1.0.0"
+    has-color "~0.1.0"
+    strip-ansi "~0.1.0"
 
 character-entities-html4@^1.0.0:
   version "1.1.3"
@@ -4755,6 +4787,11 @@ has-binary2@~1.0.2:
   dependencies:
     isarray "2.0.1"
 
+has-color@~0.1.0:
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/has-color/-/has-color-0.1.7.tgz#67144a5260c34fc3cca677d041daf52fe7b78b2f"
+  integrity sha1-ZxRKUmDDT8PMpnfQQdr1L+e3iy8=
+
 has-cors@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/has-cors/-/has-cors-1.1.0.tgz#5e474793f7ea9843d1bb99c23eef49ff126fff39"
@@ -5769,6 +5806,14 @@ jsonify@~0.0.0:
   resolved "https://registry.yarnpkg.com/jsonify/-/jsonify-0.0.0.tgz#2c74b6ee41d93ca51b7b5aaee8f503631d252a73"
   integrity sha1-LHS27kHZPKUbe1qu6PUDYx0lKnM=
 
+jsonlint-lines@1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/jsonlint-lines/-/jsonlint-lines-1.7.1.tgz#507de680d3fb8c4be1641cc57d6f679f29f178ff"
+  integrity sha1-UH3mgNP7jEvhZBzFfW9nnynxeP8=
+  dependencies:
+    JSV ">= 4.0.x"
+    nomnom ">= 1.5.x"
+
 jsonparse@^1.2.0:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/jsonparse/-/jsonparse-1.3.1.tgz#3f4dae4a91fac315f71062f8521cc239f1366280"
@@ -6747,6 +6792,14 @@ node-releases@^1.1.38:
   integrity sha512-8MRC/ErwNCHOlAFycy9OPca46fQYUjbJRDcZTHVWIGXIjYLM73k70vv3WkYutVnM4cCo4hE0MqBVVZjP6vjISA==
   dependencies:
     semver "^6.3.0"
+
+"nomnom@>= 1.5.x":
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/nomnom/-/nomnom-1.8.1.tgz#2151f722472ba79e50a76fc125bb8c8f2e4dc2a7"
+  integrity sha1-IVH3Ikcrp55Qp2/BJbuMjy5Nwqc=
+  dependencies:
+    chalk "~0.4.0"
+    underscore "~1.6.0"
 
 noop-logger@^0.1.1:
   version "0.1.1"
@@ -9571,6 +9624,11 @@ strip-ansi@^5.1.0, strip-ansi@^5.2.0:
   dependencies:
     ansi-regex "^4.1.0"
 
+strip-ansi@~0.1.0:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-0.1.1.tgz#39e8a98d044d150660abe4a6808acf70bb7bc991"
+  integrity sha1-OeipjQRNFQZgq+SmgIrPcLt7yZE=
+
 strip-bom@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/strip-bom/-/strip-bom-3.0.0.tgz#2334c18e9c759f7bdd56fdef7e9ae3d588e68ed3"
@@ -9696,7 +9754,7 @@ supercluster@^7.0.0:
   dependencies:
     kdbush "^3.0.0"
 
-supports-color@^5.3.0, supports-color@^5.4.0, supports-color@^5.5.0:
+supports-color@^5.0.0, supports-color@^5.3.0, supports-color@^5.4.0, supports-color@^5.5.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
   integrity sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==
@@ -10265,6 +10323,11 @@ underscore@>=1.8.3:
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.9.1.tgz#06dce34a0e68a7babc29b365b8e74b8925203961"
   integrity sha512-5/4etnCkd9c8gwgowi5/om/mYO5ajCaOgdzj/oW+0eQV9WxKBDZw5+ycmKmeaTXjInS/W0BzpGLo2xR2aBwZdg==
 
+underscore@~1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.6.0.tgz#8b38b10cacdef63337b8b24e4ff86d45aea529a8"
+  integrity sha1-izixDKze9jM3uLJOT/htRa6lKag=
+
 unherit@^1.0.4:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/unherit/-/unherit-1.1.2.tgz#14f1f397253ee4ec95cec167762e77df83678449"
@@ -10573,6 +10636,18 @@ vfile-message@^2.0.0:
   dependencies:
     "@types/unist" "^2.0.2"
     unist-util-stringify-position "^2.0.0"
+
+vfile-reporter@^5.1.1:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/vfile-reporter/-/vfile-reporter-5.1.2.tgz#80f1db5cbe8f9c12f2f30cce3e2cd18353a48519"
+  integrity sha512-b15sTuss1wOPWVlyWOvu+n6wGJ/eTYngz3uqMLimQvxZ+Q5oFQGYZZP1o3dR9sk58G5+wej0UPCZSwQBX/mzrQ==
+  dependencies:
+    repeat-string "^1.5.0"
+    string-width "^2.0.0"
+    supports-color "^5.0.0"
+    unist-util-stringify-position "^2.0.0"
+    vfile-sort "^2.1.2"
+    vfile-statistics "^1.1.0"
 
 vfile-reporter@^6.0.0:
   version "6.0.0"
