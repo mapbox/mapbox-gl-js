@@ -101,6 +101,7 @@ class Tile {
     /**
      * @param {OverscaledTileID} tileID
      * @param size
+     * @private
      */
     constructor(tileID: OverscaledTileID, size: number) {
         this.tileID = tileID;

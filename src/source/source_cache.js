@@ -115,6 +115,7 @@ class SourceCache extends Evented {
     /**
      * Return true if no tile data is pending, tiles will not change unless
      * an additional API call is received.
+     * @private
      */
     loaded(): boolean {
         if (this._sourceErrored) { return true; }
@@ -178,6 +179,7 @@ class SourceCache extends Evented {
 
     /**
      * Return all tile ids ordered with z-order, and cast to numbers
+     * @private
      */
     getIds(): Array<number> {
         return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
@@ -305,6 +307,7 @@ class SourceCache extends Evented {
     }
     /**
      * Get a specific tile by TileID
+     * @private
      */
     getTile(tileID: OverscaledTileID): Tile {
         return this.getTileByID(tileID.key);
@@ -312,6 +315,7 @@ class SourceCache extends Evented {
 
     /**
      * Get a specific tile by id
+     * @private
      */
     getTileByID(id: string | number): Tile {
         return this._tiles[id];
@@ -319,6 +323,7 @@ class SourceCache extends Evented {
 
     /**
      * get the zoom level adjusted for the difference in map and source tilesizes
+     * @private
      */
     getZoom(transform: Transform): number {
         return transform.zoom + transform.scaleZoom(transform.tileSize / this._source.tileSize);
@@ -327,6 +332,7 @@ class SourceCache extends Evented {
     /**
      * For a given set of tiles, retain children that are loaded and have a zoom
      * between `zoom` (exclusive) and `maxCoveringZoom` (inclusive)
+     * @private
      */
     _retainLoadedChildren(
         idealTiles: {[any]: OverscaledTileID},
@@ -372,6 +378,7 @@ class SourceCache extends Evented {
 
     /**
      * Find a loaded parent of the given tile (up to minCoveringZoom)
+     * @private
      */
     findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number): ?Tile {
         for (let z = tileID.overscaledZ - 1; z >= minCoveringZoom; z--) {
@@ -395,6 +402,7 @@ class SourceCache extends Evented {
      * Larger viewports use more tiles and need larger caches. Larger viewports
      * are more likely to be found on devices with more memory and on pages where
      * the map is more important.
+     * @private
      */
     updateCacheSize(transform: Transform) {
         const widthInTiles = Math.ceil(transform.width / this._source.tileSize) + 1;
@@ -454,6 +462,7 @@ class SourceCache extends Evented {
     /**
      * Removes tiles that are outside the viewport and adds new tiles that
      * are inside the viewport.
+     * @private
      */
     update(transform: Transform) {
         this.transform = transform;
@@ -735,6 +744,7 @@ class SourceCache extends Evented {
      * cover the given bounds.
      * @param pointQueryGeometry coordinates of the corners of bounding rectangle
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
+     * @private
      */
     tilesIn(pointQueryGeometry: Array<Point>, maxPitchScaleFactor: number, has3DLayer: boolean) {
 

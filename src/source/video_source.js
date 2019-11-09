@@ -114,6 +114,7 @@ class VideoSource extends ImageSource {
 
     /**
      * Sets playback to a timestamp, in seconds.
+     * @private
      */
     seek(seconds: number) {
         if (this.video) {

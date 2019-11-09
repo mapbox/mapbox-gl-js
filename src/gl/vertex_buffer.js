@@ -40,6 +40,7 @@ class VertexBuffer {
 
     /**
      * @param dynamicDraw Whether this buffer will be repeatedly updated.
+     * @private
      */
     constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean) {
         this.length = array.length;

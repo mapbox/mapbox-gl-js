@@ -206,10 +206,10 @@ class Transform {
 
     /**
      * Return a zoom level that will cover all tiles the transform
-     * @param {Object} options
-     * @param {number} options.tileSize
-     * @param {boolean} options.roundZoom
-     * @returns {number} zoom level
+     * @param {Object} options options
+     * @param {number} options.tileSize Tile size, expressed in pixels.
+     * @param {boolean} options.roundZoom Target zoom level. This value will be rounded to the nearest integer.
+     * @returns {number} zoom level An integer zoom level at which all tiles will be visible.
      */
     coveringZoomLevel(options: {roundZoom?: boolean, tileSize: number}) {
         return (options.roundZoom ? Math.round : Math.floor)(
@@ -257,6 +257,7 @@ class Transform {
      * @param {boolean} options.reparseOverscaled
      * @param {boolean} options.renderWorldCopies
      * @returns {Array<OverscaledTileID>} OverscaledTileIDs
+     * @private
      */
     coveringTiles(
         options: {
@@ -331,6 +332,7 @@ class Transform {
      * Given a location, return the screen point that corresponds to it
      * @param {LngLat} lnglat location
      * @returns {Point} screen point
+     * @private
      */
     locationPoint(lnglat: LngLat) {
         return this.coordinatePoint(this.locationCoordinate(lnglat));
@@ -340,6 +342,7 @@ class Transform {
      * Given a point on screen, return its lnglat
      * @param {Point} p screen point
      * @returns {LngLat} lnglat location
+     * @private
      */
     pointLocation(p: Point) {
         return this.coordinateLocation(this.pointCoordinate(p));
@@ -350,6 +353,7 @@ class Transform {
      * coordinate that represents it at this transform's zoom level.
      * @param {LngLat} lnglat
      * @returns {Coordinate}
+     * @private
      */
     locationCoordinate(lnglat: LngLat) {
         return MercatorCoordinate.fromLngLat(lnglat);
@@ -359,6 +363,7 @@ class Transform {
      * Given a Coordinate, return its geographical position.
      * @param {Coordinate} coord
      * @returns {LngLat} lnglat
+     * @private
      */
     coordinateLocation(coord: MercatorCoordinate) {
         return coord.toLngLat();
@@ -396,6 +401,7 @@ class Transform {
      * Given a coordinate, return the screen point that corresponds to it
      * @param {Coordinate} coord
      * @returns {Point} screen point
+     * @private
      */
     coordinatePoint(coord: MercatorCoordinate) {
         const p = [coord.x * this.worldSize, coord.y * this.worldSize, 0, 1];
@@ -406,6 +412,7 @@ class Transform {
     /**
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
+     * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
      */
     getBounds(): LngLatBounds {
         return new LngLatBounds()
@@ -417,6 +424,7 @@ class Transform {
 
     /**
      * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
+     * @returns {LngLatBounds} {@link LngLatBounds}
      */
     getMaxBounds(): LngLatBounds | null {
         if (!this.latRange || this.latRange.length !== 2 ||
@@ -427,6 +435,7 @@ class Transform {
 
     /**
      * Sets or clears the map's geographical constraints.
+     * @param {LngLatBounds} bounds A {@link LngLatBounds} object describing the new geographic boundaries of the map.
      */
     setMaxBounds(bounds?: LngLatBounds) {
         if (bounds) {
@@ -442,6 +451,7 @@ class Transform {
     /**
      * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
      * @param {UnwrappedTileID} unwrappedTileID;
+     * @private
      */
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
         const posMatrixKey = unwrappedTileID.key;

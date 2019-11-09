@@ -854,6 +854,7 @@ export class CollisionBoxArray extends StructArrayLayout6i1ul2ui2i24 {
     /**
      * Return the CollisionBoxStruct at the given location in the array.
      * @param {number} index The index of the element.
+     * @private
      */
     get(index: number): CollisionBoxStruct {
         assert(!this.isTransferred);
@@ -929,6 +930,7 @@ export class PlacedSymbolArray extends StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48 
     /**
      * Return the PlacedSymbolStruct at the given location in the array.
      * @param {number} index The index of the element.
+     * @private
      */
     get(index: number): PlacedSymbolStruct {
         assert(!this.isTransferred);
@@ -1031,6 +1033,7 @@ export class SymbolInstanceArray extends StructArrayLayout8i14ui1ul3f60 {
     /**
      * Return the SymbolInstanceStruct at the given location in the array.
      * @param {number} index The index of the element.
+     * @private
      */
     get(index: number): SymbolInstanceStruct {
         assert(!this.isTransferred);
@@ -1059,6 +1062,7 @@ export class GlyphOffsetArray extends StructArrayLayout1f4 {
     /**
      * Return the GlyphOffsetStruct at the given location in the array.
      * @param {number} index The index of the element.
+     * @private
      */
     get(index: number): GlyphOffsetStruct {
         assert(!this.isTransferred);
@@ -1095,6 +1099,7 @@ export class SymbolLineVertexArray extends StructArrayLayout3i6 {
     /**
      * Return the SymbolLineVertexStruct at the given location in the array.
      * @param {number} index The index of the element.
+     * @private
      */
     get(index: number): SymbolLineVertexStruct {
         assert(!this.isTransferred);
@@ -1128,6 +1133,7 @@ export class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
     /**
      * Return the FeatureIndexStruct at the given location in the array.
      * @param {number} index The index of the element.
+     * @private
      */
     get(index: number): FeatureIndexStruct {
         assert(!this.isTransferred);
