@@ -33,6 +33,7 @@ export function runMetrics() {
 
                 //Last suite so exit out
                 if (currSuiteIndex === suiteList.length) {
+                    console.log('exit');
                     return;
                 }
             }
@@ -43,7 +44,6 @@ export function runMetrics() {
 }
 
 function executeRun(fixture, finishCb) {
-
     //1. Create and position the container, floating at the top left
     const container = document.createElement('div');
     container.style.position = 'fixed';
@@ -85,4 +85,3 @@ function parseFixture(container, fixture) {
 
     return {mapOptions, operations};
 }
-

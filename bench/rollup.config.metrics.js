@@ -5,7 +5,7 @@ export default {
     output: {
         name: 'metrics',
         format: 'umd',
-        sourcemap: 'inline',
+        sourcemap: false,
         indent: false,
         file: 'bench/dist/metrics-suite.js'
     },
