@@ -48,6 +48,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - collect-metrics:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - test-render:
           requires:
             - prepare
@@ -197,6 +203,15 @@ jobs:
       - attach_workspace:
           at: .
       - run: yarn run test-unit
+
+  collect-metrics:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: yarn run run-metrics
+      - store_artifacts:
+          path: "bench/dist/render-tests/metrics-log.txt"
 
   test-render:
     <<: *defaults

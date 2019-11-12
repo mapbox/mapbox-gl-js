@@ -8,7 +8,6 @@ const performance = window.performance;
 export type PerformanceMetrics = {
     loadTime: number,
     fullLoadTime: number,
-    frameTimes: Array<number>,
     fps: number,
     onePercentLowFps: number
 }
@@ -45,8 +44,10 @@ export const PerformanceUtils = {
         }
     },
     getPerformanceMetrics(): PerformanceMetrics {
-        const loadTime = performance.measure('loadTime', PerformanceMarkers.create, PerformanceMarkers.load).duration;
-        const fullLoadTime = performance.measure('fullLoadTime', PerformanceMarkers.create, PerformanceMarkers.fullLoad).duration;
+        performance.measure('loadTime', PerformanceMarkers.create, PerformanceMarkers.load);
+        const loadTime = performance.getEntriesByName('loadTime')[0].duration;
+        performance.measure('fullLoadTime', PerformanceMarkers.create, PerformanceMarkers.fullLoad);
+        const fullLoadTime = performance.getEntriesByName('fullLoadTime')[0].duration;
         const totalFrames = frameTimes.length;
 
         const avgFrameTime = frameTimes.reduce((prev, curr) => prev + curr, 0) / totalFrames / 1000;
@@ -61,7 +62,6 @@ export const PerformanceUtils = {
         return {
             loadTime,
             fullLoadTime,
-            frameTimes,
             fps,
             onePercentLowFps
         };

@@ -1,0 +1,263 @@
+[
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  [
+    {
+      "Timestamp": 157555.570466,
+      "Documents": 3,
+      "Frames": 1,
+      "JSEventListeners": 30,
+      "Nodes": 43,
+      "LayoutCount": 4,
+      "RecalcStyleCount": 6,
+      "LayoutDuration": 0.000563,
+      "RecalcStyleDuration": 0.000869,
+      "ScriptDuration": 0.076864,
+      "TaskDuration": 0.123222,
+      "JSHeapUsedSize": 9885672,
+      "JSHeapTotalSize": 13938688
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/fast-fly-to",
+    "metrics": {
+      "loadTime": 1198.7100000260398,
+      "fullLoadTime": 1632.1550000284333,
+      "fps": 50.09157824352116,
+      "onePercentLowFps": 5.143812422224039
+    }
+  },
+  [
+    {
+      "Timestamp": 157597.959473,
+      "Documents": 2,
+      "Frames": 2,
+      "JSEventListeners": 36,
+      "Nodes": 75,
+      "LayoutCount": 21,
+      "RecalcStyleCount": 51,
+      "LayoutDuration": 0.039526,
+      "RecalcStyleDuration": 0.009662,
+      "ScriptDuration": 21.903852,
+      "TaskDuration": 26.381299,
+      "JSHeapUsedSize": 67633920,
+      "JSHeapTotalSize": 96571392
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/fast-fly-to",
+    "metrics": {
+      "loadTime": 1268.6800000083167,
+      "fullLoadTime": 1701.18000000366,
+      "fps": 50.74459330171142,
+      "onePercentLowFps": 6.654540614476485
+    }
+  },
+  [
+    {
+      "Timestamp": 157604.917494,
+      "Documents": 2,
+      "Frames": 2,
+      "JSEventListeners": 36,
+      "Nodes": 75,
+      "LayoutCount": 24,
+      "RecalcStyleCount": 59,
+      "LayoutDuration": 0.04003,
+      "RecalcStyleDuration": 0.010353,
+      "ScriptDuration": 25.309844,
+      "TaskDuration": 30.482658,
+      "JSHeapUsedSize": 62835624,
+      "JSHeapTotalSize": 93687808
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/fast-fly-to",
+    "metrics": {
+      "loadTime": 1226.040000008652,
+      "fullLoadTime": 1596.5399999986403,
+      "fps": 49.659530135442495,
+      "onePercentLowFps": 5.609101702494516
+    }
+  },
+  [
+    {
+      "Timestamp": 157611.810745,
+      "Documents": 2,
+      "Frames": 2,
+      "JSEventListeners": 36,
+      "Nodes": 75,
+      "LayoutCount": 27,
+      "RecalcStyleCount": 67,
+      "LayoutDuration": 0.040619,
+      "RecalcStyleDuration": 0.011043,
+      "ScriptDuration": 28.911215,
+      "TaskDuration": 34.759203,
+      "JSHeapUsedSize": 58719808,
+      "JSHeapTotalSize": 91590656
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/fast-fly-to",
+    "metrics": {
+      "loadTime": 1414.9999999790452,
+      "fullLoadTime": 1779.179999983171,
+      "fps": 48.23035046430122,
+      "onePercentLowFps": 5.379670226385568
+    }
+  },
+  [
+    {
+      "Timestamp": 157618.820695,
+      "Documents": 2,
+      "Frames": 2,
+      "JSEventListeners": 36,
+      "Nodes": 75,
+      "LayoutCount": 30,
+      "RecalcStyleCount": 75,
+      "LayoutDuration": 0.041069,
+      "RecalcStyleDuration": 0.01184,
+      "ScriptDuration": 32.369158,
+      "TaskDuration": 38.899358,
+      "JSHeapUsedSize": 54189456,
+      "JSHeapTotalSize": 88317952
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/fast-fly-to",
+    "metrics": {
+      "loadTime": 1155.174999992596,
+      "fullLoadTime": 1704.4450000103097,
+      "fps": 48.9834485217963,
+      "onePercentLowFps": 5.7788436532785905
+    }
+  },
+  [
+    {
+      "Timestamp": 157625.803025,
+      "Documents": 2,
+      "Frames": 2,
+      "JSEventListeners": 36,
+      "Nodes": 75,
+      "LayoutCount": 33,
+      "RecalcStyleCount": 83,
+      "LayoutDuration": 0.041557,
+      "RecalcStyleDuration": 0.012646,
+      "ScriptDuration": 35.869482,
+      "TaskDuration": 43.16665,
+      "JSHeapUsedSize": 57960312,
+      "JSHeapTotalSize": 89493504
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/slow-pans",
+    "metrics": {
+      "loadTime": 1205.9749999898486,
+      "fullLoadTime": 1725.639999989653,
+      "fps": 56.74349933152391,
+      "onePercentLowFps": 13.110670447391433
+    }
+  },
+  [
+    {
+      "Timestamp": 157755.755932,
+      "Documents": 3,
+      "Frames": 3,
+      "JSEventListeners": 34,
+      "Nodes": 71,
+      "LayoutCount": 50,
+      "RecalcStyleCount": 130,
+      "LayoutDuration": 0.044453,
+      "RecalcStyleDuration": 0.017802,
+      "ScriptDuration": 82.792259,
+      "TaskDuration": 99.772535,
+      "JSHeapUsedSize": 68773904,
+      "JSHeapTotalSize": 97619968
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/slow-pans",
+    "metrics": {
+      "loadTime": 1200.4200000083074,
+      "fullLoadTime": 1771.9550000037998,
+      "fps": 56.776200482442746,
+      "onePercentLowFps": 12.378280243326008
+    }
+  },
+  [
+    {
+      "Timestamp": 157777.607595,
+      "Documents": 3,
+      "Frames": 3,
+      "JSEventListeners": 34,
+      "Nodes": 70,
+      "LayoutCount": 53,
+      "RecalcStyleCount": 138,
+      "LayoutDuration": 0.044924,
+      "RecalcStyleDuration": 0.018536,
+      "ScriptDuration": 90.547293,
+      "TaskDuration": 109.080892,
+      "JSHeapUsedSize": 61398752,
+      "JSHeapTotalSize": 93949952
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/slow-pans",
+    "metrics": {
+      "loadTime": 1098.2500000100117,
+      "fullLoadTime": 1463.770000002114,
+      "fps": 56.69477841095845,
+      "onePercentLowFps": 12.673468094982109
+    }
+  },
+  [
+    {
+      "Timestamp": 157799.142135,
+      "Documents": 3,
+      "Frames": 3,
+      "JSEventListeners": 36,
+      "Nodes": 79,
+      "LayoutCount": 57,
+      "RecalcStyleCount": 148,
+      "LayoutDuration": 0.045524,
+      "RecalcStyleDuration": 0.019605,
+      "ScriptDuration": 98.243726,
+      "TaskDuration": 118.247566,
+      "JSHeapUsedSize": 60161456,
+      "JSHeapTotalSize": 92114944
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/slow-pans",
+    "metrics": {
+      "loadTime": 1221.8099999881815,
+      "fullLoadTime": 1770.6749999779277,
+      "fps": 56.606979488800604,
+      "onePercentLowFps": 13.148811676055805
+    }
+  },
+  [
+    {
+      "Timestamp": 157820.95373,
+      "Documents": 3,
+      "Frames": 3,
+      "JSEventListeners": 34,
+      "Nodes": 71,
+      "LayoutCount": 59,
+      "RecalcStyleCount": 154,
+      "LayoutDuration": 0.045855,
+      "RecalcStyleDuration": 0.02011,
+      "ScriptDuration": 106.006306,
+      "TaskDuration": 127.56653,
+      "JSHeapUsedSize": 44255936,
+      "JSHeapTotalSize": 93687808
+    }
+  ],
+  {
+    "name": "bench/performance-metrics/slow-pans",
+    "metrics": {
+      "loadTime": 1249.3799999938346,
+      "fullLoadTime": 1685.0200000044424,
+      "fps": 57.03787896619529,
+      "onePercentLowFps": 13.379940124948703
+    }
+  }
+]

@@ -20,8 +20,13 @@ export function runMetrics() {
     let runCtr = 0;
     const startRun = function() {
         executeRun(suiteList[currSuiteIndex], (metrics) => {
+
+
             if (runCtr >= NUM_WARMUP_RUNS) {
-                console.log(metrics);
+                console.log(JSON.stringify({
+                    name: suiteList[currSuiteIndex].style.metadata.test.testName,
+                    metrics
+                }));
             }
 
             runCtr++;

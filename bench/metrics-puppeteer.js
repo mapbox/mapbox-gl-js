@@ -2,15 +2,9 @@
 
 const puppeteer = require('puppeteer');
 const fs = require('fs');
-const zlib = require('zlib');
-const mapboxGLJSSrc = fs.readFileSync('dist/mapbox-gl-dev.js', 'utf8');
-const mapboxMetricsSrc = fs.readFileSync('bench/dist/metrics-suite.js', 'utf8');
-const benchSrc = fs.readFileSync('bench/metrics.html', 'utf8');
-const {execSync} = require('child_process');
+const st = require('st');
+const {createServer} = require('http');
 
-const benchHTML = benchSrc
-    .replace(/<script src=".\/dist\/metrics-suite.js"><\/script>/, `<script>${mapboxMetricsSrc}</script>`)
-    .replace(/<script src="..\/dist\/mapbox-gl-dev.js"><\/script>/, `<script>${mapboxGLJSSrc}</script>`);
 
 // function waitForConsole(page) {
 //     return new Promise((resolve) => {
@@ -34,39 +28,49 @@ async function countInstancesInMemory(page, prototype) {
 }
 
 (async () => {
+    const server = createServer(st({
+        path: process.cwd(),
+        cache: false,
+        index: 'index.html'
+    })).listen(9966);
+
     const browser = await puppeteer.launch({
-        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
     const messages = [];
 
     // console.log('collecting stats...');
-    await page.setViewport({width: 600, height: 600, deviceScaleFactor: 2});
-    await page.setContent(benchHTML);
+    await page.setViewport({width: 1024, height: 2014, deviceScaleFactor: 2});
+    await page.goto('http://localhost:9966/bench/metrics.html');
 
     const onConsole = async (msg) => {
         // Get a handle to the ArrayBuffer object prototype
-        const arrayBufferPrototype = page.evaluateHandle(() => ArrayBuffer.prototype);
-        const arrayBufferCount = countInstancesInMemory(page, arrayBufferPrototype);
+        // const arrayBufferPrototype = page.evaluateHandle(() => ArrayBuffer.prototype);
+        // const arrayBufferCount = countInstancesInMemory(page, arrayBufferPrototype);
 
-        // Get a handle to the Object prototype
-        const objectPrototype = page.evaluateHandle(() => Object.prototype);
-        const objectCount = countInstancesInMemory(page, objectPrototype);
+        // // Get a handle to the Object prototype
+        // const objectPrototype = page.evaluateHandle(() => Object.prototype);
+        // const objectCount = countInstancesInMemory(page, objectPrototype);
 
         const metrics = page.metrics();
-        const promises = Promise.all([arrayBufferPrototype, arrayBufferCount, objectPrototype, objectCount, metrics]);
+        const promises = Promise.all([metrics]);
 
         promises.then((output) => {
             messages.push(output);
         });
 
         if (msg.text() === 'exit') {
-            fs.writeFileSync('bench/dist/metrics-log.txt', JSON.stringify(messages));
+            fs.writeFileSync('bench/dist/metrics-log.txt', JSON.stringify(messages, null, 2));
+            server.close();
             await page.close();
             await browser.close();
         } else {
-            messages.push(msg.text());
+            try{
+                messages.push(JSON.parse(msg.text()));
+            }catch(e){
+                messages.push(msg.text());
+            }
         }
     };
     page.on('console', onConsole);

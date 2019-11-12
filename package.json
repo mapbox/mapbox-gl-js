@@ -132,7 +132,7 @@
     "start-metrics": "run-p watch-metrics-fixtures watch-metrics watch-dev start-server",
     "start-release": "run-s build-token build-prod-min build-css print-release-url start-server",
     "run-metrics": "run-s build-dev build-metrics-fixtures build-metrics start-puppeteer",
-    "start-puppeteer": "node --inspect-brk bench/metrics-puppeteer.js",
+    "start-puppeteer": "node bench/metrics-puppeteer.js",
     "lint": "eslint --cache --ignore-path .gitignore src test bench debug/*.html",
     "lint-docs": "documentation lint src/index.js",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
