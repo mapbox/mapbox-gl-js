@@ -44,7 +44,7 @@
     "line": 12
   },
   {
-    "message": "sources[2]: Source url must be a valid Mapbox tileset ID",
+    "message": "sources[2]: Source url must be a valid Mapbox tileset url",
     "line": 11
   },
   {
@@ -52,7 +52,7 @@
     "line": 17
   },
   {
-    "message": "sources[3]: Source url must be a valid Mapbox tileset ID",
+    "message": "sources[3]: Source url must be a valid Mapbox tileset url",
     "line": 16
   },
   {
