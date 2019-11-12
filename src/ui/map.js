@@ -44,6 +44,7 @@ import type DragPanHandler, {DragPanOptions} from './handler/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
+import defaultLocale from './default_locale';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
 import type {
@@ -96,7 +97,8 @@ type MapOptions = {
     renderWorldCopies?: boolean,
     maxTileCacheSize?: number,
     transformRequest?: RequestTransformFunction,
-    accessToken: string
+    accessToken: string,
+    locale?: Object
 };
 
 const defaultMinZoom = 0;
@@ -235,7 +237,7 @@ const defaultOptions = {
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this token instead of the one defined in mapboxgl.accessToken.
-
+ * @param {string} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language; see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -293,6 +295,7 @@ class Map extends Camera {
     _mapId: number;
     _localIdeographFontFamily: string;
     _requestManager: RequestManager;
+    _locale: Object;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -374,6 +377,7 @@ class Map extends Camera {
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
         this._mapId = uniqueId();
+        this._locale = extend({}, defaultLocale, options.locale);
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken);
 
@@ -1166,6 +1170,15 @@ class Map extends Camera {
             this._localIdeographFontFamily = options.localIdeographFontFamily;
             return this._updateStyle(style, options);
         }
+    }
+
+    _getUIString(key: string) {
+        const str = this._locale[key];
+        if (str == null) {
+            throw new Error(`Missing UI string '${key}'`);
+        }
+
+        return str;
     }
 
     _updateStyle(style: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions) {

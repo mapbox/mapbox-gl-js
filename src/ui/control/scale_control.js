@@ -100,27 +100,23 @@ function updateScale(map, container, options) {
         const maxFeet = 3.2808 * maxMeters;
         if (maxFeet > 5280) {
             const maxMiles = maxFeet / 5280;
-            setScale(container, maxWidth, maxMiles, 'mi');
+            setScale(container, maxWidth, maxMiles, map._getUIString('ScaleControl.Miles'));
         } else {
-            setScale(container, maxWidth, maxFeet, 'ft');
+            setScale(container, maxWidth, maxFeet, map._getUIString('ScaleControl.Feet'));
         }
     } else if (options && options.unit === 'nautical') {
         const maxNauticals = maxMeters / 1852;
-        setScale(container, maxWidth, maxNauticals, 'nm');
+        setScale(container, maxWidth, maxNauticals, map._getUIString('ScaleControl.NauticalMiles'));
+    } else if (maxMeters >= 1000) {
+        setScale(container, maxWidth, maxMeters / 1000, map._getUIString('ScaleControl.Kilometers'));
     } else {
-        setScale(container, maxWidth, maxMeters, 'm');
+        setScale(container, maxWidth, maxMeters, map._getUIString('ScaleControl.Meters'));
     }
 }
 
 function setScale(container, maxWidth, maxDistance, unit) {
-    let distance = getRoundNum(maxDistance);
+    const distance = getRoundNum(maxDistance);
     const ratio = distance / maxDistance;
-
-    if (unit === 'm' && distance >= 1000) {
-        distance = distance / 1000;
-        unit = 'km';
-    }
-
     container.style.width = `${maxWidth * ratio}px`;
     container.innerHTML = distance + unit;
 }
