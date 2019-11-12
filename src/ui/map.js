@@ -880,8 +880,9 @@ class Map extends Camera {
     }
 
     once(type: MapEvent, layerId: any, listener: any) {
+
         if (listener === undefined) {
-            return super.on(type, layerId);
+            return super.once(type, layerId);
         }
 
         const delegatedListener = this._createDelegatedListener(type, layerId, listener);
