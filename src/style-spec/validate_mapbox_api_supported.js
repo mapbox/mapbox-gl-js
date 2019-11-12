@@ -45,14 +45,14 @@ function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
 
     /*
-     * "sprite" is optional. If present, valid examples:
+     * "source" is required. Valid examples:
      * mapbox://mapbox.abcd1234
      * mapbox://penny.abcd1234
      * mapbox://mapbox.abcd1234,penny.abcd1234
      */
     const sourceUrlPattern = /^mapbox:\/\/([^/]*)$/;
     if (!isValid(source.url, sourceUrlPattern)) {
-        errors.push(new ValidationError(`sources[${i}]`, source.url, 'Style must reference sources hosted by Mapbox'));
+        errors.push(new ValidationError(`sources[${i}]`, source.url, 'Source url must be a valid Mapbox tileset url'));
     }
 
     return errors;
@@ -105,7 +105,7 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<?ValidationEr
     errors.push(...allowedKeyErrors);
 
     if (style.version > SUPPORTED_SPEC_VERSION || style.version < SUPPORTED_SPEC_VERSION) {
-        errors.push(new ValidationError('version', style.version, `style version must be ${SUPPORTED_SPEC_VERSION}`));
+        errors.push(new ValidationError('version', style.version, `Style version must be ${SUPPORTED_SPEC_VERSION}`));
     }
 
     /*
