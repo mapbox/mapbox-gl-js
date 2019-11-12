@@ -52,7 +52,7 @@ function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
      */
     const sourceUrlPattern = /^mapbox:\/\/([^/]*)$/;
     if (!isValid(source.url, sourceUrlPattern)) {
-        errors.push(new ValidationError(`sources[${i}]`, source.url, 'Source url must be a valid Mapbox tileset ID'));
+        errors.push(new ValidationError(`sources[${i}]`, source.url, 'Source url must be a valid Mapbox tileset url'));
     }
 
     return errors;
