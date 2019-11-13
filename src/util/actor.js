@@ -1,6 +1,6 @@
 // @flow
 
-import {bindAll} from './util';
+import {bindAll, isWorker} from './util';
 import {serialize, deserialize} from './web_worker_transfer';
 import ThrottledInvoker from './throttled_invoker';
 
@@ -107,7 +107,7 @@ class Actor {
                 cancel();
             }
         } else {
-            // Store the tasks that we need to process before actually processing them. This
+            // In workers, store the tasks that we need to process before actually processing them. This
             // is necessary because we want to keep receiving messages, and in particular,
             // <cancel> messages. Some tasks may take a while in the worker thread, so before
             // executing the next task in our queue, postMessage preempts this and <cancel>
@@ -115,7 +115,13 @@ class Actor {
             // process() flow to one at a time.
             this.tasks[id] = data;
             this.taskQueue.push(id);
-            this.invoker.trigger();
+            if (isWorker()) {
+                this.invoker.trigger();
+            } else {
+                // In the main thread, process messages immediately so that other work does not slip in
+                // between getting partial data back from workers.
+                this.process();
+            }
         }
     }
 
