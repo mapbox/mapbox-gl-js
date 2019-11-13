@@ -1,6 +1,6 @@
 // @flow
 
-import {bindAll} from './util';
+import {bindAll, isWorker} from './util';
 import {serialize, deserialize} from './web_worker_transfer';
 import ThrottledInvoker from './throttled_invoker';
 
@@ -22,7 +22,6 @@ class Actor {
     target: any;
     parent: any;
     mapId: ?number;
-    isWorker: boolean;
     callbacks: { number: any };
     name: string;
     tasks: { number: any };
@@ -34,7 +33,6 @@ class Actor {
         this.target = target;
         this.parent = parent;
         this.mapId = mapId;
-        this.isWorker = typeof mapId !== 'number';
         this.callbacks = {};
         this.tasks = {};
         this.taskQueue = [];
@@ -117,7 +115,7 @@ class Actor {
             // process() flow to one at a time.
             this.tasks[id] = data;
             this.taskQueue.push(id);
-            if (this.isWorker) {
+            if (isWorker()) {
                 this.invoker.trigger();
             } else {
                 // In the main thread, process messages immediately so that other work does not slip in
