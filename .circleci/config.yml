@@ -82,7 +82,6 @@ workflows:
               only:
                 - master
                 - /release-.*/
-                - fix-deploy-benchmarks
       - deploy-release:
           requires:
             - lint
@@ -234,13 +233,13 @@ jobs:
       - run:
           name: Build
           command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
-      # - aws-cli/install
-      # - run:
-      #     name: Upload benchmark
-      #     command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js
-      # - run:
-      #     name: Upload source maps
-      #     command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js.map s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js.map
+      - aws-cli/install
+      - run:
+          name: Upload benchmark
+          command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js
+      - run:
+          name: Upload source maps
+          command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js.map s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js.map
 
   deploy-release:
     <<: *defaults
