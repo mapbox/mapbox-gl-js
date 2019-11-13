@@ -46,6 +46,9 @@ class IndexBuffer {
     destroy() {
         const gl = this.context.gl;
         if (this.buffer) {
+            this.context.unbindVAO();
+            this.bind();
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, 1, gl.STATIC_DRAW);
             gl.deleteBuffer(this.buffer);
             delete this.buffer;
         }

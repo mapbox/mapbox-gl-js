@@ -26,6 +26,23 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
+var locations = [
+    [-122.430614, 37.758288],
+    [-121.897526, 37.332279],
+    [-118.164700, 33.821321]
+];
+
+var idx = 0;
+
+setInterval(function(){
+    map.flyTo({
+        center: locations[idx],
+        zoom: 15,
+        speed: 0.8,
+    });
+    idx = (idx + 1) % locations.length;
+}, 5000);
+
 </script>
 </body>
 </html>
