@@ -153,6 +153,54 @@ test('transform', (t) => {
             new OverscaledTileID(10, 0, 10, 511, 512),
             new OverscaledTileID(10, 0, 10, 512, 512)]);
 
+        transform.zoom = 5.1;
+        transform.pitch = 60.0;
+        transform.bearing = 32.0;
+        transform.center = new LngLat(56.90, 48.20);
+        transform.resize(1024, 768);
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(5, 0, 5, 21, 11),
+            new OverscaledTileID(5, 0, 5, 20, 11),
+            new OverscaledTileID(5, 0, 5, 21, 10),
+            new OverscaledTileID(5, 0, 5, 20, 10),
+            new OverscaledTileID(5, 0, 5, 21, 12),
+            new OverscaledTileID(5, 0, 5, 22, 11),
+            new OverscaledTileID(5, 0, 5, 20, 12),
+            new OverscaledTileID(5, 0, 5, 22, 10),
+            new OverscaledTileID(5, 0, 5, 21, 9),
+            new OverscaledTileID(5, 0, 5, 20, 9),
+            new OverscaledTileID(5, 0, 5, 22, 9),
+            new OverscaledTileID(5, 0, 5, 23, 10),
+            new OverscaledTileID(5, 0, 5, 21, 8),
+            new OverscaledTileID(5, 0, 5, 20, 8),
+            new OverscaledTileID(5, 0, 5, 23, 9),
+            new OverscaledTileID(5, 0, 5, 22, 8),
+            new OverscaledTileID(5, 0, 5, 23, 8),
+            new OverscaledTileID(5, 0, 5, 21, 7),
+            new OverscaledTileID(5, 0, 5, 20, 7),
+            new OverscaledTileID(5, 0, 5, 24, 9),
+            new OverscaledTileID(5, 0, 5, 22, 7)
+        ]);
+
+        transform.zoom = 8;
+        transform.pitch = 60;
+        transform.bearing = 45.0;
+        transform.center = new LngLat(25.02, 60.15);
+        transform.resize(300, 50);
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(8, 0, 8, 145, 74),
+            new OverscaledTileID(8, 0, 8, 145, 73),
+            new OverscaledTileID(8, 0, 8, 146, 74)
+        ]);
+
+        transform.resize(50, 300);
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(8, 0, 8, 145, 74),
+            new OverscaledTileID(8, 0, 8, 145, 73),
+            new OverscaledTileID(8, 0, 8, 146, 74),
+            new OverscaledTileID(8, 0, 8, 146, 73)
+        ]);
+
         t.end();
     });
 
