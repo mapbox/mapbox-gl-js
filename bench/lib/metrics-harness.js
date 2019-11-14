@@ -7,7 +7,10 @@ import {applyOperations} from '../../test/integration/lib/operation-handlers';
 //Used to warm-up the browser cache for consistent tile-load timings
 const NUM_WARMUP_RUNS = 5;
 
-const NUM_ACTUAL_RUNS = 5;
+const NUM_ACTUAL_RUNS = 15;
+
+// This namespace ised to store functions/data that can be accessed and invoked by pupeteer.
+window.mbglMetrics = {};
 
 export function runMetrics() {
     const suiteList = [];
@@ -18,19 +21,20 @@ export function runMetrics() {
 
     let currSuiteIndex = 0;
     let runCtr = 0;
-    const startRun = function() {
+    const nextRun = window.mbglMetrics.nextRun = function() {
         executeRun(suiteList[currSuiteIndex], (metrics) => {
-
-
             if (runCtr >= NUM_WARMUP_RUNS) {
-                console.log(JSON.stringify({
+                // Send a command to puppeteer using the `[PUPPETEER|<command>]:<command-data>` console message
+                console.log(`[PUPPETEER|RUN_FINISHED]:${JSON.stringify({
                     name: suiteList[currSuiteIndex].style.metadata.test.testName,
                     metrics
-                }));
+                })}`);
+            } else {
+                // Move to next run automatically if we're still warming upz
+                nextRun();
             }
 
             runCtr++;
-
             //Done with runs on this suite so reset state and move to next suite
             if (runCtr === totalRuns) {
                 currSuiteIndex++;
@@ -38,14 +42,12 @@ export function runMetrics() {
 
                 //Last suite so exit out
                 if (currSuiteIndex === suiteList.length) {
-                    console.log('exit');
-                    return;
+                    console.log('[PUPPETEER|SUITE_FINISHED]');
                 }
             }
-            startRun();
         });
     };
-    startRun();
+    nextRun();
 }
 
 function executeRun(fixture, finishCb) {

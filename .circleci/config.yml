@@ -211,7 +211,7 @@ jobs:
           at: .
       - run: yarn run run-metrics
       - store_artifacts:
-          path: "bench/dist/metrics-log.txt"
+          path: "bench/dist/metrics-summary.json"
 
   test-render:
     <<: *defaults
