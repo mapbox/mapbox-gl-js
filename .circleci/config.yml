@@ -209,8 +209,9 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: yarn run run-metrics
-      - no_output_timeout: 20m
+      - run:
+          command: yarn run run-metrics
+          no_output_timeout: 20m
       - store_artifacts:
           path: "bench/dist/metrics-summary.json"
 
