@@ -34,7 +34,6 @@ async function getJsHeapStats(page) {
     })).listen(9966);
 
     const browser = await puppeteer.launch({
-        headless:false,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
