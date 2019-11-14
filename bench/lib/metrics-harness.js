@@ -7,12 +7,20 @@ import {applyOperations} from '../../test/integration/lib/operation-handlers';
 //Used to warm-up the browser cache for consistent tile-load timings
 const NUM_WARMUP_RUNS = 5;
 
-const NUM_ACTUAL_RUNS = 15;
+const NUM_ACTUAL_RUNS = 2;
 
 // This namespace ised to store functions/data that can be accessed and invoked by pupeteer.
 window.mbglMetrics = {};
 
 export function runMetrics() {
+    //Create and position the container, floating at the top left
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = '10px';
+    container.style.top = '10px';
+    document.body.appendChild(container);
+    let map = null;
+
     const suiteList = [];
     for (const runName in suite) {
         suiteList.push(suite[runName]);
@@ -22,7 +30,23 @@ export function runMetrics() {
     let currSuiteIndex = 0;
     let runCtr = 0;
     const nextRun = window.mbglMetrics.nextRun = function() {
-        executeRun(suiteList[currSuiteIndex], (metrics) => {
+        // Teardown and re-create the map if one existed from a previous run
+        // We teardown the map lazily because puppeteer performs the memory profiling at the end of a run.
+        // and we want the map to still be active and holding onto its resources when that happens.
+        if (map) {
+            map.remove();
+            map = null;
+        }
+        const fixture = suiteList[currSuiteIndex];
+        const {mapOptions, operations} = parseFixture(container, fixture);
+        // Update size of container as per fixture
+        container.style.width = `${fixture.style.metadata.test.width}px`;
+        container.style.height = `${fixture.style.metadata.test.height}px`;
+
+        map = new mapboxgl.Map(mapOptions);
+        map.repaint = true;
+
+        executeRun(fixture, operations, map, container, (metrics) => {
             if (runCtr >= NUM_WARMUP_RUNS) {
                 // Send a command to puppeteer using the `[PUPPETEER|<command>]:<command-data>` console message
                 console.log(`[PUPPETEER|RUN_FINISHED]:${JSON.stringify({
@@ -30,7 +54,7 @@ export function runMetrics() {
                     metrics
                 })}`);
             } else {
-                // Move to next run automatically if we're still warming upz
+                // Move to next run automatically if we're still warming up
                 nextRun();
             }
 
@@ -50,24 +74,9 @@ export function runMetrics() {
     nextRun();
 }
 
-function executeRun(fixture, finishCb) {
-    //1. Create and position the container, floating at the top left
-    const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.left = '10px';
-    container.style.top = '10px';
-    container.style.width = `${fixture.style.metadata.test.width}px`;
-    container.style.height = `${fixture.style.metadata.test.height}px`;
-    document.body.appendChild(container);
-
-    const {mapOptions, operations} = parseFixture(container, fixture);
-    let map = new mapboxgl.Map(mapOptions);
-    map.repaint = true;
+function executeRun(fixture, operations, map, container, finishCb) {
     applyOperations(map, operations, () => {
         const metrics = map.extractPerformanceMetrics();
-        map.remove();
-        map = null;
-        document.body.removeChild(container);
         finishCb(metrics);
     });
 }

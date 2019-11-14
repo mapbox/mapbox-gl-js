@@ -214,6 +214,8 @@ jobs:
           no_output_timeout: 20m
       - store_artifacts:
           path: "bench/dist/metrics-summary.json"
+      - store_artifacts:
+          path: "bench/dist/metrics-raw.json"
 
   test-render:
     <<: *defaults

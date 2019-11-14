@@ -34,10 +34,11 @@ async function getJsHeapStats(page) {
     })).listen(9966);
 
     const browser = await puppeteer.launch({
+        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
-    await page.setViewport({width: 1024, height: 2014, deviceScaleFactor: 2});
+    await page.setViewport({width: 1024, height: 1024, deviceScaleFactor: 2});
     await page.goto('http://localhost:9966/bench/metrics.html');
 
     const runResults = {};
@@ -91,6 +92,7 @@ async function getJsHeapStats(page) {
 
                 console.log(suiteSummary);
                 fs.writeFileSync('bench/dist/metrics-summary.json', JSON.stringify(suiteSummary, null, 2));
+                fs.writeFileSync('bench/dist/metrics-raw.json', JSON.stringify(runResults, null, 2));
                 break;
             default:
                 console.log(`${command} is unknown`);
