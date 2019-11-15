@@ -57,6 +57,7 @@
     "eslint-plugin-flowtype": "^3.9.1",
     "eslint-plugin-html": "^5.0.5",
     "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-jsdoc": "^17.1.2",
     "eslint-plugin-react": "^7.12.4",
     "esm": "~3.0.84",
     "flow-bin": "^0.100.0",
