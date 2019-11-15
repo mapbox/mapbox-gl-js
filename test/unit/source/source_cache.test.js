@@ -754,20 +754,20 @@ test('SourceCache#update', (t) => {
             if (e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
                 t.deepEqual(sourceCache.getRenderableIds(), [
-                    new OverscaledTileID(16, 0, 16, 8192, 8192).key,
-                    new OverscaledTileID(16, 0, 16, 8191, 8192).key,
-                    new OverscaledTileID(16, 0, 16, 8192, 8191).key,
-                    new OverscaledTileID(16, 0, 16, 8191, 8191).key
+                    new OverscaledTileID(16, 0, 14, 8192, 8192).key,
+                    new OverscaledTileID(16, 0, 14, 8191, 8192).key,
+                    new OverscaledTileID(16, 0, 14, 8192, 8191).key,
+                    new OverscaledTileID(16, 0, 14, 8191, 8191).key
                 ]);
 
                 transform.zoom = 15;
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getRenderableIds(), [
-                    new OverscaledTileID(16, 0, 16, 8192, 8192).key,
-                    new OverscaledTileID(16, 0, 16, 8191, 8192).key,
-                    new OverscaledTileID(16, 0, 16, 8192, 8191).key,
-                    new OverscaledTileID(16, 0, 16, 8191, 8191).key
+                    new OverscaledTileID(16, 0, 14, 8192, 8192).key,
+                    new OverscaledTileID(16, 0, 14, 8191, 8192).key,
+                    new OverscaledTileID(16, 0, 14, 8192, 8191).key,
+                    new OverscaledTileID(16, 0, 14, 8191, 8191).key
                 ]);
                 t.end();
             }
@@ -890,9 +890,9 @@ test('SourceCache#_updateRetainedTiles', (t) => {
             // parent
             '0': new OverscaledTileID(0, 0, 0, 0, 0),
             //  1/0/1
-            '65': new OverscaledTileID(1, 0, 1, 0, 1),
+            '2081': new OverscaledTileID(1, 0, 1, 0, 1),
             // 1/1/1
-            '97': new OverscaledTileID(1, 0, 1, 1, 1)
+            '3105': new OverscaledTileID(1, 0, 1, 1, 1)
         });
         addTileSpy.restore();
         getTileSpy.restore();
@@ -964,7 +964,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
             // parent of ideal tile 0/0/0
             '0' : new OverscaledTileID(0, 0, 0, 0, 0),
             // ideal tile id 1/0/1
-            '65' : new OverscaledTileID(1, 0, 1, 0, 1)
+            '2081' : new OverscaledTileID(1, 0, 1, 0, 1)
         }, 'retain ideal and parent tile when ideal tiles aren\'t loaded');
 
         addTileSpy.resetHistory();
@@ -977,7 +977,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         t.ok(getTileSpy.notCalled);
         t.deepEqual(retainedLoaded, {
             // only ideal tile retained
-            '65' : new OverscaledTileID(1, 0, 1, 0, 1)
+            '2081' : new OverscaledTileID(1, 0, 1, 0, 1)
         }, 'only retain ideal tiles when they\'re all loaded');
 
         addTileSpy.restore();
@@ -1036,14 +1036,14 @@ test('SourceCache#_updateRetainedTiles', (t) => {
             // tiles, so we still need to load the parent)
             '0' : new OverscaledTileID(0, 0, 0, 0, 0),
             // ideal tile id (1, 0, 0)
-            '1' : new OverscaledTileID(1, 0, 1, 0, 0),
+            '33' : new OverscaledTileID(1, 0, 1, 0, 0),
             // loaded child tile (2, 0, 0)
-            '2': new OverscaledTileID(2, 0, 2, 0, 0)
+            '66': new OverscaledTileID(2, 0, 2, 0, 0)
         }, 'retains children and parent when ideal tile is partially covered by a loaded child tile');
 
         getTileSpy.restore();
         // remove child tile and check that it only uses parent tile
-        delete sourceCache._tiles['2'];
+        delete sourceCache._tiles['66'];
         retained = sourceCache._updateRetainedTiles([idealTile], 1);
 
         t.deepEqual(retained, {
@@ -1051,7 +1051,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
             // tiles, so we still need to load the parent)
             '0' : new OverscaledTileID(0, 0, 0, 0, 0),
             // ideal tile id (1, 0, 0)
-            '1' : new OverscaledTileID(1, 0, 1, 0, 0)
+            '33' : new OverscaledTileID(1, 0, 1, 0, 0)
         }, 'only retains parent tile if no child tiles are loaded');
 
         t.end();
@@ -1079,7 +1079,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
 
         t.deepEqual(retained, {
             // ideal tile id (2, 0, 0)
-            '2' : new OverscaledTileID(2, 0, 2, 0, 0)
+            '66' : new OverscaledTileID(2, 0, 2, 0, 0)
         }, 'doesn\'t retain parent tiles below minzoom');
 
         getTileSpy.restore();
@@ -1109,7 +1109,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
 
         t.deepEqual(retained, {
             // ideal tile id (2, 0, 0)
-            '2' : new OverscaledTileID(2, 0, 2, 0, 0)
+            '66' : new OverscaledTileID(2, 0, 2, 0, 0)
         }, 'doesn\'t retain child tiles above maxzoom');
 
         getTileSpy.restore();
@@ -1277,12 +1277,12 @@ test('SourceCache#tilesIn', (t) => {
                 tiles.sort((a, b) => { return a.tile.tileID.canonical.x - b.tile.tileID.canonical.x; });
                 tiles.forEach((result) => { delete result.tile.uid; });
 
-                t.equal(tiles[0].tile.tileID.key, 1);
+                t.equal(tiles[0].tile.tileID.key, 33);
                 t.equal(tiles[0].tile.tileSize, 512);
                 t.equal(tiles[0].scale, 1);
                 t.deepEqual(round(tiles[0].queryGeometry), [{x: 4096, y: 4050}, {x:12288, y: 8146}]);
 
-                t.equal(tiles[1].tile.tileID.key, 33);
+                t.equal(tiles[1].tile.tileID.key, 1057);
                 t.equal(tiles[1].tile.tileSize, 512);
                 t.equal(tiles[1].scale, 1);
                 t.deepEqual(round(tiles[1].queryGeometry), [{x: -4096, y: 4050}, {x: 4096, y: 8146}]);
@@ -1315,10 +1315,10 @@ test('SourceCache#tilesIn', (t) => {
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getIds(), [
-                    new OverscaledTileID(2, 0, 2, 1, 1).key,
-                    new OverscaledTileID(2, 0, 2, 0, 1).key,
-                    new OverscaledTileID(2, 0, 2, 1, 0).key,
-                    new OverscaledTileID(2, 0, 2, 0, 0).key
+                    new OverscaledTileID(2, 0, 1, 1, 1).key,
+                    new OverscaledTileID(2, 0, 1, 0, 1).key,
+                    new OverscaledTileID(2, 0, 1, 1, 0).key,
+                    new OverscaledTileID(2, 0, 1, 0, 0).key
                 ]);
 
                 const tiles = sourceCache.tilesIn([
@@ -1329,12 +1329,12 @@ test('SourceCache#tilesIn', (t) => {
                 tiles.sort((a, b) => { return a.tile.tileID.canonical.x - b.tile.tileID.canonical.x; });
                 tiles.forEach((result) => { delete result.tile.uid; });
 
-                t.equal(tiles[0].tile.tileID.key, 2);
+                t.equal(tiles[0].tile.tileID.key, 34);
                 t.equal(tiles[0].tile.tileSize, 1024);
                 t.equal(tiles[0].scale, 1);
                 t.deepEqual(round(tiles[0].queryGeometry), [{x: 4096, y: 4050}, {x:12288, y: 8146}]);
 
-                t.equal(tiles[1].tile.tileID.key, 34);
+                t.equal(tiles[1].tile.tileID.key, 1058);
                 t.equal(tiles[1].tile.tileSize, 1024);
                 t.equal(tiles[1].scale, 1);
                 t.deepEqual(round(tiles[1].queryGeometry), [{x: -4096, y: 4050}, {x: 4096, y: 8146}]);
