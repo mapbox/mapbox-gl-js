@@ -21,7 +21,7 @@ export class CanonicalTileID {
         this.z = z;
         this.x = x;
         this.y = y;
-        this.key = calculateKey(0, z, x, y);
+        this.key = calculateKey(0, z, z, x, y);
     }
 
     equals(id: CanonicalTileID) {
@@ -62,7 +62,7 @@ export class UnwrappedTileID {
     constructor(wrap: number, canonical: CanonicalTileID) {
         this.wrap = wrap;
         this.canonical = canonical;
-        this.key = calculateKey(wrap, canonical.z, canonical.x, canonical.y);
+        this.key = calculateKey(wrap, canonical.z, canonical.z, canonical.x, canonical.y);
     }
 }
 
@@ -78,7 +78,7 @@ export class OverscaledTileID {
         this.overscaledZ = overscaledZ;
         this.wrap = wrap;
         this.canonical = new CanonicalTileID(z, +x, +y);
-        this.key = calculateKey(wrap, overscaledZ, x, y);
+        this.key = calculateKey(wrap, overscaledZ, z, x, y);
     }
 
     equals(id: OverscaledTileID) {
@@ -164,11 +164,11 @@ export class OverscaledTileID {
     }
 }
 
-function calculateKey(wrap: number, z: number, x: number, y: number) {
+function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number) {
     wrap *= 2;
     if (wrap < 0) wrap = wrap * -1 - 1;
     const dim = 1 << z;
-    return ((dim * dim * wrap + dim * y + x) * 32) + z;
+    return (((dim * dim * wrap + dim * y + x) * 32) + z) * 32 + overscaledZ;
 }
 
 function getQuadkey(z, x, y) {
