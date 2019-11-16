@@ -1,7 +1,8 @@
 import {plugins} from '../build/rollup_plugins';
 import replace from 'rollup-plugin-replace';
 const replaceConfig = {
-    'process.env.NUM_WARMUP_RUNS': JSON.stringify(process.env.NUM_WARMUP_RUNS)
+    'process.env.NUM_WARMUP_RUNS': JSON.stringify(process.env.NUM_WARMUP_RUNS),
+    'process.env.NUM_ACTUAL_RUNS': JSON.stringify(process.env.NUM_ACTUAL_RUNS)
 };
 
 const allPlugins = plugins(false, false).concat(replace(replaceConfig));

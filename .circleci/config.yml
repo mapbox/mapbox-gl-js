@@ -229,7 +229,8 @@ jobs:
           at: .
       - run:
           environment:
-            NUM_WARMUP_RUNS: 1
+            NUM_ACTUAL_RUNS: 10
+            NUM_WARMUP_RUNS: 10
           command: yarn run run-metrics
           no_output_timeout: 20m
       - store_artifacts:
@@ -244,7 +245,8 @@ jobs:
           at: .
       - run:
           environment:
-            NUM_WARMUP_RUNS: 5
+            NUM_ACTUAL_RUNS: 10
+            NUM_WARMUP_RUNS: 10
           command: yarn run run-metrics
           no_output_timeout: 20m
       - store_artifacts:
@@ -259,6 +261,7 @@ jobs:
           at: .
       - run:
           environment:
+            NUM_ACTUAL_RUNS: 10
             NUM_WARMUP_RUNS: 10
           command: yarn run run-metrics
           no_output_timeout: 20m
@@ -274,7 +277,8 @@ jobs:
           at: .
       - run:
           environment:
-            NUM_WARMUP_RUNS: 15
+            NUM_ACTUAL_RUNS: 10
+            NUM_WARMUP_RUNS: 10
           command: yarn run run-metrics
           no_output_timeout: 20m
       - store_artifacts:
