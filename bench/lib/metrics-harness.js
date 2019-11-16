@@ -5,9 +5,9 @@ import suite from '../dist/fixtures.json';
 import {applyOperations} from '../../test/integration/lib/operation-handlers';
 
 //Used to warm-up the browser cache for consistent tile-load timings
-const NUM_WARMUP_RUNS = 5;
+const NUM_WARMUP_RUNS = parseInt(process.env.NUM_WARMUP_RUNS);
 
-const NUM_ACTUAL_RUNS = 20;
+const NUM_ACTUAL_RUNS = 10;
 
 // This namespace ised to store functions/data that can be accessed and invoked by pupeteer.
 window.mbglMetrics = {};

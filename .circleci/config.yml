@@ -48,7 +48,25 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - collect-metrics:
+      - collect-metrics-one:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-five:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-ten:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-fifteen:
           requires:
             - prepare
           filters:
@@ -204,12 +222,59 @@ jobs:
           at: .
       - run: yarn run test-unit
 
-  collect-metrics:
+  collect-metrics-one:
     <<: *defaults
     steps:
       - attach_workspace:
           at: .
       - run:
+          environment:
+            NUM_WARMUP_RUNS: 1
+          command: yarn run run-metrics
+          no_output_timeout: 20m
+      - store_artifacts:
+          path: "bench/dist/metrics-summary.json"
+      - store_artifacts:
+          path: "bench/dist/metrics-raw.json"
+
+  collect-metrics-five:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          environment:
+            NUM_WARMUP_RUNS: 5
+          command: yarn run run-metrics
+          no_output_timeout: 20m
+      - store_artifacts:
+          path: "bench/dist/metrics-summary.json"
+      - store_artifacts:
+          path: "bench/dist/metrics-raw.json"
+
+  collect-metrics-ten:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          environment:
+            NUM_WARMUP_RUNS: 10
+          command: yarn run run-metrics
+          no_output_timeout: 20m
+      - store_artifacts:
+          path: "bench/dist/metrics-summary.json"
+      - store_artifacts:
+          path: "bench/dist/metrics-raw.json"
+
+  collect-metrics-fifteen:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          environment:
+            NUM_WARMUP_RUNS: 15
           command: yarn run run-metrics
           no_output_timeout: 20m
       - store_artifacts:
