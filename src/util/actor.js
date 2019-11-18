@@ -19,6 +19,7 @@ import type {Cancelable} from '../types/cancelable';
  * @private
  */
 class Actor {
+    id: string;
     target: any;
     parent: any;
     mapId: ?number;
@@ -28,6 +29,8 @@ class Actor {
     taskQueue: Array<number>;
     cancelCallbacks: { number: Cancelable };
     invoker: ThrottledInvoker;
+    references: number;
+    uses: number;
 
     constructor(target: any, parent: any, mapId: ?number) {
         this.target = target;
@@ -39,6 +42,8 @@ class Actor {
         this.cancelCallbacks = {};
         bindAll(['receive', 'process'], this);
         this.invoker = new ThrottledInvoker(this.process);
+        this.references = 0;
+        this.uses = 0;
         this.target.addEventListener('message', this.receive, false);
     }
 
@@ -198,6 +203,9 @@ class Actor {
     remove() {
         this.invoker.remove();
         this.target.removeEventListener('message', this.receive, false);
+        if (!isWorker()) {
+            this.target.terminate();
+        }
     }
 }
 

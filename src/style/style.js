@@ -25,7 +25,6 @@ import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '
 import SourceCache from '../source/source_cache';
 import GeoJSONSource from '../source/geojson_source';
 import styleSpec from '../style-spec/reference/latest';
-import getWorkerPool from '../util/global_worker_pool';
 import deref from '../style-spec/deref';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff';
 import {
@@ -136,7 +135,7 @@ class Style extends Evented {
         super();
 
         this.map = map;
-        this.dispatcher = new Dispatcher(getWorkerPool(), this);
+        this.dispatcher = new Dispatcher(this);
         this.imageManager = new ImageManager();
         this.imageManager.setEventedParent(this);
         this.glyphManager = new GlyphManager(map._requestManager, options.localIdeographFontFamily);

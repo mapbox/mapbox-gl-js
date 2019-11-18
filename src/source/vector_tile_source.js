@@ -189,7 +189,9 @@ class VectorTileSource extends Evented implements Source {
         tile.unloadVectorData();
         tile.clearMask();
         if (tile.actor) {
-            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id}, undefined);
+            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id}, () => {
+                this.dispatcher.returnActor(tile.actor);
+            });
         }
     }
 

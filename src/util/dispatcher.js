@@ -4,7 +4,10 @@ import {uniqueId, asyncAll} from './util';
 import Actor from './actor';
 import assert from 'assert';
 
-import type WorkerPool from './worker_pool';
+import createWorker from './web_worker';
+
+const maxActorUses = 10;
+const maxWorkerCount = 2;
 
 /**
  * Responsible for sending messages from a {@link Source} to an associated
@@ -13,38 +16,44 @@ import type WorkerPool from './worker_pool';
  * @private
  */
 class Dispatcher {
-    workerPool: WorkerPool;
     actors: Array<Actor>;
-    currentActor: number;
     id: number;
+    parent: any;
+    broadcastMessages: {string: mixed};
 
     // exposed to allow stubbing in unit tests
     static Actor: Class<Actor>;
 
-    constructor(workerPool: WorkerPool, parent: any) {
-        this.workerPool = workerPool;
+    constructor(parent: any) {
         this.actors = [];
-        this.currentActor = 0;
         this.id = uniqueId();
-        const workers = this.workerPool.acquire(this.id);
-        for (let i = 0; i < workers.length; i++) {
-            const worker = workers[i];
-            const actor = new Dispatcher.Actor(worker, parent, this.id);
-            actor.name = `Worker ${i}`;
-            this.actors.push(actor);
+        this.parent = parent;
+        this.broadcastMessages = {};
+
+        while (this.actors.length < maxWorkerCount) {
+            this.actors.push(this.createActor());
         }
-        assert(this.actors.length);
     }
 
     /**
      * Broadcast a message to all Workers.
      */
     broadcast(type: string, data: mixed, cb?: Function) {
-        assert(this.actors.length);
+        // HACK: Store broadcast messages so we can send them to newly created workers.
+        this.broadcastMessages[type] = data;
+
         cb = cb || function () {};
         asyncAll(this.actors, (actor, done) => {
             actor.send(type, data, done);
         }, cb);
+    }
+
+    createActor(): Actor {
+        const actor = new Dispatcher.Actor(createWorker(), this.parent, this.id);
+        for (const type in this.broadcastMessages) {
+            actor.send(type, this.broadcastMessages[type]);
+        }
+        return actor;
     }
 
     /**
@@ -52,15 +61,28 @@ class Dispatcher {
      * @returns An actor object backed by a web worker for processing messages.
      */
     getActor(): Actor {
-        assert(this.actors.length);
-        this.currentActor = (this.currentActor + 1) % this.actors.length;
-        return this.actors[this.currentActor];
+        // We're removing the actor from the front of the queue and re-add it to the back of the queue
+        // if we can still reuse it to achieve a round-robin effect.
+        const actor = this.actors.shift();
+        if (++actor.uses < maxActorUses) {
+            this.actors.push(actor);
+        } else {
+            this.actors.push(this.createActor());
+        }
+        ++actor.references;
+        return actor;
+    }
+
+    returnActor(actor: Actor) {
+        assert(actor.references >= 0);
+        if (--actor.references <= 0 && actor.uses >= maxActorUses) {
+            actor.remove();
+        }
     }
 
     remove() {
         this.actors.forEach((actor) => { actor.remove(); });
         this.actors = [];
-        this.workerPool.release(this.id);
     }
 }
 
