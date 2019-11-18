@@ -54,7 +54,49 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - collect-metrics-two:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-three:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-four:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - collect-metrics-five:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-six:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-seven:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-eight:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-nine:
           requires:
             - prepare
           filters:
@@ -66,7 +108,61 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - collect-metrics-eleven:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-twelve:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-thirteen:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-fourteen:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - collect-metrics-fifteen:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-sixteen:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-seventeen:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-eighteen:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-nineteen:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - collect-metrics-twenty:
           requires:
             - prepare
           filters:
@@ -125,6 +221,22 @@ defaults: &defaults
   docker:
     - image: circleci/node:10.16-browsers
   working_directory: ~/mapbox-gl-js
+
+collect-metrics:
+  <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          environment:
+            NUM_ACTUAL_RUNS: 10
+            NUM_WARMUP_RUNS: 10
+          command: yarn run run-metrics
+          no_output_timeout: 20m
+      - store_artifacts:
+          path: "bench/dist/metrics-summary.json"
+      - store_artifacts:
+          path: "bench/dist/metrics-raw.json"
 
 jobs:
   prepare:
@@ -223,68 +335,64 @@ jobs:
       - run: yarn run test-unit
 
   collect-metrics-one:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          environment:
-            NUM_ACTUAL_RUNS: 10
-            NUM_WARMUP_RUNS: 10
-          command: yarn run run-metrics
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: "bench/dist/metrics-summary.json"
-      - store_artifacts:
-          path: "bench/dist/metrics-raw.json"
+    <<: *collect-metrics
+
+  collect-metrics-two:
+    <<: *collect-metrics
+
+  collect-metrics-three:
+    <<: *collect-metrics
+
+  collect-metrics-four:
+    <<: *collect-metrics
 
   collect-metrics-five:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          environment:
-            NUM_ACTUAL_RUNS: 10
-            NUM_WARMUP_RUNS: 10
-          command: yarn run run-metrics
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: "bench/dist/metrics-summary.json"
-      - store_artifacts:
-          path: "bench/dist/metrics-raw.json"
+    <<: *collect-metrics
+
+  collect-metrics-six:
+    <<: *collect-metrics
+
+  collect-metrics-seven:
+    <<: *collect-metrics
+
+  collect-metrics-eight:
+    <<: *collect-metrics
+
+  collect-metrics-nine:
+    <<: *collect-metrics
 
   collect-metrics-ten:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          environment:
-            NUM_ACTUAL_RUNS: 10
-            NUM_WARMUP_RUNS: 10
-          command: yarn run run-metrics
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: "bench/dist/metrics-summary.json"
-      - store_artifacts:
-          path: "bench/dist/metrics-raw.json"
+    <<: *collect-metrics
+
+  collect-metrics-eleven:
+    <<: *collect-metrics
+
+  collect-metrics-twelve:
+    <<: *collect-metrics
+
+  collect-metrics-thirteen:
+    <<: *collect-metrics
+
+  collect-metrics-fourteen:
+    <<: *collect-metrics
 
   collect-metrics-fifteen:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          environment:
-            NUM_ACTUAL_RUNS: 10
-            NUM_WARMUP_RUNS: 10
-          command: yarn run run-metrics
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: "bench/dist/metrics-summary.json"
-      - store_artifacts:
-          path: "bench/dist/metrics-raw.json"
+    <<: *collect-metrics
+
+  collect-metrics-sixteen:
+    <<: *collect-metrics
+
+  collect-metrics-seventeen:
+    <<: *collect-metrics
+
+  collect-metrics-eighteen:
+    <<: *collect-metrics
+
+  collect-metrics-nineteen:
+    <<: *collect-metrics
+
+  collect-metrics-twenty:
+    <<: *collect-metrics
 
   test-render:
     <<: *defaults
