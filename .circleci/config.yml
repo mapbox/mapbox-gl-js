@@ -224,19 +224,19 @@ defaults: &defaults
 
 collect-metrics:
   <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          environment:
-            NUM_ACTUAL_RUNS: 10
-            NUM_WARMUP_RUNS: 10
-          command: yarn run run-metrics
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: "bench/dist/metrics-summary.json"
-      - store_artifacts:
-          path: "bench/dist/metrics-raw.json"
+  steps:
+    - attach_workspace:
+        at: .
+    - run:
+        environment:
+          NUM_ACTUAL_RUNS: 10
+          NUM_WARMUP_RUNS: 10
+        command: yarn run run-metrics
+        no_output_timeout: 20m
+    - store_artifacts:
+        path: "bench/dist/metrics-summary.json"
+    - store_artifacts:
+        path: "bench/dist/metrics-raw.json"
 
 jobs:
   prepare:
