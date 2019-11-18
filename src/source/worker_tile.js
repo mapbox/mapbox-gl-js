@@ -34,6 +34,7 @@ class WorkerTile {
     pixelRatio: number;
     tileSize: number;
     source: string;
+    featureStateID: ?{[string]: string};
     overscaling: number;
     showCollisionBoxes: boolean;
     collectResourceTiming: boolean;

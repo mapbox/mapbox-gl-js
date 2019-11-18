@@ -28,6 +28,7 @@ class VectorTileSource extends Evented implements Source {
     url: string;
     scheme: string;
     tileSize: number;
+    featureStateID: ?{[string]: string};
 
     _options: VectorSourceSpecification;
     _collectResourceTiming: boolean;
