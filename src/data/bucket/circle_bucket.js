@@ -71,7 +71,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.layoutVertexArray = new CircleLayoutArray();
         this.indexArray = new TriangleIndexArray();
         this.segments = new SegmentVector();
-        this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
+        this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom, undefined, options.featureStateID);
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
     }
 

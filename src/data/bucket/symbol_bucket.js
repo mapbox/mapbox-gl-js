@@ -317,6 +317,7 @@ class SymbolBucket implements Bucket {
         this.index = options.index;
         this.pixelRatio = options.pixelRatio;
         this.sourceLayerIndex = options.sourceLayerIndex;
+        this.featureStateID = options.featureStateID;
         this.hasPattern = false;
         this.hasPaintOverrides = false;
         this.hasRTLText = false;
@@ -348,8 +349,8 @@ class SymbolBucket implements Bucket {
         const layout = this.layers[0].layout;
         this.hasPaintOverrides = SymbolStyleLayer.hasPaintOverrides(layout);
 
-        this.text = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property)));
-        this.icon = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property)));
+        this.text = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property), this.featureStateID));
+        this.icon = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property), this.featureStateID));
 
         this.textCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
         this.iconCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);

@@ -1,5 +1,6 @@
 // @flow
 
+import murmur3 from 'murmurhash-js';
 import {register} from '../util/web_worker_transfer';
 import assert from 'assert';
 
@@ -26,13 +27,15 @@ export default class FeaturePositionMap {
         this.indexed = false;
     }
 
-    add(id: number, index: number, start: number, end: number) {
-        this.ids.push(id);
+    add(id: mixed, index: number, start: number, end: number) {
+        this.ids.push(getIntegerId(id));
         this.positions.push(index, start, end);
     }
 
-    getPositions(id: number): Array<FeaturePosition> {
+    getPositions(id: mixed): Array<FeaturePosition> {
         assert(this.indexed);
+
+        const intId = getIntegerId(id);
 
         // binary search for the first occurrence of id in this.ids;
         // relies on ids/positions being sorted by id, which happens in serialization
@@ -40,14 +43,14 @@ export default class FeaturePositionMap {
         let j = this.ids.length - 1;
         while (i < j) {
             const m = (i + j) >> 1;
-            if (this.ids[m] >= id) {
+            if (this.ids[m] >= intId) {
                 j = m;
             } else {
                 i = m + 1;
             }
         }
         const positions = [];
-        while (this.ids[i] === id) {
+        while (this.ids[i] === intId) {
             const index = this.positions[3 * i];
             const start = this.positions[3 * i + 1];
             const end = this.positions[3 * i + 2];
@@ -77,6 +80,14 @@ export default class FeaturePositionMap {
         map.indexed = true;
         return map;
     }
+}
+
+export function getIntegerId(value: mixed) {
+    const numValue = +value;
+    if (!isNaN(numValue) && numValue % 1 === 0) {
+        return numValue;
+    }
+    return murmur3(String(value));
 }
 
 // custom quicksort that sorts ids, indices and offsets together (by ids)

@@ -624,7 +624,7 @@ export default class ProgramConfiguration {
     updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: VectorTileLayer, layer: TypedStyleLayer, imagePositions: {[string]: ImagePosition}): boolean {
         let dirty: boolean = false;
         for (const id in featureStates) {
-            const positions = featureMap.getPositions(+id);
+            const positions = featureMap.getPositions(id);
 
             for (const pos of positions) {
                 const feature = vtLayer.feature(pos.index);
@@ -729,7 +729,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     _featureMap: FeaturePositionMap;
     _bufferOffset: number;
 
-    constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true) {
+    constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true, featureStateID?: string) {
         this.programConfigurations = {};
         for (const layer of layers) {
             this.programConfigurations[layer.id] = ProgramConfiguration.createDynamic(layer, zoom, filterProperties);
@@ -737,6 +737,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         }
         this.needsUpload = false;
         this._featureMap = new FeaturePositionMap();
+        this._featureStateID = featureStateID;
         this._bufferOffset = 0;
     }
 
@@ -745,8 +746,10 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
             this.programConfigurations[key].populatePaintArrays(length, feature, index, imagePositions, formattedSection);
         }
 
-        if (feature.id !== undefined) {
-            this._featureMap.add(+feature.id, index, this._bufferOffset, length);
+        const id = this._featureStateID ? feature.properties[this._featureStateID] : feature.id;
+
+        if (id !== undefined) {
+            this._featureMap.add(id, index, this._bufferOffset, length);
         }
         this._bufferOffset = length;
 

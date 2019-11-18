@@ -58,6 +58,7 @@ class WorkerTile {
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.collectResourceTiming = !!params.collectResourceTiming;
         this.returnDependencies = !!params.returnDependencies;
+        this.featureStateID = params.featureStateID;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
@@ -117,7 +118,8 @@ class WorkerTile {
                     overscaling: this.overscaling,
                     collisionBoxArray: this.collisionBoxArray,
                     sourceLayerIndex,
-                    sourceID: this.source
+                    sourceID: this.source,
+                    featureStateID: this.featureStateID && this.featureStateID[sourceLayerId]
                 });
 
                 bucket.populate(features, options);
