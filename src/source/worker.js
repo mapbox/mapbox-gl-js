@@ -39,7 +39,9 @@ export default class Worker {
 
     constructor(self: WorkerGlobalScopeInterface) {
         this.self = self;
-        this.actor = new Actor(self, this);
+        self.onmessage = message => {
+            this.actor = new Actor(message.data, this);
+        };
 
         this.layerIndexes = {};
         this.availableImages = {};

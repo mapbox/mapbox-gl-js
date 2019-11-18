@@ -40,6 +40,7 @@ class Actor {
         bindAll(['receive', 'process'], this);
         this.invoker = new ThrottledInvoker(this.process);
         this.target.addEventListener('message', this.receive, false);
+        this.target.start();
     }
 
     /**

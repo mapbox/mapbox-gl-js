@@ -29,8 +29,10 @@ class Dispatcher {
         const workers = this.workerPool.acquire(this.id);
         for (let i = 0; i < workers.length; i++) {
             const worker = workers[i];
-            const actor = new Dispatcher.Actor(worker, parent, this.id);
+            const channel = new MessageChannel();
+            const actor = new Dispatcher.Actor(channel.port1, parent, this.id);
             actor.name = `Worker ${i}`;
+            worker.postMessage(channel.port2, [channel.port2]);
             this.actors.push(actor);
         }
         assert(this.actors.length);
