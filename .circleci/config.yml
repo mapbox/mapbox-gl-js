@@ -222,7 +222,7 @@ defaults: &defaults
     - image: circleci/node:10.16-browsers
   working_directory: ~/mapbox-gl-js
 
-collect-metrics:
+collect-metrics: &collect-metrics
   <<: *defaults
   steps:
     - attach_workspace:
