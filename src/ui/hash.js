@@ -107,9 +107,9 @@ class Hash {
             hash.split('&').map(
                 part => part.split('=')
             ).forEach(part => {
-              if (part[0] === this._hashName) {
-                keyval = part;
-              }
+                if (part[0] === this._hashName) {
+                    keyval = part;
+                }
             });
             return (keyval ? keyval[1] || '' : '').split('/');
         }
