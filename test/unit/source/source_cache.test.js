@@ -229,6 +229,31 @@ test('SourceCache#addTile', (t) => {
         t.end();
     });
 
+    t.test('should load tiles with constant overscaled Z but different canonical Z', (t) => {
+        const sourceCache = createSourceCache();
+
+        const tileIDs = [
+            new OverscaledTileID(1, 0, 0, 0, 0),
+            new OverscaledTileID(1, 0, 1, 0, 0),
+            new OverscaledTileID(1, 0, 1, 1, 0),
+            new OverscaledTileID(1, 0, 1, 0, 1),
+            new OverscaledTileID(1, 0, 1, 1, 1)
+        ];
+
+        for (let i = 0; i < tileIDs.length; i++)
+            sourceCache._addTile(tileIDs[i]);
+
+        for (let i = 0; i < tileIDs.length; i++) {
+            const id = tileIDs[i];
+            const key = id.key;
+
+            t.ok(sourceCache._tiles[key]);
+            t.deepEqual(sourceCache._tiles[key].tileID, id);
+        }
+
+        t.end();
+    });
+
     t.end();
 });
 
