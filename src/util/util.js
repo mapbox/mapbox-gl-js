@@ -449,6 +449,27 @@ export function parseCacheControl(cacheControl: string): Object {
     return header;
 }
 
+let _isSafari = null;
+
+/**
+ * Retuns true if the when run WebKit derived browsers.
+ * This is used to work-around a memory-leak in Safari caused by using web-worker transfers.
+ * https://github.com/mapbox/mapbox-gl-js/issues/8771
+ *
+ * This should be removed once the unerlying safari issue is fixed.
+ *
+ * @private
+ * @returns {boolean}
+ */
+export function isSafari(scope: any): boolean {
+    if (_isSafari == null) {
+        _isSafari = !!scope.safari ||
+        (scope.navigator && scope.navigator.userAgent &&
+         /\b(iPad|iPhone|iPod)\b/.test(scope.navigator.userAgent));
+    }
+    return _isSafari;
+}
+
 export function storageAvailable(type: string): boolean {
     try {
         const storage = window[type];
