@@ -59,15 +59,14 @@ class Actor {
         if (callback) {
             this.callbacks[id] = callback;
         }
-        const buffers: Array<Transferable> = [];
         this.target.postMessage({
             id,
             type,
             hasCallback: !!callback,
             targetMapId,
             sourceMapId: this.mapId,
-            data: serialize(data, buffers)
-        }, buffers);
+            data: serialize(data)
+        });
         return {
             cancel: () => {
                 if (callback) {
@@ -161,14 +160,13 @@ class Actor {
             const done = task.hasCallback ? (err, data) => {
                 completed = true;
                 delete this.cancelCallbacks[id];
-                const buffers: Array<Transferable> = [];
                 this.target.postMessage({
                     id,
                     type: '<response>',
                     sourceMapId: this.mapId,
                     error: err ? serialize(err) : null,
-                    data: serialize(data, buffers)
-                }, buffers);
+                    data: serialize(data)
+                });
             } : (_) => {
                 completed = true;
             };
