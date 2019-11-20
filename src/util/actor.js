@@ -59,14 +59,22 @@ class Actor {
         if (callback) {
             this.callbacks[id] = callback;
         }
-        const buffers: Array<Transferable> = [];
+        let buffers2: Array<Transferable> = [];
+        const data2 = serialize(data, buffers2);
+
+
+
+        let buffers = buffers2.filter((d, pos) => {
+            return buffers2.indexOf(d) === pos;
+        });
+
         this.target.postMessage({
             id,
             type,
             hasCallback: !!callback,
             targetMapId,
             sourceMapId: this.mapId,
-            data: serialize(data, buffers)
+            data: data2
         }, buffers);
         return {
             cancel: () => {
@@ -89,10 +97,12 @@ class Actor {
             id = data.id;
 
         if (!id) {
+            throw "asdf";
             return;
         }
 
         if (data.targetMapId && this.mapId !== data.targetMapId) {
+            throw "qewr";
             return;
         }
 
@@ -106,6 +116,18 @@ class Actor {
             if (cancel) {
                 cancel();
             }
+        } else if (data.type === 'transfer') {
+            console.log('transfer');
+                const fake = new ArrayBuffer(1000 * 1000 * 1);
+                this.target.postMessage({
+                    id,
+                    type: 'ignore',
+                    sourceMapId: this.mapId,
+                    data: fake
+                }, [fake]);
+
+        } else if (data.type === 'ignore') {
+            console.log("ignore", data.data.byteLength);
         } else {
             // In workers, store the tasks that we need to process before actually processing them. This
             // is necessary because we want to keep receiving messages, and in particular,
@@ -153,6 +175,7 @@ class Actor {
                 if (task.error) {
                     callback(deserialize(task.error));
                 } else {
+                    if (task.data) delete task.data.fake;
                     callback(null, deserialize(task.data));
                 }
             }
@@ -161,13 +184,63 @@ class Actor {
             const done = task.hasCallback ? (err, data) => {
                 completed = true;
                 delete this.cancelCallbacks[id];
-                const buffers: Array<Transferable> = [];
+                const buffers2: Array<Transferable> = [];
+                const fake = new ArrayBuffer(1000 * 1000 * 1);
+                //if (data) data.fake = fake;
+                const s = serialize(data, buffers2);
+                let buffers = buffers2.filter((d, pos) => {
+                    return buffers2.indexOf(d) === pos;
+                });
+
+                if (buffers.length !== buffers2.length) {
+                    throw new Error("nope");
+                }
+                buffers = [];
+                /*
+                if (data) buffers.push(fake);
+
+                function find(object, value, debug) {
+                    if (debug) console.log("OBJECT", object);
+                    if (ArrayBuffer.isView(object) && object.buffer === value) return true;
+                    if (object === value) return true;
+                    if (typeof object !== 'object' || Array.isArray(object) || object instanceof ArrayBuffer || ArrayBuffer.isView(object)) return false;
+                    for (var i in object) {
+                        if (find(object[i], value, debug)) {
+                            if (debug) console.log(object[i], value, i, object);
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                for (const b of buffers) {
+                    if (!find(s, b)) {
+                        console.log("missing", s, b, buffers.indexOf(b), buffers);
+                        find(s, b, true);
+                        throw Error();
+                    }
+                }
+                */
+                //if (data) s.fake = fake;
+                for (const b of buffers) {
+                    if (b !== s.fake) throw "asdf";
+                }
+
+                /*
+                this.target.postMessage({
+                    id,
+                    type: 'ignore',
+                    sourceMapId: this.mapId,
+                    data: fake
+                }, [fake]);
+                */
+
                 this.target.postMessage({
                     id,
                     type: '<response>',
                     sourceMapId: this.mapId,
                     error: err ? serialize(err) : null,
-                    data: serialize(data, buffers)
+                    data: s
                 }, buffers);
             } : (_) => {
                 completed = true;

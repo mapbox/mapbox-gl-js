@@ -137,6 +137,11 @@ class Style extends Evented {
 
         this.map = map;
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
+        const ping = () => {
+            this.dispatcher.getActor().send('transfer', {});
+        };
+
+        window.setInterval(ping, 10);
         this.imageManager = new ImageManager();
         this.imageManager.setEventedParent(this);
         this.glyphManager = new GlyphManager(map._requestManager, options.localIdeographFontFamily);

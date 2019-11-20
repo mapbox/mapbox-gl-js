@@ -118,7 +118,7 @@ class StructArray {
 
         if (transferables) {
             array.isTransferred = true;
-            transferables.push(array.arrayBuffer);
+            //transferables.push(array.arrayBuffer);
         }
 
         return {
