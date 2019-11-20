@@ -1194,6 +1194,7 @@ class Style extends Evented {
     }
 
     _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean) {
+        if(!!window.DISABLE_PLACEMENT){ return false; }
         let symbolBucketsChanged = false;
         let placementCommitted = false;
 

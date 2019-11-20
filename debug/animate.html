@@ -19,88 +19,91 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v11',
+    style: 'mapbox://styles/arindam1993/ck36mw2bl099k1coaj7616ksv',
     center: [0, 0],
     zoom: 4
 });
+map.repaint = true;
 
-var radius = 30;
+setTimeout(()=> { window.DISABLE_PLACEMENT = true }, 10000);
 
-function line(angle, radius) {
-    return {
-        "type": "Feature",
-        "geometry": {
-            "type": "LineString",
-            "coordinates": [
-                [-Math.cos(angle) * radius, -Math.sin(angle) * radius + 1],
-                [Math.cos(angle) * radius, Math.sin(angle) * radius + 1],
-            ]
-        }
-    };
-}
+// var radius = 30;
 
-function crossWithAngle(angle) {
-    return {
-        "type": "FeatureCollection",
-        "features": [
-            line(angle - Math.PI / 4, radius),
-            line(angle + Math.PI / 4, radius)
-        ]
-    };
-}
+// function line(angle, radius) {
+//     return {
+//         "type": "Feature",
+//         "geometry": {
+//             "type": "LineString",
+//             "coordinates": [
+//                 [-Math.cos(angle) * radius, -Math.sin(angle) * radius + 1],
+//                 [Math.cos(angle) * radius, Math.sin(angle) * radius + 1],
+//             ]
+//         }
+//     };
+// }
 
-map.on('load', function () {
-    // Add a source and layer displaying a point which will be animated in a circle.
-    map.addSource('lines', {
-        "type": "geojson",
-        "data": crossWithAngle(0)
-    });
+// function crossWithAngle(angle) {
+//     return {
+//         "type": "FeatureCollection",
+//         "features": [
+//             line(angle - Math.PI / 4, radius),
+//             line(angle + Math.PI / 4, radius)
+//         ]
+//     };
+// }
 
-    map.addLayer({
-        "id": "lines",
-        "source": "lines",
-        "type": "line",
-        "paint": {
-            "line-width": 4,
-            "line-color": "#007cbf"
-        }
-    });
+// map.on('load', function () {
+//     // Add a source and layer displaying a point which will be animated in a circle.
+//     map.addSource('lines', {
+//         "type": "geojson",
+//         "data": crossWithAngle(0)
+//     });
 
-    map.addLayer({
-        "id": "dot",
-        "source": "lines",
-        "type": "circle",
-        "paint": {
-            "circle-radius": 10,
-            "circle-color": "#007cbf"
-        }
-    });
+//     map.addLayer({
+//         "id": "lines",
+//         "source": "lines",
+//         "type": "line",
+//         "paint": {
+//             "line-width": 4,
+//             "line-color": "#007cbf"
+//         }
+//     });
 
-    var updates = 0;
+//     map.addLayer({
+//         "id": "dot",
+//         "source": "lines",
+//         "type": "circle",
+//         "paint": {
+//             "circle-radius": 10,
+//             "circle-color": "#007cbf"
+//         }
+//     });
 
-    map.on('data', function (d) {
-        if (d.sourceDataType === 'content') {
-            updates++;
-        }
-    });
+//     var updates = 0;
 
-    setInterval(function () {
-        console.log(updates + ' updates per second');
-        updates = 0;
-    }, 1000);
+//     map.on('data', function (d) {
+//         if (d.sourceDataType === 'content') {
+//             updates++;
+//         }
+//     });
 
-    function animateMarker(timestamp) {
-        // Update the data to a new position based on the animation timestamp. The
-        // divisor in the expression `timestamp / 1000` controls the animation speed.
-        map.getSource('lines').setData(crossWithAngle(timestamp / 1000));
+//     setInterval(function () {
+//         console.log(updates + ' updates per second');
+//         updates = 0;
+//     }, 1000);
 
-        // Request the next frame of the animation.
-        requestAnimationFrame(animateMarker);
-    }
+//     function animateMarker(timestamp) {
+//         // Update the data to a new position based on the animation timestamp. The
+//         // divisor in the expression `timestamp / 1000` controls the animation speed.
+//         map.getSource('lines').setData(crossWithAngle(timestamp / 1000));
 
-    // Start the animation.
-    animateMarker(0);
-});
+//         // Request the next frame of the animation.
+//         requestAnimationFrame(animateMarker);
+//     }
+
+//     // Start the animation.
+//     animateMarker(0);
+// });
 </script>
 
 </body>
