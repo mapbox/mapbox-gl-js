@@ -28,9 +28,9 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-map.on('load', function(){
+map.on('load', function() {
     const not = mapboxgl.isSafari(window) ? '' : 'NOT';
-    document.getElementById('overlay').innerHTML = 'THIS IS '+not+' SAFARI!!!'
+    document.getElementById('overlay').innerHTML = 'THIS IS ' + not + ' SAFARI!!!';
 });
 
 </script>
