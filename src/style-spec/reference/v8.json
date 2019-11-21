@@ -1718,7 +1718,7 @@
       "default": 10,
       "minimum": 0,
       "units": "ems",
-      "doc": "The maximum line width for text wrapping.",
+      "doc": "The maximum line width for text wrapping. If `0`, text wrapping is disabled.",
       "requires": [
         "text-field"
       ],
