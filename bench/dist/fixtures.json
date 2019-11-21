@@ -1,0 +1,104 @@
+{
+    "performance-metrics/fast-fly-to": {
+        "style": {
+            "version": 8,
+            "center": [
+                -122.397218,
+                37.791459
+            ],
+            "zoom": 15,
+            "style-url": "mapbox://styles/mapbox/streets-v11",
+            "metadata": {
+                "test": {
+                    "testName": "bench/performance-metrics/fast-fly-to",
+                    "width": 1024,
+                    "height": 1024,
+                    "pixelRatio": 1,
+                    "recycleMap": false,
+                    "allowed": 0.00015,
+                    "operations": [
+                        [
+                            "contentLoad"
+                        ],
+                        [
+                            "flyTo",
+                            {
+                                "center": [
+                                    -122.4556,
+                                    37.71272
+                                ]
+                            }
+                        ],
+                        [
+                            "idle"
+                        ],
+                        [
+                            "flyTo",
+                            {
+                                "center": [
+                                    -122.459915,
+                                    37.779474
+                                ]
+                            }
+                        ],
+                        [
+                            "idle"
+                        ]
+                    ]
+                }
+            }
+        }
+    },
+    "performance-metrics/slow-pans": {
+        "style": {
+            "version": 8,
+            "center": [
+                -122.397218,
+                37.791459
+            ],
+            "zoom": 15,
+            "style-url": "mapbox://styles/mapbox/streets-v11",
+            "metadata": {
+                "test": {
+                    "testName": "bench/performance-metrics/slow-pans",
+                    "width": 1024,
+                    "height": 1024,
+                    "pixelRatio": 1,
+                    "recycleMap": false,
+                    "allowed": 0.00015,
+                    "operations": [
+                        [
+                            "contentLoad"
+                        ],
+                        [
+                            "easeTo",
+                            {
+                                "center": [
+                                    -122.4556,
+                                    37.71272
+                                ],
+                                "duration": 10000
+                            }
+                        ],
+                        [
+                            "idle"
+                        ],
+                        [
+                            "easeTo",
+                            {
+                                "center": [
+                                    -122.459915,
+                                    37.779474
+                                ],
+                                "duration": 10000
+                            }
+                        ],
+                        [
+                            "idle"
+                        ]
+                    ]
+                }
+            }
+        }
+    }
+}
