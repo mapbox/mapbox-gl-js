@@ -83,6 +83,15 @@
       }
     },
     {
+      "id": "expression-nan",
+      "type": "symbol",
+      "source": "point",
+      "paint": {},
+      "layout": {
+          "text-size": ["sqrt", -1]
+      }
+    },
+    {
       "id": "expression-invalid",
       "type": "circle",
       "source": "point",
