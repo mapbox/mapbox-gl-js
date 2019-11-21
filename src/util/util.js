@@ -452,11 +452,12 @@ export function parseCacheControl(cacheControl: string): Object {
 let _isSafari = null;
 
 /**
- * Retuns true if the when run WebKit derived browsers.
- * This is used to work-around a memory-leak in Safari caused by using web-worker transfers.
+ * Retuns true when run in WebKit derived browsers.
+ * This is used as a workaround for a memory leak in Safari caused by using Transferable objects to
+ * transfer data between WebWorker's and the main thread.
  * https://github.com/mapbox/mapbox-gl-js/issues/8771
  *
- * This should be removed once the unerlying safari issue is fixed.
+ * This should be removed once the underlying Safari issue is fixed.
  *
  * @private
  * @returns {boolean}
