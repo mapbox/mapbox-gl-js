@@ -141,7 +141,7 @@ class Style extends Evented {
             this.dispatcher.getActor().send('transfer', {});
         };
 
-        window.setInterval(ping, 10);
+        //window.setInterval(ping, 1);
         this.imageManager = new ImageManager();
         this.imageManager.setEventedParent(this);
         this.glyphManager = new GlyphManager(map._requestManager, options.localIdeographFontFamily);

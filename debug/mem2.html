@@ -1,0 +1,17 @@
+<script>
+    var worker = new Worker('task.js');
+    var worker2 = new Worker('task.js');
+    var worker3 = new Worker('task.js');
+worker.addEventListener('message', function(e) {
+  console.log('Worker said: ', e.data.data.length);
+}, false);
+
+function send() {
+    worker.postMessage('Hello World'); // Send data to our worker.
+    worker2.postMessage('Hello World'); // Send data to our worker.
+    worker3.postMessage('Hello World'); // Send data to our worker.
+    const start = Date.now();
+}
+
+window.setInterval(send, 1);
+</script>
