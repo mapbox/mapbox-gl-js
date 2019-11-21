@@ -409,6 +409,18 @@ export function sphericalToCartesian([r, azimuthal, polar]: [number, number, num
     };
 }
 
+/* global self, WorkerGlobalScope */
+/**
+ *  Retuns true if the when run in the web-worker context.
+ *
+ * @private
+ * @returns {boolean}
+ */
+export function isWorker(): boolean {
+    return typeof WorkerGlobalScope !== 'undefined' && typeof self !== 'undefined' &&
+           self instanceof WorkerGlobalScope;
+}
+
 /**
  * Parses data from 'Cache-Control' headers.
  *

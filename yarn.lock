@@ -1115,13 +1115,6 @@
     once "^1.4.0"
     universal-user-agent "^4.0.0"
 
-"@octokit/types@^1.0.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@octokit/types/-/types-1.1.0.tgz#6c9b286f9766f8cc6c5bab9fd3eb6a7aa019c586"
-  integrity sha512-t4ZD74UnNVMq6kZBDZceflRKK3q4o5PoCKMAGht0RK84W57tqonqKL3vCxJHtbGExdan9RwV8r7VJBZxIM1O7Q==
-  dependencies:
-    "@types/node" "^12.11.1"
-
 "@rollup/plugin-strip@^1.3.1":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-strip/-/plugin-strip-1.3.1.tgz#ef7b01c81c837863aec3885db4ac47a7e87a0ec5"
