@@ -460,6 +460,8 @@ let _isSafari = null;
  * This should be removed once the underlying Safari issue is fixed.
  *
  * @private
+ * @param scope {WindowOrWorkerGlobalScope} Since this function is used both on the main thread and WebWorker context,
+ *      let the calling scope pass in the global scope object.
  * @returns {boolean}
  */
 export function isSafari(scope: any): boolean {
