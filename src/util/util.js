@@ -463,9 +463,9 @@ let _isSafari = null;
  */
 export function isSafari(scope: any): boolean {
     if (_isSafari == null) {
+        const userAgent = scope.navigator ? scope.navigator.userAgent : null;
         _isSafari = !!scope.safari ||
-        (scope.navigator && scope.navigator.userAgent &&
-         /\b(iPad|iPhone|iPod)\b/.test(scope.navigator.userAgent));
+        !!(userAgent && (/\b(iPad|iPhone|iPod)\b/.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
     }
     return _isSafari;
 }
