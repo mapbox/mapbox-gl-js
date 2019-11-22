@@ -827,3 +827,63 @@ test('DragRotateHandler does not begin rotation on spurious mousemove events', (
     map.remove();
     t.end();
 });
+
+test('DragRotateHandler does not begin a mouse drag if moved less than click tolerance', (t) => {
+    const map = createMap(t, {clickTolerance: 4});
+
+    // Prevent inertial rotation.
+    t.stub(browser, 'now').returns(0);
+
+    const rotatestart = t.spy();
+    const rotate      = t.spy();
+    const rotateend   = t.spy();
+    const pitchstart  = t.spy();
+    const pitch       = t.spy();
+    const pitchend    = t.spy();
+
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+    map.on('pitchstart',  pitchstart);
+    map.on('pitch',       pitch);
+    map.on('pitchend',    pitchend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+    t.equal(pitchstart.callCount, 0);
+    t.equal(pitch.callCount, 0);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 13, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+    t.equal(pitchstart.callCount, 0);
+    t.equal(pitch.callCount, 0);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 13});
+    map._renderTaskQueue.run();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+    t.equal(pitchstart.callCount, 0);
+    t.equal(pitch.callCount, 0);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 14, clientY: 13 - 4});
+    map._renderTaskQueue.run();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+    t.equal(pitchstart.callCount, 1);
+    t.equal(pitch.callCount, 1);
+    t.equal(pitchend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
