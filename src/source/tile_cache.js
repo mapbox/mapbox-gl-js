@@ -179,6 +179,24 @@ class TileCache {
 
         return this;
     }
+
+    /**
+     * Remove entries that do not pass a filter function. Used for removing
+     * stale tiles from the cache.
+     */
+    filter(filterFn: (tile: Tile) => boolean) {
+        const removed = [];
+        for (const key in this.data) {
+            for (const entry of this.data[key]) {
+                if (!filterFn(entry.value)) {
+                    removed.push(entry);
+                }
+            }
+        }
+        for (const r of removed) {
+            this.remove(r.value.tileID, r);
+        }
+    }
 }
 
 export default TileCache;
