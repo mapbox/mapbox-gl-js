@@ -1,6 +1,7 @@
 // @flow
 
-import {bindAll} from './util';
+import {bindAll, isWorker, isSafari} from './util';
+import window from './window';
 import {serialize, deserialize} from './web_worker_transfer';
 import ThrottledInvoker from './throttled_invoker';
 
@@ -28,6 +29,7 @@ class Actor {
     taskQueue: Array<number>;
     cancelCallbacks: { number: Cancelable };
     invoker: ThrottledInvoker;
+    globalScope: any;
 
     constructor(target: any, parent: any, mapId: ?number) {
         this.target = target;
@@ -40,6 +42,7 @@ class Actor {
         bindAll(['receive', 'process'], this);
         this.invoker = new ThrottledInvoker(this.process);
         this.target.addEventListener('message', this.receive, false);
+        this.globalScope = isWorker() ? target : window;
     }
 
     /**
@@ -59,7 +62,7 @@ class Actor {
         if (callback) {
             this.callbacks[id] = callback;
         }
-        const buffers: Array<Transferable> = [];
+        const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
         this.target.postMessage({
             id,
             type,
@@ -107,7 +110,7 @@ class Actor {
                 cancel();
             }
         } else {
-            // Store the tasks that we need to process before actually processing them. This
+            // In workers, store the tasks that we need to process before actually processing them. This
             // is necessary because we want to keep receiving messages, and in particular,
             // <cancel> messages. Some tasks may take a while in the worker thread, so before
             // executing the next task in our queue, postMessage preempts this and <cancel>
@@ -115,7 +118,13 @@ class Actor {
             // process() flow to one at a time.
             this.tasks[id] = data;
             this.taskQueue.push(id);
-            this.invoker.trigger();
+            if (isWorker()) {
+                this.invoker.trigger();
+            } else {
+                // In the main thread, process messages immediately so that other work does not slip in
+                // between getting partial data back from workers.
+                this.process();
+            }
         }
     }
 
@@ -152,10 +161,10 @@ class Actor {
             }
         } else {
             let completed = false;
+            const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
             const done = task.hasCallback ? (err, data) => {
                 completed = true;
                 delete this.cancelCallbacks[id];
-                const buffers: Array<Transferable> = [];
                 this.target.postMessage({
                     id,
                     type: '<response>',

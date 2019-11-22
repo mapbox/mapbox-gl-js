@@ -119,7 +119,7 @@ function isArrayBuffer(val: any): boolean {
  *
  * @private
  */
-export function serialize(input: mixed, transferables?: Array<Transferable>): Serialized {
+export function serialize(input: mixed, transferables: ?Array<Transferable>): Serialized {
     if (input === null ||
         input === undefined ||
         typeof input === 'boolean' ||
