@@ -1,3 +1,10 @@
+## 1.5.1
+
+## 🍏 Improvements
+* Improve animation performance when using `map.setData`. ([#8913](https://github.com/mapbox/mapbox-gl-js/pull/8913)) (h/t [msbarry](https://github.com/msbarry))
+* Add workaround for memory leak in Safari when using the Cache API. ( [#8856](https://github.com/mapbox/mapbox-gl-js/pull/8956))
+* Add workaround for memory leak in Safari triggered by using Transferable objects to transfer ArrayBuffers. This involves browser detecting Safari and disabling the use of Transferables when posting messags to WebWorkers. ( [#9003](https://github.com/mapbox/mapbox-gl-js/pull/9003))
+
 ## 1.5.0
 
 ## ✨ Features
