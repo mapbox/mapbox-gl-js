@@ -22,7 +22,6 @@ import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import Texture from './texture';
-import updateTileMasks from './tile_mask';
 import {clippingMaskUniformValues} from './program/clipping_mask_program';
 import Color from '../style-spec/util/color';
 import symbol from './draw_symbol';
@@ -296,6 +295,35 @@ class Painter {
         return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
+    /*
+     * Sort coordinates by Z as drawing tiles is done in Z-descending order.
+     * All children with the same Z write the same stencil value.  Children
+     * stencil values are greater than parent's.  Stencil ref values continue
+     * range used in _tileClippingMaskIDs.
+     *
+     * Returns [getStencilMode(coordinate), cleanup(), sortedCoords].
+     */
+    setupStencilingForOverdraw(tileIDs: Array<OverscaledTileID>): [((coord: OverscaledTileID) => StencilMode), (() => void), Array<OverscaledTileID>] {
+        this.currentStencilSource = undefined;
+        const gl = this.context.gl;
+        const coords = tileIDs.sort((a, b) => b.overscaledZ - a.overscaledZ);
+        const minTileZ = coords[coords.length - 1].overscaledZ;
+        const stencilValues = coords[0].overscaledZ - minTileZ + 1;
+        if (this.nextStencilID + stencilValues > 256) {
+            this.clearStencil();
+        }
+        const stencilMode = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, 0, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+        const painter = this;
+        const getStencilMode = (coord) => {
+            stencilMode.ref = painter.nextStencilID + coord.overscaledZ - minTileZ;
+            return stencilMode;
+        };
+        const done = () => {
+            painter.nextStencilID += stencilValues;
+        };
+        return [getStencilMode, done, coords];
+    }
+
     colorModeForRenderPass(): $ReadOnly<ColorMode> {
         const gl = this.context.gl;
         if (this._showOverdrawInspector) {
@@ -358,15 +386,6 @@ class Painter {
             coordsAscending[id] = sourceCache.getVisibleCoordinates();
             coordsDescending[id] = coordsAscending[id].slice().reverse();
             coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
-        }
-
-        for (const id in sourceCaches) {
-            const sourceCache = sourceCaches[id];
-            const source = sourceCache.getSource();
-            if (source.type !== 'raster' && source.type !== 'raster-dem') continue;
-            const visibleTiles = [];
-            for (const coord of coordsAscending[id]) visibleTiles.push(sourceCache.getTile(coord));
-            updateTileMasks(visibleTiles, this.context);
         }
 
         this.opaquePassCutoff = Infinity;
