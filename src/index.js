@@ -24,6 +24,7 @@ import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
+import browser from './util/browser';
 
 const exported = {
     version,
@@ -45,6 +46,7 @@ const exported = {
     MercatorCoordinate,
     Evented,
     config,
+    browser,
 
     /**
      * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
