@@ -23,20 +23,23 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const sourceMaxZoom = sourceCache.getSource().maxzoom;
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
-    const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
 
-    for (const tileID of tileIDs) {
-        const tile = sourceCache.getTile(tileID);
+    const [getStencilMode, done, coords] = painter.renderPass === 'translucent' ?
+        painter.setupStencilingForOverdraw(tileIDs) : [(_) => StencilMode.disabled, () => {}, tileIDs];
+
+    for (const coord of coords) {
+        const tile = sourceCache.getTile(coord);
         if (tile.needsHillshadePrepare && painter.renderPass === 'offscreen') {
-            prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stencilMode, colorMode);
+            prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, StencilMode.disabled, colorMode);
             continue;
         } else if (painter.renderPass === 'translucent') {
-            renderHillshade(painter, tile, layer, depthMode, stencilMode, colorMode);
+            renderHillshade(painter, tile, layer, depthMode, getStencilMode(coord), colorMode);
         }
     }
 
     context.viewport.set([0, 0, painter.width, painter.height]);
+    done();
 }
 
 function renderHillshade(painter, tile, layer, depthMode, stencilMode, colorMode) {
@@ -52,15 +55,9 @@ function renderHillshade(painter, tile, layer, depthMode, stencilMode, colorMode
 
     const uniformValues = hillshadeUniformValues(painter, tile, layer);
 
-    if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-            uniformValues, layer.id, tile.maskedBoundsBuffer,
-            tile.maskedIndexBuffer, tile.segments);
-    } else {
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-            uniformValues, layer.id, painter.rasterBoundsBuffer,
-            painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
-    }
+    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+        uniformValues, layer.id, painter.rasterBoundsBuffer,
+        painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
 }
 
 // hillshade rendering is done in two steps. the prepare step first calculates the slope of the terrain in the x and y
