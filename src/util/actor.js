@@ -119,11 +119,9 @@ class Actor {
             this.tasks[id] = data;
             this.taskQueue.push(id);
             if (isWorker()) {
-                this.invoker.trigger();
-            } else {
-                // In the main thread, process messages immediately so that other work does not slip in
-                // between getting partial data back from workers.
                 this.process();
+            } else {
+                this.invoker.trigger();
             }
         }
     }
@@ -132,68 +130,69 @@ class Actor {
         if (!this.taskQueue.length) {
             return;
         }
-        const id = this.taskQueue.shift();
-        const task = this.tasks[id];
-        delete this.tasks[id];
-        // Schedule another process call if we know there's more to process _before_ invoking the
-        // current task. This is necessary so that processing continues even if the current task
-        // doesn't execute successfully.
-        if (this.taskQueue.length) {
-            this.invoker.trigger();
-        }
-        if (!task) {
-            // If the task ID doesn't have associated task data anymore, it was canceled.
-            return;
-        }
-
-        if (task.type === '<response>') {
-            // The done() function in the counterpart has been called, and we are now
-            // firing the callback in the originating actor, if there is one.
-            const callback = this.callbacks[id];
-            delete this.callbacks[id];
-            if (callback) {
-                // If we get a response, but don't have a callback, the request was canceled.
-                if (task.error) {
-                    callback(deserialize(task.error));
-                } else {
-                    callback(null, deserialize(task.data));
+        while(this.taskQueue.length > 0){
+            const id = this.taskQueue.shift();
+            const task = this.tasks[id];
+            delete this.tasks[id];
+            // Schedule another process call if we know there's more to process _before_ invoking the
+            // current task. This is necessary so that processing continues even if the current task
+            // doesn't execute successfully.
+            // if (this.taskQueue.length) {
+            //     this.invoker.trigger();
+            // }
+            if (!task) {
+                // If the task ID doesn't have associated task data anymore, it was canceled.
+                return;
+            }
+            if (task.type === '<response>') {
+                // The done() function in the counterpart has been called, and we are now
+                // firing the callback in the originating actor, if there is one.
+                const callback = this.callbacks[id];
+                delete this.callbacks[id];
+                if (callback) {
+                    // If we get a response, but don't have a callback, the request was canceled.
+                    if (task.error) {
+                        callback(deserialize(task.error));
+                    } else {
+                        callback(null, deserialize(task.data));
+                    }
                 }
-            }
-        } else {
-            let completed = false;
-            const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
-            const done = task.hasCallback ? (err, data) => {
-                completed = true;
-                delete this.cancelCallbacks[id];
-                this.target.postMessage({
-                    id,
-                    type: '<response>',
-                    sourceMapId: this.mapId,
-                    error: err ? serialize(err) : null,
-                    data: serialize(data, buffers)
-                }, buffers);
-            } : (_) => {
-                completed = true;
-            };
-
-            let callback = null;
-            const params = (deserialize(task.data): any);
-            if (this.parent[task.type]) {
-                // task.type == 'loadTile', 'removeTile', etc.
-                callback = this.parent[task.type](task.sourceMapId, params, done);
-            } else if (this.parent.getWorkerSource) {
-                // task.type == sourcetype.method
-                const keys = task.type.split('.');
-                const scope = (this.parent: any).getWorkerSource(task.sourceMapId, keys[0], params.source);
-                callback = scope[keys[1]](params, done);
             } else {
-                // No function was found.
-                done(new Error(`Could not find function ${task.type}`));
-            }
+                let completed = false;
+                const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
+                const done = task.hasCallback ? (err, data) => {
+                    completed = true;
+                    delete this.cancelCallbacks[id];
+                    this.target.postMessage({
+                        id,
+                        type: '<response>',
+                        sourceMapId: this.mapId,
+                        error: err ? serialize(err) : null,
+                        data: serialize(data, buffers)
+                    }, buffers);
+                } : (_) => {
+                    completed = true;
+                };
 
-            if (!completed && callback && callback.cancel) {
-                // Allows canceling the task as long as it hasn't been completed yet.
-                this.cancelCallbacks[id] = callback.cancel;
+                let callback = null;
+                const params = (deserialize(task.data): any);
+                if (this.parent[task.type]) {
+                    // task.type == 'loadTile', 'removeTile', etc.
+                    callback = this.parent[task.type](task.sourceMapId, params, done);
+                } else if (this.parent.getWorkerSource) {
+                    // task.type == sourcetype.method
+                    const keys = task.type.split('.');
+                    const scope = (this.parent: any).getWorkerSource(task.sourceMapId, keys[0], params.source);
+                    callback = scope[keys[1]](params, done);
+                } else {
+                    // No function was found.
+                    done(new Error(`Could not find function ${task.type}`));
+                }
+
+                if (!completed && callback && callback.cancel) {
+                    // Allows canceling the task as long as it hasn't been completed yet.
+                    this.cancelCallbacks[id] = callback.cancel;
+                }
             }
         }
     }
