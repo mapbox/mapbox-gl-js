@@ -10,3 +10,6 @@
  - [ ] manually test the debug page
  - [ ] tagged `@mapbox/studio` and/or `@mapbox/maps-design` if this PR includes style spec or visual changes
  - [ ] tagged `@mapbox/gl-native` if this PR includes shader changes or needs a native port
+ - [ ] include changelog info
+    - [ ] add a changelog label ('bug', 'feature', 'docs', etc). Use the label 'skip changelog' to hide this PR in the changelog
+    - [ ] include a changelog entry. The PR title is used or optionaly a tagged `<changelog>...</changelog>` section in the body.
