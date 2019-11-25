@@ -116,7 +116,7 @@ class StructArray {
 
         array._trim();
 
-        if (transferables) {
+        if (transferables && array.arrayBuffer.byteLength) {
             array.isTransferred = true;
             transferables.push(array.arrayBuffer);
         }

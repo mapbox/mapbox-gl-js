@@ -74,7 +74,7 @@ type SerializedGrid = { buffer: ArrayBuffer };
 
 Grid.serialize = function serialize(grid: Grid, transferables?: Array<Transferable>): SerializedGrid {
     const buffer = grid.toArrayBuffer();
-    if (transferables) {
+    if (transferables && buffer.byteLength) {
         transferables.push(buffer);
     }
     return {buffer};
@@ -134,7 +134,7 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
     }
 
     if (isArrayBuffer(input)) {
-        if (transferables) {
+        if (transferables && input.byteLength) {
             transferables.push(((input: any): ArrayBuffer));
         }
         return input;
@@ -142,14 +142,14 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
 
     if (ArrayBuffer.isView(input)) {
         const view: $ArrayBufferView = (input: any);
-        if (transferables) {
+        if (transferables && view.buffer.byteLength) {
             transferables.push(view.buffer);
         }
         return view;
     }
 
     if (input instanceof ImageData) {
-        if (transferables) {
+        if (transferables && input.data.buffer.byteLength) {
             transferables.push(input.data.buffer);
         }
         return input;

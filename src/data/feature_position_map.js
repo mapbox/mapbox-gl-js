@@ -63,8 +63,9 @@ export default class FeaturePositionMap {
 
         sort(ids, positions, 0, ids.length - 1);
 
-        if (transferables) {
-            transferables.push(ids.buffer, positions.buffer);
+        if (transferables && ids.length) {
+            transferables.push(ids.buffer);
+            transferables.push(positions.buffer);
         }
 
         return {ids, positions};
