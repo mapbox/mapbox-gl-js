@@ -26,12 +26,12 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-map.once('idle', function(){
-    map.easeTo({ center: [-77.01866, 38.888], zoom: 1, duration: 1000});
+map.once('idle', function() {
+    map.easeTo({center: [-77.01866, 38.888], zoom: 1, duration: 1000});
 
-    setTimeout(function(){
-        map.easeTo({ center: [-77.01866, 38.888], zoom: 12.5, duration: 1000});
-    }, 1200)
+    setTimeout(function() {
+        map.easeTo({center: [-77.01866, 38.888], zoom: 12.5, duration: 1000});
+    }, 1200);
 });
 
 </script>
