@@ -28,9 +28,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const colorMode = painter.colorModeForRenderPass();
 
-    const [getStencilMode, done, coords] = source instanceof ImageSource ?
-        [(_) => StencilMode.disabled, () => {}, tileIDs] :
-        painter.setupStencilingForOverdraw(tileIDs);
+    const [stencilModes, coords] = source instanceof ImageSource ? [{}, tileIDs] :
+        painter.stencilConfigForOverlap(tileIDs);
 
     const minTileZ = coords[coords.length - 1].overscaledZ;
 
@@ -74,12 +73,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 uniformValues, layer.id, source.boundsBuffer,
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
         } else {
-            program.draw(context, gl.TRIANGLES, depthMode, getStencilMode(coord), colorMode, CullFaceMode.disabled,
+            program.draw(context, gl.TRIANGLES, depthMode, stencilModes[coord.overscaledZ], colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, painter.rasterBoundsBuffer,
                 painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
         }
     }
-    done();
 }
 
 function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
