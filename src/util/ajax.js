@@ -162,7 +162,9 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             }
             complete = true;
             callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
-        }).catch(err => callback(new Error(err.message)));
+        }).catch(err => {
+            if (!aborted) callback(new Error(err.message));
+        });
     };
 
     if (cacheIgnoringSearch) {
