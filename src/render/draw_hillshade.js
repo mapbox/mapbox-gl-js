@@ -25,21 +25,19 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const colorMode = painter.colorModeForRenderPass();
 
-    const [getStencilMode, done, coords] = painter.renderPass === 'translucent' ?
-        painter.setupStencilingForOverdraw(tileIDs) : [(_) => StencilMode.disabled, () => {}, tileIDs];
+    const [stencilModes, coords] = painter.renderPass === 'translucent' ?
+        painter.stencilConfigForOverlap(tileIDs) : [{}, tileIDs];
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         if (tile.needsHillshadePrepare && painter.renderPass === 'offscreen') {
             prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, StencilMode.disabled, colorMode);
-            continue;
         } else if (painter.renderPass === 'translucent') {
-            renderHillshade(painter, tile, layer, depthMode, getStencilMode(coord), colorMode);
+            renderHillshade(painter, tile, layer, depthMode, stencilModes[coord.overscaledZ], colorMode);
         }
     }
 
     context.viewport.set([0, 0, painter.width, painter.height]);
-    done();
 }
 
 function renderHillshade(painter, tile, layer, depthMode, stencilMode, colorMode) {

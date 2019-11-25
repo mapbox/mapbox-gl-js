@@ -298,30 +298,31 @@ class Painter {
     /*
      * Sort coordinates by Z as drawing tiles is done in Z-descending order.
      * All children with the same Z write the same stencil value.  Children
-     * stencil values are greater than parent's.  Stencil ref values continue
-     * range used in _tileClippingMaskIDs.
+     * stencil values are greater than parent's.  This is used only for raster
+     * and raster-dem tiles, which are already clipped to tile boundaries, to
+     * mask area of tile overlapped by children tiles.
+     * Stencil ref values continue range used in _tileClippingMaskIDs.
      *
-     * Returns [getStencilMode(coordinate), cleanup(), sortedCoords].
+     * Returns [StencilMode for tile overscaleZ map, sortedCoords].
      */
-    setupStencilingForOverdraw(tileIDs: Array<OverscaledTileID>): [((coord: OverscaledTileID) => StencilMode), (() => void), Array<OverscaledTileID>] {
-        this.currentStencilSource = undefined;
+    stencilConfigForOverlap(tileIDs: Array<OverscaledTileID>): [{[number]: $ReadOnly<StencilMode>}, Array<OverscaledTileID>] {
         const gl = this.context.gl;
         const coords = tileIDs.sort((a, b) => b.overscaledZ - a.overscaledZ);
         const minTileZ = coords[coords.length - 1].overscaledZ;
         const stencilValues = coords[0].overscaledZ - minTileZ + 1;
-        if (this.nextStencilID + stencilValues > 256) {
-            this.clearStencil();
+        if (stencilValues > 1) {
+            this.currentStencilSource = undefined;
+            if (this.nextStencilID + stencilValues > 256) {
+                this.clearStencil();
+            }
+            const zToStencilMode = {};
+            for (let i = 0; i < stencilValues; i++) {
+                zToStencilMode[i + minTileZ] = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, i + this.nextStencilID, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+            }
+            this.nextStencilID += stencilValues;
+            return [zToStencilMode, coords];
         }
-        const stencilMode = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, 0, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
-        const painter = this;
-        const getStencilMode = (coord) => {
-            stencilMode.ref = painter.nextStencilID + coord.overscaledZ - minTileZ;
-            return stencilMode;
-        };
-        const done = () => {
-            painter.nextStencilID += stencilValues;
-        };
-        return [getStencilMode, done, coords];
+        return [{[minTileZ]: StencilMode.disabled}, coords];
     }
 
     colorModeForRenderPass(): $ReadOnly<ColorMode> {
