@@ -78,7 +78,8 @@ export class StyleExpression {
 
         try {
             const val = this.expression.evaluate(this._evaluator);
-            if (val === null || val === undefined) {
+            // eslint-disable-next-line no-self-compare
+            if (val === null || val === undefined || (typeof val === 'number' && val !== val)) {
                 return this._defaultValue;
             }
             if (this._enumValues && !(val in this._enumValues)) {
