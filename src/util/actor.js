@@ -50,7 +50,7 @@ class Actor {
         bindAll(['receive', 'process'], this);
         this.invoker = new ThrottledInvoker(this.process);
         this.target.addEventListener('message', this.receive, false);
-        this.globalScope = isWorker ? target : window;
+        this.globalScope = this.isWorker ? target : window;
     }
 
     /**
