@@ -143,13 +143,13 @@ class Actor {
 
         const start = browser.now();
         let taskCtr = 0;
-        while(browser.now() - start < timeBudget && taskCtr < taskBudget && this.taskQueue.length > 0 ){
+        while (browser.now() - start < timeBudget && taskCtr < taskBudget && this.taskQueue.length > 0) {
             this._processQueueTop();
             taskCtr++;
         }
         // We've reached our budget for this frame, defer processingo the rest for the netx frame, this lets
         // the deferred tasks bet preempted on slower browsers.
-        if(this.taskQueue.length){
+        if (this.taskQueue.length) {
             this.invoker.trigger();
         }
     }
