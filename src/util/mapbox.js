@@ -197,7 +197,7 @@ function hasCacheDefeatingSku(url: string) {
     return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
 }
 
-const urlRe = /^(\w+):\/\/([^/?]*)(\/[^?]+)?\??(.+)?/;
+const urlRe = /^(\w+):\/\/([^\/?]*)(\/[^?]+)?\??(.+)?/;
 
 function parseUrl(url: string): UrlObject {
     const parts = url.match(urlRe);
