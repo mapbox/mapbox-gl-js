@@ -143,8 +143,8 @@ class Actor {
             this._processQueueTop();
             taskCtr++;
         }
-        // We've reached our budget for this frame, defer processing to the rest for the next tick, this allows
-        // the deferred tasks to be preempted on slower browsers.
+        // We've reached our budget for this frame, defer processing of the rest of the tasks to the next tick,
+        // this allows the deferred tasks to be preempted on slower browsers.
         if (this.taskQueue.length) {
             this.invoker.trigger();
         }
