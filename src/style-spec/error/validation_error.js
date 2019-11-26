@@ -1,11 +1,11 @@
+// @flow
 
-export default class ValidationError {
-    identifier?: string;
-    message: string;
-    line?: number;
+export default class ValidationError extends Error {
+    identifier: ?string;
+    line: ?number;
 
-    constructor(key: string, value: any, message: string, identifier?: string) {
-        this.message = (key ? `${key}: ` : '') + message;
+    constructor(key: string | null, value?: any, message?: string, identifier?: string) {
+        super([key, message].filter(a => a).join(': '));
         if (identifier) this.identifier = identifier;
 
         if (value !== null && value !== undefined && value.__line__) {
