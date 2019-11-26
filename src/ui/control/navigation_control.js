@@ -86,6 +86,7 @@ class NavigationControl {
             `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
 
         this._compassIcon.style.transform = rotate;
+        this._compass.disabled = this._map.transform.angle === 0 && (!this.options.visualizePitch || this._map.transform.pitch === 0);
     }
 
     onAdd(map: Map) {
