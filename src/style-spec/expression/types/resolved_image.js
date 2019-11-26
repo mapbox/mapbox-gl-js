@@ -22,7 +22,7 @@ export default class ResolvedImage {
         return new ResolvedImage({name, available: false});
     }
 
-    serialize(): Array<mixed> {
+    serialize(): Array<string> {
         return ["image", this.name];
     }
 }

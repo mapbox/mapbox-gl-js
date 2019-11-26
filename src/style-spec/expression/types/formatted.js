@@ -60,14 +60,14 @@ export default class Formatted {
     }
 
     serialize(): Array<mixed> {
-        const serialized = ["format"];
+        const serialized: Array<mixed> = ["format"];
         for (const section of this.sections) {
             if (section.image) {
                 serialized.push(["image", section.image.name]);
                 continue;
             }
             serialized.push(section.text);
-            const options = {};
+            const options: { [key: string]: mixed } = {};
             if (section.fontStack) {
                 options["text-font"] = ["literal", section.fontStack.split(',')];
             }
@@ -75,7 +75,7 @@ export default class Formatted {
                 options["font-scale"] = section.scale;
             }
             if (section.textColor) {
-                options["text-color"] = ["rgba"].concat(section.textColor.toArray());
+                options["text-color"] = (["rgba"]: Array<mixed>).concat(section.textColor.toArray());
             }
             serialized.push(options);
         }
