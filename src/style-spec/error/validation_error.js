@@ -1,6 +1,10 @@
 
 export default class ValidationError {
-    constructor(key, value, message, identifier) {
+    identifier?: string;
+    message: string;
+    line?: number;
+
+    constructor(key: string, value: any, message: string, identifier?: string) {
         this.message = (key ? `${key}: ` : '') + message;
         if (identifier) this.identifier = identifier;
 

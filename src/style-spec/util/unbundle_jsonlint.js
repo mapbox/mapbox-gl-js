@@ -1,9 +1,9 @@
-function isPrimitive(value) {
+function isPrimitive(value: any) {
     return value instanceof Number || value instanceof String || value instanceof Boolean;
 }
 
 // Turn jsonlint-lines-primitives objects into primitive objects
-export function unbundle(value) {
+export function unbundle(value: any) {
     if (isPrimitive(value)) {
         return value.valueOf();
     } else {
@@ -11,11 +11,11 @@ export function unbundle(value) {
     }
 }
 
-export function deepUnbundle(value) {
+export function deepUnbundle(value: any): any {
     if (Array.isArray(value)) {
         return value.map(deepUnbundle);
     } else if (value instanceof Object && !isPrimitive(value)) {
-        const unbundledValue = {};
+        const unbundledValue: { [key: string]: mixed } = {};
         for (const key in value) {
             unbundledValue[key] = deepUnbundle(value[key]);
         }
@@ -24,4 +24,3 @@ export function deepUnbundle(value) {
 
     return unbundle(value);
 }
-
