@@ -357,9 +357,9 @@ class Tile {
         // draw for this tile.
         this.segments.prepareSegment(0, maskedBoundsArray, indexArray);
 
-        const maskArray = Object.keys(mask);
+        const maskArray: Array<string> = Object.keys(mask);
         for (let i = 0; i < maskArray.length; i++) {
-            const maskCoord = mask[+maskArray[i]];
+            const maskCoord = mask[maskArray[i]];
             const vertexExtent = EXTENT >> maskCoord.z;
             const tlVertex = new Point(maskCoord.x * vertexExtent, maskCoord.y * vertexExtent);
             const brVertex = new Point(tlVertex.x + vertexExtent, tlVertex.y + vertexExtent);

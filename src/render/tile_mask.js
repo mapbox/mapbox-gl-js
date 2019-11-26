@@ -6,7 +6,7 @@ import type Tile from './../source/tile';
 import type Context from '../gl/context';
 
 export type Mask = {
-    [number]: CanonicalTileID
+    [string]: CanonicalTileID
 };
 
 // Updates the TileMasks for all renderable tiles. A TileMask describes all regions

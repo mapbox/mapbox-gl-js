@@ -12,7 +12,7 @@ export class CanonicalTileID {
     z: number;
     x: number;
     y: number;
-    key: number;
+    key: string;
 
     constructor(z: number, x: number, y: number) {
         assert(z >= 0 && z <= 25);
@@ -57,7 +57,7 @@ export class CanonicalTileID {
 export class UnwrappedTileID {
     wrap: number;
     canonical: CanonicalTileID;
-    key: number;
+    key: string;
 
     constructor(wrap: number, canonical: CanonicalTileID) {
         this.wrap = wrap;
@@ -70,7 +70,7 @@ export class OverscaledTileID {
     overscaledZ: number;
     wrap: number;
     canonical: CanonicalTileID;
-    key: number;
+    key: string;
     posMatrix: Float32Array;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {
@@ -164,11 +164,8 @@ export class OverscaledTileID {
     }
 }
 
-function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number) {
-    wrap *= 2;
-    if (wrap < 0) wrap = wrap * -1 - 1;
-    const dim = 1 << z;
-    return (((dim * dim * wrap + dim * y + x) * 32) + z) * 32 + overscaledZ;
+function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): string {
+    return "" + wrap + y + x + z + overscaledZ;
 }
 
 function getQuadkey(z, x, y) {
