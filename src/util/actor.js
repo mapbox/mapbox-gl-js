@@ -11,8 +11,13 @@ import type {Cancelable} from '../types/cancelable';
 
 // Upper limit on time in ms, the actor allocates towards flushing the task queue per frame
 const MAIN_THREAD_TIME_BUDGET = 1;
-// Upper limit of number of tasks executed in the a frame in the main thread
-const MAIN_THREAD_TASK_BUDGET = 8;
+// Upper limit of number of tasks executed in a frame in the main thread
+const MAIN_THREAD_TASK_BUDGET = 10;
+
+// Upper limit on time in ms, the actor allocates towards flushing the task queue per worker tick, see throttled_invoker.js
+const WORKER_THREAD_TIME_BUDGET = 2;
+// Upper limit of number of tasks executed per worker tick as per throttled_invoker.
+const WORKER_THREAD_TASK_BUDGET = 20;
 
 /**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
@@ -118,16 +123,9 @@ class Actor {
                 cancel();
             }
         } else {
-            // On the main thread, store the tasks that we need to process before actually processing them. This
-            // is necessary because we want to keep receiving messages, and in particular, <cancel> messages.
-            // By batching and deferring their execution on the main thread, we can preempt them from being sent to the worker at all.
             this.tasks[id] = data;
             this.taskQueue.push(id);
-            if (this.isWorker) {
-                this.process();
-            } else {
-                this.invoker.trigger();
-            }
+            this.invoker.trigger();
         }
     }
 
@@ -138,8 +136,8 @@ class Actor {
 
         //If this is a worker actor, then flush the entire task queue since we don't need to wait for
         //cancel messages on the worker side, only on the main thread side, so we have Infinite budget for processing messages.
-        const timeBudget = this.isWorker ? Number.MAX_VALUE : MAIN_THREAD_TIME_BUDGET;
-        const taskBudget = this.isWorker ? Number.MAX_VALUE : MAIN_THREAD_TASK_BUDGET;
+        const timeBudget = this.isWorker ? WORKER_THREAD_TIME_BUDGET : MAIN_THREAD_TIME_BUDGET;
+        const taskBudget = this.isWorker ? WORKER_THREAD_TASK_BUDGET : MAIN_THREAD_TASK_BUDGET;
 
         const start = browser.now();
         let taskCtr = 0;
@@ -158,12 +156,6 @@ class Actor {
         const id = this.taskQueue.shift();
         const task = this.tasks[id];
         delete this.tasks[id];
-        // Schedule another process call if we know there's more to process _before_ invoking the
-        // current task. This is necessary so that processing continues even if the current task
-        // doesn't execute successfully.
-        // if (this.taskQueue.length) {
-        //     this.invoker.trigger();
-        // }
         if (!task) {
             // If the task ID doesn't have associated task data anymore, it was canceled.
             return;
