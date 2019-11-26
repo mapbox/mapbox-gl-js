@@ -134,8 +134,6 @@ class Actor {
             return;
         }
 
-        //If this is a worker actor, then flush the entire task queue since we don't need to wait for
-        //cancel messages on the worker side, only on the main thread side, so we have Infinite budget for processing messages.
         const timeBudget = this.isWorker ? WORKER_THREAD_TIME_BUDGET : MAIN_THREAD_TIME_BUDGET;
         const taskBudget = this.isWorker ? WORKER_THREAD_TASK_BUDGET : MAIN_THREAD_TASK_BUDGET;
 
@@ -145,8 +143,8 @@ class Actor {
             this._processQueueTop();
             taskCtr++;
         }
-        // We've reached our budget for this frame, defer processingo the rest for the netx frame, this lets
-        // the deferred tasks bet preempted on slower browsers.
+        // We've reached our budget for this frame, defer processing to the rest for the next tick, this allows
+        // the deferred tasks to be preempted on slower browsers.
         if (this.taskQueue.length) {
             this.invoker.trigger();
         }
