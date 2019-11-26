@@ -31,7 +31,7 @@ class ThrottledInvoker {
             this._callback();
         };
         this._isWorker = isWorker();
-        if(this._isWorker){
+        if (this._isWorker) {
             if (typeof MessageChannel !== 'undefined') {
                 this._channel = new MessageChannel();
                 this._channel.port2.onmessage = this._bindFunc;
@@ -43,14 +43,14 @@ class ThrottledInvoker {
         if (!this._triggered) {
             this._triggered = true;
             //Invoker is MessageChannel/setTimeout on worker side
-            if(this._isWorker){
+            if (this._isWorker) {
                 if (this._channel) {
                     this._channel.port1.postMessage(true);
                 } else {
                     setTimeout(this._bindFunc, 0);
                 }
             // requestAnimationFrame on the Main Thread.
-            }else{
+            } else {
                 raf(this._bindFunc);
             }
         }
