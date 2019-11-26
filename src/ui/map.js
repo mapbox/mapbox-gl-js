@@ -101,7 +101,7 @@ type MapOptions = {
     locale?: Object
 };
 
-const defaultMinZoom = 0;
+const defaultMinZoom = -2;
 const defaultMaxZoom = 22;
 
 // the default values, but also the valid range

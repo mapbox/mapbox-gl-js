@@ -212,9 +212,11 @@ class Transform {
      * @returns {number} zoom level
      */
     coveringZoomLevel(options: {roundZoom?: boolean, tileSize: number}) {
-        return (options.roundZoom ? Math.round : Math.floor)(
+        const z = (options.roundZoom ? Math.round : Math.floor)(
             this.zoom + this.scaleZoom(this.tileSize / options.tileSize)
         );
+        // At negative zoom levels load tiles from z0 because negative tile zoom levels don't exist.
+        return Math.max(0, z);
     }
 
     /**
