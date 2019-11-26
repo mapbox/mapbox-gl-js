@@ -1,5 +1,6 @@
+// @flow
 
-export default function getType(val) {
+export default function getType(val: mixed): string {
     if (val instanceof Number) {
         return 'number';
     } else if (val instanceof String) {

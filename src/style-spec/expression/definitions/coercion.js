@@ -118,7 +118,7 @@ class Coercion implements Expression {
 
     serialize() {
         if (this.type.kind === 'formatted') {
-            return new FormatExpression([{text: this.args[0], scale: null, font: null, textColor: null}]).serialize();
+            return new FormatExpression([{content: this.args[0], scale: null, font: null, textColor: null}]).serialize();
         }
 
         if (this.type.kind === 'resolvedImage') {
