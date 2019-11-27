@@ -37,6 +37,7 @@ import PauseablePlacement from './pauseable_placement';
 import ZoomHistory from './zoom_history';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
+import ThrottledQueue from '../util/throttled_queue';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -121,6 +122,7 @@ class Style extends Evented {
     _removedLayers: {[string]: StyleLayer};
     _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
+    _requestQueue: ThrottledQueue;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -142,6 +144,7 @@ class Style extends Evented {
         this.glyphManager = new GlyphManager(map._requestManager, options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
+        this._requestQueue = new ThrottledQueue(3);
 
         this._layers = {};
         this._order  = [];
@@ -1280,7 +1283,12 @@ class Style extends Evented {
     }
 
     getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<any>): Cancelable {
-        return makeRequest(params, callback);
+        return this._requestQueue.add((done) => {
+            return makeRequest(params, function() {
+                done();
+                callback.apply(undefined, arguments);
+            });
+        });
     }
 }
 
