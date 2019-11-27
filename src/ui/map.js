@@ -42,11 +42,12 @@ import type {StyleImageInterface} from '../style/style_image';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
 import type DragRotateHandler from './handler/drag_rotate';
-import type DragPanHandler from './handler/drag_pan';
+import type DragPanHandler, {DragPanOptions} from './handler/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
 import type {PerformanceMetrics} from '../util/performance';
+import defaultLocale from './default_locale';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
 import type {
@@ -83,9 +84,11 @@ type MapOptions = {
     scrollZoom?: boolean,
     minZoom?: ?number,
     maxZoom?: ?number,
+    minPitch?: ?number,
+    maxPitch?: ?number,
     boxZoom?: boolean,
     dragRotate?: boolean,
-    dragPan?: boolean,
+    dragPan?: DragPanOptions,
     keyboard?: boolean,
     doubleClickZoom?: boolean,
     touchZoomRotate?: boolean,
@@ -97,11 +100,17 @@ type MapOptions = {
     renderWorldCopies?: boolean,
     maxTileCacheSize?: number,
     transformRequest?: RequestTransformFunction,
-    accessToken: string
+    accessToken: string,
+    locale?: Object
 };
 
 const defaultMinZoom = 0;
 const defaultMaxZoom = 22;
+
+// the default values, but also the valid range
+const defaultMinPitch = 0;
+const defaultMaxPitch = 60;
+
 const defaultOptions = {
     center: [0, 0],
     zoom: 0,
@@ -110,6 +119,9 @@ const defaultOptions = {
 
     minZoom: defaultMinZoom,
     maxZoom: defaultMaxZoom,
+
+    minPitch: defaultMinPitch,
+    maxPitch: defaultMaxPitch,
 
     interactive: true,
     scrollZoom: true,
@@ -153,6 +165,8 @@ const defaultOptions = {
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
  * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
+ * @param {number} [options.minPitch=0] The minimum pitch of the map (0-60).
+ * @param {number} [options.maxPitch=60] The maximum pitch of the map (0-60).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
@@ -198,7 +212,7 @@ const defaultOptions = {
  * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
  * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see {@link BoxZoomHandler}).
  * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see {@link DragRotateHandler}).
- * @param {boolean} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled (see {@link DragPanHandler}).
+ * @param {boolean|Object} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled. An `Object` value is passed as options to {@link DragPanHandler#enable}.
  * @param {boolean} [options.keyboard=true] If `true`, keyboard shortcuts are enabled (see {@link KeyboardHandler}).
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean|Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
@@ -226,7 +240,7 @@ const defaultOptions = {
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this token instead of the one defined in mapboxgl.accessToken.
-
+ * @param {string} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language; see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -285,6 +299,7 @@ class Map extends Camera {
     _mapId: number;
     _localIdeographFontFamily: string;
     _requestManager: RequestManager;
+    _locale: Object;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -335,10 +350,22 @@ class Map extends Camera {
         options = extend({}, defaultOptions, options);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
-            throw new Error(`maxZoom must be greater than minZoom`);
+            throw new Error(`maxZoom must be greater than or equal to minZoom`);
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.renderWorldCopies);
+        if (options.minPitch != null && options.maxPitch != null && options.minPitch > options.maxPitch) {
+            throw new Error(`maxPitch must be greater than or equal to minPitch`);
+        }
+
+        if (options.minPitch != null && options.minPitch < defaultMinPitch) {
+            throw new Error(`minPitch must be greater than or equal to ${defaultMinPitch}`);
+        }
+
+        if (options.maxPitch != null && options.maxPitch > defaultMaxPitch) {
+            throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
+        }
+
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
         this._interactive = options.interactive;
@@ -356,6 +383,7 @@ class Map extends Camera {
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
         this._mapId = uniqueId();
+        this._locale = extend({}, defaultLocale, options.locale);
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken);
 
@@ -656,6 +684,76 @@ class Map extends Camera {
      * var maxZoom = map.getMaxZoom();
      */
     getMaxZoom() { return this.transform.maxZoom; }
+
+    /**
+     * Sets or clears the map's minimum pitch.
+     * If the map's current pitch is lower than the new minimum,
+     * the map will pitch to the new minimum.
+     *
+     * @param {number | null | undefined} minPitch The minimum pitch to set (0-60).
+     *   If `null` or `undefined` is provided, the function removes the current minimum pitch (i.e. sets it to 0).
+     * @returns {Map} `this`
+     */
+    setMinPitch(minPitch?: ?number) {
+
+        minPitch = minPitch === null || minPitch === undefined ? defaultMinPitch : minPitch;
+
+        if (minPitch < defaultMinPitch) {
+            throw new Error(`minPitch must be greater than or equal to ${defaultMinPitch}`);
+        }
+
+        if (minPitch >= defaultMinPitch && minPitch <= this.transform.maxPitch) {
+            this.transform.minPitch = minPitch;
+            this._update();
+
+            if (this.getPitch() < minPitch) this.setPitch(minPitch);
+
+            return this;
+
+        } else throw new Error(`minPitch must be between ${defaultMinPitch} and the current maxPitch, inclusive`);
+    }
+
+    /**
+     * Returns the map's minimum allowable pitch.
+     *
+     * @returns {number} minPitch
+     */
+    getMinPitch() { return this.transform.minPitch; }
+
+    /**
+     * Sets or clears the map's maximum pitch.
+     * If the map's current pitch is higher than the new maximum,
+     * the map will pitch to the new maximum.
+     *
+     * @param {number | null | undefined} maxPitch The maximum pitch to set.
+     *   If `null` or `undefined` is provided, the function removes the current maximum pitch (sets it to 60).
+     * @returns {Map} `this`
+     */
+    setMaxPitch(maxPitch?: ?number) {
+
+        maxPitch = maxPitch === null || maxPitch === undefined ? defaultMaxPitch : maxPitch;
+
+        if (maxPitch > defaultMaxPitch) {
+            throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
+        }
+
+        if (maxPitch >= this.transform.minPitch) {
+            this.transform.maxPitch = maxPitch;
+            this._update();
+
+            if (this.getPitch() > maxPitch) this.setPitch(maxPitch);
+
+            return this;
+
+        } else throw new Error(`maxPitch must be greater than the current minPitch`);
+    }
+
+    /**
+     * Returns the map's maximum allowable pitch.
+     *
+     * @returns {number} maxPitch
+     */
+    getMaxPitch() { return this.transform.maxPitch; }
 
     /**
      * Returns the state of `renderWorldCopies`. If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
@@ -1080,6 +1178,15 @@ class Map extends Camera {
         }
     }
 
+    _getUIString(key: string) {
+        const str = this._locale[key];
+        if (str == null) {
+            throw new Error(`Missing UI string '${key}'`);
+        }
+
+        return str;
+    }
+
     _updateStyle(style: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions) {
         if (this.style) {
             this.style.setEventedParent(null);
@@ -1298,7 +1405,10 @@ class Map extends Camera {
      * @example
      * // If the style's sprite does not already contain an image with ID 'cat',
      * // add the image 'cat-icon.png' to the style's sprite with the ID 'cat'.
-     * if (!map.hasImage('cat')) map.addImage('cat', './cat-icon.png');
+     * map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cat_silhouette.svg/400px-Cat_silhouette.svg.png', function(error, image) {
+     *    if (error) throw error;
+     *    if (!map.hasImage('cat')) map.addImage('cat', image);
+     * });
      *
      * @see Use `HTMLImageElement`: [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      * @see Use `ImageData`: [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
@@ -1941,6 +2051,14 @@ class Map extends Camera {
      * @private
      */
     _render() {
+        let gpuTimer, frameStartTime = 0;
+        const extTimerQuery = this.painter.context.extTimerQuery;
+        if (this.listens('gpu-timing-frame')) {
+            gpuTimer = extTimerQuery.createQueryEXT();
+            extTimerQuery.beginQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
+            frameStartTime = browser.now();
+        }
+
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
         this.painter.setBaseState();
@@ -1992,6 +2110,7 @@ class Map extends Camera {
             rotating: this.isRotating(),
             zooming: this.isZooming(),
             moving: this.isMoving(),
+            gpuTiming: !!this.listens('gpu-timing-layer'),
             fadeDuration: this._fadeDuration
         });
 
@@ -2012,6 +2131,33 @@ class Map extends Camera {
             // all tiles held for fading. If we didn't do this, the tiles
             // would just sit in the SourceCaches until the next render
             this.style._releaseSymbolFadeTiles();
+        }
+
+        if (this.listens('gpu-timing-frame')) {
+            const renderCPUTime = browser.now() - frameStartTime;
+            extTimerQuery.endQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
+            setTimeout(() => {
+                const renderGPUTime = extTimerQuery.getQueryObjectEXT(gpuTimer, extTimerQuery.QUERY_RESULT_EXT) / (1000 * 1000);
+                extTimerQuery.deleteQueryEXT(gpuTimer);
+                this.fire(new Event('gpu-timing-frame', {
+                    cpuTime: renderCPUTime,
+                    gpuTime: renderGPUTime
+                }));
+            }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
+        }
+
+        if (this.listens('gpu-timing-layer')) {
+            // Resetting the Painter's per-layer timing queries here allows us to isolate
+            // the queries to individual frames.
+            const frameLayerQueries = this.painter.collectGpuTimers();
+
+            setTimeout(() => {
+                const renderedLayerTimes = this.painter.queryGpuTimers(frameLayerQueries);
+
+                this.fire(new Event('gpu-timing-layer', {
+                    layerTimes: renderedLayerTimes
+                }));
+            }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
         }
 
         // Schedule another render frame if it's needed.

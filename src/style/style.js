@@ -63,6 +63,7 @@ import type {
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator} from './validate_style';
+import type {OverscaledTileID} from '../source/tile_id';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -119,6 +120,7 @@ class Style extends Evented {
     _updatedSources: {[string]: 'clear' | 'reload'};
     _updatedLayers: {[string]: true};
     _removedLayers: {[string]: StyleLayer};
+    _changedImages: {[string]: true};
     _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
 
@@ -380,6 +382,8 @@ class Style extends Evented {
                 }
             }
 
+            this._updateTilesForChangedImages();
+
             for (const id in this._updatedPaintProps) {
                 this._layers[id].updateTransitions(parameters);
             }
@@ -411,6 +415,19 @@ class Style extends Evented {
 
     }
 
+    /*
+     * Apply any queued image changes.
+     */
+    _updateTilesForChangedImages() {
+        const changedImages = Object.keys(this._changedImages);
+        if (changedImages.length) {
+            for (const name in this.sourceCaches) {
+                this.sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], changedImages);
+            }
+            this._changedImages = {};
+        }
+    }
+
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
         this.dispatcher.broadcast('updateLayers', {
             layers: this._serializeLayers(updatedIds),
@@ -426,6 +443,8 @@ class Style extends Evented {
 
         this._updatedSources = {};
         this._updatedPaintProps = {};
+
+        this._changedImages = {};
     }
 
     /**
@@ -477,6 +496,8 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
         this.imageManager.addImage(id, image);
+        this._changedImages[id] = true;
+        this._changed = true;
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
@@ -493,6 +514,8 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
         this.imageManager.removeImage(id);
+        this._changedImages[id] = true;
+        this._changed = true;
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
@@ -1271,8 +1294,24 @@ class Style extends Evented {
 
     // Callbacks from web workers
 
-    getImages(mapId: string, params: {icons: Array<string>}, callback: Callback<{[string]: StyleImage}>) {
+    getImages(mapId: string, params: {icons: Array<string>, source: string, tileID: OverscaledTileID, type: string}, callback: Callback<{[string]: StyleImage}>) {
+
         this.imageManager.getImages(params.icons, callback);
+
+        // Apply queued image changes before setting the tile's dependencies so that the tile
+        // is not reloaded unecessarily. Without this forced update the reload could happen in cases
+        // like this one:
+        // - icons contains "my-image"
+        // - imageManager.getImages(...) triggers `onstyleimagemissing`
+        // - the user adds "my-image" within the callback
+        // - addImage adds "my-image" to this._changedImages
+        // - the next frame triggers a reload of this tile even though it already has the latest version
+        this._updateTilesForChangedImages();
+
+        const sourceCache = this.sourceCaches[params.source];
+        if (sourceCache) {
+            sourceCache.setDependencies(params.tileID.key, params.type, params.icons);
+        }
     }
 
     getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {[number]: ?StyleGlyph}}>) {

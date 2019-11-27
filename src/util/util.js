@@ -449,6 +449,30 @@ export function parseCacheControl(cacheControl: string): Object {
     return header;
 }
 
+let _isSafari = null;
+
+/**
+ * Returns true when run in WebKit derived browsers.
+ * This is used as a workaround for a memory leak in Safari caused by using Transferable objects to
+ * transfer data between WebWorkers and the main thread.
+ * https://github.com/mapbox/mapbox-gl-js/issues/8771
+ *
+ * This should be removed once the underlying Safari issue is fixed.
+ *
+ * @private
+ * @param scope {WindowOrWorkerGlobalScope} Since this function is used both on the main thread and WebWorker context,
+ *      let the calling scope pass in the global scope object.
+ * @returns {boolean}
+ */
+export function isSafari(scope: any): boolean {
+    if (_isSafari == null) {
+        const userAgent = scope.navigator ? scope.navigator.userAgent : null;
+        _isSafari = !!scope.safari ||
+        !!(userAgent && (/\b(iPad|iPhone|iPod)\b/.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
+    }
+    return _isSafari;
+}
+
 export function storageAvailable(type: string): boolean {
     try {
         const storage = window[type];

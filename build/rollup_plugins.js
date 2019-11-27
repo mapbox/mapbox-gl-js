@@ -19,7 +19,7 @@ export const plugins = (minified, production) => [
     json(),
     production ? strip({
         sourceMap: true,
-        functions: ['PerformanceUtils.*']
+        functions: ['PerformanceUtils.*', 'Debug.*']
     }) : false,
     glsl('./src/shaders/*.glsl', production),
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),

@@ -1,0 +1,25 @@
+[
+    {
+      "line": 42,
+      "message": "layers[2].paint.circle-radius: -1 is less than the minimum value 0"
+    },
+    {
+      "message": "layers[3].paint.circle-radius: number expected, null found"
+    },
+    {
+      "line": 58,
+      "message": "layers[4].paint.circle-radius: missing required property \"stops\""
+    },
+    {
+      "line": 66,
+      "message": "layers[5].paint.circle-radius: number expected, array found"
+    },
+    {
+      "line": 74,
+      "message": "layers[6].paint.circle-radius: number expected, boolean found"
+    },
+    {
+      "line": 6,
+      "message": "source.data: Unsupported property \"data\""
+    }
+  ]

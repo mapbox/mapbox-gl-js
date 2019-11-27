@@ -46,18 +46,23 @@ class Transform {
     _renderWorldCopies: boolean;
     _minZoom: number;
     _maxZoom: number;
+    _minPitch: number;
+    _maxPitch: number;
     _center: LngLat;
     _constraining: boolean;
     _posMatrixCache: {[number]: Float32Array};
     _alignedPosMatrixCache: {[number]: Float32Array};
 
-    constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
         this.maxValidLatitude = 85.051129; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
         this._minZoom = minZoom || 0;
         this._maxZoom = maxZoom || 22;
+
+        this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
+        this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
 
         this.setMaxBounds();
 
@@ -74,7 +79,7 @@ class Transform {
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._renderWorldCopies);
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies);
         clone.tileSize = this.tileSize;
         clone.latRange = this.latRange;
         clone.width = this.width;
@@ -101,6 +106,20 @@ class Transform {
         if (this._maxZoom === zoom) return;
         this._maxZoom = zoom;
         this.zoom = Math.min(this.zoom, zoom);
+    }
+
+    get minPitch(): number { return this._minPitch; }
+    set minPitch(pitch: number) {
+        if (this._minPitch === pitch) return;
+        this._minPitch = pitch;
+        this.pitch = Math.max(this.pitch, pitch);
+    }
+
+    get maxPitch(): number { return this._maxPitch; }
+    set maxPitch(pitch: number) {
+        if (this._maxPitch === pitch) return;
+        this._maxPitch = pitch;
+        this.pitch = Math.min(this.pitch, pitch);
     }
 
     get renderWorldCopies(): boolean { return this._renderWorldCopies; }
@@ -145,7 +164,7 @@ class Transform {
         return this._pitch / Math.PI * 180;
     }
     set pitch(pitch: number) {
-        const p = clamp(pitch, 0, 60) / 180 * Math.PI;
+        const p = clamp(pitch, this.minPitch, this.maxPitch) / 180 * Math.PI;
         if (this._pitch === p) return;
         this._unmodified = false;
         this._pitch = p;

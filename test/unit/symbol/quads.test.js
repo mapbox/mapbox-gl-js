@@ -15,7 +15,7 @@ test('getIconQuads', (t) => {
             bottom: 5.5,
             left: -7.5,
             image
-        }, 0), [{
+        }, 0, true), [{
             tl: {x: -8.5, y: -6.5},
             tr: {x: 8.5, y: -6.5},
             bl: {x: -8.5, y: 6.5},
@@ -23,6 +23,7 @@ test('getIconQuads', (t) => {
             tex: {x: 0, y: 0, w: 17, h: 13},
             writingMode: null,
             glyphOffset: [0, 0],
+            isSDF: true,
             sectionIndex: 0
         }], 'icon-anchor: center');
 
@@ -32,7 +33,7 @@ test('getIconQuads', (t) => {
             bottom: 11,
             left: -15,
             image
-        }, 0), [{
+        }, 0, false), [{
             tl: {x: -17, y: -13},
             tr: {x: 17, y: -13},
             bl: {x: -17, y: 13},
@@ -40,6 +41,7 @@ test('getIconQuads', (t) => {
             tex: {x: 0, y: 0, w: 17, h: 13},
             writingMode: null,
             glyphOffset: [0, 0],
+            isSDF: false,
             sectionIndex: 0
         }], 'icon-anchor: center icon, icon-scale: 2');
 
@@ -49,7 +51,7 @@ test('getIconQuads', (t) => {
             bottom: 11,
             left: -15,
             image
-        }, 0), [{
+        }, 0, false), [{
             tl: {x: -16, y: -1},
             tr: {x: 1, y: -1},
             bl: {x: -16, y: 12},
@@ -57,6 +59,7 @@ test('getIconQuads', (t) => {
             tex: {x: 0, y: 0, w: 17, h: 13},
             writingMode: null,
             glyphOffset: [0, 0],
+            isSDF: false,
             sectionIndex: 0
         }], 'icon-anchor: top-right');
 
@@ -66,7 +69,7 @@ test('getIconQuads', (t) => {
             bottom: 5.5,
             left: -30,
             image
-        }, 0), [{
+        }, 0, false), [{
             tl: {x: -34, y: -6.5},
             tr: {x: 34, y: -6.5},
             bl: {x: -34, y: 6.5},
@@ -74,6 +77,7 @@ test('getIconQuads', (t) => {
             tex: {x: 0, y: 0, w: 17, h: 13},
             writingMode: null,
             glyphOffset: [0, 0],
+            isSDF: false,
             sectionIndex: 0
         }], 'icon-text-fit: both');
 
@@ -87,7 +91,7 @@ test('getIconQuads', (t) => {
             bottom: 5.5,
             left: -7.5,
             image
-        }, 0), [{
+        }, 0, false), [{
             tl: {x: -8.5, y: -6.5},
             tr: {x: 8.5, y: -6.5},
             bl: {x: -8.5, y: 6.5},
@@ -95,6 +99,7 @@ test('getIconQuads', (t) => {
             tex: {x: 0, y: 0, w: 17, h: 13},
             writingMode: null,
             glyphOffset: [0, 0],
+            isSDF: false,
             sectionIndex: 0
         }]);
         t.end();

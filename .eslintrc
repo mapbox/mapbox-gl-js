@@ -10,7 +10,8 @@
   },
   "plugins": [
     "flowtype",
-    "import"
+    "import",
+    "jsdoc"
   ],
   "rules": {
     // temporarily disabled due to https://github.com/babel/babel-eslint/issues/485
@@ -73,8 +74,32 @@
     }],
     "no-multiple-empty-lines": [ "error", { 
         "max": 1
-    }]
+    }],
+    "jsdoc/check-param-names": "warn",
+    "jsdoc/require-param": "warn",
+    "jsdoc/require-param-description": "warn",
+    "jsdoc/require-param-name": "warn",
+    "jsdoc/require-returns": "warn",
+    "jsdoc/require-returns-description": "warn"
   },
+  "settings": {
+    "jsdoc":{
+      "ignorePrivate": true
+    }
+  },
+  "overrides": [
+    {
+      "files": ["debug/**", "bench/**", "test/**", "src/style-spec/**"],
+      "rules": {
+        "jsdoc/check-param-names": "off",
+        "jsdoc/require-param": "off",
+        "jsdoc/require-param-description": "off",
+        "jsdoc/require-param-name": "off",
+        "jsdoc/require-returns": "off",
+        "jsdoc/require-returns-description": "off"
+      }
+    }
+  ],
   "globals": {
     "performance": true
   },

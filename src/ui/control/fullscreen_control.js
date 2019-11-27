@@ -93,9 +93,13 @@ class FullscreenControl {
     }
 
     _updateTitle() {
-        const title = this._isFullscreen() ? "Exit fullscreen" : "Enter fullscreen";
+        const title = this._getTitle();
         this._fullscreenButton.setAttribute("aria-label", title);
         this._fullscreenButton.title = title;
+    }
+
+    _getTitle() {
+        return this._map._getUIString(this._isFullscreen() ? 'FullscreenControl.Exit' : 'FullscreenControl.Enter');
     }
 
     _isFullscreen() {

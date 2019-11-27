@@ -5,8 +5,8 @@
   ],
   "inputs": [
     [
-      {},
-      {}
+        {"availableImages": ["monument-15"]},
+        {}
     ]
   ],
   "expected": {

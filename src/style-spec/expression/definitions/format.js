@@ -1,8 +1,8 @@
 // @flow
 
-import {NumberType, ValueType, FormattedType, array, StringType, ColorType} from '../types';
+import {NumberType, ValueType, FormattedType, array, StringType, ColorType, ResolvedImageType} from '../types';
 import Formatted, {FormattedSection} from '../types/formatted';
-import {toString} from '../values';
+import {toString, typeOf} from '../values';
 
 import type {Expression} from '../expression';
 import type EvaluationContext from '../evaluation_context';
@@ -10,7 +10,9 @@ import type ParsingContext from '../parsing_context';
 import type {Type} from '../types';
 
 type FormattedSectionExpression = {
-    text: Expression,
+    // Content of a section may be Image expression or other
+    // type of expression that is coercable to 'string'.
+    content: Expression,
     scale: Expression | null;
     font: Expression | null;
     textColor: Expression | null;
@@ -26,65 +28,83 @@ export default class FormatExpression implements Expression {
     }
 
     static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
-        if (args.length < 3) {
-            return context.error(`Expected at least two arguments.`);
+        if (args.length < 2) {
+            return context.error(`Expected at least one argument.`);
         }
 
-        if ((args.length - 1) % 2 !== 0) {
-            return context.error(`Expected an even number of arguments.`);
+        const firstArg = args[1];
+        if (!Array.isArray(firstArg) && typeof firstArg === 'object')  {
+            return context.error(`First argument must be an image or text section.`);
         }
 
         const sections: Array<FormattedSectionExpression> = [];
-        for (let i = 1; i < args.length - 1; i += 2) {
-            const text = context.parse(args[i], 1, ValueType);
-            if (!text) return null;
-            const kind = text.type.kind;
-            if (kind !== 'string' && kind !== 'value' && kind !== 'null')
-                return context.error(`Formatted text type must be 'string', 'value', or 'null'.`);
+        let nextTokenMayBeObject = false;
+        for (let i = 1; i <= args.length - 1; ++i) {
+            const arg = (args[i]: any);
 
-            const options = (args[i + 1]: any);
-            if (typeof options !== "object" || Array.isArray(options))
-                return context.error(`Format options argument must be an object.`);
+            if (nextTokenMayBeObject && typeof arg === "object" && !Array.isArray(arg)) {
+                nextTokenMayBeObject = false;
 
-            let scale = null;
-            if (options['font-scale']) {
-                scale = context.parse(options['font-scale'], 1, NumberType);
-                if (!scale) return null;
+                let scale = null;
+                if (arg['font-scale']) {
+                    scale = context.parse(arg['font-scale'], 1, NumberType);
+                    if (!scale) return null;
+                }
+
+                let font = null;
+                if (arg['text-font']) {
+                    font = context.parse(arg['text-font'], 1, array(StringType));
+                    if (!font) return null;
+                }
+
+                let textColor = null;
+                if (arg['text-color']) {
+                    textColor = context.parse(arg['text-color'], 1, ColorType);
+                    if (!textColor) return null;
+                }
+
+                const lastExpression = sections[sections.length - 1];
+                lastExpression.scale = scale;
+                lastExpression.font = font;
+                lastExpression.textColor = textColor;
+            } else {
+                const content = context.parse(args[i], 1, ValueType);
+                if (!content) return null;
+
+                const kind = content.type.kind;
+                if (kind !== 'string' && kind !== 'value' && kind !== 'null' && kind !== 'resolvedImage')
+                    return context.error(`Formatted text type must be 'string', 'value', 'image' or 'null'.`);
+
+                nextTokenMayBeObject = true;
+                sections.push({content, scale: null, font: null, textColor: null});
             }
-
-            let font = null;
-            if (options['text-font']) {
-                font = context.parse(options['text-font'], 1, array(StringType));
-                if (!font) return null;
-            }
-
-            let textColor = null;
-            if (options['text-color']) {
-                textColor = context.parse(options['text-color'], 1, ColorType);
-                if (!textColor) return null;
-            }
-            sections.push({text, scale, font, textColor});
         }
 
         return new FormatExpression(sections);
     }
 
     evaluate(ctx: EvaluationContext) {
-        return new Formatted(
-            this.sections.map(section =>
-                new FormattedSection(
-                    toString(section.text.evaluate(ctx)),
+        const evaluateSection = section => {
+            const evaluatedContent = section.content.evaluate(ctx);
+            if (typeOf(evaluatedContent) === ResolvedImageType) {
+                return new FormattedSection('', evaluatedContent, null, null, null);
+            }
+
+            return new FormattedSection(
+                    toString(evaluatedContent),
+                    null,
                     section.scale ? section.scale.evaluate(ctx) : null,
                     section.font ? section.font.evaluate(ctx).join(',') : null,
                     section.textColor ? section.textColor.evaluate(ctx) : null
-                )
-            )
-        );
+            );
+        };
+
+        return new Formatted(this.sections.map(evaluateSection));
     }
 
     eachChild(fn: (Expression) => void) {
         for (const section of this.sections) {
-            fn(section.text);
+            fn(section.content);
             if (section.scale) {
                 fn(section.scale);
             }
@@ -106,7 +126,7 @@ export default class FormatExpression implements Expression {
     serialize() {
         const serialized = ["format"];
         for (const section of this.sections) {
-            serialized.push(section.text.serialize());
+            serialized.push(section.content.serialize());
             const options = {};
             if (section.scale) {
                 options['font-scale'] = section.scale.serialize();

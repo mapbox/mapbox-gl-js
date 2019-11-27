@@ -103,9 +103,14 @@ class Hash {
         const hash = window.location.hash.replace('#', '');
         if (this._hashName) {
             // Split the parameter-styled hash into parts and find the value we need
-            const keyval = hash.split('&').map(
+            let keyval;
+            hash.split('&').map(
                 part => part.split('=')
-            ).find(part => part[0] === this._hashName);
+            ).forEach(part => {
+                if (part[0] === this._hashName) {
+                    keyval = part;
+                }
+            });
             return (keyval ? keyval[1] || '' : '').split('/');
         }
         return hash.split('/');

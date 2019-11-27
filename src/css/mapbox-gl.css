@@ -199,7 +199,7 @@
 }
 
 .mapboxgl-ctrl button.mapboxgl-ctrl-shrink .mapboxgl-ctrl-icon {
-    background-image: svg-inline(ctrl-shrink);
+    background-image: svg-load('svg/mapboxgl-ctrl-shrink.svg');
 }
 
 @media (-ms-high-contrast: active) {

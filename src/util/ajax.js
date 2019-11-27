@@ -162,7 +162,9 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             }
             complete = true;
             callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
-        }).catch(err => callback(new Error(err.message)));
+        }).catch(err => {
+            if (!aborted) callback(new Error(err.message));
+        });
     };
 
     if (cacheIgnoringSearch) {
@@ -228,7 +230,8 @@ export const makeRequest = function(requestParameters: RequestParameters, callba
             return makeFetchRequest(requestParameters, callback);
         }
         if (isWorker() && self.worker && self.worker.actor) {
-            return self.worker.actor.send('getResource', requestParameters, callback);
+            const queueOnMainThread = true;
+            return self.worker.actor.send('getResource', requestParameters, callback, undefined, queueOnMainThread);
         }
     }
     return makeXMLHttpRequest(requestParameters, callback);
