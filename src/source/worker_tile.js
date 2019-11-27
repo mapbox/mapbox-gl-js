@@ -98,11 +98,7 @@ class WorkerTile {
             const features = [];
             for (let index = 0; index < sourceLayer.length; index++) {
                 const feature = sourceLayer.feature(index);
-                let id = feature.id;
-                if (this.promoteId) {
-                    const propName = typeof this.promoteId === 'string' ? this.promoteId : this.promoteId[sourceLayerId];
-                    id = feature.properties[propName];
-                }
+                const id = featureIndex.getId(feature, sourceLayerId);
                 features.push({feature, id, index, sourceLayerIndex});
             }
 
