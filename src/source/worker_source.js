@@ -23,7 +23,7 @@ export type WorkerTileParameters = TileParameters & {
     zoom: number,
     maxZoom: number,
     tileSize: number,
-    featureStateID: ?{[string]: string},
+    promoteId: ?{[string]: string} | string,
     pixelRatio: number,
     showCollisionBoxes: boolean,
     collectResourceTiming?: boolean,

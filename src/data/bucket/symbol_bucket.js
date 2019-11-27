@@ -302,7 +302,6 @@ class SymbolBucket implements Bucket {
     uploaded: boolean;
     sourceLayerIndex: number;
     sourceID: string;
-    featureStateID: ?string;
     symbolInstanceIndexes: Array<number>;
     writingModes: Array<number>;
     allowVerticalPlacement: boolean;
@@ -318,7 +317,6 @@ class SymbolBucket implements Bucket {
         this.index = options.index;
         this.pixelRatio = options.pixelRatio;
         this.sourceLayerIndex = options.sourceLayerIndex;
-        this.featureStateID = options.featureStateID;
         this.hasPattern = false;
         this.hasPaintOverrides = false;
         this.hasRTLText = false;
@@ -350,8 +348,8 @@ class SymbolBucket implements Bucket {
         const layout = this.layers[0].layout;
         this.hasPaintOverrides = SymbolStyleLayer.hasPaintOverrides(layout);
 
-        this.text = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property), this.featureStateID));
-        this.icon = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property), this.featureStateID));
+        this.text = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property)));
+        this.icon = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property)));
 
         this.textCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
         this.iconCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
@@ -403,7 +401,7 @@ class SymbolBucket implements Bucket {
         const availableImages = options.availableImages;
         const globalProperties = new EvaluationParameters(this.zoom);
 
-        for (const {feature, index, sourceLayerIndex} of features) {
+        for (const {feature, id, index, sourceLayerIndex} of features) {
             if (!layer._featureFilter(globalProperties, feature)) {
                 continue;
             }
@@ -449,6 +447,7 @@ class SymbolBucket implements Bucket {
                 undefined;
 
             const symbolFeature: SymbolFeature = {
+                id,
                 text,
                 icon,
                 index,
@@ -458,9 +457,6 @@ class SymbolBucket implements Bucket {
                 type: vectorTileFeatureTypes[feature.type],
                 sortKey
             };
-            if (typeof feature.id !== 'undefined') {
-                symbolFeature.id = feature.id;
-            }
             this.features.push(symbolFeature);
 
             if (icon) {

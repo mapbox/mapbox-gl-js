@@ -16,8 +16,7 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
     overscaling: number,
     collisionBoxArray: CollisionBoxArray,
     sourceLayerIndex: number,
-    sourceID: string,
-    featureStateID?: string
+    sourceID: string
 }
 
 export type PopulateParameters = {
@@ -30,6 +29,7 @@ export type PopulateParameters = {
 
 export type IndexedFeature = {
     feature: VectorTileFeature,
+    id: number | string,
     index: number,
     sourceLayerIndex: number,
 }

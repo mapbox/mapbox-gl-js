@@ -727,10 +727,9 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     programConfigurations: {[string]: ProgramConfiguration};
     needsUpload: boolean;
     _featureMap: FeaturePositionMap;
-    _featureStateID: ?string;
     _bufferOffset: number;
 
-    constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true, featureStateID: ?string) {
+    constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true) {
         this.programConfigurations = {};
         for (const layer of layers) {
             this.programConfigurations[layer.id] = ProgramConfiguration.createDynamic(layer, zoom, filterProperties);
@@ -738,7 +737,6 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         }
         this.needsUpload = false;
         this._featureMap = new FeaturePositionMap();
-        this._featureStateID = featureStateID;
         this._bufferOffset = 0;
     }
 
@@ -747,10 +745,8 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
             this.programConfigurations[key].populatePaintArrays(length, feature, index, imagePositions, formattedSection);
         }
 
-        const id = this._featureStateID ? feature.properties[this._featureStateID] : feature.id;
-
-        if (id !== undefined) {
-            this._featureMap.add(id, index, this._bufferOffset, length);
+        if (feature.id !== undefined) {
+            this._featureMap.add(feature.id, index, this._bufferOffset, length);
         }
         this._bufferOffset = length;
 

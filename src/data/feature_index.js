@@ -46,6 +46,7 @@ class FeatureIndex {
     grid: Grid;
     grid3D: Grid;
     featureIndexArray: FeatureIndexArray;
+    promoteId: ?{[string]: string} | string;
 
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
@@ -53,16 +54,15 @@ class FeatureIndex {
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
 
-    constructor(tileID: OverscaledTileID,
-                grid?: Grid,
-                featureIndexArray?: FeatureIndexArray) {
+    constructor(tileID: OverscaledTileID, promoteId?: ?{[string]: string} | string) {
         this.tileID = tileID;
         this.x = tileID.canonical.x;
         this.y = tileID.canonical.y;
         this.z = tileID.canonical.z;
-        this.grid = grid || new Grid(EXTENT, 16, 0);
+        this.grid = new Grid(EXTENT, 16, 0);
         this.grid3D = new Grid(EXTENT, 16, 0);
-        this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
+        this.featureIndexArray = new FeatureIndexArray();
+        this.promoteId = promoteId;
     }
 
     insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, is3D?: boolean) {

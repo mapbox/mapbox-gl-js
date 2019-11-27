@@ -67,7 +67,7 @@ class FillBucket implements Bucket {
         this.layoutVertexArray = new FillLayoutArray();
         this.indexArray = new TriangleIndexArray();
         this.indexArray2 = new LineIndexArray();
-        this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom, undefined, options.featureStateID);
+        this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.segments = new SegmentVector();
         this.segments2 = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
@@ -78,7 +78,7 @@ class FillBucket implements Bucket {
         const fillSortKey = this.layers[0].layout.get('fill-sort-key');
         const bucketFeatures = [];
 
-        for (const {feature, index, sourceLayerIndex} of features) {
+        for (const {feature, id, index, sourceLayerIndex} of features) {
             if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
 
             const geometry = loadGeometry(feature);
@@ -87,7 +87,7 @@ class FillBucket implements Bucket {
                 undefined;
 
             const bucketFeature: BucketFeature = {
-                id: feature.id,
+                id,
                 properties: feature.properties,
                 type: feature.type,
                 sourceLayerIndex,
