@@ -273,10 +273,6 @@ class TouchZoomRotateHandler {
         const duration = Math.abs(speed / (inertiaDeceleration * inertiaLinearity)) * 1000;
         let targetScale = lastScale + speed * duration / 2000;
 
-        if (targetScale < 0) {
-            targetScale = 0;
-        }
-
         map.easeTo({
             zoom: targetScale,
             duration,
