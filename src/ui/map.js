@@ -35,7 +35,7 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {StyleOptions, StyleSetterOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
-import type {StyleImageInterface} from '../style/style_image';
+import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -1409,7 +1409,7 @@ class Map extends Camera {
      */
     addImage(id: string,
              image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface,
-             {pixelRatio = 1, sdf = false, stretchX, stretchY, content}: {pixelRatio?: number, sdf?: boolean, stretchX?: Array<Array<number>>, stretchY?: Array<Array<number>>, content?: Array<number>} = {}) {
+             {pixelRatio = 1, sdf = false, stretchX, stretchY, content}: $Shape<StyleImageMetadata> = {}) {
 
         const version = 0;
 
