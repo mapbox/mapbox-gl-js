@@ -2,7 +2,7 @@
 
 import potpack from 'potpack';
 
-import {Event, Evented} from '../util/evented';
+import {Event, ErrorEvent, Evented} from '../util/evented';
 import {RGBAImage} from '../util/image';
 import {ImagePosition} from './image_atlas';
 import Texture from './texture';
@@ -86,8 +86,43 @@ class ImageManager extends Evented {
     }
 
     addImage(id: string, image: StyleImage) {
+        this._validate(id, image);
         assert(!this.images[id]);
         this.images[id] = image;
+    }
+
+    _validate(id: string, image: StyleImage) {
+        if (!this._validateStretch(image.stretchX, image.data && image.data.width)) {
+            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchX" value`)));
+        }
+        if (!this._validateStretch(image.stretchY, image.data && image.data.height)) {
+            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchY" value`)));
+        }
+        if (!this._validateContent(image.content, image)) {
+            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "content" value`)));
+        }
+    }
+
+    _validateStretch(stretch: ?Array<Array<number>> | void, size: number) {
+        if (!stretch) return true;
+        let last = 0;
+        for (const part of stretch) {
+            if (part[0] < last || part[1] < part[0] || size < part[1]) return false;
+            last = part[1];
+        }
+        return true;
+    }
+
+    _validateContent(content: ?Array<number> | void, image: StyleImage) {
+        if (!content) return true;
+        if (content.length !== 4) return false;
+        if (content[0] < 0 || image.data.width < content[0]) return false;
+        if (content[1] < 0 || image.data.height < content[1]) return false;
+        if (content[2] < 0 || image.data.width < content[2]) return false;
+        if (content[3] < 0 || image.data.height < content[3]) return false;
+        if (content[2] < content[0]) return false;
+        if (content[3] < content[1]) return false;
+        return true;
     }
 
     updateImage(id: string, image: StyleImage) {
