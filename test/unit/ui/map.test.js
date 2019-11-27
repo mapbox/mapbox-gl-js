@@ -754,7 +754,7 @@ test('Map', (t) => {
 
     t.test('#getMinZoom', (t) => {
         const map = createMap(t, {zoom: 0});
-        t.equal(map.getMinZoom(), 0, 'returns default value');
+        t.equal(map.getMinZoom(), -2, 'returns default value');
         map.setMinZoom(10);
         t.equal(map.getMinZoom(), 10, 'returns custom value');
         t.end();

@@ -101,7 +101,7 @@ type MapOptions = {
     locale?: Object
 };
 
-const defaultMinZoom = 0;
+const defaultMinZoom = -2;
 const defaultMaxZoom = 22;
 
 // the default values, but also the valid range
@@ -614,8 +614,13 @@ class Map extends Camera {
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-24).
-     *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
+     * It is not always possible to zoom out and reach the set `minZoom`.
+     * Other factors such as map height may restrict zooming. For example,
+     * if the map is 512px tall it will not be possible to zoom below zoom 0
+     * no matter what the `minZoom` is set to.
+     *
+     * @param {number | null | undefined} minZoom The minimum zoom level to set (-2 - 24).
+     *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to -2).
      * @returns {Map} `this`
      * @example
      * map.setMinZoom(12.25);
