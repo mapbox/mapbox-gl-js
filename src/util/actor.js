@@ -53,7 +53,7 @@ class Actor {
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
-    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string, mustQueue: ?string): ?Cancelable {
+    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string, mustQueue: boolean = false): ?Cancelable {
         // We're using a string ID instead of numbers because they are being used as object keys
         // anyway, and thus stringified implicitly. We use random IDs because an actor may receive
         // message from multiple other actors which could run in different execution context. A
