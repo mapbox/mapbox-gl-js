@@ -2,7 +2,7 @@ import {test} from '../../util/test';
 import SourceCache from '../../../src/source/source_cache';
 import {setType} from '../../../src/source/source';
 import Tile from '../../../src/source/tile';
-import {OverscaledTileID} from '../../../src/source/tile_id';
+import {OverscaledTileID, tileIDKeyComparison} from '../../../src/source/tile_id';
 import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
@@ -877,7 +877,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         }
 
         const retained = sourceCache._updateRetainedTiles([idealTile], 3);
-        t.deepEqual(Object.keys(retained), [
+        t.deepEqual(Object.keys(retained).sort(tileIDKeyComparison), [
             // parents are requested because ideal ideal tile is not completely covered by
             // loaded child tiles
             new OverscaledTileID(0, 0, 0, 0, 0),
@@ -912,12 +912,12 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         // retained tiles include all ideal tiles and any parents that were loaded to cover
         // non-existant tiles
         t.deepEqual(retained, {
-            // parent
-            '0': new OverscaledTileID(0, 0, 0, 0, 0),
-            //  1/0/1
-            '2081': new OverscaledTileID(1, 0, 1, 0, 1),
+            // 1/0/1
+            '20101': new OverscaledTileID(1, 0, 1, 0, 1),
             // 1/1/1
-            '3105': new OverscaledTileID(1, 0, 1, 1, 1)
+            '30101': new OverscaledTileID(1, 0, 1, 1, 1),
+            // parent
+            '00000': new OverscaledTileID(0, 0, 0, 0, 0)
         });
         addTileSpy.restore();
         getTileSpy.restore();
@@ -970,10 +970,11 @@ test('SourceCache#_updateRetainedTiles', (t) => {
             }
         });
         const idealTile = new OverscaledTileID(1, 0, 1, 0, 1);
+        const parentTile = new OverscaledTileID(0, 0, 0, 0, 0);
         sourceCache._tiles[idealTile.key] = new Tile(idealTile);
         sourceCache._tiles[idealTile.key].state = 'loading';
-        sourceCache._tiles['0'] = new Tile(new OverscaledTileID(0, 0, 0, 0, 0));
-        sourceCache._tiles['0'].state = 'loaded';
+        sourceCache._tiles[parentTile.key] = new Tile(parentTile);
+        sourceCache._tiles[parentTile.key].state = 'loaded';
 
         const addTileSpy = t.spy(sourceCache, '_addTile');
         const getTileSpy = t.spy(sourceCache, 'getTile');
@@ -987,9 +988,9 @@ test('SourceCache#_updateRetainedTiles', (t) => {
 
         t.deepEqual(retained, {
             // parent of ideal tile 0/0/0
-            '0' : new OverscaledTileID(0, 0, 0, 0, 0),
+            '00000' : new OverscaledTileID(0, 0, 0, 0, 0),
             // ideal tile id 1/0/1
-            '2081' : new OverscaledTileID(1, 0, 1, 0, 1)
+            '20101' : new OverscaledTileID(1, 0, 1, 0, 1)
         }, 'retain ideal and parent tile when ideal tiles aren\'t loaded');
 
         addTileSpy.resetHistory();
@@ -1002,7 +1003,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         t.ok(getTileSpy.notCalled);
         t.deepEqual(retainedLoaded, {
             // only ideal tile retained
-            '2081' : new OverscaledTileID(1, 0, 1, 0, 1)
+            '20101' : new OverscaledTileID(1, 0, 1, 0, 1)
         }, 'only retain ideal tiles when they\'re all loaded');
 
         addTileSpy.restore();
@@ -1059,24 +1060,24 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         t.deepEqual(retained, {
             // parent of ideal tile (0, 0, 0) (only partially covered by loaded child
             // tiles, so we still need to load the parent)
-            '0' : new OverscaledTileID(0, 0, 0, 0, 0),
+            '00000' : new OverscaledTileID(0, 0, 0, 0, 0),
             // ideal tile id (1, 0, 0)
-            '33' : new OverscaledTileID(1, 0, 1, 0, 0),
+            '00101' : new OverscaledTileID(1, 0, 1, 0, 0),
             // loaded child tile (2, 0, 0)
-            '66': new OverscaledTileID(2, 0, 2, 0, 0)
+            '00202': new OverscaledTileID(2, 0, 2, 0, 0)
         }, 'retains children and parent when ideal tile is partially covered by a loaded child tile');
 
         getTileSpy.restore();
         // remove child tile and check that it only uses parent tile
-        delete sourceCache._tiles['66'];
+        delete sourceCache._tiles['00202'];
         retained = sourceCache._updateRetainedTiles([idealTile], 1);
 
         t.deepEqual(retained, {
             // parent of ideal tile (0, 0, 0) (only partially covered by loaded child
             // tiles, so we still need to load the parent)
-            '0' : new OverscaledTileID(0, 0, 0, 0, 0),
+            '00000' : new OverscaledTileID(0, 0, 0, 0, 0),
             // ideal tile id (1, 0, 0)
-            '33' : new OverscaledTileID(1, 0, 1, 0, 0)
+            '00101' : new OverscaledTileID(1, 0, 1, 0, 0)
         }, 'only retains parent tile if no child tiles are loaded');
 
         t.end();
@@ -1104,7 +1105,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
 
         t.deepEqual(retained, {
             // ideal tile id (2, 0, 0)
-            '66' : new OverscaledTileID(2, 0, 2, 0, 0)
+            '00202' : new OverscaledTileID(2, 0, 2, 0, 0)
         }, 'doesn\'t retain parent tiles below minzoom');
 
         getTileSpy.restore();
@@ -1134,7 +1135,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
 
         t.deepEqual(retained, {
             // ideal tile id (2, 0, 0)
-            '66' : new OverscaledTileID(2, 0, 2, 0, 0)
+            '00202' : new OverscaledTileID(2, 0, 2, 0, 0)
         }, 'doesn\'t retain child tiles above maxzoom');
 
         getTileSpy.restore();
@@ -1202,7 +1203,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         const idealTiles = [new OverscaledTileID(8, 0, 7, 0, 0), new OverscaledTileID(8, 0, 7, 1, 0)];
         const retained = sourceCache._updateRetainedTiles(idealTiles, 8);
 
-        t.deepEqual(Object.keys(retained), [
+        t.deepEqual(Object.keys(retained).sort(tileIDKeyComparison), [
             new OverscaledTileID(7, 0, 7, 0, 0).key,
             new OverscaledTileID(8, 0, 7, 0, 0).key,
             new OverscaledTileID(7, 0, 7, 1, 0).key,
@@ -1302,12 +1303,12 @@ test('SourceCache#tilesIn', (t) => {
                 tiles.sort((a, b) => { return a.tile.tileID.canonical.x - b.tile.tileID.canonical.x; });
                 tiles.forEach((result) => { delete result.tile.uid; });
 
-                t.equal(tiles[0].tile.tileID.key, 33);
+                t.equal(tiles[0].tile.tileID.key, "00101");
                 t.equal(tiles[0].tile.tileSize, 512);
                 t.equal(tiles[0].scale, 1);
                 t.deepEqual(round(tiles[0].queryGeometry), [{x: 4096, y: 4050}, {x:12288, y: 8146}]);
 
-                t.equal(tiles[1].tile.tileID.key, 1057);
+                t.equal(tiles[1].tile.tileID.key, "10101");
                 t.equal(tiles[1].tile.tileSize, 512);
                 t.equal(tiles[1].scale, 1);
                 t.deepEqual(round(tiles[1].queryGeometry), [{x: -4096, y: 4050}, {x: 4096, y: 8146}]);
@@ -1354,12 +1355,12 @@ test('SourceCache#tilesIn', (t) => {
                 tiles.sort((a, b) => { return a.tile.tileID.canonical.x - b.tile.tileID.canonical.x; });
                 tiles.forEach((result) => { delete result.tile.uid; });
 
-                t.equal(tiles[0].tile.tileID.key, 34);
+                t.equal(tiles[0].tile.tileID.key, "00102");
                 t.equal(tiles[0].tile.tileSize, 1024);
                 t.equal(tiles[0].scale, 1);
                 t.deepEqual(round(tiles[0].queryGeometry), [{x: 4096, y: 4050}, {x:12288, y: 8146}]);
 
-                t.equal(tiles[1].tile.tileID.key, 1058);
+                t.equal(tiles[1].tile.tileID.key, "10102");
                 t.equal(tiles[1].tile.tileSize, 1024);
                 t.equal(tiles[1].scale, 1);
                 t.deepEqual(round(tiles[1].queryGeometry), [{x: -4096, y: 4050}, {x: 4096, y: 8146}]);

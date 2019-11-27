@@ -11,7 +11,7 @@ import EXTENT from '../data/extent';
 import Context from '../gl/context';
 import Point from '@mapbox/point-geometry';
 import browser from '../util/browser';
-import {OverscaledTileID, CanonicalTileID} from './tile_id';
+import {OverscaledTileID, tileIDKeyComparison} from './tile_id';
 import assert from 'assert';
 import SourceFeatureState from './source_state';
 
@@ -502,7 +502,7 @@ class SourceCache extends Evented {
             const ids = Object.keys(retain);
             for (const id of ids) {
                 const tileID = retain[id];
-                assert(tileID.key === +id);
+                assert(tileID.key === id);
 
                 const tile = this._tiles[id];
                 if (!tile || tile.fadeEndTime && tile.fadeEndTime <= browser.now()) continue;
@@ -855,7 +855,9 @@ SourceCache.maxOverzooming = 10;
 SourceCache.maxUnderzooming = 3;
 
 function compareIdZoom(a: OverscaledTileID, b: OverscaledTileID): number {
-    return b.overscaledZ - a.overscaledZ;
+    if (a.overscaledZ !== b.overscaledZ)
+        return a.overscaledZ - b.overscaledZ;
+    return tileIDKeyComparison(b.key, a.key);
 }
 
 function isRasterType(type) {

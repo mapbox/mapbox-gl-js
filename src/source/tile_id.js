@@ -165,7 +165,19 @@ export class OverscaledTileID {
 }
 
 function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): string {
-    return "" + wrap + y + x + z + overscaledZ;
+    wrap *= 2;
+    if (wrap < 0) wrap = wrap * -1 - 1;
+    const dim = 1 << z;
+    const first = "" + (dim * dim * wrap + dim * y + x);
+    const zStr = z.toString().padStart(2, "0");
+    const overscaledZStr = overscaledZ.toString().padStart(2, "0"); 
+    return first + zStr + overscaledZStr;
+}
+
+export function tileIDKeyComparison(keyA: string, keyB: string): number {
+    if (keyA.length !== keyB.length)
+        return keyA.length - keyB.length;
+    return keyA.localeCompare(keyB);
 }
 
 function getQuadkey(z, x, y) {
