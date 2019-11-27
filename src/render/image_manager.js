@@ -103,7 +103,7 @@ class ImageManager extends Evented {
         }
     }
 
-    _validateStretch(stretch: ?Array<Array<number>> | void, size: number) {
+    _validateStretch(stretch: ?Array<[number, number]> | void, size: number) {
         if (!stretch) return true;
         let last = 0;
         for (const part of stretch) {
@@ -113,7 +113,7 @@ class ImageManager extends Evented {
         return true;
     }
 
-    _validateContent(content: ?Array<number> | void, image: StyleImage) {
+    _validateContent(content: ?[number, number, number, number] | void, image: StyleImage) {
         if (!content) return true;
         if (content.length !== 4) return false;
         if (content[0] < 0 || image.data.width < content[0]) return false;
