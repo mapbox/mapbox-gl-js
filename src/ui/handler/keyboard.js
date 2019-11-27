@@ -4,9 +4,7 @@ import {bindAll} from '../../util/util';
 
 import type Map from '../map';
 
-const panStep = 100,
-    bearingStep = 15,
-    pitchStep = 10;
+import {keyboardPanStep, keyboardBearingStep, keyboardPitchStep} from '../constants';
 
 /**
  * The `KeyboardHandler` allows the user to zoom, rotate, and pan the map using
@@ -144,9 +142,9 @@ class KeyboardHandler {
             easing: easeOut,
 
             zoom: zoomDir ? Math.round(zoom) + zoomDir * (e.shiftKey ? 2 : 1) : zoom,
-            bearing: map.getBearing() + bearingDir * bearingStep,
-            pitch: map.getPitch() + pitchDir * pitchStep,
-            offset: [-xDir * panStep, -yDir * panStep],
+            bearing: map.getBearing() + bearingDir * keyboardBearingStep,
+            pitch: map.getPitch() + pitchDir * keyboardPitchStep,
+            offset: [-xDir * keyboardPanStep, -yDir * keyboardPanStep],
             center: map.getCenter()
         };
 

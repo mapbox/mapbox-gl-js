@@ -5,6 +5,7 @@ import {extend, bindAll} from '../../util/util';
 import DragRotateHandler from '../handler/drag_rotate';
 
 import type Map from '../map';
+import {keyboardBearingStep, keyboardPitchStep} from '../constants';
 
 type Options = {
     showCompass?: boolean,
@@ -103,9 +104,6 @@ class NavigationControl {
             DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
             DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, {passive: false});
             DOM.addEventListener(this._compass, 'keydown', (e) => {
-                const bearingStep = 15,
-                    pitchStep = 10;
-
                 let bearingDir = 0;
                 let pitchDir = 0;
 
@@ -129,8 +127,8 @@ class NavigationControl {
                     delayEndEvents: 500,
                     easing: easeOut,
 
-                    bearing: this._map.getBearing() + bearingDir * bearingStep,
-                    pitch: this._map.getPitch() + pitchDir * pitchStep
+                    bearing: this._map.getBearing() + bearingDir * keyboardBearingStep,
+                    pitch: this._map.getPitch() + pitchDir * keyboardPitchStep
                 }, {originalEvent: e});
             });
             this._handler.enable();
