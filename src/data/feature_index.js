@@ -184,7 +184,7 @@ class FeatureIndex {
         if (!filter(new EvaluationParameters(this.tileID.overscaledZ), feature))
             return;
 
-        let id = this.getId(feature, sourceLayerName);
+        const id = this.getId(feature, sourceLayerName);
 
         for (let l = 0; l < layerIDs.length; l++) {
             const layerID = layerIDs[l];
