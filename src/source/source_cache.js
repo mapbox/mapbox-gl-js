@@ -318,13 +318,6 @@ class SourceCache extends Evented {
     }
 
     /**
-     * get the zoom level adjusted for the difference in map and source tilesizes
-     */
-    getZoom(transform: Transform): number {
-        return transform.zoom + transform.scaleZoom(transform.tileSize / this._source.tileSize);
-    }
-
-    /**
      * For a given set of tiles, retain children that are loaded and have a zoom
      * between `zoom` (exclusive) and `maxCoveringZoom` (inclusive)
      */
@@ -487,7 +480,7 @@ class SourceCache extends Evented {
         }
 
         // Determine the overzooming/underzooming amounts.
-        const zoom = (this._source.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
+        const zoom = transform.coveringZoomLevel(this._source);
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
