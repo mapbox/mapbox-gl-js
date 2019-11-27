@@ -110,40 +110,42 @@ class Actor {
                 cancel();
             }
         } else {
-            // In workers, store the tasks that we need to process before actually processing them. This
-            // is necessary because we want to keep receiving messages, and in particular,
-            // <cancel> messages. Some tasks may take a while in the worker thread, so before
-            // executing the next task in our queue, postMessage preempts this and <cancel>
-            // messages can be processed. We're using a MessageChannel object to get throttle the
-            // process() flow to one at a time.
-            this.tasks[id] = data;
-            this.taskQueue.push(id);
-            if (isWorker()) {
+            if (isWorker() || data.type === 'getResource') {
+                // In workers, store the tasks that we need to process before actually processing them. This
+                // is necessary because we want to keep receiving messages, and in particular,
+                // <cancel> messages. Some tasks may take a while in the worker thread, so before
+                // executing the next task in our queue, postMessage preempts this and <cancel>
+                // messages can be processed. We're using a MessageChannel object to get throttle the
+                // process() flow to one at a time.
+                this.tasks[id] = data;
+                this.taskQueue.push(id);
                 this.invoker.trigger();
             } else {
                 // In the main thread, process messages immediately so that other work does not slip in
                 // between getting partial data back from workers.
-                this.process();
+                this.process(id, data);
             }
         }
     }
 
-    process() {
-        if (!this.taskQueue.length) {
-            return;
-        }
-        const id = this.taskQueue.shift();
-        const task = this.tasks[id];
-        delete this.tasks[id];
-        // Schedule another process call if we know there's more to process _before_ invoking the
-        // current task. This is necessary so that processing continues even if the current task
-        // doesn't execute successfully.
-        if (this.taskQueue.length) {
-            this.invoker.trigger();
-        }
-        if (!task) {
-            // If the task ID doesn't have associated task data anymore, it was canceled.
-            return;
+    process(id: number, task: any) {
+        if (id === undefined && task === undefined) {
+            if (!this.taskQueue.length) {
+                return;
+            }
+            id = this.taskQueue.shift();
+            task = this.tasks[id];
+            delete this.tasks[id];
+            // Schedule another process call if we know there's more to process _before_ invoking the
+            // current task. This is necessary so that processing continues even if the current task
+            // doesn't execute successfully.
+            if (this.taskQueue.length) {
+                this.invoker.trigger();
+            }
+            if (!task) {
+                // If the task ID doesn't have associated task data anymore, it was canceled.
+                return;
+            }
         }
 
         if (task.type === '<response>') {
