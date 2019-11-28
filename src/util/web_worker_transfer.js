@@ -100,6 +100,11 @@ for (const name in expressions) {
     register(`Expression_${name}`, expressions[name]);
 }
 
+function isArrayBuffer(val: any): boolean {
+    return val && typeof ArrayBuffer !== 'undefined' &&
+           (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
+}
+
 /**
  * Serialize the given object for transfer to or from a web worker.
  *
@@ -114,7 +119,7 @@ for (const name in expressions) {
  *
  * @private
  */
-export function serialize(input: mixed, transferables?: Array<Transferable>): Serialized {
+export function serialize(input: mixed, transferables: ?Array<Transferable>): Serialized {
     if (input === null ||
         input === undefined ||
         typeof input === 'boolean' ||
@@ -128,9 +133,9 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
         return input;
     }
 
-    if (input instanceof ArrayBuffer || window.ImageBitmap && input instanceof window.ImageBitmap) {
+    if (isArrayBuffer(input) || window.ImageBitmap && input instanceof window.ImageBitmap) {
         if (transferables) {
-            transferables.push(input);
+            transferables.push(((input: any): ArrayBuffer));
         }
         return input;
     }
@@ -218,8 +223,12 @@ export function deserialize(input: Serialized): mixed {
         input instanceof String ||
         input instanceof Date ||
         input instanceof RegExp ||
+<<<<<<< HEAD
         input instanceof ArrayBuffer ||
         input instanceof ImageBitmap ||
+=======
+        isArrayBuffer(input) ||
+>>>>>>> 8e8a28025dca26e258ad6a26c064d07596f11527
         ArrayBuffer.isView(input) ||
         input instanceof ImageData) {
         return input;

@@ -24,7 +24,7 @@ function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<Ove
     }
 }
 
-function drawDebugTile(painter, sourceCache, coord) {
+function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -45,7 +45,11 @@ function drawDebugTile(painter, sourceCache, coord) {
     const tileSizeKb = Math.floor(tileByteLength / 1024);
     const tileSize = sourceCache.getTile(coord).tileSize;
     const scaleRatio = 512 / Math.min(tileSize, 512);
-    const vertices = createTextVertices(`${coord.toString()} ${tileSizeKb}kb`, 50, 200 * scaleRatio, 5 * scaleRatio);
+    let tileIdText = coord.canonical.toString();
+    if (coord.overscaledZ !== coord.canonical.z) {
+        tileIdText += ` => ${coord.overscaledZ}`;
+    }
+    const vertices = createTextVertices(`${tileIdText} ${tileSizeKb}kb`, 50, 200 * scaleRatio, 5 * scaleRatio);
     const debugTextArray = new PosArray();
     const debugTextIndices = new LineIndexArray();
     for (let v = 0; v < vertices.length; v += 2) {
@@ -88,6 +92,10 @@ function drawDebugTile(painter, sourceCache, coord) {
     program.draw(context, gl.LINES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         debugUniformValues(posMatrix, Color.black), id,
         debugTextBuffer, debugTextIndexBuffer, debugTextSegment);
+
+    debugTextBuffer.destroy();
+    debugTextIndexBuffer.destroy();
+    debugTextSegment.destroy();
 }
 
 // Font data From Hershey Simplex Font

@@ -1,0 +1,36 @@
+{
+  "expression": [
+    "boolean",
+    ["in", ["get", "substr"], ["get", "str"]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"substr": null, "str": "helloworld"}}],
+    [{}, {"properties": {"substr": "foo", "str": "helloworld"}}],
+    [{}, {"properties": {"substr": "low", "str": "helloworld"}}],
+    [{}, {"properties": {"substr": true, "str": "falsetrue"}}],
+    [{}, {"properties": {"substr": false, "str": "falsetrue"}}],
+    [{}, {"properties": {"substr": 123, "str": "hello123world"}}],
+    [{}, {"properties": {"substr": "low", "str": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false
+    ],
+    "serialized": [
+      "boolean",
+      ["in", ["get", "substr"], ["get", "str"]]
+    ]
+  }
+}

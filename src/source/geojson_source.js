@@ -138,7 +138,8 @@ class GeoJSONSource extends Evented implements Source {
                     (this.maxzoom - 1),
                 extent: EXTENT,
                 radius: (options.clusterRadius || 50) * scale,
-                log: false
+                log: false,
+                generateId: options.generateId || false
             },
             clusterProperties: options.clusterProperties
         }, options.workerOptions);
@@ -325,6 +326,7 @@ class GeoJSONSource extends Evented implements Source {
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
+        tile.clearMask();
         this.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
     }
 

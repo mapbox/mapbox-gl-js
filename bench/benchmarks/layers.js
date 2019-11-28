@@ -25,6 +25,8 @@ export class LayerBenchmark extends Benchmark {
             style: this.layerStyle
         }).then(map => {
             this.map = map;
+        }).catch(error => {
+            console.error(error);
         });
     }
 
@@ -213,6 +215,25 @@ export class LayerSymbol extends LayerBenchmark {
                 'layout': {
                     'icon-image': 'dot-11',
                     'text-field': '{name_en}'
+                }
+            })
+        });
+    }
+}
+
+export class LayerSymbolWithIcons extends LayerBenchmark {
+    constructor() {
+        super();
+
+        this.layerStyle = Object.assign({}, style, {
+            layers: generateLayers({
+                'id': 'symbollayer',
+                'type': 'symbol',
+                'source': 'composite',
+                'source-layer': 'poi_label',
+                'layout': {
+                    'icon-image': 'dot-11',
+                    'text-field': ['format', ['get', 'name_en'], ['image', 'dot-11']]
                 }
             })
         });

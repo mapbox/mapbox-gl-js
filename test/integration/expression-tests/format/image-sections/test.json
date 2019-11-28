@@ -1,0 +1,54 @@
+{
+  "expression": [
+    "format",
+    ["image", "monument-15"],
+    ["image", "beach-11"]
+  ],
+  "inputs": [
+    [
+      {"availableImages": ["monument-15"]},
+      {}
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "formatted"
+    },
+    "outputs": [
+      {
+        "sections": [
+          {
+            "text": "",
+            "image": {"name": "monument-15", "available": true},
+            "scale": null,
+            "fontStack": null,
+            "textColor": null
+          },
+          {
+            "text": "",
+            "image": {"name": "beach-11", "available": false},
+            "scale": null,
+            "fontStack": null,
+            "textColor": null
+          }
+        ]
+      }
+    ],
+    "serialized": [
+      "format",
+      [
+        "image",
+        "monument-15"
+      ],
+      {},
+      [
+        "image",
+        "beach-11"
+      ],
+      {}
+    ]
+  }
+}

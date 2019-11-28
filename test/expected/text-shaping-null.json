@@ -1,22 +1,55 @@
 {
-  "positionedGlyphs": [
+  "positionedLines": [
     {
-      "glyph": 104,
-      "x": -10,
-      "y": -17,
-      "vertical": false,
-      "scale": 1,
-      "fontStack": "Test",
-      "sectionIndex": 0
-    },
-    {
-      "glyph": 105,
-      "x": 4,
-      "y": -17,
-      "vertical": false,
-      "scale": 1,
-      "fontStack": "Test",
-      "sectionIndex": 0
+      "positionedGlyphs": [
+        {
+          "glyph": 104,
+          "imageName": null,
+          "x": -10,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 11,
+            "height": 19,
+            "left": 2,
+            "top": -7,
+            "advance": 14
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 105,
+          "imageName": null,
+          "x": 4,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 4,
+            "height": 18,
+            "left": 1,
+            "top": -8,
+            "advance": 6
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        }
+      ],
+      "lineOffset": 0
     }
   ],
   "text": "hi\u0000",
@@ -25,6 +58,6 @@
   "left": -10,
   "right": 10,
   "writingMode": 1,
-  "yOffset": -17,
-  "lineCount": 1
+  "iconsInText": false,
+  "verticalizable": false
 }

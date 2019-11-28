@@ -30,7 +30,6 @@ const defaultOptions: Options = {
     trackUserLocation: false,
     showUserLocation: true
 };
-const className = 'mapboxgl-ctrl';
 
 let supportsGeolocation;
 
@@ -92,10 +91,10 @@ class GeolocateControl extends Evented {
     options: Options;
     _container: HTMLElement;
     _dotElement: HTMLElement;
-    _geolocateButton: HTMLElement;
+    _geolocateButton: HTMLButtonElement;
     _geolocationWatchID: number;
     _timeoutId: ?TimeoutID;
-    _watchState: string;
+    _watchState: 'OFF' | 'ACTIVE_LOCK' | 'WAITING_ACTIVE' | 'ACTIVE_ERROR' | 'BACKGROUND' | 'BACKGROUND_ERROR';
     _lastKnownPosition: any;
     _userLocationDotMarker: Marker;
     _setup: boolean; // set to true once the control has been setup
@@ -116,7 +115,7 @@ class GeolocateControl extends Evented {
 
     onAdd(map: Map) {
         this._map = map;
-        this._container = DOM.create('div', `${className} ${className}-group`);
+        this._container = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
         checkGeolocationSupport(this._setupUI);
         return this._container;
     }
@@ -137,7 +136,57 @@ class GeolocateControl extends Evented {
         this._map = (undefined: any);
     }
 
+    _isOutOfMapMaxBounds(position: Position) {
+        const bounds = this._map.getMaxBounds();
+        const coordinates = position.coords;
+
+        return bounds && (
+            coordinates.longitude < bounds.getWest() ||
+            coordinates.longitude > bounds.getEast() ||
+            coordinates.latitude < bounds.getSouth() ||
+            coordinates.latitude > bounds.getNorth()
+        );
+    }
+
+    _setErrorState() {
+        switch (this._watchState) {
+        case 'WAITING_ACTIVE':
+            this._watchState = 'ACTIVE_ERROR';
+            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
+            break;
+        case 'ACTIVE_LOCK':
+            this._watchState = 'ACTIVE_ERROR';
+            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+            // turn marker grey
+            break;
+        case 'BACKGROUND':
+            this._watchState = 'BACKGROUND_ERROR';
+            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background-error');
+            this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+            // turn marker grey
+            break;
+        case 'ACTIVE_ERROR':
+            break;
+        default:
+            assert(false, `Unexpected watchState ${this._watchState}`);
+        }
+    }
+
     _onSuccess(position: Position) {
+        if (this._isOutOfMapMaxBounds(position)) {
+            this._setErrorState();
+
+            this.fire(new Event('outofmaxbounds', position));
+            this._updateMarker();
+            this._finish();
+
+            return;
+        }
+
         if (this.options.trackUserLocation) {
             // keep a record of the position so that if the state is BACKGROUND and the user
             // clicks the button, we can move to ACTIVE_LOCK immediately without waiting for
@@ -213,36 +262,16 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active-error');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
+                this._geolocateButton.disabled = true;
+                const title = this._map._getUIString('GeolocateControl.LocationNotAvailable');
+                this._geolocateButton.title = title;
+                this._geolocateButton.setAttribute('aria-label', title);
 
                 if (this._geolocationWatchID !== undefined) {
                     this._clearWatch();
                 }
             } else {
-                switch (this._watchState) {
-                case 'WAITING_ACTIVE':
-                    this._watchState = 'ACTIVE_ERROR';
-                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
-                    break;
-                case 'ACTIVE_LOCK':
-                    this._watchState = 'ACTIVE_ERROR';
-                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
-                    // turn marker grey
-                    break;
-                case 'BACKGROUND':
-                    this._watchState = 'BACKGROUND_ERROR';
-                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background-error');
-                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
-                    // turn marker grey
-                    break;
-                case 'ACTIVE_ERROR':
-                    break;
-                default:
-                    assert(false, `Unexpected watchState ${this._watchState}`);
-                }
+                this._setErrorState();
             }
         }
 
@@ -261,17 +290,22 @@ class GeolocateControl extends Evented {
     }
 
     _setupUI(supported: boolean) {
-        if (supported === false) {
-            warnOnce('Geolocation support is not available, the GeolocateControl will not be visible.');
-            return;
-        }
         this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
-        this._geolocateButton = DOM.create('button',
-            `${className}-icon ${className}-geolocate`,
-            this._container);
+        this._geolocateButton = DOM.create('button', `mapboxgl-ctrl-geolocate`, this._container);
+        DOM.create('span', `mapboxgl-ctrl-icon`, this._geolocateButton).setAttribute('aria-hidden', true);
         this._geolocateButton.type = 'button';
-        this._geolocateButton.title = 'Find my location';
-        this._geolocateButton.setAttribute('aria-label', 'Find my location');
+
+        if (supported === false) {
+            warnOnce('Geolocation support is not available so the GeolocateControl will be disabled.');
+            const title = this._map._getUIString('GeolocateControl.LocationNotAvailable');
+            this._geolocateButton.disabled = true;
+            this._geolocateButton.title = title;
+            this._geolocateButton.setAttribute('aria-label', title);
+        } else {
+            const title = this._map._getUIString('GeolocateControl.FindMyLocation');
+            this._geolocateButton.title = title;
+            this._geolocateButton.setAttribute('aria-label', title);
+        }
 
         if (this.options.trackUserLocation) {
             this._geolocateButton.setAttribute('aria-pressed', 'false');
@@ -453,6 +487,16 @@ export default GeolocateControl;
  * @memberof GeolocateControl
  * @instance
  * @property {PositionError} data The returned [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
+ *
+ */
+
+/**
+ * Fired on each Geolocation API position update which returned as success but user position is out of map maxBounds.
+ *
+ * @event outofmaxbounds
+ * @memberof GeolocateControl
+ * @instance
+ * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
  *
  */
 

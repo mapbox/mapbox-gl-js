@@ -78,7 +78,8 @@ export class StyleExpression {
 
         try {
             const val = this.expression.evaluate(this._evaluator);
-            if (val === null || val === undefined) {
+            // eslint-disable-next-line no-self-compare
+            if (val === null || val === undefined || (typeof val === 'number' && val !== val)) {
                 return this._defaultValue;
             }
             if (this._enumValues && !(val in this._enumValues)) {
@@ -350,7 +351,7 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
     return result;
 }
 
-import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ImageType, array} from './types';
+import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ResolvedImageType, array} from './types';
 
 function getExpectedType(spec: StylePropertySpecification): Type {
     const types = {
@@ -360,7 +361,7 @@ function getExpectedType(spec: StylePropertySpecification): Type {
         enum: StringType,
         boolean: BooleanType,
         formatted: FormattedType,
-        image: ImageType
+        resolvedImage: ResolvedImageType
     };
 
     if (spec.type === 'array') {

@@ -557,15 +557,11 @@ export default class ProgramConfiguration {
     layoutAttributes: Array<StructArrayMember>;
 
     _buffers: Array<VertexBuffer>;
-    _featureMap: FeaturePositionMap;
-    _bufferOffset: number;
 
     constructor() {
         this.binders = {};
         this.cacheKey = '';
         this._buffers = [];
-        this._featureMap = new FeaturePositionMap();
-        this._bufferOffset = 0;
     }
 
     static createDynamic<Layer: TypedStyleLayer>(layer: Layer, zoom: number, filterProperties: (string) => boolean) {
@@ -617,10 +613,6 @@ export default class ProgramConfiguration {
             const binder = this.binders[property];
             binder.populatePaintArray(newLength, feature, imagePositions, formattedSection);
         }
-        if (feature.id !== undefined) {
-            this._featureMap.add(+feature.id, index, this._bufferOffset, newLength);
-        }
-        this._bufferOffset = newLength;
     }
     setConstantPatternPositions(posTo: ImagePosition, posFrom: ImagePosition) {
         for (const property in this.binders) {
@@ -629,10 +621,10 @@ export default class ProgramConfiguration {
         }
     }
 
-    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layer: TypedStyleLayer, imagePositions: {[string]: ImagePosition}): boolean {
+    updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: VectorTileLayer, layer: TypedStyleLayer, imagePositions: {[string]: ImagePosition}): boolean {
         let dirty: boolean = false;
         for (const id in featureStates) {
-            const positions = this._featureMap.getPositions(+id);
+            const positions = featureMap.getPositions(+id);
 
             for (const pos of positions) {
                 const feature = vtLayer.feature(pos.index);
@@ -734,6 +726,8 @@ export default class ProgramConfiguration {
 export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     programConfigurations: {[string]: ProgramConfiguration};
     needsUpload: boolean;
+    _featureMap: FeaturePositionMap;
+    _bufferOffset: number;
 
     constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true) {
         this.programConfigurations = {};
@@ -742,18 +736,26 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
             this.programConfigurations[layer.id].layoutAttributes = layoutAttributes;
         }
         this.needsUpload = false;
+        this._featureMap = new FeaturePositionMap();
+        this._bufferOffset = 0;
     }
 
     populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
         for (const key in this.programConfigurations) {
             this.programConfigurations[key].populatePaintArrays(length, feature, index, imagePositions, formattedSection);
         }
+
+        if (feature.id !== undefined) {
+            this._featureMap.add(+feature.id, index, this._bufferOffset, length);
+        }
+        this._bufferOffset = length;
+
         this.needsUpload = true;
     }
 
     updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: $ReadOnlyArray<TypedStyleLayer>, imagePositions: {[string]: ImagePosition}) {
         for (const layer of layers) {
-            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, vtLayer, layer, imagePositions) || this.needsUpload;
+            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, vtLayer, layer, imagePositions) || this.needsUpload;
         }
     }
 

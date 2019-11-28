@@ -5,8 +5,8 @@
   ],
   "inputs": [
     [
-      {},
-      {}
+        {"availableImages": ["monument-15"]},
+        {}
     ]
   ],
   "expected": {
@@ -14,7 +14,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "image"
+      "type": "resolvedImage"
     },
     "outputs": [
       {"name":"monument-15","available":true}

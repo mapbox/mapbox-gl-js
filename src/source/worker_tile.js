@@ -145,7 +145,7 @@ class WorkerTile {
 
         const icons = Object.keys(options.iconDependencies);
         if (icons.length) {
-            actor.send('getImages', {icons}, (err, result) => {
+            actor.send('getImages', {icons, source: this.source, tileID: this.tileID, type: 'icons'}, (err, result) => {
                 if (!error) {
                     error = err;
                     iconMap = result;
@@ -158,7 +158,7 @@ class WorkerTile {
 
         const patterns = Object.keys(options.patternDependencies);
         if (patterns.length) {
-            actor.send('getImages', {icons: patterns}, (err, result) => {
+            actor.send('getImages', {icons: patterns, source: this.source, tileID: this.tileID, type: 'patterns'}, (err, result) => {
                 if (!error) {
                     error = err;
                     patternMap = result;

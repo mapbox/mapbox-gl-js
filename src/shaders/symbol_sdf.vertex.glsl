@@ -50,15 +50,14 @@ void main() {
     vec2 a_tex = a_data.xy;
     vec2 a_size = a_data.zw;
 
+    float a_size_min = floor(a_size[0] * 0.5);
     highp float segment_angle = -a_projected_pos[2];
     float size;
 
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
-        size = mix(a_size[0], a_size[1], u_size_t) / 256.0;
+        size = mix(a_size_min, a_size[1], u_size_t) / 128.0;
     } else if (u_is_size_zoom_constant && !u_is_size_feature_constant) {
-        size = a_size[0] / 256.0;
-    } else if (!u_is_size_zoom_constant && u_is_size_feature_constant) {
-        size = u_size;
+        size = a_size_min / 128.0;
     } else {
         size = u_size;
     }
@@ -104,11 +103,10 @@ void main() {
     gl_Position = u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 32.0 * fontScale), 0.0, 1.0);
     float gamma_scale = gl_Position.w;
 
-    vec2 tex = a_tex / u_texsize;
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
     float interpolated_fade_opacity = max(0.0, min(1.0, fade_opacity[0] + fade_change));
 
-    v_data0 = vec2(tex.x, tex.y);
+    v_data0 = a_tex / u_texsize;
     v_data1 = vec3(gamma_scale, size, interpolated_fade_opacity);
 }

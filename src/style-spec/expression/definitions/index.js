@@ -23,6 +23,7 @@ import Literal from './literal';
 import Assertion from './assertion';
 import Coercion from './coercion';
 import At from './at';
+import In from './in';
 import Match from './match';
 import Case from './case';
 import Step from './step';
@@ -39,7 +40,7 @@ import {
 import CollatorExpression from './collator';
 import NumberFormat from './number_format';
 import FormatExpression from './format';
-import Image from './image';
+import ImageExpression from './image';
 import Length from './length';
 
 import type {Varargs} from '../compound_expression';
@@ -60,7 +61,8 @@ const expressions: ExpressionRegistry = {
     'coalesce': Coalesce,
     'collator': CollatorExpression,
     'format': FormatExpression,
-    'image': Image,
+    'image': ImageExpression,
+    'in': In,
     'interpolate': Interpolate,
     'interpolate-hcl': Interpolate,
     'interpolate-lab': Interpolate,

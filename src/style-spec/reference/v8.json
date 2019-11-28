@@ -131,7 +131,7 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`."
     },
     "tiles": {
       "type": "array",
@@ -195,7 +195,7 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`."
     },
     "tiles": {
       "type": "array",
@@ -265,7 +265,7 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`."
     },
     "tiles": {
       "type": "array",
@@ -1291,7 +1291,7 @@
       "property-type": "data-constant"
     },
     "icon-image": {
-      "type": "image",
+      "type": "resolvedImage",
       "doc": "Name of image in sprite to use for drawing an image background.",
       "tokens": true,
       "sdk-support": {
@@ -2528,7 +2528,7 @@
   "function_stop": {
     "type": "array",
     "minimum": 0,
-    "maximum": 22,
+    "maximum": 24,
     "value": [
       "number",
       "color"
@@ -2603,6 +2603,15 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          }
+        }
+      },
+      "in": {
+        "doc": "Determines whether an item exists in an array or a substring exists in a string.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.6.0"
           }
         }
       },
@@ -3797,7 +3806,7 @@
       "property-type": "data-constant"
     },
     "fill-pattern": {
-      "type": "image",
+      "type": "resolvedImage",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -3943,7 +3952,7 @@
       "property-type": "data-constant"
     },
     "fill-extrusion-pattern": {
-      "type": "image",
+      "type": "resolvedImage",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing images on extruded fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -4332,7 +4341,7 @@
       "property-type": "cross-faded"
     },
     "line-pattern": {
-      "type": "image",
+      "type": "resolvedImage",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image lines. For seamless patterns, image width must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -5712,7 +5721,7 @@
       "property-type": "data-constant"
     },
     "background-pattern": {
-      "type": "image",
+      "type": "resolvedImage",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing an image background. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
