@@ -745,7 +745,8 @@ export type PositionedIcon = {
     top: number,
     bottom: number,
     left: number,
-    right: number
+    right: number,
+    collisionPadding?: [number, number, number, number]
 };
 
 function shapeIcon(image: ImagePosition, iconOffset: [number, number], iconAnchor: SymbolAnchor): PositionedIcon {
@@ -768,6 +769,18 @@ function fitIconToText(shapedIcon: PositionedIcon, shapedText: Shaping,
     assert(Array.isArray(iconOffset) && iconOffset.length === 2);
 
     const image = shapedIcon.image;
+
+    let collisionPadding;
+    if (image.content) {
+        const content = image.content;
+        const pixelRatio = image.pixelRatio || 1;
+        collisionPadding = [
+            content[0] / pixelRatio,
+            content[1] / pixelRatio,
+            image.displaySize[0] - content[2] / pixelRatio,
+            image.displaySize[1] - content[3] / pixelRatio
+        ];
+    }
 
     // We don't respect the icon-anchor, because icon-text-fit is set. Instead,
     // the icon will be centered on the text, then stretched in the given
@@ -799,5 +812,5 @@ function fitIconToText(shapedIcon: PositionedIcon, shapedText: Shaping,
         bottom = top + image.displaySize[1];
     }
 
-    return {image, top, right, bottom, left};
+    return {image, top, right, bottom, left, collisionPadding};
 }
