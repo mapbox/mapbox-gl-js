@@ -43,6 +43,14 @@ class CollisionFeature {
         let x1 = shaped.left * boxScale - padding;
         let x2 = shaped.right * boxScale + padding;
 
+        const collisionPadding = shaped.collisionPadding;
+        if (collisionPadding) {
+            x1 -= collisionPadding[0] * boxScale;
+            y1 -= collisionPadding[1] * boxScale;
+            x2 += collisionPadding[2] * boxScale;
+            y2 += collisionPadding[3] * boxScale;
+        }
+
         this.boxStartIndex = collisionBoxArray.length;
 
         if (alignLine) {
