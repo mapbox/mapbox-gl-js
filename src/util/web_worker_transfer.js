@@ -223,12 +223,8 @@ export function deserialize(input: Serialized): mixed {
         input instanceof String ||
         input instanceof Date ||
         input instanceof RegExp ||
-<<<<<<< HEAD
-        input instanceof ArrayBuffer ||
-        input instanceof ImageBitmap ||
-=======
         isArrayBuffer(input) ||
->>>>>>> 8e8a28025dca26e258ad6a26c064d07596f11527
+        input instanceof ImageBitmap ||
         ArrayBuffer.isView(input) ||
         input instanceof ImageData) {
         return input;
