@@ -21,7 +21,7 @@
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": "nine-part-content",
+        "icon-image": "nine-part",
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
