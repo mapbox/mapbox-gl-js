@@ -154,7 +154,7 @@ export function getIconQuads(
         return {tl, tr, bl, br, tex: subRect, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, isSDF: isSDFIcon};
     };
 
-    if (hasIconTextFit && !image.stretchX && !image.stretchY) {
+    if (!hasIconTextFit || (!image.stretchX && !image.stretchY)) {
         quads.push(makeBox(
             {fixed: 0, stretch: -1},
             {fixed: 0, stretch: -1},
