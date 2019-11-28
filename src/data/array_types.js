@@ -189,10 +189,11 @@ register('StructArrayLayout8ui16', StructArrayLayout8ui16);
  * Implementation of the StructArray layout:
  * [0]: Int16[4]
  * [8]: Uint16[4]
+ * [16]: Int16[4]
  *
  * @private
  */
-class StructArrayLayout4i4ui16 extends StructArray {
+class StructArrayLayout4i4ui4i24 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint16: Uint16Array;
@@ -203,14 +204,14 @@ class StructArrayLayout4i4ui16 extends StructArray {
         this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number) {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
-        const o2 = i * 8;
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number) {
+        const o2 = i * 12;
         this.int16[o2 + 0] = v0;
         this.int16[o2 + 1] = v1;
         this.int16[o2 + 2] = v2;
@@ -219,12 +220,16 @@ class StructArrayLayout4i4ui16 extends StructArray {
         this.uint16[o2 + 5] = v5;
         this.uint16[o2 + 6] = v6;
         this.uint16[o2 + 7] = v7;
+        this.int16[o2 + 8] = v8;
+        this.int16[o2 + 9] = v9;
+        this.int16[o2 + 10] = v10;
+        this.int16[o2 + 11] = v11;
         return i;
     }
 }
 
-StructArrayLayout4i4ui16.prototype.bytesPerElement = 16;
-register('StructArrayLayout4i4ui16', StructArrayLayout4i4ui16);
+StructArrayLayout4i4ui4i24.prototype.bytesPerElement = 24;
+register('StructArrayLayout4i4ui4i24', StructArrayLayout4i4ui4i24);
 
 /**
  * Implementation of the StructArray layout:
@@ -1143,7 +1148,7 @@ export {
     StructArrayLayout2i4i12,
     StructArrayLayout2i4ub8,
     StructArrayLayout8ui16,
-    StructArrayLayout4i4ui16,
+    StructArrayLayout4i4ui4i24,
     StructArrayLayout3f12,
     StructArrayLayout1ul4,
     StructArrayLayout6i1ul2ui2i24,
@@ -1167,7 +1172,7 @@ export {
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub8 as LineLayoutArray,
     StructArrayLayout8ui16 as PatternLayoutArray,
-    StructArrayLayout4i4ui16 as SymbolLayoutArray,
+    StructArrayLayout4i4ui4i24 as SymbolLayoutArray,
     StructArrayLayout3f12 as SymbolDynamicLayoutArray,
     StructArrayLayout1ul4 as SymbolOpacityArray,
     StructArrayLayout2i2i2i12 as CollisionBoxLayoutArray,

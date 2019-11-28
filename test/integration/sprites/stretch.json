@@ -1,0 +1,61 @@
+{
+  "nine-part": {
+    "x": 0,
+    "y": 0,
+    "width": 40,
+    "height": 40,
+    "pixelRatio": 1,
+    "stretchX": [[10, 30]],
+    "stretchY": [[10, 30]],
+    "sdf": false
+  },
+  "nine-part-content": {
+    "x": 0,
+    "y": 0,
+    "width": 40,
+    "height": 40,
+    "pixelRatio": 2,
+    "stretchX": [[10, 30]],
+    "stretchY": [[10, 30]],
+    "sdf": false,
+    "content": [10, 10, 30, 30]
+  },
+  "fifteen-part": {
+    "x": 50,
+    "y": 0,
+    "width": 70,
+    "height": 40,
+    "pixelRatio": 1,
+    "stretchX": [[10, 30], [40, 60]],
+    "stretchY": [[10, 30]],
+    "sdf": false
+  },
+  "three-part": {
+    "x": 150,
+    "y": 0,
+    "width": 60,
+    "height": 10,
+    "pixelRatio": 1,
+    "stretchX": [[20, 40]],
+    "sdf": false
+  },
+  "two-part": {
+    "x": 250,
+    "y": 0,
+    "width": 30,
+    "height": 10,
+    "pixelRatio": 1,
+    "stretchX": [[10, 20]],
+    "sdf": false
+  },
+  "nine-part-@2x": {
+    "x": 300,
+    "y": 0,
+    "width": 80,
+    "height": 80,
+    "pixelRatio": 2,
+    "stretchX": [[20, 60]],
+    "stretchY": [[20, 60]],
+    "sdf": false
+  }
+}

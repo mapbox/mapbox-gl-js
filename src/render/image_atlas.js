@@ -8,7 +8,7 @@ import type {StyleImage} from '../style/style_image';
 import type ImageManager from './image_manager';
 import type Texture from './texture';
 
-const IMAGE_PADDING = 1;
+const IMAGE_PADDING: number = 1;
 export {IMAGE_PADDING};
 
 type Rect = {
@@ -22,10 +22,16 @@ export class ImagePosition {
     paddedRect: Rect;
     pixelRatio: number;
     version: number;
+    stretchY: ?Array<[number, number]>;
+    stretchX: ?Array<[number, number]>;
+    content: ?[number, number, number, number];
 
-    constructor(paddedRect: Rect, {pixelRatio, version}: StyleImage) {
+    constructor(paddedRect: Rect, {pixelRatio, version, stretchX, stretchY, content}: StyleImage) {
         this.paddedRect = paddedRect;
         this.pixelRatio = pixelRatio;
+        this.stretchX = stretchX;
+        this.stretchY = stretchY;
+        this.content = content;
         this.version = version;
     }
 
