@@ -21,6 +21,8 @@ let linkEl;
 
 let reducedMotionQuery: MediaQueryList;
 
+let supportsOffscreenCanvas = null;
+
 /**
  * @private
  */
@@ -57,7 +59,12 @@ const exported = {
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
 
     supportsOffscreenCanvas(): boolean {
-        return !!window.OffscreenCanvas;
+        if(supportsOffscreenCanvas == null){
+            supportsOffscreenCanvas = window.OffscreenCanvas &&
+                new window.OffscreenCanvas(1,1).getContext('2d') &&
+                typeof window.createImageBitmap === 'function';
+        }
+        return supportsOffscreenCanvas;
     },
 
     get devicePixelRatio() { return window.devicePixelRatio; },
