@@ -28,14 +28,14 @@ export default class FeaturePositionMap {
     }
 
     add(id: mixed, index: number, start: number, end: number) {
-        this.ids.push(getIntegerId(id));
+        this.ids.push(getNumericId(id));
         this.positions.push(index, start, end);
     }
 
     getPositions(id: mixed): Array<FeaturePosition> {
         assert(this.indexed);
 
-        const intId = getIntegerId(id);
+        const intId = getNumericId(id);
 
         // binary search for the first occurrence of id in this.ids;
         // relies on ids/positions being sorted by id, which happens in serialization
@@ -82,9 +82,9 @@ export default class FeaturePositionMap {
     }
 }
 
-export function getIntegerId(value: mixed) {
+export function getNumericId(value: mixed) {
     const numValue = +value;
-    if (!isNaN(numValue) && numValue % 1 === 0) {
+    if (!isNaN(numValue)) {
         return numValue;
     }
     return murmur3(String(value));

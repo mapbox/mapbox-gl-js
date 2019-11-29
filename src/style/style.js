@@ -864,6 +864,9 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
         }
+        if (target.id === undefined) {
+            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided.`)));
+        }
 
         sourceCache.setFeatureState(sourceLayer, target.id, state);
     }
