@@ -18,7 +18,7 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
-import type {VectorSourceSpecification} from '../style-spec/types';
+import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
@@ -28,7 +28,7 @@ class VectorTileSource extends Evented implements Source {
     url: string;
     scheme: string;
     tileSize: number;
-    promoteId: ?{[string]: string};
+    promoteId: ?PromoteIdSpecification;
 
     _options: VectorSourceSpecification;
     _collectResourceTiming: boolean;

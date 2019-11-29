@@ -20,7 +20,7 @@ import {polygonIntersectsBox} from '../util/intersection_tests';
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
 import type Transform from '../geo/transform';
-import type {FilterSpecification} from '../style-spec/types';
+import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
 
 import {FeatureIndexArray} from './array_types';
 
@@ -46,7 +46,7 @@ class FeatureIndex {
     grid: Grid;
     grid3D: Grid;
     featureIndexArray: FeatureIndexArray;
-    promoteId: ?{[string]: string} | string;
+    promoteId: ?PromoteIdSpecification;
 
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
@@ -54,7 +54,7 @@ class FeatureIndex {
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
 
-    constructor(tileID: OverscaledTileID, promoteId?: ?{[string]: string} | string) {
+    constructor(tileID: OverscaledTileID, promoteId?: ?PromoteIdSpecification) {
         this.tileID = tileID;
         this.x = tileID.canonical.x;
         this.y = tileID.canonical.y;

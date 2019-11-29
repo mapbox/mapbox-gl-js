@@ -48,11 +48,7 @@ map.on('load', () => {
 
     function resetFeatureState() {
         if (selectedCounty) {
-            map.setFeatureState({
-                source: 'counties',
-                sourceLayer: 'original',
-                id: selectedCounty
-            }, {hover: false});
+            map.setFeatureState({source: 'counties', sourceLayer: 'original', id: selectedCounty}, {hover: false});
             selectedCounty = null;
         }
     }
@@ -62,17 +58,12 @@ map.on('load', () => {
     });
 
     map.on("mousemove", "counties", (e) => {
-        for (const feature of e.features) {
-            if (selectedCounty !== feature.properties.COUNTY) {
-                resetFeatureState();
-                selectedCounty = feature.properties.COUNTY;
-            }
+        const feature = e.features[0];
 
-            map.setFeatureState({
-                source: 'counties',
-                sourceLayer: 'original',
-                id: selectedCounty
-            }, {hover: true});
+        if (selectedCounty !== feature.id) {
+            resetFeatureState();
+            map.setFeatureState({source: 'counties', sourceLayer: 'original', id: feature.id}, {hover: true});
+            selectedCounty = feature.id;
         }
     });
 });
