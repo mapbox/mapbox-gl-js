@@ -82,7 +82,7 @@ export default class FeaturePositionMap {
     }
 }
 
-export function getNumericId(value: mixed) {
+function getNumericId(value: mixed) {
     const numValue = +value;
     if (!isNaN(numValue)) {
         return numValue;

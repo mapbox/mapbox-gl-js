@@ -151,7 +151,7 @@ class FeatureIndex {
                         featureGeometry = loadGeometry(feature);
                     }
                     let featureState = {};
-                    if (id) {
+                    if (id !== undefined) {
                         // `feature-state` expression evaluation requires feature state to be available
                         featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', feature.id);
                     }
