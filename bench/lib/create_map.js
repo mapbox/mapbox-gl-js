@@ -6,9 +6,10 @@ export default function (options: any): Promise<Map> {
     return new Promise((resolve, reject) => {
         const container = document.createElement('div');
         container.style.width = `${options.width || 512}px`;
-        container.style.height = `${options.width || 512}px`;
+        container.style.height = `${options.height || 512}px`;
         container.style.margin = '0 auto';
-        container.style.display = 'none';
+        container.style.display = 'block';
+        container.style.visibility = 'hidden';
         (document.body: any).appendChild(container);
 
         const map = new Map(Object.assign({
