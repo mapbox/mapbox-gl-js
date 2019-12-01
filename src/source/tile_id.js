@@ -95,6 +95,21 @@ export class OverscaledTileID {
         }
     }
 
+    /*
+     * calculateScaledKey is an optimization:
+     * when withWrap == true, implements the same as this.scaledTo(z).key,
+     * when withWrap == false, implements the same as this.scaledTo(z).wrapped().key.
+     */
+    calculateScaledKey(targetZ: number, withWrap: boolean) {
+        assert(targetZ <= this.overscaledZ);
+        const zDifference = this.canonical.z - targetZ;
+        if (targetZ > this.canonical.z) {
+            return calculateKey(this.wrap * +withWrap, targetZ, this.canonical.x, this.canonical.y);
+        } else {
+            return calculateKey(this.wrap * +withWrap, targetZ, this.canonical.x >> zDifference, this.canonical.y >> zDifference);
+        }
+    }
+
     isChildOf(parent: OverscaledTileID) {
         if (parent.wrap !== this.wrap) {
             // We can't be a child if we're in a different world copy

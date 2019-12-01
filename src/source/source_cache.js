@@ -368,16 +368,15 @@ class SourceCache extends Evented {
      */
     findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number): ?Tile {
         for (let z = tileID.overscaledZ - 1; z >= minCoveringZoom; z--) {
-            const parent = tileID.scaledTo(z);
-            if (!parent) return;
-            const id = String(parent.key);
-            const tile = this._tiles[id];
+            const parentKey = tileID.calculateScaledKey(z, true);
+            const tile = this._tiles[parentKey];
             if (tile && tile.hasData()) {
                 return tile;
             }
-            if (this._cache.has(parent)) {
-                return this._cache.get(parent);
-            }
+            // TileCache ignores wrap in lookup.
+            const parentWrappedKey = tileID.calculateScaledKey(z, false);
+            const cachedTile = this._cache.getByKey(parentWrappedKey);
+            if (cachedTile) return cachedTile;
         }
     }
 
