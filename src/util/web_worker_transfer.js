@@ -105,6 +105,11 @@ function isArrayBuffer(val: any): boolean {
            (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
 }
 
+function isImageBitmap(val: any): boolean {
+    return window.ImageBitmap &&
+        val instanceof window.ImageBitmap;
+}
+
 /**
  * Serialize the given object for transfer to or from a web worker.
  *
@@ -133,7 +138,7 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
         return input;
     }
 
-    if (isArrayBuffer(input) || window.ImageBitmap && input instanceof window.ImageBitmap) {
+    if (isArrayBuffer(input) || isImageBitmap(input)) {
         if (transferables) {
             transferables.push(((input: any): ArrayBuffer));
         }
@@ -224,7 +229,7 @@ export function deserialize(input: Serialized): mixed {
         input instanceof Date ||
         input instanceof RegExp ||
         isArrayBuffer(input) ||
-        input instanceof ImageBitmap ||
+        isImageBitmap(input) ||
         ArrayBuffer.isView(input) ||
         input instanceof ImageData) {
         return input;

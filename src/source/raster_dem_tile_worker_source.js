@@ -1,6 +1,7 @@
 // @flow
 
 import DEMData from '../data/dem_data';
+import {RGBAImage} from '../util/image';
 
 import type Actor from '../util/actor';
 import type {
@@ -12,9 +13,8 @@ import type {
 class RasterDEMTileWorkerSource {
     actor: Actor;
     loaded: {[string]: DEMData};
-    offcreenCanvas: ?OffscreenCanvas;
-    offcreenCanvasContext: ?CanvasRenderingContext2D;
-
+    offcreenCanvas: OffscreenCanvas;
+    offcreenCanvasContext: CanvasRenderingContext2D;
 
     constructor() {
         this.loaded = {};
@@ -22,32 +22,28 @@ class RasterDEMTileWorkerSource {
 
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const {uid, encoding, rawImageData} = params;
-        let imagePixels = rawImageData;
-        if (rawImageData instanceof ImageBitmap) {
-            imagePixels = this.getImageData(rawImageData);
-        }
 
+        const imagePixels = rawImageData instanceof ImageBitmap ? this.getImageData(rawImageData) : rawImageData;
         const dem = new DEMData(uid, imagePixels, encoding);
-
         this.loaded = this.loaded || {};
         this.loaded[uid] = dem;
         callback(null, dem);
     }
 
-
-    getImageData(rawImageData: ImageBitmap): ImageData{
-        if(!this.offcreenCanvas || !this.offcreenCanvasContext){
+    getImageData(imgBitmap: ImageBitmap): RGBAImage {
+        // Lazily initialize OffscreenCanvas
+        if (!this.offcreenCanvas || !this.offcreenCanvasContext) {
             this.offcreenCanvas = new OffscreenCanvas(512, 512);
             this.offcreenCanvasContext = this.offcreenCanvas.getContext('2d');
         }
 
-        this.offcreenCanvas.width = rawImageData.width;
-        this.offcreenCanvas.height = rawImageData.height;
-        this.offcreenCanvasContext.drawImage(rawImageData, 0, 0, rawImageData.width, rawImageData.height);
-        return this.offcreenCanvasContext.getImageData(-1, -1, rawImageData.width + 2, rawImageData.height + 2);
+        this.offcreenCanvas.width = imgBitmap.width;
+        this.offcreenCanvas.height = imgBitmap.height;
+        this.offcreenCanvasContext.drawImage(imgBitmap, 0, 0, imgBitmap.width, imgBitmap.height);
+        // Insert an additional 1px padding around the image to allow backfilling for neighboring data.
+        const imgData = this.offcreenCanvasContext.getImageData(-1, -1, imgBitmap.width + 2, imgBitmap.height + 2);
+        return new RGBAImage({width: imgData.width, height: imgData.height}, imgData.data);
     }
-
-
 
     removeTile(params: TileParameters) {
         const loaded = this.loaded,

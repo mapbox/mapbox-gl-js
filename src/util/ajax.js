@@ -7,6 +7,7 @@ import config from './config';
 import assert from 'assert';
 import {cacheGet, cachePut} from './tile_request_cache';
 import webpSupported from './webp_supported';
+import offscreenCanvasSupported from './offscreen_canvas_supported';
 
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
@@ -28,8 +29,6 @@ const ResourceType = {
     Image: 'Image'
 };
 export {ResourceType};
-
-const supportsImageBitmap = typeof window.createImageBitmap == 'function';
 
 if (typeof Object.freeze == 'function') {
     Object.freeze(ResourceType);
@@ -335,7 +334,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         if (err) {
             callback(err);
         } else if (data) {
-            if (supportsImageBitmap) {
+            if (offscreenCanvasSupported()) {
                 arrayBufferToImageBitmap(data, callback, cacheControl, expires);
             } else {
                 arrayBufferToImage(data, callback, cacheControl, expires);
