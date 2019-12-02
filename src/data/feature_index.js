@@ -146,14 +146,14 @@ class FeatureIndex {
                 filter,
                 params.layers,
                 styleLayers,
-                (feature: VectorTileFeature, styleLayer: StyleLayer, id: ?string | number) => {
+                (feature: VectorTileFeature, styleLayer: StyleLayer, id: string | number | void) => {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature);
                     }
                     let featureState = {};
                     if (id !== undefined) {
                         // `feature-state` expression evaluation requires feature state to be available
-                        featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', feature.id);
+                        featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
                     }
                     return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.pixelPosMatrix);
                 }
@@ -171,7 +171,7 @@ class FeatureIndex {
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
-        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, id: ?string | number) => boolean | number) {
+        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, id: string | number | void) => boolean | number) {
 
         const layerIDs = this.bucketLayerIDs[bucketIndex];
         if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs))
