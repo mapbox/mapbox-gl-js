@@ -34,7 +34,7 @@ class LayerPlacement {
 
         while (this._currentTileIndex < tiles.length) {
             const tile = tiles[this._currentTileIndex];
-            placement.placeLayerTile(bucketParts, styleLayer, tile, this._sortAcrossTiles);
+            placement.getBucketParts(bucketParts, styleLayer, tile, this._sortAcrossTiles);
 
             this._currentTileIndex++;
             if (shouldPausePlacement()) {
