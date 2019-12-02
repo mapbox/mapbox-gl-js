@@ -8,7 +8,6 @@ import vtpbf from 'vt-pbf';
 import FeatureIndex from '../../../src/data/feature_index';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {extend} from '../../../src/util/util';
-import Context from '../../../src/gl/context';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
 test('querySourceFeatures', (t) => {
@@ -131,46 +130,6 @@ test('querySourceFeatures', (t) => {
     });
 
     t.end();
-});
-
-test('Tile#setMask', (t) => {
-
-    t.test('simple mask', (t) => {
-        const tile = new Tile(0, 0, 0);
-        const context = new Context(require('gl')(10, 10));
-        const a = new OverscaledTileID(1, 0, 1, 0, 0);
-        const b = new OverscaledTileID(1, 0, 1, 1, 1);
-        const mask = {};
-        mask[a.key] = a;
-        mask[b.key] = b;
-        tile.setMask(mask, context);
-        t.deepEqual(tile.mask, mask);
-        t.end();
-    });
-
-    t.test('complex mask', (t) => {
-        const tile = new Tile(0, 0, 0);
-        const context = new Context(require('gl')(10, 10));
-        const a = new OverscaledTileID(1, 0, 1, 0, 1);
-        const b = new OverscaledTileID(1, 0, 1, 1, 0);
-        const c = new OverscaledTileID(2, 0, 2, 2, 3);
-        const d = new OverscaledTileID(2, 0, 2, 3, 2);
-        const e = new OverscaledTileID(3, 0, 3, 6, 7);
-        const f = new OverscaledTileID(3, 0, 3, 7, 6);
-        const mask = {};
-        mask[a.key] = a;
-        mask[b.key] = b;
-        mask[c.key] = c;
-        mask[d.key] = d;
-        mask[e.key] = e;
-        mask[f.key] = f;
-        tile.setMask(mask, context);
-        t.deepEqual(tile.mask, mask);
-        t.end();
-
-    });
-    t.end();
-
 });
 
 test('Tile#isLessThan', (t) => {

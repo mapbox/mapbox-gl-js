@@ -868,12 +868,11 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name);
     }
 
-    setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
+    setFeatureState(target: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
         this._checkLoaded();
-        const sourceId = feature.source;
-        const sourceLayer = feature.sourceLayer;
+        const sourceId = target.source;
+        const sourceLayer = target.sourceLayer;
         const sourceCache = this.sourceCaches[sourceId];
-        const featureId = parseInt(feature.id, 10);
 
         if (sourceCache === undefined) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
@@ -888,12 +887,11 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
         }
-        if (isNaN(featureId) || featureId < 0) {
-            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided and non-negative.`)));
-            return;
+        if (target.id === undefined) {
+            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided.`)));
         }
 
-        sourceCache.setFeatureState(sourceLayer, featureId, state);
+        sourceCache.setFeatureState(sourceLayer, target.id, state);
     }
 
     removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
@@ -908,15 +906,9 @@ class Style extends Evented {
 
         const sourceType = sourceCache.getSource().type;
         const sourceLayer = sourceType === 'vector' ? target.sourceLayer : undefined;
-        const featureId = parseInt(target.id, 10);
 
         if (sourceType === 'vector' && !sourceLayer) {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
-            return;
-        }
-
-        if (target.id !== undefined && isNaN(featureId) || featureId < 0) {
-            this.fire(new ErrorEvent(new Error(`The feature id parameter must be non-negative.`)));
             return;
         }
 
@@ -925,15 +917,14 @@ class Style extends Evented {
             return;
         }
 
-        sourceCache.removeFeatureState(sourceLayer, featureId, key);
+        sourceCache.removeFeatureState(sourceLayer, target.id, key);
     }
 
-    getFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }) {
+    getFeatureState(target: { source: string; sourceLayer?: string; id: string | number; }) {
         this._checkLoaded();
-        const sourceId = feature.source;
-        const sourceLayer = feature.sourceLayer;
+        const sourceId = target.source;
+        const sourceLayer = target.sourceLayer;
         const sourceCache = this.sourceCaches[sourceId];
-        const featureId = parseInt(feature.id, 10);
 
         if (sourceCache === undefined) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
@@ -944,12 +935,11 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
         }
-        if (isNaN(featureId) || featureId < 0) {
-            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided and non-negative.`)));
-            return;
+        if (target.id === undefined) {
+            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided.`)));
         }
 
-        return sourceCache.getFeatureState(sourceLayer, featureId);
+        return sourceCache.getFeatureState(sourceLayer, target.id);
     }
 
     getTransition() {

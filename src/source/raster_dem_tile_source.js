@@ -126,7 +126,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         }
         if (tile.dem) delete tile.dem;
         delete tile.neighboringTiles;
-        tile.clearMask();
 
         tile.state = 'unloaded';
         if (tile.actor) {

@@ -37,11 +37,20 @@ export type SymbolQuad = {
         w: number,
         h: number
     },
+    pixelOffsetTL: Point,
+    pixelOffsetBR: Point,
     writingMode: any | void,
     glyphOffset: [number, number],
     sectionIndex: number,
-    isSDF: boolean
+    isSDF: boolean,
+    minFontScaleX: number,
+    minFontScaleY: number
 };
+
+// If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
+// pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
+// on one edge in some cases.
+const border = IMAGE_PADDING;
 
 /**
  * Create the quads used for rendering an icon.
@@ -51,46 +60,158 @@ export function getIconQuads(
                       shapedIcon: PositionedIcon,
                       iconRotate: number,
                       isSDFIcon: boolean): Array<SymbolQuad> {
+    const quads = [];
+
     const image = shapedIcon.image;
+    const pixelRatio = image.pixelRatio;
+    const imageWidth = image.paddedRect.w - 2 * border;
+    const imageHeight = image.paddedRect.h - 2 * border;
 
-    // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
-    // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
-    // on one edge in some cases.
-    const border = IMAGE_PADDING;
-
-    // Expand the box to respect the 1 pixel border in the atlas image. We're using `image.paddedRect - border`
-    // instead of image.displaySize because we only pad with one pixel for retina images as well, and the
-    // displaySize uses the logical dimensions, not the physical pixel dimensions.
     const iconWidth = shapedIcon.right - shapedIcon.left;
-    const expandX = (iconWidth * image.paddedRect.w / (image.paddedRect.w - 2 * border) - iconWidth) / 2;
-    const left = shapedIcon.left - expandX;
-    const right = shapedIcon.right + expandX;
-
     const iconHeight = shapedIcon.bottom - shapedIcon.top;
-    const expandY = (iconHeight * image.paddedRect.h / (image.paddedRect.h - 2 * border) - iconHeight) / 2;
-    const top = shapedIcon.top - expandY;
-    const bottom = shapedIcon.bottom + expandY;
 
-    const tl = new Point(left, top);
-    const tr = new Point(right, top);
-    const br = new Point(right, bottom);
-    const bl = new Point(left, bottom);
+    const stretchX = image.stretchX || [[0, imageWidth]];
+    const stretchY = image.stretchY || [[0, imageHeight]];
 
-    const angle = iconRotate * Math.PI / 180;
+    const reduceRanges = (sum, range) => sum + range[1] - range[0];
+    const stretchWidth = stretchX.reduce(reduceRanges, 0);
+    const stretchHeight = stretchY.reduce(reduceRanges, 0);
+    const fixedWidth = imageWidth - stretchWidth;
+    const fixedHeight = imageHeight - stretchHeight;
 
-    if (angle) {
-        const sin = Math.sin(angle),
-            cos = Math.cos(angle),
-            matrix = [cos, -sin, sin, cos];
+    let stretchOffsetX = 0;
+    let stretchContentWidth = stretchWidth;
+    let stretchOffsetY = 0;
+    let stretchContentHeight = stretchHeight;
+    let fixedOffsetX = 0;
+    let fixedContentWidth = fixedWidth;
+    let fixedOffsetY = 0;
+    let fixedContentHeight = fixedHeight;
 
-        tl._matMult(matrix);
-        tr._matMult(matrix);
-        bl._matMult(matrix);
-        br._matMult(matrix);
+    if (image.content) {
+        const content = image.content;
+        stretchOffsetX = sumWithinRange(stretchX, 0, content[0]);
+        stretchOffsetY = sumWithinRange(stretchY, 0, content[1]);
+        stretchContentWidth = sumWithinRange(stretchX, content[0], content[2]);
+        stretchContentHeight = sumWithinRange(stretchY, content[1], content[3]);
+        fixedOffsetX = content[0] - stretchOffsetX;
+        fixedOffsetY = content[1] - stretchOffsetY;
+        fixedContentWidth = content[2] - content[0] - stretchContentWidth;
+        fixedContentHeight = content[3] - content[1] - stretchContentHeight;
     }
 
-    // Icon quad is padded, so texture coordinates also need to be padded.
-    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0, isSDF: isSDFIcon}];
+    const makeBox = (left, top, right, bottom) => {
+
+        const leftEm = getEmOffset(left.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left);
+        const leftPx = getPxOffset(left.fixed - fixedOffsetX, fixedContentWidth, left.stretch, stretchWidth);
+
+        const topEm = getEmOffset(top.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top);
+        const topPx = getPxOffset(top.fixed - fixedOffsetY, fixedContentHeight, top.stretch, stretchHeight);
+
+        const rightEm = getEmOffset(right.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left);
+        const rightPx = getPxOffset(right.fixed - fixedOffsetX, fixedContentWidth, right.stretch, stretchWidth);
+
+        const bottomEm = getEmOffset(bottom.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top);
+        const bottomPx = getPxOffset(bottom.fixed - fixedOffsetY, fixedContentHeight, bottom.stretch, stretchHeight);
+
+        const tl = new Point(leftEm, topEm);
+        const tr = new Point(rightEm, topEm);
+        const br = new Point(rightEm, bottomEm);
+        const bl = new Point(leftEm, bottomEm);
+        const pixelOffsetTL = new Point(leftPx / pixelRatio, topPx / pixelRatio);
+        const pixelOffsetBR = new Point(rightPx / pixelRatio, bottomPx / pixelRatio);
+
+        const angle = iconRotate * Math.PI / 180;
+
+        if (angle) {
+            const sin = Math.sin(angle),
+                cos = Math.cos(angle),
+                matrix = [cos, -sin, sin, cos];
+
+            tl._matMult(matrix);
+            tr._matMult(matrix);
+            bl._matMult(matrix);
+            br._matMult(matrix);
+        }
+
+        const x1 = left.stretch + left.fixed;
+        const x2 = right.stretch + right.fixed;
+        const y1 = top.stretch + top.fixed;
+        const y2 = bottom.stretch + bottom.fixed;
+
+        const subRect = {
+            x: image.paddedRect.x + border + x1,
+            y: image.paddedRect.y + border + y1,
+            w: x2 - x1,
+            h: y2 - y1
+        };
+
+        const minFontScaleX = fixedContentWidth / pixelRatio / iconWidth;
+        const minFontScaleY = fixedContentHeight / pixelRatio / iconHeight;
+
+        // Icon quad is padded, so texture coordinates also need to be padded.
+        return {tl, tr, bl, br, tex: subRect, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, isSDF: isSDFIcon};
+    };
+
+    if (!image.stretchX && !image.stretchY) {
+        quads.push(makeBox(
+            {fixed: 0, stretch: -1},
+            {fixed: 0, stretch: -1},
+            {fixed: 0, stretch: imageWidth + 1},
+            {fixed: 0, stretch: imageHeight + 1}));
+    } else {
+        const xCuts = stretchZonesToCuts(stretchX, fixedWidth, stretchWidth);
+        const yCuts = stretchZonesToCuts(stretchY, fixedHeight, stretchHeight);
+
+        for (let xi = 0; xi < xCuts.length - 1; xi++) {
+            const x1 = xCuts[xi];
+            const x2 = xCuts[xi + 1];
+            for (let yi = 0; yi < yCuts.length - 1; yi++) {
+                const y1 = yCuts[yi];
+                const y2 = yCuts[yi + 1];
+                quads.push(makeBox(x1, y1, x2, y2));
+            }
+        }
+    }
+
+    return quads;
+}
+
+function sumWithinRange(ranges, min, max) {
+    let sum = 0;
+    for (const range of ranges) {
+        sum += Math.max(min, Math.min(max, range[1])) - Math.max(min, Math.min(max, range[0]));
+    }
+    return sum;
+}
+
+function stretchZonesToCuts(stretchZones, fixedSize, stretchSize) {
+    const cuts = [{fixed: -border, stretch: 0}];
+
+    for (const [c1, c2] of stretchZones) {
+        const last = cuts[cuts.length - 1];
+        cuts.push({
+            fixed: c1 - last.stretch,
+            stretch: last.stretch
+        });
+        cuts.push({
+            fixed: c1 - last.stretch,
+            stretch: last.stretch + (c2 - c1)
+        });
+    }
+    cuts.push({
+        fixed: fixedSize + border,
+        stretch: stretchSize
+    });
+    return cuts;
+}
+
+function getEmOffset(stretchOffset, stretchSize, iconSize, iconOffset) {
+    return stretchOffset / stretchSize * iconSize + iconOffset;
+}
+
+function getPxOffset(fixedOffset, fixedSize, stretchOffset, stretchSize) {
+    return fixedOffset - fixedSize * stretchOffset / stretchSize;
 }
 
 /**
@@ -200,7 +321,11 @@ export function getGlyphQuads(anchor: Anchor,
                 br._matMult(matrix);
             }
 
-            quads.push({tl, tr, bl, br, tex: textureRect, writingMode: shaping.writingMode, glyphOffset, sectionIndex: positionedGlyph.sectionIndex, isSDF});
+            const pixelOffsetTL = new Point(0, 0);
+            const pixelOffsetBR = new Point(0, 0);
+            const minFontScaleX = 0;
+            const minFontScaleY = 0;
+            quads.push({tl, tr, bl, br, tex: textureRect, writingMode: shaping.writingMode, glyphOffset, sectionIndex: positionedGlyph.sectionIndex, isSDF, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY});
         }
     }
 
