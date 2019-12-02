@@ -272,7 +272,7 @@ function arrayBufferToImage(data: ArrayBuffer, callback: (err: ?Error, image: ?H
     img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
 }
 
-function arrayBufferToImageBitmap(data: ArrayBuffer, callback: (err: ?Error, image: ?ImageBitmap) => void, cacheControl: ?string, expires: ?string) {
+function arrayBufferToImageBitmap(data: ArrayBuffer, callback: (err: ?Error, image: ?ImageBitmap) => void) {
     const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
     window.createImageBitmap(blob).then((imgBitmap) => {
         callback(null, imgBitmap);
@@ -335,7 +335,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
             callback(err);
         } else if (data) {
             if (offscreenCanvasSupported()) {
-                arrayBufferToImageBitmap(data, callback, cacheControl, expires);
+                arrayBufferToImageBitmap(data, callback);
             } else {
                 arrayBufferToImage(data, callback, cacheControl, expires);
             }

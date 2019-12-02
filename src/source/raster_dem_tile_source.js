@@ -4,6 +4,7 @@ import {getImage, ResourceType} from '../util/ajax';
 import {extend} from '../util/util';
 import {Evented} from '../util/evented';
 import browser from '../util/browser';
+import window from '../util/window';
 import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
 import {OverscaledTileID} from './tile_id';
 import RasterTileSource from './raster_tile_source';
