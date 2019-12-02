@@ -2,6 +2,7 @@
 
 import DEMData from '../data/dem_data';
 import {RGBAImage} from '../util/image';
+import window from '../util/window';
 
 import type Actor from '../util/actor';
 import type {
@@ -9,6 +10,7 @@ import type {
     WorkerDEMTileCallback,
     TileParameters
 } from './worker_source';
+const {ImageBitmap} = window;
 
 class RasterDEMTileWorkerSource {
     actor: Actor;

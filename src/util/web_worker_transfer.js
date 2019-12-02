@@ -9,7 +9,7 @@ import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import window from './window';
-const {ImageData} = window;
+const {ImageData, ImageBitmap} = window;
 
 import type {Transferable} from '../types/transferable';
 
@@ -106,8 +106,8 @@ function isArrayBuffer(val: any): boolean {
 }
 
 function isImageBitmap(val: any): boolean {
-    return window.ImageBitmap &&
-        val instanceof window.ImageBitmap;
+    return ImageBitmap &&
+        val instanceof ImageBitmap;
 }
 
 /**
