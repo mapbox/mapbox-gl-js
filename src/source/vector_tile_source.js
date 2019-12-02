@@ -18,7 +18,7 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
-import type {VectorSourceSpecification} from '../style-spec/types';
+import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
@@ -28,6 +28,7 @@ class VectorTileSource extends Evented implements Source {
     url: string;
     scheme: string;
     tileSize: number;
+    promoteId: ?PromoteIdSpecification;
 
     _options: VectorSourceSpecification;
     _collectResourceTiming: boolean;
@@ -55,7 +56,7 @@ class VectorTileSource extends Evented implements Source {
         this.isTileClipped = true;
         this._loaded = false;
 
-        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        extend(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
         this._options = extend({type: 'vector'}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
@@ -126,6 +127,7 @@ class VectorTileSource extends Evented implements Source {
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
+            promoteId: this.promoteId
         };
         params.request.collectResourceTiming = this._collectResourceTiming;
 
