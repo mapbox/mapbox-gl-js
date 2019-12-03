@@ -44,7 +44,7 @@ class SourceCache extends Evented {
     _source: Source;
     _sourceLoaded: boolean;
     _sourceErrored: boolean;
-    _tiles: {[any]: Tile};
+    _tiles: {[string]: Tile};
     _prevLng: number | void;
     _cache: TileCache;
     _timers: {[any]: TimeoutID};
@@ -52,9 +52,9 @@ class SourceCache extends Evented {
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
-    _coveredTiles: {[any]: boolean};
+    _coveredTiles: {[string]: boolean};
     transform: Transform;
-    _isIdRenderable: (id: number, symbolLayer?: boolean) => boolean;
+    _isIdRenderable: (id: string, symbolLayer?: boolean) => boolean;
     used: boolean;
     _state: SourceFeatureState;
 
@@ -179,25 +179,25 @@ class SourceCache extends Evented {
     /**
      * Return all tile ids ordered with z-order, and cast to numbers
      */
-    getIds(): Array<number> {
-        return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
+    getIds(): Array<string> {
+        return (Object.values(this._tiles): any).map((tile: Tile) => tile.tileID).sort(compareTileId).map(id => id.key);
     }
 
-    getRenderableIds(symbolLayer?: boolean): Array<number> {
-        const ids = [];
+    getRenderableIds(symbolLayer?: boolean): Array<string> {
+        const renderables: Array<Tile> = [];
         for (const id in this._tiles) {
-            if (this._isIdRenderable(+id, symbolLayer)) ids.push(+id);
+            if (this._isIdRenderable(id, symbolLayer)) renderables.push(this._tiles[id]);
         }
         if (symbolLayer) {
-            return ids.sort((a_, b_) => {
-                const a = this._tiles[a_].tileID;
-                const b = this._tiles[b_].tileID;
+            return renderables.sort((a_: Tile, b_: Tile) => {
+                const a = a_.tileID;
+                const b = b_.tileID;
                 const rotatedA = (new Point(a.canonical.x, a.canonical.y))._rotate(this.transform.angle);
                 const rotatedB = (new Point(b.canonical.x, b.canonical.y))._rotate(this.transform.angle);
                 return a.overscaledZ - b.overscaledZ || rotatedB.y - rotatedA.y || rotatedB.x - rotatedA.x;
-            });
+            }).map(tile => tile.tileID.key);
         }
-        return ids.sort(compareKeyZoom);
+        return renderables.map(tile => tile.tileID).sort(compareTileId).map(id => id.key);
     }
 
     hasRenderableParent(tileID: OverscaledTileID) {
@@ -208,7 +208,7 @@ class SourceCache extends Evented {
         return false;
     }
 
-    _isIdRenderable(id: number, symbolLayer?: boolean) {
+    _isIdRenderable(id: string, symbolLayer?: boolean) {
         return this._tiles[id] && this._tiles[id].hasData() &&
             !this._coveredTiles[id] && (symbolLayer || !this._tiles[id].holdingForFade());
     }
@@ -226,7 +226,7 @@ class SourceCache extends Evented {
         }
     }
 
-    _reloadTile(id: string | number, state: TileState) {
+    _reloadTile(id: string, state: TileState) {
         const tile = this._tiles[id];
 
         // this potentially does not address all underlying
@@ -245,7 +245,7 @@ class SourceCache extends Evented {
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile: Tile, id: string | number, previousState: TileState, err: ?Error) {
+    _tileLoaded(tile: Tile, id: string, previousState: TileState, err: ?Error) {
         if (err) {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
@@ -313,7 +313,7 @@ class SourceCache extends Evented {
     /**
      * Get a specific tile by id
      */
-    getTileByID(id: string | number): Tile {
+    getTileByID(id: string): Tile {
         return this._tiles[id];
     }
 
@@ -423,7 +423,7 @@ class SourceCache extends Evented {
         this._prevLng = lng;
 
         if (wrapDelta) {
-            const tiles = {};
+            const tiles: {[string]: Tile} = {};
             for (const key in this._tiles) {
                 const tile = this._tiles[key];
                 tile.tileID = tile.tileID.unwrapTo(tile.tileID.wrap + wrapDelta);
@@ -489,12 +489,12 @@ class SourceCache extends Evented {
         const retain = this._updateRetainedTiles(idealTileIDs, zoom);
 
         if (isRasterType(this._source.type)) {
-            const parentsForFading = {};
+            const parentsForFading: {[string]: OverscaledTileID} = {};
             const fadingTiles = {};
             const ids = Object.keys(retain);
             for (const id of ids) {
                 const tileID = retain[id];
-                assert(tileID.key === +id);
+                assert(tileID.key === id);
 
                 const tile = this._tiles[id];
                 if (!tile || tile.fadeEndTime && tile.fadeEndTime <= browser.now()) continue;
@@ -548,8 +548,8 @@ class SourceCache extends Evented {
     }
 
     _updateRetainedTiles(idealTileIDs: Array<OverscaledTileID>, zoom: number): { [string]: OverscaledTileID} {
-        const retain = {};
-        const checked: {[number]: boolean } = {};
+        const retain: {[string]: OverscaledTileID} = {};
+        const checked: {[string]: boolean } = {};
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
@@ -666,7 +666,7 @@ class SourceCache extends Evented {
         return tile;
     }
 
-    _setTileReloadTimer(id: string | number, tile: Tile) {
+    _setTileReloadTimer(id: string, tile: Tile) {
         if (id in this._timers) {
             clearTimeout(this._timers[id]);
             delete this._timers[id];
@@ -685,7 +685,7 @@ class SourceCache extends Evented {
      * Remove a tile, given its id, from the pyramid
      * @private
      */
-    _removeTile(id: string | number) {
+    _removeTile(id: string) {
         const tile = this._tiles[id];
         if (!tile)
             return;
@@ -846,7 +846,7 @@ class SourceCache extends Evented {
      * Sets the set of keys that the tile depends on. This allows tiles to
      * be reloaded when their dependencies change.
      */
-    setDependencies(tileKey: string | number, namespace: string, dependencies: Array<string>) {
+    setDependencies(tileKey: string, namespace: string, dependencies: Array<string>) {
         const tile = this._tiles[tileKey];
         if (tile) {
             tile.setDependencies(namespace, dependencies);
@@ -870,8 +870,10 @@ class SourceCache extends Evented {
 SourceCache.maxOverzooming = 10;
 SourceCache.maxUnderzooming = 3;
 
-function compareKeyZoom(a, b) {
-    return ((a % 32) - (b % 32)) || (b - a);
+function compareTileId(a: OverscaledTileID, b: OverscaledTileID): number {
+    const aWrap = Math.abs(a.wrap * 2) - +(a.wrap < 0);
+    const bWrap = Math.abs(b.wrap * 2) - +(b.wrap < 0);
+    return a.overscaledZ - b.overscaledZ || bWrap - aWrap || b.canonical.y - a.canonical.y || b.canonical.x - a.canonical.x;
 }
 
 function isRasterType(type) {
