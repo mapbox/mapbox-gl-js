@@ -282,7 +282,6 @@ class Map extends Camera {
     _trackResize: boolean;
     _preserveDrawingBuffer: boolean;
     _failIfMajorPerformanceCaveat: boolean;
-    _clickTolerance: number;
     _antialias: boolean;
     _refreshExpiredTiles: boolean;
     _hash: Hash;
@@ -366,7 +365,6 @@ class Map extends Camera {
         this._interactive = options.interactive;
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
-        this._clickTolerance = options.clickTolerance;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
         this._antialias = options.antialias;
         this._trackResize = options.trackResize;
