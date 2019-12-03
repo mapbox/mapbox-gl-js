@@ -25,7 +25,7 @@ class RasterDEMTileWorkerSource {
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const {uid, encoding, rawImageData} = params;
 
-        const imagePixels = rawImageData instanceof ImageBitmap ? this.getImageData(rawImageData) : rawImageData;
+        const imagePixels = (ImageBitmap && rawImageData instanceof ImageBitmap) ? this.getImageData(rawImageData) : rawImageData;
         const dem = new DEMData(uid, imagePixels, encoding);
         this.loaded = this.loaded || {};
         this.loaded[uid] = dem;
