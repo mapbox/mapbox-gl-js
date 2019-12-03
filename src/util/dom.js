@@ -104,22 +104,26 @@ DOM.suppressClick = function() {
 };
 
 DOM.mousePos = function (el: HTMLElement, e: MouseEvent | window.TouchEvent | Touch) {
-    const rect = el.getBoundingClientRect();
+    const rect = el.getBoundingClientRect(),
+        factorX = rect.width ? el.offsetWidth / rect.width : 1,
+        factorY = rect.height ? el.offsetHeight / rect.height : 1;
     const t = window.TouchEvent && (e instanceof window.TouchEvent) ? e.touches[0] : e;
     return new Point(
-        t.clientX - rect.left - el.clientLeft,
-        t.clientY - rect.top - el.clientTop
+        (t.clientX - rect.left) * factorX - el.clientLeft,
+        (t.clientY - rect.top) * factorY - el.clientTop
     );
 };
 
 DOM.touchPos = function (el: HTMLElement, e: TouchEvent) {
     const rect = el.getBoundingClientRect(),
+        factorX = rect.width ? el.offsetWidth / rect.width : 1,
+        factorY = rect.height ? el.offsetHeight / rect.height : 1,
         points = [];
     const touches = (e.type === 'touchend') ? e.changedTouches : e.touches;
     for (let i = 0; i < touches.length; i++) {
         points.push(new Point(
-            touches[i].clientX - rect.left - el.clientLeft,
-            touches[i].clientY - rect.top - el.clientTop
+            (touches[i].clientX - rect.left) * factorX - el.clientLeft,
+            (touches[i].clientY - rect.top) * factorY - el.clientTop
         ));
     }
     return points;
