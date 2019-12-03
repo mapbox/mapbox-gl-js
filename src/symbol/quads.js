@@ -59,7 +59,8 @@ const border = IMAGE_PADDING;
 export function getIconQuads(
                       shapedIcon: PositionedIcon,
                       iconRotate: number,
-                      isSDFIcon: boolean): Array<SymbolQuad> {
+                      isSDFIcon: boolean,
+                      hasIconTextFit: boolean): Array<SymbolQuad> {
     const quads = [];
 
     const image = shapedIcon.image;
@@ -88,7 +89,7 @@ export function getIconQuads(
     let fixedOffsetY = 0;
     let fixedContentHeight = fixedHeight;
 
-    if (image.content) {
+    if (image.content && hasIconTextFit) {
         const content = image.content;
         stretchOffsetX = sumWithinRange(stretchX, 0, content[0]);
         stretchOffsetY = sumWithinRange(stretchY, 0, content[1]);
@@ -153,7 +154,7 @@ export function getIconQuads(
         return {tl, tr, bl, br, tex: subRect, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, isSDF: isSDFIcon};
     };
 
-    if (!image.stretchX && !image.stretchY) {
+    if (!hasIconTextFit || (!image.stretchX && !image.stretchY)) {
         quads.push(makeBox(
             {fixed: 0, stretch: -1},
             {fixed: 0, stretch: -1},
