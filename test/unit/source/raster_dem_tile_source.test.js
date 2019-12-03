@@ -98,11 +98,11 @@ test('RasterTileSource', (t) => {
                 source.loadTile(tile, () => {});
 
                 t.deepEqual(Object.keys(tile.neighboringTiles), [
+                    new OverscaledTileID(10, 0, 10, 4, 5).key,
+                    new OverscaledTileID(10, 0, 10, 6, 5).key,
                     new OverscaledTileID(10, 0, 10, 4, 4).key,
                     new OverscaledTileID(10, 0, 10, 5, 4).key,
                     new OverscaledTileID(10, 0, 10, 6, 4).key,
-                    new OverscaledTileID(10, 0, 10, 4, 5).key,
-                    new OverscaledTileID(10, 0, 10, 6, 5).key,
                     new OverscaledTileID(10, 0, 10, 4, 6).key,
                     new OverscaledTileID(10, 0, 10, 5, 6).key,
                     new OverscaledTileID(10, 0, 10, 6, 6).key
@@ -134,13 +134,13 @@ test('RasterTileSource', (t) => {
                 source.loadTile(tile, () => {});
 
                 t.deepEqual(Object.keys(tile.neighboringTiles), [
-                    new OverscaledTileID(5, 0, 5, 30, 4).key,
-                    new OverscaledTileID(5, 0, 5, 31, 4).key,
-                    new OverscaledTileID(5, 0, 5, 30, 5).key,
                     new OverscaledTileID(5, 0, 5, 30, 6).key,
                     new OverscaledTileID(5, 0, 5, 31, 6).key,
-                    new OverscaledTileID(5, 1, 5, 0,  4).key,
+                    new OverscaledTileID(5, 0, 5, 30, 5).key,
                     new OverscaledTileID(5, 1, 5, 0,  5).key,
+                    new OverscaledTileID(5, 0, 5, 30, 4).key,
+                    new OverscaledTileID(5, 0, 5, 31, 4).key,
+                    new OverscaledTileID(5, 1, 5, 0,  4).key,
                     new OverscaledTileID(5, 1, 5, 0,  6).key
                 ]);
                 t.end();
