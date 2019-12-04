@@ -2,7 +2,7 @@
 
 ## ✨ Features
 * Add ability to insert images into text labels using a format expression: `"text-field": ["format", "Some text", ["image", "my-image"], "some more text"]` ([#8904](https://github.com/mapbox/mapbox-gl-js/pull/8904))
-* Add support for stretchable images (aka nine-patch images). Stretchable images can be used with `icon-text-fit` to draw resized images with unstretched corners and borders. ([#8997](https://github.com/mapbox/mapbox-gl-js/pull/8997))
+* Add support for stretchable images (aka nine-part or nine-patch images). Stretchable images can be used with `icon-text-fit` to draw resized images with unstretched corners and borders. ([#8997](https://github.com/mapbox/mapbox-gl-js/pull/8997))
 * Add "in" expression. It can check if a value is in an array (`["in", value, array]`) or a substring is in a string (`["in", substring, string]`) ([#8876](https://github.com/mapbox/mapbox-gl-js/pull/8876))
 * Add `minPitch` and `maxPitch` map options ([#8834](https://github.com/mapbox/mapbox-gl-js/pull/8834))
 * Add `rotation`, `rotationAlignment` and `pitchAlignment` options to markers ([#8836](https://github.com/mapbox/mapbox-gl-js/pull/8836)) (h/t [dburnsii](https://github.com/dburnsii))
