@@ -8,9 +8,9 @@ import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {rasterUniformValues} from './program/raster_program';
+import SourceCache from '../source/source_cache';
 
 import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
 
@@ -32,6 +32,12 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         painter.stencilConfigForOverlap(tileIDs);
 
     const minTileZ = coords[coords.length - 1].overscaledZ;
+    const rasterFadeDuration = layer.paint.get('raster-fade-duration');
+    const idealZ = painter.transform.coveringZoomLevel({
+        tileSize: source.tileSize,
+        roundZoom: source.roundZoom
+    });
+    const minCoveringZoom = Math.max(idealZ - SourceCache.maxOverzooming, sourceCache.getSource().minzoom);
 
     const align = !painter.options.moving;
     for (const coord of coords) {
@@ -43,10 +49,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const tile = sourceCache.getTile(coord);
         const posMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
 
-        tile.registerFadeDuration(layer.paint.get('raster-fade-duration'));
+        tile.registerFadeDuration(rasterFadeDuration);
 
-        const parentTile = sourceCache.findLoadedParent(coord, 0),
-            fade = getFadeValues(tile, parentTile, sourceCache, layer, painter.transform);
+        const parentTile = rasterFadeDuration > 0 ? sourceCache.findLoadedParent(coord, minCoveringZoom) : null;
+        const fade = getFadeValues(tile, parentTile, layer, idealZ);
 
         let parentScaleBy, parentTL;
 
@@ -80,19 +86,13 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     }
 }
 
-function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
+function getFadeValues(tile, parentTile, layer, idealZ) {
     const fadeDuration = layer.paint.get('raster-fade-duration');
 
     if (fadeDuration > 0) {
         const now = browser.now();
         const sinceTile = (now - tile.timeAdded) / fadeDuration;
         const sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
-
-        const source = sourceCache.getSource();
-        const idealZ = transform.coveringZoomLevel({
-            tileSize: source.tileSize,
-            roundZoom: source.roundZoom
-        });
 
         // if no parent or parent is older, fade in; if parent is younger, fade out
         const fadeIn = !parentTile || Math.abs(parentTile.tileID.overscaledZ - idealZ) > Math.abs(tile.tileID.overscaledZ - idealZ);
