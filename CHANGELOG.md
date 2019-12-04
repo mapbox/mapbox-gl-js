@@ -1,4 +1,4 @@
-## 1.6.0-beta.1
+## 1.6.0
 
 ## ✨ Features
 * Add ability to insert images into text labels using an `image` expression within a `format` expression: `"text-field": ["format", "Some text", ["image", "my-image"], "some more text"]` ([#8904](https://github.com/mapbox/mapbox-gl-js/pull/8904))
