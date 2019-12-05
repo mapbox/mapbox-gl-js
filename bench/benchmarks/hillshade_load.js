@@ -7,7 +7,7 @@ import type {StyleSpecification} from '../../src/style-spec/types';
 export default class HillshadeLoad extends Benchmark {
     style: StyleSpecification;
 
-    constructor(style: string) {
+    constructor() {
         super();
         this.style = {
             "version": 8,
@@ -45,9 +45,11 @@ export default class HillshadeLoad extends Benchmark {
         }).then((map) => {
             return new Promise((resolve, reject) => {
                 map.once('idle', () => {
-                    resolve()
+                    resolve();
                     map.remove();
                 });
+
+                map.once('error', (e) => reject(e));
             });
         });
     }

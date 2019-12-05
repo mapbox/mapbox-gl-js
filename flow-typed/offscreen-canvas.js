@@ -5,5 +5,5 @@ declare class OffscreenCanvas {
     height: number;
 
     constructor(width: number, height: number): OffscreenCanvas;
-    getContext(contextType: '2d' ): CanvasRenderingContext2D;
+    getContext(contextType: '2d'): CanvasRenderingContext2D;
 }
