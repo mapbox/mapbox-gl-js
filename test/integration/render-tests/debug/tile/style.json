@@ -12,6 +12,14 @@
   ],
   "zoom": 14,
   "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 1,
+      "tileSize": 256
+    },
     "mapbox": {
       "type": "vector",
       "maxzoom": 14,
@@ -28,6 +36,14 @@
       "type": "background",
       "paint": {
         "background-color": "white"
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
       }
     },
     {

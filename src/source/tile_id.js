@@ -48,6 +48,10 @@ export class CanonicalTileID {
             (coord.x * tilesAtZoom - this.x) * EXTENT,
             (coord.y * tilesAtZoom - this.y) * EXTENT);
     }
+
+    toString() {
+        return `${this.z}/${this.x}/${this.y}`;
+    }
 }
 
 export class UnwrappedTileID {

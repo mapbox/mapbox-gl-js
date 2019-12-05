@@ -277,6 +277,13 @@ export function charInComplexShapingScript(char: number) {
            isChar['Arabic Presentation Forms-B'](char);
 }
 
+export function charInRTLScript(char: number) {
+    // Main blocks for Hebrew, Arabic, Thaana and other RTL scripts
+    return (char >= 0x0590 && char <= 0x08FF) ||
+        isChar['Arabic Presentation Forms-A'](char) ||
+        isChar['Arabic Presentation Forms-B'](char);
+}
+
 export function charInSupportedScript(char: number, canRenderRTL: boolean) {
     // This is a rough heuristic: whether we "can render" a script
     // actually depends on the properties of the font being used
@@ -285,11 +292,7 @@ export function charInSupportedScript(char: number, canRenderRTL: boolean) {
 
     // Even in Latin script, we "can't render" combinations such as the fi
     // ligature, but we don't consider that semantically significant.
-    if (!canRenderRTL &&
-        ((char >= 0x0590 && char <= 0x08FF) ||
-         isChar['Arabic Presentation Forms-A'](char) ||
-         isChar['Arabic Presentation Forms-B'](char))) {
-        // Main blocks for Hebrew, Arabic, Thaana and other RTL scripts
+    if (!canRenderRTL && charInRTLScript(char)) {
         return false;
     }
     if ((char >= 0x0900 && char <= 0x0DFF) ||
@@ -304,6 +307,15 @@ export function charInSupportedScript(char: number, canRenderRTL: boolean) {
         return false;
     }
     return true;
+}
+
+export function stringContainsRTLText(chars: string): boolean {
+    for (const char of chars) {
+        if (charInRTLScript(char.charCodeAt(0))) {
+            return true;
+        }
+    }
+    return false;
 }
 
 export function isStringInSupportedScript(chars: string, canRenderRTL: boolean) {

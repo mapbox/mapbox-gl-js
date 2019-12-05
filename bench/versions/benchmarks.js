@@ -1,7 +1,7 @@
 import mapboxgl from '../../src';
 import accessToken from '../lib/access_token';
 import locationsWithTileID from '../lib/locations_with_tile_id';
-import styleBenchmarkLocations from '@mapbox/gazetteer/mapbox-streets/style-benchmark-locations.json';
+import styleBenchmarkLocations from '@mapbox/gazetteer/benchmark/style-benchmark-locations.json';
 import Layout from '../benchmarks/layout';
 import LayoutDDS from '../benchmarks/layout_dds';
 import SymbolLayout from '../benchmarks/symbol_layout';
@@ -9,7 +9,7 @@ import WorkerTransfer from '../benchmarks/worker_transfer';
 import Paint from '../benchmarks/paint';
 import PaintStates from '../benchmarks/paint_states';
 import {PropertyLevelRemove, FeatureLevelRemove, SourceLevelRemove} from '../benchmarks/remove_paint_state';
-import {LayerBackground, LayerCircle, LayerFill, LayerFillExtrusion, LayerHeatmap, LayerHillshade, LayerLine, LayerRaster, LayerSymbol} from '../benchmarks/layers';
+import {LayerBackground, LayerCircle, LayerFill, LayerFillExtrusion, LayerHeatmap, LayerHillshade, LayerLine, LayerRaster, LayerSymbol, LayerSymbolWithIcons} from '../benchmarks/layers';
 import Load from '../benchmarks/map_load';
 import Validate from '../benchmarks/style_validate';
 import StyleLayerCreate from '../benchmarks/style_layer_create';
@@ -29,9 +29,9 @@ window.mapboxglBenchmarks = window.mapboxglBenchmarks || {};
 
 const version = process.env.BENCHMARK_VERSION;
 
-function register(name, benchmark) {
+function register(name, bench) {
     window.mapboxglBenchmarks[name] = window.mapboxglBenchmarks[name] || {};
-    window.mapboxglBenchmarks[name][version] = benchmark;
+    window.mapboxglBenchmarks[name][version] = bench;
 }
 
 const style = 'mapbox://styles/mapbox/streets-v10';
@@ -63,6 +63,7 @@ register('LayerHillshade', new LayerHillshade());
 register('LayerLine', new LayerLine());
 register('LayerRaster', new LayerRaster());
 register('LayerSymbol', new LayerSymbol());
+register('LayerSymbolWithIcons', new LayerSymbolWithIcons());
 register('Load', new Load());
 register('LayoutDDS', new LayoutDDS());
 register('SymbolLayout', new SymbolLayout(style, styleLocations.map(location => location.tileID[0])));

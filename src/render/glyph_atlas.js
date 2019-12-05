@@ -8,7 +8,7 @@ import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph';
 
 const padding = 1;
 
-type Rect = {
+export type Rect = {
     x: number,
     y: number,
     w: number,

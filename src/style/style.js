@@ -29,8 +29,9 @@ import getWorkerPool from '../util/global_worker_pool';
 import deref from '../style-spec/deref';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff';
 import {
-    registerForPluginAvailability,
-    evented as rtlTextPluginEvented
+    registerForPluginStateChange,
+    evented as rtlTextPluginEvented,
+    triggerPluginCompletionEvent
 } from '../source/rtl_text_plugin';
 import PauseablePlacement from './pauseable_placement';
 import ZoomHistory from './zoom_history';
@@ -62,6 +63,7 @@ import type {
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator} from './validate_style';
+import type {OverscaledTileID} from '../source/tile_id';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -118,6 +120,7 @@ class Style extends Evented {
     _updatedSources: {[string]: 'clear' | 'reload'};
     _updatedLayers: {[string]: true};
     _removedLayers: {[string]: StyleLayer};
+    _changedImages: {[string]: true};
     _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
 
@@ -129,7 +132,7 @@ class Style extends Evented {
     // exposed to allow stubbing by unit tests
     static getSourceType: typeof getSourceType;
     static setSourceType: typeof setSourceType;
-    static registerForPluginAvailability: typeof registerForPluginAvailability;
+    static registerForPluginStateChange: typeof registerForPluginStateChange;
 
     constructor(map: Map, options: StyleOptions = {}) {
         super();
@@ -153,11 +156,24 @@ class Style extends Evented {
         this.dispatcher.broadcast('setReferrer', getReferrer());
 
         const self = this;
-        this._rtlTextPluginCallback = Style.registerForPluginAvailability((args) => {
-            self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginURL, args.completionCallback);
-            for (const id in self.sourceCaches) {
-                self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
-            }
+        this._rtlTextPluginCallback = Style.registerForPluginStateChange((event) => {
+            const state = {
+                pluginStatus: event.pluginStatus,
+                pluginURL: event.pluginURL,
+                pluginBlobURL: event.pluginBlobURL
+            };
+            self.dispatcher.broadcast('syncRTLPluginState', state, (err, results) => {
+                triggerPluginCompletionEvent(err);
+                if (results) {
+                    const allComplete = results.every((elem) => elem);
+                    if (allComplete) {
+                        for (const id in self.sourceCaches) {
+                            self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
+                        }
+                    }
+                }
+
+            });
         });
 
         this.on('data', (event) => {
@@ -366,6 +382,8 @@ class Style extends Evented {
                 }
             }
 
+            this._updateTilesForChangedImages();
+
             for (const id in this._updatedPaintProps) {
                 this._layers[id].updateTransitions(parameters);
             }
@@ -397,6 +415,19 @@ class Style extends Evented {
 
     }
 
+    /*
+     * Apply any queued image changes.
+     */
+    _updateTilesForChangedImages() {
+        const changedImages = Object.keys(this._changedImages);
+        if (changedImages.length) {
+            for (const name in this.sourceCaches) {
+                this.sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], changedImages);
+            }
+            this._changedImages = {};
+        }
+    }
+
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
         this.dispatcher.broadcast('updateLayers', {
             layers: this._serializeLayers(updatedIds),
@@ -412,6 +443,8 @@ class Style extends Evented {
 
         this._updatedSources = {};
         this._updatedPaintProps = {};
+
+        this._changedImages = {};
     }
 
     /**
@@ -463,6 +496,8 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
         this.imageManager.addImage(id, image);
+        this._changedImages[id] = true;
+        this._changed = true;
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
@@ -479,6 +514,8 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
         this.imageManager.removeImage(id);
+        this._changedImages[id] = true;
+        this._changed = true;
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
@@ -939,7 +976,9 @@ class Style extends Evented {
 
     _updateLayer(layer: StyleLayer) {
         this._updatedLayers[layer.id] = true;
-        if (layer.source && !this._updatedSources[layer.source]) {
+        if (layer.source && !this._updatedSources[layer.source] &&
+            //Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
+            this.sourceCaches[layer.source].getSource().type !== 'raster') {
             this._updatedSources[layer.source] = 'reload';
             this.sourceCaches[layer.source].pause();
         }
@@ -1142,7 +1181,7 @@ class Style extends Evented {
             this._spriteRequest.cancel();
             this._spriteRequest = null;
         }
-        rtlTextPluginEvented.off('pluginAvailable', this._rtlTextPluginCallback);
+        rtlTextPluginEvented.off('pluginStateChange', this._rtlTextPluginCallback);
         for (const layerId in this._layers) {
             const layer: StyleLayer = this._layers[layerId];
             layer.setEventedParent(null);
@@ -1255,8 +1294,24 @@ class Style extends Evented {
 
     // Callbacks from web workers
 
-    getImages(mapId: string, params: {icons: Array<string>}, callback: Callback<{[string]: StyleImage}>) {
+    getImages(mapId: string, params: {icons: Array<string>, source: string, tileID: OverscaledTileID, type: string}, callback: Callback<{[string]: StyleImage}>) {
+
         this.imageManager.getImages(params.icons, callback);
+
+        // Apply queued image changes before setting the tile's dependencies so that the tile
+        // is not reloaded unecessarily. Without this forced update the reload could happen in cases
+        // like this one:
+        // - icons contains "my-image"
+        // - imageManager.getImages(...) triggers `onstyleimagemissing`
+        // - the user adds "my-image" within the callback
+        // - addImage adds "my-image" to this._changedImages
+        // - the next frame triggers a reload of this tile even though it already has the latest version
+        this._updateTilesForChangedImages();
+
+        const sourceCache = this.sourceCaches[params.source];
+        if (sourceCache) {
+            sourceCache.setDependencies(params.tileID.key, params.type, params.icons);
+        }
     }
 
     getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {[number]: ?StyleGlyph}}>) {
@@ -1270,6 +1325,6 @@ class Style extends Evented {
 
 Style.getSourceType = getSourceType;
 Style.setSourceType = setSourceType;
-Style.registerForPluginAvailability = registerForPluginAvailability;
+Style.registerForPluginStateChange = registerForPluginStateChange;
 
 export default Style;

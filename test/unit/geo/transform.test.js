@@ -16,6 +16,7 @@ test('transform', (t) => {
         t.equal(transform.worldSize, 512, 'worldSize');
         t.equal(transform.width, 500, 'width');
         t.equal(transform.minZoom, 0, 'minZoom');
+        t.equal(transform.minPitch, 0, 'minPitch');
         t.equal(transform.bearing, 0, 'bearing');
         t.equal(transform.bearing = 1, 1, 'set bearing');
         t.equal(transform.bearing, 1, 'bearing');
@@ -26,6 +27,8 @@ test('transform', (t) => {
         t.equal(transform.minZoom, 10);
         t.deepEqual(transform.center, {lng: 0, lat: 0});
         t.equal(transform.maxZoom, 10);
+        t.equal(transform.minPitch = 10, 10);
+        t.equal(transform.maxPitch = 10, 10);
         t.equal(transform.size.equals(new Point(500, 500)), true);
         t.equal(transform.centerPoint.equals(new Point(250, 250)), true);
         t.equal(transform.scaleZoom(0), -Infinity);

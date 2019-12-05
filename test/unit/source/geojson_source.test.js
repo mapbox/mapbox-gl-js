@@ -170,6 +170,30 @@ test('GeoJSONSource#update', (t) => {
         }, mockDispatcher).load();
     });
 
+    t.test('forwards Supercluster options with worker request', (t) => {
+        const mockDispatcher = wrapDispatcher({
+            send(message, params) {
+                t.equal(message, 'geojson.loadData');
+                t.deepEqual(params.superclusterOptions, {
+                    maxZoom: 12,
+                    extent: 8192,
+                    radius: 1600,
+                    log: false,
+                    generateId: true
+                });
+                t.end();
+            }
+        });
+
+        new GeoJSONSource('id', {
+            data: {},
+            cluster: true,
+            clusterMaxZoom: 12,
+            clusterRadius: 100,
+            generateId: true
+        }, mockDispatcher).load();
+    });
+
     t.test('transforms url before making request', (t) => {
         const mapStub = {
             _requestManager: {

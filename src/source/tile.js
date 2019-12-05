@@ -96,6 +96,8 @@ class Tile {
 
     symbolFadeHoldUntil: ?number;
     hasSymbolBuckets: boolean;
+    hasRTLText: boolean;
+    dependencies: Object;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -110,6 +112,8 @@ class Tile {
         this.expirationTime = null;
         this.queryPadding = 0;
         this.hasSymbolBuckets = false;
+        this.hasRTLText = false;
+        this.dependencies = {};
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -180,6 +184,19 @@ class Tile {
                     bucket.justReloaded = true;
                 } else {
                     break;
+                }
+            }
+        }
+
+        this.hasRTLText = false;
+        if (this.hasSymbolBuckets) {
+            for (const id in this.buckets) {
+                const bucket = this.buckets[id];
+                if (bucket instanceof SymbolBucket) {
+                    if (bucket.hasRTLText) {
+                        this.hasRTLText = true;
+                        break;
+                    }
                 }
             }
         }
@@ -477,6 +494,28 @@ class Tile {
 
     setHoldDuration(duration: number) {
         this.symbolFadeHoldUntil = browser.now() + duration;
+    }
+
+    setDependencies(namespace: string, dependencies: Array<string>) {
+        const index = {};
+        for (const dep of dependencies) {
+            index[dep] = true;
+        }
+        this.dependencies[namespace] = index;
+    }
+
+    hasDependency(namespaces: Array<string>, keys: Array<string>) {
+        for (const namespace of namespaces) {
+            const dependencies = this.dependencies[namespace];
+            if (dependencies) {
+                for (const key of keys) {
+                    if (dependencies[key]) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
 

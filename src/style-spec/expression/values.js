@@ -10,7 +10,7 @@ import {NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, Va
 
 import type {Type} from './types';
 
-export function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
+export function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): string | null {
     if (!(
         typeof r === 'number' && r >= 0 && r <= 255 &&
         typeof g === 'number' && g >= 0 && g <= 255 &&
@@ -86,7 +86,7 @@ export function typeOf(value: Value): Type {
         return ResolvedImageType;
     } else if (Array.isArray(value)) {
         const length = value.length;
-        let itemType: ?Type;
+        let itemType: Type | typeof undefined;
 
         for (const item of value) {
             const t = typeOf(item);

@@ -131,7 +131,7 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`."
     },
     "tiles": {
       "type": "array",
@@ -200,7 +200,7 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`."
     },
     "tiles": {
       "type": "array",
@@ -275,7 +275,7 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`."
     },
     "tiles": {
       "type": "array",
@@ -2543,7 +2543,7 @@
   "function_stop": {
     "type": "array",
     "minimum": 0,
-    "maximum": 22,
+    "maximum": 24,
     "value": [
       "number",
       "color"
@@ -2618,6 +2618,15 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          }
+        }
+      },
+      "in": {
+        "doc": "Determines whether an item exists in an array or a substring exists in a string.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.6.0"
           }
         }
       },

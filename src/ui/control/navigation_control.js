@@ -36,10 +36,10 @@ class NavigationControl {
     _map: Map;
     options: Options;
     _container: HTMLElement;
-    _zoomInButton: HTMLElement;
-    _zoomOutButton: HTMLElement;
-    _compass: HTMLElement;
-    _compassArrow: HTMLElement;
+    _zoomInButton: HTMLButtonElement;
+    _zoomOutButton: HTMLButtonElement;
+    _compass: HTMLButtonElement;
+    _compassIcon: HTMLElement;
     _handler: DragRotateHandler;
 
     constructor(options: Options) {
@@ -50,38 +50,34 @@ class NavigationControl {
 
         if (this.options.showZoom) {
             bindAll([
+                '_setButtonTitle',
                 '_updateZoomButtons'
             ], this);
-            this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom in', (e) => this._map.zoomIn({}, {originalEvent: e}));
-            this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom out', (e) => this._map.zoomOut({}, {originalEvent: e}));
+            this._zoomInButton = this._createButton('mapboxgl-ctrl-zoom-in', (e) => this._map.zoomIn({}, {originalEvent: e}));
+            DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomInButton).setAttribute('aria-hidden', true);
+            this._zoomOutButton = this._createButton('mapboxgl-ctrl-zoom-out', (e) => this._map.zoomOut({}, {originalEvent: e}));
+            DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomOutButton).setAttribute('aria-hidden', true);
         }
         if (this.options.showCompass) {
             bindAll([
                 '_rotateCompassArrow'
             ], this);
-            this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset bearing to north', (e) => {
+            this._compass = this._createButton('mapboxgl-ctrl-compass', (e) => {
                 if (this.options.visualizePitch) {
                     this._map.resetNorthPitch({}, {originalEvent: e});
                 } else {
                     this._map.resetNorth({}, {originalEvent: e});
                 }
             });
-            this._compassArrow = DOM.create('span', 'mapboxgl-ctrl-compass-arrow', this._compass);
+            this._compassIcon = DOM.create('span', 'mapboxgl-ctrl-icon', this._compass);
+            this._compassIcon.setAttribute('aria-hidden', true);
         }
     }
 
     _updateZoomButtons() {
         const zoom = this._map.getZoom();
-        if (zoom === this._map.getMaxZoom()) {
-            this._zoomInButton.classList.add('mapboxgl-ctrl-icon-disabled');
-        } else {
-            this._zoomInButton.classList.remove('mapboxgl-ctrl-icon-disabled');
-        }
-        if (zoom === this._map.getMinZoom()) {
-            this._zoomOutButton.classList.add('mapboxgl-ctrl-icon-disabled');
-        } else {
-            this._zoomOutButton.classList.remove('mapboxgl-ctrl-icon-disabled');
-        }
+        this._zoomInButton.disabled = zoom === this._map.getMaxZoom();
+        this._zoomOutButton.disabled = zoom === this._map.getMinZoom();
     }
 
     _rotateCompassArrow() {
@@ -89,16 +85,19 @@ class NavigationControl {
             `scale(${1 / Math.pow(Math.cos(this._map.transform.pitch * (Math.PI / 180)), 0.5)}) rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)` :
             `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
 
-        this._compassArrow.style.transform = rotate;
+        this._compassIcon.style.transform = rotate;
     }
 
     onAdd(map: Map) {
         this._map = map;
         if (this.options.showZoom) {
+            this._setButtonTitle(this._zoomInButton, 'ZoomIn');
+            this._setButtonTitle(this._zoomOutButton, 'ZoomOut');
             this._map.on('zoom', this._updateZoomButtons);
             this._updateZoomButtons();
         }
         if (this.options.showCompass) {
+            this._setButtonTitle(this._compass, 'ResetBearing');
             if (this.options.visualizePitch) {
                 this._map.on('pitch', this._rotateCompassArrow);
             }
@@ -131,13 +130,17 @@ class NavigationControl {
         delete this._map;
     }
 
-    _createButton(className: string, ariaLabel: string, fn: () => mixed) {
+    _createButton(className: string, fn: () => mixed) {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';
-        a.title = ariaLabel;
-        a.setAttribute('aria-label', ariaLabel);
         a.addEventListener('click', fn);
         return a;
+    }
+
+    _setButtonTitle(button: HTMLButtonElement, title: string) {
+        const str = this._map._getUIString(`NavigationControl.${title}`);
+        button.title = str;
+        button.setAttribute('aria-label', str);
     }
 }
 

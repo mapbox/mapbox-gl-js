@@ -3,6 +3,7 @@
 /dist/
 /docs/pages/dist/
 /docs/img/dist/
+*.es.js
 *.js.map
 node_modules
 package-lock.json
@@ -28,3 +29,4 @@ _site
 yarn-error.log
 yarn-debug.log
 npm-debug.log
+.idea

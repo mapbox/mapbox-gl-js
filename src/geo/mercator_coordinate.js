@@ -48,6 +48,7 @@ export function altitudeFromMercatorZ(z: number, y: number) {
  *
  * @param {number} lat Latitude
  * @returns {number} scale factor
+ * @private
  */
 export function mercatorScale(lat: number) {
     return 1 / Math.cos(lat * Math.PI / 180);

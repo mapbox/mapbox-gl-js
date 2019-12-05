@@ -40,8 +40,9 @@ test('TouchZoomRotateHandler fires zoomstart, zoom, and zoomend events at approp
 
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
-    t.equal(zoomstart.callCount, 1);
-    t.equal(zoom.callCount, 2);
+    // incremented because inertia starts a second zoom
+    t.equal(zoomstart.callCount, 2);
+    t.equal(zoom.callCount, 3);
     t.equal(zoomend.callCount, 1);
 
     map.remove();
@@ -142,8 +143,9 @@ test('TouchZoomRotateHandler starts zoom immediately when rotation disabled', (t
 
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
-    t.equal(zoomstart.callCount, 1);
-    t.equal(zoom.callCount, 2);
+    // incremented because inertia starts a second zoom
+    t.equal(zoomstart.callCount, 2);
+    t.equal(zoom.callCount, 3);
     t.equal(zoomend.callCount, 1);
 
     map.remove();

@@ -1,7 +1,7 @@
 // @flow
 
 import DOM from '../../util/dom';
-import {bezier, bindAll} from '../../util/util';
+import {bezier, bindAll, extend} from '../../util/util';
 import window from '../../util/window';
 import browser from '../../util/browser';
 import {Event} from '../../util/evented';
@@ -11,10 +11,15 @@ import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
 import type {TaskID} from '../../util/task_queue';
 
-const inertiaLinearity = 0.3,
-    inertiaEasing = bezier(0, 0, inertiaLinearity, 1),
-    inertiaMaxSpeed = 1400, // px/s
-    inertiaDeceleration = 2500; // px/s^2
+const defaultInertia = {
+    linearity: 0.3,
+    easing: bezier(0, 0, 0.3, 1),
+    maxSpeed: 1400,
+    deceleration: 2500,
+};
+export type PanInertiaOptions = typeof defaultInertia;
+
+export type DragPanOptions = boolean | PanInertiaOptions;
 
 /**
  * The `DragPanHandler` allows the user to pan the map by clicking and dragging
@@ -35,6 +40,7 @@ class DragPanHandler {
     _frameId: ?TaskID;
     _clickTolerance: number;
     _shouldStart: ?boolean;
+    _inertiaOptions: PanInertiaOptions;
 
     /**
      * @private
@@ -46,6 +52,7 @@ class DragPanHandler {
         this._el = map.getCanvasContainer();
         this._state = 'disabled';
         this._clickTolerance = options.clickTolerance || 1;
+        this._inertiaOptions = defaultInertia;
 
         bindAll([
             '_onMove',
@@ -77,13 +84,27 @@ class DragPanHandler {
     /**
      * Enables the "drag to pan" interaction.
      *
+     * @param {Object} [options]
+     * @param {number} [options.linearity=0] factor used to scale the drag velocity
+     * @param {Function} [options.easing=bezier(0, 0, 0.3, 1)] easing function applled to `map.panTo` when applying the drag.
+     * @param {number} [options.maxSpeed=1400] the maximum value of the drag velocity.
+     * @param {number} [options.deceleration=2500] the rate at which the speed reduces after the pan ends.
+     *
      * @example
-     * map.dragPan.enable();
+     *   map.dragPan.enable();
+     * @example
+     *   map.dragpan.enable({
+     *      linearity: 0.3,
+     *      easing: bezier(0, 0, 0.3, 1),
+     *      maxSpeed: 1400,
+     *      deceleration: 2500,
+     *   });
      */
-    enable() {
+    enable(options: DragPanOptions) {
         if (this.isEnabled()) return;
         this._el.classList.add('mapboxgl-touch-drag-pan');
         this._state = 'enabled';
+        this._inertiaOptions = extend(defaultInertia, options);
     }
 
     /**
@@ -358,22 +379,23 @@ class DragPanHandler {
             this._fireEvent('moveend', e);
             return;
         }
+        const {linearity, easing, maxSpeed, deceleration} = this._inertiaOptions;
 
         // calculate px/s velocity & adjust for increased initial animation speed when easing out
-        const velocity = flingOffset.mult(inertiaLinearity / flingDuration);
+        const velocity = flingOffset.mult(linearity / flingDuration);
         let speed = velocity.mag(); // px/s
 
-        if (speed > inertiaMaxSpeed) {
-            speed = inertiaMaxSpeed;
+        if (speed > maxSpeed) {
+            speed = maxSpeed;
             velocity._unit()._mult(speed);
         }
 
-        const duration = speed / (inertiaDeceleration * inertiaLinearity),
+        const duration = speed / (deceleration * linearity),
             offset = velocity.mult(-duration / 2);
 
         this._map.panBy(offset, {
             duration: duration * 1000,
-            easing: inertiaEasing,
+            easing,
             noMoveStart: true
         }, {originalEvent: e});
     }

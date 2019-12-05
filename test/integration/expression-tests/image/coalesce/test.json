@@ -4,7 +4,10 @@
     "type": "resolvedImage"
   },
   "inputs": [
-    [{}, {}]
+    [
+        {"availableImages": ["monument-15"]},
+        {}
+    ]
   ],
   "expected": {
     "compiled": {

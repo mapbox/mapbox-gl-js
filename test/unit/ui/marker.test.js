@@ -120,6 +120,71 @@ test('Marker#togglePopup closes a popup that was open', (t) => {
     t.end();
 });
 
+test('Enter key on Marker opens a popup that was closed', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map)
+        .setPopup(new Popup());
+
+    // popup not initially open
+    t.notOk(marker.getPopup().isOpen());
+
+    simulate.keypress(marker.getElement(), {code: 'Enter'});
+
+    // popup open after Enter keypress
+    t.ok(marker.getPopup().isOpen());
+
+    map.remove();
+    t.end();
+});
+
+test('Space key on Marker opens a popup that was closed', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map)
+        .setPopup(new Popup());
+
+    // popup not initially open
+    t.notOk(marker.getPopup().isOpen());
+
+    simulate.keypress(marker.getElement(), {code: 'Space'});
+
+    // popup open after Enter keypress
+    t.ok(marker.getPopup().isOpen());
+
+    map.remove();
+    t.end();
+});
+
+test('Marker#setPopup sets a tabindex', (t) => {
+    const popup = new Popup();
+    const marker = new Marker()
+        .setPopup(popup);
+    t.equal(marker.getElement().getAttribute('tabindex'), "0");
+    t.end();
+});
+
+test('Marker#setPopup removes tabindex when unset', (t) => {
+    const popup = new Popup();
+    const marker = new Marker()
+        .setPopup(popup)
+        .setPopup();
+    t.notOk(marker.getElement().getAttribute('tabindex'));
+    t.end();
+});
+
+test('Marker#setPopup does not replace existing tabindex', (t) => {
+    const element = window.document.createElement('div');
+    element.setAttribute('tabindex', '5');
+    const popup = new Popup();
+    const marker = new Marker({element})
+        .setPopup(popup);
+    t.equal(marker.getElement().getAttribute('tabindex'), "5");
+    t.end();
+});
+
 test('Marker anchor defaults to center', (t) => {
     const map = createMap(t);
     const marker = new Marker()
@@ -463,5 +528,98 @@ test('Marker with draggable:true does not error if removed on mousedown', (t) =>
 
     marker.remove();
     t.ok(map.fire('mouseup'));
+    t.end();
+});
+
+test('Marker can set rotationAlignment and pitchAlignment', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({rotationAlignment: 'map', pitchAlignment: 'map'})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.equal(marker.getRotationAlignment(), 'map');
+    t.equal(marker.getPitchAlignment(), 'map');
+
+    map.remove();
+    t.end();
+});
+
+test('Marker can set and update rotation', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({rotation: 45})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.equal(marker.getRotation(), 45);
+
+    marker.setRotation(90);
+    t.equal(marker.getRotation(), 90);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker transforms rotation with the map', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({rotationAlignment: 'map'})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    const rotationRegex = /rotateZ\(-?([0-9]+)deg\)/;
+    const initialRotation = marker.getElement().style.transform.match(rotationRegex)[1];
+
+    map.setBearing(map.getBearing() + 180);
+
+    const finalRotation = marker.getElement().style.transform.match(rotationRegex)[1];
+    t.notEqual(initialRotation, finalRotation);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker transforms pitch with the map', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({pitchAlignment: 'map'})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    map.setPitch(0);
+
+    const rotationRegex = /rotateX\(-?([0-9]+)deg\)/;
+    const initialPitch = marker.getElement().style.transform.match(rotationRegex)[1];
+
+    map.setPitch(45);
+
+    const finalPitch = marker.getElement().style.transform.match(rotationRegex)[1];
+    t.notEqual(initialPitch, finalPitch);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker pitchAlignment when set to auto defaults to rotationAlignment', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({rotationAlignment: 'map', pitchAlignment: 'auto'})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.equal(marker.getRotationAlignment(), marker.getPitchAlignment());
+
+    map.remove();
+    t.end();
+});
+
+test('Marker pitchAlignment when set to auto defaults to rotationAlignment (setter/getter)', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({pitchAlignment: 'map'})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.equal(marker.getPitchAlignment(), 'map');
+    marker.setRotationAlignment('viewport');
+    marker.setPitchAlignment('auto');
+    t.equal(marker.getRotationAlignment(), marker.getPitchAlignment());
+
+    map.remove();
     t.end();
 });

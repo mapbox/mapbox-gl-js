@@ -318,13 +318,6 @@ class SourceCache extends Evented {
     }
 
     /**
-     * get the zoom level adjusted for the difference in map and source tilesizes
-     */
-    getZoom(transform: Transform): number {
-        return transform.zoom + transform.scaleZoom(transform.tileSize / this._source.tileSize);
-    }
-
-    /**
      * For a given set of tiles, retain children that are loaded and have a zoom
      * between `zoom` (exclusive) and `maxCoveringZoom` (inclusive)
      */
@@ -487,7 +480,7 @@ class SourceCache extends Evented {
         }
 
         // Determine the overzooming/underzooming amounts.
-        const zoom = (this._source.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
+        const zoom = transform.coveringZoomLevel(this._source);
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
@@ -848,6 +841,30 @@ class SourceCache extends Evented {
     getFeatureState(sourceLayer?: string, feature: number) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         return this._state.getState(sourceLayer, feature);
+    }
+
+    /**
+     * Sets the set of keys that the tile depends on. This allows tiles to
+     * be reloaded when their dependencies change.
+     */
+    setDependencies(tileKey: string | number, namespace: string, dependencies: Array<string>) {
+        const tile = this._tiles[tileKey];
+        if (tile) {
+            tile.setDependencies(namespace, dependencies);
+        }
+    }
+
+    /**
+     * Reloads all tiles that depend on the given keys.
+     */
+    reloadTilesForDependencies(namespaces: Array<string>, keys: Array<string>) {
+        for (const id in this._tiles) {
+            const tile = this._tiles[id];
+            if (tile.hasDependency(namespaces, keys)) {
+                this._reloadTile(id, 'reloading');
+            }
+        }
+        this._cache.filter(tile => !tile.hasDependency(namespaces, keys));
     }
 }
 
