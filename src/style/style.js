@@ -1206,7 +1206,7 @@ class Style extends Evented {
         }
     }
 
-    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean) {
+    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean, forceFullPlacement: boolean = false) {
         let symbolBucketsChanged = false;
         let placementCommitted = false;
 
@@ -1234,7 +1234,7 @@ class Style extends Evented {
         // We need to restart placement to keep layer indices in sync.
         // Also force full placement when fadeDuration === 0 to ensure that newly loaded
         // tiles will fully display symbols in their first frame
-        const forceFullPlacement = this._layerOrderChanged || fadeDuration === 0;
+        forceFullPlacement = forceFullPlacement || this._layerOrderChanged || fadeDuration === 0;
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
             this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement);
