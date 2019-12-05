@@ -41,7 +41,7 @@ class RasterDEMTileWorkerSource {
         }
 
         this.offscreenCanvas.width = imgBitmap.width;
-        this.offscreenCanvas.width= imgBitmap.height;
+        this.offscreenCanvas.height = imgBitmap.height;
 
         this.offscreenCanvasContext.drawImage(imgBitmap, 0, 0, imgBitmap.width, imgBitmap.height);
         // Insert an additional 1px padding around the image to allow backfilling for neighboring data.

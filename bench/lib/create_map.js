@@ -25,7 +25,7 @@ export default function (options: any): Promise<Map> {
         }, options));
 
         map
-            .on('load', () => {
+            .on(options.idle ? 'idle' : 'load', () => {
                 if (options.stubRender) {
                     // Stub out `_rerender`; benchmarks need to be the only trigger of `_render` from here on out.
                     map._rerender = () => {};

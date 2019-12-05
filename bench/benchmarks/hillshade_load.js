@@ -41,16 +41,10 @@ export default class HillshadeLoad extends Benchmark {
             height: 1024,
             style: this.style,
             stubRender: false,
-            showMap: true
+            showMap: true,
+            idle: true
         }).then((map) => {
-            return new Promise((resolve, reject) => {
-                map.once('idle', () => {
-                    resolve();
-                    map.remove();
-                });
-
-                map.once('error', (e) => reject(e));
-            });
+            map.remove();
         });
     }
 }
