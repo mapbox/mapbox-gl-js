@@ -8,14 +8,14 @@
 * Add `rotation`, `rotationAlignment` and `pitchAlignment` options to markers ([#8836](https://github.com/mapbox/mapbox-gl-js/pull/8836)) (h/t [dburnsii](https://github.com/dburnsii))
 * Add methods to Popup to manipulate container class names ([#8759](https://github.com/mapbox/mapbox-gl-js/pull/8759)) (h/t [Ashot-KR](https://github.com/Ashot-KR))
 * Add configurable inertia settings for panning (h/t @aMoniker) ([#8887](https://github.com/mapbox/mapbox-gl-js/pull/8887))
-* Add ability to localize mapbox UI controls ([#8095](https://github.com/mapbox/mapbox-gl-js/pull/8095)) (h/t [dmytro-gokun](https://github.com/dmytro-gokun))
+* Add ability to localize UI controls ([#8095](https://github.com/mapbox/mapbox-gl-js/pull/8095)) (h/t [dmytro-gokun](https://github.com/dmytro-gokun))
 * Add LatLngBounds.contains() method ([#7512](https://github.com/mapbox/mapbox-gl-js/issues/7512), fixed by [#8200](https://github.com/mapbox/mapbox-gl-js/pull/8200))
 * Add option to load rtl-text-plugin lazily ([#8865](https://github.com/mapbox/mapbox-gl-js/pull/8865))
 * Add `essential` parameter to AnimationOptions that can override `prefers-reduced-motion: reduce` ([#8743](https://github.com/mapbox/mapbox-gl-js/issues/8743), fixed by [#8883](https://github.com/mapbox/mapbox-gl-js/pull/8883))
 
 ## 🍏 Improvements
 * Allow rendering full world smaller than 512px. To restore the previous limit call `map.setMinZoom(0)` ([#9028](https://github.com/mapbox/mapbox-gl-js/pull/9028))
-* Add an es modules build of for mapbox-gl-style-spec in dist/ ([#8247](https://github.com/mapbox/mapbox-gl-js/pull/8247)) (h/t [ahocevar](https://github.com/ahocevar))
+* Add an es modules build for mapbox-gl-style-spec in dist/ ([#8247](https://github.com/mapbox/mapbox-gl-js/pull/8247)) (h/t [ahocevar](https://github.com/ahocevar))
 * Add 'image/webp,*/*' accept header to fetch/ajax image requests when webp supported ([#8262](https://github.com/mapbox/mapbox-gl-js/pull/8262))
 * Improve documentation for setStyle, getStyle, and isStyleLoaded ([#8807](https://github.com/mapbox/mapbox-gl-js/pull/8807))
 
