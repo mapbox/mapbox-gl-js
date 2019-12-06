@@ -260,7 +260,7 @@ const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAA
 
 function arrayBufferToImage(data: ArrayBuffer, callback: (err: ?Error, image: ?HTMLImageElement) => void, cacheControl: ?string, expires: ?string) {
     const img: HTMLImageElement = new window.Image();
-    const URL = window.URL || window.webkitURL;
+    const URL = window.URL;
     img.onload = () => {
         callback(null, img);
         URL.revokeObjectURL(img.src);
@@ -277,7 +277,6 @@ function arrayBufferToImageBitmap(data: ArrayBuffer, callback: (err: ?Error, ima
     window.createImageBitmap(blob).then((imgBitmap) => {
         callback(null, imgBitmap);
     }).catch((e) => {
-        console.log(e);
         callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
     });
 }
