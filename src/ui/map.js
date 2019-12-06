@@ -1959,6 +1959,10 @@ class Map extends Camera {
         const dimensions = this._containerDimensions();
         this._resizeCanvas(dimensions[0], dimensions[1]);
 
+        if (this._trackResize && window.ResizeObserver) {
+            new window.ResizeObserver(() => this.resize()).observe(container);
+        }
+
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const positions = this._controlPositions = {};
         ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
