@@ -276,7 +276,7 @@ function arrayBufferToImageBitmap(data: ArrayBuffer, callback: (err: ?Error, ima
     const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
     window.createImageBitmap(blob).then((imgBitmap) => {
         callback(null, imgBitmap);
-    }).catch((e) => {
+    }).catch(() => {
         callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
     });
 }
