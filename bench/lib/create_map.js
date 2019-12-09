@@ -11,11 +11,12 @@ export default function (options: any): Promise<Map> {
 
         const container = document.createElement('div');
         container.style.width = `${options.width || 512}px`;
-        container.style.height = `${options.width || 512}px`;
+        container.style.height = `${options.height || 512}px`;
         container.style.margin = '0 auto';
+        container.style.display = 'block';
 
         if (!options.showMap) {
-            container.style.display = 'none';
+            container.style.visibility = 'hidden';
         }
         (document.body: any).appendChild(container);
 
