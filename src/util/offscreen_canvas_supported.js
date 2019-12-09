@@ -1,7 +1,7 @@
 // @flow
 import window from './window';
 
-let supportsOffscreenCanvas = null;
+let supportsOffscreenCanvas: ?boolean;
 
 export default function offscreenCanvasSupported(): boolean {
     if (supportsOffscreenCanvas == null) {
