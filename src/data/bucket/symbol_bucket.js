@@ -25,7 +25,7 @@ import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray, LineIndexArray} from '../index_array_type';
 import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
-import {allowsVerticalWritingMode} from '../../util/script_detection';
+import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/script_detection';
 import {WritingMode} from '../../symbol/shaping';
 import loadGeometry from '../load_geometry';
 import mvt from '@mapbox/vector-tile';
@@ -129,6 +129,15 @@ function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, a
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+}
+
+function containsRTLText(formattedText: Formatted): boolean {
+    for (const section of formattedText.sections) {
+        if (stringContainsRTLText(section.text)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 export class SymbolBuffers {
@@ -423,7 +432,7 @@ class SymbolBucket implements Bucket {
                 // conversion here.
                 const resolvedTokens = layer.getValueAndResolveTokens('text-field', feature, availableImages);
                 const formattedText = Formatted.factory(resolvedTokens);
-                if (formattedText.containsRTLText()) {
+                if (containsRTLText(formattedText)) {
                     this.hasRTLText = true;
                 }
                 if (
