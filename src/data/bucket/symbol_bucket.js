@@ -131,8 +131,8 @@ function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, a
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
 }
 
-function containsRTLText(text: Formatted): boolean {
-    for (const section of test.sections) {
+function containsRTLText(formattedText: Formatted): boolean {
+    for (const section of formattedText.sections) {
         if (stringContainsRTLText(section.text)) {
             return true;
         }
