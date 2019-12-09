@@ -1,3 +1,8 @@
+## 13.10.1
+
+### 🐛 Bug fixes
+* Fix import of `script_detection` module, which was external to style-spec package and a part of gl-js.
+
 ## 13.10.0
 
 ### ✨ Features and improvements
