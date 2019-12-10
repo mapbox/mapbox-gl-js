@@ -1,6 +1,7 @@
 // @flow
 
 import {extend} from './util';
+import type {MapEvent} from '../ui/events';
 
 type Listener = (Object) => any;
 type Listeners = { [string]: Array<Listener> };
@@ -89,7 +90,7 @@ export class Evented {
      * @param {Function} listener The function to be called when the event is fired the first time.
      * @returns {Object} `this`
      */
-    once(type: *, listener: Listener) {
+    once(type: MapEvent | string, listener: Listener) {
         this._oneTimeListeners = this._oneTimeListeners || {};
         _addEventListener(type, listener, this._oneTimeListeners);
 

@@ -1,5 +1,9 @@
 // @flow
 
+// map.fire(event, options)
+// remove the delegatedoneTimeListener
+// super.fire(event, options)
+
 import {version} from '../../package.json';
 import {extend, bindAll, warnOnce, uniqueId} from '../util/util';
 import browser from '../util/browser';
@@ -269,6 +273,7 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
+    _delegatedOneTimeListeners: any;
     _fadeDuration: number;
     _crossSourceCollisions: boolean;
     _crossFadingFactor: number;
@@ -862,8 +867,8 @@ class Map extends Camera {
             return super.off(type, layerId);
         }
 
-        if (this._delegatedListeners && this._delegatedListeners[type]) {
-            const listeners = this._delegatedListeners[type];
+        const removeDelegatedListener = (delegatedListeners) => {
+            const listeners = delegatedListeners[type];
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
                 if (delegatedListener.layer === layerId && delegatedListener.listener === listener) {
@@ -874,6 +879,14 @@ class Map extends Camera {
                     return this;
                 }
             }
+        };
+
+        if (this._delegatedListeners && this._delegatedListeners[type]) {
+            removeDelegatedListener(this._delegatedListeners);
+        }
+
+        if (this._delegatedOneTimeListeners && this._delegatedOneTimeListeners[type]) {
+            removeDelegatedListener(this._delegatedOneTimeListeners);
         }
 
         return this;
@@ -887,9 +900,9 @@ class Map extends Camera {
 
         const delegatedListener = this._createDelegatedListener(type, layerId, listener);
 
-        this._delegatedListeners = this._delegatedListeners || {};
-        this._delegatedListeners[type] = this._delegatedListeners[type] || [];
-        this._delegatedListeners[type].push(delegatedListener);
+        this._delegatedOneTimeListeners = this._delegatedOneTimeListeners || {};
+        this._delegatedOneTimeListeners[type] = this._delegatedOneTimeListeners[type] || [];
+        this.delegatedOneTimeListeners[type].push(delegatedListener);
 
         for (const event in delegatedListener.delegates) {
             this.once((event: any), delegatedListener.delegates[event]);
