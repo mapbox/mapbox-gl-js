@@ -1,13 +1,17 @@
 // @flow
 
+import type Map from './map';
+
 /**
  * Base class for gesture handlers which control user interaction with the map
  */
 class Handler {
   _state: 'disabled' | 'enabled' | 'pending' | 'active';
   _options: Object;
+  _map: Map;
 
-  constructor(options: ?Object) {
+  constructor(map: Map, options: ?Object) {
+    this._map = map;
     this._options = {};
     if (options) this.setOptions(options);
     this._state = 'enabled';

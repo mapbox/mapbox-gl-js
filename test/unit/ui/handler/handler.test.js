@@ -1,9 +1,21 @@
-import {test} from '../../util/test';
-import Handler from '../../../src/ui/handler';
+import {test} from '../../../util/test';
+import Handler from '../../../../src/ui/handler/handler';
+import window from '../../../../src/util/window';
+import Map from '../../../../src/ui/map';
+import DOM from '../../../../src/util/dom';
+
+
+function createMap(t) {
+    t.stub(Map.prototype, '_detectMissingCSS');
+    return new Map({
+        container: DOM.create('div', '', window.document.body),
+    });
+}
 
 
 test('Methods .enable(), .disable(), and .isEnabled() work as expected', (t) => {
-    const h = new Handler();
+    const map = createMap(t);
+    const h = new Handler(map);
     t.ok(h.isEnabled());
     t.equal(h._state, 'enabled');
     h.disable();
@@ -15,13 +27,15 @@ test('Methods .enable(), .disable(), and .isEnabled() work as expected', (t) => 
 });
 
 test('New Handler is enabled by default', (t) => {
-    const h = new Handler();
+    const map = createMap(t);
+    const h = new Handler(map);
     t.ok(h.isEnabled(), 'should be enabled');
     t.end();
 });
 
 test('Methods .setOptions() and .getOptions() work as expected', (t) => {
-    const h = new Handler();
+    const map = createMap(t);
+    const h = new Handler(map);
     t.deepEqual(h.getOptions(), {}, '.getOptions() should return options object');
     t.throws(() => h.setOptions({ happy: true }), /happy/, '.setOptions() should throw error on unrecognized options');
     h._options.happy = false;
