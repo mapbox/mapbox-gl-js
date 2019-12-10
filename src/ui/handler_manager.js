@@ -3,26 +3,24 @@
 import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../ui/events';
 import DOM from '../util/dom';
 import type Map from './map';
-import Handler from './handler';
+import Handler from './handler/handler';
 
 class HandlerManager {
+  _map: Map;
+  _el: HTMLElement;
   _handlers: Array<Handler>;
 
   /**
    * @private
    */
-  constructor(map: Map, options: Object) {
+  constructor(map: Map, options?: Object) {
+    this._map = map;
+    this._el = this._map.getCanvasContainer();
     this._handlers = [];
   }
 
   list() {
     return this._handlers.map(([name, handler]) => name);
-  }
-
-  *[Symbol.iterator] () {
-    for (const [name, handler] of this._handlers) {
-      yield handler;
-    }
   }
 
   get length() {
