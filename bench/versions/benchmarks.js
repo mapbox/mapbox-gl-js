@@ -12,6 +12,7 @@ import PaintStates from '../benchmarks/paint_states';
 import {PropertyLevelRemove, FeatureLevelRemove, SourceLevelRemove} from '../benchmarks/remove_paint_state';
 import {LayerBackground, LayerCircle, LayerFill, LayerFillExtrusion, LayerHeatmap, LayerHillshade, LayerLine, LayerRaster, LayerSymbol, LayerSymbolWithIcons} from '../benchmarks/layers';
 import Load from '../benchmarks/map_load';
+import HillshadeLoad from '../benchmarks/hillshade_load';
 import Validate from '../benchmarks/style_validate';
 import StyleLayerCreate from '../benchmarks/style_layer_create';
 import QueryPoint from '../benchmarks/query_point';
@@ -71,6 +72,7 @@ register('LayoutDDS', new LayoutDDS());
 register('SymbolLayout', new SymbolLayout(style, styleLocations.map(location => location.tileID[0])));
 register('FilterCreate', new FilterCreate());
 register('FilterEvaluate', new FilterEvaluate());
+register('HillshadeLoad', new HillshadeLoad());
 
 Promise.resolve().then(() => {
     // Ensure the global worker pool is never drained. Browsers have resource limits
