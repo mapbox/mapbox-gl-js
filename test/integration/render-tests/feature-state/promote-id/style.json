@@ -1,0 +1,99 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32,
+      "operations": [
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": "9007199254740992"
+          },
+          {
+            "color": "red"
+          }
+        ],
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": "1.2"
+          },
+          {
+            "color": "blue"
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 2,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "promoteId": "foo",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [{
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              0,
+              0
+            ]
+          },
+          "properties": {
+            "foo": "9007199254740992"
+          }
+        }, {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              3,
+              0
+            ]
+          },
+          "properties": {
+            "foo": "9007199254740993"
+          }
+        }, {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              -3,
+              0
+            ]
+          },
+          "properties": {
+            "foo": "1.2"
+          }
+        }]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 5,
+        "circle-color": [
+          "coalesce",
+          [
+            "feature-state",
+            "color"
+          ],
+          "black"
+        ]
+      }
+    }
+  ]
+}

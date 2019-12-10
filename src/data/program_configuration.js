@@ -624,7 +624,7 @@ export default class ProgramConfiguration {
     updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: VectorTileLayer, layer: TypedStyleLayer, imagePositions: {[string]: ImagePosition}): boolean {
         let dirty: boolean = false;
         for (const id in featureStates) {
-            const positions = featureMap.getPositions(+id);
+            const positions = featureMap.getPositions(id);
 
             for (const pos of positions) {
                 const feature = vtLayer.feature(pos.index);
@@ -746,7 +746,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         }
 
         if (feature.id !== undefined) {
-            this._featureMap.add(+feature.id, index, this._bufferOffset, length);
+            this._featureMap.add(feature.id, index, this._bufferOffset, length);
         }
         this._bufferOffset = length;
 

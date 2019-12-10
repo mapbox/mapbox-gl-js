@@ -122,6 +122,14 @@ class TileCache {
         return data.value;
     }
 
+    /*
+     * Get the value with the specified (wrapped tile) key.
+     */
+    getByKey(key: number): ?Tile {
+        const data = this.data[key];
+        return data ? data[0].value : null;
+    }
+
     /**
      * Get the value attached to a specific key without removing data
      * from the cache. If the key is not found, returns `null`

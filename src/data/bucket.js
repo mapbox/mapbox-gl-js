@@ -29,6 +29,7 @@ export type PopulateParameters = {
 
 export type IndexedFeature = {
     feature: VectorTileFeature,
+    id: number | string,
     index: number,
     sourceLayerIndex: number,
 }

@@ -368,16 +368,15 @@ class SourceCache extends Evented {
      */
     findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number): ?Tile {
         for (let z = tileID.overscaledZ - 1; z >= minCoveringZoom; z--) {
-            const parent = tileID.scaledTo(z);
-            if (!parent) return;
-            const id = String(parent.key);
-            const tile = this._tiles[id];
+            const parentKey = tileID.calculateScaledKey(z, true);
+            const tile = this._tiles[parentKey];
             if (tile && tile.hasData()) {
                 return tile;
             }
-            if (this._cache.has(parent)) {
-                return this._cache.get(parent);
-            }
+            // TileCache ignores wrap in lookup.
+            const parentWrappedKey = tileID.calculateScaledKey(z, false);
+            const cachedTile = this._cache.getByKey(parentWrappedKey);
+            if (cachedTile) return cachedTile;
         }
     }
 
@@ -820,27 +819,27 @@ class SourceCache extends Evented {
      * Set the value of a particular state for a feature
      * @private
      */
-    setFeatureState(sourceLayer?: string, feature: number, state: Object) {
+    setFeatureState(sourceLayer?: string, featureId: number | string, state: Object) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
-        this._state.updateState(sourceLayer, feature, state);
+        this._state.updateState(sourceLayer, featureId, state);
     }
 
     /**
      * Resets the value of a particular state key for a feature
      * @private
      */
-    removeFeatureState(sourceLayer?: string, feature?: number, key?: string) {
+    removeFeatureState(sourceLayer?: string, featureId?: number | string, key?: string) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
-        this._state.removeFeatureState(sourceLayer, feature, key);
+        this._state.removeFeatureState(sourceLayer, featureId, key);
     }
 
     /**
      * Get the entire state object for a feature
      * @private
      */
-    getFeatureState(sourceLayer?: string, feature: number) {
+    getFeatureState(sourceLayer?: string, featureId: number | string) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
-        return this._state.getState(sourceLayer, feature);
+        return this._state.getState(sourceLayer, featureId);
     }
 
     /**
