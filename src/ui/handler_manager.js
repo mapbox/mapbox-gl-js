@@ -5,6 +5,7 @@ import {Event} from '../util/evented';
 import DOM from '../util/dom';
 import type Map from './map';
 import Handler from './handler/handler';
+import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
 import {extend} from '../util/util';
 
 
@@ -31,6 +32,8 @@ class HandlerManager {
     };
 
 
+    this._addDefaultHandlers();
+
     // Bind touchstart and touchmove with passive: false because, even though
     // they only fire a map events and therefore could theoretically be
     // passive, binding with passive: true causes iOS not to respect
@@ -46,6 +49,13 @@ class HandlerManager {
     this.addMouseListener('mouseup');
     this.addMouseListener('mouseover');
     this.addMouseListener('mouseout');
+  }
+
+  _addDefaultHandlers() {
+    this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
+    this.add('touchPitch', new TouchPitchHandler(this._map), ['touchRotate']);
+    this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
+    this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch']);
   }
 
   list() {
@@ -68,9 +78,6 @@ class HandlerManager {
     this[handlerName] = handler;
 
     if (disableDuring) {
-      for (const otherHandler of disableDuring) {
-        if (!this[otherHandler]) throw new Error(`Cannot disable ${handlerName} during ${otherHandler}: No such handler ${otherHandler}`);
-      }
       this._disableDuring[handlerName] = disableDuring;
     }
   }
