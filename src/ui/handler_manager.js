@@ -17,6 +17,19 @@ class HandlerManager {
     this._map = map;
     this._el = this._map.getCanvasContainer();
     this._handlers = [];
+
+    // Bind touchstart and touchmove with passive: false because, even though
+    // they only fire a map events and therefore could theoretically be
+    // passive, binding with passive: true causes iOS not to respect
+    // e.preventDefault() in _other_ handlers, even if they are non-passive
+    // (see https://bugs.webkit.org/show_bug.cgi?id=184251)
+    this.addTouchListener('touchstart', {passive: false});
+    this.addTouchListener('touchmove', {passive: false});
+    this.addTouchListener('touchend');
+    this.addTouchListener('touchcancel');
+
+    this.addMouseListener('mousedown');
+    this.addMouseListener('mouseup');
   }
 
   list() {
@@ -52,6 +65,17 @@ class HandlerManager {
     });
     this._handlers = newHandlers;
   }
+
+  addTouchListener(eventType: string, options?: Object) {
+    const fireMapEvent = (e: TouchEvent) => { this._map.fire(new MapTouchEvent(eventType, this._map, e)) };
+    DOM.addEventListener(this._el, eventType, fireMapEvent, options);
+  }
+
+  addMouseListener(eventType: string, options?: Object) {
+    const fireMapEvent = (e: MouseEvent) => { this._map.fire(new MapMouseEvent(eventType, this._map, e)) };
+    DOM.addEventListener(this._el, eventType, fireMapEvent, options);
+  }
+
 
 }
 

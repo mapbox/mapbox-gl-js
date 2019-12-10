@@ -46,3 +46,38 @@ test('Handler array can be updated with .add() and .remove() methods', (t) => {
 
   t.end();
 });
+
+test('Constructor sets up touch event listeners to fire map events', (t) => {
+  const map = createMap(t);
+  const hm = map.handlers;
+
+  for (const touchType of ['start', 'move', 'end', 'cancel']) {
+    const eventType = 'touch' + touchType;
+
+    const spy = t.spy(function (e) {
+      t.equal(this, map);
+      t.equal(e.type, eventType);
+    });
+
+    map.on(eventType, spy);
+    simulate[eventType](map.getCanvasContainer());
+    t.ok(spy.called);
+    t.equal(spy.callCount, 1);
+  }
+
+  for (const touchType of ['down', 'up']) {
+    const eventType = 'mouse' + touchType;
+
+    const spy = t.spy(function (e) {
+      t.equal(this, map);
+      t.equal(e.type, eventType);
+    });
+
+    map.on(eventType, spy);
+    simulate[eventType](map.getCanvasContainer());
+    t.ok(spy.called);
+    t.equal(spy.callCount, 1);
+  }
+
+  t.end();
+});
