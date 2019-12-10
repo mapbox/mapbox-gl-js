@@ -13,7 +13,8 @@ import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
 import Transform from '../geo/transform';
 import Hash from './hash';
-import bindHandlers from './bind_handlers';
+// import bindHandlers from './bind_handlers';
+import HandlerManager from './handler_manager';
 import Camera from './camera';
 import LngLat from '../geo/lng_lat';
 import LngLatBounds from '../geo/lng_lat_bounds';
@@ -300,49 +301,50 @@ class Map extends Camera {
     _localIdeographFontFamily: string;
     _requestManager: RequestManager;
     _locale: Object;
+    _handlers: HandlerManager;
 
-    /**
-     * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
-     * Find more details and examples using `scrollZoom` in the {@link ScrollZoomHandler} section.
-     */
-    scrollZoom: ScrollZoomHandler;
-
-    /**
-     * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
-     * Find more details and examples using `boxZoom` in the {@link BoxZoomHandler} section.
-     */
-    boxZoom: BoxZoomHandler;
-
-    /**
-     * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
-     * mouse button or with the Control key pressed. Find more details and examples using `dragRotate`
-     * in the {@link DragRotateHandler} section.
-     */
-    dragRotate: DragRotateHandler;
-
-    /**
-     * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
-     * Find more details and examples using `dragPan` in the {@link DragPanHandler} section.
-     */
-    dragPan: DragPanHandler;
-
-    /**
-     * The map's {@link KeyboardHandler}, which allows the user to zoom, rotate, and pan the map using keyboard
-     * shortcuts. Find more details and examples using `keyboard` in the {@link KeyboardHandler} section.
-     */
-    keyboard: KeyboardHandler;
-
-    /**
-     * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
-     * Find more details and examples using `doubleClickZoom` in the {@link DoubleClickZoomHandler} section.
-     */
-    doubleClickZoom: DoubleClickZoomHandler;
-
-    /**
-     * The map's {@link TouchZoomRotateHandler}, which allows the user to zoom or rotate the map with touch gestures.
-     * Find more details and examples using `touchZoomRotate` in the {@link TouchZoomRotateHandler} section.
-     */
-    touchZoomRotate: TouchZoomRotateHandler;
+    // /**
+    //  * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
+    //  * Find more details and examples using `scrollZoom` in the {@link ScrollZoomHandler} section.
+    //  */
+    // scrollZoom: ScrollZoomHandler;
+    //
+    // /**
+    //  * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
+    //  * Find more details and examples using `boxZoom` in the {@link BoxZoomHandler} section.
+    //  */
+    // boxZoom: BoxZoomHandler;
+    //
+    // /**
+    //  * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
+    //  * mouse button or with the Control key pressed. Find more details and examples using `dragRotate`
+    //  * in the {@link DragRotateHandler} section.
+    //  */
+    // dragRotate: DragRotateHandler;
+    //
+    // /**
+    //  * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
+    //  * Find more details and examples using `dragPan` in the {@link DragPanHandler} section.
+    //  */
+    // dragPan: DragPanHandler;
+    //
+    // /**
+    //  * The map's {@link KeyboardHandler}, which allows the user to zoom, rotate, and pan the map using keyboard
+    //  * shortcuts. Find more details and examples using `keyboard` in the {@link KeyboardHandler} section.
+    //  */
+    // keyboard: KeyboardHandler;
+    //
+    // /**
+    //  * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
+    //  * Find more details and examples using `doubleClickZoom` in the {@link DoubleClickZoomHandler} section.
+    //  */
+    // doubleClickZoom: DoubleClickZoomHandler;
+    //
+    // /**
+    //  * The map's {@link TouchZoomRotateHandler}, which allows the user to zoom or rotate the map with touch gestures.
+    //  * Find more details and examples using `touchZoomRotate` in the {@link TouchZoomRotateHandler} section.
+    //  */
+    // touchZoomRotate: TouchZoomRotateHandler;
 
     constructor(options: MapOptions) {
         PerformanceUtils.mark(PerformanceMarkers.create);
@@ -368,7 +370,7 @@ class Map extends Camera {
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
-        this._interactive = options.interactive;
+        // this._interactive = options.interactive;
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
@@ -424,7 +426,9 @@ class Map extends Camera {
             window.addEventListener('resize', this._onWindowResize, false);
         }
 
-        bindHandlers(this, options);
+        // bindHandlers(this, options);
+        this.handlers = new HandlerManager(this, options);
+
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         this._hash = options.hash && (new Hash(hashName)).addTo(this);
@@ -829,10 +833,7 @@ class Map extends Camera {
      * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving ||
-            this.dragPan.isActive() ||
-            this.dragRotate.isActive() ||
-            this.scrollZoom.isActive();
+        return this._moving;
     }
 
     /**
@@ -841,8 +842,7 @@ class Map extends Camera {
      * var isZooming = map.isZooming();
      */
     isZooming(): boolean {
-        return this._zooming ||
-            this.scrollZoom.isZooming();
+        return this._zooming;
     }
 
     /**
@@ -851,8 +851,7 @@ class Map extends Camera {
      * map.isRotating();
      */
     isRotating(): boolean {
-        return this._rotating ||
-            this.dragRotate.isActive();
+        return this._rotating;
     }
 
     _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
