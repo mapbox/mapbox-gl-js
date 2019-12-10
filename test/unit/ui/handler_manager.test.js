@@ -7,14 +7,13 @@ import {createMap} from '../../util';
 import simulate, {window} from '../../util/simulate_interaction';
 
 
-test('HandlerManager contains a collection of handlers', (t) => {
+test('HandlerManager contains default handlers', (t) => {
     const map = createMap(t);
     const hm = map.handlers;
     t.equal(typeof hm.length, 'number', 'should have a numeric .length property');
-    const myHandler = new Handler(map);
-    hm.add('myHandler', myHandler);
-    t.equal(hm.length, 1, '.length should be accurate'); //TODO will change
-    t.deepEqual(hm.list(), ['myHandler'], '.list() method should return an array of handler names'); //TODO will change
+    t.equal(hm.length, 4, '.length should be accurate'); //TODO will change
+    t.ok(hm.touchZoom, 'default handlers should be available through named properties');
+    t.deepEqual(hm.list(), ['touchRotate', 'touchPitch', 'touchZoom', 'touchPan'], '.list() method should return an array of handler names'); //TODO will change
     t.end();
 });
 
@@ -25,6 +24,7 @@ test('Handler array can be updated with .add(), .remove(), and .removeAll() meth
   hm.removeAll();
   t.equal(hm.length, 0, 'after .removeAll() length should be zero');
   t.deepEqual(hm._handlers, [], 'after .removeAll() the collection should be empty');
+  t.notOk(hm.touchZoom || hm.touchRotate, '.removeAll() should delete named handler properties');
 
   t.throws(() => hm.add(handy), '.add() throws error if no name provided');
   t.throws(() => hm.add('handy'), '.add() throws error if no handler provided');
@@ -79,10 +79,12 @@ test('Constructor sets up event listeners to fire map events and call handler ev
   t.spy(handy, 'mousedown');
   hm.add('handy', handy);
 
+  const tzh = hm.touchZoom;
 
   for (const touchType of ['start', 'move', 'end', 'cancel']) {
     const eventType = 'touch' + touchType;
 
+    t.spy(tzh, 'processInputEvent');
     const spy = t.spy(function (e) {
       t.equal(this, map);
       t.equal(e.type, eventType);
@@ -92,21 +94,30 @@ test('Constructor sets up event listeners to fire map events and call handler ev
     simulate[eventType](map.getCanvasContainer());
     t.ok(spy.called);
     t.equal(spy.callCount, 1);
+    t.ok(tzh.processInputEvent.called);
+    t.equal(tzh.processInputEvent.args[0][0].type, eventType);
+    tzh.processInputEvent.restore();
   }
 
   for (const mouseType of ['down', 'up', 'move', 'over', 'out']) {
     const eventType = 'mouse' + mouseType;
 
+    t.spy(tzh, 'processInputEvent');
     const spy = t.spy(function (e) {
       t.equal(this, map);
       t.equal(e.type, eventType);
     });
-
     map.on(eventType, spy);
 
     simulate[eventType](map.getCanvasContainer());
     t.ok(spy.called);
     t.equal(spy.callCount, 1);
+    t.ok(tzh.processInputEvent.called)
+    t.equal(tzh.processInputEvent.args[0][0].type, eventType);
+    if (eventType === 'mousedown') {
+      t.ok(handy.mousedown.called);
+    }
+    tzh.processInputEvent.restore();
   }
 
   t.end();
