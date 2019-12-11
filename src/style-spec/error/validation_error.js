@@ -1,11 +1,14 @@
 // @flow
 
-export default class ValidationError extends Error {
+// Note: Do not inherit from Error. It breaks when transpiling to ES5.
+
+export default class ValidationError {
+    message: string;
     identifier: ?string;
     line: ?number;
 
-    constructor(key: string | null, value?: any, message?: string, identifier?: string) {
-        super([key, message].filter(a => a).join(': '));
+    constructor(key: ?string, value: ?{ __line__: number }, message: string, identifier: ?string) {
+        this.message = (key ? `${key}: ` : '') + message;
         if (identifier) this.identifier = identifier;
 
         if (value !== null && value !== undefined && value.__line__) {
