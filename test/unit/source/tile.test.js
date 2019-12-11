@@ -1,4 +1,5 @@
 import {test} from '../../util/test';
+import {createSymbolBucket} from '../../util/create_symbol_layer';
 import Tile from '../../../src/source/tile';
 import GeoJSONWrapper from '../../../src/source/geojson_wrapper';
 import {OverscaledTileID} from '../../../src/source/tile_id';
@@ -8,6 +9,7 @@ import vtpbf from 'vt-pbf';
 import FeatureIndex from '../../../src/data/feature_index';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {extend} from '../../../src/util/util';
+import {lazyLoadRTLTextPlugin} from '../../../src/source/rtl_text_plugin';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
 test('querySourceFeatures', (t) => {
@@ -263,6 +265,27 @@ test('expiring tiles', (t) => {
     t.end();
 });
 
+test('rtl text detection', (t) => {
+    t.test('Tile#hasRTLText is true when a tile loads a symbol bucket with rtl text', (t) => {
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        const symbolBucket = createSymbolBucket('test', 'Test', 'مرحبا', new CollisionBoxArray());
+        symbolBucket.hasRTLText = true;
+        tile.loadVectorData(
+            createVectorData({rawTileData: createRawTileData(), buckets: [symbolBucket]}),
+            createPainter({
+                getLayer() {
+                    return symbolBucket.layers[0]
+                }
+            })
+        );
+
+        t.ok(tile.hasRTLText);
+        t.end();
+    });
+
+    t.end();
+});
+
 function createRawTileData() {
     return fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
 }
@@ -276,6 +299,6 @@ function createVectorData(options) {
     }, options);
 }
 
-function createPainter() {
-    return {style: {}};
+function createPainter(styleStub = {}) {
+    return {style: styleStub};
 }
