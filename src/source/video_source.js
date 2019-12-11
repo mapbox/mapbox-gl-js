@@ -119,7 +119,7 @@ class VideoSource extends ImageSource {
         if (this.video) {
             const seekableRange = this.video.seekable;
             if (seconds < seekableRange.start(0) || seconds > seekableRange.end(0)) {
-                this.fire(new ErrorEvent(new ValidationError(`Playback for this video can be set only between the ${seekableRange.start(0)} and ${seekableRange.end(0)}-second mark.`)));
+                this.fire(new ErrorEvent(new ValidationError(`sources.${this.id}`, null, `Playback for this video can be set only between the ${seekableRange.start(0)} and ${seekableRange.end(0)}-second mark.`)));
             } else this.video.currentTime = seconds;
         }
     }
