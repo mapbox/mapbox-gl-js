@@ -208,7 +208,7 @@ function stretchZonesToCuts(stretchZones, fixedSize, stretchSize) {
 }
 
 function getEmOffset(stretchOffset, stretchSize, iconSize, iconOffset) {
-    return stretchOffset / stretchSize * iconSize + iconOffset;
+    return iconOffset + iconSize * stretchOffset / stretchSize;
 }
 
 function getPxOffset(fixedOffset, fixedSize, stretchOffset, stretchSize) {
