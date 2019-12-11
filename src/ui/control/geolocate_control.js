@@ -53,6 +53,9 @@ function checkGeolocationSupport(callback) {
     }
 }
 
+let numberOfWatches = 0;
+let noTimeout = false;
+
 /**
  * A `GeolocateControl` control provides a button that uses the browser's geolocation
  * API to locate the user on the map.
@@ -134,6 +137,8 @@ class GeolocateControl extends Evented {
 
         DOM.remove(this._container);
         this._map = (undefined: any);
+        numberOfWatches = 0;
+        noTimeout = false;
     }
 
     _isOutOfMapMaxBounds(position: Position) {
@@ -270,6 +275,11 @@ class GeolocateControl extends Evented {
                 if (this._geolocationWatchID !== undefined) {
                     this._clearWatch();
                 }
+            } else if (error.code === 3 && noTimeout) {
+                // this represents a forced error state
+                // this was triggered to force immediate geolocation when a watch is already present
+                // see https://github.com/mapbox/mapbox-gl-js/issues/8214
+                return;
             } else {
                 this._setErrorState();
             }
@@ -366,6 +376,8 @@ class GeolocateControl extends Evented {
             case 'ACTIVE_ERROR':
             case 'BACKGROUND_ERROR':
                 // turn off the Geolocate Control
+                numberOfWatches--;
+                noTimeout = false;
                 this._watchState = 'OFF';
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
@@ -423,8 +435,18 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
                 this._geolocateButton.setAttribute('aria-pressed', 'true');
 
+                numberOfWatches++;
+                let options;
+                if (numberOfWatches > 1) {
+                    options = {maximumAge:600000, timeout:0};
+                    noTimeout = true;
+                } else {
+                    options = this.options.positionOptions;
+                    noTimeout = false;
+                }
+
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
-                    this._onSuccess, this._onError, this.options.positionOptions);
+                    this._onSuccess, this._onError, options);
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
