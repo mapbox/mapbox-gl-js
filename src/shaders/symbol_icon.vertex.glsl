@@ -2,6 +2,7 @@ const float PI = 3.141592653589793;
 
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
+attribute vec4 a_pixeloffset;
 attribute vec3 a_projected_pos;
 attribute float a_fade_opacity;
 
@@ -39,6 +40,9 @@ void main() {
     vec2 a_size = a_data.zw;
 
     float a_size_min = floor(a_size[0] * 0.5);
+    vec2 a_pxoffset = a_pixeloffset.xy;
+    vec2 a_minFontScale = a_pixeloffset.zw / 256.0;
+
     highp float segment_angle = -a_projected_pos[2];
     float size;
 
@@ -81,7 +85,7 @@ void main() {
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
-    gl_Position = u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 32.0 * fontScale), 0.0, 1.0);
+    gl_Position = u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 32.0 * max(a_minFontScale, fontScale) + a_pxoffset / 16.0), 0.0, 1.0);
 
     v_tex = a_tex / u_texsize;
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);

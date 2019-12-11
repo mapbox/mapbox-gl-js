@@ -1,6 +1,4 @@
 // @flow
-
-import {stringContainsRTLText} from "../../../util/script_detection";
 import type Color from '../../util/color';
 import type ResolvedImage from '../types/resolved_image';
 
@@ -48,15 +46,6 @@ export default class Formatted {
     toString(): string {
         if (this.sections.length === 0) return '';
         return this.sections.map(section => section.text).join('');
-    }
-
-    containsRTLText(): boolean {
-        for (const section of this.sections) {
-            if (stringContainsRTLText(section.text)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     serialize(): Array<mixed> {

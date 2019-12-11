@@ -3,6 +3,7 @@ import accessToken from '../lib/access_token';
 import locationsWithTileID from '../lib/locations_with_tile_id';
 import styleBenchmarkLocations from '@mapbox/gazetteer/benchmark/style-benchmark-locations.json';
 import Layout from '../benchmarks/layout';
+import Placement from '../benchmarks/placement';
 import LayoutDDS from '../benchmarks/layout_dds';
 import SymbolLayout from '../benchmarks/symbol_layout';
 import WorkerTransfer from '../benchmarks/worker_transfer';
@@ -11,6 +12,7 @@ import PaintStates from '../benchmarks/paint_states';
 import {PropertyLevelRemove, FeatureLevelRemove, SourceLevelRemove} from '../benchmarks/remove_paint_state';
 import {LayerBackground, LayerCircle, LayerFill, LayerFillExtrusion, LayerHeatmap, LayerHillshade, LayerLine, LayerRaster, LayerSymbol, LayerSymbolWithIcons} from '../benchmarks/layers';
 import Load from '../benchmarks/map_load';
+import HillshadeLoad from '../benchmarks/hillshade_load';
 import Validate from '../benchmarks/style_validate';
 import StyleLayerCreate from '../benchmarks/style_layer_create';
 import QueryPoint from '../benchmarks/query_point';
@@ -43,6 +45,7 @@ register('Paint', new Paint(style, locations));
 register('QueryPoint', new QueryPoint(style, locations));
 register('QueryBox', new QueryBox(style, locations));
 register('Layout', new Layout(style));
+register('Placement', new Placement(style, locations));
 register('Validate', new Validate(style));
 register('StyleLayerCreate', new StyleLayerCreate(style));
 register('FunctionCreate', new FunctionCreate(style));
@@ -69,6 +72,7 @@ register('LayoutDDS', new LayoutDDS());
 register('SymbolLayout', new SymbolLayout(style, styleLocations.map(location => location.tileID[0])));
 register('FilterCreate', new FilterCreate());
 register('FilterEvaluate', new FilterEvaluate());
+register('HillshadeLoad', new HillshadeLoad());
 
 Promise.resolve().then(() => {
     // Ensure the global worker pool is never drained. Browsers have resource limits

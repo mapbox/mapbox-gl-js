@@ -177,6 +177,19 @@ test('AttributionControl shows custom attribution if customAttribution option is
     t.end();
 });
 
+test('AttributionControl shows custom attribution if customAttribution option is provided, control is removed and added back', (t) => {
+    const map = createMap(t);
+    const attributionControl = new AttributionControl({
+        customAttribution: 'Custom string'
+    });
+    map.addControl(attributionControl);
+    map.removeControl(attributionControl);
+    map.addControl(attributionControl);
+
+    t.equal(attributionControl._innerContainer.innerHTML, 'Custom string');
+    t.end();
+});
+
 test('AttributionControl in compact mode shows custom attribution if customAttribution option is provided', (t) => {
     const map = createMap(t);
     const attributionControl = new AttributionControl({

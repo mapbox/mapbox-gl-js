@@ -27,7 +27,7 @@ class SourceFeatureState {
         this.deletedStates = {};
     }
 
-    updateState(sourceLayer: string, featureId: number, newState: Object) {
+    updateState(sourceLayer: string, featureId: number | string, newState: Object) {
         const feature = String(featureId);
         this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || {};
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
@@ -54,7 +54,7 @@ class SourceFeatureState {
         }
     }
 
-    removeFeatureState(sourceLayer: string, featureId?: number, key?: string) {
+    removeFeatureState(sourceLayer: string, featureId?: number | string, key?: string) {
         const sourceLayerDeleted = this.deletedStates[sourceLayer] === null;
         if (sourceLayerDeleted) return;
 
@@ -62,12 +62,12 @@ class SourceFeatureState {
 
         this.deletedStates[sourceLayer] = this.deletedStates[sourceLayer] || {};
 
-        if (key && featureId !== undefined && featureId >= 0) {
+        if (key && featureId !== undefined) {
             if (this.deletedStates[sourceLayer][feature] !== null) {
                 this.deletedStates[sourceLayer][feature] = this.deletedStates[sourceLayer][feature] || {};
                 this.deletedStates[sourceLayer][feature][key] = null;
             }
-        } else if (featureId !== undefined && featureId >= 0) {
+        } else if (featureId !== undefined) {
             const updateInQueue = this.stateChanges[sourceLayer] && this.stateChanges[sourceLayer][feature];
             if (updateInQueue) {
                 this.deletedStates[sourceLayer][feature] = {};
@@ -82,7 +82,7 @@ class SourceFeatureState {
 
     }
 
-    getState(sourceLayer: string, featureId: number) {
+    getState(sourceLayer: string, featureId: number | string) {
         const feature = String(featureId);
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};

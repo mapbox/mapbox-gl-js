@@ -11,6 +11,9 @@ import type {CollisionBoxArray} from '../data/array_types';
 import type DEMData from '../data/dem_data';
 import type {StyleGlyph} from '../style/style_glyph';
 import type {StyleImage} from '../style/style_image';
+import type {PromoteIdSpecification} from '../style-spec/types';
+import window from '../util/window';
+const {ImageBitmap} = window;
 
 export type TileParameters = {
     source: string,
@@ -23,6 +26,7 @@ export type WorkerTileParameters = TileParameters & {
     zoom: number,
     maxZoom: number,
     tileSize: number,
+    promoteId: ?PromoteIdSpecification,
     pixelRatio: number,
     showCollisionBoxes: boolean,
     collectResourceTiming?: boolean,
@@ -31,7 +35,7 @@ export type WorkerTileParameters = TileParameters & {
 
 export type WorkerDEMTileParameters = TileParameters & {
     coord: { z: number, x: number, y: number, w: number },
-    rawImageData: RGBAImage,
+    rawImageData: RGBAImage | ImageBitmap,
     encoding: "mapbox" | "terrarium"
 };
 

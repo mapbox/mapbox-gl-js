@@ -37,7 +37,7 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {StyleOptions, StyleSetterOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
-import type {StyleImageInterface} from '../style/style_image';
+import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -104,7 +104,7 @@ type MapOptions = {
     locale?: Object
 };
 
-const defaultMinZoom = 0;
+const defaultMinZoom = -2;
 const defaultMaxZoom = 22;
 
 // the default values, but also the valid range
@@ -620,8 +620,13 @@ class Map extends Camera {
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-24).
-     *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
+     * It is not always possible to zoom out and reach the set `minZoom`.
+     * Other factors such as map height may restrict zooming. For example,
+     * if the map is 512px tall it will not be possible to zoom below zoom 0
+     * no matter what the `minZoom` is set to.
+     *
+     * @param {number | null | undefined} minZoom The minimum zoom level to set (-2 - 24).
+     *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to -2).
      * @returns {Map} `this`
      * @example
      * map.setMinZoom(12.25);
@@ -1401,6 +1406,9 @@ class Map extends Camera {
      * @param options
      * @param options.pixelRatio The ratio of pixels in the image to physical pixels on the screen
      * @param options.sdf Whether the image should be interpreted as an SDF image
+     * @param options.content  `[x1, y1, x2, y2]`  If `icon-text-fit` is used in a layer with this image, this option defines the part of the image that can be covered by the content in `text-field`.
+     * @param options.stretchX  `[[x1, x2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched horizontally.
+     * @param options.stretchY  `[[y1, y2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched vertically.
      *
      * @example
      * // If the style's sprite does not already contain an image with ID 'cat',
@@ -1410,18 +1418,33 @@ class Map extends Camera {
      *    if (!map.hasImage('cat')) map.addImage('cat', image);
      * });
      *
+     *
+     * // Add a stretchable image that can be used with `icon-text-fit`
+     * // In this example, the image is 600px wide by 400px high.
+     * map.loadImage('https://upload.wikimedia.org/wikipedia/commons/8/89/Black_and_White_Boxed_%28bordered%29.png', function(error, image) {
+     *    if (error) throw error;
+     *    if (!map.hasImage('border-image')) {
+     *      map.addImage('border-image', image, {
+     *          content: [16, 16, 300, 384], // place text over left half of image, avoiding the 16px border
+     *          stretchX: [[16, 584]], // stretch everything horizontally except the 16px border
+     *          stretchY: [[16, 384]], // stretch everything vertically except the 16px border
+     *      });
+     *    }
+     * });
+     *
+     *
      * @see Use `HTMLImageElement`: [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      * @see Use `ImageData`: [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
      */
     addImage(id: string,
              image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface,
-             {pixelRatio = 1, sdf = false}: {pixelRatio?: number, sdf?: boolean} = {}) {
+             {pixelRatio = 1, sdf = false, stretchX, stretchY, content}: $Shape<StyleImageMetadata> = {}) {
 
         const version = 0;
 
         if (image instanceof HTMLImageElement) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, sdf, version});
+            this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version});
         } else if (image.width === undefined || image.height === undefined) {
             return this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +
@@ -1433,6 +1456,9 @@ class Map extends Camera {
             this.style.addImage(id, {
                 data: new RGBAImage({width, height}, new Uint8Array(data)),
                 pixelRatio,
+                stretchX,
+                stretchY,
+                content,
                 sdf,
                 version,
                 userImage
@@ -1947,7 +1973,7 @@ class Map extends Camera {
     }
 
     _resizeCanvas(width: number, height: number) {
-        const pixelRatio = window.devicePixelRatio || 1;
+        const pixelRatio = browser.devicePixelRatio || 1;
 
         // Request the required canvas size taking the pixelratio into account.
         this._canvas.width = pixelRatio * width;

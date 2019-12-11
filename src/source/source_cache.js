@@ -318,13 +318,6 @@ class SourceCache extends Evented {
     }
 
     /**
-     * get the zoom level adjusted for the difference in map and source tilesizes
-     */
-    getZoom(transform: Transform): number {
-        return transform.zoom + transform.scaleZoom(transform.tileSize / this._source.tileSize);
-    }
-
-    /**
      * For a given set of tiles, retain children that are loaded and have a zoom
      * between `zoom` (exclusive) and `maxCoveringZoom` (inclusive)
      */
@@ -375,16 +368,15 @@ class SourceCache extends Evented {
      */
     findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number): ?Tile {
         for (let z = tileID.overscaledZ - 1; z >= minCoveringZoom; z--) {
-            const parent = tileID.scaledTo(z);
-            if (!parent) return;
-            const id = String(parent.key);
-            const tile = this._tiles[id];
+            const parentKey = tileID.calculateScaledKey(z, true);
+            const tile = this._tiles[parentKey];
             if (tile && tile.hasData()) {
                 return tile;
             }
-            if (this._cache.has(parent)) {
-                return this._cache.get(parent);
-            }
+            // TileCache ignores wrap in lookup.
+            const parentWrappedKey = tileID.calculateScaledKey(z, false);
+            const cachedTile = this._cache.getByKey(parentWrappedKey);
+            if (cachedTile) return cachedTile;
         }
     }
 
@@ -487,7 +479,7 @@ class SourceCache extends Evented {
         }
 
         // Determine the overzooming/underzooming amounts.
-        const zoom = (this._source.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
+        const zoom = transform.coveringZoomLevel(this._source);
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
@@ -827,27 +819,27 @@ class SourceCache extends Evented {
      * Set the value of a particular state for a feature
      * @private
      */
-    setFeatureState(sourceLayer?: string, feature: number, state: Object) {
+    setFeatureState(sourceLayer?: string, featureId: number | string, state: Object) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
-        this._state.updateState(sourceLayer, feature, state);
+        this._state.updateState(sourceLayer, featureId, state);
     }
 
     /**
      * Resets the value of a particular state key for a feature
      * @private
      */
-    removeFeatureState(sourceLayer?: string, feature?: number, key?: string) {
+    removeFeatureState(sourceLayer?: string, featureId?: number | string, key?: string) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
-        this._state.removeFeatureState(sourceLayer, feature, key);
+        this._state.removeFeatureState(sourceLayer, featureId, key);
     }
 
     /**
      * Get the entire state object for a feature
      * @private
      */
-    getFeatureState(sourceLayer?: string, feature: number) {
+    getFeatureState(sourceLayer?: string, featureId: number | string) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
-        return this._state.getState(sourceLayer, feature);
+        return this._state.getState(sourceLayer, featureId);
     }
 
     /**

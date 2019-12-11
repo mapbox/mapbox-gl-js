@@ -74,7 +74,7 @@ class LngLat {
     }
 
     /**
-     * Returns a `LngLatBounds` from the coordinates extended by a given `radius`.
+     * Returns a `LngLatBounds` from the coordinates extended by a given `radius`. The returned `LngLatBounds` completely contains the `radius`.
      *
      * @param {number} [radius=0] Distance in meters from the coordinates to extend the bounds.
      * @returns {LngLatBounds} A new `LngLatBounds` object representing the coordinates extended by the `radius`.

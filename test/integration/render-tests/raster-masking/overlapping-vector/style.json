@@ -1,0 +1,90 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    -122.48,
+    37.84
+  ],
+  "zoom": 14,
+  "sources": {
+    "contour": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.contour.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -123,
+              37.839
+            ],
+            [
+              -123,
+              37.843
+            ],
+            [
+              -122,
+              37.843
+            ],
+            [
+              -122,
+              37.839
+            ],
+            [
+              -123,
+              37.839
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "contour",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "green",
+        "fill-opacity": 0.2
+      }
+    },
+    {
+      "id": "raster-transparent",
+      "type": "raster",
+      "source": "contour",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-opacity": 0.5,
+        "raster-hue-rotate": 90
+      }
+    }
+  ]
+}
