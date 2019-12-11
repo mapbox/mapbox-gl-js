@@ -279,6 +279,7 @@ class GeolocateControl extends Evented {
                 // this represents a forced error state
                 // this was triggered to force immediate geolocation when a watch is already present
                 // see https://github.com/mapbox/mapbox-gl-js/issues/8214
+                // and https://w3c.github.io/geolocation-api/#example-5-forcing-the-user-agent-to-return-a-fresh-cached-position
                 return;
             } else {
                 this._setErrorState();
