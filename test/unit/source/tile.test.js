@@ -9,7 +9,6 @@ import vtpbf from 'vt-pbf';
 import FeatureIndex from '../../../src/data/feature_index';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {extend} from '../../../src/util/util';
-import {lazyLoadRTLTextPlugin} from '../../../src/source/rtl_text_plugin';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
 test('querySourceFeatures', (t) => {
@@ -274,7 +273,7 @@ test('rtl text detection', (t) => {
             createVectorData({rawTileData: createRawTileData(), buckets: [symbolBucket]}),
             createPainter({
                 getLayer() {
-                    return symbolBucket.layers[0]
+                    return symbolBucket.layers[0];
                 }
             })
         );
