@@ -28,6 +28,9 @@ test(`v8 Spec SDK Support section`, (t) => {
         const propKeys = Object.keys(props);
         propKeys.forEach((key) => {
             t.ok(props[key]["sdk-support"], `${objKey}_${key} is missing sdk support section`);
+            if (props[key]["sdk-support"]) {
+                t.ok(props[key]["sdk-support"]["basic functionality"], `${objKey}_${key} is missing sdk support section for 'basic functionality'`);
+            }
         });
     });
 
@@ -35,6 +38,9 @@ test(`v8 Spec SDK Support section`, (t) => {
     const expressionNames = Object.keys(expressions);
     expressionNames.forEach((expr) => {
         t.ok(expressions[expr]["sdk-support"], `expression_${expr} is missing sdk support section`);
+        if (expressions[expr]["sdk-support"]) {
+            t.ok(expressions[expr]["sdk-support"]["basic functionality"], `expression_${expr} is missing sdk support section for 'basic functionality'`);
+        }
     });
     t.end();
 });
