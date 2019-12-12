@@ -267,7 +267,9 @@ test('expiring tiles', (t) => {
 test('rtl text detection', (t) => {
     t.test('Tile#hasRTLText is true when a tile loads a symbol bucket with rtl text', (t) => {
         const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
-        const symbolBucket = createSymbolBucket('test', 'Test', 'مرحبا', new CollisionBoxArray());
+        // Create a stub symbol bucket
+        const symbolBucket = createSymbolBucket('test', 'Test', 'test', new CollisionBoxArray());
+        // symbolBucket phasnt been populateed yet so we force override the value in the stub
         symbolBucket.hasRTLText = true;
         tile.loadVectorData(
             createVectorData({rawTileData: createRawTileData(), buckets: [symbolBucket]}),

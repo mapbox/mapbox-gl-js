@@ -97,6 +97,18 @@ test('SymbolBucket detects rtl text', (t) => {
     t.end();
 });
 
+// Test to prevent symbol bucket with rtl from text being culled by worker serialization.
+test('SymbolBucket with rtl text is NOT empty even though no symbol instances are created', (t) => {
+    const rtlBucket = bucketSetup('مرحبا');
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+    rtlBucket.createArrays();
+    rtlBucket.populate([{feature}], options);
+
+    t.notOk(rtlBucket.isEmpty());
+    t.equal(rtlBucket.symbolInstances.length, 0);
+    t.end();
+});
+
 test('SymbolBucket detects rtl text mixed with ltr text', (t) => {
     const mixedBucket = bucketSetup('مرحبا translates to hello');
     const options = {iconDependencies: {}, glyphDependencies: {}};
