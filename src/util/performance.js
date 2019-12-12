@@ -8,9 +8,8 @@ const performance = window.performance;
 export type PerformanceMetrics = {
     loadTime: number,
     fullLoadTime: number,
-    frameTimes: Array<number>,
     fps: number,
-    onePercentLowFps: number
+    percentDroppedFrames: number
 }
 
 export const PerformanceMarkers = {
@@ -21,6 +20,9 @@ export const PerformanceMarkers = {
 
 let lastFrameTime = null;
 let frameTimes = [];
+
+const minFramerateTarget = 30;
+const frameTimeTarget = 1000 / minFramerateTarget;
 
 export const PerformanceUtils = {
     mark(marker: $Keys<typeof PerformanceMarkers>) {
@@ -52,18 +54,19 @@ export const PerformanceUtils = {
         const avgFrameTime = frameTimes.reduce((prev, curr) => prev + curr, 0) / totalFrames / 1000;
         const fps = 1 / avgFrameTime;
 
-        // Sort frametimes, in descending order to get the 1% slowest frames
-        const onePercentLowFrameTimes = frameTimes.slice().sort((a, b) => b - a)
-            .slice(0, totalFrames * 0.01 | 0);
+        // count frames that missed our framerate target
+        const droppedFrames = frameTimes
+            .filter((frameTime) => frameTime > frameTimeTarget)
+            .reduce((acc, curr) => {
+                return acc + (curr -  frameTimeTarget)/frameTimeTarget;
+            }, 0);
+        const percentDroppedFrames = (droppedFrames/(totalFrames+droppedFrames))*100;
 
-        const onePercentLowFrameTime = onePercentLowFrameTimes.reduce((prev, curr) => prev + curr, 0) / onePercentLowFrameTimes.length / 1000;
-        const onePercentLowFps = 1 / onePercentLowFrameTime;
         return {
             loadTime,
             fullLoadTime,
-            frameTimes,
             fps,
-            onePercentLowFps
+            percentDroppedFrames
         };
     }
 };
