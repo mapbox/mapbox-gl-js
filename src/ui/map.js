@@ -2204,7 +2204,6 @@ class Map extends Camera {
             this.fire(new Event('content.load'));
         }
 
-        PerformanceUtils.frame();
         return this;
     }
 
@@ -2245,10 +2244,6 @@ class Map extends Camera {
         this.fire(new Event('remove'));
     }
 
-    extractPerformanceMetrics(): PerformanceMetrics {
-        return PerformanceUtils.getPerformanceMetrics();
-    }
-
     /**
      * Trigger the rendering of a single frame. Use this method with custom layers to
      * repaint the map when the layer changes. Calling this multiple times before the
@@ -2256,7 +2251,8 @@ class Map extends Camera {
      */
     triggerRepaint() {
         if (this.style && !this._frame) {
-            this._frame = browser.frame(() => {
+            this._frame = browser.frame((paintStartTimestamp: number) => {
+                PerformanceUtils.frame(paintStartTimestamp);
                 this._frame = null;
                 this._render();
             });

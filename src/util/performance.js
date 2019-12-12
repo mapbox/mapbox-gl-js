@@ -26,8 +26,8 @@ export const PerformanceUtils = {
     mark(marker: $Keys<typeof PerformanceMarkers>) {
         performance.mark(marker);
     },
-    frame() {
-        const currTimestamp = performance.now();
+    frame(timestamp: number) {
+        const currTimestamp = timestamp;
         if (lastFrameTime != null) {
             const frameTime = currTimestamp - lastFrameTime;
             frameTimes.push(frameTime);

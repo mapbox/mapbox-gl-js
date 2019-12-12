@@ -24,6 +24,7 @@ import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
+import {PerformanceUtils} from './util/performance';
 
 const exported = {
     version,
@@ -133,7 +134,7 @@ const exported = {
 };
 
 //This gets automatically stripped out in production builds.
-Debug.extend(exported, {isSafari});
+Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics});
 
 /**
  * The version of Mapbox GL JS in use as specified in `package.json`,
