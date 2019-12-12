@@ -20,6 +20,24 @@ import * as spec from '../../../src/style-spec/style-spec';
     });
 });
 
+test(`v8 Spec SDK Support section`, (t) => {
+    const v = 'v8';
+    const propObjs = [].concat(spec[v].paint).concat(spec[v].layout);
+    propObjs.forEach((objKey) => {
+        const props = spec[v][objKey];
+        const propKeys = Object.keys(props);
+        propKeys.forEach((key) => {
+            t.ok(props[key]["sdk-support"], `${objKey}_${key} is missing sdk support section`);
+        });
+    });
+
+    const expressions = spec[v].expression_name.values;
+    const expressionNames = Object.keys(expressions);
+    expressionNames.forEach((expr) => {
+        t.ok(expressions[expr]["sdk-support"], `expression_${expr} is missing sdk support section`);
+    });
+    t.end();
+});
 function validSchema(k, t, obj, ref, version, kind) {
     const scalar = ['boolean', 'string', 'number'];
     const types = Object.keys(ref).concat(['boolean', 'string', 'number',
