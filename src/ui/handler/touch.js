@@ -50,9 +50,24 @@ class TouchHandler extends Handler {
   //
   // }
   //
-  // _onTouchCancel(e: TouchEvent) {
+  touchend(e: TouchEvent) {
+    this.deactivate();
+  }
   //
-  // }
+  touchcancel(e: TouchEvent) {
+    this.deactivate();
+  }
+
+  deactivate() {
+    delete this._startTouchEvent;
+    delete this._startTouchData;
+    delete this._startTime;
+    delete this._lastTouchEvent;
+    delete this._lastTouchData;
+    if (this._state === 'pending' || this._state === 'active') {
+      this._state = 'enabled';
+    }
+  }
 
 
 }
@@ -88,6 +103,11 @@ class TouchZoomHandler extends TouchHandler {
         return { transform: { zoom : newZoom }};
       }
     }
+
+    deactivate() {
+      delete this._startScale;
+      super.deactivate();
+    }
 }
 
 class TouchRotateHandler extends TouchHandler {
@@ -120,6 +140,11 @@ class TouchRotateHandler extends TouchHandler {
         const newBearing = this._startBearing + bearing;
         return { transform: { bearing : newBearing }};
       }
+    }
+
+    deactivate() {
+      delete this._startBearing;
+      super.deactivate();
     }
 }
 
