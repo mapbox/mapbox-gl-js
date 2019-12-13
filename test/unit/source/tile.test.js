@@ -8,7 +8,6 @@ import vtpbf from 'vt-pbf';
 import FeatureIndex from '../../../src/data/feature_index';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {extend} from '../../../src/util/util';
-import Context from '../../../src/gl/context';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
 test('querySourceFeatures', (t) => {

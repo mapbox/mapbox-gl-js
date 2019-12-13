@@ -58,9 +58,9 @@ export const PerformanceUtils = {
         const droppedFrames = frameTimes
             .filter((frameTime) => frameTime > frameTimeTarget)
             .reduce((acc, curr) => {
-                return acc + (curr -  frameTimeTarget)/frameTimeTarget;
+                return acc + (curr -  frameTimeTarget) / frameTimeTarget;
             }, 0);
-        const percentDroppedFrames = (droppedFrames/(totalFrames+droppedFrames))*100;
+        const percentDroppedFrames = (droppedFrames / (totalFrames + droppedFrames)) * 100;
 
         return {
             loadTime,
