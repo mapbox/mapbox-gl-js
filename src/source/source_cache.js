@@ -57,6 +57,7 @@ class SourceCache extends Evented {
     _isIdRenderable: (id: string, symbolLayer?: boolean) => boolean;
     used: boolean;
     _state: SourceFeatureState;
+    _loadedParentTiles: {[string]: ?Tile};
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
@@ -93,6 +94,7 @@ class SourceCache extends Evented {
         this._timers = {};
         this._cacheTimers = {};
         this._maxTileCacheSize = null;
+        this._loadedParentTiles = {};
 
         this._coveredTiles = {};
         this._state = new SourceFeatureState();
@@ -367,17 +369,31 @@ class SourceCache extends Evented {
      * Find a loaded parent of the given tile (up to minCoveringZoom)
      */
     findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number): ?Tile {
+        if (tileID.key in this._loadedParentTiles) {
+            const parent = this._loadedParentTiles[tileID.key];
+            if (parent && parent.tileID.overscaledZ >= minCoveringZoom) {
+                return parent;
+            } else {
+                return null;
+            }
+        }
         for (let z = tileID.overscaledZ - 1; z >= minCoveringZoom; z--) {
-            const parentKey = tileID.calculateScaledKey(z, true);
-            const tile = this._tiles[parentKey];
-            if (tile && tile.hasData()) {
+            const parentTileID = tileID.scaledTo(z);
+            const tile = this._getLoadedTile(parentTileID);
+            if (tile) {
                 return tile;
             }
-            // TileCache ignores wrap in lookup.
-            const parentWrappedKey = tileID.calculateScaledKey(z, false);
-            const cachedTile = this._cache.getByKey(parentWrappedKey);
-            if (cachedTile) return cachedTile;
         }
+    }
+
+    _getLoadedTile(tileID: OverscaledTileID): ?Tile {
+        const tile = this._tiles[tileID.key];
+        if (tile && tile.hasData()) {
+            return tile;
+        }
+        // TileCache ignores wrap in lookup.
+        const cachedTile = this._cache.getByKey(tileID.wrapped().key);
+        return cachedTile;
     }
 
     /**
@@ -537,6 +553,9 @@ class SourceCache extends Evented {
                 this._removeTile(tileID);
             }
         }
+
+        // Construct a cache of loaded parents
+        this._updateLoadedParentTileCache();
     }
 
     releaseSymbolFadeTiles() {
@@ -626,6 +645,43 @@ class SourceCache extends Evented {
         }
 
         return retain;
+    }
+
+    _updateLoadedParentTileCache() {
+        this._loadedParentTiles = {};
+
+        for (const tile of (Object.values(this._tiles): any)) {
+            const path = [];
+            let parentTile: ?Tile;
+            let currentId = tile.tileID;
+
+            // Find the closest loaded ancestor by traversing the tile tree towards the root and
+            // caching results along the way
+            while (currentId.overscaledZ > 0) {
+
+                // Do we have a cached result from previous traversals?
+                if (currentId.key in this._loadedParentTiles) {
+                    parentTile = this._loadedParentTiles[currentId.key];
+                    break;
+                }
+
+                path.push(currentId.key);
+
+                // Is the parent loaded?
+                const parentId = currentId.scaledTo(currentId.overscaledZ - 1);
+                parentTile = this._getLoadedTile(parentId);
+                if (parentTile) {
+                    break;
+                }
+
+                currentId = parentId;
+            }
+
+            // Cache the result of this traversal to all newly visited tiles
+            for (let i = 0; i < path.length; i++) {
+                this._loadedParentTiles[path[i]] = parentTile;
+            }
+        }
     }
 
     /**
