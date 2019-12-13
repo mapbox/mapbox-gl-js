@@ -1,6 +1,6 @@
 // @flow
 
-import type Map from './map';
+import type Map from '../map';
 
 /**
  * Base class for gesture handlers which control user interaction with the map
@@ -67,6 +67,22 @@ class Handler {
    */
   getOptions() {
     return this._options;
+  }
+
+  /**
+   * Process an interaction event received by the map.
+   * The handler will receive every type of input event, but will only respond to event types for which it has a corresponding method.
+   * Handlers should implement event-type methods (e.g. .touchmove() or .mousedown()) for events they wish to respond to.
+   * Each event-type method should either return an object with target data for a map update, //TODO describe data object shape
+   * or return undefined if no update is required for the event.
+   *
+   * @param {Event} [event] Mouse, Touch, Keyboard or Wheel event to be processed
+   * @returns {Object | undefined} Data (e.g. new transform settings) to be used to update the map, or undefined if no update is required
+   */
+  processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent) {
+    if (!e || !e.type) return console.warn('Invalid input event:', e);
+    if (!this[e.type] || !(typeof this[e.type] === 'function')) return;
+    return this[e.type](e);
   }
 }
 

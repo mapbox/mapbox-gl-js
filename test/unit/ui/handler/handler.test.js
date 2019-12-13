@@ -44,3 +44,18 @@ test('Methods .setOptions() and .getOptions() work as expected', (t) => {
     t.deepEqual(h.getOptions(), { happy: true }, '.getOptions() should return the up to date options');
     t.end();
 });
+
+test('.processInputEvent() method delegates to event-type methods accordingly', (t) => {
+    const warnings = [];
+    t.stub(console, 'warn').callsFake((...args) => warnings.push(args.join(' ')));
+    const map = createMap(t);
+    const h = new Handler(map);
+    const touchstart = new window.TouchEvent('touchstart', { touches: [{ clientX: 1, clientY: 1 }] });
+    t.doesNotThrow(() => h.processInputEvent('notanevent'), '.processInputEvent() should not throw error, even for unrecognized event types');
+    t.ok(/notanevent/.test(warnings[0]), 'should give appropriate warning if input event is not a valid type');
+    t.doesNotThrow(() => h.processInputEvent(touchstart), '.processInputEvent() should not throw error, even for unrecognized event types');
+    t.notOk(h.processInputEvent(touchstart), 'if no method exists for the event type, .processInputEvent() should return nothing');
+    h.touchstart = function(e) { return e.touches[0].clientX; };
+    t.equal(h.processInputEvent(touchstart), 1, 'if a method exists for the event type, .processInputEvent() should pass through its return value');
+    t.end();
+});
