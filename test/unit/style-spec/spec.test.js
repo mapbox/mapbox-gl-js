@@ -30,6 +30,11 @@ test(`v8 Spec SDK Support section`, (t) => {
             t.ok(props[key]["sdk-support"], `${objKey}_${key} is missing sdk support section`);
             if (props[key]["sdk-support"]) {
                 t.ok(props[key]["sdk-support"]["basic functionality"], `${objKey}_${key} is missing sdk support section for 'basic functionality'`);
+                if (props[key]["property-type"].includes("constant")) {
+                    t.notOk(props[key]["sdk-support"]["data-driven styling"], `${objKey}_${key} should not have sdk support section for 'data-driven styling'`);
+                } else {
+                    t.ok(props[key]["sdk-support"]["data-driven styling"], `${objKey}_${key} is missing sdk support section for 'data-driven styling'`);
+                }
             }
         });
     });
