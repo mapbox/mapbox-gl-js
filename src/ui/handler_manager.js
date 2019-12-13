@@ -4,6 +4,7 @@ import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../ui/events';
 import DOM from '../util/dom';
 import type Map from './map';
 import Handler from './handler/handler';
+import { TouchZoomHandler, TouchRotateHandler } from './handler/touch';
 import {extend} from '../util/util';
 
 
@@ -20,6 +21,8 @@ class HandlerManager {
     this._el = this._map.getCanvasContainer();
     this._handlers = [];
 
+    this._addDefaultHandlers();
+
     // Bind touchstart and touchmove with passive: false because, even though
     // they only fire a map events and therefore could theoretically be
     // passive, binding with passive: true causes iOS not to respect
@@ -32,6 +35,11 @@ class HandlerManager {
 
     this.addMouseListener('mousedown');
     this.addMouseListener('mouseup');
+  }
+
+  _addDefaultHandlers() {
+    this.add('touchZoom', new TouchZoomHandler(this._map));
+    this.add('touchRotate', new TouchRotateHandler(this._map));
   }
 
   list() {
