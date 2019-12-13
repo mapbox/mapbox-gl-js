@@ -269,7 +269,7 @@ test('rtl text detection', (t) => {
         const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         // Create a stub symbol bucket
         const symbolBucket = createSymbolBucket('test', 'Test', 'test', new CollisionBoxArray());
-        // symbolBucket phasnt been populateed yet so we force override the value in the stub
+        // symbolBucket has not been populated yet so we force override the value in the stub
         symbolBucket.hasRTLText = true;
         tile.loadVectorData(
             createVectorData({rawTileData: createRawTileData(), buckets: [symbolBucket]}),
