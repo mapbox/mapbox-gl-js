@@ -4,6 +4,8 @@ import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../ui/events';
 import DOM from '../util/dom';
 import type Map from './map';
 import Handler from './handler/handler';
+import {extend} from '../util/util';
+
 
 class HandlerManager {
   _map: Map;
@@ -66,17 +68,49 @@ class HandlerManager {
     this._handlers = newHandlers;
   }
 
+  removeAll() {
+    for (const [handlerName, _] of this._handlers) this.remove(handlerName);
+  }
+
+
+  addListener(mapEventClass: Event, eventType: string, options?: Object) {
+    const listener = (e: Event) => {
+      this._map.fire(new mapEventClass(eventType, this._map, e));
+      this.processInputEvent(e);
+    };
+    DOM.addEventListener(this._el, eventType, listener, options);
+  }
+
   addTouchListener(eventType: string, options?: Object) {
-    const fireMapEvent = (e: TouchEvent) => { this._map.fire(new MapTouchEvent(eventType, this._map, e)) };
-    DOM.addEventListener(this._el, eventType, fireMapEvent, options);
+    this.addListener(MapTouchEvent, eventType, options);
   }
 
   addMouseListener(eventType: string, options?: Object) {
-    const fireMapEvent = (e: MouseEvent) => { this._map.fire(new MapMouseEvent(eventType, this._map, e)) };
-    DOM.addEventListener(this._el, eventType, fireMapEvent, options);
+    this.addListener(MapMouseEvent, eventType, options);
   }
 
 
+  processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent) {
+    let newTransform = {};
+    let mapMethods = {};
+
+    for (const [name, handler] of this._handlers) {
+      if (!handler.isEnabled()) continue;
+      let data = handler.processInputEvent(e);
+      if (!data) continue;
+      if (data.transform) extend(newTransform, data.transform);
+    }
+    const tr = this._map.transform;
+    let { zoom, bearing, pitch, setLocationAtPoint } = newTransform;
+    if (zoom) tr.zoom = zoom;
+    if (bearing) tr.bearing = bearing;
+    if (pitch) tr.pitch = pitch;
+    if (setLocationAtPoint) {
+      let [loc, pt] = setLocationAtPoint;
+      tr.setLocationAtPoint(loc, pt);
+    }
+
+  }
 }
 
 export default HandlerManager;
