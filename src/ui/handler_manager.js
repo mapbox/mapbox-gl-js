@@ -20,6 +20,8 @@ class HandlerManager {
     this._map = map;
     this._el = this._map.getCanvasContainer();
     this._handlers = [];
+    this._disableDuring = {};
+
 
     this._addDefaultHandlers();
 
@@ -40,7 +42,7 @@ class HandlerManager {
   _addDefaultHandlers() {
     this.add('touchPitch', new TouchPitchHandler(this._map));
     this.add('touchZoom', new TouchZoomHandler(this._map));
-    this.add('touchRotate', new TouchRotateHandler(this._map));
+    this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
   }
 
   list() {
@@ -51,7 +53,7 @@ class HandlerManager {
     return this._handlers.length;
   }
 
-  add(handlerName: string, handler: Handler) {
+  add(handlerName: string, handler: Handler, disableDuring: Array<string>) {
     if (!handlerName || !(/^[a-z]+[a-zA-Z]*$/.test(handlerName))) throw new Error('Must provide a valid handlerName string');
     if (!handler || !(handler instanceof Handler)) throw new Error('Must provide a valid Handler instance');
 
@@ -59,9 +61,15 @@ class HandlerManager {
     for (const [existingName, existingHandler] of this._handlers) {
       if (existingHandler === handler) throw new Error(`Cannot add ${handler} as ${handlerName}: handler already exists as ${existingName}`);
     }
-
     this._handlers.push([handlerName, handler]);
     this[handlerName] = handler;
+
+    if (disableDuring) {
+      for (const otherHandler of disableDuring) {
+        if (!this[otherHandler]) throw new Error(`Cannot disable ${handlerName} during ${otherHandler}: No such handler ${otherHandler}`);
+      }
+      this._disableDuring[handlerName] = disableDuring;
+    }
   }
 
   remove(handlerName: string) {
@@ -103,15 +111,20 @@ class HandlerManager {
     if (e.cancelable) e.preventDefault();
     let newSettings = {};
     let mapMethods = {};
+    let activeHandlers = [];
 
     for (const [name, handler] of this._handlers) {
       if (!handler.isEnabled()) continue;
       let data = handler.processInputEvent(e);
       if (!data) continue;
-      // Check for disabledDuring relationships
 
+      if (this._disableDuring[name]) {
+        const conflicts = this._disableDuring[name].filter(otherHandler => activeHandlers.indexOf(otherHandler) > -1);
+        if (conflicts.length > 0) continue;
+      }
       // validate the update request
       if (data.transform) extend(newSettings, data.transform);
+      activeHandlers.push(name);
     }
     // Set map transform accordingly
     if (newSettings.zoom || newSettings.bearing || newSettings.pitch || newSettings.setLocationAtPoint) {
