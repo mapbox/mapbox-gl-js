@@ -28,11 +28,9 @@ class TouchHandler extends Handler {
   }
 
   _getTouchEventData(e: TouchEvent) {
+      if (!e.touches) throw new Error('no touches', e);
       const isMultiTouch = e.touches.length > 1;
-      let points = [];
-      for (let i = 0; i < e.touches.length; i++) {
-        points.push(DOM.mousePos(this._el, e.touches[i]));
-      }
+      let points = DOM.touchPos(this._el, e);
       const center = isMultiTouch ? points[0].add(points[1]).div(2) : points[0];
       const vector = isMultiTouch ? points[0].sub(points[1]) : null ;
       return { isMultiTouch, points, center, vector };
@@ -97,6 +95,10 @@ class TouchZoomHandler extends TouchHandler {
       if (scale !== 1) {
         this._state = 'active';
         const newZoom = this._map.transform.scaleZoom(this._startScale * scale);
+        this._startTouchEvent = this._lastTouchEvent;
+        this._startTouchData = this._lastTouchData;
+        this._startTime = browser.now();
+        this._startScale = this._startScale * scale;
         return { transform: { zoom : newZoom }};
       }
     }
@@ -127,11 +129,15 @@ class TouchRotateHandler extends TouchHandler {
       this._lastTouchEvent = e;
       this._lastTouchData = this._getTouchEventData(e);
       if (!this._lastTouchData.isMultiTouch) return;
-      // TODO check time vs. start time to prevent responding to spurious events (vs. tap)
+      // TODO check time vs. start time to prevent responding to spurious events?
       const bearingDelta = this._lastTouchData.vector.angleWith(this._startTouchData.vector) * 180 / Math.PI
       if (Math.abs(bearingDelta) > 0) {
         this._state = 'active';
         const newBearing = this._startBearing + bearingDelta;
+        this._startTouchEvent = this._lastTouchEvent;
+        this._startTouchData = this._lastTouchData;
+        this._startTime = browser.now();
+        this._startBearing = newBearing;
         return { transform: { bearing : newBearing }};
       }
     }
