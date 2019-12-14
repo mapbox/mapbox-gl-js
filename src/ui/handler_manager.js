@@ -99,26 +99,41 @@ class HandlerManager {
 
 
   processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent) {
-    let newTransform = {};
+    let newSettings = {};
     let mapMethods = {};
 
     for (const [name, handler] of this._handlers) {
       if (!handler.isEnabled()) continue;
       let data = handler.processInputEvent(e);
       if (!data) continue;
-      if (data.transform) extend(newTransform, data.transform);
+      // Check for disabledDuring relationships
+
+      // validate the update request
+      if (data.transform) extend(newSettings, data.transform);
     }
+    // Set map transform accordingly
+    if (newSettings.zoom || newSettings.bearing || newSettings.pitch || newSettings.setLocationAtPoint) {
+      if (e.cancelable) e.preventDefault();
+      this.updateMapTransform(newSettings);
+    }
+
+    // Call map methods accordingly
+    // };
+  }
+
+  updateMapTransform(newSettings) {
     const tr = this._map.transform;
-    let { zoom, bearing, pitch, setLocationAtPoint } = newTransform;
+    let { zoom, bearing, pitch, setLocationAtPoint } = newSettings;
     if (zoom) tr.zoom = zoom;
     if (bearing) tr.bearing = bearing;
     if (pitch) tr.pitch = pitch;
-    if (setLocationAtPoint) {
+    if (setLocationAtPoint && setLocationAtPoint.length === 2) {
       let [loc, pt] = setLocationAtPoint;
       tr.setLocationAtPoint(loc, pt);
     }
-
+    this._map._update()
   }
 }
+
 
 export default HandlerManager;
