@@ -73,12 +73,10 @@ class TouchHandler extends Handler {
 }
 
 class TouchZoomHandler extends TouchHandler {
-    significantScaleThreshold: number;
     _startScale: ?number;
 
     constructor(map: Map, options?: Object) {
       super(map, options);
-      this.significantScaleThreshold = 0.15;
     }
 
     touchstart(e: TouchEvent) {
@@ -96,8 +94,7 @@ class TouchZoomHandler extends TouchHandler {
       if (!this._lastTouchData.isMultiTouch) return;
       // TODO check time vs. start time to prevent responding to spurious events (vs. tap)
       const scale = this._lastTouchData.vector.mag() / this._startTouchData.vector.mag();
-      const scalingSignificantly = Math.abs(1 - scale) > this.significantScaleThreshold;
-      if (scalingSignificantly) {
+      if (scale !== 1) {
         this._state = 'active';
         const newZoom = this._map.transform.scaleZoom(this._startScale * scale);
         return { transform: { zoom : newZoom }};
@@ -111,12 +108,10 @@ class TouchZoomHandler extends TouchHandler {
 }
 
 class TouchRotateHandler extends TouchHandler {
-    significantRotateThreshold: number;
     _startBearing: ?number;
 
     constructor(map: Map, options?: Object) {
       super(map, options);
-      this.significantRotateThreshold = 10;
     }
 
     touchstart(e: TouchEvent) {
@@ -133,11 +128,10 @@ class TouchRotateHandler extends TouchHandler {
       this._lastTouchData = this._getTouchEventData(e);
       if (!this._lastTouchData.isMultiTouch) return;
       // TODO check time vs. start time to prevent responding to spurious events (vs. tap)
-      const bearing = this._lastTouchData.vector.angleWith(this._startTouchData.vector) * 180 / Math.PI
-      const rotatingSignificantly = Math.abs(bearing) > this.significantRotateThreshold;
-      if (rotatingSignificantly) {
+      const bearingDelta = this._lastTouchData.vector.angleWith(this._startTouchData.vector) * 180 / Math.PI
+      if (Math.abs(bearingDelta) > 0) {
         this._state = 'active';
-        const newBearing = this._startBearing + bearing;
+        const newBearing = this._startBearing + bearingDelta;
         return { transform: { bearing : newBearing }};
       }
     }
