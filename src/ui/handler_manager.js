@@ -4,7 +4,7 @@ import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../ui/events';
 import DOM from '../util/dom';
 import type Map from './map';
 import Handler from './handler/handler';
-import { TouchZoomHandler, TouchRotateHandler } from './handler/touch';
+import { TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
 import {extend} from '../util/util';
 
 
@@ -38,6 +38,7 @@ class HandlerManager {
   }
 
   _addDefaultHandlers() {
+    this.add('touchPitch', new TouchPitchHandler(this._map));
     this.add('touchZoom', new TouchZoomHandler(this._map));
     this.add('touchRotate', new TouchRotateHandler(this._map));
   }
@@ -99,6 +100,7 @@ class HandlerManager {
 
 
   processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent) {
+    if (e.cancelable) e.preventDefault();
     let newSettings = {};
     let mapMethods = {};
 
@@ -113,7 +115,6 @@ class HandlerManager {
     }
     // Set map transform accordingly
     if (newSettings.zoom || newSettings.bearing || newSettings.pitch || newSettings.setLocationAtPoint) {
-      if (e.cancelable) e.preventDefault();
       this.updateMapTransform(newSettings);
     }
 

@@ -11,9 +11,9 @@ test('HandlerManager contains default handlers', (t) => {
     const map = createMap(t);
     const hm = map.handlers;
     t.equal(typeof hm.length, 'number', 'should have a numeric .length property');
-    t.equal(hm.length, 2, '.length should be accurate'); //TODO will change
+    t.equal(hm.length, 3, '.length should be accurate'); //TODO will change
     t.ok(hm.touchZoom, 'default handlers should be available through named properties');
-    t.deepEqual(hm.list(), ['touchZoom', 'touchRotate'], '.list() method should return an array of handler names'); //TODO will change
+    t.deepEqual(hm.list(), ['touchPitch', 'touchZoom', 'touchRotate'], '.list() method should return an array of handler names'); //TODO will change
     t.end();
 });
 

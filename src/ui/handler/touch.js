@@ -148,5 +148,53 @@ class TouchRotateHandler extends TouchHandler {
     }
 }
 
+class TouchPitchHandler extends TouchHandler {
+    _horizontalThreshold: number;
+    _startPitch: ?number;
 
-export { TouchHandler, TouchZoomHandler, TouchRotateHandler };
+    constructor(map: Map, options?: Object) {
+      super(map, options);
+      this._horizontalThreshold = 50;
+    }
+
+    _pointsAreHorizontal(pointA, pointB) {
+      return Math.abs(pointA.y - pointB.y) < this._horizontalThreshold;
+    }
+
+    touchstart(e: TouchEvent) {
+      super.touchstart(e);
+      if (!this._startTouchData.isMultiTouch) return;
+      // if (!this._pointsAreHorizontal(this._startTouchData.points[0], this._startTouchData.points[1])) return;
+      this._state = 'pending';
+      this._startPitch = this._map.transform.pitch;
+    }
+
+    touchmove(e: TouchEvent) {
+      if (!(this._state === 'pending' || this._state === 'active')) return;
+      if (!this._startTouchData) return this.touchstart(e);
+      this._lastTouchEvent = e;
+      this._lastTouchData = this._getTouchEventData(e);
+      if (!this._lastTouchData.isMultiTouch) return;
+      const isHorizontal = this._pointsAreHorizontal(this._lastTouchData.points[0], this._lastTouchData.points[1]);
+      if (!isHorizontal) return;
+      const pitchDelta = (this._startTouchData.center.y - this._lastTouchData.center.y) * 0.5;
+
+      if (Math.abs(pitchDelta) > 0) {
+        this._state = 'active';
+        const newPitch = this._startPitch + pitchDelta;
+        this._startTouchEvent = this._lastTouchEvent;
+        this._startTouchData = this._lastTouchData;
+        this._startTime = browser.now();
+        this._startPitch = newPitch;
+        return { transform: { pitch : newPitch }};
+      }
+    }
+
+    deactivate() {
+      delete this._startPitch;
+      super.deactivate();
+    }
+}
+
+
+export { TouchHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler };

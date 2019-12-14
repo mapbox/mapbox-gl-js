@@ -30,6 +30,24 @@ test('TouchZoomHandler is added to manager by default', (t) => {
     t.end();
 });
 
+test('TouchRotateHandler is added to manager by default', (t) => {
+    const map = createMap(t);
+    const hm = map.handlers;
+    t.ok(hm.touchRotate);
+    const h = hm.touchRotate;
+    t.ok(h.isEnabled());
+    t.end();
+});
+
+test('TouchPitchHandler is added to manager by default', (t) => {
+    const map = createMap(t);
+    const hm = map.handlers;
+    t.ok(hm.touchPitch);
+    const h = hm.touchPitch;
+    t.ok(h.isEnabled());
+    t.end();
+});
+
 test('TouchZoomHandler responds to touchstart events', (t) => {
     const map = createMap(t, {zoom: 5});
     const h = map.handlers.touchZoom;
@@ -66,18 +84,19 @@ test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 6, clientY: 8}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
     t.equal(h.touchmove.returnValues[1].transform.zoom, 6, '.touchmove() should return target transform data');
-    t.equal(map.transform.zoom, 6, 'manager should zoom in the map');
+    t.equal(map.getZoom(), 6, 'manager should zoom in the map');
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 1.5, clientY: 2}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
     t.equal(h.touchmove.returnValues[2].transform.zoom, 4, '.touchmove() should return target transform data');
-    t.equal(map.transform.zoom, 4, 'manager should zoom out the map');
+    t.equal(map.getZoom(), 4, 'manager should zoom out the map');
     t.end();
 });
 
 test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => {
     const map = createMap(t, {bearing: 0});
     const hm = map.handlers;
+    map.handlers.touchPitch.disable();
     const h = map.handlers.touchRotate;
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
@@ -92,18 +111,49 @@ test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 3}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
     t.equal(h.touchmove.returnValues[1].transform.bearing, -90, '.touchmove() should return target transform data');
-    t.equal(map.transform.bearing, -90, 'manager should rotate the map clockwise');
+    t.equal(map.getBearing(), -90, 'manager should rotate the map clockwise');
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 2, clientY: 2}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
     t.equal(h.touchmove.returnValues[2].transform.bearing, -45, '.touchmove() should return target transform data');
-    t.equal(map.transform.bearing, -45, 'manager should rotate the map counterclockwise');
+    t.equal(map.getBearing(), -45, 'manager should rotate the map counterclockwise');
     t.end();
 });
+
+test('TouchPitchHandler pitches map appropriately on touchmove events', (t) => {
+    const map = createMap(t, {pitch: 0});
+    const hm = map.handlers;
+    const h = map.handlers.touchPitch;
+    t.spy(h, 'touchstart');
+    t.spy(h, 'touchmove');
+
+    t.stub(console, 'error').callsFake(console.log);
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 2}]});
+    t.equal(h._state, 'enabled', 'single-touch event should not do anything');
+    t.ok(h.touchmove.called && !h.touchmove.returnValues[0], '.touchmove() should be called but return nothing');
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 20}, {clientX: 11, clientY: 20}]});
+    // console.log('after touchstart', h._state, h._startTouchData, h._lastTouchData);
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 0}, {clientX: 11, clientY: 0}]});
+    // console.log('after touchmove', h._state, h._startTouchData, h._lastTouchData);
+    t.equal(h._state, 'active', 'multi-touch event should activate the handler');
+    t.equal(h.touchmove.returnValues[1].transform.pitch, 10, '.touchmove() should return target transform data');
+    t.equal(map.getPitch(), 10, 'manager should pitch the map more');
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 10}, {clientX: 11, clientY: 10}]});
+    t.equal(h._state, 'active', 'multi-touch event should activate the handler');
+    t.equal(h.touchmove.returnValues[2].transform.pitch, 5, '.touchmove() should return target transform data');
+    t.equal(map.getPitch(), 5, 'manager should pitch the map less');
+    t.end();
+});
+
+//TODO test for map zoom/pitch/rotate events
 
 test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously', (t) => {
     const map = createMap(t, {zoom: 5, bearing: 0});
     const hm = map.handlers;
+    hm.touchPitch.disable();
     const rh = map.handlers.touchRotate;
     const zh = map.handlers.touchZoom;
     t.spy(rh, 'touchstart');
@@ -117,20 +167,16 @@ test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously'
     t.notOk(rh.touchmove.called, 'touchstart should not call touchmove method');
     t.notOk(zh.touchmove.called, 'touchstart should not call touchmove method');
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 6}]});
-    console.log('rh.touchmove.returnValues', rh.touchmove.returnValues);
-    console.log('zh.touchmove.returnValues', zh.touchmove.returnValues);
 
     t.equal(rh.touchmove.returnValues[0].transform.bearing, -90, '.touchmove() should return target transform data');
-    t.equal(map.transform.bearing, -90, 'manager should rotate the map clockwise');
+    t.equal(map.getBearing(), -90, 'manager should rotate the map clockwise');
     t.equal(zh.touchmove.returnValues[0].transform.zoom, 6, '.touchmove() should return target transform data');
-    t.equal(map.transform.zoom, 6, 'manager should zoom in the map');
+    t.equal(map.getZoom(), 6, 'manager should zoom in the map');
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 1, clientY: 1}]});
-    console.log('rh.touchmove.returnValues', rh.touchmove.returnValues);
-    console.log('zh.touchmove.returnValues', zh.touchmove.returnValues);
     t.equal(rh.touchmove.returnValues[1].transform.bearing, -45, '.touchmove() should return target transform data');
-    t.equal(map.transform.bearing, -45, 'manager should rotate the map counterclockwise');
+    t.equal(map.getBearing(), -45, 'manager should rotate the map counterclockwise');
     t.equal(Math.round(zh.touchmove.returnValues[1].transform.zoom), 4, '.touchmove() should return target transform data');
-    t.equal(Math.round(map.transform.zoom), 4, 'manager should zoom out the map');
+    t.equal(Math.round(map.getZoom()), 4, 'manager should zoom out the map');
     t.end();
 });
