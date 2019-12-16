@@ -1498,6 +1498,70 @@ test('SourceCache#findLoadedParent', (t) => {
         t.end();
     });
 
+    t.test('Search cache for loaded parent tiles', (t) => {
+        const sourceCache = createSourceCache({});
+        sourceCache.onAdd();
+        const tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        sourceCache.updateCacheSize(tr);
+
+        const mockTile = id => {
+            const tile = {
+                tileID: id,
+                hasData() { return true; }
+            };
+            sourceCache._tiles[id.key] = tile;
+        };
+
+        const tiles = [
+            new OverscaledTileID(0, 0, 0, 0, 0),
+            new OverscaledTileID(1, 0, 1, 1, 0),
+            new OverscaledTileID(2, 0, 2, 0, 0),
+            new OverscaledTileID(2, 0, 2, 1, 0),
+            new OverscaledTileID(2, 0, 2, 2, 0),
+            new OverscaledTileID(2, 0, 2, 1, 2)
+        ];
+
+        tiles.forEach(t => mockTile(t));
+        sourceCache._updateLoadedParentTileCache();
+
+        // Loaded tiles excluding the root should be in the cache
+        t.equal(sourceCache.findLoadedParent(tiles[0], 0), undefined);
+        t.equal(sourceCache.findLoadedParent(tiles[1], 0).tileID, tiles[0]);
+        t.equal(sourceCache.findLoadedParent(tiles[2], 0).tileID, tiles[0]);
+        t.equal(sourceCache.findLoadedParent(tiles[3], 0).tileID, tiles[0]);
+        t.equal(sourceCache.findLoadedParent(tiles[4], 0).tileID, tiles[1]);
+        t.equal(sourceCache.findLoadedParent(tiles[5], 0).tileID, tiles[0]);
+
+        t.equal(tiles[0].key in sourceCache._loadedParentTiles, false);
+        t.equal(tiles[1].key in sourceCache._loadedParentTiles, true);
+        t.equal(tiles[2].key in sourceCache._loadedParentTiles, true);
+        t.equal(tiles[3].key in sourceCache._loadedParentTiles, true);
+        t.equal(tiles[4].key in sourceCache._loadedParentTiles, true);
+        t.equal(tiles[5].key in sourceCache._loadedParentTiles, true);
+
+        // Arbitray tiles should not in the cache
+        const notLoadedTiles = [
+            new OverscaledTileID(2, 1, 2, 0, 0),
+            new OverscaledTileID(2, 0, 2, 3, 0),
+            new OverscaledTileID(2, 0, 2, 3, 3),
+            new OverscaledTileID(3, 0, 3, 2, 1)
+        ];
+
+        t.equal(sourceCache.findLoadedParent(notLoadedTiles[0], 0), undefined);
+        t.equal(sourceCache.findLoadedParent(notLoadedTiles[1], 0).tileID, tiles[1]);
+        t.equal(sourceCache.findLoadedParent(notLoadedTiles[2], 0).tileID, tiles[0]);
+        t.equal(sourceCache.findLoadedParent(notLoadedTiles[3], 0).tileID, tiles[3]);
+
+        t.equal(notLoadedTiles[0].key in sourceCache._loadedParentTiles, false);
+        t.equal(notLoadedTiles[1].key in sourceCache._loadedParentTiles, false);
+        t.equal(notLoadedTiles[2].key in sourceCache._loadedParentTiles, false);
+        t.equal(notLoadedTiles[3].key in sourceCache._loadedParentTiles, false);
+
+        t.end();
+    });
+
     t.end();
 });
 
