@@ -141,3 +141,12 @@ export const plugin: {
         };
     }
 };
+
+export const lazyLoadRTLTextPlugin = function() {
+    if (!plugin.isLoading() &&
+        !plugin.isLoaded() &&
+        getRTLTextPluginStatus() === 'deferred'
+    ) {
+        downloadRTLTextPlugin();
+    }
+};
