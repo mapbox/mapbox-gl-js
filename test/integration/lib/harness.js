@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import glob from 'glob';
 import {shuffle} from 'shuffle-seed';
-import {queue} from 'd3-queue';
+import {queue} from 'd3';
 import colors from 'chalk';
 import template from 'lodash.template';
 import createServer from './server';
