@@ -5,8 +5,6 @@ import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
 import {CollisionBoxArray} from '../../../src/data/array_types';
-import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
-import featureFilter from '../../../src/style-spec/feature_filter';
 import {performSymbolLayout} from '../../../src/symbol/symbol_layout';
 import {Placement} from '../../../src/symbol/placement';
 import Transform from '../../../src/geo/transform';
@@ -14,6 +12,7 @@ import {OverscaledTileID} from '../../../src/source/tile_id';
 import Tile from '../../../src/source/tile';
 import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
 import FeatureIndex from '../../../src/data/feature_index';
+import {createSymbolBucket} from '../../util/create_symbol_layer';
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
@@ -29,21 +28,8 @@ transform.cameraToCenterDistance = 100;
 
 const stacks = {'Test': glyphs};
 
-function bucketSetup() {
-    const layer = new SymbolStyleLayer({
-        id: 'test',
-        type: 'symbol',
-        layout: {'text-font': ['Test'], 'text-field': 'abcde'},
-        filter: featureFilter()
-    });
-    layer.recalculate({zoom: 0, zoomHistory: {}});
-
-    return new SymbolBucket({
-        overscaling: 1,
-        zoom: 0,
-        collisionBoxArray,
-        layers: [layer]
-    });
+function bucketSetup(text = 'abcde') {
+    return createSymbolBucket('test', 'Test', text, collisionBoxArray);
 }
 
 test('SymbolBucket', (t) => {
@@ -98,3 +84,37 @@ test('SymbolBucket integer overflow', (t) => {
     t.ok(console.warn.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));
     t.end();
 });
+
+test('SymbolBucket detects rtl text', (t) => {
+    const rtlBucket = bucketSetup('مرحبا');
+    const ltrBucket = bucketSetup('hello');
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+    rtlBucket.populate([{feature}], options);
+    ltrBucket.populate([{feature}], options);
+
+    t.ok(rtlBucket.hasRTLText);
+    t.notOk(ltrBucket.hasRTLText);
+    t.end();
+});
+
+// Test to prevent symbol bucket with rtl from text being culled by worker serialization.
+test('SymbolBucket with rtl text is NOT empty even though no symbol instances are created', (t) => {
+    const rtlBucket = bucketSetup('مرحبا');
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+    rtlBucket.createArrays();
+    rtlBucket.populate([{feature}], options);
+
+    t.notOk(rtlBucket.isEmpty());
+    t.equal(rtlBucket.symbolInstances.length, 0);
+    t.end();
+});
+
+test('SymbolBucket detects rtl text mixed with ltr text', (t) => {
+    const mixedBucket = bucketSetup('مرحبا translates to hello');
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+    mixedBucket.populate([{feature}], options);
+
+    t.ok(mixedBucket.hasRTLText);
+    t.end();
+});
+
