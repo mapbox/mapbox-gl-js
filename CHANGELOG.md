@@ -1,3 +1,9 @@
+## 1.6.1
+
+## 🐞 Bug Fixes
+* Fix style and expression validation error messages in the browser ([#9073](https://github.com/mapbox/mapbox-gl-js/pull/9073))
+* Fix lazy load of rtl-text-plugin with GeoJSON sources ([#9091](https://github.com/mapbox/mapbox-gl-js/pull/9091))
+
 ## 1.6.0
 
 ## ✨ Features
