@@ -1,6 +1,6 @@
 
 function replacer(k, v) {
-    return (k === 'doc' || k === 'example' || k === 'sdk-support') ? undefined : v;
+    return k === 'doc' || k === 'example' || k === 'sdk-support' || k === 'values' || k === 'requires' ? undefined : v;
 }
 
 export default function minifyStyleSpec() {
