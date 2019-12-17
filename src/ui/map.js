@@ -281,7 +281,8 @@ class Map extends Camera {
     _sourcesDirty: ?boolean;
     _placementDirty: ?boolean;
     _loaded: boolean;
-    _contentLoaded: boolean;
+    // accounts for placement finishing as well
+    _fullyLoaded: boolean;
     _trackResize: boolean;
     _preserveDrawingBuffer: boolean;
     _failIfMajorPerformanceCaveat: boolean;
@@ -2194,14 +2195,13 @@ class Map extends Camera {
         if (somethingDirty || this._repaint) {
             this.triggerRepaint();
         } else if (!this.isMoving() && this.loaded()) {
+            if (!this._fullyLoaded) {
+                this._fullyLoaded = true;
+                PerformanceUtils.mark(PerformanceMarkers.fullLoad);
+            }
             this.fire(new Event('idle'));
         }
 
-        if (this._loaded && !this._contentLoaded && !somethingDirty) {
-            this._contentLoaded = true;
-            PerformanceUtils.mark(PerformanceMarkers.fullLoad);
-            this.fire(new Event('content.load'));
-        }
 
         return this;
     }
