@@ -650,10 +650,10 @@ class SourceCache extends Evented {
     _updateLoadedParentTileCache() {
         this._loadedParentTiles = {};
 
-        for (const tile of (Object.values(this._tiles): any)) {
+        for (const tileKey in this._tiles) {
             const path = [];
             let parentTile: ?Tile;
-            let currentId = tile.tileID;
+            let currentId = this._tiles[tileKey].tileID;
 
             // Find the closest loaded ancestor by traversing the tile tree towards the root and
             // caching results along the way
@@ -678,8 +678,8 @@ class SourceCache extends Evented {
             }
 
             // Cache the result of this traversal to all newly visited tiles
-            for (let i = 0; i < path.length; i++) {
-                this._loadedParentTiles[path[i]] = parentTile;
+            for (const key of path) {
+                this._loadedParentTiles[key] = parentTile;
             }
         }
     }
@@ -927,6 +927,9 @@ SourceCache.maxOverzooming = 10;
 SourceCache.maxUnderzooming = 3;
 
 function compareTileId(a: OverscaledTileID, b: OverscaledTileID): number {
+    // Different copies of the world are sorted based on their distance to the center.
+    // Wrap values are converted to unsigned distances by reserving odd number for copies
+    // with negative wrap and even numbers for copies with positive wrap.
     const aWrap = Math.abs(a.wrap * 2) - +(a.wrap < 0);
     const bWrap = Math.abs(b.wrap * 2) - +(b.wrap < 0);
     return a.overscaledZ - b.overscaledZ || bWrap - aWrap || b.canonical.y - a.canonical.y || b.canonical.x - a.canonical.x;
