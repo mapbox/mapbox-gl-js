@@ -64,6 +64,7 @@ import latest from './reference/latest';
 import format from './format';
 import migrate from './migrate';
 import composite from './composite';
+import derefLayers from './deref';
 import diff from './diff';
 import ValidationError from './error/validation_error';
 import ParsingError from './error/parsing_error';
@@ -103,6 +104,7 @@ export {
     format,
     migrate,
     composite,
+    derefLayers,
     diff,
     ValidationError,
     ParsingError,
