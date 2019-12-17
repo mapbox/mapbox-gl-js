@@ -2202,7 +2202,6 @@ class Map extends Camera {
             this.fire(new Event('idle'));
         }
 
-
         return this;
     }
 
