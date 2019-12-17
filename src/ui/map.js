@@ -269,7 +269,6 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
-    _delegatedOneTimeListeners: any;
     _fadeDuration: number;
     _crossSourceCollisions: boolean;
     _crossFadingFactor: number;
@@ -876,10 +875,6 @@ class Map extends Camera {
 
         const delegatedListener = this._createDelegatedListener(type, layerId, listener);
 
-        this._delegatedOneTimeListeners = this._delegatedOneTimeListeners || {};
-        this._delegatedOneTimeListeners[type] = this._delegatedOneTimeListeners[type] || [];
-        this.delegatedOneTimeListeners[type].push(delegatedListener);
-
         for (const event in delegatedListener.delegates) {
             this.once((event: any), delegatedListener.delegates[event]);
         }
@@ -928,10 +923,6 @@ class Map extends Camera {
 
         if (this._delegatedListeners && this._delegatedListeners[type]) {
             removeDelegatedListener(this._delegatedListeners);
-        }
-
-        if (this._delegatedOneTimeListeners && this._delegatedOneTimeListeners[type]) {
-            removeDelegatedListener(this._delegatedOneTimeListeners);
         }
 
         return this;
