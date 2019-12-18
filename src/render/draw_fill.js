@@ -63,7 +63,15 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
 
     const patternProperty = layer.paint.get('fill-pattern');
     const image = patternProperty && patternProperty.constantOr((1: any));
-    const crossfade = layer.getCrossfadeParameters();
+    let crossfade = layer.getCrossfadeParameters();
+
+    // Hardcode a crossfade parameter to make debugging easier
+    crossfade = {
+        fromScale: 1,
+        toScale: 1,
+        t: 0
+    };
+
     let drawMode, programName, uniformValues, indexBuffer, segments;
 
     if (!isOutline) {
