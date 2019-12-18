@@ -27,6 +27,7 @@ import GeoJSONSource from '../source/geojson_source';
 import styleSpec from '../style-spec/reference/latest';
 import getWorkerPool from '../util/global_worker_pool';
 import deref from '../style-spec/deref';
+import emptyStyle from '../style-spec/empty';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff';
 import {
     registerForPluginStateChange,
@@ -87,6 +88,8 @@ const ignoredDiffOperations = pick(diffOperations, [
     'setBearing',
     'setPitch'
 ]);
+
+const empty = emptyStyle();
 
 export type StyleOptions = {
     validate?: boolean,
@@ -229,6 +232,11 @@ class Style extends Evented {
         });
     }
 
+    loadEmpty() {
+        this.fire(new Event('dataloading', {dataType: 'style'}));
+        this._load(empty, false);
+    }
+
     _load(json: StyleSpecification, validate: boolean) {
         if (validate && emitValidationErrors(this, validateStyle(json))) {
             return;
@@ -356,8 +364,10 @@ class Style extends Evented {
     }
 
     /**
-     * Apply queued style updates in a batch and recalculate zoom-dependent paint properties.
-     */
+ * Apply queued style updates in a batch and recalculate zoom-dependent paint properties.
+ *
+ * @param parameters
+ */
     update(parameters: EvaluationParameters) {
         if (!this._loaded) {
             return;
