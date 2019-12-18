@@ -322,11 +322,11 @@ test('Map', (t) => {
             const map = createMap(t, {style});
             t.equal(map.areTilesLoaded(), true, 'returns true if there are no sources on the map');
             map.on('load', () => {
-
+                const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
                 map.addSource('geojson', createStyleSource());
-                map.style.sourceCaches.geojson._tiles.fakeTile = new Tile(new OverscaledTileID(0, 0, 0, 0, 0));
+                map.style.sourceCaches.geojson._tiles[fakeTileId.key] = new Tile(fakeTileId);
                 t.equal(map.areTilesLoaded(), false, 'returns false if tiles are loading');
-                map.style.sourceCaches.geojson._tiles.fakeTile.state = 'loaded';
+                map.style.sourceCaches.geojson._tiles[fakeTileId.key].state = 'loaded';
                 t.equal(map.areTilesLoaded(), true, 'returns true if tiles are loaded');
                 t.end();
             });
