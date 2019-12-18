@@ -3,10 +3,8 @@
   "$root": {
     "version": {
       "required": true,
-      "type": "enum",
-      "values": [
-        8
-      ],
+      "type": "number",
+      "default": 8,
       "doc": "Style specification version number. Must be 8.",
       "example": 8
     },

@@ -1,6 +1,7 @@
 
 function replacer(k, v) {
-    return k === 'doc' || k === 'example' || k === 'sdk-support' || k === 'values' || k === 'requires' ? undefined : v;
+    if (k === 'values') Object.keys(v).reduce((obj, key) => (obj[key] = true, obj), {});
+    return k === 'doc' || k === 'example' || k === 'sdk-support' || k === 'requires' ? undefined : v;
 }
 
 export default function minifyStyleSpec() {
