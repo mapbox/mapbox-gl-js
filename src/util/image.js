@@ -76,7 +76,6 @@ function copyImage(srcImg: *, dstImg: *, srcPt: Point, dstPt: Point, size: Size,
             dstData[dstOffset + i] = srcData[srcOffset + i];
         }
     }
-
     return dstImg;
 }
 

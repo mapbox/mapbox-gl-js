@@ -6,7 +6,7 @@ import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import WorkerTile from './worker_tile';
 import {extend} from '../util/util';
-import performance from '../util/performance';
+import {RequestPerformance} from '../util/performance';
 
 import type {
     WorkerSource,
@@ -104,7 +104,7 @@ class VectorTileWorkerSource implements WorkerSource {
             this.loading = {};
 
         const perf = (params && params.request && params.request.collectResourceTiming) ?
-            new performance.Performance(params.request) : false;
+            new RequestPerformance(params.request) : false;
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.abort = this.loadVectorData(params, (err, response) => {
