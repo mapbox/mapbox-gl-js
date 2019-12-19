@@ -12,7 +12,8 @@ const notifier = require('node-notifier');
 const rollupDevConfig = require('../../rollup.config').default;
 const rollupTestConfig = require('./rollup.config.test').default;
 
-const fixturePath = 'test/integration/query-tests';
+const rootFixturePath = 'test/integration/';
+const suitePath = 'query-tests';
 const fixtureBuildInterval = 2000;
 
 let beforeHookInvoked = false;
@@ -79,7 +80,7 @@ module.exports =  {
 // Retuns a promise that resolves when all artifacts are built
 function buildArtifactsCi() {
     //1. Compile fixture data into a json file, so it can be bundled
-    generateFixtureJson(fixturePath, {});
+    generateFixtureJson(rootFixturePath, suitePath);
     //2. Build tape
     const tapePromise = buildTape();
     //3. Build test artifacts in parallel
@@ -94,15 +95,15 @@ function buildArtifactsDev() {
     return buildTape().then(() => {
         // A promise that resolves on the first build of fixtures.json
         return new Promise((resolve, reject) => {
-            fixtureWatcher = chokidar.watch(getAllFixtureGlobs(fixturePath));
+            fixtureWatcher = chokidar.watch(getAllFixtureGlobs(rootFixturePath, suitePath));
             let needsRebuild = false;
             fixtureWatcher.on('ready', () => {
-                generateFixtureJson(fixturePath);
+                generateFixtureJson(rootFixturePath, suitePath);
 
                 //Throttle calls to `generateFixtureJson` to run every 2s
                 setInterval(() => {
                     if (needsRebuild) {
-                        generateFixtureJson(fixturePath);
+                        generateFixtureJson(rootFixturePath, suitePath);
                         needsRebuild = false;
                     }
                 }, fixtureBuildInterval);

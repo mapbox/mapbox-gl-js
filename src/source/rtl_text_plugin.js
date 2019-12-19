@@ -3,7 +3,6 @@
 import {Event, Evented} from '../util/evented';
 import {getArrayBuffer} from '../util/ajax';
 import browser from '../util/browser';
-import window from '../util/window';
 import assert from 'assert';
 import {isWorker} from '../util/util';
 
@@ -17,8 +16,7 @@ const status = {
 
 export type PluginState = {
     pluginStatus: $Values<typeof status>;
-    pluginURL: ?string,
-    pluginBlobURL: ?string
+    pluginURL: ?string
 };
 
 type ErrorCallback = (error: ?Error) => void;
@@ -28,7 +26,6 @@ let _completionCallback = null;
 //Variables defining the current state of the plugin
 let pluginStatus = status.unavailable;
 let pluginURL = null;
-let pluginBlobURL = null;
 
 export const triggerPluginCompletionEvent = function(error: ?Error) {
     if (_completionCallback) {
@@ -37,7 +34,7 @@ export const triggerPluginCompletionEvent = function(error: ?Error) {
 };
 
 function sendPluginStateToWorker() {
-    evented.fire(new Event('pluginStateChange', {pluginStatus, pluginURL, pluginBlobURL}));
+    evented.fire(new Event('pluginStateChange', {pluginStatus, pluginURL}));
 }
 
 export const evented = new Evented();
@@ -48,7 +45,7 @@ export const getRTLTextPluginStatus = function () {
 
 export const registerForPluginStateChange = function(callback: PluginStateSyncCallback) {
     // Do an initial sync of the state
-    callback({pluginStatus, pluginURL, pluginBlobURL});
+    callback({pluginStatus, pluginURL});
     // Listen for all future state changes
     evented.on('pluginStateChange', callback);
     return callback;
@@ -57,10 +54,6 @@ export const registerForPluginStateChange = function(callback: PluginStateSyncCa
 export const clearRTLTextPlugin = function() {
     pluginStatus = status.unavailable;
     pluginURL = null;
-    if (pluginBlobURL) {
-        window.URL.revokeObjectURL(pluginBlobURL);
-    }
-    pluginBlobURL = null;
 };
 
 export const setRTLTextPlugin = function(url: string, callback: ?ErrorCallback, deferred: boolean = false) {
@@ -85,12 +78,10 @@ export const downloadRTLTextPlugin = function() {
     pluginStatus = status.loading;
     sendPluginStateToWorker();
     if (pluginURL) {
-        getArrayBuffer({url: pluginURL}, (error, data) => {
+        getArrayBuffer({url: pluginURL}, (error) => {
             if (error) {
                 triggerPluginCompletionEvent(error);
             } else {
-                const rtlBlob = new window.Blob([data], {type: 'application/javascript'});
-                pluginBlobURL = window.URL.createObjectURL(rtlBlob);
                 pluginStatus = status.loaded;
                 sendPluginStateToWorker();
             }
@@ -106,7 +97,7 @@ export const plugin: {
     isLoading: () => boolean,
     setState: (state: PluginState) => void,
     isParsed: () => boolean,
-    getURLs: () => { blob: ?string, host: ?string }
+    getPluginURL: () => ?string
 } = {
     applyArabicShaping: null,
     processBidirectionalText: null,
@@ -123,7 +114,6 @@ export const plugin: {
 
         pluginStatus = state.pluginStatus;
         pluginURL = state.pluginURL;
-        pluginBlobURL = state.pluginBlobURL;
     },
     isParsed(): boolean {
         assert(isWorker(), 'rtl-text-plugin is only parsed on the worker-threads');
@@ -132,12 +122,17 @@ export const plugin: {
             plugin.processBidirectionalText != null &&
             plugin.processStyledBidirectionalText != null;
     },
-    getURLs(): { blob: ?string, host: ?string } {
-        assert(isWorker(), 'rtl-text-plugin urls can only be queried from the worker threads');
+    getPluginURL(): ?string {
+        assert(isWorker(), 'rtl-text-plugin url can only be queried from the worker threads');
+        return pluginURL;
+    }
+};
 
-        return {
-            blob: pluginBlobURL,
-            host: pluginURL,
-        };
+export const lazyLoadRTLTextPlugin = function() {
+    if (!plugin.isLoading() &&
+        !plugin.isLoaded() &&
+        getRTLTextPluginStatus() === 'deferred'
+    ) {
+        downloadRTLTextPlugin();
     }
 };

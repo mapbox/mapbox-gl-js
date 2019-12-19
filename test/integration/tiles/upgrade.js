@@ -2,7 +2,7 @@
 
 const mapnik = require('mapnik');
 const fs = require('fs');
-const queue = require('d3-queue').queue;
+const queue = require('d3').queue;
 
 function upgrade(z, x, y, path, callback) {
     console.log('Updating ', path);

@@ -521,7 +521,9 @@ class SymbolBucket implements Bucket {
     }
 
     isEmpty() {
-        return this.symbolInstances.length === 0;
+        // When the bucket encounters only rtl-text but the plugin isnt loaded, no symbol instances will be created.
+        // In order for the bucket to be serialized, and not discarded as an empty bucket both checks are necessary.
+        return this.symbolInstances.length === 0 && !this.hasRTLText;
     }
 
     uploadPending() {

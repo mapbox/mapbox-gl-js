@@ -10,15 +10,16 @@ exports.generateFixtureJson = generateFixtureJson;
 exports.getAllFixtureGlobs = getAllFixtureGlobs;
 
 /**
- * Analyzes the contents of the specified `directory` ,and inlines
+ * Analyzes the contents of the specified `path.join(rootDirectory, suiteDirectory)`, and inlines
  * the contents into a single json file which can then be imported and built into a bundle
  * to be shipped to the browser.
  *
- * @param {string} directory
+ * @param {string} rootDirectory
+ * @param {string} suiteDirectory
  * @param {boolean} includeImages
  */
-function generateFixtureJson(directory, includeImages = false) {
-    const globs = getAllFixtureGlobs(directory);
+function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false) {
+    const globs = getAllFixtureGlobs(rootDirectory, suiteDirectory);
     const jsonPaths = globs[0];
     const imagePaths = globs[1];
     //Extract the filedata into a flat dictionary
@@ -59,7 +60,7 @@ function generateFixtureJson(directory, includeImages = false) {
     // Re-nest by directory path, each directory path defines a testcase.
     const result = {};
     for (const fullPath in allFiles) {
-        const testName = path.dirname(fullPath).replace('test/integration/', '');
+        const testName = path.dirname(fullPath).replace(rootDirectory, '');
         //Skip if test is malformed
         if (malformedTests[testName]) { continue; }
 
@@ -73,7 +74,7 @@ function generateFixtureJson(directory, includeImages = false) {
     }
 
     const outputStr = JSON.stringify(result, null, 4);
-    const outputPath = path.join('test/integration/dist', OUTPUT_FILE);
+    const outputPath = path.join(outputDirectory, OUTPUT_FILE);
 
     return new Promise((resolve, reject) => {
         fs.writeFile(outputPath, outputStr, {encoding: 'utf8'}, (err) => {
@@ -84,7 +85,8 @@ function generateFixtureJson(directory, includeImages = false) {
     });
 }
 
-function getAllFixtureGlobs(basePath) {
+function getAllFixtureGlobs(rootDirectory, suiteDirectory) {
+    const basePath = path.join(rootDirectory, suiteDirectory);
     const jsonPaths = path.join(basePath, '/**/*.json');
     const imagePaths = path.join(basePath, '/**/*.png');
 
