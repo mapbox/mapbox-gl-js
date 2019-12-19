@@ -299,16 +299,16 @@ export function getGlyphQuads(anchor: Anchor,
                 const center = new Point(-halfAdvance, halfAdvance - SHAPING_DEFAULT_OFFSET);
                 const verticalRotation = -Math.PI / 2;
 
-                // xHalfWidhtOffsetCorrection is a difference between full-width and half-width
+                // xHalfWidthOffsetCorrection is a difference between full-width and half-width
                 // advance, should be 0 for full-width glyphs and will pull up half-width glyphs.
-                const xHalfWidhtOffsetCorrection = ONE_EM / 2 - halfAdvance;
-                const yImageOffsetCorrection = positionedGlyph.imageName ? xHalfWidhtOffsetCorrection : 0.0;
-                const halfWidhtOffsetCorrection = new Point(5 - SHAPING_DEFAULT_OFFSET - xHalfWidhtOffsetCorrection, -yImageOffsetCorrection);
+                const xHalfWidthOffsetCorrection = ONE_EM / 2 - halfAdvance;
+                const yImageOffsetCorrection = positionedGlyph.imageName ? xHalfWidthOffsetCorrection : 0.0;
+                const halfWidthOffsetCorrection = new Point(5 - SHAPING_DEFAULT_OFFSET - xHalfWidthOffsetCorrection, -yImageOffsetCorrection);
                 const verticalOffsetCorrection = new Point(...verticalizedLabelOffset);
-                tl._rotateAround(verticalRotation, center)._add(halfWidhtOffsetCorrection)._add(verticalOffsetCorrection);
-                tr._rotateAround(verticalRotation, center)._add(halfWidhtOffsetCorrection)._add(verticalOffsetCorrection);
-                bl._rotateAround(verticalRotation, center)._add(halfWidhtOffsetCorrection)._add(verticalOffsetCorrection);
-                br._rotateAround(verticalRotation, center)._add(halfWidhtOffsetCorrection)._add(verticalOffsetCorrection);
+                tl._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
+                tr._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
+                bl._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
+                br._rotateAround(verticalRotation, center)._add(halfWidthOffsetCorrection)._add(verticalOffsetCorrection);
             }
 
             if (textRotate) {
