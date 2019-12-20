@@ -1216,6 +1216,14 @@ class Map extends Camera {
         return this;
     }
 
+    _lazyInitEmptyStyle() {
+        if (!this.style) {
+            this.style = new Style(this, {});
+            this.style.setEventedParent(this, {style: this.style});
+            this.style.loadEmpty();
+        }
+    }
+
     _diffStyle(style: StyleSpecification | string,  options?: {diff?: boolean} & StyleOptions) {
         if (typeof style === 'string') {
             const url = this._requestManager.normalizeStyleURL(style);
@@ -1307,6 +1315,7 @@ class Map extends Camera {
      * @see Raster DEM source: [Add hillshading](https://docs.mapbox.com/mapbox-gl-js/example/hillshade/)
      */
     addSource(id: string, source: SourceSpecification) {
+        this._lazyInitEmptyStyle();
         this.style.addSource(id, source);
         return this._update(true);
     }
@@ -1359,6 +1368,7 @@ class Map extends Camera {
      * @param {Function} callback Called when the source type is ready or with an error argument if there is an error.
      */
     addSourceType(name: string, SourceType: any, callback: Function) {
+        this._lazyInitEmptyStyle();
         return this.style.addSourceType(name, SourceType, callback);
     }
 
@@ -1439,7 +1449,7 @@ class Map extends Camera {
     addImage(id: string,
              image: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface,
              {pixelRatio = 1, sdf = false, stretchX, stretchY, content}: $Shape<StyleImageMetadata> = {}) {
-
+        this._lazyInitEmptyStyle();
         const version = 0;
 
         if (image instanceof HTMLImageElement) {
@@ -1627,6 +1637,7 @@ class Map extends Camera {
      * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
      */
     addLayer(layer: LayerSpecification | CustomLayerInterface, beforeId?: string) {
+        this._lazyInitEmptyStyle();
         this.style.addLayer(layer, beforeId);
         return this._update(true);
     }
@@ -1808,6 +1819,7 @@ class Map extends Camera {
      * @returns {Map} `this`
      */
     setLight(light: LightSpecification, options: StyleSetterOptions = {}) {
+        this._lazyInitEmptyStyle();
         this.style.setLight(light, options);
         return this._update(true);
     }
