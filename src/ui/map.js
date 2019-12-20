@@ -838,13 +838,13 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a listener for events of a specified type.
+     * Adds a listener that will be called only once to a specified event type.
      *
      * @method
      * @name once
      * @memberof Map
      * @instance
-     * @param {string} type The event type to add a listen for.
+     * @param {string} type The event type to add a listener for.
      * @param {Function} listener The function to be called when the event is fired.
      *   The listener function is called with the data object passed to `fire`,
      *   extended with `target` and `type` properties.
@@ -852,7 +852,7 @@ class Map extends Camera {
      */
 
     /**
-     * Adds a listener for events of a specified type occurring on features in a specified style layer.
+     * Adds a listener that will be called only once to a specified event type occurring on features in a specified style layer.
      *
      * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'click'`, `'dblclick'`,
      * `'mousemove'`, `'mouseenter'`, `'mouseleave'`, `'mouseover'`, `'mouseout'`, `'contextmenu'`, `'touchstart'`,
