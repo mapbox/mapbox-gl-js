@@ -63,7 +63,6 @@ test('TouchZoomHandler responds to touchstart events', (t) => {
     t.ok(h._startTouchData.isMultiTouch);
     t.equal(h._startTouchData.vector.mag(), 5);
     t.equal(h._state, 'pending', 'single-touch event should trigger "pending" state');
-    t.equal(h._startScale, 32); // z5
     t.end();
 });
 
@@ -83,12 +82,12 @@ test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 4}]});
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 6, clientY: 8}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
-    t.equal(h.touchmove.returnValues[1].transform.zoom, 6, '.touchmove() should return target transform data');
+    t.equal(h.touchmove.returnValues[1].transform.zoomDelta, 1, '.touchmove() should return delta to apply to transform');
     t.equal(map.getZoom(), 6, 'manager should zoom in the map');
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 1.5, clientY: 2}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
-    t.equal(h.touchmove.returnValues[2].transform.zoom, 4, '.touchmove() should return target transform data');
+    t.equal(h.touchmove.returnValues[2].transform.zoomDelta, -2, '.touchmove() should return delta to apply to transform');
     t.equal(map.getZoom(), 4, 'manager should zoom out the map');
     t.end();
 });
@@ -110,12 +109,12 @@ test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 0}]});
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 3}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
-    t.equal(h.touchmove.returnValues[1].transform.bearing, -90, '.touchmove() should return target transform data');
+    t.equal(h.touchmove.returnValues[1].transform.bearingDelta, -90, '.touchmove() should return delta to apply to transform');
     t.equal(map.getBearing(), -90, 'manager should rotate the map clockwise');
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 2, clientY: 2}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
-    t.equal(h.touchmove.returnValues[2].transform.bearing, -45, '.touchmove() should return target transform data');
+    t.equal(h.touchmove.returnValues[2].transform.bearingDelta, 45, '.touchmove() should return delta to apply to transform');
     t.equal(map.getBearing(), -45, 'manager should rotate the map counterclockwise');
     t.end();
 });
@@ -138,12 +137,12 @@ test('TouchPitchHandler pitches map appropriately on touchmove events', (t) => {
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 0}, {clientX: 11, clientY: 0}]});
     // console.log('after touchmove', h._state, h._startTouchData, h._lastTouchData);
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
-    t.equal(h.touchmove.returnValues[1].transform.pitch, 10, '.touchmove() should return target transform data');
+    t.equal(h.touchmove.returnValues[1].transform.pitchDelta, 10, '.touchmove() should return delta to apply to transform');
     t.equal(map.getPitch(), 10, 'manager should pitch the map more');
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 10}, {clientX: 11, clientY: 10}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
-    t.equal(h.touchmove.returnValues[2].transform.pitch, 5, '.touchmove() should return target transform data');
+    t.equal(h.touchmove.returnValues[2].transform.pitchDelta, -5, '.touchmove() should return delta to apply to transform');
     t.equal(map.getPitch(), 5, 'manager should pitch the map less');
     t.end();
 });
@@ -168,15 +167,15 @@ test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously'
     t.notOk(zh.touchmove.called, 'touchstart should not call touchmove method');
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 6}]});
 
-    t.equal(rh.touchmove.returnValues[0].transform.bearing, -90, '.touchmove() should return target transform data');
+    t.equal(rh.touchmove.returnValues[0].transform.bearingDelta, -90, '.touchmove() should return delta to apply to transform');
     t.equal(map.getBearing(), -90, 'manager should rotate the map clockwise');
-    t.equal(zh.touchmove.returnValues[0].transform.zoom, 6, '.touchmove() should return target transform data');
+    t.equal(zh.touchmove.returnValues[0].transform.zoomDelta, 1, '.touchmove() should return delta to apply to transform');
     t.equal(map.getZoom(), 6, 'manager should zoom in the map');
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 1, clientY: 1}]});
-    t.equal(rh.touchmove.returnValues[1].transform.bearing, -45, '.touchmove() should return target transform data');
+    t.equal(rh.touchmove.returnValues[1].transform.bearingDelta, 45, '.touchmove() should return delta to apply to transform');
     t.equal(map.getBearing(), -45, 'manager should rotate the map counterclockwise');
-    t.equal(Math.round(zh.touchmove.returnValues[1].transform.zoom), 4, '.touchmove() should return target transform data');
+    t.equal(Math.round(zh.touchmove.returnValues[1].transform.zoomDelta), -2, '.touchmove() should return delta to apply to transform');
     t.equal(Math.round(map.getZoom()), 4, 'manager should zoom out the map');
     t.end();
 });

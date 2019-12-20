@@ -118,7 +118,7 @@ test('HandlerManager applies transforms requested by handler event processors', 
   const handy = new Handler(map);
   handy.mousedown = (e) => {
     t.equal(e.type, 'mousedown');
-    return { transform: { zoom: 10 }};
+    return { transform: { zoomDelta: 5 }};
   };
   t.spy(handy, 'mousedown');
   hm.add('handy', handy);

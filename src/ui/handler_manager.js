@@ -40,9 +40,9 @@ class HandlerManager {
   }
 
   _addDefaultHandlers() {
-    this.add('touchPitch', new TouchPitchHandler(this._map));
-    this.add('touchZoom', new TouchZoomHandler(this._map));
-    this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
+    this.add('touchPitch', new TouchPitchHandler(this._el));
+    this.add('touchZoom', new TouchZoomHandler(this._el));
+    this.add('touchRotate', new TouchRotateHandler(this._el), ['touchPitch']);
   }
 
   list() {
@@ -109,8 +109,7 @@ class HandlerManager {
 
   processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent) {
     if (e.cancelable) e.preventDefault();
-    let newSettings = {};
-    let mapMethods = {};
+    let transformSettings;
     let activeHandlers = [];
 
     for (const [name, handler] of this._handlers) {
@@ -123,29 +122,30 @@ class HandlerManager {
         if (conflicts.length > 0) continue;
       }
       // validate the update request
-      if (data.transform) extend(newSettings, data.transform);
+      if (data.transform) {
+        if (!transformSettings) { transformSettings = data.transform; }
+        else { extend(transformSettings, data.transform); }
+      }
       activeHandlers.push(name);
     }
     // Set map transform accordingly
-    if (newSettings.zoom || newSettings.bearing || newSettings.pitch || newSettings.setLocationAtPoint) {
-      this.updateMapTransform(newSettings);
-    }
+    if (transformSettings) this.updateMapTransform(transformSettings);
 
     // Call map methods accordingly
     // };
   }
 
-  updateMapTransform(newSettings) {
+  updateMapTransform(settings) {
     const tr = this._map.transform;
-    let { zoom, bearing, pitch, setLocationAtPoint } = newSettings;
-    if (zoom) tr.zoom = zoom;
-    if (bearing) tr.bearing = bearing;
-    if (pitch) tr.pitch = pitch;
+    let { zoomDelta, bearingDelta, pitchDelta, setLocationAtPoint } = settings;
+    if (zoomDelta) tr.zoom += zoomDelta;
+    if (bearingDelta) tr.bearing += bearingDelta;
+    if (pitchDelta) tr.pitch += pitchDelta;
     if (setLocationAtPoint && setLocationAtPoint.length === 2) {
       let [loc, pt] = setLocationAtPoint;
       tr.setLocationAtPoint(loc, pt);
     }
-    this._map._update()
+    this._map._update();
   }
 }
 

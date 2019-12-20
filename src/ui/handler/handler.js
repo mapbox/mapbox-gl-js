@@ -8,10 +8,12 @@ import type Map from '../map';
 class Handler {
   _state: 'disabled' | 'enabled' | 'pending' | 'active';
   _options: Object;
-  _map: Map;
+  // _map: Map;
+  _el: HTMLElement;
 
-  constructor(map: Map, options: ?Object) {
-    this._map = map;
+  constructor(el: HTMLElement, options: ?Object) {
+    // this._map = map;
+    this._el = el;
     this._options = {};
     if (options) this.setOptions(options);
     this._state = 'enabled';

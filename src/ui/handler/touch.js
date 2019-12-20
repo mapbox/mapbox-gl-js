@@ -5,8 +5,8 @@ import Inertia from './inertia';
 import DOM from '../../util/dom';
 import window from '../../util/window';
 import browser from '../../util/browser';
+import Transform from '../../geo/transform';
 
-import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
 
 
@@ -17,15 +17,6 @@ class TouchHandler extends Handler {
   _startTime: ?number;
   _lastTouchEvent: ?TouchEvent;
   _lastTouchData: ?Object;
-
-  /**
-   * @private
-   */
-  constructor(map: Map, options?: Object) {
-    super(map, options);
-    this._el = this._map.getCanvasContainer();
-
-  }
 
   _getTouchEventData(e: TouchEvent) {
       if (!e.touches) throw new Error('no touches', e);
@@ -71,17 +62,11 @@ class TouchHandler extends Handler {
 }
 
 class TouchZoomHandler extends TouchHandler {
-    _startScale: ?number;
-
-    constructor(map: Map, options?: Object) {
-      super(map, options);
-    }
 
     touchstart(e: TouchEvent) {
       super.touchstart(e);
       if (!this._startTouchData.isMultiTouch) return;
       this._state = 'pending';
-      this._startScale = this._map.transform.scale;
     }
 
     touchmove(e: TouchEvent) {
@@ -94,33 +79,21 @@ class TouchZoomHandler extends TouchHandler {
       const scale = this._lastTouchData.vector.mag() / this._startTouchData.vector.mag();
       if (scale !== 1) {
         this._state = 'active';
-        const newZoom = this._map.transform.scaleZoom(this._startScale * scale);
+        const zoomDelta = Transform.prototype.scaleZoom(scale);
         this._startTouchEvent = this._lastTouchEvent;
         this._startTouchData = this._lastTouchData;
         this._startTime = browser.now();
-        this._startScale = this._startScale * scale;
-        return { transform: { zoom : newZoom }};
+        return { transform: { zoomDelta }};
       }
-    }
-
-    deactivate() {
-      delete this._startScale;
-      super.deactivate();
     }
 }
 
 class TouchRotateHandler extends TouchHandler {
-    _startBearing: ?number;
-
-    constructor(map: Map, options?: Object) {
-      super(map, options);
-    }
 
     touchstart(e: TouchEvent) {
       super.touchstart(e);
       if (!this._startTouchData.isMultiTouch) return;
       this._state = 'pending';
-      this._startBearing = this._map.transform.bearing;
     }
 
     touchmove(e: TouchEvent) {
@@ -133,27 +106,19 @@ class TouchRotateHandler extends TouchHandler {
       const bearingDelta = this._lastTouchData.vector.angleWith(this._startTouchData.vector) * 180 / Math.PI
       if (Math.abs(bearingDelta) > 0) {
         this._state = 'active';
-        const newBearing = this._startBearing + bearingDelta;
         this._startTouchEvent = this._lastTouchEvent;
         this._startTouchData = this._lastTouchData;
         this._startTime = browser.now();
-        this._startBearing = newBearing;
-        return { transform: { bearing : newBearing }};
+        return { transform: { bearingDelta }};
       }
-    }
-
-    deactivate() {
-      delete this._startBearing;
-      super.deactivate();
     }
 }
 
 class TouchPitchHandler extends TouchHandler {
     _horizontalThreshold: number;
-    _startPitch: ?number;
 
-    constructor(map: Map, options?: Object) {
-      super(map, options);
+    constructor(el: HTMLElement, options?: Object) {
+      super(el, options);
       this._horizontalThreshold = 50;
     }
 
@@ -164,9 +129,7 @@ class TouchPitchHandler extends TouchHandler {
     touchstart(e: TouchEvent) {
       super.touchstart(e);
       if (!this._startTouchData.isMultiTouch) return;
-      // if (!this._pointsAreHorizontal(this._startTouchData.points[0], this._startTouchData.points[1])) return;
       this._state = 'pending';
-      this._startPitch = this._map.transform.pitch;
     }
 
     touchmove(e: TouchEvent) {
@@ -181,18 +144,11 @@ class TouchPitchHandler extends TouchHandler {
 
       if (Math.abs(pitchDelta) > 0) {
         this._state = 'active';
-        const newPitch = this._startPitch + pitchDelta;
         this._startTouchEvent = this._lastTouchEvent;
         this._startTouchData = this._lastTouchData;
         this._startTime = browser.now();
-        this._startPitch = newPitch;
-        return { transform: { pitch : newPitch }};
+        return { transform: { pitchDelta }};
       }
-    }
-
-    deactivate() {
-      delete this._startPitch;
-      super.deactivate();
     }
 }
 
