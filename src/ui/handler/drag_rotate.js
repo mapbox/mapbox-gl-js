@@ -242,7 +242,7 @@ class DragRotateHandler {
             this._el.click();
         }
 
-        if (DOM.mouseButton(e) !== this._eventButton) return;
+        if (!touchEvent && DOM.mouseButton(e) !== this._eventButton) return;
         switch (this._state) {
         case 'active':
             this._state = 'enabled';
