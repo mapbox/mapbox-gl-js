@@ -40,9 +40,9 @@ class HandlerManager {
   }
 
   _addDefaultHandlers() {
-    this.add('touchPitch', new TouchPitchHandler(this._el));
-    this.add('touchZoom', new TouchZoomHandler(this._el));
-    this.add('touchRotate', new TouchRotateHandler(this._el), ['touchPitch']);
+    this.add('touchPitch', new TouchPitchHandler(this._map));
+    this.add('touchZoom', new TouchZoomHandler(this._map));
+    this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
   }
 
   list() {

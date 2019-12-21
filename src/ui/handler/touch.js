@@ -5,18 +5,25 @@ import Inertia from './inertia';
 import DOM from '../../util/dom';
 import window from '../../util/window';
 import browser from '../../util/browser';
-import Transform from '../../geo/transform';
 
+import type Map from '../map';
+import type Transform from '../../geo/transform';
 import type Point from '@mapbox/point-geometry';
 
 
 class TouchHandler extends Handler {
   _el: HTMLElement;
+  _transform: Transform;
   _startTouchEvent: ?TouchEvent;
   _startTouchData: ?Object;
   _startTime: ?number;
   _lastTouchEvent: ?TouchEvent;
   _lastTouchData: ?Object;
+
+  constructor(map: Map, options: ?Object) {
+    super(map, options);
+    this._transform = map.transform;
+  }
 
   _getTouchEventData(e: TouchEvent) {
       if (!e.touches) throw new Error('no touches', e);
