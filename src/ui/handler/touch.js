@@ -29,9 +29,10 @@ class TouchHandler extends Handler {
       if (!e.touches) throw new Error('no touches', e);
       const isMultiTouch = e.touches.length > 1;
       let points = DOM.touchPos(this._el, e);
-      const center = isMultiTouch ? points[0].add(points[1]).div(2) : points[0];
+      const centerPoint = isMultiTouch ? points[0].add(points[1]).div(2) : points[0];
+      const centerLocation = this._transform.pointLocation(centerPoint);
       const vector = isMultiTouch ? points[0].sub(points[1]) : null ;
-      return { isMultiTouch, points, center, vector };
+      return { isMultiTouch, points, centerPoint, centerLocation, vector };
   }
 
 
@@ -70,6 +71,10 @@ class TouchHandler extends Handler {
 
 class TouchZoomHandler extends TouchHandler {
 
+    get _threshold() {
+      return this._state === 'active' ? 0 : 0.15;
+    }
+
     touchstart(e: TouchEvent) {
       super.touchstart(e);
       if (!this._startTouchData.isMultiTouch) return;
@@ -84,18 +89,24 @@ class TouchZoomHandler extends TouchHandler {
       if (!this._lastTouchData.isMultiTouch) return;
       // TODO check time vs. start time to prevent responding to spurious events (vs. tap)
       const scale = this._lastTouchData.vector.mag() / this._startTouchData.vector.mag();
-      if (scale !== 1) {
+      if (Math.abs(1 - scale) > this._threshold) {
         this._state = 'active';
-        const zoomDelta = Transform.prototype.scaleZoom(scale);
+        const zoomDelta = this._transform.scaleZoom(scale);
+        const aroundLocation = this._lastTouchData.centerLocation;
+        const aroundPoint = this._lastTouchData.centerPoint;
         this._startTouchEvent = this._lastTouchEvent;
         this._startTouchData = this._lastTouchData;
         this._startTime = browser.now();
-        return { transform: { zoomDelta }};
+        return { transform: { zoomDelta, setLocationAtPoint: [aroundLocation, aroundPoint] }};
       }
     }
 }
 
 class TouchRotateHandler extends TouchHandler {
+
+    get _threshold() {
+      return 0;
+    }
 
     touchstart(e: TouchEvent) {
       super.touchstart(e);
@@ -111,12 +122,18 @@ class TouchRotateHandler extends TouchHandler {
       if (!this._lastTouchData.isMultiTouch) return;
       // TODO check time vs. start time to prevent responding to spurious events?
       const bearingDelta = this._lastTouchData.vector.angleWith(this._startTouchData.vector) * 180 / Math.PI
-      if (Math.abs(bearingDelta) > 0) {
+
+      this._startTouchEvent = this._lastTouchEvent;
+      this._startTouchData = this._lastTouchData;
+      this._startTime = browser.now();
+
+      if (Math.abs(bearingDelta) > this._threshold) {
         this._state = 'active';
-        this._startTouchEvent = this._lastTouchEvent;
-        this._startTouchData = this._lastTouchData;
-        this._startTime = browser.now();
-        return { transform: { bearingDelta }};
+        const aroundLocation = this._lastTouchData.centerLocation;
+        const aroundPoint = this._lastTouchData.centerPoint;
+        return { transform: { bearingDelta, setLocationAtPoint: [aroundLocation, aroundPoint] }};
+      } else {
+        this._state = 'pending'
       }
     }
 }
@@ -147,14 +164,19 @@ class TouchPitchHandler extends TouchHandler {
       if (!this._lastTouchData.isMultiTouch) return;
       const isHorizontal = this._pointsAreHorizontal(this._lastTouchData.points[0], this._lastTouchData.points[1]);
       if (!isHorizontal) return;
-      const pitchDelta = (this._startTouchData.center.y - this._lastTouchData.center.y) * 0.5;
+      const pitchDelta = (this._startTouchData.centerPoint.y - this._lastTouchData.centerPoint.y) * 0.5;
+
+      this._startTouchEvent = this._lastTouchEvent;
+      this._startTouchData = this._lastTouchData;
+      this._startTime = browser.now();
 
       if (Math.abs(pitchDelta) > 0) {
         this._state = 'active';
-        this._startTouchEvent = this._lastTouchEvent;
-        this._startTouchData = this._lastTouchData;
-        this._startTime = browser.now();
-        return { transform: { pitchDelta }};
+        // const aroundLocation = this._lastTouchData.centerLocation;
+        // const aroundPoint = this._lastTouchData.centerPoint;
+        return { transform: { pitchDelta}};
+      } else {
+        this._state = 'pending';
       }
     }
 }
