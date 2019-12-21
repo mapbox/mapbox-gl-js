@@ -123,8 +123,9 @@ class HandlerManager {
       }
       // validate the update request
       if (data.transform) {
-        if (!transformSettings) { transformSettings = data.transform; }
-        else { extend(transformSettings, data.transform); }
+        const merged = data.transform
+        if (!!transformSettings) extend(merged, transformSettings)
+        transformSettings = merged;
       }
       activeHandlers.push(name);
     }
