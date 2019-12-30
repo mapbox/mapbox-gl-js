@@ -159,8 +159,7 @@ class Style extends Evented {
         this._rtlTextPluginCallback = Style.registerForPluginStateChange((event) => {
             const state = {
                 pluginStatus: event.pluginStatus,
-                pluginURL: event.pluginURL,
-                pluginBlobURL: event.pluginBlobURL
+                pluginURL: event.pluginURL
             };
             self.dispatcher.broadcast('syncRTLPluginState', state, (err, results) => {
                 triggerPluginCompletionEvent(err);

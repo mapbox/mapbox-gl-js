@@ -156,15 +156,15 @@ export default class Worker {
     syncRTLPluginState(map: string, state: PluginState, callback: Callback<boolean>) {
         try {
             globalRTLTextPlugin.setState(state);
-            const {blob, host} = globalRTLTextPlugin.getURLs();
+            const pluginURL = globalRTLTextPlugin.getPluginURL();
             if (
                 globalRTLTextPlugin.isLoaded() &&
                 !globalRTLTextPlugin.isParsed() &&
-                blob != null && host != null // Not possible when `isLoaded` is true, but keeps flow happy
+                pluginURL != null // Not possible when `isLoaded` is true, but keeps flow happy
             ) {
-                this.self.importScripts(blob);
+                this.self.importScripts(pluginURL);
                 const complete = globalRTLTextPlugin.isParsed();
-                const error = complete ? undefined : new Error(`RTL Text Plugin failed to import scripts from ${host}`);
+                const error = complete ? undefined : new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`);
                 callback(error, complete);
             }
         } catch (e) {

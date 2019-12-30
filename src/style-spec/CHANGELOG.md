@@ -1,3 +1,8 @@
+## 13.10.1
+
+### 🐛 Bug fixes
+* Fix an incorrect import of the `script_detection` module which breaks projects that rely on importing submodules directly.
+
 ## 13.10.0
 
 ### ✨ Features and improvements
