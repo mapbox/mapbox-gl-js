@@ -57,6 +57,11 @@ test('hash', (t) => {
         t.equal(map.getBearing(), 0);
         t.equal(map.getPitch(), 0);
 
+        // map is created with `interactive: false`
+        // so explicitly enable rotation for this test
+        map.dragRotate.enable();
+        map.touchZoomRotate.enable();
+
         window.location.hash = '#5/1.00/0.50/30/60';
 
         hash._onHashChange();
@@ -66,6 +71,33 @@ test('hash', (t) => {
         t.equal(map.getZoom(), 5);
         t.equal(map.getBearing(), 30);
         t.equal(map.getPitch(), 60);
+
+        // disable rotation to test that updating
+        // the hash's bearing won't change the map
+        map.dragRotate.disable();
+        map.touchZoomRotate.disable();
+
+        window.location.hash = '#5/1.00/0.50/-45/60';
+
+        hash._onHashChange();
+
+        t.equal(map.getCenter().lng, 0.5);
+        t.equal(map.getCenter().lat, 1);
+        t.equal(map.getZoom(), 5);
+        t.equal(map.getBearing(), 30);
+        t.equal(map.getPitch(), 60);
+
+        // test that a hash with no bearing resets
+        // to the previous bearing when rotation is disabled
+        window.location.hash = '#5/1.00/0.50/';
+
+        hash._onHashChange();
+
+        t.equal(map.getCenter().lng, 0.5);
+        t.equal(map.getCenter().lat, 1);
+        t.equal(map.getZoom(), 5);
+        t.equal(map.getBearing(), 30);
+        t.equal(window.location.hash, '#5/1/0.5/30');
 
         window.location.hash = '#4/wrongly/formed/hash';
 
