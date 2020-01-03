@@ -437,17 +437,17 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.setAttribute('aria-pressed', 'true');
 
                 numberOfWatches++;
-                let options;
+                let positionOptions;
                 if (numberOfWatches > 1) {
-                    options = {maximumAge:600000, timeout:0};
+                    positionOptions = {maximumAge:600000, timeout:0};
                     noTimeout = true;
                 } else {
-                    options = this.options.positionOptions;
+                    positionOptions = this.options.positionOptions;
                     noTimeout = false;
                 }
 
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
-                    this._onSuccess, this._onError, options);
+                    this._onSuccess, this._onError, positionOptions);
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
