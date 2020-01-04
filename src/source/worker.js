@@ -9,6 +9,7 @@ import GeoJSONWorkerSource from './geojson_worker_source';
 import assert from 'assert';
 import {plugin as globalRTLTextPlugin} from './rtl_text_plugin';
 import {enforceCacheSizeLimit} from '../util/tile_request_cache';
+import {stubAbortController, restoreAbortController} from '../util/abort-controller-stub';
 
 import type {
     WorkerSource,
@@ -223,6 +224,14 @@ export default class Worker {
 
     enforceCacheSizeLimit(mapId: string, limit: number) {
         enforceCacheSizeLimit(limit);
+    }
+
+    mockAbortController(stub: ?boolean) {
+        if (stub) {
+            stubAbortController();
+        } else {
+            restoreAbortController();
+        }
     }
 }
 
