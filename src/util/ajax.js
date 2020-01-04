@@ -34,6 +34,8 @@ if (typeof Object.freeze == 'function') {
     Object.freeze(ResourceType);
 }
 
+let _requestAbortingEnabled = true;
+
 /**
  * A `RequestParameters` object to be returned from Map.options.transformRequest callbacks.
  * @typedef {Object} RequestParameters
@@ -176,7 +178,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
     return {cancel: () => {
         aborted = true;
-        if (!complete) controller.abort();
+        if (!complete && _requestAbortingEnabled) controller.abort();
     }};
 }
 
@@ -215,7 +217,11 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
         }
     };
     xhr.send(requestParameters.body);
-    return {cancel: () => xhr.abort()};
+    return {
+        cancel: () => {
+            if (_requestAbortingEnabled) xhr.abort();
+        }
+    };
 }
 
 export const makeRequest = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
@@ -364,4 +370,12 @@ export const getVideo = function(urls: Array<string>, callback: Callback<HTMLVid
         video.appendChild(s);
     }
     return {cancel: () => {}};
+};
+
+export const disableRequestAborting = function() {
+    _requestAbortingEnabled = false;
+};
+
+export const enableRequestAborting = function() {
+    _requestAbortingEnabled = true;
 };
