@@ -176,7 +176,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
     return {cancel: () => {
         aborted = true;
-        //if (!complete) controller.abort();
+        if (!complete) controller.abort();
     }};
 }
 
