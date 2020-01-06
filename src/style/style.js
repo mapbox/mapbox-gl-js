@@ -1365,7 +1365,8 @@ class Style extends Evented {
 
     numInflightRequests(cb: (count: number) => void) {
         const mainThreadRequests = inflightRequestCount();
-        this.dispatcher.broadcast('getNumInflightRequests', null, (counts) => {
+        this.dispatcher.broadcast('getNumInflightRequests', 0, (err, counts) => {
+            if (err) { throw err; }
             cb(mainThreadRequests + counts.reduce((accum, curr) => accum + curr, 0));
         });
     }
