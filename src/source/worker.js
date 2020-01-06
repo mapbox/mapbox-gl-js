@@ -9,7 +9,7 @@ import GeoJSONWorkerSource from './geojson_worker_source';
 import assert from 'assert';
 import {plugin as globalRTLTextPlugin} from './rtl_text_plugin';
 import {enforceCacheSizeLimit} from '../util/tile_request_cache';
-import {enableRequestAborting, disableRequestAborting} from '../util/ajax';
+import {enableRequestAborting, disableRequestAborting, inflightRequestCount} from '../util/ajax';
 
 import type {
     WorkerSource,
@@ -232,6 +232,10 @@ export default class Worker {
 
     disableRequestAborting() {
         disableRequestAborting();
+    }
+
+    getNumInflightRequests(): number {
+        return inflightRequestCount();
     }
 }
 

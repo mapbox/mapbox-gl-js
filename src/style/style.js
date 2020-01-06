@@ -11,7 +11,7 @@ import GlyphManager from '../render/glyph_manager';
 import Light from './light';
 import LineAtlas from '../render/line_atlas';
 import {pick, clone, extend, deepEqual, filterObject, mapObject} from '../util/util';
-import {getJSON, getReferrer, makeRequest, ResourceType, enableRequestAborting, disableRequestAborting} from '../util/ajax';
+import {getJSON, getReferrer, makeRequest, ResourceType, enableRequestAborting, disableRequestAborting, inflightRequestCount} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
@@ -1361,6 +1361,13 @@ class Style extends Evented {
     enableFetchCancellation() {
         enableRequestAborting();
         this.dispatcher.broadcast('enableRequestAborting');
+    }
+
+    getNumInflightRequests(cb: (count: number) => void) {
+        const mainThreadRequests = inflightRequestCount();
+        this.dispatcher.broadcast('getNumInflightRequests', null, (counts) => {
+            cb(mainThreadRequests + counts.reduce((accum, curr) => accum + curr, 0));
+        });
     }
 }
 

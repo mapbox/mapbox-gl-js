@@ -35,6 +35,7 @@ if (typeof Object.freeze == 'function') {
 }
 
 let _requestAbortingEnabled = true;
+let _inflightRequestCount = 0;
 
 /**
  * A `RequestParameters` object to be returned from Map.options.transformRequest callbacks.
@@ -131,7 +132,9 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
         const requestTime = Date.now();
 
+        _inflightRequestCount++;
         window.fetch(request).then(response => {
+            _inflightRequestCount--;
             if (response.ok) {
                 const cacheableResponse = cacheIgnoringSearch ? response.clone() : null;
                 return finishRequest(response, cacheableResponse, requestTime);
@@ -140,6 +143,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 return callback(new AJAXError(response.statusText, response.status, requestParameters.url));
             }
         }).catch(error => {
+            _inflightRequestCount--;
             if (error.code === 20) {
                 // silence expected AbortError
                 return;
@@ -178,6 +182,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
     return {cancel: () => {
         aborted = true;
+        _inflightRequestCount--;
         if (!complete && _requestAbortingEnabled) controller.abort();
     }};
 }
@@ -198,9 +203,11 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
     }
     xhr.withCredentials = requestParameters.credentials === 'include';
     xhr.onerror = () => {
+        _inflightRequestCount--;
         callback(new Error(xhr.statusText));
     };
     xhr.onload = () => {
+        _inflightRequestCount--;
         if (((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) && xhr.response !== null) {
             let data: mixed = xhr.response;
             if (requestParameters.type === 'json') {
@@ -216,6 +223,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
             callback(new AJAXError(xhr.statusText, xhr.status, requestParameters.url));
         }
     };
+    _inflightRequestCount++;
     xhr.send(requestParameters.body);
     return {
         cancel: () => {
@@ -378,4 +386,8 @@ export const disableRequestAborting = function() {
 
 export const enableRequestAborting = function() {
     _requestAbortingEnabled = true;
+};
+
+export const inflightRequestCount =  function(): number {
+    return _inflightRequestCount;
 };
