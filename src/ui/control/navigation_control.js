@@ -103,7 +103,8 @@ class NavigationControl {
             }
             this._map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
-            this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
+            // Temporary fix with clickTolerance (https://github.com/mapbox/mapbox-gl-js/pull/9015)
+            this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass, clickTolerance: map.dragRotate._clickTolerance});
             DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
             DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, {passive: false});
             this._handler.enable();
