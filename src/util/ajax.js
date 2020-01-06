@@ -182,8 +182,10 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
     return {cancel: () => {
         aborted = true;
-        _inflightRequestCount--;
-        if (!complete && _requestAbortingEnabled) controller.abort();
+        if (!complete && _requestAbortingEnabled) {
+            _inflightRequestCount--;
+            controller.abort();
+        }
     }};
 }
 
@@ -227,7 +229,10 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
     xhr.send(requestParameters.body);
     return {
         cancel: () => {
-            if (_requestAbortingEnabled) xhr.abort();
+            if (_requestAbortingEnabled) {
+                _inflightRequestCount--;
+                xhr.abort();
+            }
         }
     };
 }
