@@ -1363,7 +1363,7 @@ class Style extends Evented {
         this.dispatcher.broadcast('enableRequestAborting');
     }
 
-    getNumInflightRequests(cb: (count: number) => void) {
+    numInflightRequests(cb: (count: number) => void) {
         const mainThreadRequests = inflightRequestCount();
         this.dispatcher.broadcast('getNumInflightRequests', null, (counts) => {
             cb(mainThreadRequests + counts.reduce((accum, curr) => accum + curr, 0));
