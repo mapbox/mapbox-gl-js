@@ -61,7 +61,7 @@ test('SymbolBucket', (t) => {
         const parts = [];
         placement.getBucketParts(parts, layer, tile, false);
         for (const part of parts) {
-            placement.placeLayerBucket(part, {}, false);
+            placement.placeLayerBucketPart(part, {}, false);
         }
     };
     const a = placement.collisionIndex.grid.keysLength();

@@ -327,7 +327,7 @@ export class Placement {
         }
     }
 
-    placeLayerBucket(bucketPart: Object, seenCrossTileIDs: { [string | number]: boolean }, showCollisionBoxes: boolean) {
+    placeLayerBucketPart(bucketPart: Object, seenCrossTileIDs: { [string | number]: boolean }, showCollisionBoxes: boolean) {
 
         const {
             bucket,

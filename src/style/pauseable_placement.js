@@ -18,8 +18,7 @@ class LayerPlacement {
     _bucketParts: Array<BucketPart>;
 
     constructor(styleLayer: SymbolStyleLayer) {
-        this._sortAcrossTiles = styleLayer.type === 'symbol' &&
-            styleLayer.layout.get('symbol-z-order') !== 'viewport-y' &&
+        this._sortAcrossTiles = styleLayer.layout.get('symbol-z-order') !== 'viewport-y' &&
             styleLayer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
 
         this._currentTileIndex = 0;
@@ -49,13 +48,14 @@ class LayerPlacement {
 
         while (this._currentPartIndex < bucketParts.length) {
             const bucketPart = bucketParts[this._currentPartIndex];
-            placement.placeLayerBucket(bucketPart, this._seenCrossTileIDs, showCollisionBoxes);
+            placement.placeLayerBucketPart(bucketPart, this._seenCrossTileIDs, showCollisionBoxes);
 
             this._currentPartIndex++;
             if (shouldPausePlacement()) {
                 return true;
             }
         }
+        return false;
     }
 }
 
