@@ -134,7 +134,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
         _inflightRequestCount++;
         window.fetch(request).then(response => {
-            _inflightRequestCount--;
+            _inflightRequestCount = Math.max(_inflightRequestCount - 1, 0);
             if (response.ok) {
                 const cacheableResponse = cacheIgnoringSearch ? response.clone() : null;
                 return finishRequest(response, cacheableResponse, requestTime);
@@ -143,7 +143,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 return callback(new AJAXError(response.statusText, response.status, requestParameters.url));
             }
         }).catch(error => {
-            _inflightRequestCount--;
+            _inflightRequestCount = Math.max(_inflightRequestCount - 1, 0);
             if (error.code === 20) {
                 // silence expected AbortError
                 return;
@@ -183,7 +183,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
     return {cancel: () => {
         aborted = true;
         if (!complete && _requestAbortingEnabled) {
-            _inflightRequestCount--;
+            _inflightRequestCount = Math.max(_inflightRequestCount - 1, 0);
             controller.abort();
         }
     }};
@@ -205,11 +205,11 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
     }
     xhr.withCredentials = requestParameters.credentials === 'include';
     xhr.onerror = () => {
-        _inflightRequestCount--;
+        _inflightRequestCount = Math.max(_inflightRequestCount - 1, 0);
         callback(new Error(xhr.statusText));
     };
     xhr.onload = () => {
-        _inflightRequestCount--;
+        _inflightRequestCount = Math.max(_inflightRequestCount - 1, 0);
         if (((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) && xhr.response !== null) {
             let data: mixed = xhr.response;
             if (requestParameters.type === 'json') {
@@ -230,7 +230,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
     return {
         cancel: () => {
             if (_requestAbortingEnabled) {
-                _inflightRequestCount--;
+                _inflightRequestCount = Math.max(_inflightRequestCount - 1, 0);
                 xhr.abort();
             }
         }
