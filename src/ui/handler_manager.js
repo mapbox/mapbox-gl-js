@@ -8,6 +8,13 @@ import { TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handl
 import {extend} from '../util/util';
 
 
+const defaultHandlers = [
+  // [name, handler, disableDuring]
+  ['touchPitch', new TouchPitchHandler(this._map)],
+  ['touchZoom', new TouchZoomHandler(this._map)],
+  ['touchRotate', new TouchRotateHandler(this._map), ['touchPitch']]
+];
+
 class HandlerManager {
   _map: Map;
   _el: HTMLElement;
@@ -22,8 +29,9 @@ class HandlerManager {
     this._handlers = [];
     this._disableDuring = {};
 
-
-    this._addDefaultHandlers();
+    for (const [name, handler, disableDuring] of defaultHandlers) {
+      this.add(name, handler, disableDuring);
+    }
 
     // Bind touchstart and touchmove with passive: false because, even though
     // they only fire a map events and therefore could theoretically be
@@ -37,12 +45,6 @@ class HandlerManager {
 
     this.addMouseListener('mousedown');
     this.addMouseListener('mouseup');
-  }
-
-  _addDefaultHandlers() {
-    this.add('touchPitch', new TouchPitchHandler(this._map));
-    this.add('touchZoom', new TouchZoomHandler(this._map));
-    this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
   }
 
   list() {
