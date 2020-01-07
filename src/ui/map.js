@@ -855,6 +855,54 @@ class Map extends Camera {
             this.dragRotate.isActive();
     }
 
+    _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
+        if (type === 'mouseenter' || type === 'mouseover') {
+            let mousein = false;
+            const mousemove = (e) => {
+                const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
+                if (!features.length) {
+                    mousein = false;
+                } else if (!mousein) {
+                    mousein = true;
+                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent, {features}));
+                }
+            };
+            const mouseout = () => {
+                mousein = false;
+            };
+            return {layer: layerId, listener, delegates: {mousemove, mouseout}};
+        } else if (type === 'mouseleave' || type === 'mouseout') {
+            let mousein = false;
+            const mousemove = (e) => {
+                const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
+                if (features.length) {
+                    mousein = true;
+                } else if (mousein) {
+                    mousein = false;
+                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
+                }
+            };
+            const mouseout = (e) => {
+                if (mousein) {
+                    mousein = false;
+                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
+                }
+            };
+            return {layer: layerId, listener, delegates: {mousemove, mouseout}};
+        } else {
+            const delegate = (e) => {
+                const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
+                if (features.length) {
+                    // Here we need to mutate the original event, so that preventDefault works as expected.
+                    e.features = features;
+                    listener.call(this, e);
+                    delete e.features;
+                }
+            };
+            return {layer: layerId, listener, delegates: {[type]: delegate}};
+        }
+    }
+
     /**
      * Adds a listener for events of a specified type.
      *
@@ -889,53 +937,7 @@ class Map extends Camera {
             return super.on(type, layerId);
         }
 
-        const delegatedListener = (() => {
-            if (type === 'mouseenter' || type === 'mouseover') {
-                let mousein = false;
-                const mousemove = (e) => {
-                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
-                    if (!features.length) {
-                        mousein = false;
-                    } else if (!mousein) {
-                        mousein = true;
-                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent, {features}));
-                    }
-                };
-                const mouseout = () => {
-                    mousein = false;
-                };
-                return {layer: layerId, listener, delegates: {mousemove, mouseout}};
-            } else if (type === 'mouseleave' || type === 'mouseout') {
-                let mousein = false;
-                const mousemove = (e) => {
-                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
-                    if (features.length) {
-                        mousein = true;
-                    } else if (mousein) {
-                        mousein = false;
-                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
-                    }
-                };
-                const mouseout = (e) => {
-                    if (mousein) {
-                        mousein = false;
-                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
-                    }
-                };
-                return {layer: layerId, listener, delegates: {mousemove, mouseout}};
-            } else {
-                const delegate = (e) => {
-                    const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
-                    if (features.length) {
-                        // Here we need to mutate the original event, so that preventDefault works as expected.
-                        e.features = features;
-                        listener.call(this, e);
-                        delete e.features;
-                    }
-                };
-                return {layer: layerId, listener, delegates: {[type]: delegate}};
-            }
-        })();
+        const delegatedListener = this._createDelegatedListener(type, layerId, listener);
 
         this._delegatedListeners = this._delegatedListeners || {};
         this._delegatedListeners[type] = this._delegatedListeners[type] || [];
@@ -943,6 +945,51 @@ class Map extends Camera {
 
         for (const event in delegatedListener.delegates) {
             this.on((event: any), delegatedListener.delegates[event]);
+        }
+
+        return this;
+    }
+
+    /**
+     * Adds a listener that will be called only once to a specified event type.
+     *
+     * @method
+     * @name once
+     * @memberof Map
+     * @instance
+     * @param {string} type The event type to add a listener for.
+     * @param {Function} listener The function to be called when the event is fired.
+     *   The listener function is called with the data object passed to `fire`,
+     *   extended with `target` and `type` properties.
+     * @returns {Map} `this`
+     */
+
+    /**
+     * Adds a listener that will be called only once to a specified event type occurring on features in a specified style layer.
+     *
+     * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'click'`, `'dblclick'`,
+     * `'mousemove'`, `'mouseenter'`, `'mouseleave'`, `'mouseover'`, `'mouseout'`, `'contextmenu'`, `'touchstart'`,
+     * `'touchend'`, or `'touchcancel'`. `mouseenter` and `mouseover` events are triggered when the cursor enters
+     * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
+     * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
+     * the map canvas.
+     * @param {string} layerId The ID of a style layer. Only events whose location is within a visible
+     * feature in this layer will trigger the listener. The event will have a `features` property containing
+     * an array of the matching features.
+     * @param {Function} listener The function to be called when the event is fired.
+     * @returns {Map} `this`
+     */
+
+    once(type: MapEvent, layerId: any, listener: any) {
+
+        if (listener === undefined) {
+            return super.once(type, layerId);
+        }
+
+        const delegatedListener = this._createDelegatedListener(type, layerId, listener);
+
+        for (const event in delegatedListener.delegates) {
+            this.once((event: any), delegatedListener.delegates[event]);
         }
 
         return this;
@@ -973,8 +1020,8 @@ class Map extends Camera {
             return super.off(type, layerId);
         }
 
-        if (this._delegatedListeners && this._delegatedListeners[type]) {
-            const listeners = this._delegatedListeners[type];
+        const removeDelegatedListener = (delegatedListeners) => {
+            const listeners = delegatedListeners[type];
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
                 if (delegatedListener.layer === layerId && delegatedListener.listener === listener) {
@@ -985,6 +1032,10 @@ class Map extends Camera {
                     return this;
                 }
             }
+        };
+
+        if (this._delegatedListeners && this._delegatedListeners[type]) {
+            removeDelegatedListener(this._delegatedListeners);
         }
 
         return this;
