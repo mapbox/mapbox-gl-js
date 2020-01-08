@@ -35,12 +35,15 @@ class TouchHandler extends Handler {
       return { isMultiTouch, points, centerPoint, centerLocation, vector };
   }
 
-
-  touchstart(e: TouchEvent) {
-    if (!this.isEnabled()) return;
+  _setStartTouch(e: TouchEvent) {
     this._startTouchEvent = e;
     this._startTouchData = this._getTouchEventData(e);
     this._startTime = browser.now();
+  }
+
+  touchstart(e: TouchEvent) {
+    if (!this.isEnabled()) return;
+    this._setStartTouch(e);
     this._state = 'pending';
   };
 
@@ -72,6 +75,24 @@ class TouchHandler extends Handler {
     }
   }
 
+
+}
+
+class TouchPanHandler extends TouchHandler {
+
+  touchmove(e: TouchEvent) {
+    if (!super.touchmove(e)) return;
+  }
+
+  touchend(e: TouchEvent) {
+    const stateBeforeEnd = this._state;
+    super.touchend(e);
+    if (this._state === 'pending' || this._state === 'active') {
+      // We did not deactivate, as there are still finger(s) touching.
+      // Reset the start event for the remaining finger(s), as if on touchstart
+      this._setStartTouch(e);
+    }
+  }
 
 }
 
@@ -175,4 +196,4 @@ class TouchPitchHandler extends MultiTouchHandler {
 }
 
 
-export { TouchHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler };
+export { TouchHandler, TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler };

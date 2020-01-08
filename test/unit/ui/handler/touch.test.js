@@ -21,6 +21,15 @@ test('New TouchZoomHandler is in "enabled" state', (t) => {
     t.end();
 });
 
+test('TouchPanHandler is added to manager by default', (t) => {
+    const map = createMap(t);
+    const hm = map.handlers;
+    t.ok(hm.touchPan);
+    const h = hm.touchPan;
+    t.ok(h.isEnabled());
+    t.end();
+});
+
 test('TouchZoomHandler is added to manager by default', (t) => {
     const map = createMap(t);
     const hm = map.handlers;
@@ -45,6 +54,35 @@ test('TouchPitchHandler is added to manager by default', (t) => {
     t.ok(hm.touchPitch);
     const h = hm.touchPitch;
     t.ok(h.isEnabled());
+    t.end();
+});
+
+test('TouchPanHandler responds to touchstart/end/cancel events', (t) => {
+    const map = createMap(t, {zoom: 5});
+    const h = map.handlers.touchPan;
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
+    t.equal(h._state, 'pending', 'single-touch touchstart event should trigger "pending" state');
+    t.ok(h._startTouchEvent);
+    t.equal(h._startTouchEvent.touches.length, 1);
+    t.notOk(h._startTouchData.isMultiTouch);
+
+    simulate.touchend(map.getCanvas(), {changedTouches: [{clientX: 1, clientY: 1}]});
+    t.equal(h._state, 'enabled', 'touchend should reset handler to "enabled" state');
+    t.notOk(h._startTouchEvent);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 4}]});
+    t.equal(h._startTouchEvent.touches.length, 2);
+    t.ok(h._startTouchData.isMultiTouch);
+    t.equal(h._state, 'pending', 'multi-touch touchstart event should trigger "pending" state');
+
+    simulate.touchend(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}], changedTouches: [{clientX: 3, clientY: 4}]});
+    t.equal(h._state, 'pending', 'touchend should not deactivate handler if any fingers are still touching');
+    t.equal(h._startTouchEvent.touches.length, 1);
+
+    simulate.touchcancel(map.getCanvas(), {changedTouches: [{clientX: 0, clientY: 0}]});
+    t.equal(h._state, 'enabled', 'touchcancel should reset handler to "enabled" state');
+    t.notOk(h._startTouchEvent);
     t.end();
 });
 

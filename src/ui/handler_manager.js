@@ -4,7 +4,7 @@ import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../ui/events';
 import DOM from '../util/dom';
 import type Map from './map';
 import Handler from './handler/handler';
-import { TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
+import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
 import {extend} from '../util/util';
 
 
@@ -40,6 +40,7 @@ class HandlerManager {
   }
 
   _addDefaultHandlers() {
+    this.add('touchPan', new TouchPanHandler(this._map));
     this.add('touchPitch', new TouchPitchHandler(this._map));
     this.add('touchZoom', new TouchZoomHandler(this._map));
     this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
