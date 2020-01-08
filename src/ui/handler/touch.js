@@ -41,16 +41,22 @@ class TouchHandler extends Handler {
     this._startTouchEvent = e;
     this._startTouchData = this._getTouchEventData(e);
     this._startTime = browser.now();
+    this._state = 'pending';
   };
 
-  // touchmove(e: TouchEvent) {
-  //
-  // }
-  //
-  touchend(e: TouchEvent) {
-    this.deactivate();
+  touchmove(e: TouchEvent) {
+    if (!(this._state === 'pending' || this._state === 'active')) return;
+    if (!this._startTouchData) return this.touchstart(e);
+    this._lastTouchEvent = e;
+    this._lastTouchData = this._getTouchEventData(e);
+    // TODO check time vs. start time to prevent responding to spurious events?
+    return true; // signal to extended classes that they should continue processing the touchmove event
   }
-  //
+
+  touchend(e: TouchEvent) {
+    if (!e.touches || e.touches.length === 0) this.deactivate();
+  }
+
   touchcancel(e: TouchEvent) {
     this.deactivate();
   }
@@ -69,26 +75,32 @@ class TouchHandler extends Handler {
 
 }
 
-class TouchZoomHandler extends TouchHandler {
+class MultiTouchHandler extends TouchHandler {
+
+  touchstart(e: TouchEvent) {
+    if (e.touches && e.touches.length > 1) super.touchstart(e);
+  }
+
+  touchmove(e: TouchEvent) {
+    if (e.touches && e.touches.length > 1) return super.touchmove(e);
+  }
+
+  touchend(e: TouchEvent) {
+    if (!e.touches || e.touches.length < 2) this.deactivate();
+  }
+}
+
+class TouchZoomHandler extends MultiTouchHandler {
 
     get _threshold() {
       return this._state === 'active' ? 0 : 0.15;
     }
 
-    touchstart(e: TouchEvent) {
-      super.touchstart(e);
-      if (!this._startTouchData.isMultiTouch) return;
-      this._state = 'pending';
-    }
-
     touchmove(e: TouchEvent) {
-      if (!(this._state === 'pending' || this._state === 'active')) return;
-      if (!this._startTouchData) return this.touchstart(e);
-      this._lastTouchEvent = e;
-      this._lastTouchData = this._getTouchEventData(e);
-      if (!this._lastTouchData.isMultiTouch) return;
-      // TODO check time vs. start time to prevent responding to spurious events (vs. tap)
+      if (!super.touchmove(e)) return;
+
       const scale = this._lastTouchData.vector.mag() / this._startTouchData.vector.mag();
+
       if (Math.abs(1 - scale) > this._threshold) {
         this._state = 'active';
         const zoomDelta = this._transform.scaleZoom(scale);
@@ -102,25 +114,15 @@ class TouchZoomHandler extends TouchHandler {
     }
 }
 
-class TouchRotateHandler extends TouchHandler {
+class TouchRotateHandler extends MultiTouchHandler {
 
     get _threshold() {
       return 0;
     }
 
-    touchstart(e: TouchEvent) {
-      super.touchstart(e);
-      if (!this._startTouchData.isMultiTouch) return;
-      this._state = 'pending';
-    }
-
     touchmove(e: TouchEvent) {
-      if (!(this._state === 'pending' || this._state === 'active')) return;
-      if (!this._startTouchData) return this.touchstart(e);
-      this._lastTouchEvent = e;
-      this._lastTouchData = this._getTouchEventData(e);
-      if (!this._lastTouchData.isMultiTouch) return;
-      // TODO check time vs. start time to prevent responding to spurious events?
+      if (!super.touchmove(e)) return;
+
       const bearingDelta = this._lastTouchData.vector.angleWith(this._startTouchData.vector) * 180 / Math.PI
 
       this._startTouchEvent = this._lastTouchEvent;
@@ -138,7 +140,7 @@ class TouchRotateHandler extends TouchHandler {
     }
 }
 
-class TouchPitchHandler extends TouchHandler {
+class TouchPitchHandler extends MultiTouchHandler {
     _horizontalThreshold: number;
 
     constructor(el: HTMLElement, options?: Object) {
@@ -150,18 +152,9 @@ class TouchPitchHandler extends TouchHandler {
       return Math.abs(pointA.y - pointB.y) < this._horizontalThreshold;
     }
 
-    touchstart(e: TouchEvent) {
-      super.touchstart(e);
-      if (!this._startTouchData.isMultiTouch) return;
-      this._state = 'pending';
-    }
-
     touchmove(e: TouchEvent) {
-      if (!(this._state === 'pending' || this._state === 'active')) return;
-      if (!this._startTouchData) return this.touchstart(e);
-      this._lastTouchEvent = e;
-      this._lastTouchData = this._getTouchEventData(e);
-      if (!this._lastTouchData.isMultiTouch) return;
+      if (!super.touchmove(e)) return;
+
       const isHorizontal = this._pointsAreHorizontal(this._lastTouchData.points[0], this._lastTouchData.points[1]);
       if (!isHorizontal) return;
       const pitchDelta = (this._startTouchData.centerPoint.y - this._lastTouchData.centerPoint.y) * 0.5;
@@ -174,7 +167,7 @@ class TouchPitchHandler extends TouchHandler {
         this._state = 'active';
         // const aroundLocation = this._lastTouchData.centerLocation;
         // const aroundPoint = this._lastTouchData.centerPoint;
-        return { transform: { pitchDelta}};
+        return { transform: { pitchDelta }};
       } else {
         this._state = 'pending';
       }
