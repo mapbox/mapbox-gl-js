@@ -48,21 +48,28 @@ test('TouchPitchHandler is added to manager by default', (t) => {
     t.end();
 });
 
-test('TouchZoomHandler responds to touchstart events', (t) => {
+test('TouchZoomHandler responds to touchstart/end/cancel events', (t) => {
     const map = createMap(t, {zoom: 5});
     const h = map.handlers.touchZoom;
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
-    t.ok(h._startTouchEvent);
-    t.equal(h._startTouchEvent.touches.length, 1);
-    t.notOk(h._startTouchData.isMultiTouch);
     t.equal(h._state, 'enabled', 'single-touch event should not trigger "pending" state');
+    t.notOk(h._startTouchEvent);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 4}]});
+    t.equal(h._state, 'pending', 'multi-touch event should trigger "pending" state');
     t.equal(h._startTouchEvent.touches.length, 2);
     t.ok(h._startTouchData.isMultiTouch);
     t.equal(h._startTouchData.vector.mag(), 5);
-    t.equal(h._state, 'pending', 'single-touch event should trigger "pending" state');
+
+    simulate.touchend(map.getCanvas(), {changedTouches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 4}]});
+    t.equal(h._state, 'enabled', 'touchend should reset handler to "enabled" state');
+    t.notOk(h._startTouchEvent);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 4}]});
+    simulate.touchcancel(map.getCanvas(), {changedTouches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 4}]});
+    t.equal(h._state, 'enabled', 'touchcancel should reset handler to "enabled" state');
+    t.notOk(h._startTouchEvent);
     t.end();
 });
 
