@@ -44,7 +44,7 @@ class TouchHandler extends Handler {
   touchstart(e: TouchEvent) {
     if (!this.isEnabled()) return;
     this._setStartTouch(e);
-    this._state = 'pending';
+    if (this._state !== 'active') this._state = 'pending';
   };
 
   touchmove(e: TouchEvent) {
@@ -80,8 +80,35 @@ class TouchHandler extends Handler {
 
 class TouchPanHandler extends TouchHandler {
 
+  // _pointsMatch(lastPoints: ?Array<Point>, thisPoints: ?Array<Point>) {
+  //     if (!lastPoints || !thisPoints || lastPoints.length !== thisPoints.length) return false;
+  //     return lastPoints.every((pos, i) => thisPoints[i] === pos);
+  // }
+
+  get _tapTolerance() {
+    return 1;
+  }
+
   touchmove(e: TouchEvent) {
     if (!super.touchmove(e)) return;
+
+    // const noMovement = this._pointsMatch(this._lastTouchData.points, this._startTouchData.points);
+    const underTapTolerance = this._lastTouchData.centerPoint.dist(this._startTouchData.centerPoint) < this._tapTolerance;
+    // if (noMovement || underTapTolerance) return;
+    if (underTapTolerance) return;
+
+    //TODO track inertia
+
+    const location = this._startTouchData.centerLocation;
+    const point = this._lastTouchData.centerPoint;
+
+    this._startTouchEvent = this._lastTouchEvent;
+    this._startTouchData = this._lastTouchData;
+    this._startTime = browser.now();
+
+    this._state = 'active';
+    return { transform: { setLocationAtPoint: [location, point] }};
+
   }
 
   touchend(e: TouchEvent) {
