@@ -105,8 +105,11 @@ class TouchPanHandler extends TouchHandler {
     this._startTime = browser.now();
 
     if (underTapTolerance) return;
+    const events = [];
+    if (this._state === 'pending') events.push('dragstart', 'movestart');
     this._state = 'active';
-    return { transform: { setLocationAtPoint: [location, point] }};
+    events.push('drag', 'move');
+    return { transform: { setLocationAtPoint: [location, point] }, events };
 
   }
 
@@ -117,7 +120,15 @@ class TouchPanHandler extends TouchHandler {
       // We did not deactivate, as there are still finger(s) touching.
       // Reset the start event for the remaining finger(s), as if on touchstart
       this._setStartTouch(e);
+    } else if (stateBeforeEnd === 'active') {
+      return { events: ['dragend', 'moveend'] };
     }
+  }
+
+  touchcancel(e: TouchEvent) {
+    const stateBeforeCancel = this._state;
+    super.touchcancel(e);
+    if (stateBeforeCancel === 'active') return { events: ['dragend', 'moveend']};
   }
 
 }
