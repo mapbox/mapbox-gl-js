@@ -86,6 +86,55 @@ test('TouchPanHandler responds to touchstart/end/cancel events', (t) => {
     t.end();
 });
 
+test('TouchPanHandler pans map appropriately on touchmove events', (t) => {
+    const map = createMap(t, {zoom: 1, center: [0,0]});
+    const hm = map.handlers;
+    const h = map.handlers.touchPan;
+    t.spy(h, 'touchstart');
+    t.spy(h, 'touchmove');
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 1.5}]});
+    t.equal(h._state, 'pending', 'moving less than clickTolerance should not activate the handler');
+    t.ok(h.touchmove.called && !h.touchmove.returnValues[0], '.touchmove() should be called but return nothing');
+    t.ok(map.getCenter().lng === 0 && map.getCenter().lat === 0, 'manager should not pan the map');
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 3, clientY: 4}]});
+    t.equal(h._state, 'active', 'moving more than clickTolerance should activate the handler');
+    t.equal(h.touchmove.returnValues[1].transform.setLocationAtPoint.length, 2, '.touchmove() should return new location for transform');
+    t.ok(map.getCenter().lng === -0.7031250000023874 && map.getCenter().lat === 1.0546279422783584, 'manager should pan the map');
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 3, clientY: 4}, {clientX: 1, clientY: 2}]});
+    t.equal(h._state, 'active', 'adding a finger should leave the handler active');
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 8, clientY: 4}, {clientX: 5, clientY: 2}]});
+    t.equal(h._state, 'active', 'multi-finger move should leave the handler active');
+    t.ok(h.touchmove.returnValues[1].transform.setLocationAtPoint.length, 2, '.touchmove() should return new location for transform');
+    t.ok(map.getCenter().lng === -24.3524639423116 && map.getCenter().lat === 2.514216764823942, 'manager should pan the map');
+
+    t.end();
+});
+
+test('TouchPanHandler does not cause map to jump when removing first touch point', (t) => {
+  // Bug https://github.com/mapbox/mapbox-gl-js/issues/9136
+  const map = createMap(t, {center: [0,0]});
+  const hm = map.handlers;
+  const h = map.handlers.touchPan;
+
+  simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 2}, {clientX: 3, clientY: 4}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 5, clientY: 2}, {clientX: 8, clientY: 4}]});
+  t.equal(h._state, 'active', 'multi-touch event should activate the handler');
+  const oldCenter = map.getCenter();
+  t.ok(map.getCenter().lng === -47.298677884617064 && map.getCenter().lat === 2.91940900926312, 'manager should pan the map');
+
+  simulate.touchend(map.getCanvas(), {touches: [{clientX: 8, clientY: 4}], changedTouches: [{clientX: 5, clientY: 2}]});
+  t.equal(h._state, 'active', 'multi-touch touchend should not deactivate the handler if there are touches remaining');
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 8, clientY: 4}]});
+  t.ok(map.getCenter().lng === oldCenter.lng && map.getCenter().lat === oldCenter.lat, 'manager should not pan the map if remaining touch has not moved');
+
+  t.end();
+})
+
+
 test('TouchZoomHandler responds to touchstart/end/cancel events', (t) => {
     const map = createMap(t, {zoom: 5});
     const h = map.handlers.touchZoom;
@@ -114,6 +163,7 @@ test('TouchZoomHandler responds to touchstart/end/cancel events', (t) => {
 test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
     const map = createMap(t, {zoom: 5});
     const hm = map.handlers;
+    map.handlers.touchPitch.disable(); // The dummy touches below are so close together, they activate touchPitch handler
     const h = map.handlers.touchZoom;
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
