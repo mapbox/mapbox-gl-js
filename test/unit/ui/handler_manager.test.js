@@ -86,7 +86,7 @@ test('Constructor sets up event listeners to fire map events and call handler ev
     tzh.processInputEvent.restore();
   }
 
-  for (const mouseType of ['down', 'up']) {
+  for (const mouseType of ['down', 'up', 'move', 'over', 'out']) {
     const eventType = 'mouse' + mouseType;
 
     t.spy(tzh, 'processInputEvent');
