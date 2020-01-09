@@ -25,6 +25,7 @@ export type Offset = number | PointLike | {[Anchor]: PointLike};
 export type PopupOptions = {
     closeButton?: boolean,
     closeOnClick?: boolean,
+    closeOnMove?: boolean,
     anchor?: Anchor,
     offset?: Offset,
     className?: string,
@@ -39,6 +40,8 @@ export type PopupOptions = {
  *   top right corner of the popup.
  * @param {boolean} [options.closeOnClick=true] If `true`, the popup will closed when the
  *   map is clicked.
+ * @param {boolean} [options.closeOnMove=false] If `true`, the popup will closed when the
+ *   map moves.
  * @param {string} [options.anchor] - A string indicating the part of the Popup that should
  *   be positioned closest to the coordinate set via {@link Popup#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
@@ -92,7 +95,7 @@ export default class Popup extends Evented {
     constructor(options: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
-        bindAll(['_update', '_onClickClose', 'remove'], this);
+        bindAll(['_update', '_onClose', 'remove'], this);
     }
 
     /**
@@ -104,7 +107,11 @@ export default class Popup extends Evented {
     addTo(map: Map) {
         this._map = map;
         if (this.options.closeOnClick) {
-            this._map.on('click', this._onClickClose);
+            this._map.on('click', this._onClose);
+        }
+
+        if (this.options.closeOnMove) {
+            this._map.on('move', this._onClose);
         }
 
         this._map.on('remove', this.remove);
@@ -162,7 +169,8 @@ export default class Popup extends Evented {
 
         if (this._map) {
             this._map.off('move', this._update);
-            this._map.off('click', this._onClickClose);
+            this._map.off('move', this._onClose);
+            this._map.off('click', this._onClose);
             this._map.off('remove', this.remove);
             this._map.off('mousemove');
             delete this._map;
@@ -390,7 +398,7 @@ export default class Popup extends Evented {
             this._closeButton.type = 'button';
             this._closeButton.setAttribute('aria-label', 'Close popup');
             this._closeButton.innerHTML = '&#215;';
-            this._closeButton.addEventListener('click', this._onClickClose);
+            this._closeButton.addEventListener('click', this._onClose);
         }
 
     }
@@ -460,7 +468,7 @@ export default class Popup extends Evented {
         applyAnchorClass(this._container, anchor, 'popup');
     }
 
-    _onClickClose() {
+    _onClose() {
         this.remove();
     }
 }

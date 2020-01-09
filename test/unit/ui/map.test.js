@@ -388,6 +388,23 @@ test('Map', (t) => {
             });
         });
 
+        t.test('a layer can be added even if a map is created without a style', (t) => {
+            const map = createMap(t, {deleteStyle: true});
+            const layer = {
+                id: 'background',
+                type: 'background'
+            };
+            map.addLayer(layer);
+            t.end();
+        });
+
+        t.test('a source can be added even if a map is created without a style', (t) => {
+            const map = createMap(t, {deleteStyle: true});
+            const source = createStyleSource();
+            map.addSource('fill', source);
+            t.end();
+        });
+
         t.test('returns the style with added source and layer', (t) => {
             const style = createStyle();
             const map = createMap(t, {style});

@@ -90,6 +90,12 @@ export type SymbolFeature = {|
     id?: any
 |};
 
+export type SortKeyRange = {
+    sortKey: number,
+    symbolInstanceStart: number,
+    symbolInstanceEnd: number
+};
+
 // Opacity arrays are frequently updated but don't contain a lot of information, so we pack them
 // tight. Each Uint32 is actually four duplicate Uint8s for the four corners of a glyph
 // 7 bits are for the current opacity, and the lowest bit is the target opacity
@@ -301,6 +307,7 @@ class SymbolBucket implements Bucket {
     features: Array<SymbolFeature>;
     symbolInstances: SymbolInstanceArray;
     collisionArrays: Array<CollisionArrays>;
+    sortKeyRanges: Array<SortKeyRange>;
     pixelRatio: number;
     tilePixelRatio: number;
     compareText: {[string]: Array<Point>};
@@ -337,6 +344,7 @@ class SymbolBucket implements Bucket {
         this.hasPattern = false;
         this.hasPaintOverrides = false;
         this.hasRTLText = false;
+        this.sortKeyRanges = [];
 
         const layer = this.layers[0];
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
@@ -881,6 +889,19 @@ class SymbolBucket implements Bucket {
         });
 
         return result;
+    }
+
+    addToSortKeyRanges(symbolInstanceIndex: number, sortKey: number) {
+        const last = this.sortKeyRanges[this.sortKeyRanges.length - 1];
+        if (last && last.sortKey === sortKey) {
+            last.symbolInstanceEnd = symbolInstanceIndex + 1;
+        } else {
+            this.sortKeyRanges.push({
+                sortKey,
+                symbolInstanceStart: symbolInstanceIndex,
+                symbolInstanceEnd: symbolInstanceIndex + 1
+            });
+        }
     }
 
     sortFeatures(angle: number) {
