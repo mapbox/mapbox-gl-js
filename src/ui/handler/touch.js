@@ -94,8 +94,6 @@ class TouchPanHandler extends TouchHandler {
 
     // const noMovement = this._pointsMatch(this._lastTouchData.points, this._startTouchData.points);
     const underTapTolerance = this._lastTouchData.centerPoint.dist(this._startTouchData.centerPoint) < this._tapTolerance;
-    // if (noMovement || underTapTolerance) return;
-    if (underTapTolerance) return;
 
     //TODO track inertia
 
@@ -106,6 +104,7 @@ class TouchPanHandler extends TouchHandler {
     this._startTouchData = this._lastTouchData;
     this._startTime = browser.now();
 
+    if (underTapTolerance) return;
     this._state = 'active';
     return { transform: { setLocationAtPoint: [location, point] }};
 
