@@ -13,7 +13,7 @@ test('HandlerManager contains default handlers', (t) => {
     t.equal(typeof hm.length, 'number', 'should have a numeric .length property');
     t.equal(hm.length, 4, '.length should be accurate'); //TODO will change
     t.ok(hm.touchZoom, 'default handlers should be available through named properties');
-    t.deepEqual(hm.list(), ['touchPan', 'touchPitch', 'touchZoom', 'touchRotate'], '.list() method should return an array of handler names'); //TODO will change
+    t.deepEqual(hm.list(), ['touchPitch', 'touchZoom', 'touchRotate', 'touchPan'], '.list() method should return an array of handler names'); //TODO will change
     t.end();
 });
 
