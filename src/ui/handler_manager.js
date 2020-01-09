@@ -1,6 +1,7 @@
 // @flow
 
 import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../ui/events';
+import {Event} from '../util/evented';
 import DOM from '../util/dom';
 import type Map from './map';
 import Handler from './handler/handler';
@@ -36,7 +37,10 @@ class HandlerManager {
     this.addTouchListener('touchcancel');
 
     this.addMouseListener('mousedown');
+    this.addMouseListener('mousemove');
     this.addMouseListener('mouseup');
+    this.addMouseListener('mouseover');
+    this.addMouseListener('mouseout');
   }
 
   _addDefaultHandlers() {
@@ -111,6 +115,7 @@ class HandlerManager {
   processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent) {
     if (e.cancelable) e.preventDefault();
     let transformSettings;
+    let eventsToFire = [];
     let activeHandlers = [];
 
     for (const [name, handler] of this._handlers) {
@@ -128,13 +133,14 @@ class HandlerManager {
         if (!!transformSettings) extend(merged, transformSettings)
         transformSettings = merged;
       }
+      if (data.events) {
+        data.events.filter(e => eventsToFire.indexOf(e) < 0).map(e => eventsToFire.push(e));
+      }
       activeHandlers.push(name);
     }
-    // Set map transform accordingly
-    if (transformSettings) this.updateMapTransform(transformSettings);
 
-    // Call map methods accordingly
-    // };
+    if (transformSettings) this.updateMapTransform(transformSettings);
+    if (eventsToFire.length > 0) this.fireMapEvents(eventsToFire, e);
   }
 
   updateMapTransform(settings) {
@@ -148,6 +154,12 @@ class HandlerManager {
       tr.setLocationAtPoint(loc, pt);
     }
     this._map._update();
+  }
+
+  fireMapEvents(events, originalEvent) {
+    for (const eventType of events) {
+      this._map.fire(new Event(eventType, { originalEvent }));
+    }
   }
 }
 

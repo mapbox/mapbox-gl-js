@@ -128,3 +128,61 @@ test('HandlerManager applies transforms requested by handler event processors', 
 
   t.end();
 });
+
+test('HandlerManager fires map movement events as requested by handlers', (t) => {
+  const map = createMap(t);
+  const hm = map.handlers;
+  hm.removeAll();
+
+  const handy = new Handler(map);
+  handy.mousedown = (e) => { handy._state = 'pending'; };
+  handy.mousemove = (e) => {
+    handy._state = 'active';
+    return { events: ['zoomstart', 'pitchstart', 'rotatestart', 'dragstart', 'movestart', 'zoom', 'pitch', 'rotate', 'drag', 'move'] };
+    // return { events: ['zoomstart', 'pitchstart', 'rotatestart', 'dragstart', 'zoom', 'pitch', 'rotate', 'drag'] };
+
+  };
+  handy.mouseup = (e) => {
+    handy._state = 'enabled';
+    return { events: ['zoomend', 'pitchend', 'rotateend', 'dragend', 'moveend'] };
+    // return { events: ['zoomend', 'pitchend', 'rotateend', 'dragend'] };
+  };
+  hm.add('handy', handy);
+
+  const spies = {};
+  for (const eventType of ['move', 'zoom', 'pitch', 'rotate', 'drag']) {
+    for (const eventStage of ['start', '', 'end']) {
+      const event = eventType + eventStage;
+      const spy = t.spy();
+      spies[event] = spy;
+      map.on(event, spy);
+    }
+  };
+
+  simulate.mousedown(map.getCanvasContainer());
+  for (const event in spies) {
+    t.equal(spies[event].callCount, 0, 'start events should not be fired until the map is updated');
+  }
+  simulate.mousemove(map.getCanvasContainer(), {clientX: 10, clientY: 10});
+  for (const event in spies) {
+    if (event.endsWith('end')) {
+      t.equal(spies[event].callCount, 0, 'end events should not be fired until movement stops');
+    } else if (event.endsWith('start')) {
+      t.equal(spies[event].callCount, 1, 'start events should be fired on first movement');
+    } else {
+      t.equal(spies[event].callCount, 1, 'movement events should be fired on movement');
+    }
+  }
+  simulate.mouseup(map.getCanvasContainer());
+  for (const event in spies) {
+    if (event.endsWith('end')) {
+      t.equal(spies[event].callCount, 1, 'end events should be fired when movement stops');
+    } else if (event.endsWith('start')) {
+      t.equal(spies[event].callCount, 1, 'start events should not be refired');
+    } else {
+      t.equal(spies[event].callCount, 1, 'movement events should be fired only on movement');
+    }
+  }
+
+  t.end();
+});
