@@ -120,7 +120,6 @@ class Hash {
         const loc = this._getCurrentHash();
         if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
             const bearing = this._map.dragRotate.isEnabled() && this._map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : this._map.getBearing();
-            console.log('bearing', bearing);
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
