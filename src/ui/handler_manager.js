@@ -94,6 +94,13 @@ class HandlerManager {
     for (const [handlerName, _] of this._handlers) this.remove(handlerName);
   }
 
+  disableAll() {
+    for (const [_, handler] of this._handlers) handler.disable();
+  }
+
+  enableAll() {
+    for (const [_, handler] of this._handlers) handler.enable();
+  }
 
   addListener(mapEventClass: Event, eventType: string, options?: Object) {
     const listener = (e: Event) => {

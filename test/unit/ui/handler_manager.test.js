@@ -55,6 +55,19 @@ test('Handler array can be updated with .add(), .remove(), and .removeAll() meth
   t.end();
 });
 
+test('Handlers can be en/disabled with en/disableAll() methods', (t) => {
+    const map = createMap(t);
+    const hm = map.handlers;
+    const handlerNames = hm.list();
+
+    hm.disableAll();
+    handlerNames.map((h) => t.notOk(hm[h].isEnabled(), 'disableAll() should disable each handler'));
+
+    hm.enableAll();
+    handlerNames.map((h) => t.ok(hm[h].isEnabled(), 'enableAll() should disable each handler'));
+
+    t.end();
+});
 
 test('Constructor sets up event listeners to fire map events and call handler event processors', (t) => {
   const map = createMap(t);

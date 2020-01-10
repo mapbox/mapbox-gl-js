@@ -111,10 +111,9 @@ test('TouchPanHandler responds to touchstart/end/cancel events', (t) => {
 test('TouchPanHandler pans map & fires events appropriately on single-finger drag', (t) => {
     const map = createMap(t, {zoom: 1, center: [0,0]});
     const hm = map.handlers;
-    hm.touchPitch.disable();
-    hm.touchZoom.disable();
-    hm.touchRotate.disable();
+    hm.disableAll();
     const h = map.handlers.touchPan;
+    h.enable();
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
 
@@ -151,9 +150,8 @@ test('TouchPanHandler pans map & fires events appropriately on single-finger dra
 test('TouchPanHandler fires events appropriately when touch is canceled', (t) => {
     const map = createMap(t, {zoom: 1, center: [0,0]});
     const hm = map.handlers;
-    hm.touchPitch.disable();
-    hm.touchZoom.disable();
-    hm.touchRotate.disable();
+    hm.disableAll();
+    hm.touchPan.enable();
 
     const spies = setupEventSpies(['dragend', 'moveend'], map, t);
 
@@ -168,10 +166,9 @@ test('TouchPanHandler fires events appropriately when touch is canceled', (t) =>
 test('TouchPanHandler pans map & fires events appropriately when transitioning between single & multi-finger drag', (t) => {
     const map = createMap(t, {zoom: 1, center: [0,0]});
     const hm = map.handlers;
-    hm.touchPitch.disable();
-    hm.touchZoom.disable();
-    hm.touchRotate.disable();
+    hm.disableAll();
     const h = map.handlers.touchPan;
+    h.enable();
     t.spy(h, 'touchmove');
 
     const spies = setupEventSpies(['drag', 'move'], map, t);
@@ -256,8 +253,9 @@ test('TouchZoomHandler responds to touchstart/end/cancel events', (t) => {
 test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
     const map = createMap(t, {zoom: 5});
     const hm = map.handlers;
-    map.handlers.touchPitch.disable(); // The dummy touches below are so close together, they activate touchPitch handler
+    hm.disableAll(); // The dummy touches below are so close together, they activate touchPitch handler
     const h = map.handlers.touchZoom;
+    h.enable();
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
 
@@ -283,8 +281,9 @@ test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
 test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => {
     const map = createMap(t, {bearing: 0});
     const hm = map.handlers;
-    map.handlers.touchPitch.disable();
+    hm.disableAll();
     const h = map.handlers.touchRotate;
+    h.enable();
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
 
