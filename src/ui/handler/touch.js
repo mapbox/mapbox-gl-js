@@ -41,11 +41,22 @@ class TouchHandler extends Handler {
     this._startTime = browser.now();
   }
 
-  touchstart(e: TouchEvent) {
+  _start(e: TouchEvent) {
     if (!this.isEnabled()) return;
     this._setStartTouch(e);
     if (this._state !== 'active') this._state = 'pending';
-  };
+  }
+
+  reset(e: TouchEvent) {
+    this._start(e);
+    if (this._state === 'active') {
+      this._state === 'pending';
+    }
+  }
+
+  touchstart(e: TouchEvent) {
+    this._start(e);
+  }
 
   touchmove(e: TouchEvent) {
     if (!(this._state === 'pending' || this._state === 'active')) return;

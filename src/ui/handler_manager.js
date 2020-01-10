@@ -129,7 +129,10 @@ class HandlerManager {
 
       if (this._disableDuring[name]) {
         const conflicts = this._disableDuring[name].filter(otherHandler => activeHandlers.indexOf(otherHandler) > -1);
-        if (conflicts.length > 0) continue;
+        if (conflicts.length > 0) {
+          handler.reset(e);
+          continue;
+        }
       }
       // validate the update request
       if (data.transform) {

@@ -47,6 +47,17 @@ class Handler {
   }
 
   /**
+   * Resets a possibly-active handler to enabled state.
+   *
+   */
+  reset() {
+      if (this.isEnabled()) {
+        this.disable();
+        this.enable();
+      }
+  }
+
+  /**
    * Set custom options for this handler.
    *
    * @param {Object} [options] Object in { option: value } format.
