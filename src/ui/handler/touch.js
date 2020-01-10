@@ -80,11 +80,6 @@ class TouchHandler extends Handler {
 
 class TouchPanHandler extends TouchHandler {
 
-  // _pointsMatch(lastPoints: ?Array<Point>, thisPoints: ?Array<Point>) {
-  //     if (!lastPoints || !thisPoints || lastPoints.length !== thisPoints.length) return false;
-  //     return lastPoints.every((pos, i) => thisPoints[i] === pos);
-  // }
-
   get _tapTolerance() {
     return 1;
   }
@@ -92,7 +87,6 @@ class TouchPanHandler extends TouchHandler {
   touchmove(e: TouchEvent) {
     if (!super.touchmove(e)) return;
 
-    // const noMovement = this._pointsMatch(this._lastTouchData.points, this._startTouchData.points);
     const underTapTolerance = this._lastTouchData.centerPoint.dist(this._startTouchData.centerPoint) < this._tapTolerance;
 
     //TODO track inertia
@@ -100,11 +94,7 @@ class TouchPanHandler extends TouchHandler {
     const location = this._startTouchData.centerLocation;
     const point = this._lastTouchData.centerPoint;
 
-    this._startTouchEvent = this._lastTouchEvent;
-    this._startTouchData = this._lastTouchData;
-    this._startTime = browser.now();
-
-    if (underTapTolerance) return;
+    // if (underTapTolerance) return;
     const events = [];
     if (this._state === 'pending') events.push('dragstart', 'movestart');
     this._state = 'active';
