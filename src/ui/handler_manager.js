@@ -44,10 +44,10 @@ class HandlerManager {
   }
 
   _addDefaultHandlers() {
-    this.add('touchPitch', new TouchPitchHandler(this._map));
-    this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
     this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
-    this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch', 'touchZoom', 'touchRotate']);
+    this.add('touchPitch', new TouchPitchHandler(this._map), ['touchRotate']);
+    this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
+    this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch']);
   }
 
   list() {
@@ -70,9 +70,6 @@ class HandlerManager {
     this[handlerName] = handler;
 
     if (disableDuring) {
-      for (const otherHandler of disableDuring) {
-        if (!this[otherHandler]) throw new Error(`Cannot disable ${handlerName} during ${otherHandler}: No such handler ${otherHandler}`);
-      }
       this._disableDuring[handlerName] = disableDuring;
     }
   }
