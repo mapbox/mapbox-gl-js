@@ -152,12 +152,10 @@ class TouchZoomHandler extends MultiTouchHandler {
       if (Math.abs(1 - scale) > this._threshold) {
         this._state = 'active';
         const zoomDelta = this._transform.scaleZoom(scale);
-        const aroundLocation = this._lastTouchData.centerLocation;
-        const aroundPoint = this._lastTouchData.centerPoint;
         this._startTouchEvent = this._lastTouchEvent;
         this._startTouchData = this._lastTouchData;
         this._startTime = browser.now();
-        return { transform: { zoomDelta, setLocationAtPoint: [aroundLocation, aroundPoint] }};
+        return { transform: { zoomDelta }};
       }
     }
 }
@@ -179,9 +177,7 @@ class TouchRotateHandler extends MultiTouchHandler {
 
       if (Math.abs(bearingDelta) > this._threshold) {
         this._state = 'active';
-        const aroundLocation = this._lastTouchData.centerLocation;
-        const aroundPoint = this._lastTouchData.centerPoint;
-        return { transform: { bearingDelta, setLocationAtPoint: [aroundLocation, aroundPoint] }};
+        return { transform: { bearingDelta }};
       } else {
         this._state = 'pending'
       }
@@ -213,11 +209,7 @@ class TouchPitchHandler extends MultiTouchHandler {
 
       if (Math.abs(pitchDelta) > 0) {
         this._state = 'active';
-        // const aroundLocation = this._lastTouchData.centerLocation;
-        // const aroundPoint = this._lastTouchData.centerPoint;
         return { transform: { pitchDelta }};
-      } else {
-        this._state = 'pending';
       }
     }
 }
