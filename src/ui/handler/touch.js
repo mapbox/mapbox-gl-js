@@ -162,8 +162,9 @@ class TouchZoomHandler extends MultiTouchHandler {
 
 class TouchRotateHandler extends MultiTouchHandler {
 
-    get _threshold() {
-      return 0;
+    get _rotationThreshold() {
+      if (this._state === 'active') return 0;
+      return 2;
     }
 
     touchmove(e: TouchEvent) {
@@ -175,7 +176,7 @@ class TouchRotateHandler extends MultiTouchHandler {
       this._startTouchData = this._lastTouchData;
       this._startTime = browser.now();
 
-      if (Math.abs(bearingDelta) > this._threshold) {
+      if (Math.abs(bearingDelta) > this._rotationThreshold) {
         this._state = 'active';
         return { transform: { bearingDelta }};
       } else {
@@ -189,7 +190,7 @@ class TouchPitchHandler extends MultiTouchHandler {
 
     constructor(el: HTMLElement, options?: Object) {
       super(el, options);
-      this._horizontalThreshold = 50;
+      this._horizontalThreshold = 70;
     }
 
     _pointsAreHorizontal(pointA, pointB) {
@@ -200,13 +201,13 @@ class TouchPitchHandler extends MultiTouchHandler {
       if (!super.touchmove(e)) return;
 
       const isHorizontal = this._pointsAreHorizontal(this._lastTouchData.points[0], this._lastTouchData.points[1]);
-      if (!isHorizontal) return;
-      const pitchDelta = (this._startTouchData.centerPoint.y - this._lastTouchData.centerPoint.y) * 0.5;
+      const pitchDelta = (this._startTouchData.centerPoint.y - this._lastTouchData.centerPoint.y) * 0.4;
 
       this._startTouchEvent = this._lastTouchEvent;
       this._startTouchData = this._lastTouchData;
       this._startTime = browser.now();
 
+      if (!isHorizontal) return;
       if (Math.abs(pitchDelta) > 0) {
         this._state = 'active';
         return { transform: { pitchDelta }};
