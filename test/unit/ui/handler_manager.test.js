@@ -151,14 +151,11 @@ test('HandlerManager fires map movement events as requested by handlers', (t) =>
   handy.mousedown = (e) => { handy._state = 'pending'; };
   handy.mousemove = (e) => {
     handy._state = 'active';
-    return { events: ['zoomstart', 'pitchstart', 'rotatestart', 'dragstart', 'movestart', 'zoom', 'pitch', 'rotate', 'drag', 'move'] };
-    // return { events: ['zoomstart', 'pitchstart', 'rotatestart', 'dragstart', 'zoom', 'pitch', 'rotate', 'drag'] };
-
+    return { events: ['zoomstart', 'pitchstart', 'rotatestart', 'dragstart', 'zoom', 'pitch', 'rotate', 'drag'] };
   };
   handy.mouseup = (e) => {
     handy._state = 'enabled';
-    return { events: ['zoomend', 'pitchend', 'rotateend', 'dragend', 'moveend'] };
-    // return { events: ['zoomend', 'pitchend', 'rotateend', 'dragend'] };
+    return { events: ['zoomend', 'pitchend', 'rotateend', 'dragend'] };
   };
   hm.add('handy', handy);
 
@@ -174,26 +171,26 @@ test('HandlerManager fires map movement events as requested by handlers', (t) =>
 
   simulate.mousedown(map.getCanvasContainer());
   for (const event in spies) {
-    t.equal(spies[event].callCount, 0, 'start events should not be fired until the map is updated');
+    t.equal(spies[event].callCount, 0, `${event} should not be fired until the map is updated`);
   }
   simulate.mousemove(map.getCanvasContainer(), {clientX: 10, clientY: 10});
   for (const event in spies) {
     if (event.endsWith('end')) {
-      t.equal(spies[event].callCount, 0, 'end events should not be fired until movement stops');
+      t.equal(spies[event].callCount, 0, `${event} should not be fired until movement stops`);
     } else if (event.endsWith('start')) {
-      t.equal(spies[event].callCount, 1, 'start events should be fired on first movement');
+      t.equal(spies[event].callCount, 1, `${event} should be fired on first movement`);
     } else {
-      t.equal(spies[event].callCount, 1, 'movement events should be fired on movement');
+      t.equal(spies[event].callCount, 1, `${event} should be fired on each movement`);
     }
   }
   simulate.mouseup(map.getCanvasContainer());
   for (const event in spies) {
     if (event.endsWith('end')) {
-      t.equal(spies[event].callCount, 1, 'end events should be fired when movement stops');
+      t.equal(spies[event].callCount, 1, `${event} should be fired when movement stops`);
     } else if (event.endsWith('start')) {
-      t.equal(spies[event].callCount, 1, 'start events should not be refired');
+      t.equal(spies[event].callCount, 1, `${event} should not be fired more than once`);
     } else {
-      t.equal(spies[event].callCount, 1, 'movement events should be fired only on movement');
+      t.equal(spies[event].callCount, 1, `${event} should be fired only on movement`);
     }
   }
 
