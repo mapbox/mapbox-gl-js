@@ -19,8 +19,6 @@ import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 
-export type VectorTileSourceOptions = {...VectorSourceSpecification, collectResourceTiming?: boolean};
-
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
     id: string;
@@ -43,7 +41,7 @@ class VectorTileSource extends Evented implements Source {
     _tileJSONRequest: ?Cancelable;
     _loaded: boolean;
 
-    constructor(id: string, options: VectorTileSourceOptions, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: {...VectorSourceSpecification, collectResourceTiming?: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -60,7 +58,7 @@ class VectorTileSource extends Evented implements Source {
         extend(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
         this._options = extend({type: 'vector'}, options);
 
-        this._collectResourceTiming = options.collectResourceTiming;
+        this._collectResourceTiming = !!options.collectResourceTiming;
 
         if (this.tileSize !== 512) {
             throw new Error('vector tile sources must have a tileSize of 512');
