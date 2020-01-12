@@ -66,8 +66,6 @@ class VectorTileSource extends Evented implements Source {
             throw new Error('vector tile sources must have a tileSize of 512');
         }
 
-        // this._updateOptions(options);
-
         this.setEventedParent(eventedParent);
     }
 
@@ -107,28 +105,29 @@ class VectorTileSource extends Evented implements Source {
         this.load();
     }
 
-    _updateOptions(options: VectorTileSourceOptions) {
-        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
-        this._options = extend({ type: 'vector' }, options);
-
-        this._collectResourceTiming = !!options.collectResourceTiming;
-
-        if (this.tileSize !== 512) {
-            throw new Error('vector tile sources must have a tileSize of 512');
-        }
-    }
-
-    setSourceProperty(name: string, value: mixed) {
+    setSourceProperty(callback: Function) {
         if (this._tileJSONRequest) {
             this._tileJSONRequest.cancel();
         }
 
-        const options = { [name]: value};
-        this._updateOptions(options);
+        callback();
 
         const sourceCache = this.map.style.sourceCaches[this.id];
         sourceCache.clearTiles();
         this.load();
+    }
+
+    setTiles(tiles: Array<string>) {
+        this.setSourceProperty(() => {
+            this._options.tiles = tiles;
+        });
+    }
+
+    setUrl(url: string) {
+        this.setSourceProperty(() => {
+            this.url = url;
+            this._options.url = url;
+        });
     }
 
     onRemove() {
