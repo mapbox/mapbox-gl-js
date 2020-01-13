@@ -2056,10 +2056,10 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "next",
-          "android": "next",
-          "ios": "next",
-          "macos": "next"
+          "js": "1.3.0",
+          "android": "8.3.0",
+          "ios": "5.3.0",
+          "macos": "0.14.0"
         }
       },
       "expression": {
@@ -2784,7 +2784,7 @@
         }
       },
       "format": {
-        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. If set, the `text-font` argument overrides the font specified by the root layout properties. If set, the `font-scale` argument specifies a scaling factor relative to the `text-size` specified in the root layout properties. If set, the `text-color` argument overrides the color specified by the paint properties for this layer.",
+        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. For a `text-field` entries of a string type, following option object's properties are supported: If set, the `text-font` value overrides the font specified by the root layout properties. If set, the `font-scale` value specifies a scaling factor relative to the `text-size` specified in the root layout properties. If set, the `text-color` value overrides the color specified by the root paint properties for this layer.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -2792,11 +2792,32 @@
             "android": "6.7.0",
             "ios": "4.6.0",
             "macos": "0.12.0"
+          },
+          "text-font": {
+            "js": "0.48.0",
+            "android": "6.7.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
+          },
+          "font-scale": {
+            "js": "0.48.0",
+            "android": "6.7.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
+          },
+          "text-color": {
+            "js": "1.3.0",
+            "android": "7.3.0",
+            "ios": "4.10.0",
+            "macos": "0.14.0"
+          },
+          "image": {
+            "js": "1.6.0"
           }
         }
       },
       "image": {
-        "doc": "Returns an `image` type for use in `icon-image` and `*-pattern` entries. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
+        "doc": "Returns an `image` type for use in `icon-image`, `*-pattern` entries and as a section in the `format` expression. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
