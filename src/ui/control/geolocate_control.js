@@ -261,8 +261,8 @@ class GeolocateControl extends Evented {
     _updateMarker(position: ?Position) {
         if (position) {
             const center = new LngLat(position.coords.longitude, position.coords.latitude);
-            this._userLocationDotMarker.setLngLat(center).addTo(this._map);
             this._accuracyCircleMarker.setLngLat(center).addTo(this._map);
+            this._userLocationDotMarker.setLngLat(center).addTo(this._map);
             this._accuracy = position.coords.accuracy;
             this._onMove();
         } else {
