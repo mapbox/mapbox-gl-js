@@ -234,7 +234,7 @@ export default class Worker {
         disableRequestAborting();
     }
 
-    getNumInflightRequests(mapId: string, data: typeof null, callback: WorkerTileCallback) {
+    getNumInflightRequests(mapId: string, data: any, callback: (err: ?Error, result: number) => void) {
         callback(null, inflightRequestCount());
     }
 }
