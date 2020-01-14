@@ -260,7 +260,7 @@ const defaultOptions = {
  * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
 class Map extends Camera {
-    style: Style;
+    style: ?Style;
     painter: Painter;
 
     _container: HTMLElement;
@@ -455,7 +455,8 @@ class Map extends Camera {
 
         this.on('style.load', () => {
             if (this.transform.unmodified) {
-                this.jumpTo((this.style.stylesheet: any));
+                const style = this._lazyInitEmptyStyle();
+                this.jumpTo((style.stylesheet: any));
             }
         });
         this.on('data', (event: MapDataEvent) => {
@@ -858,7 +859,7 @@ class Map extends Camera {
     _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
         if (type === 'mouseenter' || type === 'mouseover') {
             let mousein = false;
-            const mousemove = (e) => {
+            const mousemove = (e: MapMouseEvent) => {
                 const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
                 if (!features.length) {
                     mousein = false;
@@ -873,7 +874,7 @@ class Map extends Camera {
             return {layer: layerId, listener, delegates: {mousemove, mouseout}};
         } else if (type === 'mouseleave' || type === 'mouseout') {
             let mousein = false;
-            const mousemove = (e) => {
+            const mousemove = (e: MapMouseEvent) => {
                 const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
                 if (features.length) {
                     mousein = true;
@@ -882,7 +883,7 @@ class Map extends Camera {
                     listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
                 }
             };
-            const mouseout = (e) => {
+            const mouseout = (e: MapMouseEvent) => {
                 if (mousein) {
                     mousein = false;
                     listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
@@ -890,7 +891,7 @@ class Map extends Camera {
             };
             return {layer: layerId, listener, delegates: {mousemove, mouseout}};
         } else {
-            const delegate = (e) => {
+            const delegate = (e: MapMouseEvent & { features: any }) => {
                 const features = this.getLayer(layerId) ? this.queryRenderedFeatures(e.point, {layers: [layerId]}) : [];
                 if (features.length) {
                     // Here we need to mutate the original event, so that preventDefault works as expected.
@@ -899,7 +900,7 @@ class Map extends Camera {
                     delete e.features;
                 }
             };
-            return {layer: layerId, listener, delegates: {[type]: delegate}};
+            return {layer: layerId, listener, delegates: {[(type: string)]: delegate}};
         }
     }
 
@@ -932,7 +933,7 @@ class Map extends Camera {
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
      */
-    on(type: MapEvent, layerId: any, listener: any) {
+    on(type: MapEvent, layerId: any, listener: any): this {
         if (listener === undefined) {
             return super.on(type, layerId);
         }
@@ -1192,7 +1193,8 @@ class Map extends Camera {
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
     querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}) {
-        return this.style.querySourceFeatures(sourceId, parameters);
+        const style = this._lazyInitEmptyStyle();
+        return style.querySourceFeatures(sourceId, parameters);
     }
 
     /**
@@ -1243,36 +1245,38 @@ class Map extends Camera {
         return str;
     }
 
-    _updateStyle(style: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions) {
+    _updateStyle(newStyle: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions) {
         if (this.style) {
-            this.style.setEventedParent(null);
-            this.style._remove();
+            const style = this.style;
+            style.setEventedParent(null);
+            style._remove();
         }
 
-        if (!style) {
+        if (!newStyle) {
             delete this.style;
             return this;
-        } else {
-            this.style = new Style(this, options || {});
         }
 
-        this.style.setEventedParent(this, {style: this.style});
+        const style = this.style = new Style(this, options || {});
+        style.setEventedParent(this, {style});
 
-        if (typeof style === 'string') {
-            this.style.loadURL(style);
+        if (typeof newStyle === 'string') {
+            style.loadURL(newStyle);
         } else {
-            this.style.loadJSON(style);
+            style.loadJSON(newStyle);
         }
 
         return this;
     }
 
-    _lazyInitEmptyStyle() {
-        if (!this.style) {
-            this.style = new Style(this, {});
-            this.style.setEventedParent(this, {style: this.style});
-            this.style.loadEmpty();
+    _lazyInitEmptyStyle(): Style {
+        if (this.style) {
+            return this.style;
         }
+        const style = this.style = new Style(this, {});
+        style.setEventedParent(this, {style});
+        style.loadEmpty();
+        return style;
     }
 
     _diffStyle(style: StyleSpecification | string,  options?: {diff?: boolean} & StyleOptions) {
@@ -1293,7 +1297,7 @@ class Map extends Camera {
 
     _updateDiff(style: StyleSpecification,  options?: {diff?: boolean} & StyleOptions) {
         try {
-            if (this.style.setState(style)) {
+            if (this._lazyInitEmptyStyle().setState(style)) {
                 this._update(true);
             }
         } catch (e) {
@@ -1366,8 +1370,8 @@ class Map extends Camera {
      * @see Raster DEM source: [Add hillshading](https://docs.mapbox.com/mapbox-gl-js/example/hillshade/)
      */
     addSource(id: string, source: SourceSpecification) {
-        this._lazyInitEmptyStyle();
-        this.style.addSource(id, source);
+        const style = this._lazyInitEmptyStyle();
+        style.addSource(id, source);
         return this._update(true);
     }
 
@@ -1381,7 +1385,7 @@ class Map extends Camera {
      */
     isSourceLoaded(id: string) {
         const source = this.style && this.style.sourceCaches[id];
-        if (source === undefined) {
+        if (!source) {
             this.fire(new ErrorEvent(new Error(`There is no source with ID '${id}'`)));
             return;
         }
@@ -1419,8 +1423,7 @@ class Map extends Camera {
      * @param {Function} callback Called when the source type is ready or with an error argument if there is an error.
      */
     addSourceType(name: string, SourceType: any, callback: Function) {
-        this._lazyInitEmptyStyle();
-        return this.style.addSourceType(name, SourceType, callback);
+        return this._lazyInitEmptyStyle().addSourceType(name, SourceType, callback);
     }
 
     /**
@@ -1432,7 +1435,9 @@ class Map extends Camera {
      * map.removeSource('bathymetry-data');
      */
     removeSource(id: string) {
-        this.style.removeSource(id);
+        if (this.style) {
+            this.style.removeSource(id);
+        }
         return this._update(true);
     }
 
@@ -1449,7 +1454,9 @@ class Map extends Camera {
      * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
      */
     getSource(id: string) {
-        return this.style.getSource(id);
+        if (this.style) {
+            return this.style.getSource(id);
+        }
     }
 
     /**
@@ -1505,7 +1512,7 @@ class Map extends Camera {
 
         if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version});
+            this._lazyInitEmptyStyle().addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version});
         } else if (image.width === undefined || image.height === undefined) {
             return this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
@@ -1514,7 +1521,7 @@ class Map extends Camera {
             const {width, height, data} = image;
             const userImage = ((image: any): StyleImageInterface);
 
-            this.style.addImage(id, {
+            this._lazyInitEmptyStyle().addImage(id, {
                 data: new RGBAImage({width, height}, new Uint8Array(data)),
                 pixelRatio,
                 stretchX,
@@ -1551,7 +1558,8 @@ class Map extends Camera {
     updateImage(id: string,
         image: HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface) {
 
-        const existingImage = this.style.getImage(id);
+        const style = this._lazyInitEmptyStyle();
+        const existingImage = style.getImage(id);
         if (!existingImage) {
             return this.fire(new ErrorEvent(new Error(
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
@@ -1573,7 +1581,7 @@ class Map extends Camera {
         const copy = !(image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap));
         existingImage.data.replace(data, copy);
 
-        this.style.updateImage(id, existingImage);
+        style.updateImage(id, existingImage);
     }
 
     /**
@@ -1595,7 +1603,7 @@ class Map extends Camera {
             return false;
         }
 
-        return !!this.style.getImage(id);
+        return !!(this.style && this.style.getImage(id));
     }
 
     /**
@@ -1611,7 +1619,9 @@ class Map extends Camera {
      * if (map.hasImage('cat')) map.removeImage('cat');
      */
     removeImage(id: string) {
-        this.style.removeImage(id);
+        if (this.style) {
+            this.style.removeImage(id);
+        }
     }
 
     /**
@@ -1647,7 +1657,7 @@ class Map extends Camera {
     *
     */
     listImages() {
-        return this.style.listImages();
+        return this.style ? this.style.listImages() : [];
     }
 
     /**
@@ -1687,8 +1697,7 @@ class Map extends Camera {
      * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
      */
     addLayer(layer: LayerSpecification | CustomLayerInterface, beforeId?: string) {
-        this._lazyInitEmptyStyle();
-        this.style.addLayer(layer, beforeId);
+        this._lazyInitEmptyStyle().addLayer(layer, beforeId);
         return this._update(true);
     }
 
@@ -1705,7 +1714,7 @@ class Map extends Camera {
      * map.moveLayer('label', 'waterways');
      */
     moveLayer(id: string, beforeId?: string) {
-        this.style.moveLayer(id, beforeId);
+        this._lazyInitEmptyStyle().moveLayer(id, beforeId);
         return this._update(true);
     }
 
@@ -1722,7 +1731,9 @@ class Map extends Camera {
      * if (map.getLayer('state-data')) map.removeLayer('state-data');
      */
     removeLayer(id: string) {
-        this.style.removeLayer(id);
+        if (this.style) {
+            this.style.removeLayer(id);
+        }
         return this._update(true);
     }
 
@@ -1740,7 +1751,7 @@ class Map extends Camera {
      * @see [Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
     getLayer(id: string) {
-        return this.style.getLayer(id);
+        return this.style ? this.style.getLayer(id) : undefined;
     }
 
     /**
@@ -1764,7 +1775,7 @@ class Map extends Camera {
      *
      */
     setLayerZoomRange(layerId: string, minzoom: number, maxzoom: number) {
-        this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
+        this._lazyInitEmptyStyle().setLayerZoomRange(layerId, minzoom, maxzoom);
         return this._update(true);
     }
 
@@ -1786,7 +1797,7 @@ class Map extends Camera {
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
-        this.style.setFilter(layerId, filter, options);
+        this._lazyInitEmptyStyle().setFilter(layerId, filter, options);
         return this._update(true);
     }
 
@@ -1797,7 +1808,7 @@ class Map extends Camera {
      * @returns {Array} The layer's filter.
      */
     getFilter(layerId: string) {
-        return this.style.getFilter(layerId);
+        return this._lazyInitEmptyStyle().getFilter(layerId);
     }
 
     /**
@@ -1817,7 +1828,7 @@ class Map extends Camera {
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
-        this.style.setPaintProperty(layerId, name, value, options);
+        this._lazyInitEmptyStyle().setPaintProperty(layerId, name, value, options);
         return this._update(true);
     }
 
@@ -1829,7 +1840,7 @@ class Map extends Camera {
      * @returns {*} The value of the specified paint property.
      */
     getPaintProperty(layerId: string, name: string) {
-        return this.style.getPaintProperty(layerId, name);
+        return this._lazyInitEmptyStyle().getPaintProperty(layerId, name);
     }
 
     /**
@@ -1845,7 +1856,7 @@ class Map extends Camera {
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
      */
     setLayoutProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
-        this.style.setLayoutProperty(layerId, name, value, options);
+        this._lazyInitEmptyStyle().setLayoutProperty(layerId, name, value, options);
         return this._update(true);
     }
 
@@ -1857,7 +1868,7 @@ class Map extends Camera {
      * @returns {*} The value of the specified layout property.
      */
     getLayoutProperty(layerId: string, name: string) {
-        return this.style.getLayoutProperty(layerId, name);
+        return this._lazyInitEmptyStyle().getLayoutProperty(layerId, name);
     }
 
     /**
@@ -1869,8 +1880,7 @@ class Map extends Camera {
      * @returns {Map} `this`
      */
     setLight(light: LightSpecification, options: StyleSetterOptions = {}) {
-        this._lazyInitEmptyStyle();
-        this.style.setLight(light, options);
+        this._lazyInitEmptyStyle().setLight(light, options);
         return this._update(true);
     }
 
@@ -1880,7 +1890,7 @@ class Map extends Camera {
      * @returns {Object} light Light properties of the style.
      */
     getLight() {
-        return this.style.getLight();
+        return this._lazyInitEmptyStyle().getLight();
     }
 
     /**
@@ -1902,7 +1912,7 @@ class Map extends Camera {
      * `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
      */
     setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
-        this.style.setFeatureState(feature, state);
+        this._lazyInitEmptyStyle().setFeatureState(feature, state);
         return this._update();
     }
 
@@ -1922,7 +1932,7 @@ class Map extends Camera {
      * @param {string} key (optional) The key in the feature state to reset.
     */
     removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
-        this.style.removeFeatureState(target, key);
+        this._lazyInitEmptyStyle().removeFeatureState(target, key);
         return this._update();
     }
 
@@ -1941,7 +1951,7 @@ class Map extends Camera {
      * @returns {Object} The state of the feature.
      */
     getFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }): any {
-        return this.style.getFeatureState(feature);
+        return this._lazyInitEmptyStyle().getFeatureState(feature);
     }
 
     /**
@@ -2139,6 +2149,7 @@ class Map extends Camera {
      * @private
      */
     _render() {
+        const style = this._lazyInitEmptyStyle();
         let gpuTimer, frameStartTime = 0;
         const extTimerQuery = this.painter.context.extTimerQuery;
         if (this.listens('gpu-timing-frame')) {
@@ -2158,18 +2169,18 @@ class Map extends Camera {
         // If the style has changed, the map is being zoomed, or a transition or fade is in progress:
         //  - Apply style changes (in a batch)
         //  - Recalculate paint properties.
-        if (this.style && this._styleDirty) {
+        if (this._styleDirty) {
             this._styleDirty = false;
 
             const zoom = this.transform.zoom;
             const now = browser.now();
-            this.style.zoomHistory.update(zoom, now);
+            style.zoomHistory.update(zoom, now);
 
             const parameters = new EvaluationParameters(zoom, {
                 now,
                 fadeDuration: this._fadeDuration,
-                zoomHistory: this.style.zoomHistory,
-                transition: this.style.getTransition()
+                zoomHistory: style.zoomHistory,
+                transition: style.getTransition()
             });
 
             const factor = parameters.crossFadingFactor();
@@ -2178,21 +2189,21 @@ class Map extends Camera {
                 this._crossFadingFactor = factor;
             }
 
-            this.style.update(parameters);
+            style.update(parameters);
         }
 
         // If we are in _render for any reason other than an in-progress paint
         // transition, update source caches to check for and load any tiles we
         // need for the current transform
-        if (this.style && this._sourcesDirty) {
+        if (this._sourcesDirty) {
             this._sourcesDirty = false;
-            this.style._updateSources(this.transform);
+            style._updateSources(this.transform);
         }
 
-        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration, this._crossSourceCollisions);
+        this._placementDirty = style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration, this._crossSourceCollisions);
 
         // Actually draw
-        this.painter.render(this.style, {
+        this.painter.render(style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
             rotating: this.isRotating(),
@@ -2367,7 +2378,7 @@ class Map extends Camera {
         if (value) {
             // When we turn collision boxes on we have to generate them for existing tiles
             // When we turn them off, there's no cost to leaving existing boxes in place
-            this.style._generateCollisionBoxes();
+            this._lazyInitEmptyStyle()._generateCollisionBoxes();
         } else {
             // Otherwise, call an update to remove collision boxes
             this._update();

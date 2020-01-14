@@ -44,12 +44,14 @@ export default class Paint extends Benchmark {
             const crossSourceCollisions = true;
             const forceFullPlacement = true;
 
-            map.style._updatePlacement(
-                map.transform,
-                showCollisionBoxes,
-                fadeDuration,
-                crossSourceCollisions,
-                forceFullPlacement);
+            if (map.style) {
+                map.style._updatePlacement(
+                    map.transform,
+                    showCollisionBoxes,
+                    fadeDuration,
+                    crossSourceCollisions,
+                    forceFullPlacement);
+            }
         }
     }
 

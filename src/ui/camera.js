@@ -89,8 +89,8 @@ class Camera extends Evented {
     _easeStart: number;
     _easeOptions: {duration: number, easing: (number) => number};
 
-    _onEaseFrame: (number) => void;
-    _onEaseEnd: () => void;
+    _onEaseFrame: ?(number) => void;
+    _onEaseEnd: ?() => void;
     _easeFrameId: ?TaskID;
 
     +_requestRenderFrame: (() => void) => TaskID;
@@ -1062,7 +1062,11 @@ class Camera extends Evented {
     // Callback for map._requestRenderFrame
     _renderFrameCallback() {
         const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
-        this._onEaseFrame(this._easeOptions.easing(t));
+        if (this._onEaseFrame) {
+            // Flow doesn't accept this unless we assign it to a variable...
+            const onEaseFrame = this._onEaseFrame;
+            onEaseFrame(this._easeOptions.easing(t));
+        }
         if (t < 1) {
             this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
         } else {

@@ -35,7 +35,7 @@ class DragRotateHandler {
     _prevPos: Point;
     _lastPos: Point;
     _startTime: number;
-    _lastMoveEvent: MouseEvent;
+    _lastMoveEvent: ?MouseEvent;
     _inertia: Array<[number, number]>;
     _center: Point;
     _frameId: ?TaskID;

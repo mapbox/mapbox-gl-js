@@ -93,10 +93,10 @@ export type SourceState =
 class GeoJSONWorkerSource extends VectorTileWorkerSource {
     loadGeoJSON: LoadGeoJSON;
     _state: SourceState;
-    _pendingCallback: Callback<{
+    _pendingCallback: ?Callback<{
         resourceTiming?: {[string]: Array<PerformanceResourceTiming>},
         abandoned?: boolean }>;
-    _pendingLoadDataParams: LoadGeoJSONParameters;
+    _pendingLoadDataParams: ?LoadGeoJSONParameters;
     _geoJSONIndex: GeoJSONIndex
 
     /**

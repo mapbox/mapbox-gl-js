@@ -81,7 +81,7 @@ class ImageSource extends Evented implements Source {
     image: HTMLImageElement | ImageBitmap;
     tileID: CanonicalTileID;
     _boundsArray: RasterBoundsArray;
-    boundsBuffer: VertexBuffer;
+    boundsBuffer: ?VertexBuffer;
     boundsSegments: SegmentVector;
     _loaded: boolean;
 

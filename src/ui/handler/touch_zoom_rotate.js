@@ -34,7 +34,7 @@ class TouchZoomRotateHandler {
     _startBearing: number;
     _gestureIntent: 'rotate' | 'zoom' | void;
     _inertia: Array<[number, number, Point]>;
-    _lastTouchEvent: TouchEvent;
+    _lastTouchEvent: ?TouchEvent;
     _frameId: ?TaskID;
 
     /**
@@ -191,6 +191,9 @@ class TouchZoomRotateHandler {
         const gestureIntent = this._gestureIntent;
         if (!gestureIntent) return;
 
+        const lastTouchEvent = this._lastTouchEvent;
+        if (!lastTouchEvent) return;
+
         const tr = this._map.transform;
 
         if (!this._startScale) {
@@ -198,7 +201,7 @@ class TouchZoomRotateHandler {
             this._startBearing = tr.bearing;
         }
 
-        const {center, bearing, scale} = this._getTouchEventData(this._lastTouchEvent);
+        const {center, bearing, scale} = this._getTouchEventData(lastTouchEvent);
         const around = tr.pointLocation(center);
         const aroundPoint = tr.locationPoint(around);
 
@@ -209,8 +212,8 @@ class TouchZoomRotateHandler {
         tr.zoom = tr.scaleZoom(this._startScale * scale);
         tr.setLocationAtPoint(this._startAround, aroundPoint);
 
-        this._map.fire(new Event(gestureIntent, {originalEvent: this._lastTouchEvent}));
-        this._map.fire(new Event('move', {originalEvent: this._lastTouchEvent}));
+        this._map.fire(new Event(gestureIntent, {originalEvent: lastTouchEvent}));
+        this._map.fire(new Event('move', {originalEvent: lastTouchEvent}));
 
         this._drainInertiaBuffer();
         this._inertia.push([browser.now(), scale, center]);
@@ -228,8 +231,8 @@ class TouchZoomRotateHandler {
             this._frameId = null;
         }
         delete this._gestureIntent;
-        delete this._startScale;
-        delete this._startBearing;
+        this._startScale = 0;
+        this._startBearing = 0;
         delete this._lastTouchEvent;
 
         if (!gestureIntent) return;

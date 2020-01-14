@@ -166,6 +166,11 @@ class SourceCache extends Evented {
     }
 
     prepare(context: Context) {
+        const style = this.map.style;
+        if (!style) {
+            return;
+        }
+
         if  (this._source.prepare) {
             this._source.prepare();
         }
@@ -174,7 +179,7 @@ class SourceCache extends Evented {
         for (const i in this._tiles) {
             const tile = this._tiles[i];
             tile.upload(context);
-            tile.prepare(this.map.style.imageManager);
+            tile.prepare(style.imageManager);
         }
     }
 
@@ -831,7 +836,7 @@ class SourceCache extends Evented {
                 tileSpaceBounds[1].x + queryPadding >= 0 && tileSpaceBounds[1].y + queryPadding >= 0) {
 
                 const tileSpaceQueryGeometry: Array<Point> = queryGeometry.map((c) => tileID.getTilePoint(c));
-                const tileSpaceCameraQueryGeometry = cameraQueryGeometry.map((c) => tileID.getTilePoint(c));
+                const tileSpaceCameraQueryGeometry = cameraQueryGeometry.map<Point>((c) => tileID.getTilePoint(c));
 
                 tileResults.push({
                     tile,

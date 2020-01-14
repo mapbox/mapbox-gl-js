@@ -69,9 +69,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const uniformValues = rasterUniformValues(posMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
 
         if (source instanceof ImageSource) {
-            program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                uniformValues, layer.id, source.boundsBuffer,
-                painter.quadTriangleIndexBuffer, source.boundsSegments);
+            if (source.boundsBuffer) {
+                program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
+                    uniformValues, layer.id, source.boundsBuffer,
+                    painter.quadTriangleIndexBuffer, source.boundsSegments);
+            }
         } else {
             program.draw(context, gl.TRIANGLES, depthMode, stencilModes[coord.overscaledZ], colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, painter.rasterBoundsBuffer,

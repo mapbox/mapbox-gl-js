@@ -7,7 +7,7 @@
  * @private
  */
 class ThrottledInvoker {
-    _channel: MessageChannel;
+    _channel: ?MessageChannel;
     _triggered: boolean;
     _callback: Function
 

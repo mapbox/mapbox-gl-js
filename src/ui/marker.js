@@ -45,7 +45,7 @@ type Options = {
  * @see [Create a draggable Marker](https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
  */
 export default class Marker extends Evented {
-    _map: Map;
+    _map: ?Map;
     _anchor: Anchor;
     _offset: Point;
     _element: HTMLElement;
@@ -206,9 +206,11 @@ export default class Marker extends Evented {
         });
         this._element.addEventListener('focus', () => {
             // revert the default scrolling action of the container
-            const el = this._map.getContainer();
-            el.scrollTop = 0;
-            el.scrollLeft = 0;
+            if (this._map) {
+                const el = this._map.getContainer();
+                el.scrollTop = 0;
+                el.scrollLeft = 0;
+            }
         });
         applyAnchorClass(this._element, this._anchor, 'marker');
 
@@ -232,7 +234,7 @@ export default class Marker extends Evented {
         // If we attached the `click` listener to the marker element, the popup
         // would close once the event propogated to `map` due to the
         // `Popup#_onClickClose` listener.
-        this._map.on('click', this._onMapClick);
+        map.on('click', this._onMapClick);
 
         return this;
     }
@@ -246,15 +248,16 @@ export default class Marker extends Evented {
      */
     remove() {
         if (this._map) {
-            this._map.off('click', this._onMapClick);
-            this._map.off('move', this._update);
-            this._map.off('moveend', this._update);
-            this._map.off('mousedown', this._addDragHandler);
-            this._map.off('touchstart', this._addDragHandler);
-            this._map.off('mouseup', this._onUp);
-            this._map.off('touchend', this._onUp);
-            this._map.off('mousemove', this._onMove);
-            this._map.off('touchmove', this._onMove);
+            const map = this._map;
+            map.off('click', this._onMapClick);
+            map.off('move', this._update);
+            map.off('moveend', this._update);
+            map.off('mousedown', this._addDragHandler);
+            map.off('touchstart', this._addDragHandler);
+            map.off('mouseup', this._onUp);
+            map.off('touchend', this._onUp);
+            map.off('mousemove', this._onMove);
+            map.off('touchmove', this._onMove);
             delete this._map;
         }
         DOM.remove(this._element);
@@ -379,31 +382,32 @@ export default class Marker extends Evented {
 
         if (!popup) return this;
         else if (popup.isOpen()) popup.remove();
-        else popup.addTo(this._map);
+        else if (this._map) popup.addTo(this._map);
         return this;
     }
 
     _update(e?: {type: 'move' | 'moveend'}) {
         if (!this._map) return;
+        const map = this._map;
 
-        if (this._map.transform.renderWorldCopies) {
-            this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
+        if (map.transform.renderWorldCopies) {
+            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
         }
 
-        this._pos = this._map.project(this._lngLat)._add(this._offset);
+        this._pos = map.project(this._lngLat)._add(this._offset);
 
         let rotation = "";
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
             rotation = `rotateZ(${this._rotation}deg)`;
         } else if (this._rotationAlignment === "map") {
-            rotation = `rotateZ(${this._rotation - this._map.getBearing()}deg)`;
+            rotation = `rotateZ(${this._rotation - map.getBearing()}deg)`;
         }
 
         let pitch = "";
         if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
             pitch = "rotateX(0deg)";
         } else if (this._pitchAlignment === "map") {
-            pitch = `rotateX(${this._map.getPitch()}deg)`;
+            pitch = `rotateX(${map.getPitch()}deg)`;
         }
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
@@ -436,8 +440,10 @@ export default class Marker extends Evented {
     }
 
     _onMove(e: MapMouseEvent | MapTouchEvent) {
+        if (!this._map) return;
+        const map = this._map;
         this._pos = e.point.sub(this._positionDelta);
-        this._lngLat = this._map.unproject(this._pos);
+        this._lngLat = map.unproject(this._pos);
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
         this._element.style.pointerEvents = 'none';
@@ -473,11 +479,13 @@ export default class Marker extends Evented {
     }
 
     _onUp() {
+        if (!this._map) return;
+        const map = this._map;
         // revert to normal pointer event handling
         this._element.style.pointerEvents = 'auto';
         this._positionDelta = null;
-        this._map.off('mousemove', this._onMove);
-        this._map.off('touchmove', this._onMove);
+        map.off('mousemove', this._onMove);
+        map.off('touchmove', this._onMove);
 
         // only fire dragend if it was preceded by at least one drag event
         if (this._state === 'active') {
@@ -497,6 +505,9 @@ export default class Marker extends Evented {
     }
 
     _addDragHandler(e: MapMouseEvent | MapTouchEvent) {
+        if (!this._map) return;
+        const map = this._map;
+
         if (this._element.contains((e.originalEvent.target: any))) {
             e.preventDefault();
 
@@ -509,10 +520,10 @@ export default class Marker extends Evented {
             this._positionDelta = e.point.sub(this._pos).add(this._offset);
 
             this._state = 'pending';
-            this._map.on('mousemove', this._onMove);
-            this._map.on('touchmove', this._onMove);
-            this._map.once('mouseup', this._onUp);
-            this._map.once('touchend', this._onUp);
+            map.on('mousemove', this._onMove);
+            map.on('touchmove', this._onMove);
+            map.once('mouseup', this._onUp);
+            map.once('touchend', this._onUp);
         }
     }
 
@@ -527,12 +538,13 @@ export default class Marker extends Evented {
         // handle case where map may not exist yet
         // e.g. when setDraggable is called before addTo
         if (this._map) {
+            const map = this._map;
             if (shouldBeDraggable) {
-                this._map.on('mousedown', this._addDragHandler);
-                this._map.on('touchstart', this._addDragHandler);
+                map.on('mousedown', this._addDragHandler);
+                map.on('touchstart', this._addDragHandler);
             } else {
-                this._map.off('mousedown', this._addDragHandler);
-                this._map.off('touchstart', this._addDragHandler);
+                map.off('mousedown', this._addDragHandler);
+                map.off('touchstart', this._addDragHandler);
             }
         }
 

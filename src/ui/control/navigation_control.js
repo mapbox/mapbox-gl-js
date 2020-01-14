@@ -33,14 +33,14 @@ const defaultOptions: Options = {
  * @see [Add a third party vector tile source](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
  */
 class NavigationControl {
-    _map: Map;
+    _map: ?Map;
     options: Options;
     _container: HTMLElement;
     _zoomInButton: HTMLButtonElement;
     _zoomOutButton: HTMLButtonElement;
     _compass: HTMLButtonElement;
     _compassIcon: HTMLElement;
-    _handler: DragRotateHandler;
+    _handler: ?DragRotateHandler;
 
     constructor(options: Options) {
         this.options = extend({}, defaultOptions, options);
@@ -53,9 +53,15 @@ class NavigationControl {
                 '_setButtonTitle',
                 '_updateZoomButtons'
             ], this);
-            this._zoomInButton = this._createButton('mapboxgl-ctrl-zoom-in', (e) => this._map.zoomIn({}, {originalEvent: e}));
+            this._zoomInButton = this._createButton('mapboxgl-ctrl-zoom-in', (e) => {
+                if (!this._map) return;
+                this._map.zoomIn({}, {originalEvent: e});
+            });
             DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomInButton).setAttribute('aria-hidden', true);
-            this._zoomOutButton = this._createButton('mapboxgl-ctrl-zoom-out', (e) => this._map.zoomOut({}, {originalEvent: e}));
+            this._zoomOutButton = this._createButton('mapboxgl-ctrl-zoom-out', (e) => {
+                if (!this._map) return;
+                this._map.zoomOut({}, {originalEvent: e});
+            });
             DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomOutButton).setAttribute('aria-hidden', true);
         }
         if (this.options.showCompass) {
@@ -63,6 +69,7 @@ class NavigationControl {
                 '_rotateCompassArrow'
             ], this);
             this._compass = this._createButton('mapboxgl-ctrl-compass', (e) => {
+                if (!this._map) return;
                 if (this.options.visualizePitch) {
                     this._map.resetNorthPitch({}, {originalEvent: e});
                 } else {
@@ -75,15 +82,19 @@ class NavigationControl {
     }
 
     _updateZoomButtons() {
-        const zoom = this._map.getZoom();
-        this._zoomInButton.disabled = zoom === this._map.getMaxZoom();
-        this._zoomOutButton.disabled = zoom === this._map.getMinZoom();
+        if (!this._map) return;
+        const map = this._map;
+        const zoom = map.getZoom();
+        this._zoomInButton.disabled = zoom === map.getMaxZoom();
+        this._zoomOutButton.disabled = zoom === map.getMinZoom();
     }
 
     _rotateCompassArrow() {
+        if (!this._map) return;
+        const map = this._map;
         const rotate = this.options.visualizePitch ?
-            `scale(${1 / Math.pow(Math.cos(this._map.transform.pitch * (Math.PI / 180)), 0.5)}) rotateX(${this._map.transform.pitch}deg) rotateZ(${this._map.transform.angle * (180 / Math.PI)}deg)` :
-            `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+            `scale(${1 / Math.pow(Math.cos(map.transform.pitch * (Math.PI / 180)), 0.5)}) rotateX(${map.transform.pitch}deg) rotateZ(${map.transform.angle * (180 / Math.PI)}deg)` :
+            `rotate(${map.transform.angle * (180 / Math.PI)}deg)`;
 
         this._compassIcon.style.transform = rotate;
     }
@@ -93,39 +104,44 @@ class NavigationControl {
         if (this.options.showZoom) {
             this._setButtonTitle(this._zoomInButton, 'ZoomIn');
             this._setButtonTitle(this._zoomOutButton, 'ZoomOut');
-            this._map.on('zoom', this._updateZoomButtons);
+            map.on('zoom', this._updateZoomButtons);
             this._updateZoomButtons();
         }
         if (this.options.showCompass) {
             this._setButtonTitle(this._compass, 'ResetBearing');
             if (this.options.visualizePitch) {
-                this._map.on('pitch', this._rotateCompassArrow);
+                map.on('pitch', this._rotateCompassArrow);
             }
-            this._map.on('rotate', this._rotateCompassArrow);
+            map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
             // Temporary fix with clickTolerance (https://github.com/mapbox/mapbox-gl-js/pull/9015)
-            this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass, clickTolerance: map.dragRotate._clickTolerance});
-            DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
-            DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, {passive: false});
-            this._handler.enable();
+            const handler = this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass, clickTolerance: map.dragRotate._clickTolerance});
+            DOM.addEventListener(this._compass, 'mousedown', handler.onMouseDown);
+            DOM.addEventListener(this._compass, 'touchstart', handler.onMouseDown, {passive: false});
+            handler.enable();
         }
         return this._container;
     }
 
     onRemove() {
+        if (!this._map) return;
+        const map = this._map;
         DOM.remove(this._container);
         if (this.options.showZoom) {
-            this._map.off('zoom', this._updateZoomButtons);
+            map.off('zoom', this._updateZoomButtons);
         }
         if (this.options.showCompass) {
             if (this.options.visualizePitch) {
-                this._map.off('pitch', this._rotateCompassArrow);
+                map.off('pitch', this._rotateCompassArrow);
             }
-            this._map.off('rotate', this._rotateCompassArrow);
-            DOM.removeEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
-            DOM.removeEventListener(this._compass, 'touchstart', this._handler.onMouseDown, {passive: false});
-            this._handler.disable();
-            delete this._handler;
+            map.off('rotate', this._rotateCompassArrow);
+            if (this._handler != null) {
+                const handler = this._handler;
+                DOM.removeEventListener(this._compass, 'mousedown', handler.onMouseDown);
+                DOM.removeEventListener(this._compass, 'touchstart', handler.onMouseDown, {passive: false});
+                handler.disable();
+                delete this._handler;
+            }
         }
 
         delete this._map;
@@ -139,6 +155,7 @@ class NavigationControl {
     }
 
     _setButtonTitle(button: HTMLButtonElement, title: string) {
+        if (!this._map) return;
         const str = this._map._getUIString(`NavigationControl.${title}`);
         button.title = str;
         button.setAttribute('aria-label', str);
