@@ -105,7 +105,7 @@ class GeolocateControl extends Evented {
     _lastKnownPosition: any;
     _userLocationDotMarker: Marker;
     _accuracyCircleMarker: Marker;
-    _accuracy: Number;
+    _accuracy: number;
     _setup: boolean; // set to true once the control has been setup
 
     constructor(options: Options) {
