@@ -28,26 +28,22 @@ test('primitives', (t) => {
             t.end();
         });
 
-        t.test('Closest point inside of aabb', (t) => {
-            const min = vec3.fromValues(-1, -1, -1);
-            const max = vec3.fromValues(1, 1, 1);
-            const aabb = new Aabb(min, max);
-
-            t.deepEqual(aabb.closestPoint([0.5, -0.5]), [0.5, -0.5]);
-            t.deepEqual(aabb.closestPoint([0, 10]), [0, 1]);
-            t.deepEqual(aabb.closestPoint([-2, -2]), [-1, -1]);
-            t.end();
-        });
-
         t.test('Distance to a point', (t) => {
             const min = vec3.fromValues(-1, -1, -1);
             const max = vec3.fromValues(1, 1, 1);
             const aabb = new Aabb(min, max);
 
-            t.deepEqual(aabb.distanceXY([0.5, -0.5]), [0, 0]);
-            t.deepEqual(aabb.distanceXY([1, 1]), [0, 0]);
-            t.deepEqual(aabb.distanceXY([0, 10]), [0, -9]);
-            t.deepEqual(aabb.distanceXY([-2, -2]), [1, 1]);
+            t.equal(aabb.distanceX([0.5, -0.5]), 0);
+            t.equal(aabb.distanceY([0.5, -0.5]), 0);
+
+            t.equal(aabb.distanceX([1, 1]), 0);
+            t.equal(aabb.distanceY([1, 1]), 0);
+
+            t.equal(aabb.distanceX([0, 10]), 0);
+            t.equal(aabb.distanceY([0, 10]), -9);
+
+            t.equal(aabb.distanceX([-2, -2]), 1);
+            t.equal(aabb.distanceY([-2, -2]), 1);
             t.end();
         });
 
@@ -76,7 +72,7 @@ test('primitives', (t) => {
             ];
 
             for (const aabb of aabbList)
-                t.equal(aabb.intersects(frustum), 'contains');
+                t.equal(aabb.intersects(frustum), 2);
 
             t.end();
         });
@@ -90,7 +86,7 @@ test('primitives', (t) => {
             ];
 
             for (const aabb of aabbList)
-                t.equal(aabb.intersects(frustum), 'intersects');
+                t.equal(aabb.intersects(frustum), 1);
 
             t.end();
         });
@@ -105,7 +101,7 @@ test('primitives', (t) => {
             ];
 
             for (const aabb of aabbList)
-                t.equal(aabb.intersects(frustum), 'none');
+                t.equal(aabb.intersects(frustum), 0);
 
             t.end();
         });

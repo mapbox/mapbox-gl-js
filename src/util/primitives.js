@@ -3,8 +3,6 @@
 import {vec3, vec4} from 'gl-matrix';
 import assert from 'assert';
 
-type IntersectResult = 'none' | 'intersects' | 'contains';
-
 class Frustum {
     points: Array<Array<number>>;
     planes: Array<Array<number>>;
@@ -78,20 +76,19 @@ class Aabb {
         return new Aabb(qMin, qMax);
     }
 
-    closestPoint(point: Array<number>): Array<number> {
-        const x = Math.max(Math.min(this.max[0], point[0]), this.min[0]);
-        const y = Math.max(Math.min(this.max[1], point[1]), this.min[1]);
-        return [x, y];
+    distanceX(point: Array<number>): number {
+        const pointOnAabb = Math.max(Math.min(this.max[0], point[0]), this.min[0]);
+        return pointOnAabb - point[0];
     }
 
-    distanceXY(point: Array<number>): Array<number> {
-        const aabbPoint = this.closestPoint(point);
-        const dx = aabbPoint[0] - point[0];
-        const dy = aabbPoint[1] - point[1];
-        return [dx, dy];
+    distanceY(point: Array<number>): number {
+        const pointOnAabb = Math.max(Math.min(this.max[1], point[1]), this.min[1]);
+        return pointOnAabb - point[1];
     }
 
-    intersects(frustum: Frustum): IntersectResult {
+    // Performs a frustum-aabb intersection test. Returns 0 if there's no intersection,
+    // 1 if shapes are intersecting and 2 if the aabb if fully inside the frustum.
+    intersects(frustum: Frustum): number {
         // Execute separating axis test between two convex objects to find intersections
         // Each frustum plane together with 3 major axes define the separating axes
         // Note: test only 4 points as both min and max points have equal elevation
@@ -115,14 +112,14 @@ class Aabb {
             }
 
             if (pointsInside === 0)
-                return 'none';
+                return 0;
 
             if (pointsInside !== aabbPoints.length)
                 fullyInside = false;
         }
 
         if (fullyInside)
-            return 'contains';
+            return 2;
 
         for (let axis = 0; axis < 3; axis++) {
             let projMin = Number.MAX_VALUE;
@@ -136,10 +133,10 @@ class Aabb {
             }
 
             if (projMax < 0 || projMin > this.max[axis] - this.min[axis])
-                return 'none';
+                return 0;
         }
 
-        return 'intersects';
+        return 1;
     }
 }
 export {

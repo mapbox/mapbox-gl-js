@@ -201,6 +201,55 @@ test('transform', (t) => {
             new OverscaledTileID(8, 0, 8, 146, 73)
         ]);
 
+        transform.zoom = 2;
+        transform.pitch = 0;
+        transform.bearing = 0;
+        transform.resize(300, 300);
+        t.test('calculates tile coverage at w > 0', (t) => {
+            transform.center = {lng: 630.01, lat: 0.01};
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(2, 2, 2, 1, 1),
+                new OverscaledTileID(2, 2, 2, 1, 2),
+                new OverscaledTileID(2, 2, 2, 0, 1),
+                new OverscaledTileID(2, 2, 2, 0, 2)
+            ]);
+            t.end();
+        });
+
+        t.test('calculates tile coverage at w = -1', (t) => {
+            transform.center = {lng: -360.01, lat: 0.01};
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(2, -1, 2, 1, 1),
+                new OverscaledTileID(2, -1, 2, 1, 2),
+                new OverscaledTileID(2, -1, 2, 2, 1),
+                new OverscaledTileID(2, -1, 2, 2, 2)
+            ]);
+            t.end();
+        });
+
+        t.test('calculates tile coverage across meridian', (t) => {
+            transform.zoom = 1;
+            transform.center = {lng: -180.01, lat: 0.01};
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, 0, 1, 0, 1),
+                new OverscaledTileID(1, -1, 1, 1, 0),
+                new OverscaledTileID(1, -1, 1, 1, 1)
+            ]);
+            t.end();
+        });
+
+        t.test('only includes tiles for a single world, if renderWorldCopies is set to false', (t) => {
+            transform.zoom = 1;
+            transform.center = {lng: -180.01, lat: 0.01};
+            transform.renderWorldCopies = false;
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, 0, 1, 0, 1)
+            ]);
+            t.end();
+        });
+
         t.end();
     });
 

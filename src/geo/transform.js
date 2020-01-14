@@ -276,12 +276,13 @@ class Transform {
         if (options.minzoom !== undefined && z < options.minzoom) return [];
         if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
 
-        let minZoom = options.minzoom || 0;
         const centerCoord = MercatorCoordinate.fromLngLat(this.center);
         const numTiles = Math.pow(2, z);
-        const centerPoint = new Point(numTiles * centerCoord.x, numTiles * centerCoord.y);
+        const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
         const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
 
+        // No change of LOD behavior for pitch lower than 60: return only tile ids from the requested zoom level
+        let minZoom = options.minzoom || 0;
         if (this.pitch <= 60.0)
             minZoom = z;
 
@@ -316,10 +317,6 @@ class Transform {
 
         stack.push(newRootTile(0));
 
-        // Stream position will determine the "center of the streaming",
-        // ie. where the most detailed tiles are loaded.
-        const streamPos = [centerPoint.x, centerPoint.y, 0];
-
         while (stack.length > 0) {
             const it = stack.pop();
             const x = it.x;
@@ -330,28 +327,35 @@ class Transform {
             if (!fullyVisible) {
                 const intersectResult = it.aabb.intersects(cameraFrustum);
 
-                if (intersectResult === 'none')
+                if (intersectResult === 0)
                     continue;
 
-                fullyVisible = intersectResult === 'contains';
+                fullyVisible = intersectResult === 2;
             }
 
-            const distanceXY = it.aabb.distanceXY(streamPos);
-            const longestDim = Math.max(Math.abs(distanceXY[0]), Math.abs(distanceXY[1]));
+            const distanceX = it.aabb.distanceX(centerPoint);
+            const distanceY = it.aabb.distanceY(centerPoint);
+            const longestDim = Math.max(Math.abs(distanceX), Math.abs(distanceY));
+
+            // We're using distance based heuristics to determine if a tile should be split into quadrants or not.
+            // radiusOfMaxLvlLodInTiles defines that there's always a certain number of maxLevel tiles next to the map center.
+            // Using the fact that a parent node in quadtree is twice the size of its children (per dimension)
+            // we can define distance thresholds for each relative level:
+            // f(k) = offset + 2 + 4 + 8 + 16 + ... + 2^k. This is the same as "offset+2^(k+1)-2"
             const distToSplit = radiusOfMaxLvlLodInTiles + (1 << (maxZoom - it.zoom)) - 2;
 
             // Have we reached the target depth or is the tile too far away to be any split further?
             if (it.zoom === maxZoom || (longestDim > distToSplit && it.zoom >= minZoom)) {
                 result.push({
                     tileID: new OverscaledTileID(it.zoom === maxZoom ? overscaledZ : it.zoom, it.wrap, it.zoom, x, y),
-                    distanceSq: vec2.sqrLen([streamPos[0] - 0.5 - x, streamPos[1] - 0.5 - y])
+                    distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x, centerPoint[1] - 0.5 - y])
                 });
                 continue;
             }
 
             for (let i = 0; i < 4; i++) {
                 const childX = (x << 1) + (i % 2);
-                const childY = (y << 1) + Math.floor(i / 2);
+                const childY = (y << 1) + (i >> 1);
 
                 stack.push({aabb: it.aabb.quadrant(i), zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible});
             }
