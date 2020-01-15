@@ -115,7 +115,7 @@ class GeolocateControl extends Evented {
         bindAll([
             '_onSuccess',
             '_onError',
-            '_onMove',
+            '_onZoom',
             '_finish',
             '_setupUI',
             '_updateCamera',
@@ -127,7 +127,7 @@ class GeolocateControl extends Evented {
         this._map = map;
         this._container = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
         checkGeolocationSupport(this._setupUI);
-        this._map.on('move', this._onMove);
+        this._map.on('zoom', this._onZoom);
         return this._container;
     }
 
@@ -144,7 +144,7 @@ class GeolocateControl extends Evented {
         }
 
         DOM.remove(this._container);
-        this._map.off('move', this._onMove);
+        this._map.off('zoom', this._onZoom);
         this._map = (undefined: any);
         numberOfWatches = 0;
         noTimeout = false;
@@ -264,14 +264,14 @@ class GeolocateControl extends Evented {
             this._accuracyCircleMarker.setLngLat(center).addTo(this._map);
             this._userLocationDotMarker.setLngLat(center).addTo(this._map);
             this._accuracy = position.coords.accuracy;
-            this._onMove();
+            this._onZoom();
         } else {
             this._userLocationDotMarker.remove();
             this._accuracyCircleMarker.remove();
         }
     }
 
-    _onMove() {
+    _onZoom() {
         if (this.options.showAccuracyRadius) {
             updateCircleRadius(this._map, this._circleElement, this._accuracy);
         }
