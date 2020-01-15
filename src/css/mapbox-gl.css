@@ -761,7 +761,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     display: none;
 }
 
-.mapboxgl-accuracy-circle {
+.mapboxgl-user-location-accuracy-circle {
     background-color: #1da1f233;
     width: 1px;
     height: 1px;
