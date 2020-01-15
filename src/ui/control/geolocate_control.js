@@ -348,7 +348,7 @@ class GeolocateControl extends Evented {
             this._dotElement = DOM.create('div', 'mapboxgl-user-location-dot');
             this._userLocationDotMarker = new Marker(this._dotElement);
 
-            this._circleElement = DOM.create('div', 'mapboxgl-accuracy-circle');
+            this._circleElement = DOM.create('div', 'mapboxgl-user-location-accuracy-circle');
             this._accuracyCircleMarker = new Marker(this._circleElement);
 
             if (this.options.trackUserLocation) this._watchState = 'OFF';
