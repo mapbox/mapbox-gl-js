@@ -423,6 +423,32 @@ test('GeolocateControl switches to BACKGROUND state on map manipulation', (t) =>
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
 });
 
+test('GeolocateControl accuracy circle not shown if showAccuracy = false', (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+        showAccuracy: false,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        map.jumpTo({
+            center: [10, 20]
+        });
+        map.once('zoomend', () => {
+            t.ok(!geolocate._circleElement.style.width);
+            t.end();
+        });
+        map.zoomTo(10, {duration: 0});
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 700});
+});
+
 test('GeolocateControl accuracy circle radius matches reported accuracy', (t) => {
     const map = createMap(t);
     const geolocate = new GeolocateControl({
@@ -439,9 +465,9 @@ test('GeolocateControl accuracy circle radius matches reported accuracy', (t) =>
         map.jumpTo({
             center: [10, 20]
         });
-        map.once('zoom', () => {
+        map.once('zoomend', () => {
             t.equal(geolocate._circleElement.style.width, '20px'); // 700m = 20px at zoom 10
-            map.once('zoom', () => {
+            map.once('zoomend', () => {
                 t.equal(geolocate._circleElement.style.width, '79px'); // 700m = 79px at zoom 12
                 t.end();
             });
