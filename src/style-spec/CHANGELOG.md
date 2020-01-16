@@ -2,8 +2,6 @@
 
 ### ✨ Features and improvements
 * Add `promoteId` option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
-* Edit convert functions to output linear interpolation ([#9107](https://github.com/mapbox/mapbox-gl-js/pull/9107)) (h/t [Jo-IE](https://github.com/Jo-IE))
-* Export the internal `derefLayers` utility function from the `style-spec` bundle ([#9121](https://github.com/mapbox/mapbox-gl-js/pull/9121)) (h/t [ahocevar](https://github.com/ahocevar))
 * Update `symbol-avoid-edges` documentation regarding global collision detection ([#9157](https://github.com/mapbox/mapbox-gl-js/pull/9157))
 * Remove reference to `in` function which has been replaced by the `in` expression ([#9102](https://github.com/mapbox/mapbox-gl-js/pull/9102))
 
