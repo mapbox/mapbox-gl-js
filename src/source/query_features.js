@@ -40,6 +40,7 @@ function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[_: string]:
 
 export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[_: string]: StyleLayer},
+                            serializedLayers: {[_: string]: Object},
                             queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             transform: Transform) {
@@ -57,6 +58,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
             wrappedTileID: tileIn.tileID.wrapped().key,
             queryResults: tileIn.tile.queryRenderedFeatures(
                 styleLayers,
+                serializedLayers,
                 sourceCache._state,
                 tileIn.queryGeometry,
                 tileIn.cameraQueryGeometry,

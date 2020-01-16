@@ -1088,13 +1088,20 @@ class Style extends Evented {
         }
 
         const sourceResults = [];
-
+        const serializedLayers = {};
+        for (let layer in this._layers) {
+            serializedLayers[layer] = this._layers[layer].serialize();
+        };
+        console.log('this._layers', this._layers);
+        console.log('serializedLayers', serializedLayers);
+        // console.log('serialized layer', this._layers['tracks'].serialize());
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
             sourceResults.push(
                 queryRenderedFeatures(
                     this.sourceCaches[id],
                     this._layers,
+                    serializedLayers,
                     queryGeometry,
                     params,
                     transform)
@@ -1114,6 +1121,8 @@ class Style extends Evented {
                     this.placement.retainedQueryData)
             );
         }
+
+        console.log('sourceResults', sourceResults);
 
         return this._flattenAndSortRenderedFeatures(sourceResults);
     }

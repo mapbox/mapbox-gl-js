@@ -18,12 +18,69 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
+const style = {
+    "version": 8,
+    "sources": {},
+    "sprite": "mapbox://sprites/ryanhamley/cjsxn92np2rfb1fpueclvro50",
+    "glyphs": "mapbox://fonts/ryanhamley/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "layout": {},
+            "paint": {"background-color": "hsl(38, 48%, 86%)"}
+        }
+    ]
+};
+
+mapboxgl.accessToken = 'pk.eyJ1IjoicnlhbmhhbWxleSIsImEiOiJjaWszbmluaG8wMDAzdTBrc2Q3Ymk3b3l1In0.BxdMyaYKg_0-LwANjPybNA';
+
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v10',
+    zoom: 13,
+    center: [-122.4088, 37.77326],
+    style,
     hash: true
+});
+
+map.on('load', function() {
+    map.addLayer({
+        'id': 'tracks',
+        'type': 'line',
+        'source': {
+            'type': 'geojson',
+            'data': 'https://gist.githubusercontent.com/ryanhamley/110908e1848a2360fc922419b11460ec/raw/689985046164ac84899a6051de31d333de03c0e3/BART_Tracks.geojson'
+        },
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': [
+                'case',
+                ['in', 'ANTC-SFIA', ['get', 'Name']], '#fff638',
+                ['in', 'FRMT-RICH', ['get', 'Name']], '#f28c16',
+                ['in', 'FRMT-DALY', ['get', 'Name']], '#40af38',
+                ['in', 'RICH-MLBR', ['get', 'Name']], '#d80045',
+                ['in', 'DUBL-DALY', ['get', 'Name']], '#169ceb',
+                ['in', 'OAKL-COLS', ['get', 'Name']], '#cbc691',
+                '#000000'
+            ],
+            'line-offset': [
+                'case',
+                ['in', 'ANTC-SFIA', ['get', 'Name']], -14,
+                ['in', 'FRMT-DALY', ['get', 'Name']], 7,
+                ['in', 'RICH-MLBR', ['get', 'Name']], -7,
+                0
+            ],
+            'line-width': 5
+        }
+    });
+});
+
+map.on('click', function (e) {
+    var results = map.queryRenderedFeatures();
+    console.log('results', results);
 });
 
 </script>
