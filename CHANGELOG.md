@@ -10,7 +10,6 @@
 * Export the internal `derefLayers` utility function from the `style-spec` bundle ([#9121](https://github.com/mapbox/mapbox-gl-js/pull/9121)) (h/t [ahocevar](https://github.com/ahocevar))
 
 ## 🍏 Improvements
-* Update Code of Conduct (v2.0, https links) ([#9176](https://github.com/mapbox/mapbox-gl-js/pull/9176))
 * Optimize `findLoadedParent` for rendering view with a large number of raster tiles ([#9050](https://github.com/mapbox/mapbox-gl-js/pull/9050))
 * Improve performance for hillshade and raster layers by implementing a progressive enhancement that utilizes `ImageBitmap` and `OffscreenCanvas` ([#8845](https://github.com/mapbox/mapbox-gl-js/pull/8845))
 * Improve performance for raster tile rendering by using the stencil buffer ([#9012](https://github.com/mapbox/mapbox-gl-js/pull/9012))
@@ -18,7 +17,6 @@
 
 ## 🐞 Bug Fixes
 * Change the type of tile id key to string to prevent hash collisions ([#8979](https://github.com/mapbox/mapbox-gl-js/pull/8979))
-* Fix validation error messages in the browser ([#9073](https://github.com/mapbox/mapbox-gl-js/pull/9073))
 * Prevent changing bearing via URL hash when rotation is disabled ([#9156](https://github.com/mapbox/mapbox-gl-js/pull/9156))
 * Fix URL hash with no bearing causing map to fail to load ([#9170](https://github.com/mapbox/mapbox-gl-js/pull/9170))
 * Fix bug in `GeolocateControl` where multiple instances of the control on one page may result in the user location not being updated ([#9092](https://github.com/mapbox/mapbox-gl-js/pull/9092))
