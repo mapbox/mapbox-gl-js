@@ -9,7 +9,11 @@
 
 ### 🐛 Bug fixes
 * Fix bug where `symbol-sort-key` was not used for collisions that crossed tile boundaries ([#9054](https://github.com/mapbox/mapbox-gl-js/pull/9054))
-* Fix validation error messages in the browser ([#9073](https://github.com/mapbox/mapbox-gl-js/pull/9073))
+
+## 13.10.2
+
+### 🐛 Bug fixes
+* Fix style validation error messages not being displayed ([#9073](https://github.com/mapbox/mapbox-gl-js/pull/9073))
 
 ## 13.10.0
 
