@@ -1,7 +1,7 @@
 ## 1.7.0-beta.1
 
 ## ✨ Features
-* Add option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
+* Add `promoteId` option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
 * Use `browser.devicePixelRatio` instead of directly calling `window.devicePixelRatio` to be able to override it ([#9063](https://github.com/mapbox/mapbox-gl-js/pull/9063))
 * Add a new constructor option to `mapboxgl.Popup`, `closeOnMove`, that closes the popup when the map's position changes ([#9163](https://github.com/mapbox/mapbox-gl-js/pull/9163))
 * Edit convert functions to output linear interpolation ([#9107](https://github.com/mapbox/mapbox-gl-js/pull/9107)) (h/t [Jo-IE](https://github.com/Jo-IE))
@@ -10,7 +10,7 @@
 * Export the internal `derefLayers` utility function from the `style-spec` bundle ([#9121](https://github.com/mapbox/mapbox-gl-js/pull/9121)) (h/t [ahocevar](https://github.com/ahocevar))
 
 ## 🍏 Improvements
-* Optimize `findLoadedParent` for rendering view with a large number of raster tiles ([#9050](https://github.com/mapbox/mapbox-gl-js/pull/9050))
+* Improve performance of raster layers on large screens ([#9050](https://github.com/mapbox/mapbox-gl-js/pull/9050))
 * Improve performance for hillshade and raster layers by implementing a progressive enhancement that utilizes `ImageBitmap` and `OffscreenCanvas` ([#8845](https://github.com/mapbox/mapbox-gl-js/pull/8845))
 * Improve performance for raster tile rendering by using the stencil buffer ([#9012](https://github.com/mapbox/mapbox-gl-js/pull/9012))
 * Update `symbol-avoid-edges` documentation to acknowledge the existence of global collision detection ([#9157](https://github.com/mapbox/mapbox-gl-js/pull/9157))
