@@ -1,3 +1,37 @@
+## 1.7.0-beta.1
+
+## ✨ Features
+* Add a new constructor option to `mapboxgl.Popup`, `closeOnMove`, that closes the popup when the map's position changes ([#9163](https://github.com/mapbox/mapbox-gl-js/pull/9163))
+* Add third parameter to once event handler ([#8875](https://github.com/mapbox/mapbox-gl-js/pull/8875))
+* Allow programmatic construction of style even when one is not passed in initially ( h/t @stepankuzmin ) ([#8924](https://github.com/mapbox/mapbox-gl-js/pull/8924))
+* Add option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
+* Use `browser.devicePixelRatio` instead of directly calling `window.devicePixelRatio` ([#9063](https://github.com/mapbox/mapbox-gl-js/pull/9063))
+* Add instrumentation for performance metrics tracking ([#9035](https://github.com/mapbox/mapbox-gl-js/pull/9035))
+* Edit convert functions to output linear interpolation ([#9107](https://github.com/mapbox/mapbox-gl-js/pull/9107)) (h/t [Jo-IE](https://github.com/Jo-IE))
+* Add `derefLayers` to the `style-spec` bundle ([#9121](https://github.com/mapbox/mapbox-gl-js/pull/9121)) (h/t [ahocevar](https://github.com/ahocevar))
+
+## 🍏 Improvements
+* Update Code of Conduct (v2.0, https links) ([#9176](https://github.com/mapbox/mapbox-gl-js/pull/9176))
+* Optimize `findLoadedParent` for rendering view with a large number of raster tiles ([#9050](https://github.com/mapbox/mapbox-gl-js/pull/9050))
+* `ImageBitmap` and `OffscreenCanvas` for DEM tiles ([#8845](https://github.com/mapbox/mapbox-gl-js/pull/8845))
+* Use stencil test instead of tile mask approach ([#9012](https://github.com/mapbox/mapbox-gl-js/pull/9012))
+* Update `symbol-avoid-edges` documentation to acknowledge the existence of global collision detection ([#9157](https://github.com/mapbox/mapbox-gl-js/pull/9157))
+* Remove reference to deprecated `in` expression ([#9102](https://github.com/mapbox/mapbox-gl-js/pull/9102))
+
+## 🐞 Bug Fixes
+* Change the type of tile id key to string to prevent hash collisions ([#8979](https://github.com/mapbox/mapbox-gl-js/pull/8979))
+* Fix validation error messages in the browser ([#9073](https://github.com/mapbox/mapbox-gl-js/pull/9073))
+* Prevent changing bearing via URL hash when rotation is disabled ([#9156](https://github.com/mapbox/mapbox-gl-js/pull/9156))
+* Fix URL hash with no bearing causing map to fail to load ([#9170](https://github.com/mapbox/mapbox-gl-js/pull/9170))
+* Fix bug in `GeolocateControl` where multiple instances of the control on one page may result in the user location not being updated ([#9092](https://github.com/mapbox/mapbox-gl-js/pull/9092))
+* Fix query `fill-extrusions` made from polygons with coincident points and polygons with less than four points ([#9138](https://github.com/mapbox/mapbox-gl-js/pull/9138))
+* Fix bug where `symbol-sort-key` was not used for collisions that crossed tile boundaries ([#9054](https://github.com/mapbox/mapbox-gl-js/pull/9054))
+* Fix `versions` benchmark not being able to fetch latest release ([#9084](https://github.com/mapbox/mapbox-gl-js/pull/9084))
+* Support `ImageBitmap` in `Map#addImage` and `Map#updateImage` ([#9139](https://github.com/mapbox/mapbox-gl-js/pull/9139))
+* Fix bug in `DragRotateHandler._onMouseUp` getting stuck in drag/rotate ([#9137](https://github.com/mapbox/mapbox-gl-js/pull/9137))
+* Update quads.js algorithm comments ([#9128](https://github.com/mapbox/mapbox-gl-js/pull/9128)) (h/t [cs09g](https://github.com/cs09g))
+* Fix "Click on Compass" on some mobile devices (add `clickTolerance` to `DragRotateHandler`) ([#9015](https://github.com/mapbox/mapbox-gl-js/pull/9015)) (h/t [Yanonix](https://github.com/Yanonix))
+
 ## 1.6.1
 
 ## 🐞 Bug Fixes
