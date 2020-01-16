@@ -2,7 +2,7 @@
 
 ## ✨ Features
 * Add `promoteId` option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
-* Use `browser.devicePixelRatio` instead of directly calling `window.devicePixelRatio` to be able to override it ([#9063](https://github.com/mapbox/mapbox-gl-js/pull/9063))
+* Use `browser.devicePixelRatio` instead of directly calling `window.devicePixelRatio` to be able to override it ([#9063](https://github.com/mapbox/mapbox-gl-js/pull/9063)) (h/t [pakastin](https://github.com/pakastin)) 
 * Add a new constructor option to `mapboxgl.Popup`, `closeOnMove`, that closes the popup when the map's position changes ([#9163](https://github.com/mapbox/mapbox-gl-js/pull/9163))
 * Edit convert functions to output linear interpolation ([#9107](https://github.com/mapbox/mapbox-gl-js/pull/9107)) (h/t [Jo-IE](https://github.com/Jo-IE))
 * Allow creating a map without a style (an empty one will be created automatically) ( h/t @stepankuzmin ) ([#8924](https://github.com/mapbox/mapbox-gl-js/pull/8924))
