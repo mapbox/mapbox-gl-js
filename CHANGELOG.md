@@ -1,12 +1,12 @@
 ## 1.7.0-beta.1
 
 ## ✨ Features
-* Add a new constructor option to `mapboxgl.Popup`, `closeOnMove`, that closes the popup when the map's position changes ([#9163](https://github.com/mapbox/mapbox-gl-js/pull/9163))
-* `map.once()` now allows specifying a layer id as a third parameter making it consistent with `map.on()` ([#8875](https://github.com/mapbox/mapbox-gl-js/pull/8875))
-* Allow programmatic construction of style even when one is not passed in initially ( h/t @stepankuzmin ) ([#8924](https://github.com/mapbox/mapbox-gl-js/pull/8924))
 * Add option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
-* Use `browser.devicePixelRatio` instead of directly calling `window.devicePixelRatio` ([#9063](https://github.com/mapbox/mapbox-gl-js/pull/9063))
+* Use `browser.devicePixelRatio` instead of directly calling `window.devicePixelRatio` to be able to override it ([#9063](https://github.com/mapbox/mapbox-gl-js/pull/9063))
+* Add a new constructor option to `mapboxgl.Popup`, `closeOnMove`, that closes the popup when the map's position changes ([#9163](https://github.com/mapbox/mapbox-gl-js/pull/9163))
 * Edit convert functions to output linear interpolation ([#9107](https://github.com/mapbox/mapbox-gl-js/pull/9107)) (h/t [Jo-IE](https://github.com/Jo-IE))
+* Allow creating a map without a style (an empty one will be created automatically) ( h/t @stepankuzmin ) ([#8924](https://github.com/mapbox/mapbox-gl-js/pull/8924))
+* `map.once()` now allows specifying a layer id as a third parameter making it consistent with `map.on()` ([#8875](https://github.com/mapbox/mapbox-gl-js/pull/8875))
 * Export the internal `derefLayers` utility function from the `style-spec` bundle ([#9121](https://github.com/mapbox/mapbox-gl-js/pull/9121)) (h/t [ahocevar](https://github.com/ahocevar))
 
 ## 🍏 Improvements
@@ -15,7 +15,6 @@
 * Improve performance for hillshade and raster layers by implementing a progressive enhancement that utilizes `ImageBitmap` and `OffscreenCanvas` ([#8845](https://github.com/mapbox/mapbox-gl-js/pull/8845))
 * Improve performance for raster tile rendering by using the stencil buffer ([#9012](https://github.com/mapbox/mapbox-gl-js/pull/9012))
 * Update `symbol-avoid-edges` documentation to acknowledge the existence of global collision detection ([#9157](https://github.com/mapbox/mapbox-gl-js/pull/9157))
-* Remove reference to deprecated `in` expression ([#9102](https://github.com/mapbox/mapbox-gl-js/pull/9102))
 
 ## 🐞 Bug Fixes
 * Change the type of tile id key to string to prevent hash collisions ([#8979](https://github.com/mapbox/mapbox-gl-js/pull/8979))
