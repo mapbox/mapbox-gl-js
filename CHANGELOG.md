@@ -13,7 +13,7 @@
 * Update Code of Conduct (v2.0, https links) ([#9176](https://github.com/mapbox/mapbox-gl-js/pull/9176))
 * Optimize `findLoadedParent` for rendering view with a large number of raster tiles ([#9050](https://github.com/mapbox/mapbox-gl-js/pull/9050))
 * Improve performance for hillshade and raster layers by implementing a progressive enhancement that utilizes `ImageBitmap` and `OffscreenCanvas` ([#8845](https://github.com/mapbox/mapbox-gl-js/pull/8845))
-* Use stencil test instead of tile mask approach ([#9012](https://github.com/mapbox/mapbox-gl-js/pull/9012))
+* Improve performance for raster tile rendering by using the stencil buffer ([#9012](https://github.com/mapbox/mapbox-gl-js/pull/9012))
 * Update `symbol-avoid-edges` documentation to acknowledge the existence of global collision detection ([#9157](https://github.com/mapbox/mapbox-gl-js/pull/9157))
 * Remove reference to deprecated `in` expression ([#9102](https://github.com/mapbox/mapbox-gl-js/pull/9102))
 
@@ -26,7 +26,6 @@
 * Fix query `fill-extrusions` made from polygons with coincident points and polygons with less than four points ([#9138](https://github.com/mapbox/mapbox-gl-js/pull/9138))
 * Fix bug where `symbol-sort-key` was not used for collisions that crossed tile boundaries ([#9054](https://github.com/mapbox/mapbox-gl-js/pull/9054))
 * Fix bug in `DragRotateHandler._onMouseUp` getting stuck in drag/rotate ([#9137](https://github.com/mapbox/mapbox-gl-js/pull/9137))
-* Update quads.js algorithm comments ([#9128](https://github.com/mapbox/mapbox-gl-js/pull/9128)) (h/t [cs09g](https://github.com/cs09g))
 * Fix "Click on Compass" on some mobile devices (add `clickTolerance` to `DragRotateHandler`) ([#9015](https://github.com/mapbox/mapbox-gl-js/pull/9015)) (h/t [Yanonix](https://github.com/Yanonix))
 
 ## 1.6.1
