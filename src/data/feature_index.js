@@ -148,16 +148,11 @@ class FeatureIndex {
                 styleLayers,
                 serializedLayers,
                 sourceFeatureState,
-                (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, id: string | number | void) => {
+                (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object) => {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature);
                     }
-                    // let featureState = {};
-                    // if (id !== undefined) {
-                        // `feature-state` expression evaluation requires feature state to be available
-                        // featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
-                        // console.log('featureState', featureState, feature);
-                    // }
+
                     return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.pixelPosMatrix);
                 }
             );
@@ -175,7 +170,7 @@ class FeatureIndex {
         filterLayerIDs: Array<string>,
         styleLayers: {[_: string]: StyleLayer},
         serializedLayers: {[_: string]: Object},
-        sourceFeatureState: SourceFeatureState,
+        sourceFeatureState?: SourceFeatureState,
         intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, id: string | number | void) => boolean | number) {
 
         const layerIDs = this.bucketLayerIDs[bucketIndex];
@@ -202,10 +197,14 @@ class FeatureIndex {
             console.log('styleLayer', styleLayer);
             if (!styleLayer) continue;
 
-            const featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
+            let featureState = {};
+            if (id !== undefined && sourceFeatureState) {
+                // `feature-state` expression evaluation requires feature state to be available
+                featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
+            }
             console.log('featureState', featureState, feature);
 
-            const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState, id);
+            const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState);
             if (!intersectionZ) {
                 // Only applied for non-symbol features
                 continue;
@@ -224,6 +223,7 @@ class FeatureIndex {
     // Given a set of symbol indexes that have already been looked up,
     // return a matching set of GeoJSONFeatures
     lookupSymbolFeatures(symbolFeatureIndexes: Array<number>,
+                         serializedLayers: {[string]: StyleLayer},
                          bucketIndex: number,
                          sourceLayerIndex: number,
                          filterSpec: FilterSpecification,
@@ -242,7 +242,8 @@ class FeatureIndex {
                 symbolFeatureIndex,
                 filter,
                 filterLayerIDs,
-                styleLayers
+                styleLayers,
+                serializedLayers
             );
 
         }

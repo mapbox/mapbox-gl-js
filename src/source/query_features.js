@@ -46,12 +46,12 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                             transform: Transform) {
 
     const has3DLayer = queryIncludes3DLayer(params && params.layers, styleLayers, sourceCache.id);
-
+    console.log('sourceCache', sourceCache);
     const maxPitchScaleFactor = transform.maxPitchScaleFactor();
     const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor, has3DLayer);
 
     tilesIn.sort(sortTilesIn);
-
+    console.log('styleLayers', styleLayers);
     const renderedFeatureLayers = [];
     for (const tileIn of tilesIn) {
         renderedFeatureLayers.push({
@@ -88,6 +88,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
 }
 
 export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
+                            serializedLayers: {[_: string]: StyleLayer},
                             sourceCaches: {[_: string]: SourceCache},
                             queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string> },
@@ -104,6 +105,7 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
     for (const queryData of bucketQueryData) {
         const bucketSymbols = queryData.featureIndex.lookupSymbolFeatures(
                 renderedSymbols[queryData.bucketInstanceId],
+                serializedLayers,
                 queryData.bucketIndex,
                 queryData.sourceLayerIndex,
                 params.filter,
