@@ -274,10 +274,18 @@ class GeolocateControl extends Evented {
         }
     }
 
+    _updateCircleRadius() {
+        const y = this._map._container.clientHeight / 2;
+        const metersPerPixel = getDistance(this._map.unproject([0, y]), this._map.unproject([1, y]));
+        const circleDiameter = Math.ceil(2.0 * this._accuracy / metersPerPixel);
+        this._circleElement.style.width = `${circleDiameter}px`;
+        this._circleElement.style.height = `${circleDiameter}px`;
+    }
+
     _onZoom() {
         if (this.options.trackUserLocation && this.options.showAccuracy) {
             assert(this._circleElement);
-            updateCircleRadius(this._map, this._circleElement, this._accuracy);
+            this._updateCircleRadius();
         }
     }
 
@@ -514,14 +522,6 @@ function getDistance(latlng1, latlng2) {
 
     const maxMeters = R * Math.acos(Math.min(a, 1));
     return maxMeters;
-}
-
-function updateCircleRadius(map, circle, accuracy) {
-    const y = map._container.clientHeight / 2;
-    const metersPerPixel = getDistance(map.unproject([0, y]), map.unproject([1, y]));
-    const circleDiameter = Math.ceil(2.0 * accuracy / metersPerPixel);
-    circle.style.width = `${circleDiameter}px`;
-    circle.style.height = `${circleDiameter}px`;
 }
 
 /* Geolocate Control Watch States
