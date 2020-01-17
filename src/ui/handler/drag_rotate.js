@@ -134,12 +134,13 @@ class DragRotateHandler {
         if (this._state !== 'enabled') return;
 
         const touchEvent = e.type === 'touchstart';
-
         if (touchEvent) {
             this._startTime = Date.now();
         } else {
             if (this._button === 'right') {
                 this._eventButton = DOM.mouseButton(e);
+
+                if (e.altKey) return;
                 if (this._eventButton !== (e.ctrlKey ? 0 : 2)) return;
             } else {
                 if (e.ctrlKey || DOM.mouseButton(e) !== 0) return;
