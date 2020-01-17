@@ -1,6 +1,7 @@
 // @flow
 
 import LngLat from '../geo/lng_lat';
+import Point from '@mapbox/point-geometry';
 import type {LngLatLike} from '../geo/lng_lat';
 
 /*
@@ -130,6 +131,15 @@ class MercatorCoordinate {
      */
     toAltitude() {
         return altitudeFromMercatorZ(this.z, this.y);
+    }
+
+    /**
+     * Returns the Mercator co-ordinate cast to Point.
+     *
+     * @returns {Point}
+     */
+    toPoint(): Point {
+        return new Point(this.x, this.y);
     }
 
     /**

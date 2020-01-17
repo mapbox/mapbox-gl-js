@@ -39,6 +39,7 @@ class Transform {
     pixelMatrixInverse: Float64Array;
     glCoordMatrix: Float32Array;
     labelPlaneMatrix: Float32Array;
+    cameraCoordinate: MercatorCoordinate;
     _fov: number;
     _pitch: number;
     _zoom: number;
@@ -619,6 +620,7 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
+        this.cameraCoordinate = this.pointCoordinate(this.getCameraPoint());;
         this._posMatrixCache = {};
         this._alignedPosMatrixCache = {};
     }

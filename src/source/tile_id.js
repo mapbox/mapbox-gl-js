@@ -177,6 +177,12 @@ export class OverscaledTileID {
     getTilePoint(coord: MercatorCoordinate) {
         return this.canonical.getTilePoint(new MercatorCoordinate(coord.x - this.wrap, coord.y));
     }
+
+    getTileCoordinate(): MercatorCoordinate {
+        const scale = Math.pow(2, this.canonical.z);
+        const unwrappedX = this.canonical.x + scale * this.wrap;
+        return new MercatorCoordinate(unwrappedX / scale, this.canonical.y / scale, 0);
+    }
 }
 
 function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): string {

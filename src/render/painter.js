@@ -64,7 +64,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type ResolvedImage from '../style-spec/expression/types/resolved_image';
 
-export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
+export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | '3d';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -381,13 +381,24 @@ class Painter {
         const coordsAscending: {[string]: Array<OverscaledTileID>} = {};
         const coordsDescending: {[string]: Array<OverscaledTileID>} = {};
         const coordsDescendingSymbol: {[string]: Array<OverscaledTileID>} = {};
-
+        // Closest to camera first
+        const coordsDepthSorted: {[string]: Array<OverscaledTileID>} = {};
+        const cameraPosition = this.transform.cameraCoordinate.toPoint();
+        const start = performance.now();
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
-            coordsAscending[id] = sourceCache.getVisibleCoordinates();
-            coordsDescending[id] = coordsAscending[id].slice().reverse();
+            const visibleCoords = sourceCache.getVisibleCoordinates();
+
+            coordsAscending[id] = visibleCoords;
+            coordsDescending[id] = visibleCoords.slice().reverse();
             coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
+            coordsDepthSorted[id] = visibleCoords.sort((c1, c2) => {
+                const c1Point = c1.getTileCoordinate().toPoint();
+                const c2Point = c2.getTileCoordinate().toPoint();
+                return cameraPosition.distSqr(c1Point) - cameraPosition.distSqr(c2Point);
+            });
         }
+        console.log(performance.now() - start);
 
         this.opaquePassCutoff = Infinity;
         for (let i = 0; i < layerIds.length; i++) {
@@ -453,6 +464,17 @@ class Painter {
 
             this._renderTileClippingMasks(layer, coordsAscending[layer.source]);
             this.renderLayer(this, sourceCache, layer, coords);
+        }
+
+        // 3d objects pass =============================================
+        // 3d objects should'nt be influenced by render order and compositing of 2d layers on the base-map
+        this.renderPass = '3d';
+        for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
+            const layer = this.style._layers[layerIds[this.currentLayer]];
+            // skip rendering of non-3d layers
+            if (!layer.is3D()) continue;
+
+
         }
 
         if (this.options.showTileBoundaries) {
