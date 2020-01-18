@@ -322,11 +322,11 @@ test('Map', (t) => {
             const map = createMap(t, {style});
             t.equal(map.areTilesLoaded(), true, 'returns true if there are no sources on the map');
             map.on('load', () => {
-
+                const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
                 map.addSource('geojson', createStyleSource());
-                map.style.sourceCaches.geojson._tiles.fakeTile = new Tile(new OverscaledTileID(0, 0, 0, 0, 0));
+                map.style.sourceCaches.geojson._tiles[fakeTileId.key] = new Tile(fakeTileId);
                 t.equal(map.areTilesLoaded(), false, 'returns false if tiles are loading');
-                map.style.sourceCaches.geojson._tiles.fakeTile.state = 'loaded';
+                map.style.sourceCaches.geojson._tiles[fakeTileId.key].state = 'loaded';
                 t.equal(map.areTilesLoaded(), true, 'returns true if tiles are loaded');
                 t.end();
             });
@@ -386,6 +386,23 @@ test('Map', (t) => {
                 }));
                 t.end();
             });
+        });
+
+        t.test('a layer can be added even if a map is created without a style', (t) => {
+            const map = createMap(t, {deleteStyle: true});
+            const layer = {
+                id: 'background',
+                type: 'background'
+            };
+            map.addLayer(layer);
+            t.end();
+        });
+
+        t.test('a source can be added even if a map is created without a style', (t) => {
+            const map = createMap(t, {deleteStyle: true});
+            const source = createStyleSource();
+            map.addSource('fill', source);
+            t.end();
         });
 
         t.test('returns the style with added source and layer', (t) => {

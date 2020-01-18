@@ -11,4 +11,4 @@
  - [ ] tagged `@mapbox/studio` and/or `@mapbox/map-design-team` if this PR includes style spec or visual changes
  - [ ] tagged `@mapbox/gl-native` if this PR includes shader changes or needs a native port
  - [ ] apply changelog label ('bug', 'feature', 'docs', etc) or use the label 'skip changelog'
- - [ ] `<changelog>...</changelog>`
+ - [ ] add an entry inside this element for inclusion in the `mapbox-gl-js` changelog: `<changelog></changelog>`

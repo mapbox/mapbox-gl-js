@@ -27,6 +27,7 @@ import GeoJSONSource from '../source/geojson_source';
 import styleSpec from '../style-spec/reference/latest';
 import getWorkerPool from '../util/global_worker_pool';
 import deref from '../style-spec/deref';
+import emptyStyle from '../style-spec/empty';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff';
 import {
     registerForPluginStateChange,
@@ -87,6 +88,8 @@ const ignoredDiffOperations = pick(diffOperations, [
     'setBearing',
     'setPitch'
 ]);
+
+const empty = emptyStyle();
 
 export type StyleOptions = {
     validate?: boolean,
@@ -159,8 +162,7 @@ class Style extends Evented {
         this._rtlTextPluginCallback = Style.registerForPluginStateChange((event) => {
             const state = {
                 pluginStatus: event.pluginStatus,
-                pluginURL: event.pluginURL,
-                pluginBlobURL: event.pluginBlobURL
+                pluginURL: event.pluginURL
             };
             self.dispatcher.broadcast('syncRTLPluginState', state, (err, results) => {
                 triggerPluginCompletionEvent(err);
@@ -228,6 +230,11 @@ class Style extends Evented {
             this._request = null;
             this._load(json, options.validate !== false);
         });
+    }
+
+    loadEmpty() {
+        this.fire(new Event('dataloading', {dataType: 'style'}));
+        this._load(empty, false);
     }
 
     _load(json: StyleSpecification, validate: boolean) {

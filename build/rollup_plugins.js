@@ -7,8 +7,8 @@ import unassert from 'rollup-plugin-unassert';
 import json from 'rollup-plugin-json';
 import {terser} from 'rollup-plugin-terser';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
-import strip from '@rollup/plugin-strip';
 import {createFilter} from 'rollup-pluginutils';
+import strip from '@rollup/plugin-strip';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
@@ -18,7 +18,8 @@ export const plugins = (minified, production) => [
     minifyStyleSpec(),
     json(),
     production ? strip({
-        functions: ['Debug.*']
+        sourceMap: true,
+        functions: ['PerformanceUtils.*', 'Debug.*']
     }) : false,
     glsl('./src/shaders/*.glsl', production),
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),

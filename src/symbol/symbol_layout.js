@@ -717,6 +717,10 @@ function addSymbol(bucket: SymbolBucket,
         "Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907"
     );
 
+    if (feature.sortKey !== undefined) {
+        bucket.addToSortKeyRanges(bucket.symbolInstances.length, feature.sortKey);
+    }
+
     bucket.symbolInstances.emplaceBack(
         anchor.x,
         anchor.y,

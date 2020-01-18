@@ -6,12 +6,11 @@ import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAlt
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
-import tileCover from '../util/tile_cover';
-import {UnwrappedTileID} from '../source/tile_id';
 import EXTENT from '../data/extent';
-import {vec4, mat4, mat2} from 'gl-matrix';
+import {vec4, mat4, mat2, vec2} from 'gl-matrix';
+import {Aabb, Frustum} from '../util/primitives.js';
 
-import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
+import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 
 /**
  * A single transform, generally used for a single tile to be
@@ -34,6 +33,7 @@ class Transform {
     cameraToCenterDistance: number;
     mercatorMatrix: Array<number>;
     projMatrix: Float64Array;
+    invProjMatrix: Float64Array;
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
@@ -50,8 +50,8 @@ class Transform {
     _maxPitch: number;
     _center: LngLat;
     _constraining: boolean;
-    _posMatrixCache: {[number]: Float32Array};
-    _alignedPosMatrixCache: {[number]: Float32Array};
+    _posMatrixCache: {[string]: Float32Array};
+    _alignedPosMatrixCache: {[string]: Float32Array};
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
@@ -278,15 +278,90 @@ class Transform {
 
         const centerCoord = MercatorCoordinate.fromLngLat(this.center);
         const numTiles = Math.pow(2, z);
-        const centerPoint = new Point(numTiles * centerCoord.x - 0.5, numTiles * centerCoord.y - 0.5);
-        const cornerCoords = [
-            this.pointCoordinate(new Point(0, 0)),
-            this.pointCoordinate(new Point(this.width, 0)),
-            this.pointCoordinate(new Point(this.width, this.height)),
-            this.pointCoordinate(new Point(0, this.height))
-        ];
-        return tileCover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._renderWorldCopies)
-            .sort((a, b) => centerPoint.dist(a.canonical) - centerPoint.dist(b.canonical));
+        const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
+        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
+
+        // No change of LOD behavior for pitch lower than 60: return only tile ids from the requested zoom level
+        let minZoom = options.minzoom || 0;
+        if (this.pitch <= 60.0)
+            minZoom = z;
+
+        // There should always be a certain number of maximum zoom level tiles surrounding the center location
+        const radiusOfMaxLvlLodInTiles = 3;
+
+        const newRootTile = (wrap: number): any => {
+            return {
+                // All tiles are on zero elevation plane => z difference is zero
+                aabb: new Aabb([wrap * numTiles, 0, 0], [(wrap + 1) * numTiles, numTiles, 0]),
+                zoom: 0,
+                x: 0,
+                y: 0,
+                wrap,
+                fullyVisible: false
+            };
+        };
+
+        // Do a depth-first traversal to find visible tiles and proper levels of detail
+        const stack = [];
+        const result = [];
+        const maxZoom = z;
+        const overscaledZ = options.reparseOverscaled ? actualZ : z;
+
+        if (this._renderWorldCopies) {
+            // Render copy of the globe thrice on both sides
+            for (let i = 1; i <= 3; i++) {
+                stack.push(newRootTile(-i));
+                stack.push(newRootTile(i));
+            }
+        }
+
+        stack.push(newRootTile(0));
+
+        while (stack.length > 0) {
+            const it = stack.pop();
+            const x = it.x;
+            const y = it.y;
+            let fullyVisible = it.fullyVisible;
+
+            // Visibility of a tile is not required if any of its ancestor if fully inside the frustum
+            if (!fullyVisible) {
+                const intersectResult = it.aabb.intersects(cameraFrustum);
+
+                if (intersectResult === 0)
+                    continue;
+
+                fullyVisible = intersectResult === 2;
+            }
+
+            const distanceX = it.aabb.distanceX(centerPoint);
+            const distanceY = it.aabb.distanceY(centerPoint);
+            const longestDim = Math.max(Math.abs(distanceX), Math.abs(distanceY));
+
+            // We're using distance based heuristics to determine if a tile should be split into quadrants or not.
+            // radiusOfMaxLvlLodInTiles defines that there's always a certain number of maxLevel tiles next to the map center.
+            // Using the fact that a parent node in quadtree is twice the size of its children (per dimension)
+            // we can define distance thresholds for each relative level:
+            // f(k) = offset + 2 + 4 + 8 + 16 + ... + 2^k. This is the same as "offset+2^(k+1)-2"
+            const distToSplit = radiusOfMaxLvlLodInTiles + (1 << (maxZoom - it.zoom)) - 2;
+
+            // Have we reached the target depth or is the tile too far away to be any split further?
+            if (it.zoom === maxZoom || (longestDim > distToSplit && it.zoom >= minZoom)) {
+                result.push({
+                    tileID: new OverscaledTileID(it.zoom === maxZoom ? overscaledZ : it.zoom, it.wrap, it.zoom, x, y),
+                    distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x, centerPoint[1] - 0.5 - y])
+                });
+                continue;
+            }
+
+            for (let i = 0; i < 4; i++) {
+                const childX = (x << 1) + (i % 2);
+                const childY = (y << 1) + (i >> 1);
+
+                stack.push({aabb: it.aabb.quadrant(i), zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible});
+            }
+        }
+
+        return result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
     }
 
     resize(width: number, height: number) {
@@ -549,7 +624,7 @@ class Transform {
         // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
         const halfFov = this._fov / 2;
         const groundAngle = Math.PI / 2 + this._pitch;
-        const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
+        const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(clamp(Math.PI - groundAngle - halfFov, 0.01, Math.PI - 0.01));
         const point = this.point;
         const x = point.x, y = point.y;
 
@@ -585,6 +660,7 @@ class Transform {
         mat4.scale(m, m, [1, 1, mercatorZfromAltitude(1, this.center.lat) * this.worldSize, 1]);
 
         this.projMatrix = m;
+        this.invProjMatrix = mat4.invert([], this.projMatrix);
 
         // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.
         // We're rounding the (floating point) x/y values to achieve to avoid rendering raster images to fractional
