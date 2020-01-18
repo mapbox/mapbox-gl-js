@@ -180,8 +180,8 @@ export class OverscaledTileID {
 
     getTileCoordinate(): MercatorCoordinate {
         const scale = Math.pow(2, this.canonical.z);
-        const unwrappedX = this.canonical.x + scale * this.wrap;
-        return new MercatorCoordinate(unwrappedX / scale, this.canonical.y / scale, 0);
+        const unwrappedX = this.canonical.x + 0.5 + scale * this.wrap;
+        return new MercatorCoordinate(unwrappedX / scale, (this.canonical.y + 0.5) / scale, 0);
     }
 }
 

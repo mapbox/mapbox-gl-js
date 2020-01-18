@@ -20,11 +20,11 @@ export default drawDebug;
 
 function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {
-        drawDebugTile(painter, sourceCache, coords[i]);
+        drawDebugTile(painter, sourceCache, coords[i], i);
     }
 }
 
-function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
+function drawDebugTile(painter, sourceCache, coord: OverscaledTileID, index: number) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -45,7 +45,7 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     const tileSizeKb = Math.floor(tileByteLength / 1024);
     const tileSize = sourceCache.getTile(coord).tileSize;
     const scaleRatio = 512 / Math.min(tileSize, 512);
-    let tileIdText = coord.canonical.toString();
+    let tileIdText = `${index}`;
     if (coord.overscaledZ !== coord.canonical.z) {
         tileIdText += ` => ${coord.overscaledZ}`;
     }

@@ -384,7 +384,6 @@ class Painter {
         // Closest to camera first
         const coordsDepthSorted: {[string]: Array<OverscaledTileID>} = {};
         const cameraPosition = this.transform.cameraCoordinate.toPoint();
-        const start = performance.now();
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             const visibleCoords = sourceCache.getVisibleCoordinates();
@@ -398,7 +397,6 @@ class Painter {
                 return cameraPosition.distSqr(c1Point) - cameraPosition.distSqr(c2Point);
             });
         }
-        console.log(performance.now() - start);
 
         this.opaquePassCutoff = Infinity;
         for (let i = 0; i < layerIds.length; i++) {
@@ -460,22 +458,19 @@ class Painter {
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
             // separate clipping masks
-            const coords = (layer.type === 'symbol' ? coordsDescendingSymbol : coordsDescending)[layer.source];
+            let coords = null;
+            if (layer.type === 'symbol') {
+                coords = coordsDescendingSymbol[layer.source];
+            } else if (layer.is3D()) {
+                coords = coordsDepthSorted[layer.source];
+            } else {
+                coords = coordsDescending[layer.source];
+            }
 
             this._renderTileClippingMasks(layer, coordsAscending[layer.source]);
             this.renderLayer(this, sourceCache, layer, coords);
         }
 
-        // 3d objects pass =============================================
-        // 3d objects should'nt be influenced by render order and compositing of 2d layers on the base-map
-        this.renderPass = '3d';
-        for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
-            const layer = this.style._layers[layerIds[this.currentLayer]];
-            // skip rendering of non-3d layers
-            if (!layer.is3D()) continue;
-
-
-        }
 
         if (this.options.showTileBoundaries) {
             //Use source with highest maxzoom
@@ -493,7 +488,7 @@ class Painter {
                 }
             });
             if (selectedSource) {
-                draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
+                draw.debug(this, selectedSource, coordsDepthSorted[selectedSource.id]);
             }
         }
 
