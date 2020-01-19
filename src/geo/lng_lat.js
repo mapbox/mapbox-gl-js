@@ -93,7 +93,7 @@ class LngLat {
      * @example
      * var new_york = new mapboxgl.LngLat(-74.0060, 40.7128);
      * var los_angeles = new mapboxgl.LngLat(-118.2437, 34.0522);
-     * new_york.distanceTo(los_angeles); // = 393574.6254609724
+     * new_york.distanceTo(los_angeles); // = 3935751.690893987, "true distance" using a non-spherical approximation is ~3966km
      */
     distanceTo(lngLat: LngLat) {
         const R = LngLat.earthRadius(); // meters
