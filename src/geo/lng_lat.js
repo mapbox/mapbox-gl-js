@@ -81,7 +81,7 @@ class LngLat {
     * @returns {number} Average radius of the earth in meters.
     */
     static earthRadius(): number {
-        return 6371000;
+        return 6371008.8; // see https://en.wikipedia.org/wiki/Earth_radius#Mean_radius, or ftp://athena.fsv.cvut.cz/ZFG/grs80-Moritz.pdf p. 4
     }
 
     /**
