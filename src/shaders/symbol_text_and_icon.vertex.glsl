@@ -58,9 +58,9 @@ void main() {
     float size;
 
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
-        size = mix(a_size_min, a_size[1], u_size_t) / 128.0;
+        size = mix(a_size_min, a_size[1], u_size_t);
     } else if (u_is_size_zoom_constant && !u_is_size_feature_constant) {
-        size = a_size_min / 128.0;
+        size = a_size_min;
     } else {
         size = u_size;
     }

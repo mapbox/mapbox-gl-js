@@ -77,9 +77,9 @@ function evaluateSizeForFeature(sizeData: SizeData,
                                 {uSize, uSizeT}: { uSize: number, uSizeT: number },
                                 {lowerSize, upperSize}: { lowerSize: number, upperSize: number}) {
     if (sizeData.kind === 'source') {
-        return lowerSize / SIZE_PACK_FACTOR;
+        return lowerSize;
     } else if (sizeData.kind === 'composite') {
-        return interpolate(lowerSize / SIZE_PACK_FACTOR, upperSize / SIZE_PACK_FACTOR, uSizeT);
+        return interpolate(lowerSize, upperSize, uSizeT);
     }
     return uSize;
 }
