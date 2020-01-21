@@ -99,17 +99,15 @@ class TouchPanHandler extends TouchHandler {
     if (!super.touchmove(e)) return;
 
     const underTapTolerance = this._lastTouchData.centerPoint.dist(this._startTouchData.centerPoint) < this._tapTolerance;
-
-    //TODO track inertia
+    if (underTapTolerance) return;
 
     const location = this._startTouchData.centerLocation;
     const point = this._lastTouchData.centerPoint;
 
-    // if (underTapTolerance) return;
     const events = [];
-    if (this._state === 'pending') events.push('dragstart', 'movestart');
+    if (this._state === 'pending') events.push('dragstart');
     this._state = 'active';
-    events.push('drag', 'move');
+    events.push('drag');
     return { transform: { setLocationAtPoint: [location, point] }, events };
 
   }
@@ -122,14 +120,14 @@ class TouchPanHandler extends TouchHandler {
       // Reset the start event for the remaining finger(s), as if on touchstart
       this._setStartTouch(e);
     } else if (stateBeforeEnd === 'active') {
-      return { events: ['dragend', 'moveend'] };
+      return { events: ['dragend'] };
     }
   }
 
   touchcancel(e: TouchEvent) {
     const stateBeforeCancel = this._state;
     super.touchcancel(e);
-    if (stateBeforeCancel === 'active') return { events: ['dragend', 'moveend']};
+    if (stateBeforeCancel === 'active') return { events: ['dragend']};
   }
 
 }
@@ -147,6 +145,7 @@ class MultiTouchHandler extends TouchHandler {
   touchend(e: TouchEvent) {
     if (!e.touches || e.touches.length < 2) this.deactivate();
   }
+
 }
 
 class TouchZoomHandler extends MultiTouchHandler {
@@ -161,13 +160,28 @@ class TouchZoomHandler extends MultiTouchHandler {
       const scale = this._lastTouchData.vector.mag() / this._startTouchData.vector.mag();
 
       if (Math.abs(1 - scale) > this._threshold) {
+        const events = [];
+        if (this._state === 'pending') events.push('zoomstart');
         this._state = 'active';
         const zoomDelta = this._transform.scaleZoom(scale);
         this._startTouchEvent = this._lastTouchEvent;
         this._startTouchData = this._lastTouchData;
         this._startTime = browser.now();
-        return { transform: { zoomDelta }};
+        events.push('zoom');
+        return { transform: { zoomDelta }, events };
       }
+    }
+
+    touchend(e: TouchEvent) {
+      const stateBeforeEnd = this._state;
+      super.touchend(e);
+      if (stateBeforeEnd === 'active') return { events: ['zoomend'] };
+    }
+
+    touchcancel(e: TouchEvent) {
+      const stateBeforeCancel = this._state;
+      super.touchcancel(e);
+      if (stateBeforeCancel === 'active') return { events: ['zoomend']};
     }
 }
 
@@ -187,12 +201,28 @@ class TouchRotateHandler extends MultiTouchHandler {
       this._startTouchData = this._lastTouchData;
       this._startTime = browser.now();
 
+
       if (Math.abs(bearingDelta) > this._rotationThreshold) {
+        const events = [];
+        if (this._state === 'pending') events.push('rotatestart');
         this._state = 'active';
-        return { transform: { bearingDelta }};
+        events.push('rotate');
+        return { transform: { bearingDelta }, events };
       } else {
         this._state = 'pending'
       }
+    }
+
+    touchend(e: TouchEvent) {
+      const stateBeforeEnd = this._state;
+      super.touchend(e);
+      if (stateBeforeEnd === 'active') return { events: ['rotateend'] };
+    }
+
+    touchcancel(e: TouchEvent) {
+      const stateBeforeCancel = this._state;
+      super.touchcancel(e);
+      if (stateBeforeCancel === 'active') return { events: ['rotateend']};
     }
 }
 
@@ -220,9 +250,24 @@ class TouchPitchHandler extends MultiTouchHandler {
 
       if (!isHorizontal) return;
       if (Math.abs(pitchDelta) > 0) {
+        const events = [];
+        if (this._state === 'pending') events.push('pitchstart');
         this._state = 'active';
-        return { transform: { pitchDelta }};
+        events.push('pitch');
+        return { transform: { pitchDelta }, events };
       }
+    }
+
+    touchend(e: TouchEvent) {
+      const stateBeforeEnd = this._state;
+      super.touchend(e);
+      if (stateBeforeEnd === 'active') return { events: ['pitchend'] };
+    }
+
+    touchcancel(e: TouchEvent) {
+      const stateBeforeCancel = this._state;
+      super.touchcancel(e);
+      if (stateBeforeCancel === 'active') return { events: ['pitchend']};
     }
 }
 

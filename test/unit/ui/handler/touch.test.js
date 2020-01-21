@@ -123,7 +123,7 @@ test('TouchPanHandler pans map & fires events appropriately on single-finger dra
     for (const startEvent of ['dragstart', 'movestart']) t.equal(spies[startEvent].callCount, 0, `${startEvent} should not be fired until first movement`);
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 1.5}]});
-    t.equal(h._state, 'pending', 'moving less than clickTolerance should not activate the handler');
+    t.equal(h._state, 'pending', 'moving less than tapTolerance should not activate the handler');
     t.ok(h.touchmove.called && !h.touchmove.returnValues[0], '.touchmove() should be called but return nothing');
     t.ok(map.getCenter().lng === 0 && map.getCenter().lat === 0, 'manager should not pan the map');
     for (const event in spies) t.equal(spies[event].callCount, 0, `${event} should not be fired if handler was not activated`);
@@ -131,9 +131,9 @@ test('TouchPanHandler pans map & fires events appropriately on single-finger dra
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 3, clientY: 4}]});
     t.equal(h._state, 'active', 'moving more than clickTolerance should activate the handler');
     t.equal(h.touchmove.returnValues[1].transform.setLocationAtPoint.length, 2, '.touchmove() should return new location for transform');
-    t.deepEqual(h.touchmove.returnValues[1].events, ['dragstart', 'movestart', 'drag', 'move'], '.touchmove() should return start and move events to fire');
-    t.equal(map.getCenter().lng, -0.7031250000023874, 'manager should pan the map to correct lng');
-    t.equal(map.getCenter().lat, 0.878871782835347, 'manager should pan the map to correct lat');
+    t.deepEqual(h.touchmove.returnValues[1].events, ['dragstart', 'drag'], '.touchmove() should return start and move events to fire');
+    t.notEqual(map.getCenter().lng, 0, 'manager should change the map center lng');
+    t.notEqual(map.getCenter().lat, 0, 'manager should change the map center lat');
 
     for (const event in spies) {
       if (event.endsWith('end')) t.equal(spies[event].callCount, 0,  `${event} should not be fired until movement has stopped`);
@@ -182,7 +182,7 @@ test('TouchPanHandler pans map & fires events appropriately when transitioning b
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 8, clientY: 4}, {clientX: 5, clientY: 2}]});
     t.equal(h._state, 'active', 'multi-finger move should leave the handler active');
     t.ok(h.touchmove.returnValues[1].transform.setLocationAtPoint.length, 2, '.touchmove() should return new location for transform');
-    t.deepEqual(h.touchmove.returnValues[1].events, ['drag', 'move'], '.touchmove() should return move events to fire');
+    t.deepEqual(h.touchmove.returnValues[1].events, ['drag'], '.touchmove() should return drag event to fire');
     for (const event in spies) {
       if (event.endsWith('end')) t.equal(spies[event].callCount, 0, `${event} should not be fired until movement has stopped`);
       else if (event.endsWith('start')) t.equal(spies[event].callCount, 1, `${event} should not be fired more than once`);
@@ -211,11 +211,12 @@ test('TouchPanHandler does not cause map to jump when removing first touch point
   const h = map.handlers.touchPan;
 
   simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 2}, {clientX: 3, clientY: 4}]});
+  let oldCenter = map.getCenter();
   simulate.touchmove(map.getCanvas(), {touches: [{clientX: 5, clientY: 2}, {clientX: 8, clientY: 4}]});
   t.equal(h._state, 'active', 'multi-touch event should activate the handler');
-  const oldCenter = map.getCenter();
-  t.ok(map.getCenter().lng === -47.298677884617064 && map.getCenter().lat === 2.91940900926312, 'manager should pan the map');
+  t.ok(map.getCenter().lng !== oldCenter.lng && map.getCenter().lat !== oldCenter.lat, 'manager should pan the map');
 
+  oldCenter = map.getCenter();
   simulate.touchend(map.getCanvas(), {touches: [{clientX: 8, clientY: 4}], changedTouches: [{clientX: 5, clientY: 2}]});
   t.equal(h._state, 'active', 'multi-touch touchend should not deactivate the handler if there are touches remaining');
   simulate.touchmove(map.getCanvas(), {touches: [{clientX: 8, clientY: 4}]});
@@ -280,7 +281,7 @@ test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 6, clientY: 8}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
     t.equal(h.touchmove.returnValues[1].transform.zoomDelta, 1, '.touchmove() should return delta to apply to transform');
-    t.deepEqual(h.touchmove.returnValues[1].events, ['zoomstart', 'movestart', 'zoom', 'move'], '.touchmove() should return start and move events to fire');
+    t.deepEqual(h.touchmove.returnValues[1].events, ['zoomstart', 'zoom'], '.touchmove() should return start and move events to fire');
     t.equal(map.getZoom(), 6, 'manager should zoom in the map');
     for (const event in spies) {
       if (event.endsWith('end')) t.equal(spies[event].callCount, 0,  `${event} should not be fired until movement has stopped`);
@@ -292,7 +293,7 @@ test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
     t.equal(h.touchmove.returnValues[2].transform.zoomDelta, -2, '.touchmove() should return delta to apply to transform');
     t.equal(map.getZoom(), 4, 'manager should zoom out the map');
-    for (const event of ['zoom', 'move']) t.equal(spies[event].callCount, 1, `${event} should be fired on every movement`);
+    for (const event of ['zoom', 'move']) t.equal(spies[event].callCount, 2, `${event} should be fired on every movement`);
 
     simulate.touchend(map.getCanvas());
     for (const endEvent of ['zoomend', 'moveend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
@@ -309,10 +310,10 @@ test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => 
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
 
-    const spies = setupEventSpies(['drag', 'move'], map, t);
+    const spies = setupEventSpies(['rotate', 'move'], map, t);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
-    for (const startEvent of ['dragstart', 'movestart']) t.equal(spies[startEvent].callCount, 0, `${startEvent} should not be fired until first movement`);
+    for (const startEvent of ['rotatestart', 'movestart']) t.equal(spies[startEvent].callCount, 0, `${startEvent} should not be fired until first movement`);
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 2}]});
     t.equal(h._state, 'enabled', 'single-touch event should not do anything');
@@ -324,44 +325,75 @@ test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 3}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
     t.equal(h.touchmove.returnValues[1].transform.bearingDelta, -90, '.touchmove() should return delta to apply to transform');
+    t.deepEqual(h.touchmove.returnValues[1].events, ['rotatestart', 'rotate'], '.touchmove() should return start and move events to fire');
     t.equal(map.getBearing(), -90, 'manager should rotate the map clockwise');
+    for (const event in spies) {
+      if (event.endsWith('end')) t.equal(spies[event].callCount, 0,  `${event} should not be fired until movement has stopped`);
+      else if (event.endsWith('start')) t.equal(spies[event].callCount, 1, `${event} should be fired on first movement`);
+      else t.equal(spies[event].callCount, 1, `${event} should be fired on every movement`);
+    }
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 2, clientY: 2}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
     t.equal(h.touchmove.returnValues[2].transform.bearingDelta, 45, '.touchmove() should return delta to apply to transform');
     t.equal(map.getBearing(), -45, 'manager should rotate the map counterclockwise');
+    for (const event in spies) {
+      if (event.endsWith('end')) t.equal(spies[event].callCount, 0,  `${event} should not be fired until movement has stopped`);
+      else if (event.endsWith('start')) t.equal(spies[event].callCount, 1, `${event} should not be fired more than once`);
+      else t.equal(spies[event].callCount, 2, `${event} should be fired on every movement`);
+    }
+
+    simulate.touchend(map.getCanvas());
+    for (const endEvent of ['rotateend', 'moveend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
+
     t.end();
 });
 
 test('TouchPitchHandler pitches map appropriately on touchmove events', (t) => {
     const map = createMap(t, {pitch: 0});
     const hm = map.handlers;
+    hm.disableAll();
     const h = map.handlers.touchPitch;
+    h.enable();
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
 
-    t.stub(console, 'error').callsFake(console.log);
+    const spies = setupEventSpies(['pitch', 'move'], map, t);
+
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 2}]});
     t.equal(h._state, 'enabled', 'single-touch event should not do anything');
     t.ok(h.touchmove.called && !h.touchmove.returnValues[0], '.touchmove() should be called but return nothing');
+    for (const event in spies) t.equal(spies[event].callCount, 0, `${event} should not be fired if handler was not activated`);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 20}, {clientX: 11, clientY: 20}]});
-    // console.log('after touchstart', h._state, h._startTouchData, h._lastTouchData);
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 0}, {clientX: 11, clientY: 0}]});
-    // console.log('after touchmove', h._state, h._startTouchData, h._lastTouchData);
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
-    t.equal(h.touchmove.returnValues[1].transform.pitchDelta, 10, '.touchmove() should return delta to apply to transform');
-    t.equal(map.getPitch(), 10, 'manager should pitch the map more');
+    t.equal(h.touchmove.returnValues[1].transform.pitchDelta, 8, '.touchmove() should return delta to apply to transform');
+    t.deepEqual(h.touchmove.returnValues[1].events, ['pitchstart', 'pitch'], '.touchmove() should return start and move events to fire');
+    t.equal(map.getPitch(), 8, 'manager should pitch the map more');
+    for (const event in spies) {
+      if (event.endsWith('end')) t.equal(spies[event].callCount, 0,  `${event} should not be fired until movement has stopped`);
+      else if (event.endsWith('start')) t.equal(spies[event].callCount, 1, `${event} should be fired on first movement`);
+      else t.equal(spies[event].callCount, 1, `${event} should be fired on every movement`);
+    }
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 10}, {clientX: 11, clientY: 10}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
-    t.equal(h.touchmove.returnValues[2].transform.pitchDelta, -5, '.touchmove() should return delta to apply to transform');
-    t.equal(map.getPitch(), 5, 'manager should pitch the map less');
+    t.equal(h.touchmove.returnValues[2].transform.pitchDelta, -4, '.touchmove() should return delta to apply to transform');
+    t.equal(map.getPitch(), 4, 'manager should pitch the map less');
+    for (const event in spies) {
+      if (event.endsWith('end')) t.equal(spies[event].callCount, 0,  `${event} should not be fired until movement has stopped`);
+      else if (event.endsWith('start')) t.equal(spies[event].callCount, 1, `${event} should not be fired more than once`);
+      else t.equal(spies[event].callCount, 2, `${event} should be fired on every movement`);
+    }
+
+    simulate.touchend(map.getCanvas());
+    for (const endEvent of ['pitchend', 'moveend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
+
     t.end();
 });
 
-//TODO test for map zoom/pitch/rotate events
 
 test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously', (t) => {
     const map = createMap(t, {zoom: 5, bearing: 0});
@@ -374,7 +406,7 @@ test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously'
     t.spy(zh, 'touchstart');
     t.spy(zh, 'touchmove');
 
-    t.stub(console, 'error').callsFake(console.log);
+    const spies = setupEventSpies(['rotate', 'zoom', 'move'], map, t);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 0}]});
     t.notOk(rh.touchmove.called, 'touchstart should not call touchmove method');
@@ -385,11 +417,27 @@ test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously'
     t.equal(map.getBearing(), -90, 'manager should rotate the map clockwise');
     t.equal(zh.touchmove.returnValues[0].transform.zoomDelta, 1, '.touchmove() should return delta to apply to transform');
     t.equal(map.getZoom(), 6, 'manager should zoom in the map');
+    t.deepEqual(rh.touchmove.returnValues[0].events, ['rotatestart', 'rotate'], '.touchmove() should return start and move events to fire');
+    t.deepEqual(zh.touchmove.returnValues[0].events, ['zoomstart', 'zoom'], '.touchmove() should return start and move events to fire');
+    for (const event in spies) {
+      if (event.endsWith('end')) t.equal(spies[event].callCount, 0,  `${event} should not be fired until movement has stopped`);
+      else if (event.endsWith('start')) t.equal(spies[event].callCount, 1, `${event} should be fired on first movement`);
+      else t.equal(spies[event].callCount, 1, `${event} should be fired on every movement`);
+    }
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 1, clientY: 1}]});
     t.equal(rh.touchmove.returnValues[1].transform.bearingDelta, 45, '.touchmove() should return delta to apply to transform');
     t.equal(map.getBearing(), -45, 'manager should rotate the map counterclockwise');
     t.equal(Math.round(zh.touchmove.returnValues[1].transform.zoomDelta), -2, '.touchmove() should return delta to apply to transform');
     t.equal(Math.round(map.getZoom()), 4, 'manager should zoom out the map');
+    for (const event in spies) {
+      if (event.endsWith('end')) t.equal(spies[event].callCount, 0,  `${event} should not be fired until movement has stopped`);
+      else if (event.endsWith('start')) t.equal(spies[event].callCount, 1, `${event} should not be fired more than once`);
+      else t.equal(spies[event].callCount, 2, `${event} should be fired on every movement`);
+    }
+
+    simulate.touchend(map.getCanvas());
+    for (const endEvent of ['rotateend', 'zoomend', 'moveend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
+
     t.end();
 });
