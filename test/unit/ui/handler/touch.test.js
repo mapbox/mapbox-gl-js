@@ -199,8 +199,7 @@ test('TouchPanHandler pans map & fires events appropriately when transitioning b
     }
 
     simulate.touchend(map.getCanvas());
-    for (const endEvent of ['dragend', 'moveend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if no touches remain`);
-
+    t.equal(spies['dragend'].callCount, 1, `dragend should be fired on touchend if no touches remain`);
     t.end();
 });
 
@@ -296,8 +295,7 @@ test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
     for (const event of ['zoom', 'move']) t.equal(spies[event].callCount, 2, `${event} should be fired on every movement`);
 
     simulate.touchend(map.getCanvas());
-    for (const endEvent of ['zoomend', 'moveend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
-
+    t.equal(spies['zoomend'].callCount, 1, `zoomend should be fired on touchend if handler was active`);
     t.end();
 });
 
@@ -344,8 +342,7 @@ test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => 
     }
 
     simulate.touchend(map.getCanvas());
-    for (const endEvent of ['rotateend', 'moveend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
-
+    t.equal(spies['rotateend'].callCount, 1, `rotateend should be fired on touchend if handler was active`);
     t.end();
 });
 
@@ -357,7 +354,6 @@ test('TouchPitchHandler pitches map appropriately on touchmove events', (t) => {
     h.enable();
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
-
     const spies = setupEventSpies(['pitch', 'move'], map, t);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
@@ -389,8 +385,7 @@ test('TouchPitchHandler pitches map appropriately on touchmove events', (t) => {
     }
 
     simulate.touchend(map.getCanvas());
-    for (const endEvent of ['pitchend', 'moveend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
-
+    t.equal(spies['pitchend'].callCount, 1, `pitchend should be fired on touchend if handler was active`);
     t.end();
 });
 
@@ -437,7 +432,7 @@ test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously'
     }
 
     simulate.touchend(map.getCanvas());
-    for (const endEvent of ['rotateend', 'zoomend', 'moveend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
+    for (const endEvent of ['rotateend', 'zoomend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
 
     t.end();
 });
