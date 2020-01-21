@@ -9,7 +9,13 @@ import Handler from './handler/handler';
 import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
 import {bezier, extend} from '../util/util';
 
-
+const defaultInertiaOptions = {
+    linearity: 0.15,
+    easing: bezier(0, 0, 0.15, 1),
+    deceleration: 12,
+    maxSpeed: 5
+};
+export type InertiaOptions = typeof defaultInertiaOptions;
 
 class HandlerManager {
   _map: Map;
@@ -25,6 +31,7 @@ class HandlerManager {
     this._el = this._map.getCanvasContainer();
     this._handlers = [];
     this._disableDuring = {};
+    this._inertiaOptions = options.inertiaOptions || defaultInertiaOptions;
     this._inertiaBuffer = [];
 
     // Track whether map is currently moving, to compute start/move/end events
@@ -202,15 +209,28 @@ class HandlerManager {
     return false;
   }
 
-  _onEndEvent(e) {
-    const inertiaLinearity = 0.15,
-        inertiaEasing = bezier(0, 0, inertiaLinearity, 1),
-        inertiaDeceleration = 12, //12 scale / s^2
-        inertiaMaxSpeed = 5; // scale / s
+  _clampSpeed(speed) {
+    const { maxSpeed } = this._inertiaOptions;
+    if (Math.abs(speed) > maxSpeed) {
+        if (speed > 0) {
+            return maxSpeed;
+        } else {
+            return -maxSpeed;
+        }
+    } else {
+      return speed;
+    }
+  }
 
-
+  _onMoveEnd(originalEvent) {
     this._drainInertiaBuffer();
-    // console.log(this._inertiaBuffer);
+    if (this._inertiaBuffer.length < 2) {
+      this._map.fire(new Event('moveend', { originalEvent }));
+      return;
+    }
+
+    const {linearity, easing, maxSpeed, deceleration} = this._inertiaOptions;
+
     let deltas = {
       zoom: 0,
       bearing: 0
@@ -224,15 +244,12 @@ class HandlerManager {
         lastPoint = settings.setLocationAtPoint[1];
       }
     };
-    // console.log(deltas);
+
     const lastEntry = this._inertiaBuffer[this._inertiaBuffer.length - 1];
     const duration = (lastEntry[0] - this._inertiaBuffer[0][0]) / 1000;
-    // console.log(duration);
-    // console.log(firstPoint, lastPoint);
-
-    let panOffset = lastPoint.sub(firstPoint);
 
     //TODO
+    // let panOffset = lastPoint.sub(firstPoint);
     // const velocity = flingOffset.mult(linearity / flingDuration);
     // let speed = velocity.mag(); // px/s
     //
@@ -246,48 +263,28 @@ class HandlerManager {
 
 
     // calculate zoom/s speed and adjust for increased initial animation speed when easing
-    let zoomSpeed = (deltas.zoom * inertiaLinearity) / duration; // scale/s
-    let bearingSpeed = (deltas.bearing * inertiaLinearity) / duration; // scale/s
-
-
-    if (Math.abs(zoomSpeed) > inertiaMaxSpeed) {
-        if (zoomSpeed > 0) {
-            zoomSpeed = inertiaMaxSpeed;
-        } else {
-            zoomSpeed = -inertiaMaxSpeed;
-        }
-    }
-
-    const zoomEaseDuration = Math.abs(zoomSpeed / (inertiaDeceleration * inertiaLinearity)) * 1000;
+    let zoomSpeed = this._clampSpeed((deltas.zoom * linearity) / duration);
+    const zoomEaseDuration = Math.abs(zoomSpeed / (deceleration * linearity)) * 1000;
     const targetZoom = (this._map.transform.zoom) + zoomSpeed * zoomEaseDuration / 2000;
 
-
-    if (Math.abs(bearingSpeed) > inertiaMaxSpeed) {
-        if (bearingSpeed > 0) {
-            bearingSpeed = inertiaMaxSpeed;
-        } else {
-            bearingSpeed = -inertiaMaxSpeed;
-        }
-    }
-
-    const bearingEaseDuration = Math.abs(bearingSpeed / (inertiaDeceleration * inertiaLinearity)) * 1000;
+    let bearingSpeed = this._clampSpeed((deltas.bearing * linearity) / duration);
+    const bearingEaseDuration = Math.abs(bearingSpeed / (deceleration * linearity)) * 1000;
     const targetBearing = (this._map.transform.bearing) + bearingSpeed * bearingEaseDuration / 2000;
 
     this._map.easeTo({
         zoom: targetZoom,
         bearing: targetBearing,
         easeDuration: Math.max(zoomEaseDuration, bearingEaseDuration),
-        easing: inertiaEasing,
+        easing: easing,
         around: lastPoint ? this._map.unproject(lastPoint) : this._map.getCenter(),
         noMoveStart: true
-    }, {originalEvent: e});
+    }, { originalEvent });
 
   }
 
-  fireMapEvents(events, originalEvent, endWithInertia) {
+  fireMapEvents(events, originalEvent) {
     let alreadyMoving = this._moving;
     const moveEvents = [];
-    let endEvent = false;
 
     for (const event of events) {
       const eventType = event.replace('start', '').replace('end', '');
@@ -300,7 +297,6 @@ class HandlerManager {
         if (!this._eventsInProgress[eventType]) { continue; } // spurious end event, don't fire
         else { this._eventsInProgress[eventType] = false; }
         if (!this._moving && moveEvents.indexOf('moveend') < 0) { moveEvents.push('moveend'); }
-        endEvent = true;
       } else {
         if (!this._eventsInProgress[eventType]) {
           // We never got a corresponding start event for some reason; fire it now & update event progress state
@@ -319,9 +315,10 @@ class HandlerManager {
     for (const moveEvent of moveEvents) {
       if (moveEvent === 'moveend') {
         const activeHandlers = this._handlers.filter(([name, handler]) => handler._state === 'active');
-        if (activeHandlers.length === 0) this._onEndEvent(originalEvent);
+        if (activeHandlers.length === 0) this._onMoveEnd(originalEvent);
+      } else {
+        this._map.fire(new Event(moveEvent, { originalEvent }))
       }
-      this._map.fire(new Event(moveEvent, { originalEvent }))
     };
   }
 }
