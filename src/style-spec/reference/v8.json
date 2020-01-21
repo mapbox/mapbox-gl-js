@@ -177,6 +177,10 @@
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
+    "promoteId": {
+      "type": "promoteId",
+      "doc": "A property to use as a feature id (for feature state). Either a property name, or an object of the form `{<sourceLayer>: <propertyName>}`. If specified as a string for a vector tile source, the same property is used across all its source layers."
+    },
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."
@@ -316,10 +320,6 @@
       },
       "default": "mapbox",
       "doc": "The encoding used by this source. Mapbox Terrain RGB is used by default"
-    },
-    "promoteId": {
-      "type": "promoteId",
-      "doc": "A property to use as a feature id (for feature state). Either a property name, or an object of the form `{<sourceLayer>: <propertyName>}`."
     },
     "*": {
       "type": "*",
@@ -5785,6 +5785,12 @@
     "constant": {
       "type": "property-type",
       "doc": "Property is constant across all zoom levels and property values."
+    }
+  },
+  "promoteId": {
+    "*": {
+      "type": "string",
+      "doc": "A name of a feature property to use as ID for feature state."
     }
   }
 }
