@@ -1,13 +1,12 @@
 // @flow
 
-import LngLat from '../geo/lng_lat';
+import LngLat, {earthRadius} from '../geo/lng_lat';
 import type {LngLatLike} from '../geo/lng_lat';
 
 /*
  * The average circumference of the world in meters.
  */
-const earthRadius = LngLat.earthRadius(); // meters
-const earthCircumfrence = 2 * Math.PI * earthRadius;
+const earthCircumfrence = 2 * Math.PI * earthRadius; // meters
 
 /*
  * The circumference at a line of latitude in meters.
