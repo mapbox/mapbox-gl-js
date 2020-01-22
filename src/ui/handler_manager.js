@@ -230,20 +230,43 @@ class HandlerManager {
     }
 
     const {linearity, easing, maxSpeed, deceleration} = this._inertiaOptions;
+    let easeOptions = {};
 
     let deltas = {
       zoom: 0,
-      bearing: 0
+      bearing: 0,
+      pitch: 0
     };
+    let first = {}, last = {};
     let firstPoint, lastPoint;
+
+    console.log(this._inertiaBuffer);
     for (const [time, settings] of this._inertiaBuffer) {
-      deltas.zoom += settings.zoomDelta || 0;
-      deltas.bearing += settings.bearingDelta || 0;
+
+      //TODO this maybe doesn't work? re-do as last-first
+      // deltas.zoom += settings.zoomDelta || 0;
+      // deltas.bearing += settings.bearingDelta || 0;
+      // deltas.pitch += settings.pitchDelta || 0;
+      for (const prop of ['zoom', 'bearing', 'pitch']) {
+        const propDelta = prop + 'Delta';
+        if (settings[propDelta]) {
+          if (!first[prop]) first[prop] = settings[propDelta];
+          last[prop] = settings[propDelta];
+        }
+      }
       if (settings.setLocationAtPoint) {
         if (!firstPoint) firstPoint = settings.setLocationAtPoint[1];
         lastPoint = settings.setLocationAtPoint[1];
       }
     };
+
+    console.log(first, last);
+    for (const prop of ['zoom', 'bearing', 'pitch']) {
+      if (first[prop] && last[prop]) {
+        deltas[prop] = last[prop] - first[prop];
+      }
+    }
+    console.log(deltas);
 
     const lastEntry = this._inertiaBuffer[this._inertiaBuffer.length - 1];
     const duration = (lastEntry[0] - this._inertiaBuffer[0][0]) / 1000;
@@ -261,24 +284,38 @@ class HandlerManager {
     // const duration = speed / (deceleration * linearity),
     //     offset = velocity.mult(-duration / 2);
 
+    if (deltas.zoom) {
+      const zoomSpeed = this._clampSpeed((deltas.zoom * linearity) / duration);
+      const zoomEaseDuration = Math.abs(zoomSpeed / (deceleration * linearity)) * 1000;
+      const targetZoom = (this._map.transform.zoom) + zoomSpeed * zoomEaseDuration / 2000;
+      easeOptions.zoom = targetZoom;
+      easeOptions.easeDuration = Math.max(easeOptions.easeDuration || 0, zoomEaseDuration);
+    }
 
-    // calculate zoom/s speed and adjust for increased initial animation speed when easing
-    let zoomSpeed = this._clampSpeed((deltas.zoom * linearity) / duration);
-    const zoomEaseDuration = Math.abs(zoomSpeed / (deceleration * linearity)) * 1000;
-    const targetZoom = (this._map.transform.zoom) + zoomSpeed * zoomEaseDuration / 2000;
+    if (deltas.bearing) {
+      const bearingSpeed = this._clampSpeed((deltas.bearing * linearity) / duration);
+      const bearingEaseDuration = Math.abs(bearingSpeed / (deceleration * linearity)) * 1000;
+      const targetBearing = (this._map.transform.bearing) + bearingSpeed * bearingEaseDuration / 2000;
+      easeOptions.bearing = targetBearing;
+      easeOptions.easeDuration = Math.max(easeOptions.easeDuration || 0, bearingEaseDuration);
+    }
 
-    let bearingSpeed = this._clampSpeed((deltas.bearing * linearity) / duration);
-    const bearingEaseDuration = Math.abs(bearingSpeed / (deceleration * linearity)) * 1000;
-    const targetBearing = (this._map.transform.bearing) + bearingSpeed * bearingEaseDuration / 2000;
+    if (deltas.pitch) {
+      const pitchSpeed = this._clampSpeed((deltas.pitch * linearity) / duration);
+      const pitchEaseDuration = Math.abs(pitchSpeed / (deceleration * linearity)) * 1000;
+      const targetPitch = (this._map.transform.pitch) + pitchSpeed * pitchEaseDuration / 2000;
+      easeOptions.pitch = targetPitch;
+      easeOptions.easeDuration = Math.max(easeOptions.easeDuration || 0, pitchEaseDuration);
+    }
 
-    this._map.easeTo({
-        zoom: targetZoom,
-        bearing: targetBearing,
-        easeDuration: Math.max(zoomEaseDuration, bearingEaseDuration),
-        easing: easing,
-        around: lastPoint ? this._map.unproject(lastPoint) : this._map.getCenter(),
-        noMoveStart: true
-    }, { originalEvent });
+    console.log(easeOptions);
+    extend(easeOptions, {
+      easing: easing,
+      around: lastPoint ? this._map.unproject(lastPoint) : this._map.getCenter(),
+      noMoveStart: true
+    });
+
+    this._map.easeTo(easeOptions, { originalEvent });
 
   }
 
