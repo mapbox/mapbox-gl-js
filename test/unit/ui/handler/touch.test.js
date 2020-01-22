@@ -202,7 +202,10 @@ test('TouchPanHandler pans map & fires events appropriately when transitioning b
     simulate.touchend(map.getCanvas());
     t.equal(spies['dragend'].callCount, 1, `dragend should be fired on touchend if no touches remain`);
     t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
-
+    const easeToArgs = map.easeTo.getCall(0).args[0];
+    t.ok(easeToArgs.offset && (easeToArgs.offset[0] + easeToArgs.offset[1] !== 0), 'easeTo should be called with a nonzero offset');
+    t.deepEqual(easeToArgs.center, map.getCenter(), 'easeTo should be called with the map center as center option');
+    t.notOk(easeToArgs.around, 'easeTo should not be called with an around option');
     t.end();
 });
 
@@ -367,7 +370,6 @@ test('TouchPitchHandler pitches map appropriately on touchmove events', (t) => {
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
     t.spy(map, 'easeTo');
-
     const spies = setupEventSpies(['pitch', 'move'], map, t);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
@@ -401,6 +403,7 @@ test('TouchPitchHandler pitches map appropriately on touchmove events', (t) => {
     simulate.touchend(map.getCanvas());
     t.equal(spies['pitchend'].callCount, 1, `pitchend should be fired on touchend if handler was active`);
     t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
+    t.notEqual(map.easeTo.getCall(0).args[0].pitch, 4, 'easeTo should be called with new pitch for inertial pitch');
     t.end();
 });
 
