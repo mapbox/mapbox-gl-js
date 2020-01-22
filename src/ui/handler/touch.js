@@ -250,21 +250,34 @@ class TouchPitchHandler extends MultiTouchHandler {
       this._horizontalThreshold = 70;
     }
 
+    get _shoveThreshold() {
+      if (this._state === 'active') return 0;
+      return 5;
+    }
+
     _pointsAreHorizontal(pointA, pointB) {
       return Math.abs(pointA.y - pointB.y) < this._horizontalThreshold;
+    }
+
+    _shoveDetected() {
+      const isHorizontal = this._pointsAreHorizontal(this._lastTouchData.points[0], this._lastTouchData.points[1]);
+      const isMovingVertically = Math.abs(this._startTouchData.centerPoint.y - this._lastTouchData.centerPoint.y) > this._shoveThreshold;
+      return isHorizontal && isMovingVertically;
     }
 
     touchmove(e: TouchEvent) {
       if (!super.touchmove(e)) return;
 
-      const isHorizontal = this._pointsAreHorizontal(this._lastTouchData.points[0], this._lastTouchData.points[1]);
+      // const isHorizontal = this._pointsAreHorizontal(this._lastTouchData.points[0], this._lastTouchData.points[1]);
+      const isVerticalShove = this._shoveDetected();
       const pitchDelta = (this._startTouchData.centerPoint.y - this._lastTouchData.centerPoint.y) * 0.4;
 
       this._startTouchEvent = this._lastTouchEvent;
       this._startTouchData = this._lastTouchData;
       this._startTime = browser.now();
 
-      if (!isHorizontal) return;
+      // if (!isHorizontal) return;
+      if (!isVerticalShove) return;
       if (Math.abs(pitchDelta) > 0) {
         const events = [];
         if (this._state === 'pending') events.push('pitchstart');
