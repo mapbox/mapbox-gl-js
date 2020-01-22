@@ -194,7 +194,7 @@ class FeatureIndex {
             }
 
             const styleLayer = styleLayers[layerID];
-            console.log('styleLayer', styleLayer);
+
             if (!styleLayer) continue;
 
             let featureState = {};
@@ -202,7 +202,23 @@ class FeatureIndex {
                 // `feature-state` expression evaluation requires feature state to be available
                 featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
             }
-            console.log('featureState', featureState, feature);
+
+            const serializedLayer = serializedLayers[layerID];
+
+            const evaluatedPaint = {};
+            for (const property in serializedLayer.paint) {
+                const prop = styleLayer.paint.get(property);
+                evaluatedPaint[property] = prop && prop.evaluate ? prop.evaluate(feature, featureState) : prop;
+            }
+
+            const evaluatedLayout = {};
+            for (const property in serializedLayer.layout) {
+                const prop = styleLayer.layout.get(property);
+                evaluatedLayout[property] = prop && prop.evaluate ? prop.evaluate(feature, featureState) : prop;
+            }
+
+            serializedLayer.paint = evaluatedPaint;
+            serializedLayer.layout = evaluatedLayout;
 
             const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState);
             if (!intersectionZ) {
