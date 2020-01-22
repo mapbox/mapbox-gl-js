@@ -151,10 +151,10 @@ class HandlerManager {
         const conflicts = this._disableDuring[name].filter(otherHandler => activeHandlers.indexOf(otherHandler) > -1);
         if (conflicts.length > 0) {
           // A handler that was active but is now overridden should still be able to return end events to fire
-          const resetResult = handler.reset(e);
-          if (resetResult && resetResult.events) {
-            resetResult.events.filter(e => e.endsWith('end')).map(e => postUpdateEvents.push(e));
+          if (data.events) {
+            data.events.filter(e => e.endsWith('end') && postUpdateEvents.indexOf(e) < 0).map(e => postUpdateEvents.push(e));
           }
+          handler.reset(e);
           continue;
         }
       }
