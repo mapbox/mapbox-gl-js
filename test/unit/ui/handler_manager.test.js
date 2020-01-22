@@ -196,3 +196,88 @@ test('HandlerManager fires map movement events as requested by handlers', (t) =>
 
   t.end();
 });
+
+test('HandlerManager performs inertial pan', (t) => {
+  const map = createMap(t, {zoom: 1, center: [0,0]});
+  map.handlers.disableAll();
+  map.handlers.touchPan.enable();
+  t.spy(map, 'easeTo');
+
+  simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 3, clientY: 4}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 9, clientY: 10}]});
+  simulate.touchend(map.getCanvas());
+
+  t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
+  const easeToArgs = map.easeTo.getCall(0).args[0];
+  t.ok(easeToArgs.offset && (easeToArgs.offset[0] + easeToArgs.offset[1] !== 0), 'easeTo should be called with a nonzero offset');
+  t.deepEqual(easeToArgs.center, map.getCenter(), 'easeTo should be called with the map center as center option');
+  t.notOk(easeToArgs.around, 'easeTo should not be called with an around option');
+  t.end();
+});
+
+test('HandlerManager performs inertial zoom', (t) => {
+  const map = createMap(t, {zoom: 1, center: [0,0]});
+  map.handlers.disableAll();
+  map.handlers.touchZoom.enable();
+  t.spy(map, 'easeTo');
+
+  simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 4}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 6, clientY: 8}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 1.5, clientY: 2}]});
+  const oldZoom = map.getZoom();
+  simulate.touchend(map.getCanvas());
+
+  t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
+  t.ok(map.easeTo.getCall(0).args[0].zoom < oldZoom, 'easeTo should be called with smaller zoom for inertial zoom out');
+  t.ok(map.easeTo.getCall(0).args[0].around, 'easeTo should be called with an around option');
+  t.end();
+});
+
+test('HandlerManager performs inertial rotate', (t) => {
+  const map = createMap(t, {zoom: 1, center: [0,0]});
+  map.handlers.disableAll();
+  map.handlers.touchRotate.enable();
+  t.spy(map, 'easeTo');
+
+  simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 0}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 3}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 80, clientY: 80}]});
+  simulate.touchend(map.getCanvas());
+
+  t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
+  t.ok(map.easeTo.getCall(0).args[0].bearing < -45, 'easeTo should be called with counterclockwise bearing for inertial rotate');
+  t.ok(map.easeTo.getCall(0).args[0].around, 'easeTo should be called with an around option');
+  t.end();
+});
+
+test('HandlerManager performs inertial pitch', (t) => {
+  const map = createMap(t, {zoom: 1, center: [0,0]});
+  map.handlers.disableAll();
+  map.handlers.touchPitch.enable();
+  t.spy(map, 'easeTo');
+
+  simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 20}, {clientX: 11, clientY: 20}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 0}, {clientX: 11, clientY: 0}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 1, clientY: 10}, {clientX: 11, clientY: 10}]});
+  simulate.touchend(map.getCanvas());
+
+  t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
+  t.notEqual(map.easeTo.getCall(0).args[0].pitch, 4, 'easeTo should be called with new pitch for inertial pitch');
+  t.end();
+});
+
+test('HandlerManager performs multiple inertial movements simultaneously', (t) => {
+  const map = createMap(t, {zoom: 1, center: [0,0]});
+  t.spy(map, 'easeTo');
+
+  simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 300, clientY: 0}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 600}]});
+  simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 100, clientY: 100}]});
+  simulate.touchend(map.getCanvas());
+
+  t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handlers were active with inertia');
+  t.ok(map.easeTo.getCall(0).args[0].bearing < -45, 'easeTo should be called with counterclockwise bearing for inertial rotate');
+  t.ok(map.easeTo.getCall(0).args[0].zoom < 4, 'easeTo should be called with smaller zoom for inertial zoom out');
+  t.end();
+});

@@ -170,7 +170,6 @@ test('TouchPanHandler pans map & fires events appropriately when transitioning b
     const h = map.handlers.touchPan;
     h.enable();
     t.spy(h, 'touchmove');
-    t.spy(map, 'easeTo');
 
     const spies = setupEventSpies(['drag', 'move'], map, t);
 
@@ -201,11 +200,6 @@ test('TouchPanHandler pans map & fires events appropriately when transitioning b
 
     simulate.touchend(map.getCanvas());
     t.equal(spies['dragend'].callCount, 1, `dragend should be fired on touchend if no touches remain`);
-    t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
-    const easeToArgs = map.easeTo.getCall(0).args[0];
-    t.ok(easeToArgs.offset && (easeToArgs.offset[0] + easeToArgs.offset[1] !== 0), 'easeTo should be called with a nonzero offset');
-    t.deepEqual(easeToArgs.center, map.getCenter(), 'easeTo should be called with the map center as center option');
-    t.notOk(easeToArgs.around, 'easeTo should not be called with an around option');
     t.end();
 });
 
@@ -270,7 +264,6 @@ test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
     h.enable();
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
-    t.spy(map, 'easeTo');
 
     const spies = setupEventSpies(['zoom', 'move'], map, t);
 
@@ -301,12 +294,8 @@ test('TouchZoomHandler scales map appropriately on touchmove events', (t) => {
     t.equal(map.getZoom(), 4, 'manager should zoom out the map');
     for (const event of ['zoom', 'move']) t.equal(spies[event].callCount, 2, `${event} should be fired on every movement`);
 
-    const oldZoom = map.getZoom();
     simulate.touchend(map.getCanvas());
     t.equal(spies['zoomend'].callCount, 1, `zoomend should be fired on touchend if handler was active`);
-    t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
-    t.ok(map.easeTo.getCall(0).args[0].zoom < oldZoom, 'easeTo should be called with smaller zoom for inertial zoom out');
-
     t.end();
 });
 
@@ -318,7 +307,6 @@ test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => 
     h.enable();
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
-    t.spy(map, 'easeTo');
 
     const spies = setupEventSpies(['rotate', 'move'], map, t);
 
@@ -355,9 +343,6 @@ test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => 
 
     simulate.touchend(map.getCanvas());
     t.equal(spies['rotateend'].callCount, 1, `rotateend should be fired on touchend if handler was active`);
-    t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
-    t.ok(map.easeTo.getCall(0).args[0].bearing < -45, 'easeTo should be called with counterclockwise bearing for inertial rotate');
-
     t.end();
 });
 
@@ -369,7 +354,6 @@ test('TouchPitchHandler pitches map appropriately on touchmove events', (t) => {
     h.enable();
     t.spy(h, 'touchstart');
     t.spy(h, 'touchmove');
-    t.spy(map, 'easeTo');
     const spies = setupEventSpies(['pitch', 'move'], map, t);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 1, clientY: 1}]});
@@ -402,8 +386,6 @@ test('TouchPitchHandler pitches map appropriately on touchmove events', (t) => {
 
     simulate.touchend(map.getCanvas());
     t.equal(spies['pitchend'].callCount, 1, `pitchend should be fired on touchend if handler was active`);
-    t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handler was active with inertia');
-    t.notEqual(map.easeTo.getCall(0).args[0].pitch, 4, 'easeTo should be called with new pitch for inertial pitch');
     t.end();
 });
 
@@ -418,7 +400,6 @@ test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously'
     t.spy(rh, 'touchmove');
     t.spy(zh, 'touchstart');
     t.spy(zh, 'touchmove');
-    t.spy(map, 'easeTo');
 
     const spies = setupEventSpies(['rotate', 'zoom', 'move'], map, t);
 
@@ -452,9 +433,6 @@ test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously'
 
     simulate.touchend(map.getCanvas());
     for (const endEvent of ['rotateend', 'zoomend']) t.equal(spies[endEvent].callCount, 1, `${endEvent} should be fired on touchend if handler was active`);
-    t.equal(map.easeTo.callCount, 1, 'easeTo should be fired on touchend if handlers were active with inertia');
-    t.ok(map.easeTo.getCall(0).args[0].bearing < -45, 'easeTo should be called with counterclockwise bearing for inertial rotate');
-    t.ok(map.easeTo.getCall(0).args[0].zoom < 4, 'easeTo should be called with smaller zoom for inertial zoom out');
 
     t.end();
 });
