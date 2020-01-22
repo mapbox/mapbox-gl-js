@@ -1,7 +1,6 @@
 // @flow
 
 import Handler from './handler';
-import Inertia from './inertia';
 import DOM from '../../util/dom';
 import window from '../../util/window';
 import browser from '../../util/browser';
