@@ -119,11 +119,11 @@ function setupFramebuffer(painter, layer, type) {
 
         layer[fboName] = context.createFramebuffer(painter.width, painter.height);
         layer[fboName].colorAttachment.set(texture);
-    } else {
-        const fbo = layer[fboName];
-        gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
-        context.bindFramebuffer.set(fbo.framebuffer);
-        const clearColor = type === 'accum' ? Color.black : Color.red;
-        context.clear({color: clearColor});
     }
+    const fbo = layer[fboName];
+    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+    context.bindFramebuffer.set(fbo.framebuffer);
+    const clearColor = type === 'accum' ? Color.black : Color.red;
+    context.clear({color: clearColor});
+
 }

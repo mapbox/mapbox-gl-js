@@ -46,6 +46,17 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return true;
     }
 
+    resize() {
+        if (this.accumFbo) {
+            this.accumFbo.destroy();
+            this.accumFbo = null;
+        }
+        if (this.revealageFbo) {
+            this.revealageFbo.destroy();
+            this.revealageFbo = null;
+        }
+    }
+
     queryIntersectsFeature(queryGeometry: Array<Point>,
                            feature: VectorTileFeature,
                            featureState: FeatureState,
