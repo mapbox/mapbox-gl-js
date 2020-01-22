@@ -340,7 +340,7 @@ test('TouchRotateHandler rotates map appropriately on touchmove events', (t) => 
       else t.equal(spies[event].callCount, 1, `${event} should be fired on every movement`);
     }
 
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 2, clientY: 2}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 80, clientY: 80}]});
     t.equal(h._state, 'active', 'multi-touch event should activate the handler');
     t.equal(h.touchmove.returnValues[2].transform.bearingDelta, 45, '.touchmove() should return delta to apply to transform');
     t.equal(map.getBearing(), -45, 'manager should rotate the map counterclockwise');
@@ -419,10 +419,10 @@ test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously'
 
     const spies = setupEventSpies(['rotate', 'zoom', 'move'], map, t);
 
-    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 3, clientY: 0}]});
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 300, clientY: 0}]});
     t.notOk(rh.touchmove.called, 'touchstart should not call touchmove method');
     t.notOk(zh.touchmove.called, 'touchstart should not call touchmove method');
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 6}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 600}]});
 
     t.equal(rh.touchmove.returnValues[0].transform.bearingDelta, -90, '.touchmove() should return delta to apply to transform');
     t.equal(map.getBearing(), -90, 'manager should rotate the map clockwise');
@@ -436,7 +436,7 @@ test('TouchZoomHandler and TouchRotateHandler can update the map simultaneously'
       else t.equal(spies[event].callCount, 1, `${event} should be fired on every movement`);
     }
 
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 1, clientY: 1}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 100, clientY: 100}]});
     t.equal(rh.touchmove.returnValues[1].transform.bearingDelta, 45, '.touchmove() should return delta to apply to transform');
     t.equal(map.getBearing(), -45, 'manager should rotate the map counterclockwise');
     t.equal(Math.round(zh.touchmove.returnValues[1].transform.zoomDelta), -2, '.touchmove() should return delta to apply to transform');
