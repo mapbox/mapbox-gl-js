@@ -231,6 +231,7 @@ class LineBucket implements Bucket {
             for (let i = 0; i < vertices.length - 1; i++) {
                 this.totalDistance += vertices[i].dist(vertices[i + 1]);
             }
+            this.updateScaledDistance();
         }
 
         const isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
@@ -333,6 +334,7 @@ class LineBucket implements Bucket {
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
                     this.updateDistance(prevVertex, newPrevVertex);
+                    this.updateScaledDistance();
                     this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment);
                     prevVertex = newPrevVertex;
                 }
@@ -365,7 +367,10 @@ class LineBucket implements Bucket {
             }
 
             // Calculate how far along the line the currentVertex is
-            if (prevVertex) this.updateDistance(prevVertex, currentVertex);
+            if (prevVertex) {
+                this.updateDistance(prevVertex, currentVertex);
+                this.updateScaledDistance();
+            }
 
             if (currentJoin === 'miter') {
 
@@ -454,6 +459,7 @@ class LineBucket implements Bucket {
                 if (nextSegmentLength > 2 * sharpCornerOffset) {
                     const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
                     this.updateDistance(currentVertex, newCurrentVertex);
+                    this.updateScaledDistance();
                     this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment);
                     currentVertex = newCurrentVertex;
                 }
@@ -526,9 +532,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    updateDistance(prev: Point, next: Point) {
-        this.distance += prev.dist(next);
-
+    updateScaledDistance() {
         // Knowing the ratio of the full linestring covered by this tiled feature, as well
         // as the total distance (in tile units) of this tiled feature, and the distance
         // (in tile units) of the current vertex, we can determine the relative distance
@@ -536,6 +540,10 @@ class LineBucket implements Bucket {
         this.scaledDistance = this.totalDistance > 0 ?
             (this.clipStart + (this.clipEnd - this.clipStart) * this.distance / this.totalDistance)  * (MAX_LINE_DISTANCE - 1) :
             this.distance;
+    }
+
+    updateDistance(prev: Point, next: Point) {
+        this.distance += prev.dist(next);
     }
 }
 
