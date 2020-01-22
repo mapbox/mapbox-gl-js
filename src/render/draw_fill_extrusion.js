@@ -34,21 +34,21 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         const revealageColorMode = new ColorMode([gl.ZERO, gl.ONE_MINUS_SRC_COLOR], Color.transparent, [true, true, true, true]);
         drawExtrusionTiles(painter, source, layer, coords, DepthMode.disabled, StencilMode.disabled, revealageColorMode, 'revealage');
     } else if (painter.renderPass === 'translucent') {
-        // const accumFbo = layer.accumFbo;
-        // const revealageFbo = layer.revealageFbo;
-        // const context = painter.context;
-        // if (!accumFbo || !revealageFbo) return;
+        const accumFbo = layer.accumFbo;
+        const revealageFbo = layer.revealageFbo;
+        const context = painter.context;
+        if (!accumFbo || !revealageFbo) return;
 
-        // context.activeTexture.set(gl.TEXTURE0);
-        // gl.bindTexture(gl.TEXTURE_2D, accumFbo.colorAttachment.get());
-        // context.activeTexture.set(gl.TEXTURE1);
-        // gl.bindTexture(gl.TEXTURE_2D, revealageFbo.colorAttachment.get());
+        context.activeTexture.set(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, accumFbo.colorAttachment.get());
+        context.activeTexture.set(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, revealageFbo.colorAttachment.get());
 
-        // painter.useProgram('fillExtrusionTexture').draw(context, gl.TRIANGLES,
-        //     DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
-        //     fillExtrusionTextureUniformValues(painter, 0, 1),
-        //     layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
-        //     painter.viewportSegments, layer.paint, painter.transform.zoom);
+        painter.useProgram('fillExtrusionTexture').draw(context, gl.TRIANGLES,
+            DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
+            fillExtrusionTextureUniformValues(painter, 0, 1),
+            layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
+            painter.viewportSegments, layer.paint, painter.transform.zoom);
     }
 }
 
@@ -106,11 +106,19 @@ function setupFramebuffer(painter, layer, type) {
     const fboName = `${type}Fbo`;
 
     if (layer[fboName] == null) {
-        const format = type === 'accum' ? gl.RGBA : gl.ALPHA;
         const highPrecision = type === 'accum';
-        const tex = new Texture(context, {width: painter.width, height: painter.height, data: null}, format, {premultiply: false, highPrecision});
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA,
+            context.extTextureHalfFloat && highPrecision ? context.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
+
+
         layer[fboName] = context.createFramebuffer(painter.width, painter.height);
-        layer[fboName].colorAttachment.set(tex.texture);
+        layer[fboName].colorAttachment.set(texture);
     } else {
         const fbo = layer[fboName];
         gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
