@@ -151,6 +151,21 @@ class MultiTouchHandler extends TouchHandler {
     if (!e.touches || e.touches.length < 2) this.deactivate();
   }
 
+  get _horizontalThreshold() { return 70; }
+  get _shoveThreshold() {
+    if (this._state === 'active') return 0;
+    return 5;
+  }
+
+  _pointsAreHorizontal(pointA, pointB) {
+    return Math.abs(pointA.y - pointB.y) < this._horizontalThreshold;
+  }
+
+  _shoveDetected() {
+    const isHorizontal = this._pointsAreHorizontal(this._lastTouchData.points[0], this._lastTouchData.points[1]);
+    const isMovingVertically = Math.abs(this._startTouchData.centerPoint.y - this._lastTouchData.centerPoint.y) > this._shoveThreshold;
+    return isHorizontal && isMovingVertically;
+  }
 }
 
 class TouchZoomHandler extends MultiTouchHandler {
@@ -206,14 +221,14 @@ class TouchRotateHandler extends MultiTouchHandler {
     touchmove(e: TouchEvent) {
       if (!super.touchmove(e)) return;
 
+      const isVerticalShove = this._shoveDetected();
       const bearingDelta = this._lastTouchData.vector.angleWith(this._startTouchData.vector) * 180 / Math.PI
 
       this._startTouchEvent = this._lastTouchEvent;
       this._startTouchData = this._lastTouchData;
       this._startTime = browser.now();
 
-
-      if (Math.abs(bearingDelta) > this._rotationThreshold) {
+      if (!isVerticalShove && Math.abs(bearingDelta) > this._rotationThreshold) {
         const events = [];
         if (this._state === 'pending') events.push('rotatestart');
         this._state = 'active';
@@ -242,27 +257,6 @@ class TouchRotateHandler extends MultiTouchHandler {
 }
 
 class TouchPitchHandler extends MultiTouchHandler {
-    _horizontalThreshold: number;
-
-    constructor(el: HTMLElement, options?: Object) {
-      super(el, options);
-      this._horizontalThreshold = 70;
-    }
-
-    get _shoveThreshold() {
-      if (this._state === 'active') return 0;
-      return 5;
-    }
-
-    _pointsAreHorizontal(pointA, pointB) {
-      return Math.abs(pointA.y - pointB.y) < this._horizontalThreshold;
-    }
-
-    _shoveDetected() {
-      const isHorizontal = this._pointsAreHorizontal(this._lastTouchData.points[0], this._lastTouchData.points[1]);
-      const isMovingVertically = Math.abs(this._startTouchData.centerPoint.y - this._lastTouchData.centerPoint.y) > this._shoveThreshold;
-      return isHorizontal && isMovingVertically;
-    }
 
     touchmove(e: TouchEvent) {
       if (!super.touchmove(e)) return;
@@ -275,9 +269,7 @@ class TouchPitchHandler extends MultiTouchHandler {
       this._startTouchData = this._lastTouchData;
       this._startTime = browser.now();
 
-      // if (!isHorizontal) return;
-      if (!isVerticalShove) return;
-      if (Math.abs(pitchDelta) > 0) {
+      if (isVerticalShove && Math.abs(pitchDelta) > 0) {
         const events = [];
         if (this._state === 'pending') events.push('pitchstart');
         this._state = 'active';
