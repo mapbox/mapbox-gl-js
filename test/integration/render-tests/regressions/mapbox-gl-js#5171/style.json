@@ -1,0 +1,35 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32
+    }
+  },
+  "center": [-0.63938, 44.77458],
+  "zoom": 18,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.639208, 44.774651],
+          [-0.639605, 44.774487],
+          [-0.639605, 44.774487]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-color": "#f44336",
+        "line-width": 10
+      }
+    }
+  ]
+}
