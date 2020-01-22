@@ -334,7 +334,6 @@ class LineBucket implements Bucket {
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
                     this.updateDistance(prevVertex, newPrevVertex);
-                    this.updateScaledDistance();
                     this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment);
                     prevVertex = newPrevVertex;
                 }
@@ -367,10 +366,7 @@ class LineBucket implements Bucket {
             }
 
             // Calculate how far along the line the currentVertex is
-            if (prevVertex) {
-                this.updateDistance(prevVertex, currentVertex);
-                this.updateScaledDistance();
-            }
+            if (prevVertex) this.updateDistance(prevVertex, currentVertex);
 
             if (currentJoin === 'miter') {
 
@@ -459,7 +455,6 @@ class LineBucket implements Bucket {
                 if (nextSegmentLength > 2 * sharpCornerOffset) {
                     const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
                     this.updateDistance(currentVertex, newCurrentVertex);
-                    this.updateScaledDistance();
                     this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment);
                     currentVertex = newCurrentVertex;
                 }
@@ -544,6 +539,7 @@ class LineBucket implements Bucket {
 
     updateDistance(prev: Point, next: Point) {
         this.distance += prev.dist(next);
+        this.updateScaledDistance();
     }
 }
 
