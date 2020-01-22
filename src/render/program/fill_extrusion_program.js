@@ -10,7 +10,7 @@ import {
     UniformMatrix4f
 } from '../uniform_binding';
 
-import {mat3, vec3} from 'gl-matrix';
+import {mat4, mat3, vec3} from 'gl-matrix';
 import {extend} from '../../util/util';
 
 import type Context from '../../gl/context';
@@ -46,6 +46,13 @@ export type FillExtrusionPatternUniformsType = {|
     'u_opacity': Uniform1f
 |};
 
+export type FillExtrusionTextureUniformsType = {|
+    'u_matrix': UniformMatrix4f,
+    'u_world': Uniform2f,
+    'u_accum': Uniform1i,
+    'u_revealage': Uniform1i
+|};
+
 const fillExtrusionUniforms = (context: Context, locations: UniformLocations): FillExtrusionUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_lightpos': new Uniform3f(context, locations.u_lightpos),
@@ -70,6 +77,13 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_scale': new Uniform4f(context, locations.u_scale),
     'u_fade': new Uniform1f(context, locations.u_fade),
     'u_opacity': new Uniform1f(context, locations.u_opacity)
+});
+
+const fillExtrusionTextureUniforms = (context: Context, locations: UniformLocations): FillExtrusionTextureUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_world': new Uniform2f(context, locations.u_world),
+    'u_accum': new Uniform1i(context, locations.u_accum),
+    'u_revealage': new Uniform1i(context, locations.u_revealage)
 });
 
 const fillExtrusionUniformValues = (
@@ -115,9 +129,29 @@ const fillExtrusionPatternUniformValues = (
         });
 };
 
+const fillExtrusionTextureUniformValues = (
+    painter: Painter,
+    accumUnit: number,
+    revealageUnit: number
+): UniformValues<FillExtrusionTextureUniformsType> => {
+    const matrix = mat4.create();
+    mat4.ortho(matrix, 0, painter.width, painter.height, 0, 0, 1);
+
+    const gl = painter.context.gl;
+
+    return {
+        'u_matrix': matrix,
+        'u_world': [gl.drawingBufferWidth, gl.drawingBufferHeight],
+        'u_accum': accumUnit,
+        'u_revealage': revealageUnit
+    };
+};
+
 export {
     fillExtrusionUniforms,
     fillExtrusionPatternUniforms,
     fillExtrusionUniformValues,
-    fillExtrusionPatternUniformValues
+    fillExtrusionPatternUniformValues,
+    fillExtrusionTextureUniforms,
+    fillExtrusionTextureUniformValues
 };

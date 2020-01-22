@@ -75,9 +75,10 @@ const heatmapTextureUniformValues = (
     };
 };
 
+
 export {
     heatmapUniforms,
     heatmapTextureUniforms,
     heatmapUniformValues,
-    heatmapTextureUniformValues
+    heatmapTextureUniformValues,
 };

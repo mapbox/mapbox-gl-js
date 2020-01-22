@@ -7,6 +7,7 @@ import CullFaceMode from '../gl/cull_face_mode';
 import {
     fillExtrusionUniformValues,
     fillExtrusionPatternUniformValues,
+    fillExtrusionTextureUniformValues
 } from './program/fill_extrusion_program';
 import Texture from './texture';
 import Color from '../style-spec/util/color';
@@ -33,26 +34,21 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         const revealageColorMode = new ColorMode([gl.ZERO, gl.ONE_MINUS_SRC_COLOR], Color.transparent, [true, true, true, true]);
         drawExtrusionTiles(painter, source, layer, coords, DepthMode.disabled, StencilMode.disabled, revealageColorMode, 'revealage');
     } else if (painter.renderPass === 'translucent') {
-        // const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+        // const accumFbo = layer.accumFbo;
+        // const revealageFbo = layer.revealageFbo;
+        // const context = painter.context;
+        // if (!accumFbo || !revealageFbo) return;
 
-        // if (opacity === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
-        //     const colorMode = painter.colorModeForRenderPass();
-        //     drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
+        // context.activeTexture.set(gl.TEXTURE0);
+        // gl.bindTexture(gl.TEXTURE_2D, accumFbo.colorAttachment.get());
+        // context.activeTexture.set(gl.TEXTURE1);
+        // gl.bindTexture(gl.TEXTURE_2D, revealageFbo.colorAttachment.get());
 
-        // } else {
-        //     // Draw transparent buildings in two passes so that only the closest surface is drawn.
-        //     // First draw all the extrusions into only the depth buffer. No colors are drawn.
-        //     // drawExtrusionTiles(painter, source, layer, coords, depthMode,
-        //     //     StencilMode.disabled,
-        //     //     ColorMode.disabled);
-
-        //     // Then draw all the extrusions a second type, only coloring fragments if they have the
-        //     // same depth value as the closest fragment in the previous pass. Use the stencil buffer
-        //     // to prevent the second draw in cases where we have coincident polygons.
-        //     drawExtrusionTiles(painter, source, layer, coords, depthMode,
-        //         painter.stencilModeFor3D(),
-        //         painter.colorModeForRenderPass());
-        // }
+        // painter.useProgram('fillExtrusionTexture').draw(context, gl.TRIANGLES,
+        //     DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
+        //     fillExtrusionTextureUniformValues(painter, 0, 1),
+        //     layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
+        //     painter.viewportSegments, layer.paint, painter.transform.zoom);
     }
 }
 
@@ -110,13 +106,16 @@ function setupFramebuffer(painter, layer, type) {
     const fboName = `${type}Fbo`;
 
     if (layer[fboName] == null) {
-        layer[fboName] = context.createFramebuffer(painter.width, painter.height);
         const format = type === 'accum' ? gl.RGBA : gl.ALPHA;
-        const tex = new Texture(context, {width: painter.width, height: painter.height, data: null}, format, {highPrecision: true});
+        const highPrecision = type === 'accum';
+        const tex = new Texture(context, {width: painter.width, height: painter.height, data: null}, format, {premultiply: false, highPrecision});
+        layer[fboName] = context.createFramebuffer(painter.width, painter.height);
         layer[fboName].colorAttachment.set(tex.texture);
+    } else {
+        const fbo = layer[fboName];
+        gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+        context.bindFramebuffer.set(fbo.framebuffer);
+        const clearColor = type === 'accum' ? Color.black : Color.red;
+        context.clear({color: clearColor});
     }
-    const fbo = layer[fboName];
-    context.bindFramebuffer.set(fbo.framebuffer);
-    const clearColor = type === 'accum' ? Color.black : Color.white;
-    context.clear({color: clearColor});
 }

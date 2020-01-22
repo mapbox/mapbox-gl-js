@@ -24,7 +24,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
 
     //Fullscreen buffers for orderindependent transparency, lazily initialized in the draw loop when needed.
     accumFbo: ?Framebuffer;
-    revealageFbo: ?framebuffer;
+    revealageFbo: ?Framebuffer;
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);
@@ -39,6 +39,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     is3D(): boolean {
+        return true;
+    }
+
+    hasOffscreenPass(): boolean {
         return true;
     }
 
