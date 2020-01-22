@@ -299,7 +299,7 @@ class HandlerManager {
       easeOptions.pitch = targetPitch;
     }
 
-    if (easeOptions.zoom || easeOptions.rotate) {
+    if (easeOptions.zoom || easeOptions.bearing) {
       easeOptions.around = lastPoint ? this._map.unproject(lastPoint) : this._map.getCenter();
     }
 
