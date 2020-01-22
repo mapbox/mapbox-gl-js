@@ -64,7 +64,7 @@ class HandlerManager {
 
   _addDefaultHandlers() {
     this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
-    this.add('touchPitch', new TouchPitchHandler(this._map), ['touchRotate']);
+    this.add('touchPitch', new TouchPitchHandler(this._map), ['touchRotate', 'touchPan']);
     this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
     this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch']);
   }
@@ -150,7 +150,11 @@ class HandlerManager {
       if (this._disableDuring[name]) {
         const conflicts = this._disableDuring[name].filter(otherHandler => activeHandlers.indexOf(otherHandler) > -1);
         if (conflicts.length > 0) {
-          handler.reset(e);
+          // A handler that was active but is now overridden should still be able to return end events to fire
+          const resetResult = handler.reset(e);
+          if (resetResult && resetResult.events) {
+            resetResult.events.filter(e => e.endsWith('end')).map(e => postUpdateEvents.push(e));
+          }
           continue;
         }
       }
@@ -233,12 +237,14 @@ class HandlerManager {
 
     let deltas = {
       zoom: 0,
-      bearing: 0
+      bearing: 0,
+      pitch: 0
     };
     let firstPoint, lastPoint;
     for (const [time, settings] of this._inertiaBuffer) {
       deltas.zoom += settings.zoomDelta || 0;
       deltas.bearing += settings.bearingDelta || 0;
+      deltas.pitch += settings.pitchDelta || 0;
       if (settings.setLocationAtPoint) {
         if (!firstPoint) firstPoint = settings.setLocationAtPoint[1];
         lastPoint = settings.setLocationAtPoint[1];
@@ -271,9 +277,14 @@ class HandlerManager {
     const bearingEaseDuration = Math.abs(bearingSpeed / (deceleration * linearity)) * 1000;
     const targetBearing = (this._map.transform.bearing) + bearingSpeed * bearingEaseDuration / 2000;
 
+    let pitchSpeed = this._clampSpeed((deltas.pitch * linearity) / duration);
+    const pitchEaseDuration = Math.abs(pitchSpeed / (deceleration * linearity)) * 1000;
+    const targetPitch = (this._map.transform.pitch) + pitchSpeed * pitchEaseDuration / 2000;
+
     this._map.easeTo({
         zoom: targetZoom,
         bearing: targetBearing,
+        pitch: targetPitch,
         easeDuration: Math.max(zoomEaseDuration, bearingEaseDuration),
         easing: easing,
         around: lastPoint ? this._map.unproject(lastPoint) : this._map.getCenter(),
@@ -319,7 +330,7 @@ class HandlerManager {
       } else {
         this._map.fire(new Event(moveEvent, { originalEvent }))
       }
-    };
+    }
   }
 }
 
