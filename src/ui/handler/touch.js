@@ -84,8 +84,6 @@ class TouchHandler extends Handler {
       this._state = 'enabled';
     }
   }
-
-
 }
 
 class TouchPanHandler extends TouchHandler {
@@ -128,13 +126,6 @@ class TouchPanHandler extends TouchHandler {
     super.touchcancel(e);
     if (stateBeforeCancel === 'active') return { events: ['dragend']};
   }
-
-  reset(e: TouchEvent) {
-    const stateBeforeReset = this._state;
-    super.reset(e);
-    if (stateBeforeReset === 'active') return { events: ['dragend']};
-  }
-
 }
 
 class MultiTouchHandler extends TouchHandler {
@@ -203,12 +194,6 @@ class TouchZoomHandler extends MultiTouchHandler {
       super.touchcancel(e);
       if (stateBeforeCancel === 'active') return { events: ['zoomend']};
     }
-
-    reset(e: TouchEvent) {
-      const stateBeforeReset = this._state;
-      super.reset(e);
-      if (stateBeforeReset === 'active') return { events: ['zoomend']};
-    }
 }
 
 class TouchRotateHandler extends MultiTouchHandler {
@@ -248,12 +233,6 @@ class TouchRotateHandler extends MultiTouchHandler {
       super.touchcancel(e);
       if (stateBeforeCancel === 'active') return { events: ['rotateend']};
     }
-
-    reset(e: TouchEvent) {
-      const stateBeforeReset = this._state;
-      super.reset(e);
-      if (stateBeforeReset === 'active') return { events: ['rotateend']};
-    }
 }
 
 class TouchPitchHandler extends MultiTouchHandler {
@@ -288,12 +267,6 @@ class TouchPitchHandler extends MultiTouchHandler {
       const stateBeforeCancel = this._state;
       super.touchcancel(e);
       if (stateBeforeCancel === 'active') return { events: ['pitchend']};
-    }
-
-    reset(e: TouchEvent) {
-      const stateBeforeReset = this._state;
-      super.reset(e);
-      if (stateBeforeReset === 'active') return { events: ['pitchend']};
     }
 }
 
