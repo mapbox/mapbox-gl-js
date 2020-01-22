@@ -8,6 +8,8 @@ import {
     fillExtrusionUniformValues,
     fillExtrusionPatternUniformValues,
 } from './program/fill_extrusion_program';
+import Texture from './texture';
+import Color from '../style-spec/util/color';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -22,32 +24,39 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     if (opacity === 0) {
         return;
     }
+    const gl = painter.context.gl;
+    if (painter.renderPass === 'offscreen') {
+        setupFramebuffer(painter, layer, 'accum');
+        const accumColorMode = new ColorMode([gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
+        drawExtrusionTiles(painter, source, layer, coords, DepthMode.disabled, StencilMode.disabled, accumColorMode, 'accum');
+        setupFramebuffer(painter, layer, 'revealage');
+        const revealageColorMode = new ColorMode([gl.ZERO, gl.ONE_MINUS_SRC_COLOR], Color.transparent, [true, true, true, true]);
+        drawExtrusionTiles(painter, source, layer, coords, DepthMode.disabled, StencilMode.disabled, revealageColorMode, 'revealage');
+    } else if (painter.renderPass === 'translucent') {
+        // const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
-    if (painter.renderPass === 'translucent') {
-        const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+        // if (opacity === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
+        //     const colorMode = painter.colorModeForRenderPass();
+        //     drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
 
-        if (opacity === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
-            const colorMode = painter.colorModeForRenderPass();
-            drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
+        // } else {
+        //     // Draw transparent buildings in two passes so that only the closest surface is drawn.
+        //     // First draw all the extrusions into only the depth buffer. No colors are drawn.
+        //     // drawExtrusionTiles(painter, source, layer, coords, depthMode,
+        //     //     StencilMode.disabled,
+        //     //     ColorMode.disabled);
 
-        } else {
-            // Draw transparent buildings in two passes so that only the closest surface is drawn.
-            // First draw all the extrusions into only the depth buffer. No colors are drawn.
-            drawExtrusionTiles(painter, source, layer, coords, depthMode,
-                StencilMode.disabled,
-                ColorMode.disabled);
-
-            // Then draw all the extrusions a second type, only coloring fragments if they have the
-            // same depth value as the closest fragment in the previous pass. Use the stencil buffer
-            // to prevent the second draw in cases where we have coincident polygons.
-            drawExtrusionTiles(painter, source, layer, coords, depthMode,
-                painter.stencilModeFor3D(),
-                painter.colorModeForRenderPass());
-        }
+        //     // Then draw all the extrusions a second type, only coloring fragments if they have the
+        //     // same depth value as the closest fragment in the previous pass. Use the stencil buffer
+        //     // to prevent the second draw in cases where we have coincident polygons.
+        //     drawExtrusionTiles(painter, source, layer, coords, depthMode,
+        //         painter.stencilModeFor3D(),
+        //         painter.colorModeForRenderPass());
+        // }
     }
 }
 
-function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
+function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode, type) {
     const context = painter.context;
     const gl = context.gl;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
@@ -61,7 +70,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         if (!bucket) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
+        const program = painter.useProgram(type === 'accum' ? 'fillExtrusionAccum' : 'fillExtrusionRevealage', programConfiguration);
 
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);
@@ -93,4 +102,21 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             bucket.segments, layer.paint, painter.transform.zoom,
             programConfiguration);
     }
+}
+
+function setupFramebuffer(painter, layer, type) {
+    const gl = painter.context.gl;
+    const context = painter.context;
+    const fboName = `${type}Fbo`;
+
+    if (layer[fboName] == null) {
+        layer[fboName] = context.createFramebuffer(painter.width, painter.height);
+        const format = type === 'accum' ? gl.RGBA : gl.ALPHA;
+        const tex = new Texture(context, {width: painter.width, height: painter.height, data: null}, format, {highPrecision: true});
+        layer[fboName].colorAttachment.set(tex.texture);
+    }
+    const fbo = layer[fboName];
+    context.bindFramebuffer.set(fbo.framebuffer);
+    const clearColor = type === 'accum' ? Color.black : Color.white;
+    context.clear({color: clearColor});
 }

@@ -9,6 +9,7 @@ import properties from './fill_extrusion_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import {vec4} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
+import Framebuffer from '../../gl/framebuffer';
 
 import type {FeatureState} from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
@@ -20,6 +21,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
+
+    //Fullscreen buffers for orderindependent transparency, lazily initialized in the draw loop when needed.
+    accumFbo: ?Framebuffer;
+    revealageFbo: ?framebuffer;
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);
