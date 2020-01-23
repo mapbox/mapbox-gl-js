@@ -17,15 +17,21 @@ class CollisionFeature {
     boxEndIndex: number;
 
     /**
-     * Create a CollisionFeature, adding its collision box data to the given collisionBoxArray in the process.
-     *
-     * @param line The geometry the label is placed on.
-     * @param anchor The point along the line around which the label is anchored.
-     * @param shaped The text or icon shaping results.
-     * @param boxScale A magic number used to convert from glyph metrics units to geometry units.
-     * @param padding The amount of padding to add around the label edges.
-     * @param alignLine Whether the label is aligned with the line or the viewport.
-     */
+ * Create a CollisionFeature, adding its collision box data to the given collisionBoxArray in the process.
+ *
+ * @param line The geometry the label is placed on.
+ * @param anchor The point along the line around which the label is anchored.
+ * @param shaped The text or icon shaping results.
+ * @param boxScale A magic number used to convert from glyph metrics units to geometry units.
+ * @param padding The amount of padding to add around the label edges.
+ * @param collisionBoxArray
+ * @param featureIndex
+ * @param sourceLayerIndex
+ * @param bucketIndex
+ * @param alignLine Whether the label is aligned with the line or the viewport.
+ * @param overscaling
+ * @param rotate
+ */
     constructor(collisionBoxArray: CollisionBoxArray,
                 line: Array<Point>,
                 anchor: Anchor,

@@ -306,23 +306,32 @@ class SourceCache extends Evented {
         }
     }
     /**
-     * Get a specific tile by TileID
-     */
+ * Get a specific tile by TileID
+ *
+ * @param tileID
+ */
     getTile(tileID: OverscaledTileID): Tile {
         return this.getTileByID(tileID.key);
     }
 
     /**
-     * Get a specific tile by id
-     */
+ * Get a specific tile by id
+ *
+ * @param id
+ */
     getTileByID(id: string): Tile {
         return this._tiles[id];
     }
 
     /**
-     * For a given set of tiles, retain children that are loaded and have a zoom
-     * between `zoom` (exclusive) and `maxCoveringZoom` (inclusive)
-     */
+ * For a given set of tiles, retain children that are loaded and have a zoom
+between `zoom` (exclusive) and `maxCoveringZoom` (inclusive)
+ *
+ * @param idealTiles
+ * @param zoom
+ * @param maxCoveringZoom
+ * @param retain
+ */
     _retainLoadedChildren(
         idealTiles: {[_: any]: OverscaledTileID},
         zoom: number,
@@ -366,8 +375,11 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Find a loaded parent of the given tile (up to minCoveringZoom)
-     */
+ * Find a loaded parent of the given tile (up to minCoveringZoom)
+ *
+ * @param tileID
+ * @param minCoveringZoom
+ */
     findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number): ?Tile {
         if (tileID.key in this._loadedParentTiles) {
             const parent = this._loadedParentTiles[tileID.key];
@@ -397,13 +409,15 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Resizes the tile cache based on the current viewport's size
-     * or the maxTileCacheSize option passed during map creation
-     *
-     * Larger viewports use more tiles and need larger caches. Larger viewports
-     * are more likely to be found on devices with more memory and on pages where
-     * the map is more important.
-     */
+ * Resizes the tile cache based on the current viewport's size
+or the maxTileCacheSize option passed during map creation
+
+Larger viewports use more tiles and need larger caches. Larger viewports
+are more likely to be found on devices with more memory and on pages where
+the map is more important.
+ *
+ * @param transform
+ */
     updateCacheSize(transform: Transform) {
         const widthInTiles = Math.ceil(transform.width / this._source.tileSize) + 1;
         const heightInTiles = Math.ceil(transform.height / this._source.tileSize) + 1;
@@ -460,9 +474,11 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Removes tiles that are outside the viewport and adds new tiles that
-     * are inside the viewport.
-     */
+ * Removes tiles that are outside the viewport and adds new tiles that
+are inside the viewport.
+ *
+ * @param transform
+ */
     update(transform: Transform) {
         this.transform = transform;
         if (!this._sourceLoaded || this._paused) { return; }
@@ -779,11 +795,14 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Search through our current tiles and attempt to find the tiles that
-     * cover the given bounds.
-     * @param pointQueryGeometry coordinates of the corners of bounding rectangle
-     * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
-     */
+ * Search through our current tiles and attempt to find the tiles that
+cover the given bounds.
+ *
+ * @param pointQueryGeometry coordinates of the corners of bounding rectangle
+ * @param maxPitchScaleFactor
+ * @param has3DLayer
+ * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
+ */
     tilesIn(pointQueryGeometry: Array<Point>, maxPitchScaleFactor: number, has3DLayer: boolean) {
 
         const tileResults = [];
@@ -899,9 +918,13 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Sets the set of keys that the tile depends on. This allows tiles to
-     * be reloaded when their dependencies change.
-     */
+ * Sets the set of keys that the tile depends on. This allows tiles to
+be reloaded when their dependencies change.
+ *
+ * @param tileKey
+ * @param namespace
+ * @param dependencies
+ */
     setDependencies(tileKey: string, namespace: string, dependencies: Array<string>) {
         const tile = this._tiles[tileKey];
         if (tile) {
@@ -910,8 +933,11 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Reloads all tiles that depend on the given keys.
-     */
+ * Reloads all tiles that depend on the given keys.
+ *
+ * @param namespaces
+ * @param keys
+ */
     reloadTilesForDependencies(namespaces: Array<string>, keys: Array<string>) {
         for (const id in this._tiles) {
             const tile = this._tiles[id];

@@ -113,8 +113,10 @@ class VideoSource extends ImageSource {
     }
 
     /**
-     * Sets playback to a timestamp, in seconds.
-     */
+ * Sets playback to a timestamp, in seconds.
+ *
+ * @param seconds
+ */
     seek(seconds: number) {
         if (this.video) {
             const seekableRange = this.video.seekable;

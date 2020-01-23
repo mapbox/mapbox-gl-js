@@ -42,7 +42,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[_: string]: StyleLayer},
                             serializedLayers: {[_: string]: Object},
                             queryGeometry: Array<Point>,
-                            params: { filter: FilterSpecification, layers: Array<string> },
+                            params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                             transform: Transform) {
 
     const has3DLayer = queryIncludes3DLayer(params && params.layers, styleLayers, sourceCache.id);
@@ -89,7 +89,7 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
                             serializedLayers: {[_: string]: StyleLayer},
                             sourceCaches: {[_: string]: SourceCache},
                             queryGeometry: Array<Point>,
-                            params: { filter: FilterSpecification, layers: Array<string> },
+                            params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                             collisionIndex: CollisionIndex,
                             retainedQueryData: {[_: number]: RetainedQueryData}) {
     const result = {};
@@ -108,6 +108,7 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
                 queryData.sourceLayerIndex,
                 params.filter,
                 params.layers,
+                params.availableImages,
                 styleLayers);
 
         for (const layerID in bucketSymbols) {

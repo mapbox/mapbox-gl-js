@@ -102,7 +102,7 @@ class Coercion implements Expression {
             // created by properties that expect the 'formatted' type.
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'resolvedImage') {
-            return ResolvedImage.fromString(valueToString(this.args[0].evaluate(ctx)));
+            return ResolvedImage.fromString(valueToString(this.args[0].evaluate(ctx)), ctx.availableImages);
         } else {
             return valueToString(this.args[0].evaluate(ctx));
         }

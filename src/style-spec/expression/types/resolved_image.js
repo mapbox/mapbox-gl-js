@@ -18,8 +18,9 @@ export default class ResolvedImage {
         return this.name;
     }
 
-    static fromString(name: string): ResolvedImage {
-        return new ResolvedImage({name, available: false});
+    static fromString(name: string, availableImages?: ?Array<string>): ResolvedImage {
+        const available = availableImages ? availableImages.indexOf(name) > -1 : false;
+        return new ResolvedImage({name, available});
     }
 
     serialize(): Array<string> {

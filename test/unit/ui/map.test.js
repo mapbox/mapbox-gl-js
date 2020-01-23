@@ -1065,7 +1065,7 @@ test('Map', (t) => {
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.ok(args[0]);
-                t.deepEqual(args[1], {});
+                t.deepEqual(args[1], {availableImages: []});
                 t.deepEqual(output, []);
 
                 t.end();
@@ -1081,7 +1081,7 @@ test('Map', (t) => {
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.deepEqual(args[0], [{x: 100, y: 100}]); // query geometry
-                t.deepEqual(args[1], {}); // params
+                t.deepEqual(args[1], {availableImages: []}); // params
                 t.deepEqual(args[2], map.transform); // transform
                 t.deepEqual(output, []);
 
@@ -1098,7 +1098,7 @@ test('Map', (t) => {
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.ok(args[0]);
-                t.deepEqual(args[1], {filter: ['all']});
+                t.deepEqual(args[1], {availableImages: [], filter: ['all']});
                 t.deepEqual(output, []);
 
                 t.end();
@@ -1114,7 +1114,7 @@ test('Map', (t) => {
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.ok(args[0]);
-                t.deepEqual(args[1], {filter: ['all']});
+                t.deepEqual(args[1], {availableImages: [], filter: ['all']});
                 t.deepEqual(output, []);
 
                 t.end();

@@ -545,10 +545,15 @@ class Painter {
     }
 
     /**
-     * Transform a matrix to incorporate the *-translate and *-translate-anchor properties into it.
-     * @param inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
-     * @returns {Float32Array} matrix
-     */
+ * Transform a matrix to incorporate the *-translate and *-translate-anchor properties into it.
+ *
+ * @param matrix
+ * @param tile
+ * @param translate
+ * @param translateAnchor
+ * @param inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
+ * @returns {Float32Array} matrix
+ */
     translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {
         if (!translate[0] && !translate[1]) return matrix;
 
@@ -591,10 +596,11 @@ class Painter {
     }
 
     /**
-     * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
-     *
-     * @returns true if a needed image is missing and rendering needs to be skipped.
-     */
+ * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
+ *
+ * @returns true if a needed image is missing and rendering needs to be skipped.
+ * @param image
+ */
     isPatternMissing(image: ?CrossFaded<ResolvedImage>): boolean {
         if (!image) return false;
         const imagePosA = this.imageManager.getPattern(image.from.toString());

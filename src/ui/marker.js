@@ -276,9 +276,11 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Set the marker's geographical position and move it.
-     * @returns {Marker} `this`
-     */
+ * Set the marker's geographical position and move it.
+ *
+ * @returns {Marker} `this`
+ * @param lnglat
+ */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;

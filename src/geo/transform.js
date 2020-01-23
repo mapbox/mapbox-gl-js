@@ -555,8 +555,10 @@ class Transform {
     }
 
     /**
-     * Sets or clears the map's geographical constraints.
-     */
+ * Sets or clears the map's geographical constraints.
+ *
+ * @param bounds
+ */
     setMaxBounds(bounds?: LngLatBounds) {
         if (bounds) {
             this.lngRange = [bounds.getWest(), bounds.getEast()];
@@ -569,9 +571,12 @@ class Transform {
     }
 
     /**
-     * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
-     * @param {UnwrappedTileID} unwrappedTileID;
-     */
+ * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
+ *
+ * @param unwrappedTileID
+ * @param aligned
+ * @param {UnwrappedTileID} unwrappedTileID;
+ */
     calculatePosMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
         const posMatrixKey = unwrappedTileID.key;
         const cache = aligned ? this._alignedPosMatrixCache : this._posMatrixCache;

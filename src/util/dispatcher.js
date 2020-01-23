@@ -37,8 +37,12 @@ class Dispatcher {
     }
 
     /**
-     * Broadcast a message to all Workers.
-     */
+ * Broadcast a message to all Workers.
+ *
+ * @param type
+ * @param data
+ * @param cb
+ */
     broadcast(type: string, data: mixed, cb?: Function) {
         assert(this.actors.length);
         cb = cb || function () {};

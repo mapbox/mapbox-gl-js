@@ -16,6 +16,7 @@ import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from '../style/evaluation_parameters';
 import SourceFeatureState from '../source/source_state';
 import {polygonIntersectsBox} from '../util/intersection_tests';
+import {PossiblyEvaluated} from '../style/properties';
 
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
@@ -35,6 +36,7 @@ type QueryParameters = {
     params: {
         filter: FilterSpecification,
         layers: Array<string>,
+        availableImages: Array<string>
     }
 }
 
@@ -145,6 +147,7 @@ class FeatureIndex {
                 match.featureIndex,
                 filter,
                 params.layers,
+                params.availableImages,
                 styleLayers,
                 serializedLayers,
                 sourceFeatureState,
@@ -168,6 +171,7 @@ class FeatureIndex {
         featureIndex: number,
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
+        availableImages: Array<string>,
         styleLayers: {[_: string]: StyleLayer},
         serializedLayers: {[_: string]: Object},
         sourceFeatureState?: SourceFeatureState,
@@ -205,20 +209,14 @@ class FeatureIndex {
 
             const serializedLayer = serializedLayers[layerID];
 
-            const evaluatedPaint = {};
-            for (const property in serializedLayer.paint) {
-                const prop = styleLayer.paint.get(property);
-                evaluatedPaint[property] = prop && prop.evaluate ? prop.evaluate(feature, featureState) : prop;
-            }
+            const evaluationParameters = {
+                feature,
+                featureState,
+                availableImages
+            };
 
-            const evaluatedLayout = {};
-            for (const property in serializedLayer.layout) {
-                const prop = styleLayer.layout.get(property);
-                evaluatedLayout[property] = prop && prop.evaluate ? prop.evaluate(feature, featureState) : prop;
-            }
-
-            serializedLayer.paint = evaluatedPaint;
-            serializedLayer.layout = evaluatedLayout;
+            serializedLayer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, evaluationParameters);
+            serializedLayer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, evaluationParameters);
 
             const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState);
             if (!intersectionZ) {
@@ -244,6 +242,7 @@ class FeatureIndex {
                          sourceLayerIndex: number,
                          filterSpec: FilterSpecification,
                          filterLayerIDs: Array<string>,
+                         availableImages: Array<string>,
                          styleLayers: {[_: string]: StyleLayer}) {
         const result = {};
         this.loadVTLayers();
@@ -258,6 +257,7 @@ class FeatureIndex {
                 symbolFeatureIndex,
                 filter,
                 filterLayerIDs,
+                availableImages,
                 styleLayers,
                 serializedLayers
             );
@@ -294,6 +294,16 @@ register(
 );
 
 export default FeatureIndex;
+
+function evaluateProperties(serializedProperties, styleLayerProperties, evaluationParameters) {
+    const evaluatedProperties = {};
+    for (const property in serializedProperties) {
+        const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(property) : null;
+        evaluatedProperties[property] = prop && prop.evaluate ? prop.evaluate(evaluationParameters.feature, evaluationParameters.featureState, evaluationParameters.availableImages) : prop;
+    }
+
+    return evaluatedProperties;
+}
 
 function getBounds(geometry: Array<Point>) {
     let minX = Infinity;
