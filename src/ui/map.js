@@ -13,7 +13,8 @@ import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
 import Transform from '../geo/transform';
 import Hash from './hash';
-import bindHandlers from './bind_handlers';
+// import bindHandlers from './bind_handlers';
+import HandlerManager from './handler_manager';
 import Camera from './camera';
 import LngLat from '../geo/lng_lat';
 import LngLatBounds from '../geo/lng_lat_bounds';
@@ -262,6 +263,7 @@ const defaultOptions = {
 class Map extends Camera {
     style: Style;
     painter: Painter;
+    handlers: HandlerManager;
 
     _container: HTMLElement;
     _missingCSSCanary: HTMLElement;
@@ -369,7 +371,7 @@ class Map extends Camera {
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
-        this._interactive = options.interactive;
+        // this._interactive = options.interactive;
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
@@ -425,7 +427,9 @@ class Map extends Camera {
             window.addEventListener('resize', this._onWindowResize, false);
         }
 
-        bindHandlers(this, options);
+        // bindHandlers(this, options);
+        this.handlers = new HandlerManager(this, options);
+
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         this._hash = options.hash && (new Hash(hashName)).addTo(this);
@@ -833,10 +837,7 @@ class Map extends Camera {
      * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving ||
-            this.dragPan.isActive() ||
-            this.dragRotate.isActive() ||
-            this.scrollZoom.isActive();
+        return this._moving;
     }
 
     /**
@@ -846,8 +847,7 @@ class Map extends Camera {
      * var isZooming = map.isZooming();
      */
     isZooming(): boolean {
-        return this._zooming ||
-            this.scrollZoom.isZooming();
+        return this._zooming;
     }
 
     /**
@@ -857,8 +857,7 @@ class Map extends Camera {
      * map.isRotating();
      */
     isRotating(): boolean {
-        return this._rotating ||
-            this.dragRotate.isActive();
+        return this._rotating;
     }
 
     _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
