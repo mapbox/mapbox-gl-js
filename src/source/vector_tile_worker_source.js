@@ -78,14 +78,11 @@ class VectorTileWorkerSource implements WorkerSource {
     loaded: {[_: string]: WorkerTile };
 
     /**
- * @param actor
- * @param layerIndex
- * @param availableImages
- * @param [loadVectorData] Optional method for custom loading of a VectorTile
- * object based on parameters passed from the main-thread Source. See
- * {@link VectorTileWorkerSource#loadTile}. The default implementation simply
- * loads the pbf at `params.url`.
- */
+     * @param [loadVectorData] Optional method for custom loading of a VectorTile
+     * object based on parameters passed from the main-thread Source. See
+     * {@link VectorTileWorkerSource#loadTile}. The default implementation simply
+     * loads the pbf at `params.url`.
+     */
     constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, loadVectorData: ?LoadVectorData) {
         this.actor = actor;
         this.layerIndex = layerIndex;
@@ -96,13 +93,10 @@ class VectorTileWorkerSource implements WorkerSource {
     }
 
     /**
- * Implements {@link WorkerSource#loadTile}. Delegates to
-{@link VectorTileWorkerSource#loadVectorData} (which by default expects
-a `params.url` property) for fetching and producing a VectorTile object.
- *
- * @param params
- * @param callback
- */
+     * Implements {@link WorkerSource#loadTile}. Delegates to
+     * {@link VectorTileWorkerSource#loadVectorData} (which by default expects
+     * a `params.url` property) for fetching and producing a VectorTile object.
+     */
     loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
         const uid = params.uid;
 
@@ -150,11 +144,8 @@ a `params.url` property) for fetching and producing a VectorTile object.
     }
 
     /**
- * Implements {@link WorkerSource#reloadTile}.
- *
- * @param params
- * @param callback
- */
+     * Implements {@link WorkerSource#reloadTile}.
+     */
     reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
         const loaded = this.loaded,
             uid = params.uid,
@@ -186,12 +177,11 @@ a `params.url` property) for fetching and producing a VectorTile object.
     }
 
     /**
- * Implements {@link WorkerSource#abortTile}.
- *
- * @param params
- * @param callback
- * @param params.uid The UID for this tile.
- */
+     * Implements {@link WorkerSource#abortTile}.
+     *
+     * @param params
+     * @param params.uid The UID for this tile.
+     */
     abortTile(params: TileParameters, callback: WorkerTileCallback) {
         const loading = this.loading,
             uid = params.uid;
@@ -203,12 +193,11 @@ a `params.url` property) for fetching and producing a VectorTile object.
     }
 
     /**
- * Implements {@link WorkerSource#removeTile}.
- *
- * @param params
- * @param callback
- * @param params.uid The UID for this tile.
- */
+     * Implements {@link WorkerSource#removeTile}.
+     *
+     * @param params
+     * @param params.uid The UID for this tile.
+     */
     removeTile(params: TileParameters, callback: WorkerTileCallback) {
         const loaded = this.loaded,
             uid = params.uid;

@@ -100,13 +100,10 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     _geoJSONIndex: GeoJSONIndex
 
     /**
- * @param actor
- * @param layerIndex
- * @param availableImages
- * @param [loadGeoJSON] Optional method for custom loading/parsing of
- * GeoJSON based on parameters passed from the main-thread Source.
- * See {@link GeoJSONWorkerSource#loadGeoJSON}.
- */
+     * @param [loadGeoJSON] Optional method for custom loading/parsing of
+     * GeoJSON based on parameters passed from the main-thread Source.
+     * See {@link GeoJSONWorkerSource#loadGeoJSON}.
+     */
     constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, loadGeoJSON: ?LoadGeoJSON) {
         super(actor, layerIndex, availableImages, loadGeoJSONTile);
         if (loadGeoJSON) {
@@ -229,15 +226,14 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 
     /**
- * Implements {@link WorkerSource#reloadTile}.
-
-If the tile is loaded, uses the implementation in VectorTileWorkerSource.
-Otherwise, such as after a setData() call, we load the tile fresh.
- *
- * @param params
- * @param callback
- * @param params.uid The UID for this tile.
- */
+    * Implements {@link WorkerSource#reloadTile}.
+    *
+    * If the tile is loaded, uses the implementation in VectorTileWorkerSource.
+    * Otherwise, such as after a setData() call, we load the tile fresh.
+    *
+    * @param params
+    * @param params.uid The UID for this tile.
+    */
     reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
         const loaded = this.loaded,
             uid = params.uid;
@@ -250,17 +246,16 @@ Otherwise, such as after a setData() call, we load the tile fresh.
     }
 
     /**
- * Fetch and parse GeoJSON according to the given params.  Calls `callback`
-with `(err, data)`, where `data` is a parsed GeoJSON object.
-
-GeoJSON is loaded and parsed from `params.url` if it exists, or else
-expected as a literal (string or object) `params.data`.
- *
- * @param params
- * @param [params.url] A URL to the remote GeoJSON data.
- * @param callback
- * @param [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
- */
+     * Fetch and parse GeoJSON according to the given params.  Calls `callback`
+     * with `(err, data)`, where `data` is a parsed GeoJSON object.
+     *
+     * GeoJSON is loaded and parsed from `params.url` if it exists, or else
+     * expected as a literal (string or object) `params.data`.
+     *
+     * @param params
+     * @param [params.url] A URL to the remote GeoJSON data.
+     * @param [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
+     */
     loadGeoJSON(params: LoadGeoJSONParameters, callback: ResponseCallback<Object>) {
         // Because of same origin issues, urls must either include an explicit
         // origin or absolute path.

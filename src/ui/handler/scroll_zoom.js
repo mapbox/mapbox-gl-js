@@ -78,21 +78,17 @@ class ScrollZoomHandler {
     }
 
     /**
- * Set the zoom rate of a trackpad
- *
- * @param zoomRate
- * @param {number} [zoomRate = 1/100]
- */
+     * Set the zoom rate of a trackpad
+     * @param {number} [zoomRate = 1/100]
+     */
     setZoomRate(zoomRate: number) {
         this._defaultZoomRate = zoomRate;
     }
 
     /**
- * Set the zoom rate of a mouse wheel
- *
- * @param wheelZoomRate
- * @param {number} [wheelZoomRate = 1/450]
- */
+     * Set the zoom rate of a mouse wheel
+     * @param {number} [wheelZoomRate = 1/450]
+     */
     setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
     }

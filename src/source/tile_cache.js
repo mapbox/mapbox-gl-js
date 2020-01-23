@@ -189,11 +189,9 @@ class TileCache {
     }
 
     /**
- * Remove entries that do not pass a filter function. Used for removing
-stale tiles from the cache.
- *
- * @param filterFn
- */
+     * Remove entries that do not pass a filter function. Used for removing
+     * stale tiles from the cache.
+     */
     filter(filterFn: (tile: Tile) => boolean) {
         const removed = [];
         for (const key in this.data) {

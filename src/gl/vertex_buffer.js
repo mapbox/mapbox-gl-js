@@ -39,11 +39,8 @@ class VertexBuffer {
     buffer: WebGLBuffer;
 
     /**
- * @param context
- * @param array
- * @param attributes
- * @param dynamicDraw Whether this buffer will be repeatedly updated.
- */
+     * @param dynamicDraw Whether this buffer will be repeatedly updated.
+     */
     constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean) {
         this.length = array.length;
         this.attributes = attributes;
