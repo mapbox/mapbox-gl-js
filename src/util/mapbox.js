@@ -197,7 +197,7 @@ function hasCacheDefeatingSku(url: string) {
     return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
 }
 
-const urlRe = /^(\w+):\/\/([^/?]*)(\/[^?]+)?\??(.+)?/;
+const urlRe = /^(\w+)?:?\/?\/([^/?]*)(\/[^?]+)?\??(.+)?/;
 
 function parseUrl(url: string): UrlObject {
     const parts = url.match(urlRe);
@@ -214,7 +214,7 @@ function parseUrl(url: string): UrlObject {
 
 function formatUrl(obj: UrlObject): string {
     const params = obj.params.length ? `?${obj.params.join('&')}` : '';
-    return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
+    return `${obj.protocol ? `${obj.protocol}://` : '/'}${obj.authority}${obj.path}${params}`;
 }
 
 export {isMapboxURL, isMapboxHTTPURL, hasCacheDefeatingSku};

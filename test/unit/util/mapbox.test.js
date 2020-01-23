@@ -234,6 +234,12 @@ test("mapbox", (t) => {
                 t.end();
             });
 
+            t.test('concantenates path, ratio, and extension for same host urls /', (t) => {
+                t.equal(manager.normalizeSpriteURL('/path/to/bar', '@2x', '.png'), '/path/to/bar@2x.png');
+                t.equal(manager.normalizeSpriteURL('/path/to/bar?style=fresh', '@2x', '.png'), '/path/to/bar@2x.png?style=fresh');
+                t.end();
+            });
+
             t.test('normalizes non-mapbox:// scheme when query string exists', (t) => {
                 t.equal(manager.normalizeSpriteURL('http://www.foo.com/bar?fresh=true', '@2x', '.png'), 'http://www.foo.com/bar@2x.png?fresh=true');
                 t.end();
