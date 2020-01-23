@@ -10,7 +10,7 @@ void main() {
         discard;
     }
     vec4 accum = texture2D(u_accum, v_pos);
-    gl_FragColor = vec4(accum.rgb / clamp(accum.a, 1e-2, 5e3), 1.0 - revealage);
+    gl_FragColor = vec4(accum.rgb / clamp(accum.a, 1e-2, 5e4), 1.0 - revealage);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(0.0);
