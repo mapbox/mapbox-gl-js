@@ -1,7 +1,7 @@
 // @flow
 
 import type Map from '../map';
-
+import type {InputEvent} from '../handler_manager';
 /**
  * Base class for gesture handlers which control user interaction with the map
  */
@@ -50,7 +50,7 @@ class Handler {
    * Resets a possibly-active handler to enabled state.
    *
    */
-  reset() {
+  reset(e: ?InputEvent) {
       if (this.isEnabled()) {
         this.disable();
         this.enable();

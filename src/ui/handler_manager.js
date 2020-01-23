@@ -17,10 +17,20 @@ const defaultInertiaOptions = {
 };
 export type InertiaOptions = typeof defaultInertiaOptions;
 
+export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
+
 class HandlerManager {
   _map: Map;
   _el: HTMLElement;
-  _handlers: Array<Handler>;
+  _handlers: Array<[string, Handler]>;
+  _disableDuring: Object;
+  _inertiaOptions: InertiaOptions;
+  _inertiaBuffer: Array<[number, Object]>;
+  _eventsInProgress: Object;
+  touchPan: TouchPanHandler;
+  touchZoom: TouchZoomHandler;
+  touchRotate: TouchRotateHandler;
+  touchPitch: TouchPitchHandler;
 
   /**
    * @private
@@ -118,8 +128,8 @@ class HandlerManager {
     for (const [_, handler] of this._handlers) handler.enable();
   }
 
-  addListener(mapEventClass: Event, eventType: string, options?: Object) {
-    const listener = (e: Event) => {
+  addListener(mapEventClass: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, eventType: string, options?: Object) {
+    const listener = (e: *) => {
       this._map.fire(new mapEventClass(eventType, this._map, e));
       this.processInputEvent(e);
     };
@@ -135,7 +145,7 @@ class HandlerManager {
   }
 
 
-  processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent) {
+  processInputEvent(e: InputEvent) {
     if (e.cancelable) e.preventDefault();
     let transformSettings;
     let activeHandlers = [];
@@ -182,7 +192,7 @@ class HandlerManager {
     if (postUpdateEvents.length > 0) this.fireMapEvents(postUpdateEvents, e); // move and moveend events
   }
 
-  updateMapTransform(settings) {
+  updateMapTransform(settings: Object) {
     this._map.stop();
     const tr = this._map.transform;
     this._drainInertiaBuffer();
@@ -213,7 +223,7 @@ class HandlerManager {
     return false;
   }
 
-  _clampSpeed(speed) {
+  _clampSpeed(speed: number) {
     const { maxSpeed } = this._inertiaOptions;
     if (Math.abs(speed) > maxSpeed) {
         if (speed > 0) {
@@ -226,7 +236,7 @@ class HandlerManager {
     }
   }
 
-  _onMoveEnd(originalEvent) {
+  _onMoveEnd(originalEvent: *) {
     this._drainInertiaBuffer();
     if (this._inertiaBuffer.length < 2) {
       this._map.fire(new Event('moveend', { originalEvent }));
@@ -310,7 +320,7 @@ class HandlerManager {
 
   }
 
-  fireMapEvents(events, originalEvent) {
+  fireMapEvents(events: Array<string>, originalEvent: *) {
     let alreadyMoving = this._moving;
     const moveEvents = [];
 
