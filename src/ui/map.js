@@ -263,6 +263,7 @@ const defaultOptions = {
 class Map extends Camera {
     style: Style;
     painter: Painter;
+    handlers: HandlerManager;
 
     _container: HTMLElement;
     _missingCSSCanary: HTMLElement;
@@ -301,50 +302,49 @@ class Map extends Camera {
     _localIdeographFontFamily: string;
     _requestManager: RequestManager;
     _locale: Object;
-    _handlers: HandlerManager;
 
-    // /**
-    //  * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
-    //  * Find more details and examples using `scrollZoom` in the {@link ScrollZoomHandler} section.
-    //  */
-    // scrollZoom: ScrollZoomHandler;
-    //
-    // /**
-    //  * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
-    //  * Find more details and examples using `boxZoom` in the {@link BoxZoomHandler} section.
-    //  */
-    // boxZoom: BoxZoomHandler;
-    //
-    // /**
-    //  * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
-    //  * mouse button or with the Control key pressed. Find more details and examples using `dragRotate`
-    //  * in the {@link DragRotateHandler} section.
-    //  */
-    // dragRotate: DragRotateHandler;
-    //
-    // /**
-    //  * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
-    //  * Find more details and examples using `dragPan` in the {@link DragPanHandler} section.
-    //  */
-    // dragPan: DragPanHandler;
-    //
-    // /**
-    //  * The map's {@link KeyboardHandler}, which allows the user to zoom, rotate, and pan the map using keyboard
-    //  * shortcuts. Find more details and examples using `keyboard` in the {@link KeyboardHandler} section.
-    //  */
-    // keyboard: KeyboardHandler;
-    //
-    // /**
-    //  * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
-    //  * Find more details and examples using `doubleClickZoom` in the {@link DoubleClickZoomHandler} section.
-    //  */
-    // doubleClickZoom: DoubleClickZoomHandler;
-    //
-    // /**
-    //  * The map's {@link TouchZoomRotateHandler}, which allows the user to zoom or rotate the map with touch gestures.
-    //  * Find more details and examples using `touchZoomRotate` in the {@link TouchZoomRotateHandler} section.
-    //  */
-    // touchZoomRotate: TouchZoomRotateHandler;
+    /**
+     * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
+     * Find more details and examples using `scrollZoom` in the {@link ScrollZoomHandler} section.
+     */
+    scrollZoom: ScrollZoomHandler;
+
+    /**
+     * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
+     * Find more details and examples using `boxZoom` in the {@link BoxZoomHandler} section.
+     */
+    boxZoom: BoxZoomHandler;
+
+    /**
+     * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
+     * mouse button or with the Control key pressed. Find more details and examples using `dragRotate`
+     * in the {@link DragRotateHandler} section.
+     */
+    dragRotate: DragRotateHandler;
+
+    /**
+     * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
+     * Find more details and examples using `dragPan` in the {@link DragPanHandler} section.
+     */
+    dragPan: DragPanHandler;
+
+    /**
+     * The map's {@link KeyboardHandler}, which allows the user to zoom, rotate, and pan the map using keyboard
+     * shortcuts. Find more details and examples using `keyboard` in the {@link KeyboardHandler} section.
+     */
+    keyboard: KeyboardHandler;
+
+    /**
+     * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
+     * Find more details and examples using `doubleClickZoom` in the {@link DoubleClickZoomHandler} section.
+     */
+    doubleClickZoom: DoubleClickZoomHandler;
+
+    /**
+     * The map's {@link TouchZoomRotateHandler}, which allows the user to zoom or rotate the map with touch gestures.
+     * Find more details and examples using `touchZoomRotate` in the {@link TouchZoomRotateHandler} section.
+     */
+    touchZoomRotate: TouchZoomRotateHandler;
 
     constructor(options: MapOptions) {
         PerformanceUtils.mark(PerformanceMarkers.create);
