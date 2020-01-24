@@ -2821,7 +2821,9 @@
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
-            "js": "1.4.0"
+            "js": "1.4.0",
+            "android": "8.6.0",
+            "ios": "5.6.0"
           }
         }
       },
