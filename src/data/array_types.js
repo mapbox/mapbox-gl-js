@@ -777,43 +777,6 @@ class StructArrayLayout2f8 extends StructArray {
 StructArrayLayout2f8.prototype.bytesPerElement = 8;
 register('StructArrayLayout2f8', StructArrayLayout2f8);
 
-<<<<<<< HEAD
-/**
- * Implementation of the StructArray layout:
- * [0]: Float32[4]
- *
- * @private
- */
-class StructArrayLayout4f16 extends StructArray {
-    uint8: Uint8Array;
-    float32: Float32Array;
-
-    _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
-    }
-
-    emplaceBack(v0: number, v1: number, v2: number, v3: number) {
-        const i = this.length;
-        this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3);
-    }
-
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number) {
-        const o4 = i * 4;
-        this.float32[o4 + 0] = v0;
-        this.float32[o4 + 1] = v1;
-        this.float32[o4 + 2] = v2;
-        this.float32[o4 + 3] = v3;
-        return i;
-    }
-}
-
-StructArrayLayout4f16.prototype.bytesPerElement = 16;
-register('StructArrayLayout4f16', StructArrayLayout4f16);
-=======
->>>>>>> 5cba880af... Update a_projected_pos
-
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
     anchorPointX: number;
@@ -1156,13 +1119,8 @@ export {
     StructArrayLayout2i4i12,
     StructArrayLayout2i4ub8,
     StructArrayLayout8ui16,
-<<<<<<< HEAD
     StructArrayLayout4i4ui4i24,
-    StructArrayLayout3f12,
-=======
-    StructArrayLayout4i4ui16,
     StructArrayLayout4f16,
->>>>>>> 5cba880af... Update a_projected_pos
     StructArrayLayout1ul4,
     StructArrayLayout7i1ul2ui2i28,
     StructArrayLayout2i2i2i12,
@@ -1184,13 +1142,8 @@ export {
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub8 as LineLayoutArray,
     StructArrayLayout8ui16 as PatternLayoutArray,
-<<<<<<< HEAD
     StructArrayLayout4i4ui4i24 as SymbolLayoutArray,
-    StructArrayLayout3f12 as SymbolDynamicLayoutArray,
-=======
-    StructArrayLayout4i4ui16 as SymbolLayoutArray,
     StructArrayLayout4f16 as SymbolDynamicLayoutArray,
->>>>>>> 5cba880af... Update a_projected_pos
     StructArrayLayout1ul4 as SymbolOpacityArray,
     StructArrayLayout2i2i2i12 as CollisionBoxLayoutArray,
     StructArrayLayout2i2i2i12 as CollisionCircleLayoutArray,
