@@ -7,6 +7,7 @@ import browser from '../util/browser';
 import type Map from './map';
 import Handler from './handler/handler';
 import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
+import KeyboardHandler from './handler/keyboard';
 import {bezier, extend} from '../util/util';
 
 const defaultInertiaOptions = {
@@ -70,6 +71,9 @@ class HandlerManager {
     this.addMouseListener('mouseup');
     this.addMouseListener('mouseover');
     this.addMouseListener('mouseout');
+
+    this.addKeyboardListener('keydown');
+    this.addKeyboardListener('keyup');
   }
 
   _addDefaultHandlers() {
@@ -77,6 +81,7 @@ class HandlerManager {
     this.add('touchPitch', new TouchPitchHandler(this._map), ['touchRotate', 'touchPan']);
     this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
     this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch']);
+    this.add('keyboard', new KeyboardHandler(this._map), ['touchPan', 'touchPitch', 'touchRotate', 'touchZoom']);
   }
 
   list() {
@@ -128,25 +133,29 @@ class HandlerManager {
     for (const [_, handler] of this._handlers) handler.enable();
   }
 
-  addListener(mapEventClass: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, eventType: string, options?: Object) {
+  addListener(eventType: string, mapEventClass?: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, options?: Object) {
     const listener = (e: *) => {
-      this._map.fire(new mapEventClass(eventType, this._map, e));
+      if (mapEventClass) this._map.fire(new mapEventClass(eventType, this._map, e));
       this.processInputEvent(e);
     };
     DOM.addEventListener(this._el, eventType, listener, options);
   }
 
   addTouchListener(eventType: string, options?: Object) {
-    this.addListener(MapTouchEvent, eventType, options);
+    this.addListener(eventType, MapTouchEvent, options);
   }
 
   addMouseListener(eventType: string, options?: Object) {
-    this.addListener(MapMouseEvent, eventType, options);
+    this.addListener(eventType, MapMouseEvent, options);
+  }
+
+  addKeyboardListener(eventType: string, options?: Object) {
+    this.addListener(eventType, null, extend({capture: false}, options)); // No such thing as MapKeyboardEvent to fire
   }
 
 
   processInputEvent(e: InputEvent) {
-    if (e.cancelable) e.preventDefault();
+    if (e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) e.preventDefault();
     let transformSettings;
     let activeHandlers = [];
     let preUpdateEvents = [];
@@ -169,6 +178,13 @@ class HandlerManager {
         }
       }
 
+      // "Discrete" handlers (e.g. keyboard) should return easeTo options
+      if (data.easeTo) {
+        // Discrete handlers cannot compete; the first handler to match wins
+        return this._map.easeTo(data.easeTo, { originalEvent: e });
+      }
+
+      // "Continuous" handlers (e.g. touchPan) should return transform settings and/or events to fire
       if (data.transform) {
         const merged = data.transform
         if (!!transformSettings) extend(merged, transformSettings)
