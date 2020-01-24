@@ -1,12 +1,14 @@
 // @flow
 
-import {bindAll} from '../../util/util';
-
+import {extend} from '../../util/util';
+import Handler from './handler.js';
 import type Map from '../map';
 
-const panStep = 100,
-    bearingStep = 15,
-    pitchStep = 10;
+const defaultOptions = {
+  panStep: 100,
+  bearingStep: 15,
+  pitchStep: 10
+};
 
 /**
  * The `KeyboardHandler` allows the user to zoom, rotate, and pan the map using
@@ -22,57 +24,25 @@ const panStep = 100,
  * - `Shift+⇡`: Increase the pitch by 10 degrees.
  * - `Shift+⇣`: Decrease the pitch by 10 degrees.
  */
-class KeyboardHandler {
+class KeyboardHandler extends Handler {
     _map: Map;
-    _el: HTMLElement;
-    _enabled: boolean;
+    _panStep: number;
+    _bearingStep: number;
+    _pitchStep: number;
 
     /**
-     * @private
-     */
-    constructor(map: Map) {
-        this._map = map;
-        this._el = map.getCanvasContainer();
-
-        bindAll([
-            '_onKeyDown'
-        ], this);
+    * @private
+    */
+    constructor(map: Map, options: ?Object) {
+      super(map, options);
+      this._map = map;
+      const stepOptions = extend(defaultOptions, options);
+      this._panStep = stepOptions.panStep;
+      this._bearingStep = stepOptions.bearingStep;
+      this._pitchStep = stepOptions.pitchStep;
     }
 
-    /**
-     * Returns a Boolean indicating whether keyboard interaction is enabled.
-     *
-     * @returns {boolean} `true` if keyboard interaction is enabled.
-     */
-    isEnabled() {
-        return !!this._enabled;
-    }
-
-    /**
-     * Enables keyboard interaction.
-     *
-     * @example
-     * map.keyboard.enable();
-     */
-    enable() {
-        if (this.isEnabled()) return;
-        this._el.addEventListener('keydown', this._onKeyDown, false);
-        this._enabled = true;
-    }
-
-    /**
-     * Disables keyboard interaction.
-     *
-     * @example
-     * map.keyboard.disable();
-     */
-    disable() {
-        if (!this.isEnabled()) return;
-        this._el.removeEventListener('keydown', this._onKeyDown);
-        this._enabled = false;
-    }
-
-    _onKeyDown(e: KeyboardEvent) {
+    keydown(e: KeyboardEvent) {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
 
         let zoomDir = 0;
@@ -99,7 +69,6 @@ class KeyboardHandler {
             if (e.shiftKey) {
                 bearingDir = -1;
             } else {
-                e.preventDefault();
                 xDir = -1;
             }
             break;
@@ -108,7 +77,6 @@ class KeyboardHandler {
             if (e.shiftKey) {
                 bearingDir = 1;
             } else {
-                e.preventDefault();
                 xDir = 1;
             }
             break;
@@ -117,7 +85,6 @@ class KeyboardHandler {
             if (e.shiftKey) {
                 pitchDir = 1;
             } else {
-                e.preventDefault();
                 yDir = -1;
             }
             break;
@@ -127,7 +94,6 @@ class KeyboardHandler {
                 pitchDir = -1;
             } else {
                 yDir = 1;
-                e.preventDefault();
             }
             break;
 
@@ -144,13 +110,13 @@ class KeyboardHandler {
             easing: easeOut,
 
             zoom: zoomDir ? Math.round(zoom) + zoomDir * (e.shiftKey ? 2 : 1) : zoom,
-            bearing: map.getBearing() + bearingDir * bearingStep,
-            pitch: map.getPitch() + pitchDir * pitchStep,
-            offset: [-xDir * panStep, -yDir * panStep],
+            bearing: map.getBearing() + bearingDir * this._bearingStep,
+            pitch: map.getPitch() + pitchDir * this._pitchStep,
+            offset: [-xDir * this._panStep, -yDir * this._panStep],
             center: map.getCenter()
         };
 
-        map.easeTo(easeOptions, {originalEvent: e});
+        return { easeTo: easeOptions }
     }
 }
 
