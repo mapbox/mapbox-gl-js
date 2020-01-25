@@ -1,0 +1,75 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "center": [0, 30],
+  "zoom": 1,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "sort-key": 0,
+              "image": "bank-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -1,
+                34
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "sort-key": 2,
+              "image": "bank-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -1,
+                30
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "sort-key": 1,
+              "image": "fav-campsite-18"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                1,
+                32
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-sort-key": ["get", "sort-key"],
+        "icon-image": ["get", "image"]
+      }
+    }
+  ]
+}

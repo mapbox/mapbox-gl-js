@@ -17,6 +17,23 @@ export type ResponseOptions = {
     headers: window.Headers
 };
 
+// We're using a global shared cache object. Normally, requesting ad-hoc Cache objects is fine, but
+// Safari has a memory leak in which it fails to release memory when requesting keys() from a Cache
+// object. See https://bugs.webkit.org/show_bug.cgi?id=203991 for more information.
+let sharedCache: ?Promise<Cache>;
+
+function cacheOpen() {
+    if (window.caches && !sharedCache) {
+        sharedCache = window.caches.open(CACHE_NAME);
+    }
+}
+
+// We're never closing the cache, but our unit tests rely on changing out the global window.caches
+// object, so we have a function specifically for unit tests that allows resetting the shared cache.
+export function cacheClose() {
+    sharedCache = undefined;
+}
+
 let responseConstructorSupportsReadableStream;
 function prepareBody(response: Response, callback) {
     if (responseConstructorSupportsReadableStream === undefined) {
@@ -37,7 +54,8 @@ function prepareBody(response: Response, callback) {
 }
 
 export function cachePut(request: Request, response: Response, requestTime: number) {
-    if (!window.caches) return;
+    cacheOpen();
+    if (!sharedCache) return;
 
     const options: ResponseOptions = {
         status: response.status,
@@ -60,7 +78,9 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     prepareBody(response, body => {
         const clonedResponse = new window.Response(body, options);
 
-        window.caches.open(CACHE_NAME)
+        cacheOpen();
+        if (!sharedCache) return;
+        sharedCache
             .then(cache => cache.put(stripQueryParameters(request.url), clonedResponse))
             .catch(e => warnOnce(e.message));
     });
@@ -72,11 +92,12 @@ function stripQueryParameters(url: string) {
 }
 
 export function cacheGet(request: Request, callback: (error: ?any, response: ?Response, fresh: ?boolean) => void) {
-    if (!window.caches) return callback(null);
+    cacheOpen();
+    if (!sharedCache) return callback(null);
 
     const strippedURL = stripQueryParameters(request.url);
 
-    window.caches.open(CACHE_NAME)
+    sharedCache
         .then(cache => {
             // manually strip URL instead of `ignoreSearch: true` because of a known
             // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431
@@ -101,7 +122,7 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
 
 function isFresh(response) {
     if (!response) return false;
-    const expires = new Date(response.headers.get('Expires'));
+    const expires = new Date(response.headers.get('Expires') || 0);
     const cacheControl = parseCacheControl(response.headers.get('Cache-Control') || '');
     return expires > Date.now() && !cacheControl['no-cache'];
 }
@@ -125,8 +146,10 @@ export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
 
 // runs on worker, see above comment
 export function enforceCacheSizeLimit(limit: number) {
-    if (!window.caches) return;
-    window.caches.open(CACHE_NAME)
+    cacheOpen();
+    if (!sharedCache) return;
+
+    sharedCache
         .then(cache => {
             cache.keys().then(keys => {
                 for (let i = 0; i < keys.length - limit; i++) {

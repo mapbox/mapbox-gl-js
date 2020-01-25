@@ -75,12 +75,12 @@
     "no-multiple-empty-lines": [ "error", { 
         "max": 1
     }],
-    "jsdoc/check-param-names": 1,
-    "jsdoc/require-param": 1,
-    "jsdoc/require-param-description": 1,
-    "jsdoc/require-param-name": 1,
-    "jsdoc/require-returns": 1,
-    "jsdoc/require-returns-description": 1
+    "jsdoc/check-param-names": "warn",
+    "jsdoc/require-param": "warn",
+    "jsdoc/require-param-description": "warn",
+    "jsdoc/require-param-name": "warn",
+    "jsdoc/require-returns": "warn",
+    "jsdoc/require-returns-description": "warn"
   },
   "settings": {
     "jsdoc":{
@@ -91,12 +91,12 @@
     {
       "files": ["debug/**", "bench/**", "test/**", "src/style-spec/**"],
       "rules": {
-        "jsdoc/check-param-names": 0,
-        "jsdoc/require-param": 0,
-        "jsdoc/require-param-description": 0,
-        "jsdoc/require-param-name": 0,
-        "jsdoc/require-returns": 0,
-        "jsdoc/require-returns-description": 0
+        "jsdoc/check-param-names": "off",
+        "jsdoc/require-param": "off",
+        "jsdoc/require-param-description": "off",
+        "jsdoc/require-param-name": "off",
+        "jsdoc/require-returns": "off",
+        "jsdoc/require-returns-description": "off"
       }
     }
   ],

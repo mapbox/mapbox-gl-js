@@ -1,5 +1,6 @@
 // @flow
 
+import murmur3 from 'murmurhash-js';
 import {register} from '../util/web_worker_transfer';
 import assert from 'assert';
 
@@ -26,13 +27,15 @@ export default class FeaturePositionMap {
         this.indexed = false;
     }
 
-    add(id: number, index: number, start: number, end: number) {
-        this.ids.push(id);
+    add(id: mixed, index: number, start: number, end: number) {
+        this.ids.push(getNumericId(id));
         this.positions.push(index, start, end);
     }
 
-    getPositions(id: number): Array<FeaturePosition> {
+    getPositions(id: mixed): Array<FeaturePosition> {
         assert(this.indexed);
+
+        const intId = getNumericId(id);
 
         // binary search for the first occurrence of id in this.ids;
         // relies on ids/positions being sorted by id, which happens in serialization
@@ -40,14 +43,14 @@ export default class FeaturePositionMap {
         let j = this.ids.length - 1;
         while (i < j) {
             const m = (i + j) >> 1;
-            if (this.ids[m] >= id) {
+            if (this.ids[m] >= intId) {
                 j = m;
             } else {
                 i = m + 1;
             }
         }
         const positions = [];
-        while (this.ids[i] === id) {
+        while (this.ids[i] === intId) {
             const index = this.positions[3 * i];
             const start = this.positions[3 * i + 1];
             const end = this.positions[3 * i + 2];
@@ -63,7 +66,9 @@ export default class FeaturePositionMap {
 
         sort(ids, positions, 0, ids.length - 1);
 
-        transferables.push(ids.buffer, positions.buffer);
+        if (transferables) {
+            transferables.push(ids.buffer, positions.buffer);
+        }
 
         return {ids, positions};
     }
@@ -77,6 +82,16 @@ export default class FeaturePositionMap {
         map.indexed = true;
         return map;
     }
+}
+
+const MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+
+function getNumericId(value: mixed) {
+    const numValue = +value;
+    if (!isNaN(numValue) && numValue <= MAX_SAFE_INTEGER) {
+        return numValue;
+    }
+    return murmur3(String(value));
 }
 
 // custom quicksort that sorts ids, indices and offsets together (by ids)

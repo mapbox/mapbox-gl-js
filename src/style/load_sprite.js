@@ -42,10 +42,10 @@ export default function(baseURL: string,
             const result = {};
 
             for (const id in json) {
-                const {width, height, x, y, sdf, pixelRatio} = json[id];
+                const {width, height, x, y, sdf, pixelRatio, stretchX, stretchY, content} = json[id];
                 const data = new RGBAImage({width, height});
                 RGBAImage.copy(imageData, data, {x, y}, {x: 0, y: 0}, {width, height});
-                result[id] = {data, pixelRatio, sdf};
+                result[id] = {data, pixelRatio, sdf, stretchX, stretchY, content};
             }
 
             callback(null, result);

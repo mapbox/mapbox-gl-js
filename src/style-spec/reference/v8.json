@@ -177,6 +177,10 @@
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
+    "promoteId": {
+      "type": "promoteId",
+      "doc": "A property to use as a feature id (for feature state). Either a property name, or an object of the form `{<sourceLayer>: <propertyName>}`. If specified as a string for a vector tile source, the same property is used across all its source layers."
+    },
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."
@@ -383,9 +387,13 @@
       "doc": "Whether to calculate line distance metrics. This is required for line layers that specify `line-gradient` values."
     },
     "generateId": {
-        "type": "boolean",
-        "default": false,
-        "doc": "Whether to generate ids for the geojson features. When enabled, the `feature.id` property will be auto assigned based on its index in the `features` array, over-writing any previous values."
+      "type": "boolean",
+      "default": false,
+      "doc": "Whether to generate ids for the geojson features. When enabled, the `feature.id` property will be auto assigned based on its index in the `features` array, over-writing any previous values."
+    },
+    "promoteId": {
+      "type": "promoteId",
+      "doc": "A property to use as a feature id (for feature state). Either a property name, or an object of the form `{<sourceLayer>: <propertyName>}`."
     }
   },
   "source_video": {
@@ -636,7 +644,12 @@
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
       "sdk-support": {
+        "basic functionality": {
           "js": "1.2.0"
+        },
+        "data-driven styling": {
+          "js": "1.2.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -675,7 +688,12 @@
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
       "sdk-support": {
+        "basic functionality": {
           "js": "1.2.0"
+        },
+        "data-driven styling": {
+          "js": "1.2.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -779,8 +797,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -843,8 +860,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -869,8 +885,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -884,7 +899,12 @@
       "type": "number",
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
       "sdk-support": {
+        "basic functionality": {
           "js": "1.2.0"
+        },
+        "data-driven styling": {
+          "js": "1.2.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -913,8 +933,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "property-type": "constant"
     }
@@ -947,8 +966,7 @@
           "android": "6.4.0",
           "ios": "4.3.0",
           "macos": "0.10.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -975,8 +993,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -989,15 +1006,14 @@
     "symbol-avoid-edges": {
       "type": "boolean",
       "default": false,
-      "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer.",
+      "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer. When using a client that supports global collision detection, like Mapbox GL JS version 0.42.0 or greater, enabling this property is not needed to prevent clipped labels at tile boundaries.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1054,8 +1070,7 @@
           "android": "6.6.0",
           "ios": "4.5.0",
           "macos": "0.12.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1078,8 +1093,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1102,8 +1116,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1127,8 +1140,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1168,8 +1180,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.3.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1239,8 +1250,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1279,8 +1289,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -1364,8 +1373,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -1386,8 +1394,8 @@
         },
         {
           "symbol-placement": [
-              "line",
-              "line-center"
+            "line",
+            "line-center"
           ]
         }
       ],
@@ -1397,8 +1405,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1526,8 +1533,7 @@
           "android": "5.2.0",
           "ios": "3.7.0",
           "macos": "0.6.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1567,8 +1573,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.3.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1608,8 +1613,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.3.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1759,8 +1763,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -1917,24 +1920,18 @@
       "requires": [
         "text-field",
         {
-            "symbol-placement": [
-                "point"
-            ]
+          "symbol-placement": [
+            "point"
+          ]
         }
       ],
-      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the render will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` or the two-dimensional `text-offset`.",
+      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the renderer will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` or the two-dimensional `text-offset`.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.54.0",
           "android": "7.4.0",
           "ios": "4.10.0",
           "macos": "0.14.0"
-        },
-        "data-driven styling": {
-          "js": "Not yet supported",
-          "android": "Not yet supported",
-          "ios": "Not yet supported",
-          "macos": "Not yet supported"
         }
       },
       "expression": {
@@ -2015,10 +2012,10 @@
       "requires": [
         "text-field",
         {
-            "symbol-placement": [
-                "line",
-                "line-center"
-            ]
+          "symbol-placement": [
+            "line",
+            "line-center"
+          ]
         }
       ],
       "sdk-support": {
@@ -2027,8 +2024,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -2054,22 +2050,16 @@
         "text-field",
         {
           "symbol-placement": [
-              "point"
+            "point"
           ]
         }
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "next",
-          "android": "next",
-          "ios": "next",
-          "macos": "next"
-        },
-        "data-driven styling": {
-          "js": "Not yet supported",
-          "android": "Not yet supported",
-          "ios": "Not yet supported",
-          "macos": "Not yet supported"
+          "js": "1.3.0",
+          "android": "8.3.0",
+          "ios": "5.3.0",
+          "macos": "0.14.0"
         }
       },
       "expression": {
@@ -2127,8 +2117,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -2148,10 +2137,10 @@
           "text-rotation-alignment": "map"
         },
         {
-            "symbol-placement": [
-                "line",
-                "line-center"
-            ]
+          "symbol-placement": [
+            "line",
+            "line-center"
+          ]
         }
       ],
       "sdk-support": {
@@ -2160,8 +2149,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2225,7 +2213,7 @@
       "requires": [
         "text-field",
         {
-            "!": "text-radial-offset"
+          "!": "text-radial-offset"
         }
       ],
       "sdk-support": {
@@ -2264,8 +2252,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2288,8 +2275,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2313,8 +2299,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2342,8 +2327,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "property-type": "constant"
     }
@@ -2367,8 +2351,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "property-type": "constant"
     }
@@ -2392,8 +2375,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "property-type": "constant"
     }
@@ -2628,7 +2610,7 @@
         }
       },
       "match": {
-        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must be either:\n * a single literal value; or\n * an array of literal values, whose values must be all strings or all numbers (e.g. `[100, 101]` or `[\"c\", \"b\"]`). The input matches if any of the values in the array matches, similar to the deprecated `\"in\"` operator.\n\nEach label must be unique. If the input type does not match the type of the labels, the result will be the fallback value.",
+        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must be either:\n * a single literal value; or\n * an array of literal values, whose values must be all strings or all numbers (e.g. `[100, 101]` or `[\"c\", \"b\"]`). The input matches if any of the values in the array matches, similar to the `\"in\"` operator.\n\nEach label must be unique. If the input type does not match the type of the labels, the result will be the fallback value.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2802,7 +2784,7 @@
         }
       },
       "format": {
-        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. If set, the `text-font` argument overrides the font specified by the root layout properties. If set, the `font-scale` argument specifies a scaling factor relative to the `text-size` specified in the root layout properties. If set, the `text-color` argument overrides the color specified by the paint properties for this layer.",
+        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. For a `text-field` entries of a string type, following option object's properties are supported: If set, the `text-font` value overrides the font specified by the root layout properties. If set, the `font-scale` value specifies a scaling factor relative to the `text-size` specified in the root layout properties. If set, the `text-color` value overrides the color specified by the root paint properties for this layer.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -2810,15 +2792,38 @@
             "android": "6.7.0",
             "ios": "4.6.0",
             "macos": "0.12.0"
+          },
+          "text-font": {
+            "js": "0.48.0",
+            "android": "6.7.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
+          },
+          "font-scale": {
+            "js": "0.48.0",
+            "android": "6.7.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
+          },
+          "text-color": {
+            "js": "1.3.0",
+            "android": "7.3.0",
+            "ios": "4.10.0",
+            "macos": "0.14.0"
+          },
+          "image": {
+            "js": "1.6.0"
           }
         }
       },
       "image": {
-        "doc": "Returns an `image` type for use in `icon-image` and `*-pattern` entries. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
+        "doc": "Returns an `image` type for use in `icon-image`, `*-pattern` entries and as a section in the `format` expression. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
-            "js": "1.4.0"
+            "js": "1.4.0",
+            "android": "8.6.0",
+            "ios": "5.6.0"
           }
         }
       },
@@ -3451,7 +3456,13 @@
       },
       "is-supported-script": {
         "doc": "Returns `true` if the input string is expected to render legibly. Returns `false` if the input string contains sections that cannot be rendered without potential loss of meaning (e.g. Indic scripts that require complex text shaping, or right-to-left scripts if the the `mapbox-gl-rtl-text` plugin is not in use in Mapbox GL JS).",
-        "group": "String"
+        "group": "String",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0",
+            "android": "6.6.0"
+          }
+        }
       },
       "upcase": {
         "doc": "Returns the input string converted to uppercase. Follows the Unicode Default Case Conversion algorithm and the locale-insensitive case mappings in the Unicode Character Database.",
@@ -3633,8 +3644,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -3762,8 +3772,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -3794,8 +3803,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -3908,8 +3916,7 @@
           "android": "5.1.0",
           "ios": "3.6.0",
           "macos": "0.5.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -3940,8 +3947,7 @@
           "android": "5.1.0",
           "ios": "3.6.0",
           "macos": "0.5.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -4051,13 +4057,15 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.50.0",
-          "ios" : "4.7.0",
-          "macos" : "0.13.0"
+          "ios": "4.7.0",
+          "macos": "0.13.0"
         }
       },
       "expression": {
         "interpolated": false,
-        "parameters": ["zoom"]
+        "parameters": [
+          "zoom"
+        ]
       },
       "property-type": "data-constant"
     }
@@ -4145,8 +4153,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -4177,8 +4184,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -4541,8 +4547,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -4573,8 +4578,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -4602,8 +4606,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -4631,8 +4634,7 @@
           "android": "5.2.0",
           "ios": "3.7.0",
           "macos": "0.6.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -4808,8 +4810,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -4874,8 +4875,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5073,8 +5073,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5106,8 +5105,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -5304,8 +5302,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5337,8 +5334,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -5363,8 +5359,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5387,8 +5382,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5411,8 +5405,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5435,8 +5428,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5459,8 +5451,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5483,8 +5474,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5512,8 +5502,7 @@
           "android": "6.3.0",
           "ios": "4.2.0",
           "macos": "0.9.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -5536,8 +5525,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5562,8 +5550,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5577,10 +5564,10 @@
       "type": "enum",
       "values": {
         "map": {
-            "doc": "The hillshade illumination is relative to the north direction."
+          "doc": "The hillshade illumination is relative to the north direction."
         },
         "viewport": {
-            "doc": "The hillshade illumination is relative to the top of the viewport."
+          "doc": "The hillshade illumination is relative to the top of the viewport."
         }
       },
       "default": "viewport",
@@ -5591,8 +5578,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -5615,8 +5601,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5637,8 +5622,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5659,8 +5643,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5681,8 +5664,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5730,7 +5712,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       },
       "expression": {
         "interpolated": false,
@@ -5804,6 +5787,12 @@
     "constant": {
       "type": "property-type",
       "doc": "Property is constant across all zoom levels and property values."
+    }
+  },
+  "promoteId": {
+    "*": {
+      "type": "string",
+      "doc": "A name of a feature property to use as ID for feature state."
     }
   }
 }

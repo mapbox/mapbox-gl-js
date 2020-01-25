@@ -8,7 +8,7 @@ import EvaluationParameters from '../style/evaluation_parameters';
 import type {PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
 import type {InterpolationType} from '../style-spec/expression/definitions/interpolate';
 
-const SIZE_PACK_FACTOR = 256;
+const SIZE_PACK_FACTOR = 128;
 
 export {getSizeData, evaluateSizeForFeature, evaluateSizeForZoom, SIZE_PACK_FACTOR};
 

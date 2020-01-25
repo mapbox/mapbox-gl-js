@@ -22,6 +22,7 @@
         "sections": [
           {
             "text": "a",
+            "image": null,
             "scale": 1.5,
             "fontStack": null,
             "textColor": null
@@ -32,6 +33,7 @@
         "sections": [
           {
             "text": "a",
+            "image": null,
             "scale": 0.5,
             "fontStack": null,
             "textColor": null

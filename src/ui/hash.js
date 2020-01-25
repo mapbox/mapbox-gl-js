@@ -103,9 +103,14 @@ class Hash {
         const hash = window.location.hash.replace('#', '');
         if (this._hashName) {
             // Split the parameter-styled hash into parts and find the value we need
-            const keyval = hash.split('&').map(
+            let keyval;
+            hash.split('&').map(
                 part => part.split('=')
-            ).find(part => part[0] === this._hashName);
+            ).forEach(part => {
+                if (part[0] === this._hashName) {
+                    keyval = part;
+                }
+            });
             return (keyval ? keyval[1] || '' : '').split('/');
         }
         return hash.split('/');
@@ -114,10 +119,11 @@ class Hash {
     _onHashChange() {
         const loc = this._getCurrentHash();
         if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
+            const bearing = this._map.dragRotate.isEnabled() && this._map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : this._map.getBearing();
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
-                bearing: +(loc[3] || 0),
+                bearing,
                 pitch: +(loc[4] || 0)
             });
             return true;

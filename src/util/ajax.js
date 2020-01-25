@@ -7,6 +7,7 @@ import config from './config';
 import assert from 'assert';
 import {cacheGet, cachePut} from './tile_request_cache';
 import webpSupported from './webp_supported';
+import offscreenCanvasSupported from './offscreen_canvas_supported';
 
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
@@ -162,7 +163,9 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             }
             complete = true;
             callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
-        }).catch(err => callback(new Error(err.message)));
+        }).catch(err => {
+            if (!aborted) callback(new Error(err.message));
+        });
     };
 
     if (cacheIgnoringSearch) {
@@ -228,7 +231,8 @@ export const makeRequest = function(requestParameters: RequestParameters, callba
             return makeFetchRequest(requestParameters, callback);
         }
         if (isWorker() && self.worker && self.worker.actor) {
-            return self.worker.actor.send('getResource', requestParameters, callback);
+            const queueOnMainThread = true;
+            return self.worker.actor.send('getResource', requestParameters, callback, undefined, queueOnMainThread);
         }
     }
     return makeXMLHttpRequest(requestParameters, callback);
@@ -254,6 +258,29 @@ function sameOrigin(url) {
 
 const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
 
+function arrayBufferToImage(data: ArrayBuffer, callback: (err: ?Error, image: ?HTMLImageElement) => void, cacheControl: ?string, expires: ?string) {
+    const img: HTMLImageElement = new window.Image();
+    const URL = window.URL;
+    img.onload = () => {
+        callback(null, img);
+        URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
+    const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
+    (img: any).cacheControl = cacheControl;
+    (img: any).expires = expires;
+    img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+}
+
+function arrayBufferToImageBitmap(data: ArrayBuffer, callback: (err: ?Error, image: ?ImageBitmap) => void) {
+    const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
+    window.createImageBitmap(blob).then((imgBitmap) => {
+        callback(null, imgBitmap);
+    }).catch((e) => {
+        callback(new Error(`Could not load image because of ${e.message}. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.`));
+    });
+}
+
 let imageQueue, numImageRequests;
 export const resetImageRequestQueue = () => {
     imageQueue = [];
@@ -261,7 +288,7 @@ export const resetImageRequestQueue = () => {
 };
 resetImageRequestQueue();
 
-export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
+export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement | ImageBitmap>): Cancelable {
     if (webpSupported.supported) {
         if (!requestParameters.headers) {
             requestParameters.headers = {};
@@ -306,16 +333,11 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         if (err) {
             callback(err);
         } else if (data) {
-            const img: HTMLImageElement = new window.Image();
-            img.onload = () => {
-                callback(null, img);
-                window.URL.revokeObjectURL(img.src);
-            };
-            img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
-            const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
-            (img: any).cacheControl = cacheControl;
-            (img: any).expires = expires;
-            img.src = data.byteLength ? window.URL.createObjectURL(blob) : transparentPngUrl;
+            if (offscreenCanvasSupported()) {
+                arrayBufferToImageBitmap(data, callback);
+            } else {
+                arrayBufferToImage(data, callback, cacheControl, expires);
+            }
         }
     });
 

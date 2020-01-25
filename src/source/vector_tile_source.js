@@ -9,7 +9,6 @@ import TileBounds from './tile_bounds';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
-import {plugin as rtlTextPlugin, getRTLTextPluginStatus, downloadRTLTextPlugin} from './rtl_text_plugin';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -18,7 +17,7 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
-import type {VectorSourceSpecification} from '../style-spec/types';
+import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
@@ -28,6 +27,7 @@ class VectorTileSource extends Evented implements Source {
     url: string;
     scheme: string;
     tileSize: number;
+    promoteId: ?PromoteIdSpecification;
 
     _options: VectorSourceSpecification;
     _collectResourceTiming: boolean;
@@ -55,7 +55,7 @@ class VectorTileSource extends Evented implements Source {
         this.isTileClipped = true;
         this._loaded = false;
 
-        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        extend(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
         this._options = extend({type: 'vector'}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
@@ -126,6 +126,7 @@ class VectorTileSource extends Evented implements Source {
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
+            promoteId: this.promoteId
         };
         params.request.collectResourceTiming = this._collectResourceTiming;
 
@@ -154,15 +155,6 @@ class VectorTileSource extends Evented implements Source {
 
             if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);
-            if (tile.hasRTLText) {
-                const plugin = rtlTextPlugin;
-                if (!plugin.isLoading() &&
-                    !plugin.isLoaded() &&
-                    getRTLTextPluginStatus() === 'deferred'
-                ) {
-                    downloadRTLTextPlugin();
-                }
-            }
 
             cacheEntryPossiblyAdded(this.dispatcher);
 
@@ -187,7 +179,6 @@ class VectorTileSource extends Evented implements Source {
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
-        tile.clearMask();
         if (tile.actor) {
             tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id}, undefined);
         }

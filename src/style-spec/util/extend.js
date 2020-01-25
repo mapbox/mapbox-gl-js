@@ -1,5 +1,6 @@
+// @flow
 
-export default function (output, ...inputs) {
+export default function (output: any, ...inputs: Array<any>) {
     for (const input of inputs) {
         for (const k in input) {
             output[k] = input[k];

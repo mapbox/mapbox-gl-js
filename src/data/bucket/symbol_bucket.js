@@ -25,7 +25,7 @@ import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray, LineIndexArray} from '../index_array_type';
 import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
-import {allowsVerticalWritingMode} from '../../util/script_detection';
+import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/script_detection';
 import {WritingMode} from '../../symbol/shaping';
 import loadGeometry from '../load_geometry';
 import mvt from '@mapbox/vector-tile';
@@ -33,6 +33,7 @@ const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import Anchor from '../../symbol/anchor';
 import {getSizeData} from '../../symbol/symbol_size';
+import {MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
@@ -89,6 +90,12 @@ export type SymbolFeature = {|
     id?: any
 |};
 
+export type SortKeyRange = {
+    sortKey: number,
+    symbolInstanceStart: number,
+    symbolInstanceEnd: number
+};
+
 // Opacity arrays are frequently updated but don't contain a lot of information, so we pack them
 // tight. Each Uint32 is actually four duplicate Uint8s for the four corners of a glyph
 // 7 bits are for the current opacity, and the lowest bit is the target opacity
@@ -101,7 +108,9 @@ const shaderOpacityAttributes = [
     {name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0}
 ];
 
-function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex) {
+function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
+    const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
+    const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
     array.emplaceBack(
         // a_pos_offset
         anchorX,
@@ -112,8 +121,12 @@ function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex) {
         // a_data
         tx, // x coordinate of symbol on glyph atlas texture
         ty, // y coordinate of symbol on glyph atlas texture
-        sizeVertex ? sizeVertex[0] : 0,
-        sizeVertex ? sizeVertex[1] : 0
+        (aSizeX << 1) + (isSDF ? 1 : 0),
+        aSizeY,
+        pixelOffsetX * 16,
+        pixelOffsetY * 16,
+        minFontScaleX * 256,
+        minFontScaleY * 256
     );
 }
 
@@ -122,6 +135,15 @@ function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, a
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+}
+
+function containsRTLText(formattedText: Formatted): boolean {
+    for (const section of formattedText.sections) {
+        if (stringContainsRTLText(section.text)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 export class SymbolBuffers {
@@ -271,6 +293,7 @@ class SymbolBucket implements Bucket {
 
     index: number;
     sdfIcons: boolean;
+    iconsInText: boolean;
     iconsNeedLinear: boolean;
     bucketInstanceId: number;
     justReloaded: boolean;
@@ -284,6 +307,7 @@ class SymbolBucket implements Bucket {
     features: Array<SymbolFeature>;
     symbolInstances: SymbolInstanceArray;
     collisionArrays: Array<CollisionArrays>;
+    sortKeyRanges: Array<SortKeyRange>;
     pixelRatio: number;
     tilePixelRatio: number;
     compareText: {[string]: Array<Point>};
@@ -320,6 +344,7 @@ class SymbolBucket implements Bucket {
         this.hasPattern = false;
         this.hasPaintOverrides = false;
         this.hasRTLText = false;
+        this.sortKeyRanges = [];
 
         const layer = this.layers[0];
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
@@ -381,7 +406,9 @@ class SymbolBucket implements Bucket {
         const textField = layout.get('text-field');
         const iconImage = layout.get('icon-image');
         const hasText =
-            (textField.value.kind !== 'constant' || textField.value.value.toString().length > 0) &&
+            (textField.value.kind !== 'constant' ||
+                (textField.value.value instanceof Formatted && !textField.value.value.isEmpty()) ||
+                textField.value.value.toString().length > 0) &&
             (textFont.value.kind !== 'constant' || textFont.value.value.length > 0);
         // we should always resolve the icon-image value if the property was defined in the style
         // this allows us to fire the styleimagemissing event if image evaluation returns null
@@ -401,7 +428,7 @@ class SymbolBucket implements Bucket {
         const availableImages = options.availableImages;
         const globalProperties = new EvaluationParameters(this.zoom);
 
-        for (const {feature, index, sourceLayerIndex} of features) {
+        for (const {feature, id, index, sourceLayerIndex} of features) {
             if (!layer._featureFilter(globalProperties, feature)) {
                 continue;
             }
@@ -413,7 +440,7 @@ class SymbolBucket implements Bucket {
                 // conversion here.
                 const resolvedTokens = layer.getValueAndResolveTokens('text-field', feature, availableImages);
                 const formattedText = Formatted.factory(resolvedTokens);
-                if (formattedText.containsRTLText()) {
+                if (containsRTLText(formattedText)) {
                     this.hasRTLText = true;
                 }
                 if (
@@ -447,6 +474,7 @@ class SymbolBucket implements Bucket {
                 undefined;
 
             const symbolFeature: SymbolFeature = {
+                id,
                 text,
                 icon,
                 index,
@@ -456,9 +484,6 @@ class SymbolBucket implements Bucket {
                 type: vectorTileFeatureTypes[feature.type],
                 sortKey
             };
-            if (typeof feature.id !== 'undefined') {
-                symbolFeature.id = feature.id;
-            }
             this.features.push(symbolFeature);
 
             if (icon) {
@@ -470,10 +495,15 @@ class SymbolBucket implements Bucket {
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
                 this.allowVerticalPlacement = this.writingModes && this.writingModes.indexOf(WritingMode.vertical) >= 0;
                 for (const section of text.sections) {
-                    const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
-                    const sectionFont = section.fontStack || fontStack;
-                    const sectionStack = stacks[sectionFont] = stacks[sectionFont] || {};
-                    this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
+                    if (!section.image) {
+                        const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
+                        const sectionFont = section.fontStack || fontStack;
+                        const sectionStack = stacks[sectionFont] = stacks[sectionFont] || {};
+                        this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
+                    } else {
+                        // Add section image to the list of dependencies.
+                        icons[section.image.name] = true;
+                    }
                 }
             }
         }
@@ -499,7 +529,9 @@ class SymbolBucket implements Bucket {
     }
 
     isEmpty() {
-        return this.symbolInstances.length === 0;
+        // When the bucket encounters only rtl-text but the plugin isnt loaded, no symbol instances will be created.
+        // In order for the bucket to be serialized, and not discarded as an empty bucket both checks are necessary.
+        return this.symbolInstances.length === 0 && !this.hasRTLText;
     }
 
     uploadPending() {
@@ -582,15 +614,19 @@ class SymbolBucket implements Bucket {
                 tr = symbol.tr,
                 bl = symbol.bl,
                 br = symbol.br,
-                tex = symbol.tex;
+                tex = symbol.tex,
+                pixelOffsetTL = symbol.pixelOffsetTL,
+                pixelOffsetBR = symbol.pixelOffsetBR,
+                mfsx = symbol.minFontScaleX,
+                mfsy = symbol.minFontScaleY;
 
             const index = segment.vertexLength;
 
             const y = symbol.glyphOffset[1];
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, symbol.isSDF, pixelOffsetTL.x, pixelOffsetTL.y, mfsx, mfsy);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, symbol.isSDF, pixelOffsetBR.x, pixelOffsetTL.y, mfsx, mfsy);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, symbol.isSDF, pixelOffsetTL.x, pixelOffsetBR.y, mfsx, mfsy);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, symbol.isSDF, pixelOffsetBR.x, pixelOffsetBR.y, mfsx, mfsy);
 
             addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, angle);
 
@@ -820,22 +856,13 @@ class SymbolBucket implements Bucket {
         return this.iconCollisionCircle.segments.get().length > 0;
     }
 
-    addIndicesForPlacedTextSymbol(placedTextSymbolIndex: number) {
-        const placedSymbol = this.text.placedSymbolArray.get(placedTextSymbolIndex);
+    addIndicesForPlacedSymbol(iconOrText: SymbolBuffers, placedSymbolIndex: number) {
+        const placedSymbol = iconOrText.placedSymbolArray.get(placedSymbolIndex);
 
         const endIndex = placedSymbol.vertexStartIndex + placedSymbol.numGlyphs * 4;
         for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
-            this.text.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
-            this.text.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
-        }
-    }
-
-    addIndicesForPlacedIconSymbol(placedIconSymbolIndex: number) {
-        const placedIcon = this.icon.placedSymbolArray.get(placedIconSymbolIndex);
-        if (placedIcon.numGlyphs) {
-            const vertexIndex = placedIcon.vertexStartIndex;
-            this.icon.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
-            this.icon.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
+            iconOrText.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+            iconOrText.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
         }
     }
 
@@ -862,6 +889,19 @@ class SymbolBucket implements Bucket {
         });
 
         return result;
+    }
+
+    addToSortKeyRanges(symbolInstanceIndex: number, sortKey: number) {
+        const last = this.sortKeyRanges[this.sortKeyRanges.length - 1];
+        if (last && last.sortKey === sortKey) {
+            last.symbolInstanceEnd = symbolInstanceIndex + 1;
+        } else {
+            this.sortKeyRanges.push({
+                sortKey,
+                symbolInstanceStart: symbolInstanceIndex,
+                symbolInstanceEnd: symbolInstanceIndex + 1
+            });
+        }
     }
 
     sortFeatures(angle: number) {
@@ -898,20 +938,20 @@ class SymbolBucket implements Bucket {
                 // to avoid duplicate opacity entries when multiple justifications
                 // share the same glyphs.
                 if (index >= 0 && array.indexOf(index) === i) {
-                    this.addIndicesForPlacedTextSymbol(index);
+                    this.addIndicesForPlacedSymbol(this.text, index);
                 }
             });
 
             if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
-                this.addIndicesForPlacedTextSymbol(symbolInstance.verticalPlacedTextSymbolIndex);
+                this.addIndicesForPlacedSymbol(this.text, symbolInstance.verticalPlacedTextSymbolIndex);
             }
 
             if (symbolInstance.placedIconSymbolIndex >= 0) {
-                this.addIndicesForPlacedIconSymbol(symbolInstance.placedIconSymbolIndex);
+                this.addIndicesForPlacedSymbol(this.icon, symbolInstance.placedIconSymbolIndex);
             }
 
             if (symbolInstance.verticalPlacedIconSymbolIndex >= 0) {
-                this.addIndicesForPlacedIconSymbol(symbolInstance.verticalPlacedIconSymbolIndex);
+                this.addIndicesForPlacedSymbol(this.icon, symbolInstance.verticalPlacedIconSymbolIndex);
             }
         }
 

@@ -27,6 +27,7 @@ class Program<Us: UniformBindings> {
     numAttributes: number;
     fixedUniforms: Us;
     binderUniforms: Array<BinderUniform>;
+    failedToCreate: boolean;
 
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
@@ -44,12 +45,20 @@ class Program<Us: UniformBindings> {
         const fragmentSource = defines.concat(prelude.fragmentSource, source.fragmentSource).join('\n');
         const vertexSource = defines.concat(prelude.vertexSource, source.vertexSource).join('\n');
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        if (gl.isContextLost()) {
+            this.failedToCreate = true;
+            return;
+        }
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
         assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
         gl.attachShader(this.program, fragmentShader);
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        if (gl.isContextLost()) {
+            this.failedToCreate = true;
+            return;
+        }
         gl.shaderSource(vertexShader, vertexSource);
         gl.compileShader(vertexShader);
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
@@ -109,6 +118,8 @@ class Program<Us: UniformBindings> {
          dynamicLayoutBuffer2: ?VertexBuffer) {
 
         const gl = context.gl;
+
+        if (this.failedToCreate) return;
 
         context.program.set(this.program);
         context.setDepthMode(depthMode);
