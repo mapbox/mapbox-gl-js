@@ -827,7 +827,7 @@ class Map extends Camera {
 
     /**
      * Returns true if the map is panning, zooming, rotating, or pitching due to a camera animation or user gesture.
-     * @returns {Boolean} True if the map is moving.
+     * @returns {boolean} True if the map is moving.
      * @example
      * var isMoving = map.isMoving();
      */
@@ -840,7 +840,7 @@ class Map extends Camera {
 
     /**
      * Returns true if the map is zooming due to a camera animation or user gesture.
-     * @returns {Boolean} True if the map is zooming.
+     * @returns {boolean} True if the map is zooming.
      * @example
      * var isZooming = map.isZooming();
      */
@@ -851,7 +851,7 @@ class Map extends Camera {
 
     /**
      * Returns true if the map is rotating due to a camera animation or user gesture.
-     * @returns {Boolean} True if hte map is rotating.
+     * @returns {boolean} True if hte map is rotating.
      * @example
      * map.isRotating();
      */
