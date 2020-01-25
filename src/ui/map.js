@@ -851,7 +851,7 @@ class Map extends Camera {
 
     /**
      * Returns true if the map is rotating due to a camera animation or user gesture.
-     * @returns {boolean} True if hte map is rotating.
+     * @returns {boolean} True if the map is rotating.
      * @example
      * map.isRotating();
      */
