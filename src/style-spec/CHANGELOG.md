@@ -1,4 +1,4 @@
-## 13.11.0-beta.1
+## 13.11.0
 
 ### ✨ Features and improvements
 * Add `promoteId` option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
