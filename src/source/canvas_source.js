@@ -167,10 +167,6 @@ class CanvasSource extends ImageSource {
      * @method setCoordinates
      * @instance
      * @memberof CanvasSource
-     * @param {Array<Array<number>>} coordinates Four geographical coordinates,
-     *   represented as arrays of longitude and latitude numbers, which define the corners of the canvas.
-     *   The coordinates start at the top left corner of the canvas and proceed in clockwise order.
-     *   They do not have to represent a rectangle.
      * @returns {CanvasSource} this
      */
     // setCoordinates inherited from ImageSource
