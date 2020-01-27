@@ -250,20 +250,7 @@ class Style extends Evented {
         }
 
         if (json.sprite) {
-            this._spriteRequest = loadSprite(json.sprite, this.map._requestManager, (err, images) => {
-                this._spriteRequest = null;
-                if (err) {
-                    this.fire(new ErrorEvent(err));
-                } else if (images) {
-                    for (const id in images) {
-                        this.imageManager.addImage(id, images[id]);
-                    }
-                }
-
-                this.imageManager.setLoaded(true);
-                this.dispatcher.broadcast('setImages', this.imageManager.listImages());
-                this.fire(new Event('data', {dataType: 'style'}));
-            });
+            this._loadSprite(json.sprite);
         } else {
             this.imageManager.setLoaded(true);
         }
@@ -286,6 +273,23 @@ class Style extends Evented {
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
+    }
+
+    _loadSprite(url: string) {
+        this._spriteRequest = loadSprite(url, this.map._requestManager, (err, images) => {
+            this._spriteRequest = null;
+            if (err) {
+                this.fire(new ErrorEvent(err));
+            } else if (images) {
+                for (const id in images) {
+                    this.imageManager.addImage(id, images[id]);
+                }
+            }
+
+            this.imageManager.setLoaded(true);
+            this.dispatcher.broadcast('setImages', this.imageManager.listImages());
+            this.fire(new Event('data', {dataType: 'style'}));
+        });
     }
 
     _validateLayer(layer: StyleLayer) {
