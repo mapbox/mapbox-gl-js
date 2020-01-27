@@ -28,8 +28,7 @@ class LineAtlas {
         this.height = height;
         this.nextRow = 0;
 
-        this.bytes = 4;
-        this.data = new Uint8Array(this.width * this.height * this.bytes);
+        this.data = new Uint8Array(this.width * this.height);
 
         this.positions = {};
     }
@@ -114,7 +113,7 @@ class LineAtlas {
                     signedDistance = (inside ? 1 : -1) * dist;
                 }
 
-                this.data[3 + (index + x) * 4] = Math.max(0, Math.min(255, signedDistance + offset));
+                this.data[index + x] = Math.max(0, Math.min(255, signedDistance + offset));
             }
         }
 
@@ -139,14 +138,14 @@ class LineAtlas {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, this.width, this.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
 
         } else {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
             if (this.dirty) {
                 this.dirty = false;
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
             }
         }
     }
