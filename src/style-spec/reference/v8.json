@@ -2589,7 +2589,7 @@
         }
       },
       "in": {
-        "doc": "Determines whether an item exists in an array or a substring exists in a string.",
+        "doc": "Determines whether an item exists in an array or a substring exists in a string. If the `haystack` argument is an array literal, it must be wrapped in a `literal` expression, e.g. `['in', 1, ['literal', [1, 2, 3]]]`. This is not necessary when the `haystack` is an array returned from a sub-expression, e.g. `['in', 1, ['get', 'myArrayProp']]`.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
