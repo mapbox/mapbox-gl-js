@@ -1,0 +1,108 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 132
+    }
+  },
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "width": 2,
+              "offset": 0
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [ [ -40, -18 ], [ 40, -18 ] ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "width": 4,
+              "offset": 0
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [ [ -40, -10 ], [ 40, -10 ] ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "width": 6,
+              "offset": 0
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [ [ -40, -2 ], [ 40, -2 ] ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "road0",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": ["get", "width"],
+        "line-offset": ["+", ["get", "offset"], 32],
+        "line-dasharray": [1, 0, 1, 1],
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "road1",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": ["get", "width"],
+        "line-offset": ["-", ["get", "offset"], 32],
+        "line-dasharray": [1, 1, 0],
+        "line-color": "green"
+      }
+    },
+    {
+      "id": "road2",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": ["get", "width"],
+        "line-offset": ["-", ["get", "offset"], 64],
+        "line-dasharray": [1, 0, 1],
+        "line-color": "blue"
+      }
+    },
+    {
+      "id": "road3",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": ["get", "width"],
+        "line-dasharray": [1, 0],
+        "line-color": "yellow"
+      }
+    },
+    {
+      "id": "road4",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": ["get", "width"],
+        "line-dasharray": [0, 1],
+        "line-color": "black"
+      }
+    }
+  ]
+}
