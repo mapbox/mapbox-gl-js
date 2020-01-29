@@ -44,8 +44,9 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         context.activeTexture.set(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, revealageFbo.colorAttachment.get());
 
+        const compositionColorMode = new ColorMode([gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
         painter.useProgram('fillExtrusionTexture').draw(context, gl.TRIANGLES,
-            DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
+            DepthMode.disabled, StencilMode.disabled, compositionColorMode, CullFaceMode.disabled,
             fillExtrusionTextureUniformValues(painter, 0, 1),
             layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
             painter.viewportSegments, layer.paint, painter.transform.zoom);
