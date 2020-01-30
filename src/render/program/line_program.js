@@ -135,7 +135,7 @@ const linePatternUniformValues = (
     crossfade: CrossfadeParameters
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
-    const tileZoomRatio = calculateTileRatio(tile, transform);
+    const integerZoomRatio = calculateTileRatio(tile, transform);
     return {
         'u_matrix': calculateMatrix(painter, tile, layer),
         'u_texsize': tile.imageAtlasTexture.size,
@@ -144,7 +144,7 @@ const linePatternUniformValues = (
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_image': 0,
         // this assumes all images in the icon atlas texture have the same pixel ratio
-        'u_scale': [browser.devicePixelRatio, tileZoomRatio, crossfade.fromScale, crossfade.toScale],
+        'u_scale': [browser.devicePixelRatio, integerZoomRatio, crossfade.fromScale, crossfade.toScale],
         'u_fade': crossfade.t,
         'u_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
@@ -184,7 +184,7 @@ const lineSDFUniformValues = (
 };
 
 function calculateTileRatio(tile: Tile, transform: Transform) {
-    return 1 / pixelsToTileUnits(tile, 1, transform.tileZoom);
+    return 1 / pixelsToTileUnits(tile, 1, transform.integerZoom);
 }
 
 function calculateMatrix(painter, tile, layer) {

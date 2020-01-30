@@ -49,10 +49,10 @@ function patternUniformValues(crossfade: CrossfadeParameters, painter: Painter,
         tile: Tile
 ): UniformValues<PatternUniformsType> {
 
-    const tileRatio = 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom);
+    const tileRatio = 1 / pixelsToTileUnits(tile, 1, painter.transform.integerZoom);
 
     const numTiles = Math.pow(2, tile.tileID.overscaledZ);
-    const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom) / numTiles;
+    const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.integerZoom) / numTiles;
 
     const pixelX = tileSizeAtNearestZoom * (tile.tileID.canonical.x + tile.tileID.wrap * numTiles);
     const pixelY = tileSizeAtNearestZoom * tile.tileID.canonical.y;
@@ -78,7 +78,7 @@ function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, crossfade: Cro
     const {width, height} = painter.imageManager.getPixelSize();
 
     const numTiles = Math.pow(2, tile.tileID.overscaledZ);
-    const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom) / numTiles;
+    const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.integerZoom) / numTiles;
 
     const pixelX = tileSizeAtNearestZoom * (tile.tileID.canonical.x + tile.tileID.wrap * numTiles);
     const pixelY = tileSizeAtNearestZoom * tile.tileID.canonical.y;
@@ -95,7 +95,7 @@ function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, crossfade: Cro
         'u_pattern_size_b': (imagePosB: any).displaySize,
         'u_scale_a': crossfade.fromScale,
         'u_scale_b': crossfade.toScale,
-        'u_tile_units_to_pixels': 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom),
+        'u_tile_units_to_pixels': 1 / pixelsToTileUnits(tile, 1, painter.transform.integerZoom),
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],
         'u_pixel_coord_lower': [pixelX & 0xFFFF, pixelY & 0xFFFF]

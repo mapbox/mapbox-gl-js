@@ -20,7 +20,7 @@ import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
  */
 class Transform {
     tileSize: number;
-    tileZoom: number;
+    integerZoom: number;
     lngRange: ?[number, number];
     latRange: ?[number, number];
     maxValidLatitude: number;
@@ -189,8 +189,8 @@ class Transform {
         this._unmodified = false;
         this._zoom = z;
         this.scale = this.zoomScale(z);
-        this.tileZoom = Math.floor(z);
-        this.zoomFraction = z - this.tileZoom;
+        this.integerZoom = Math.floor(z);
+        this.zoomFraction = z - this.integerZoom;
         this._constrain();
         this._calcMatrices();
     }
