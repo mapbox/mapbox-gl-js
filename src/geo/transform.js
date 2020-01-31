@@ -70,6 +70,7 @@ class Transform {
         this.height = 0;
         this._center = new LngLat(0, 0);
         this.zoom = 0;
+        this.patternZoom = 0;
         this.angle = 0;
         this._fov = 0.6435011087932844;
         this._pitch = 0;

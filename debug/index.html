@@ -30,6 +30,10 @@ map.on('style.load', function() {
     //map.setPaintProperty('water', 'fill-pattern', 'pedestrian-polygon');
     map.setPaintProperty('water', 'fill-pattern', 'aquarium-15');
 });
+
+map.on('zoomend', function() {
+    map.transform.patternZoom = map.getZoom();
+});
 </script>
 </body>
 </html>
