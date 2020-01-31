@@ -276,7 +276,9 @@ class GeolocateControl extends Evented {
 
     _updateCircleRadius() {
         const y = this._map._container.clientHeight / 2;
-        const metersPerPixel = getDistance(this._map.unproject([0, y]), this._map.unproject([1, y]));
+        const a = this._map.unproject([0, y]);
+        const b = this._map.unproject([1, y]);
+        const metersPerPixel = a.distanceTo(b);
         const circleDiameter = Math.ceil(2.0 * this._accuracy / metersPerPixel);
         this._circleElement.style.width = `${circleDiameter}px`;
         this._circleElement.style.height = `${circleDiameter}px`;
@@ -509,20 +511,6 @@ class GeolocateControl extends Evented {
 }
 
 export default GeolocateControl;
-
-function getDistance(latlng1, latlng2) {
-    // Uses spherical law of cosines approximation.
-    const R = 6371000;
-
-    const rad = Math.PI / 180,
-        lat1 = latlng1.lat * rad,
-        lat2 = latlng2.lat * rad,
-        a = Math.sin(lat1) * Math.sin(lat2) +
-          Math.cos(lat1) * Math.cos(lat2) * Math.cos((latlng2.lng - latlng1.lng) * rad);
-
-    const maxMeters = R * Math.acos(Math.min(a, 1));
-    return maxMeters;
-}
 
 /* Geolocate Control Watch States
  * This is the private state of the control.
