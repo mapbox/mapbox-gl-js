@@ -49,10 +49,10 @@ function patternUniformValues(crossfade: CrossfadeParameters, painter: Painter,
         tile: Tile
 ): UniformValues<PatternUniformsType> {
 
-    const tileRatio = 1 / pixelsToTileUnits(tile, 1, painter.transform.integerZoom);
+    const tileRatio = 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom);
 
     const numTiles = Math.pow(2, tile.tileID.overscaledZ);
-    const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.integerZoom) / numTiles;
+    const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.zoom) / numTiles;
 
     const pixelX = tileSizeAtNearestZoom * (tile.tileID.canonical.x + tile.tileID.wrap * numTiles);
     const pixelY = tileSizeAtNearestZoom * tile.tileID.canonical.y;
