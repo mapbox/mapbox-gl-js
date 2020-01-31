@@ -49,8 +49,16 @@ function patternUniformValues(crossfade: CrossfadeParameters, painter: Painter,
         tile: Tile
 ): UniformValues<PatternUniformsType> {
 
-    let patternZoom = painter.transform.patternZoom || painter.transform.zoom;
-    patternZoom += Math.floor(painter.transform.zoom - patternZoom);
+    if (painter.transform.patternZoom === undefined) {
+        painter.transform.patternZoom = painter.transform.zoom;
+    }
+
+    let patternZoom = painter.transform.patternZoom;
+
+    // adjust it so that it resets while zooming if you have zoomed more than 1 zoom level
+    patternZoom += patternZoom > painter.transform.zoom ?
+        -Math.floor(patternZoom - painter.transform.zoom) :
+        Math.floor(painter.transform.zoom - patternZoom);
 
     const tileRatio = 1 / pixelsToTileUnits(tile, 1, patternZoom);
 
