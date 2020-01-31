@@ -423,12 +423,12 @@ test('GeolocateControl switches to BACKGROUND state on map manipulation', (t) =>
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
 });
 
-test('GeolocateControl accuracy circle not shown if showAccuracy = false', (t) => {
+test('GeolocateControl accuracy circle not shown if showAccuracyCircle = false', (t) => {
     const map = createMap(t);
     const geolocate = new GeolocateControl({
         trackUserLocation: true,
         showUserLocation: true,
-        showAccuracy: false,
+        showAccuracyCircle: false,
     });
     map.addControl(geolocate);
 
