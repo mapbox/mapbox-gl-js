@@ -3,6 +3,13 @@
 import {wrap} from '../util/util';
 import LngLatBounds from './lng_lat_bounds';
 
+/*
+* Approximate radius of the earth in meters.
+* Uses the WGS-84 approximation. The radius at the equator is ~6378137 and at the poles is ~6356752. https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84
+* 6371008.8 is one published "average radius" see https://en.wikipedia.org/wiki/Earth_radius#Mean_radius, or ftp://athena.fsv.cvut.cz/ZFG/grs80-Moritz.pdf p.4
+*/
+export const earthRadius = 6371008.8;
+
 /**
  * A `LngLat` object represents a given longitude and latitude coordinate, measured in degrees.
  *
@@ -71,6 +78,27 @@ class LngLat {
      */
     toString() {
         return `LngLat(${this.lng}, ${this.lat})`;
+    }
+
+    /**
+     * Returns the approximate distance between a pair of coordinates in meters
+     * Uses the Haversine Formula (from R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope, vol. 68, no. 2, 1984, p. 159)
+     *
+     * @param {LngLat} lngLat coordinates to compute the distance to
+     * @returns {number} Distance in meters between the two coordinates.
+     * @example
+     * var new_york = new mapboxgl.LngLat(-74.0060, 40.7128);
+     * var los_angeles = new mapboxgl.LngLat(-118.2437, 34.0522);
+     * new_york.distanceTo(los_angeles); // = 3935751.690893987, "true distance" using a non-spherical approximation is ~3966km
+     */
+    distanceTo(lngLat: LngLat) {
+        const rad = Math.PI / 180;
+        const lat1 = this.lat * rad;
+        const lat2 = lngLat.lat * rad;
+        const a = Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos((lngLat.lng - this.lng) * rad);
+
+        const maxMeters = earthRadius * Math.acos(Math.min(a, 1));
+        return maxMeters;
     }
 
     /**
