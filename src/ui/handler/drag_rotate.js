@@ -134,7 +134,7 @@ class DragRotateHandler {
         if (this._state !== 'enabled') return;
 
         const touchEvent = e.type === 'touchstart';
-        
+
         if (touchEvent) {
             this._startTime = Date.now();
         } else {
