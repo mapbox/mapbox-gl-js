@@ -134,6 +134,7 @@ The conventions for module exports are:
 ### Version Control Conventions
 
 * We use [rebase merging](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) (as opposed to [basic merging](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merging)) to merge branches
+* To rebase your fork's PR branch onto master, the recommended approach is `git rebase origin/master`, `git push --force origin your-branch`
 
 ## Documentation Conventions
 
