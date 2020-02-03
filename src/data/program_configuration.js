@@ -218,41 +218,27 @@ class SourceExpressionBinder<T> implements Binder<T> {
     setConstantPatternPositions() {}
 
     populatePaintArray(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
-        const paintArray = this.paintVertexArray;
-
-        const start = paintArray.length;
-        paintArray.reserve(newLength);
-
+        const start = this.paintVertexArray.length;
         const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, [], formattedSection);
-
-        if (this.type === 'color') {
-            const color = packColor(value);
-            for (let i = start; i < newLength; i++) {
-                paintArray.emplaceBack(color[0], color[1]);
-            }
-        } else {
-            for (let i = start; i < newLength; i++) {
-                paintArray.emplaceBack(value);
-            }
-
-            this.maxValue = Math.max(this.maxValue, value);
-        }
+        this.paintVertexArray.resize(newLength);
+        this._setPaintValue(start, newLength, value);
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
-        const paintArray = this.paintVertexArray;
         const value = this.expression.evaluate({zoom: 0}, feature, featureState);
+        this._setPaintValue(start, end, value);
+    }
 
+    _setPaintValue(start, end, value) {
         if (this.type === 'color') {
             const color = packColor(value);
             for (let i = start; i < end; i++) {
-                paintArray.emplace(i, color[0], color[1]);
+                this.paintVertexArray.emplace(i, color[0], color[1]);
             }
         } else {
             for (let i = start; i < end; i++) {
-                paintArray.emplace(i, value);
+                this.paintVertexArray.emplace(i, value);
             }
-
             this.maxValue = Math.max(this.maxValue, value);
         }
     }
@@ -322,43 +308,29 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     setConstantPatternPositions() {}
 
     populatePaintArray(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
-        const paintArray = this.paintVertexArray;
-
-        const start = paintArray.length;
-        paintArray.reserve(newLength);
-
         const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, [], formattedSection);
         const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, [], formattedSection);
-
-        if (this.type === 'color') {
-            const minColor = packColor(min);
-            const maxColor = packColor(max);
-            for (let i = start; i < newLength; i++) {
-                paintArray.emplaceBack(minColor[0], minColor[1], maxColor[0], maxColor[1]);
-            }
-        } else {
-            for (let i = start; i < newLength; i++) {
-                paintArray.emplaceBack(min, max);
-            }
-            this.maxValue = Math.max(this.maxValue, min, max);
-        }
+        const start = this.paintVertexArray.length;
+        this.paintVertexArray.resize(newLength);
+        this._setPaintValue(start, newLength, min, max);
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
-        const paintArray = this.paintVertexArray;
-
         const min = this.expression.evaluate({zoom: this.zoom}, feature, featureState);
         const max = this.expression.evaluate({zoom: this.zoom + 1}, feature, featureState);
+        this._setPaintValue(start, end, min, max);
+    }
 
+    _setPaintValue(start, end, min, max) {
         if (this.type === 'color') {
             const minColor = packColor(min);
             const maxColor = packColor(max);
             for (let i = start; i < end; i++) {
-                paintArray.emplace(i, minColor[0], minColor[1], maxColor[0], maxColor[1]);
+                this.paintVertexArray.emplace(i, minColor[0], minColor[1], maxColor[0], maxColor[1]);
             }
         } else {
             for (let i = start; i < end; i++) {
-                paintArray.emplace(i, min, max);
+                this.paintVertexArray.emplace(i, min, max);
             }
             this.maxValue = Math.max(this.maxValue, min, max);
         }
@@ -444,68 +416,38 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
     setConstantPatternPositions() {}
 
     populatePaintArray(length: number, feature: Feature, imagePositions: {[string]: ImagePosition}) {
-        // We populate two paint arrays because, for cross-faded properties, we don't know which direction
-        // we're cross-fading to at layout time. In order to keep vertex attributes to a minimum and not pass
-        // unnecessary vertex data to the shaders, we determine which to upload at draw time.
-
-        const zoomInArray = this.zoomInPaintVertexArray;
-        const zoomOutArray = this.zoomOutPaintVertexArray;
-        const {layerId} = this;
-        const start = zoomInArray.length;
-
-        zoomInArray.reserve(length);
-        zoomOutArray.reserve(length);
-
-        if (imagePositions && feature.patterns && feature.patterns[layerId]) {
-            const {min, mid, max} = feature.patterns[layerId];
-
-            const imageMin = imagePositions[min];
-            const imageMid = imagePositions[mid];
-            const imageMax = imagePositions[max];
-
-            if (!imageMin || !imageMid || !imageMax) return;
-
-            for (let i = start; i < length; i++) {
-                zoomInArray.emplaceBack(
-                    imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
-                    imageMin.tl[0], imageMin.tl[1], imageMin.br[0], imageMin.br[1]
-                );
-
-                zoomOutArray.emplaceBack(
-                    imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
-                    imageMax.tl[0], imageMax.tl[1], imageMax.br[0], imageMax.br[1]
-                );
-            }
-        }
+        const start = this.zoomInPaintVertexArray.length;
+        this.zoomInPaintVertexArray.resize(length);
+        this.zoomOutPaintVertexArray.resize(length);
+        this._setPaintValues(start, length, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, imagePositions: {[string]: ImagePosition}) {
+        this._setPaintValues(start, end, feature.patterns && feature.patterns[this.layerId], imagePositions);
+    }
+
+    _setPaintValues(start, end, patterns, positions) {
+        if (!positions || !patterns) return;
+
+        const {min, mid, max} = patterns;
+        const imageMin = positions[min];
+        const imageMid = positions[mid];
+        const imageMax = positions[max];
+        if (!imageMin || !imageMid || !imageMax) return;
+
         // We populate two paint arrays because, for cross-faded properties, we don't know which direction
         // we're cross-fading to at layout time. In order to keep vertex attributes to a minimum and not pass
         // unnecessary vertex data to the shaders, we determine which to upload at draw time.
+        for (let i = start; i < end; i++) {
+            this.zoomInPaintVertexArray.emplace(i,
+                imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
+                imageMin.tl[0], imageMin.tl[1], imageMin.br[0], imageMin.br[1]
+            );
 
-        const zoomInArray = this.zoomInPaintVertexArray;
-        const zoomOutArray = this.zoomOutPaintVertexArray;
-        const {layerId} = this;
-
-        if (imagePositions && feature.patterns && feature.patterns[layerId]) {
-            const {min, mid, max} = feature.patterns[layerId];
-            const imageMin = imagePositions[min];
-            const imageMid = imagePositions[mid];
-            const imageMax = imagePositions[max];
-
-            if (!imageMin || !imageMid || !imageMax) return;
-            for (let i = start; i < end; i++) {
-                zoomInArray.emplace(i,
-                    imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
-                    imageMin.tl[0], imageMin.tl[1], imageMin.br[0], imageMin.br[1]
-                );
-
-                zoomOutArray.emplace(i,
-                    imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
-                    imageMax.tl[0], imageMax.tl[1], imageMax.br[0], imageMax.br[1]
-                );
-            }
+            this.zoomOutPaintVertexArray.emplace(i,
+                imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
+                imageMax.tl[0], imageMax.tl[1], imageMax.br[0], imageMax.br[1]
+            );
         }
     }
 
@@ -608,7 +550,7 @@ export default class ProgramConfiguration {
         return self;
     }
 
-    populatePaintArrays(newLength: number, feature: Feature, index: number, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
+    populatePaintArrays(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             binder.populatePaintArray(newLength, feature, imagePositions, formattedSection);
@@ -742,7 +684,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
 
     populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
         for (const key in this.programConfigurations) {
-            this.programConfigurations[key].populatePaintArrays(length, feature, index, imagePositions, formattedSection);
+            this.programConfigurations[key].populatePaintArrays(length, feature, imagePositions, formattedSection);
         }
 
         if (feature.id !== undefined) {
