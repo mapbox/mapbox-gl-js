@@ -36,6 +36,11 @@ class ThrottledInvoker {
             }
         }
     }
+
+    remove() {
+        delete this._channel;
+        this._callback = () => {};
+    }
 }
 
 export default ThrottledInvoker;

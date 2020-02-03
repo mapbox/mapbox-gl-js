@@ -17,6 +17,8 @@ import type Color from '../../style-spec/util/color';
 
 import type Formatted from '../../style-spec/expression/types/formatted';
 
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+
 export type LayoutProps = {|
     "line-cap": DataConstantProperty<"butt" | "round" | "square">,
     "line-join": DataDrivenProperty<"bevel" | "round" | "miter">,
@@ -43,7 +45,7 @@ export type PaintProps = {|
     "line-offset": DataDrivenProperty<number>,
     "line-blur": DataDrivenProperty<number>,
     "line-dasharray": CrossFadedProperty<Array<number>>,
-    "line-pattern": CrossFadedDataDrivenProperty<string>,
+    "line-pattern": CrossFadedDataDrivenProperty<ResolvedImage>,
     "line-gradient": ColorRampProperty,
 |};
 

@@ -2,7 +2,7 @@
 
 import potpack from 'potpack';
 
-import {Event, Evented} from '../util/evented';
+import {Event, ErrorEvent, Evented} from '../util/evented';
 import {RGBAImage} from '../util/image';
 import {ImagePosition} from './image_atlas';
 import Texture from './texture';
@@ -87,7 +87,48 @@ class ImageManager extends Evented {
 
     addImage(id: string, image: StyleImage) {
         assert(!this.images[id]);
-        this.images[id] = image;
+        if (this._validate(id, image)) {
+            this.images[id] = image;
+        }
+    }
+
+    _validate(id: string, image: StyleImage) {
+        let valid = true;
+        if (!this._validateStretch(image.stretchX, image.data && image.data.width)) {
+            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchX" value`)));
+            valid = false;
+        }
+        if (!this._validateStretch(image.stretchY, image.data && image.data.height)) {
+            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchY" value`)));
+            valid = false;
+        }
+        if (!this._validateContent(image.content, image)) {
+            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "content" value`)));
+            valid = false;
+        }
+        return valid;
+    }
+
+    _validateStretch(stretch: ?Array<[number, number]> | void, size: number) {
+        if (!stretch) return true;
+        let last = 0;
+        for (const part of stretch) {
+            if (part[0] < last || part[1] < part[0] || size < part[1]) return false;
+            last = part[1];
+        }
+        return true;
+    }
+
+    _validateContent(content: ?[number, number, number, number] | void, image: StyleImage) {
+        if (!content) return true;
+        if (content.length !== 4) return false;
+        if (content[0] < 0 || image.data.width < content[0]) return false;
+        if (content[1] < 0 || image.data.height < content[1]) return false;
+        if (content[2] < 0 || image.data.width < content[2]) return false;
+        if (content[3] < 0 || image.data.height < content[3]) return false;
+        if (content[2] < content[0]) return false;
+        if (content[3] < content[1]) return false;
+        return true;
     }
 
     updateImage(id: string, image: StyleImage) {
@@ -117,7 +158,7 @@ class ImageManager extends Evented {
 
     getImages(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
-        // (i.e. if they've been addeded via runtime styling), then notify the requestor immediately.
+        // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
         // dependencies are still unavailable, we'll just assume they are permanently missing.
         let hasAllDependencies = true;
@@ -150,6 +191,9 @@ class ImageManager extends Evented {
                     pixelRatio: image.pixelRatio,
                     sdf: image.sdf,
                     version: image.version,
+                    stretchX: image.stretchX,
+                    stretchY: image.stretchY,
+                    content: image.content,
                     hasRenderCallback: Boolean(image.userImage && image.userImage.render)
                 };
             } else {

@@ -19,14 +19,18 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
 import config from './util/config';
-import {setRTLTextPlugin} from './source/rtl_text_plugin';
+import {Debug} from './util/debug';
+import {isSafari} from './util/util';
+import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
+import {PerformanceUtils} from './util/performance';
 
 const exported = {
     version,
     supported,
     setRTLTextPlugin,
+    getRTLTextPluginStatus,
     Map,
     NavigationControl,
     GeolocateControl,
@@ -129,6 +133,9 @@ const exported = {
     workerUrl: ''
 };
 
+//This gets automatically stripped out in production builds.
+Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics});
+
 /**
  * The version of Mapbox GL JS in use as specified in `package.json`,
  * `CHANGELOG.md`, and the GitHub release.
@@ -157,10 +164,22 @@ const exported = {
  * @function setRTLTextPlugin
  * @param {string} pluginURL URL pointing to the Mapbox RTL text plugin source.
  * @param {Function} callback Called with an error argument if there is an error.
+ * @param {boolean} lazy If set to `true`, mapboxgl will defer loading the plugin until rtl text is encountered,
+ *    rtl text will then be rendered only after the plugin finishes loading.
  * @example
  * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
  * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
  */
+
+/**
+  * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
+  * The status can be `unavailable` (i.e. not requested or removed), `loading`, `loaded` or `error`.
+  * If the status is `loaded` and the plugin is requested again, an error will be thrown.
+  *
+  * @function getRTLTextPluginStatus
+  * @example
+  * const pluginStatus = mapboxgl.getRTLTextPluginStatus();
+  */
 
 export default exported;
 

@@ -1,4 +1,5 @@
 import {test} from '../../util/test';
+import {createSymbolBucket} from '../../util/create_symbol_layer';
 import Tile from '../../../src/source/tile';
 import GeoJSONWrapper from '../../../src/source/geojson_wrapper';
 import {OverscaledTileID} from '../../../src/source/tile_id';
@@ -8,7 +9,6 @@ import vtpbf from 'vt-pbf';
 import FeatureIndex from '../../../src/data/feature_index';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {extend} from '../../../src/util/util';
-import Context from '../../../src/gl/context';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
 test('querySourceFeatures', (t) => {
@@ -131,46 +131,6 @@ test('querySourceFeatures', (t) => {
     });
 
     t.end();
-});
-
-test('Tile#setMask', (t) => {
-
-    t.test('simple mask', (t) => {
-        const tile = new Tile(0, 0, 0);
-        const context = new Context(require('gl')(10, 10));
-        const a = new OverscaledTileID(1, 0, 1, 0, 0);
-        const b = new OverscaledTileID(1, 0, 1, 1, 1);
-        const mask = {};
-        mask[a.key] = a;
-        mask[b.key] = b;
-        tile.setMask(mask, context);
-        t.deepEqual(tile.mask, mask);
-        t.end();
-    });
-
-    t.test('complex mask', (t) => {
-        const tile = new Tile(0, 0, 0);
-        const context = new Context(require('gl')(10, 10));
-        const a = new OverscaledTileID(1, 0, 1, 0, 1);
-        const b = new OverscaledTileID(1, 0, 1, 1, 0);
-        const c = new OverscaledTileID(2, 0, 2, 2, 3);
-        const d = new OverscaledTileID(2, 0, 2, 3, 2);
-        const e = new OverscaledTileID(3, 0, 3, 6, 7);
-        const f = new OverscaledTileID(3, 0, 3, 7, 6);
-        const mask = {};
-        mask[a.key] = a;
-        mask[b.key] = b;
-        mask[c.key] = c;
-        mask[d.key] = d;
-        mask[e.key] = e;
-        mask[f.key] = f;
-        tile.setMask(mask, context);
-        t.deepEqual(tile.mask, mask);
-        t.end();
-
-    });
-    t.end();
-
 });
 
 test('Tile#isLessThan', (t) => {
@@ -304,6 +264,29 @@ test('expiring tiles', (t) => {
     t.end();
 });
 
+test('rtl text detection', (t) => {
+    t.test('Tile#hasRTLText is true when a tile loads a symbol bucket with rtl text', (t) => {
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        // Create a stub symbol bucket
+        const symbolBucket = createSymbolBucket('test', 'Test', 'test', new CollisionBoxArray());
+        // symbolBucket has not been populated yet so we force override the value in the stub
+        symbolBucket.hasRTLText = true;
+        tile.loadVectorData(
+            createVectorData({rawTileData: createRawTileData(), buckets: [symbolBucket]}),
+            createPainter({
+                getLayer() {
+                    return symbolBucket.layers[0];
+                }
+            })
+        );
+
+        t.ok(tile.hasRTLText);
+        t.end();
+    });
+
+    t.end();
+});
+
 function createRawTileData() {
     return fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
 }
@@ -317,6 +300,6 @@ function createVectorData(options) {
     }, options);
 }
 
-function createPainter() {
-    return {style: {}};
+function createPainter(styleStub = {}) {
+    return {style: styleStub};
 }

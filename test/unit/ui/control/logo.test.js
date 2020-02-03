@@ -25,7 +25,10 @@ function createMap(t, logoPosition, logoRequired) {
 function createSource(options, logoRequired) {
     const source = new VectorTileSource('id', options, {send () {}});
     source.onAdd({
-        _requestManager: {_skuToken: '1234567890123'},
+        _requestManager: {
+            _skuToken: '1234567890123',
+            canonicalizeTileset: tileJSON => tileJSON.tiles
+        },
         transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
         _getMapId: () => 1
     });

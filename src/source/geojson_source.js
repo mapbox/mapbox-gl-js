@@ -14,7 +14,7 @@ import type Tile from './tile';
 import type Actor from '../util/actor';
 import type {Callback} from '../types/callback';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
-import type {GeoJSONSourceSpecification} from '../style-spec/types';
+import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 
 /**
  * A source containing GeoJSON.
@@ -69,6 +69,7 @@ class GeoJSONSource extends Evented implements Source {
     maxzoom: number;
     tileSize: number;
     attribution: string;
+    promoteId: ?PromoteIdSpecification;
 
     isTileClipped: boolean;
     reparseOverscaled: boolean;
@@ -114,6 +115,7 @@ class GeoJSONSource extends Evented implements Source {
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
         if (options.type) this.type = options.type;
         if (options.attribution) this.attribution = options.attribution;
+        this.promoteId = options.promoteId;
 
         const scale = EXTENT / this.tileSize;
 
@@ -138,7 +140,8 @@ class GeoJSONSource extends Evented implements Source {
                     (this.maxzoom - 1),
                 extent: EXTENT,
                 radius: (options.clusterRadius || 50) * scale,
-                log: false
+                log: false,
+                generateId: options.generateId || false
             },
             clusterProperties: options.clusterProperties
         }, options.workerOptions);
@@ -294,7 +297,8 @@ class GeoJSONSource extends Evented implements Source {
             tileSize: this.tileSize,
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
-            showCollisionBoxes: this.map.showCollisionBoxes
+            showCollisionBoxes: this.map.showCollisionBoxes,
+            promoteId: this.promoteId
         };
 
         tile.request = this.actor.send(message, params, (err, data) => {

@@ -29,7 +29,7 @@
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
-<script src='access_token_generated.js'></script>
+<script src='../debug/access_token_generated.js'></script>
 <script>
 
 var map = window.map = new mapboxgl.Map({
@@ -52,6 +52,7 @@ map.addControl(new mapboxgl.GeolocateControl({
     }
 }));
 map.addControl(new mapboxgl.ScaleControl());
+map.addControl(new mapboxgl.FullscreenControl());
 
 map.on('load', function() {
     map.addSource('geojson', {

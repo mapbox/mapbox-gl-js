@@ -16,18 +16,23 @@ import type {OverscaledTileID} from '../source/tile_id';
 
 export default drawRaster;
 
-function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<OverscaledTileID>) {
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
+    if (!tileIDs.length) return;
 
     const context = painter.context;
     const gl = context.gl;
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
-    const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
-    const minTileZ = coords.length && coords[0].overscaledZ;
+
+    const [stencilModes, coords] = source instanceof ImageSource ? [{}, tileIDs] :
+        painter.stencilConfigForOverlap(tileIDs);
+
+    const minTileZ = coords[coords.length - 1].overscaledZ;
+
     const align = !painter.options.moving;
     for (const coord of coords) {
         // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
@@ -64,16 +69,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const uniformValues = rasterUniformValues(posMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
 
         if (source instanceof ImageSource) {
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, source.boundsBuffer,
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
-        } else if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                uniformValues, layer.id, tile.maskedBoundsBuffer,
-                tile.maskedIndexBuffer, tile.segments, layer.paint,
-                painter.transform.zoom);
         } else {
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(context, gl.TRIANGLES, depthMode, stencilModes[coord.overscaledZ], colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, painter.rasterBoundsBuffer,
                 painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
         }

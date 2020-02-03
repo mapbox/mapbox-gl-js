@@ -1,0 +1,30 @@
+{
+  "expression": [
+    "boolean",
+    ["in", ["get", "substr"], ["string", ["get", "str"]]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"substr": null, "str": "helloworld"}}],
+    [{}, {"properties": {"substr": "foo", "str": "helloworld"}}],
+    [{}, {"properties": {"substr": "low", "str": "helloworld"}}],
+    [{}, {"properties": {"substr": "low", "str": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [
+      false,
+      false,
+      true,
+      {"error":"Expected value to be of type string, but found null instead."}
+    ],
+    "serialized": [
+      "boolean",
+      ["in", ["get", "substr"], ["string", ["get", "str"]]]
+    ]
+  }
+}

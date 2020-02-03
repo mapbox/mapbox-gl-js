@@ -120,6 +120,10 @@ export type ColorSpecification = string;
 
 export type FormattedSpecification = string;
 
+export type ResolvedImageSpecification = string;
+
+export type PromoteIdSpecification = {[string]: string} | string;
+
 export type FilterSpecification =
     | ['has', string]
     | ['!has', string]

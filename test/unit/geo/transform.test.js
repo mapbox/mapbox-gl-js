@@ -16,6 +16,7 @@ test('transform', (t) => {
         t.equal(transform.worldSize, 512, 'worldSize');
         t.equal(transform.width, 500, 'width');
         t.equal(transform.minZoom, 0, 'minZoom');
+        t.equal(transform.minPitch, 0, 'minPitch');
         t.equal(transform.bearing, 0, 'bearing');
         t.equal(transform.bearing = 1, 1, 'set bearing');
         t.equal(transform.bearing, 1, 'bearing');
@@ -26,6 +27,8 @@ test('transform', (t) => {
         t.equal(transform.minZoom, 10);
         t.deepEqual(transform.center, {lng: 0, lat: 0});
         t.equal(transform.maxZoom, 10);
+        t.equal(transform.minPitch = 10, 10);
+        t.equal(transform.maxPitch = 10, 10);
         t.equal(transform.size.equals(new Point(500, 500)), true);
         t.equal(transform.centerPoint.equals(new Point(250, 250)), true);
         t.equal(transform.scaleZoom(0), -Infinity);
@@ -149,6 +152,103 @@ test('transform', (t) => {
             new OverscaledTileID(10, 0, 10, 512, 511),
             new OverscaledTileID(10, 0, 10, 511, 512),
             new OverscaledTileID(10, 0, 10, 512, 512)]);
+
+        transform.zoom = 5.1;
+        transform.pitch = 60.0;
+        transform.bearing = 32.0;
+        transform.center = new LngLat(56.90, 48.20);
+        transform.resize(1024, 768);
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(5, 0, 5, 21, 11),
+            new OverscaledTileID(5, 0, 5, 20, 11),
+            new OverscaledTileID(5, 0, 5, 21, 10),
+            new OverscaledTileID(5, 0, 5, 20, 10),
+            new OverscaledTileID(5, 0, 5, 21, 12),
+            new OverscaledTileID(5, 0, 5, 22, 11),
+            new OverscaledTileID(5, 0, 5, 20, 12),
+            new OverscaledTileID(5, 0, 5, 22, 10),
+            new OverscaledTileID(5, 0, 5, 21, 9),
+            new OverscaledTileID(5, 0, 5, 20, 9),
+            new OverscaledTileID(5, 0, 5, 22, 9),
+            new OverscaledTileID(5, 0, 5, 23, 10),
+            new OverscaledTileID(5, 0, 5, 21, 8),
+            new OverscaledTileID(5, 0, 5, 20, 8),
+            new OverscaledTileID(5, 0, 5, 23, 9),
+            new OverscaledTileID(5, 0, 5, 22, 8),
+            new OverscaledTileID(5, 0, 5, 23, 8),
+            new OverscaledTileID(5, 0, 5, 21, 7),
+            new OverscaledTileID(5, 0, 5, 20, 7),
+            new OverscaledTileID(5, 0, 5, 24, 9),
+            new OverscaledTileID(5, 0, 5, 22, 7)
+        ]);
+
+        transform.zoom = 8;
+        transform.pitch = 60;
+        transform.bearing = 45.0;
+        transform.center = new LngLat(25.02, 60.15);
+        transform.resize(300, 50);
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(8, 0, 8, 145, 74),
+            new OverscaledTileID(8, 0, 8, 145, 73),
+            new OverscaledTileID(8, 0, 8, 146, 74)
+        ]);
+
+        transform.resize(50, 300);
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(8, 0, 8, 145, 74),
+            new OverscaledTileID(8, 0, 8, 145, 73),
+            new OverscaledTileID(8, 0, 8, 146, 74),
+            new OverscaledTileID(8, 0, 8, 146, 73)
+        ]);
+
+        transform.zoom = 2;
+        transform.pitch = 0;
+        transform.bearing = 0;
+        transform.resize(300, 300);
+        t.test('calculates tile coverage at w > 0', (t) => {
+            transform.center = {lng: 630.01, lat: 0.01};
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(2, 2, 2, 1, 1),
+                new OverscaledTileID(2, 2, 2, 1, 2),
+                new OverscaledTileID(2, 2, 2, 0, 1),
+                new OverscaledTileID(2, 2, 2, 0, 2)
+            ]);
+            t.end();
+        });
+
+        t.test('calculates tile coverage at w = -1', (t) => {
+            transform.center = {lng: -360.01, lat: 0.01};
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(2, -1, 2, 1, 1),
+                new OverscaledTileID(2, -1, 2, 1, 2),
+                new OverscaledTileID(2, -1, 2, 2, 1),
+                new OverscaledTileID(2, -1, 2, 2, 2)
+            ]);
+            t.end();
+        });
+
+        t.test('calculates tile coverage across meridian', (t) => {
+            transform.zoom = 1;
+            transform.center = {lng: -180.01, lat: 0.01};
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, 0, 1, 0, 1),
+                new OverscaledTileID(1, -1, 1, 1, 0),
+                new OverscaledTileID(1, -1, 1, 1, 1)
+            ]);
+            t.end();
+        });
+
+        t.test('only includes tiles for a single world, if renderWorldCopies is set to false', (t) => {
+            transform.zoom = 1;
+            transform.center = {lng: -180.01, lat: 0.01};
+            transform.renderWorldCopies = false;
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, 0, 1, 0, 1)
+            ]);
+            t.end();
+        });
 
         t.end();
     });

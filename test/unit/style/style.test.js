@@ -62,23 +62,30 @@ test('Style', (t) => {
         callback();
     });
 
-    t.test('registers plugin listener', (t) => {
+    t.test('registers plugin state change listener', (t) => {
         clearRTLTextPlugin();
-
-        t.spy(Style, 'registerForPluginAvailability');
-
+        window.useFakeXMLHttpRequest();
+        window.fakeWorkerPresence();
+        t.spy(Style, 'registerForPluginStateChange');
         const style = new Style(new StubMap());
         t.spy(style.dispatcher, 'broadcast');
-        t.ok(Style.registerForPluginAvailability.calledOnce);
+        t.ok(Style.registerForPluginStateChange.calledOnce);
 
-        setRTLTextPlugin("some bogus url");
-        t.ok(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin', "some bogus url"));
+        setRTLTextPlugin("/plugin.js",);
+        t.ok(style.dispatcher.broadcast.calledWith('syncRTLPluginState', {
+            pluginStatus: 'deferred',
+            pluginURL: "/plugin.js"
+        }));
+        window.clearFakeWorkerPresence();
         t.end();
     });
 
     t.test('loads plugin immediately if already registered', (t) => {
         clearRTLTextPlugin();
         window.useFakeXMLHttpRequest();
+        window.fakeWorkerPresence();
+        window.URL.createObjectURL = () => 'blob:';
+        t.tearDown(() => delete window.URL.createObjectURL);
         window.server.respondWith('/plugin.js', "doesn't matter");
         let firstError = true;
         setRTLTextPlugin("/plugin.js", (error) => {
@@ -87,6 +94,7 @@ test('Style', (t) => {
             if (firstError) {
                 t.equals(error.message, 'RTL Text Plugin failed to import scripts from /plugin.js');
                 t.end();
+                window.clearFakeWorkerPresence();
                 firstError = false;
             }
         });
@@ -421,8 +429,8 @@ test('Style#_remove', (t) => {
         style.on('style.load', () => {
             style._remove();
 
-            rtlTextPluginEvented.fire(new Event('pluginAvailable'));
-            t.notOk(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin'));
+            rtlTextPluginEvented.fire(new Event('pluginStateChange'));
+            t.notOk(style.dispatcher.broadcast.calledWith('syncRTLPluginState'));
             t.end();
         });
     });
@@ -1765,6 +1773,33 @@ test('Style#setLayerZoomRange', (t) => {
                 t.end();
             });
             style.setLayerZoomRange('non-existant', 5, 12);
+        });
+    });
+
+    t.test('does not reload raster source', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "raster": {
+                    type: "raster",
+                    tiles: ['http://tiles.server']
+                }
+            },
+            "layers": [{
+                "id": "raster",
+                "type": "raster",
+                "source": "raster"
+            }]
+        });
+
+        style.on('style.load', () => {
+            t.spy(style, '_reloadSource');
+
+            style.setLayerZoomRange('raster', 5, 12);
+            style.update(0);
+            t.notOk(style._reloadSource.called, '_reloadSource should not be called for raster source');
+            t.end();
         });
     });
 

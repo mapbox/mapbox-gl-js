@@ -53,6 +53,8 @@ import symbolIconFrag from './symbol_icon.fragment.glsl';
 import symbolIconVert from './symbol_icon.vertex.glsl';
 import symbolSDFFrag from './symbol_sdf.fragment.glsl';
 import symbolSDFVert from './symbol_sdf.vertex.glsl';
+import symbolTextAndIconFrag from './symbol_text_and_icon.fragment.glsl';
+import symbolTextAndIconVert from './symbol_text_and_icon.vertex.glsl';
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const background = compile(backgroundFrag, backgroundVert);
@@ -80,6 +82,7 @@ export const lineSDF = compile(lineSDFFrag, lineSDFVert);
 export const raster = compile(rasterFrag, rasterVert);
 export const symbolIcon = compile(symbolIconFrag, symbolIconVert);
 export const symbolSDF = compile(symbolSDFFrag, symbolSDFVert);
+export const symbolTextAndIcon = compile(symbolTextAndIconFrag, symbolTextAndIconVert);
 
 // Expand #pragmas to #ifdefs.
 

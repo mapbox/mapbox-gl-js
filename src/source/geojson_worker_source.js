@@ -2,7 +2,7 @@
 
 import {getJSON} from '../util/ajax';
 
-import performance from '../util/performance';
+import {RequestPerformance} from '../util/performance';
 import rewind from '@mapbox/geojson-rewind';
 import GeoJSONWrapper from './geojson_wrapper';
 import vtpbf from 'vt-pbf';
@@ -104,8 +104,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * GeoJSON based on parameters passed from the main-thread Source.
      * See {@link GeoJSONWorkerSource#loadGeoJSON}.
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, loadGeoJSON: ?LoadGeoJSON) {
-        super(actor, layerIndex, loadGeoJSONTile);
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, loadGeoJSON: ?LoadGeoJSON) {
+        super(actor, layerIndex, availableImages, loadGeoJSONTile);
         if (loadGeoJSON) {
             this.loadGeoJSON = loadGeoJSON;
         }
@@ -161,7 +161,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         delete this._pendingLoadDataParams;
 
         const perf = (params && params.request && params.request.collectResourceTiming) ?
-            new performance.Performance(params.request) : false;
+            new RequestPerformance(params.request) : false;
 
         this.loadGeoJSON(params, (err: ?Error, data: ?Object) => {
             if (err || !data) {

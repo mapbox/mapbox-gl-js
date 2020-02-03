@@ -13,6 +13,7 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 
 run('js', {ignores, tests}, (fixture) => {
     const spec = Object.assign({}, fixture.propertySpec);
+    let availableImages;
 
     if (!spec['property-type']) {
         spec['property-type'] = 'data-driven';
@@ -48,13 +49,15 @@ run('js', {ignores, tests}, (fixture) => {
         for (const input of fixture.inputs || []) {
             try {
                 const feature = {properties: input[1].properties || {}};
+                availableImages = input[0].availableImages || [];
+
                 if ('id' in input[1]) {
                     feature.id = input[1].id;
                 }
                 if ('geometry' in input[1]) {
                     feature.type = input[1].geometry.type;
                 }
-                let value = expression.evaluateWithoutErrorHandling(input[0], feature);
+                let value = expression.evaluateWithoutErrorHandling(input[0], feature, {}, availableImages);
                 if (type.kind === 'color') {
                     value = [value.r, value.g, value.b, value.a];
                 }
@@ -82,7 +85,7 @@ run('js', {ignores, tests}, (fixture) => {
         }
     })();
 
-    result.outputs = evaluateExpression(expression, result.compiled);
+    result.outputs = evaluateExpression(expression, result.compiled, {}, availableImages);
     if (expression.result === 'success') {
         result.serialized = expression.value._styleExpression.expression.serialize();
         result.roundTripOutputs = evaluateExpression(

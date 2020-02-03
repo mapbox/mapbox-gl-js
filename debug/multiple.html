@@ -18,7 +18,7 @@
 <div class='map'></div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
-<script src='access_token_generated.js'></script>
+<script src='../debug/access_token_generated.js'></script>
 <script>
 
 var style = {
@@ -63,6 +63,17 @@ function addMap (container) {
         style,
         hash: false
     });
+
+    map.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserLocation: true,
+        fitBoundsOptions: {
+            maxZoom: 20
+        }
+    }));
 }
 
 var containers = document.querySelectorAll('.map');

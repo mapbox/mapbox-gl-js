@@ -322,11 +322,11 @@ test('Map', (t) => {
             const map = createMap(t, {style});
             t.equal(map.areTilesLoaded(), true, 'returns true if there are no sources on the map');
             map.on('load', () => {
-
+                const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
                 map.addSource('geojson', createStyleSource());
-                map.style.sourceCaches.geojson._tiles.fakeTile = new Tile(new OverscaledTileID(0, 0, 0, 0, 0));
+                map.style.sourceCaches.geojson._tiles[fakeTileId.key] = new Tile(fakeTileId);
                 t.equal(map.areTilesLoaded(), false, 'returns false if tiles are loading');
-                map.style.sourceCaches.geojson._tiles.fakeTile.state = 'loaded';
+                map.style.sourceCaches.geojson._tiles[fakeTileId.key].state = 'loaded';
                 t.equal(map.areTilesLoaded(), true, 'returns true if tiles are loaded');
                 t.end();
             });
@@ -386,6 +386,23 @@ test('Map', (t) => {
                 }));
                 t.end();
             });
+        });
+
+        t.test('a layer can be added even if a map is created without a style', (t) => {
+            const map = createMap(t, {deleteStyle: true});
+            const layer = {
+                id: 'background',
+                type: 'background'
+            };
+            map.addLayer(layer);
+            t.end();
+        });
+
+        t.test('a source can be added even if a map is created without a style', (t) => {
+            const map = createMap(t, {deleteStyle: true});
+            const source = createStyleSource();
+            map.addSource('fill', source);
+            t.end();
         });
 
         t.test('returns the style with added source and layer', (t) => {
@@ -754,7 +771,7 @@ test('Map', (t) => {
 
     t.test('#getMinZoom', (t) => {
         const map = createMap(t, {zoom: 0});
-        t.equal(map.getMinZoom(), 0, 'returns default value');
+        t.equal(map.getMinZoom(), -2, 'returns default value');
         map.setMinZoom(10);
         t.equal(map.getMinZoom(), 10, 'returns custom value');
         t.end();
@@ -807,14 +824,110 @@ test('Map', (t) => {
     t.test('throw on maxZoom smaller than minZoom at init', (t) => {
         t.throws(() => {
             createMap(t, {minZoom:10, maxZoom:5});
-        }, new Error(`maxZoom must be greater than minZoom`));
+        }, new Error(`maxZoom must be greater than or equal to minZoom`));
         t.end();
     });
 
     t.test('throw on maxZoom smaller than minZoom at init with falsey maxZoom', (t) => {
         t.throws(() => {
             createMap(t, {minZoom:1, maxZoom:0});
-        }, new Error(`maxZoom must be greater than minZoom`));
+        }, new Error(`maxZoom must be greater than or equal to minZoom`));
+        t.end();
+    });
+
+    t.test('#setMinPitch', (t) => {
+        const map = createMap(t, {pitch: 20});
+        map.setMinPitch(10);
+        map.setPitch(0);
+        t.equal(map.getPitch(), 10);
+        t.end();
+    });
+
+    t.test('unset minPitch', (t) => {
+        const map = createMap(t, {minPitch: 20});
+        map.setMinPitch(null);
+        map.setPitch(0);
+        t.equal(map.getPitch(), 0);
+        t.end();
+    });
+
+    t.test('#getMinPitch', (t) => {
+        const map = createMap(t, {pitch: 0});
+        t.equal(map.getMinPitch(), 0, 'returns default value');
+        map.setMinPitch(10);
+        t.equal(map.getMinPitch(), 10, 'returns custom value');
+        t.end();
+    });
+
+    t.test('ignore minPitchs over maxPitch', (t) => {
+        const map = createMap(t, {pitch: 0, maxPitch: 10});
+        t.throws(() => {
+            map.setMinPitch(20);
+        });
+        map.setPitch(0);
+        t.equal(map.getPitch(), 0);
+        t.end();
+    });
+
+    t.test('#setMaxPitch', (t) => {
+        const map = createMap(t, {pitch: 0});
+        map.setMaxPitch(10);
+        map.setPitch(20);
+        t.equal(map.getPitch(), 10);
+        t.end();
+    });
+
+    t.test('unset maxPitch', (t) => {
+        const map = createMap(t, {maxPitch:10});
+        map.setMaxPitch(null);
+        map.setPitch(20);
+        t.equal(map.getPitch(), 20);
+        t.end();
+    });
+
+    t.test('#getMaxPitch', (t) => {
+        const map = createMap(t, {pitch: 0});
+        t.equal(map.getMaxPitch(), 60, 'returns default value');
+        map.setMaxPitch(10);
+        t.equal(map.getMaxPitch(), 10, 'returns custom value');
+        t.end();
+    });
+
+    t.test('ignore maxPitchs over minPitch', (t) => {
+        const map = createMap(t, {minPitch:10});
+        t.throws(() => {
+            map.setMaxPitch(0);
+        });
+        map.setPitch(10);
+        t.equal(map.getPitch(), 10);
+        t.end();
+    });
+
+    t.test('throw on maxPitch smaller than minPitch at init', (t) => {
+        t.throws(() => {
+            createMap(t, {minPitch: 10, maxPitch: 5});
+        }, new Error(`maxPitch must be greater than or equal to minPitch`));
+        t.end();
+    });
+
+    t.test('throw on maxPitch smaller than minPitch at init with falsey maxPitch', (t) => {
+        t.throws(() => {
+            createMap(t, {minPitch: 1, maxPitch: 0});
+        }, new Error(`maxPitch must be greater than or equal to minPitch`));
+        t.end();
+    });
+
+    t.test('throw on maxPitch greater than valid maxPitch at init', (t) => {
+        t.throws(() => {
+            createMap(t, {maxPitch: 90});
+        }, new Error(`maxPitch must be less than or equal to 60`));
+        t.end();
+    });
+
+    t.test('throw on minPitch less than valid minPitch at init', (t) => {
+        t.throws(() => {
+            createMap(t, {minPitch: -10});
+        }, new Error(`minPitch must be greater than or equal to 0`));
         t.end();
     });
 
@@ -1350,6 +1463,23 @@ test('Map', (t) => {
                 t.end();
             });
         });
+        t.test('works with string ids', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({source: 'geojson', id: 'foo'}, {'hover': true});
+                const fState = map.getFeatureState({source: 'geojson', id: 'foo'});
+                t.equal(fState.hover, true);
+                t.end();
+            });
+        });
         t.test('parses feature id as an int', (t) => {
             const map = createMap(t, {
                 style: {
@@ -1443,48 +1573,6 @@ test('Map', (t) => {
                 map.setFeatureState({source: 'vector', sourceLayer: "1"}, {'hover': true});
             });
         });
-        t.test('fires an error if id is less than zero', (t) => {
-            const map = createMap(t, {
-                style: {
-                    "version": 8,
-                    "sources": {
-                        "vector": {
-                            "type": "vector",
-                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
-                        }
-                    },
-                    "layers": []
-                }
-            });
-            map.on('load', () => {
-                map.on('error', ({error}) => {
-                    t.match(error.message, /id/);
-                    t.end();
-                });
-                map.setFeatureState({source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
-            });
-        });
-        t.test('fires an error if id cannot be parsed as an int', (t) => {
-            const map = createMap(t, {
-                style: {
-                    "version": 8,
-                    "sources": {
-                        "vector": {
-                            "type": "vector",
-                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
-                        }
-                    },
-                    "layers": []
-                }
-            });
-            map.on('load', () => {
-                map.on('error', ({error}) => {
-                    t.match(error.message, /id/);
-                    t.end();
-                });
-                map.setFeatureState({source: 'vector', sourceLayer: "1", id: 'abc'}, {'hover': true});
-            });
-        });
         t.end();
     });
 
@@ -1504,6 +1592,25 @@ test('Map', (t) => {
                 map.setFeatureState({source: 'geojson', id: 0}, {'hover': true, 'click': true});
                 map.removeFeatureState({source: 'geojson', id: 0}, 'hover');
                 const fState = map.getFeatureState({source: 'geojson', id: 0});
+                t.equal(fState.hover, undefined);
+                t.equal(fState.click, true);
+                t.end();
+            });
+        });
+        t.test('accepts string id', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({source: 'geojson', id: 'foo'}, {'hover': true, 'click': true});
+                map.removeFeatureState({source: 'geojson', id: 'foo'}, 'hover');
+                const fState = map.getFeatureState({source: 'geojson', id: 'foo'});
                 t.equal(fState.hover, undefined);
                 t.equal(fState.click, true);
                 t.end();
@@ -1754,48 +1861,6 @@ test('Map', (t) => {
                     t.end();
                 });
                 map.removeFeatureState({source: 'vector', sourceLayer: "1"}, {'hover': true});
-            });
-        });
-        t.test('removeFeatureState fires an error if id is less than zero', (t) => {
-            const map = createMap(t, {
-                style: {
-                    "version": 8,
-                    "sources": {
-                        "vector": {
-                            "type": "vector",
-                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
-                        }
-                    },
-                    "layers": []
-                }
-            });
-            map.on('load', () => {
-                map.on('error', ({error}) => {
-                    t.match(error.message, /id/);
-                    t.end();
-                });
-                map.removeFeatureState({source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
-            });
-        });
-        t.test('fires an error if id cannot be parsed as an int', (t) => {
-            const map = createMap(t, {
-                style: {
-                    "version": 8,
-                    "sources": {
-                        "vector": {
-                            "type": "vector",
-                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
-                        }
-                    },
-                    "layers": []
-                }
-            });
-            map.on('load', () => {
-                map.on('error', ({error}) => {
-                    t.match(error.message, /id/);
-                    t.end();
-                });
-                map.removeFeatureState({source: 'vector', sourceLayer: "1", id: 'abc'}, {'hover': true});
             });
         });
         t.end();

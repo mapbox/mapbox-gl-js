@@ -1,0 +1,160 @@
+{
+  "positionedLines": [
+    {
+      "positionedGlyphs": [
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": -33,
+          "y": -13.5,
+          "vertical": true,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 57344,
+          "imageName": "square",
+          "x": -9,
+          "y": -10.5,
+          "vertical": true,
+          "scale": 1.5,
+          "fontStack": "",
+          "sectionIndex": 1,
+          "metrics": {
+            "width": 14,
+            "height": 14,
+            "left": 1,
+            "top": -3,
+            "advance": 14
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 16,
+            "h": 16
+          }
+        },
+        {
+          "glyph": 57345,
+          "imageName": "wide",
+          "x": 12,
+          "y": -10.5,
+          "vertical": true,
+          "scale": 1.5,
+          "fontStack": "",
+          "sectionIndex": 2,
+          "metrics": {
+            "width": 30,
+            "height": 14,
+            "left": 1,
+            "top": -3,
+            "advance": 14
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 16
+          }
+        }
+      ],
+      "lineOffset": 21
+    },
+    {
+      "positionedGlyphs": [
+        {
+          "glyph": 57346,
+          "imageName": "tall",
+          "x": -43.5,
+          "y": -10.5,
+          "vertical": true,
+          "scale": 1.5,
+          "fontStack": "",
+          "sectionIndex": 4,
+          "metrics": {
+            "width": 14,
+            "height": 30,
+            "left": 1,
+            "top": -3,
+            "advance": 30
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 16,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 57347,
+          "imageName": "square",
+          "x": 1.5,
+          "y": 13.5,
+          "vertical": true,
+          "scale": 1.5,
+          "fontStack": "",
+          "sectionIndex": 5,
+          "metrics": {
+            "width": 14,
+            "height": 14,
+            "left": 1,
+            "top": -3,
+            "advance": 14
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 16,
+            "h": 16
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": 22.5,
+          "y": 10.5,
+          "vertical": true,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 6,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        }
+      ],
+      "lineOffset": 0
+    }
+  ],
+  "text": "三​三",
+  "top": -34.5,
+  "bottom": 34.5,
+  "left": -45,
+  "right": 45,
+  "writingMode": 2,
+  "iconsInText": true,
+  "verticalizable": true
+}

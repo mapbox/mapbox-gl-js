@@ -8,6 +8,7 @@ import EXTENT from '../data/extent';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import SegmentVector from '../data/segment';
 import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types';
+import {values} from '../util/util';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import posAttributes from '../data/pos_attributes';
 import ProgramConfiguration from '../data/program_configuration';
@@ -21,7 +22,6 @@ import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import Texture from './texture';
-import updateTileMasks from './tile_mask';
 import {clippingMaskUniformValues} from './program/clipping_mask_program';
 import Color from '../style-spec/util/color';
 import symbol from './draw_symbol';
@@ -62,6 +62,7 @@ import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
+import type ResolvedImage from '../style-spec/expression/types/resolved_image';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 
@@ -72,6 +73,7 @@ type PainterOptions = {
     rotating: boolean,
     zooming: boolean,
     moving: boolean,
+    gpuTiming: boolean,
     fadeDuration: number
 }
 
@@ -102,7 +104,7 @@ class Painter {
     viewportSegments: SegmentVector;
     quadTriangleIndexBuffer: IndexBuffer;
     tileBorderIndexBuffer: IndexBuffer;
-    _tileClippingMaskIDs: { [number]: number };
+    _tileClippingMaskIDs: { [string]: number };
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -120,6 +122,7 @@ class Painter {
     cache: { [string]: Program<*> };
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
+    gpuTimers: { [string]: any };
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -138,6 +141,8 @@ class Painter {
         this.emptyProgramConfiguration = new ProgramConfiguration();
 
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
+
+        this.gpuTimers = {};
     }
 
     /*
@@ -291,6 +296,36 @@ class Painter {
         return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
+    /*
+     * Sort coordinates by Z as drawing tiles is done in Z-descending order.
+     * All children with the same Z write the same stencil value.  Children
+     * stencil values are greater than parent's.  This is used only for raster
+     * and raster-dem tiles, which are already clipped to tile boundaries, to
+     * mask area of tile overlapped by children tiles.
+     * Stencil ref values continue range used in _tileClippingMaskIDs.
+     *
+     * Returns [StencilMode for tile overscaleZ map, sortedCoords].
+     */
+    stencilConfigForOverlap(tileIDs: Array<OverscaledTileID>): [{[number]: $ReadOnly<StencilMode>}, Array<OverscaledTileID>] {
+        const gl = this.context.gl;
+        const coords = tileIDs.sort((a, b) => b.overscaledZ - a.overscaledZ);
+        const minTileZ = coords[coords.length - 1].overscaledZ;
+        const stencilValues = coords[0].overscaledZ - minTileZ + 1;
+        if (stencilValues > 1) {
+            this.currentStencilSource = undefined;
+            if (this.nextStencilID + stencilValues > 256) {
+                this.clearStencil();
+            }
+            const zToStencilMode = {};
+            for (let i = 0; i < stencilValues; i++) {
+                zToStencilMode[i + minTileZ] = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, i + this.nextStencilID, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+            }
+            this.nextStencilID += stencilValues;
+            return [zToStencilMode, coords];
+        }
+        return [{[minTileZ]: StencilMode.disabled}, coords];
+    }
+
     colorModeForRenderPass(): $ReadOnly<ColorMode> {
         const gl = this.context.gl;
         if (this._showOverdrawInspector) {
@@ -353,15 +388,6 @@ class Painter {
             coordsAscending[id] = sourceCache.getVisibleCoordinates();
             coordsDescending[id] = coordsAscending[id].slice().reverse();
             coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
-        }
-
-        for (const id in sourceCaches) {
-            const sourceCache = sourceCaches[id];
-            const source = sourceCache.getSource();
-            if (source.type !== 'raster' && source.type !== 'raster-dem') continue;
-            const visibleTiles = [];
-            for (const coord of coordsAscending[id]) visibleTiles.push(sourceCache.getTile(coord));
-            updateTileMasks(visibleTiles, this.context);
         }
 
         this.opaquePassCutoff = Infinity;
@@ -431,9 +457,22 @@ class Painter {
         }
 
         if (this.options.showTileBoundaries) {
-            for (const id in sourceCaches) {
-                draw.debug(this, sourceCaches[id], coordsAscending[id]);
-                break;
+            //Use source with highest maxzoom
+            let selectedSource;
+            let sourceCache;
+            const layers = values(this.style._layers);
+            layers.forEach((layer) => {
+                if (layer.source && !layer.isHidden(this.transform.zoom)) {
+                    if (layer.source !== (sourceCache && sourceCache.id)) {
+                        sourceCache = this.style.sourceCaches[layer.source];
+                    }
+                    if (!selectedSource || (selectedSource.getSource().maxzoom < sourceCache.getSource().maxzoom)) {
+                        selectedSource = sourceCache;
+                    }
+                }
+            });
+            if (selectedSource) {
+                draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
             }
         }
 
@@ -459,7 +498,52 @@ class Painter {
         if (layer.type !== 'background' && layer.type !== 'custom' && !coords.length) return;
         this.id = layer.id;
 
+        this.gpuTimingStart(layer);
         draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets);
+        this.gpuTimingEnd();
+    }
+
+    gpuTimingStart(layer: StyleLayer) {
+        if (!this.options.gpuTiming) return;
+        const ext = this.context.extTimerQuery;
+        // This tries to time the draw call itself, but note that the cost for drawing a layer
+        // may be dominated by the cost of uploading vertices to the GPU.
+        // To instrument that, we'd need to pass the layerTimers object down into the bucket
+        // uploading logic.
+        let layerTimer = this.gpuTimers[layer.id];
+        if (!layerTimer) {
+            layerTimer = this.gpuTimers[layer.id] = {
+                calls: 0,
+                cpuTime: 0,
+                query: ext.createQueryEXT()
+            };
+        }
+        layerTimer.calls++;
+        ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, layerTimer.query);
+    }
+
+    gpuTimingEnd() {
+        if (!this.options.gpuTiming) return;
+        const ext = this.context.extTimerQuery;
+        ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
+    }
+
+    collectGpuTimers() {
+        const currentLayerTimers = this.gpuTimers;
+        this.gpuTimers = {};
+        return currentLayerTimers;
+    }
+
+    queryGpuTimers(gpuTimers: {[string]: any}) {
+        const layers = {};
+        for (const layerId in gpuTimers) {
+            const gpuTimer = gpuTimers[layerId];
+            const ext = this.context.extTimerQuery;
+            const gpuTime = ext.getQueryObjectEXT(gpuTimer.query, ext.QUERY_RESULT_EXT) / (1000 * 1000);
+            ext.deleteQueryEXT(gpuTimer.query);
+            layers[layerId] = gpuTime;
+        }
+        return layers;
     }
 
     /**
@@ -513,10 +597,10 @@ class Painter {
      *
      * @returns true if a needed image is missing and rendering needs to be skipped.
      */
-    isPatternMissing(image: ?CrossFaded<string>): boolean {
+    isPatternMissing(image: ?CrossFaded<ResolvedImage>): boolean {
         if (!image) return false;
-        const imagePosA = this.imageManager.getPattern(image.from);
-        const imagePosB = this.imageManager.getPattern(image.to);
+        const imagePosA = this.imageManager.getPattern(image.from.toString());
+        const imagePosB = this.imageManager.getPattern(image.to.toString());
         return !imagePosA || !imagePosB;
     }
 

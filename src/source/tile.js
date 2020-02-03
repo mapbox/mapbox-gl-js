@@ -1,21 +1,17 @@
 // @flow
 
-import {uniqueId, deepEqual, parseCacheControl} from '../util/util';
+import {uniqueId, parseCacheControl} from '../util/util';
 import {deserialize as deserializeBucket} from '../data/bucket';
 import FeatureIndex from '../data/feature_index';
 import GeoJSONFeature from '../util/vectortile_to_geojson';
 import featureFilter from '../style-spec/feature_filter';
 import SymbolBucket from '../data/bucket/symbol_bucket';
-import {RasterBoundsArray, CollisionBoxArray} from '../data/array_types';
-import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import EXTENT from '../data/extent';
-import Point from '@mapbox/point-geometry';
+import {CollisionBoxArray} from '../data/array_types';
 import Texture from '../render/texture';
-import SegmentVector from '../data/segment';
-import {TriangleIndexArray} from '../data/index_array_type';
 import browser from '../util/browser';
 import EvaluationParameters from '../style/evaluation_parameters';
 import SourceFeatureState from '../source/source_state';
+import {lazyLoadRTLTextPlugin} from './rtl_text_plugin';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -27,10 +23,7 @@ import type DEMData from '../data/dem_data';
 import type {AlphaImage} from '../util/image';
 import type ImageAtlas from '../render/image_atlas';
 import type ImageManager from '../render/image_manager';
-import type {Mask} from '../render/tile_mask';
 import type Context from '../gl/context';
-import type IndexBuffer from '../gl/index_buffer';
-import type VertexBuffer from '../gl/vertex_buffer';
 import type {OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
 import type Transform from '../geo/transform';
@@ -76,14 +69,10 @@ class Tile {
     placementSource: any;
     actor: ?Actor;
     vtLayers: {[string]: VectorTileLayer};
-    mask: Mask;
 
     neighboringTiles: ?Object;
     dem: ?DEMData;
     aborted: ?boolean;
-    maskedBoundsBuffer: ?VertexBuffer;
-    maskedIndexBuffer: ?IndexBuffer;
-    segments: ?SegmentVector;
     needsHillshadePrepare: ?boolean;
     request: ?Cancelable;
     texture: any;
@@ -96,6 +85,8 @@ class Tile {
 
     symbolFadeHoldUntil: ?number;
     hasSymbolBuckets: boolean;
+    hasRTLText: boolean;
+    dependencies: Object;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -110,6 +101,8 @@ class Tile {
         this.expirationTime = null;
         this.queryPadding = 0;
         this.hasSymbolBuckets = false;
+        this.hasRTLText = false;
+        this.dependencies = {};
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -184,6 +177,20 @@ class Tile {
             }
         }
 
+        this.hasRTLText = false;
+        if (this.hasSymbolBuckets) {
+            for (const id in this.buckets) {
+                const bucket = this.buckets[id];
+                if (bucket instanceof SymbolBucket) {
+                    if (bucket.hasRTLText) {
+                        this.hasRTLText = true;
+                        lazyLoadRTLTextPlugin();
+                        break;
+                    }
+                }
+            }
+        }
+
         this.queryPadding = 0;
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
@@ -222,12 +229,6 @@ class Tile {
         }
 
         this.latestFeatureIndex = null;
-        this.state = 'unloaded';
-    }
-
-    unloadDEMData() {
-        this.dem = null;
-        this.neighboringTiles = null;
         this.state = 'unloaded';
     }
 
@@ -288,9 +289,10 @@ class Tile {
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
-        if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData) return;
+        const featureIndex = this.latestFeatureIndex;
+        if (!featureIndex || !featureIndex.rawTileData) return;
 
-        const vtLayers = this.latestFeatureIndex.loadVTLayers();
+        const vtLayers = featureIndex.loadVTLayers();
 
         const sourceLayer = params ? params.sourceLayer : '';
         const layer = vtLayers._geojsonTileLayer || vtLayers[sourceLayer];
@@ -304,75 +306,12 @@ class Tile {
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i);
             if (filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
-                const geojsonFeature = new GeoJSONFeature(feature, z, x, y);
+                const id = featureIndex.getId(feature, sourceLayer);
+                const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
                 (geojsonFeature: any).tile = coord;
                 result.push(geojsonFeature);
             }
         }
-    }
-
-    clearMask() {
-        if (this.segments) {
-            this.segments.destroy();
-            delete this.segments;
-        }
-        if (this.maskedBoundsBuffer) {
-            this.maskedBoundsBuffer.destroy();
-            delete this.maskedBoundsBuffer;
-        }
-        if (this.maskedIndexBuffer) {
-            this.maskedIndexBuffer.destroy();
-            delete this.maskedIndexBuffer;
-        }
-    }
-
-    setMask(mask: Mask, context: Context) {
-
-        // don't redo buffer work if the mask is the same;
-        if (deepEqual(this.mask, mask)) return;
-
-        this.mask = mask;
-        this.clearMask();
-
-        // We want to render the full tile, and keeping the segments/vertices/indices empty means
-        // using the global shared buffers for covering the entire tile.
-        if (deepEqual(mask, {'0': true})) return;
-
-        const maskedBoundsArray = new RasterBoundsArray();
-        const indexArray = new TriangleIndexArray();
-
-        this.segments = new SegmentVector();
-        // Create a new segment so that we will upload (empty) buffers even when there is nothing to
-        // draw for this tile.
-        this.segments.prepareSegment(0, maskedBoundsArray, indexArray);
-
-        const maskArray = Object.keys(mask);
-        for (let i = 0; i < maskArray.length; i++) {
-            const maskCoord = mask[+maskArray[i]];
-            const vertexExtent = EXTENT >> maskCoord.z;
-            const tlVertex = new Point(maskCoord.x * vertexExtent, maskCoord.y * vertexExtent);
-            const brVertex = new Point(tlVertex.x + vertexExtent, tlVertex.y + vertexExtent);
-
-            // not sure why flow is complaining here because it doesn't complain at L401
-            const segment = (this.segments: any).prepareSegment(4, maskedBoundsArray, indexArray);
-
-            maskedBoundsArray.emplaceBack(tlVertex.x, tlVertex.y, tlVertex.x, tlVertex.y);
-            maskedBoundsArray.emplaceBack(brVertex.x, tlVertex.y, brVertex.x, tlVertex.y);
-            maskedBoundsArray.emplaceBack(tlVertex.x, brVertex.y, tlVertex.x, brVertex.y);
-            maskedBoundsArray.emplaceBack(brVertex.x, brVertex.y, brVertex.x, brVertex.y);
-
-            const offset = segment.vertexLength;
-            // 0, 1, 2
-            // 1, 2, 3
-            indexArray.emplaceBack(offset, offset + 1, offset + 2);
-            indexArray.emplaceBack(offset + 1, offset + 2, offset + 3);
-
-            segment.vertexLength += 4;
-            segment.primitiveLength += 2;
-        }
-
-        this.maskedBoundsBuffer = context.createVertexBuffer(maskedBoundsArray, rasterBoundsAttributes.members);
-        this.maskedIndexBuffer = context.createIndexBuffer(indexArray);
     }
 
     hasData() {
@@ -481,6 +420,28 @@ class Tile {
 
     setHoldDuration(duration: number) {
         this.symbolFadeHoldUntil = browser.now() + duration;
+    }
+
+    setDependencies(namespace: string, dependencies: Array<string>) {
+        const index = {};
+        for (const dep of dependencies) {
+            index[dep] = true;
+        }
+        this.dependencies[namespace] = index;
+    }
+
+    hasDependency(namespaces: Array<string>, keys: Array<string>) {
+        for (const namespace of namespaces) {
+            const dependencies = this.dependencies[namespace];
+            if (dependencies) {
+                for (const key of keys) {
+                    if (dependencies[key]) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
 

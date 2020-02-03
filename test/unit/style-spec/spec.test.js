@@ -20,6 +20,35 @@ import * as spec from '../../../src/style-spec/style-spec';
     });
 });
 
+test(`v8 Spec SDK Support section`, (t) => {
+    const v = 'v8';
+    const propObjs = [].concat(spec[v].paint).concat(spec[v].layout);
+    propObjs.forEach((objKey) => {
+        const props = spec[v][objKey];
+        const propKeys = Object.keys(props);
+        propKeys.forEach((key) => {
+            t.ok(props[key]["sdk-support"], `${objKey}_${key} is missing sdk support section`);
+            if (props[key]["sdk-support"]) {
+                t.ok(props[key]["sdk-support"]["basic functionality"], `${objKey}_${key} is missing sdk support section for 'basic functionality'`);
+                if (props[key]["property-type"].includes("constant")) {
+                    t.notOk(props[key]["sdk-support"]["data-driven styling"], `${objKey}_${key} should not have sdk support section for 'data-driven styling'`);
+                } else {
+                    t.ok(props[key]["sdk-support"]["data-driven styling"], `${objKey}_${key} is missing sdk support section for 'data-driven styling'`);
+                }
+            }
+        });
+    });
+
+    const expressions = spec[v].expression_name.values;
+    const expressionNames = Object.keys(expressions);
+    expressionNames.forEach((expr) => {
+        t.ok(expressions[expr]["sdk-support"], `expression_${expr} is missing sdk support section`);
+        if (expressions[expr]["sdk-support"]) {
+            t.ok(expressions[expr]["sdk-support"]["basic functionality"], `expression_${expr} is missing sdk support section for 'basic functionality'`);
+        }
+    });
+    t.end();
+});
 function validSchema(k, t, obj, ref, version, kind) {
     const scalar = ['boolean', 'string', 'number'];
     const types = Object.keys(ref).concat(['boolean', 'string', 'number',
@@ -36,7 +65,9 @@ function validSchema(k, t, obj, ref, version, kind) {
         'text-transform-enum',
         'visibility-enum',
         'property-type',
-        'formatted'
+        'formatted',
+        'resolvedImage',
+        'promoteId'
     ]);
     const keys = [
         'default',

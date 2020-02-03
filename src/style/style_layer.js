@@ -193,16 +193,16 @@ class StyleLayer extends Evented {
         return this._transitioningPaint.hasTransition();
     }
 
-    recalculate(parameters: EvaluationParameters) {
+    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
         if (parameters.getCrossfadeParameters) {
             this._crossfadeParameters = parameters.getCrossfadeParameters();
         }
 
         if (this._unevaluatedLayout) {
-            (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters);
+            (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, availableImages);
         }
 
-        (this: any).paint = this._transitioningPaint.possiblyEvaluate(parameters);
+        (this: any).paint = this._transitioningPaint.possiblyEvaluate(parameters, availableImages);
     }
 
     serialize() {

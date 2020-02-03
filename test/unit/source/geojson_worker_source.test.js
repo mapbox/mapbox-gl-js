@@ -4,6 +4,8 @@ import StyleLayerIndex from '../../../src/style/style_layer_index';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import perf from '../../../src/util/performance';
 
+const actor = {send: () => {}};
+
 test('reloadTile', (t) => {
     t.test('does not rebuild vector data unless data has changed', (t) => {
         const layers = [
@@ -14,7 +16,7 @@ test('reloadTile', (t) => {
             }
         ];
         const layerIndex = new StyleLayerIndex(layers);
-        const source = new GeoJSONWorkerSource(null, layerIndex);
+        const source = new GeoJSONWorkerSource(actor, layerIndex, []);
         const originalLoadVectorData = source.loadVectorData;
         let loadVectorCallCount = 0;
         source.loadVectorData = function(params, callback) {
@@ -126,7 +128,7 @@ test('resourceTiming', (t) => {
         t.stub(perf, 'getEntriesByName').callsFake(() => { return [ exampleResourceTiming ]; });
 
         const layerIndex = new StyleLayerIndex(layers);
-        const source = new GeoJSONWorkerSource(null, layerIndex, (params, callback) => { return callback(null, geoJson); });
+        const source = new GeoJSONWorkerSource(actor, layerIndex, [], (params, callback) => { return callback(null, geoJson); });
 
         source.loadData({source: 'testSource', request: {url: 'http://localhost/nonexistent', collectResourceTiming: true}}, (err, result) => {
             t.equal(err, null);
@@ -158,7 +160,7 @@ test('resourceTiming', (t) => {
         t.stub(perf, 'clearMeasures').callsFake(() => { return null; });
 
         const layerIndex = new StyleLayerIndex(layers);
-        const source = new GeoJSONWorkerSource(null, layerIndex, (params, callback) => { return callback(null, geoJson); });
+        const source = new GeoJSONWorkerSource(actor, layerIndex, [], (params, callback) => { return callback(null, geoJson); });
 
         source.loadData({source: 'testSource', request: {url: 'http://localhost/nonexistent', collectResourceTiming: true}}, (err, result) => {
             t.equal(err, null);
@@ -169,7 +171,7 @@ test('resourceTiming', (t) => {
 
     t.test('loadData - data', (t) => {
         const layerIndex = new StyleLayerIndex(layers);
-        const source = new GeoJSONWorkerSource(null, layerIndex);
+        const source = new GeoJSONWorkerSource(actor, layerIndex, []);
 
         source.loadData({source: 'testSource', data: JSON.stringify(geoJson)}, (err, result) => {
             t.equal(err, null);
@@ -205,7 +207,7 @@ test('loadData', (t) => {
 
     const layerIndex = new StyleLayerIndex(layers);
     function createWorker() {
-        const worker = new GeoJSONWorkerSource(null, layerIndex);
+        const worker = new GeoJSONWorkerSource(actor, layerIndex, []);
 
         // Making the call to loadGeoJSON asynchronous
         // allows these tests to mimic a message queue building up

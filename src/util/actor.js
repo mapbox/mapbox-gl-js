@@ -1,6 +1,7 @@
 // @flow
 
-import {bindAll} from './util';
+import {bindAll, isWorker, isSafari} from './util';
+import window from './window';
 import {serialize, deserialize} from './web_worker_transfer';
 import ThrottledInvoker from './throttled_invoker';
 
@@ -28,6 +29,7 @@ class Actor {
     taskQueue: Array<number>;
     cancelCallbacks: { number: Cancelable };
     invoker: ThrottledInvoker;
+    globalScope: any;
 
     constructor(target: any, parent: any, mapId: ?number) {
         this.target = target;
@@ -40,6 +42,7 @@ class Actor {
         bindAll(['receive', 'process'], this);
         this.invoker = new ThrottledInvoker(this.process);
         this.target.addEventListener('message', this.receive, false);
+        this.globalScope = isWorker() ? target : window;
     }
 
     /**
@@ -50,7 +53,7 @@ class Actor {
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
-    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string): ?Cancelable {
+    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string, mustQueue: boolean = false): ?Cancelable {
         // We're using a string ID instead of numbers because they are being used as object keys
         // anyway, and thus stringified implicitly. We use random IDs because an actor may receive
         // message from multiple other actors which could run in different execution context. A
@@ -59,12 +62,13 @@ class Actor {
         if (callback) {
             this.callbacks[id] = callback;
         }
-        const buffers: Array<Transferable> = [];
+        const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
         this.target.postMessage({
             id,
             type,
             hasCallback: !!callback,
             targetMapId,
+            mustQueue,
             sourceMapId: this.mapId,
             data: serialize(data, buffers)
         }, buffers);
@@ -107,15 +111,21 @@ class Actor {
                 cancel();
             }
         } else {
-            // Store the tasks that we need to process before actually processing them. This
-            // is necessary because we want to keep receiving messages, and in particular,
-            // <cancel> messages. Some tasks may take a while in the worker thread, so before
-            // executing the next task in our queue, postMessage preempts this and <cancel>
-            // messages can be processed. We're using a MessageChannel object to get throttle the
-            // process() flow to one at a time.
-            this.tasks[id] = data;
-            this.taskQueue.push(id);
-            this.invoker.trigger();
+            if (isWorker() || data.mustQueue) {
+                // In workers, store the tasks that we need to process before actually processing them. This
+                // is necessary because we want to keep receiving messages, and in particular,
+                // <cancel> messages. Some tasks may take a while in the worker thread, so before
+                // executing the next task in our queue, postMessage preempts this and <cancel>
+                // messages can be processed. We're using a MessageChannel object to get throttle the
+                // process() flow to one at a time.
+                this.tasks[id] = data;
+                this.taskQueue.push(id);
+                this.invoker.trigger();
+            } else {
+                // In the main thread, process messages immediately so that other work does not slip in
+                // between getting partial data back from workers.
+                this.processTask(id, data);
+            }
         }
     }
 
@@ -137,6 +147,10 @@ class Actor {
             return;
         }
 
+        this.processTask(id, task);
+    }
+
+    processTask(id: number, task: any) {
         if (task.type === '<response>') {
             // The done() function in the counterpart has been called, and we are now
             // firing the callback in the originating actor, if there is one.
@@ -152,10 +166,10 @@ class Actor {
             }
         } else {
             let completed = false;
+            const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
             const done = task.hasCallback ? (err, data) => {
                 completed = true;
                 delete this.cancelCallbacks[id];
-                const buffers: Array<Transferable> = [];
                 this.target.postMessage({
                     id,
                     type: '<response>',
@@ -190,6 +204,7 @@ class Actor {
     }
 
     remove() {
+        this.invoker.remove();
         this.target.removeEventListener('message', this.receive, false);
     }
 }

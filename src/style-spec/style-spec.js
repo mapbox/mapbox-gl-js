@@ -64,6 +64,7 @@ import latest from './reference/latest';
 import format from './format';
 import migrate from './migrate';
 import composite from './composite';
+import derefLayers from './deref';
 import diff from './diff';
 import ValidationError from './error/validation_error';
 import ParsingError from './error/parsing_error';
@@ -76,6 +77,7 @@ import convertFunction from './function/convert';
 import {eachSource, eachLayer, eachProperty} from './visit';
 
 import validate from './validate_style';
+import validateMapboxApiSupported from './validate_mapbox_api_supported';
 
 const expression = {
     StyleExpression,
@@ -102,6 +104,7 @@ export {
     format,
     migrate,
     composite,
+    derefLayers,
     diff,
     ValidationError,
     ParsingError,
@@ -111,6 +114,7 @@ export {
     Color,
     styleFunction as function,
     validate,
+    validateMapboxApiSupported,
     visit
 };
 

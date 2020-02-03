@@ -29,6 +29,7 @@ class DragRotateHandler {
     _eventButton: number;
     _bearingSnap: number;
     _pitchWithRotate: boolean;
+    _clickTolerance: number;
 
     _startPos: Point;
     _prevPos: Point;
@@ -51,7 +52,8 @@ class DragRotateHandler {
         button?: 'right' | 'left',
         element?: HTMLElement,
         bearingSnap?: number,
-        pitchWithRotate?: boolean
+        pitchWithRotate?: boolean,
+        clickTolerance?: number
     }) {
         this._map = map;
         this._el = options.element || map.getCanvasContainer();
@@ -59,6 +61,7 @@ class DragRotateHandler {
         this._button = options.button || 'right';
         this._bearingSnap = options.bearingSnap || 0;
         this._pitchWithRotate = options.pitchWithRotate !== false;
+        this._clickTolerance = options.clickTolerance || 1;
 
         bindAll([
             'onMouseDown',
@@ -137,6 +140,8 @@ class DragRotateHandler {
         } else {
             if (this._button === 'right') {
                 this._eventButton = DOM.mouseButton(e);
+
+                if (e.altKey || e.metaKey) return;
                 if (this._eventButton !== (e.ctrlKey ? 0 : 2)) return;
             } else {
                 if (e.ctrlKey || DOM.mouseButton(e) !== 0) return;
@@ -173,7 +178,7 @@ class DragRotateHandler {
 
     _onMouseMove(e: MouseEvent) {
         const pos = DOM.mousePos(this._el, e);
-        if (this._lastPos.equals(pos)) {
+        if (this._lastPos.equals(pos) || ((this._state === 'pending') && (pos.dist(this._startPos) < this._clickTolerance))) {
             return;
         }
 
@@ -213,13 +218,19 @@ class DragRotateHandler {
         this._drainInertiaBuffer();
         inertia.push([browser.now(), this._map._normalizeBearing(bearing, last[1])]);
 
+        const prevBearing = tr.bearing;
         tr.bearing = bearing;
         if (this._pitchWithRotate) {
-            this._fireEvent('pitch', e);
+            const prevPitch = tr.pitch;
             tr.pitch = pitch;
+            if (tr.pitch !== prevPitch) {
+                this._fireEvent('pitch', e);
+            }
         }
 
-        this._fireEvent('rotate', e);
+        if (tr.bearing !== prevBearing) {
+            this._fireEvent('rotate', e);
+        }
         this._fireEvent('move', e);
 
         delete this._lastMoveEvent;
@@ -233,7 +244,7 @@ class DragRotateHandler {
             this._el.click();
         }
 
-        if (DOM.mouseButton(e) !== this._eventButton) return;
+        if (!touchEvent && DOM.mouseButton(e) !== this._eventButton) return;
         switch (this._state) {
         case 'active':
             this._state = 'enabled';

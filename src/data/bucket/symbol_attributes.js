@@ -4,8 +4,9 @@ import {createLayout} from '../../util/struct_array';
 
 export const symbolLayoutAttributes = createLayout([
     {name: 'a_pos_offset',  components: 4, type: 'Int16'},
-    {name: 'a_data',        components: 4, type: 'Uint16'}
-]);
+    {name: 'a_data',        components: 4, type: 'Uint16'},
+    {name: 'a_pixeloffset',        components: 4, type: 'Int16'}
+], 4);
 
 export const dynamicLayoutAttributes = createLayout([
     {name: 'a_projected_pos', components: 3, type: 'Float32'}
@@ -73,7 +74,8 @@ export const placement = createLayout([
     {type: 'Uint8', name: 'writingMode'},
     {type: 'Uint8', name: 'placedOrientation'},
     {type: 'Uint8', name: 'hidden'},
-    {type: 'Uint32', name: 'crossTileID'}
+    {type: 'Uint32', name: 'crossTileID'},
+    {type: 'Int16', name: 'associatedIconIndex'}
 ]);
 
 export const symbolInstance = createLayout([
@@ -83,6 +85,8 @@ export const symbolInstance = createLayout([
     {type: 'Int16', name: 'centerJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'leftJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'verticalPlacedTextSymbolIndex'},
+    {type: 'Int16', name: 'placedIconSymbolIndex'},
+    {type: 'Int16', name: 'verticalPlacedIconSymbolIndex'},
     {type: 'Uint16', name: 'key'},
     {type: 'Uint16', name: 'textBoxStartIndex'},
     {type: 'Uint16', name: 'textBoxEndIndex'},
@@ -90,10 +94,13 @@ export const symbolInstance = createLayout([
     {type: 'Uint16', name: 'verticalTextBoxEndIndex'},
     {type: 'Uint16', name: 'iconBoxStartIndex'},
     {type: 'Uint16', name: 'iconBoxEndIndex'},
+    {type: 'Uint16', name: 'verticalIconBoxStartIndex'},
+    {type: 'Uint16', name: 'verticalIconBoxEndIndex'},
     {type: 'Uint16', name: 'featureIndex'},
     {type: 'Uint16', name: 'numHorizontalGlyphVertices'},
     {type: 'Uint16', name: 'numVerticalGlyphVertices'},
     {type: 'Uint16', name: 'numIconVertices'},
+    {type: 'Uint16', name: 'numVerticalIconVertices'},
     {type: 'Uint32', name: 'crossTileID'},
     {type: 'Float32', name: 'textBoxScale'},
     {type: 'Float32', components: 2, name: 'textOffset'}

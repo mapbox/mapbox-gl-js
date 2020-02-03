@@ -32,6 +32,8 @@ global.flowType = function (property) {
             return `Color`;
         case 'formatted':
             return `Formatted`;
+        case 'resolvedImage':
+            return `ResolvedImage`;
         case 'array':
             if (property.length) {
                 return `[${new Array(property.length).fill(flowType({type: property.value})).join(', ')}]`;
@@ -73,6 +75,8 @@ global.runtimeType = function (property) {
             return `ColorType`;
         case 'formatted':
             return `FormattedType`;
+        case 'Image':
+            return `ImageType`;
         case 'array':
             if (property.length) {
                 return `array(${runtimeType({type: property.value})}, ${property.length})`;

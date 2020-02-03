@@ -1,15 +1,17 @@
 // @flow
-
 import type Color from '../../util/color';
+import type ResolvedImage from '../types/resolved_image';
 
 export class FormattedSection {
     text: string;
+    image: ResolvedImage | null;
     scale: number | null;
     fontStack: string | null;
     textColor: Color | null;
 
-    constructor(text: string, scale: number | null, fontStack: string | null, textColor: Color | null) {
+    constructor(text: string, image: ResolvedImage | null, scale: number | null, fontStack: string | null, textColor: Color | null) {
         this.text = text;
+        this.image = image;
         this.scale = scale;
         this.fontStack = fontStack;
         this.textColor = textColor;
@@ -24,18 +26,37 @@ export default class Formatted {
     }
 
     static fromString(unformatted: string): Formatted {
-        return new Formatted([new FormattedSection(unformatted, null, null, null)]);
+        return new Formatted([new FormattedSection(unformatted, null, null, null, null)]);
+    }
+
+    isEmpty(): boolean {
+        if (this.sections.length === 0) return true;
+        return !this.sections.some(section => section.text.length !== 0 ||
+                                             (section.image && section.image.name.length !== 0));
+    }
+
+    static factory(text: Formatted | string): Formatted {
+        if (text instanceof Formatted) {
+            return text;
+        } else {
+            return Formatted.fromString(text);
+        }
     }
 
     toString(): string {
+        if (this.sections.length === 0) return '';
         return this.sections.map(section => section.text).join('');
     }
 
     serialize(): Array<mixed> {
-        const serialized = ["format"];
+        const serialized: Array<mixed> = ["format"];
         for (const section of this.sections) {
+            if (section.image) {
+                serialized.push(["image", section.image.name]);
+                continue;
+            }
             serialized.push(section.text);
-            const options = {};
+            const options: { [key: string]: mixed } = {};
             if (section.fontStack) {
                 options["text-font"] = ["literal", section.fontStack.split(',')];
             }
@@ -43,7 +64,7 @@ export default class Formatted {
                 options["font-scale"] = section.scale;
             }
             if (section.textColor) {
-                options["text-color"] = ["rgba"].concat(section.textColor.toArray());
+                options["text-color"] = (["rgba"]: Array<mixed>).concat(section.textColor.toArray());
             }
             serialized.push(options);
         }

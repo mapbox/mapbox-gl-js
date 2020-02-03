@@ -1,0 +1,98 @@
+[
+  {
+    "message": "sources.missing-type: \"type\" is required",
+    "line": 4
+  },
+  {
+    "message": "sources.invalid-type.type: expected one of [vector, raster, raster-dem, geojson, video, image], \"invalid\" found",
+    "line": 7
+  },
+  {
+    "message": "sources.video-missing-coordinates: missing required property \"coordinates\"",
+    "line": 26
+  },
+  {
+    "message": "sources.video-wrong-coordinates.coordinates[0]: array expected, number found",
+    "line": 34
+  },
+  {
+    "message": "sources.video-wrong-coordinates.coordinates[1]: array expected, string found",
+    "line": 34
+  },
+  {
+    "message": "sources.video-wrong-coordinates.coordinates[2][1]: number expected, string found",
+    "line": 34
+  },
+  {
+    "message": "sources.video-wrong-coordinates.coordinates[3]: array length 2 expected, length 0 found",
+    "line": 34
+  },
+  {
+    "message": "sources.canvas: Please use runtime APIs to add canvas sources, rather than including them in stylesheets.",
+    "identifier": "source.canvas"
+  },
+  {
+    "message": "sources.cluster-properties.zoom.map: \"zoom\" and \"feature-state\" expressions are not supported with cluster properties.",
+    "line": 49
+  },
+  {
+    "message": "sources.cluster-properties.state.map: \"zoom\" and \"feature-state\" expressions are not supported with cluster properties.",
+    "line": 50
+  },
+  {
+    "message": "source.tiles: Unsupported property \"tiles\"",
+    "line": 12
+  },
+  {
+    "message": "sources[2]: Source url must be a valid Mapbox tileset url",
+    "line": 11
+  },
+  {
+    "message": "source.foo: Unsupported property \"foo\"",
+    "line": 17
+  },
+  {
+    "message": "sources[3]: Source url must be a valid Mapbox tileset url",
+    "line": 16
+  },
+  {
+    "message": "source.urls: Unsupported property \"urls\"",
+    "line": 21
+  },
+  {
+    "message": "source.coordinates: Unsupported property \"coordinates\"",
+    "line": 22
+  },
+  {
+    "message": "source.urls: Unsupported property \"urls\"",
+    "line": 28
+  },
+  {
+    "message": "source.urls: Unsupported property \"urls\"",
+    "line": 32
+  },
+  {
+    "message": "source.coordinates: Unsupported property \"coordinates\"",
+    "line": 33
+  },
+  {
+    "message": "source.canvas: Unsupported property \"canvas\"",
+    "line": 39
+  },
+  {
+    "message": "source.coordinates: Unsupported property \"coordinates\"",
+    "line": 40
+  },
+  {
+    "message": "source.data: Unsupported property \"data\"",
+    "line": 46
+  },
+  {
+    "message": "source.cluster: Unsupported property \"cluster\"",
+    "line": 47
+  },
+  {
+    "message": "source.clusterProperties: Unsupported property \"clusterProperties\"",
+    "line": 48
+  }
+]

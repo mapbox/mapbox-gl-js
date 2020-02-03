@@ -78,16 +78,16 @@ class FillBucket implements Bucket {
         const fillSortKey = this.layers[0].layout.get('fill-sort-key');
         const bucketFeatures = [];
 
-        for (const {feature, index, sourceLayerIndex} of features) {
+        for (const {feature, id, index, sourceLayerIndex} of features) {
             if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
 
             const geometry = loadGeometry(feature);
             const sortKey = fillSortKey ?
-                fillSortKey.evaluate(feature, {}) :
+                fillSortKey.evaluate(feature, {}, options.availableImages) :
                 undefined;
 
             const bucketFeature: BucketFeature = {
-                id: feature.id,
+                id,
                 properties: feature.properties,
                 type: feature.type,
                 sourceLayerIndex,

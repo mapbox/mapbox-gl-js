@@ -6,13 +6,12 @@ import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAlt
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
-import tileCover from '../util/tile_cover';
-import {UnwrappedTileID} from '../source/tile_id';
 import EXTENT from '../data/extent';
-import {vec4, mat4, mat2} from 'gl-matrix';
+import {vec4, mat4, mat2, vec2} from 'gl-matrix';
+import {Aabb, Frustum} from '../util/primitives.js';
 import EdgeInsets from './edge_insets';
 
-import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
+import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 import type {EdgeInsetLike, EdgeInsetJSON} from './edge_insets';
 
 /**
@@ -36,6 +35,7 @@ class Transform {
     cameraToCenterDistance: number;
     mercatorMatrix: Array<number>;
     projMatrix: Float64Array;
+    invProjMatrix: Float64Array;
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
@@ -48,19 +48,24 @@ class Transform {
     _renderWorldCopies: boolean;
     _minZoom: number;
     _maxZoom: number;
+    _minPitch: number;
+    _maxPitch: number;
     _center: LngLat;
     _edgeInsets: EdgeInsets;
     _constraining: boolean;
-    _posMatrixCache: {[number]: Float32Array};
-    _alignedPosMatrixCache: {[number]: Float32Array};
+    _posMatrixCache: {[string]: Float32Array};
+    _alignedPosMatrixCache: {[string]: Float32Array};
 
-    constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
         this.maxValidLatitude = 85.051129; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
         this._minZoom = minZoom || 0;
         this._maxZoom = maxZoom || 22;
+
+        this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
+        this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
 
         this.setMaxBounds();
 
@@ -78,7 +83,7 @@ class Transform {
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._renderWorldCopies);
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies);
         clone.tileSize = this.tileSize;
         clone.latRange = this.latRange;
         clone.width = this.width;
@@ -106,6 +111,20 @@ class Transform {
         if (this._maxZoom === zoom) return;
         this._maxZoom = zoom;
         this.zoom = Math.min(this.zoom, zoom);
+    }
+
+    get minPitch(): number { return this._minPitch; }
+    set minPitch(pitch: number) {
+        if (this._minPitch === pitch) return;
+        this._minPitch = pitch;
+        this.pitch = Math.max(this.pitch, pitch);
+    }
+
+    get maxPitch(): number { return this._maxPitch; }
+    set maxPitch(pitch: number) {
+        if (this._maxPitch === pitch) return;
+        this._maxPitch = pitch;
+        this.pitch = Math.min(this.pitch, pitch);
     }
 
     get renderWorldCopies(): boolean { return this._renderWorldCopies; }
@@ -150,7 +169,7 @@ class Transform {
         return this._pitch / Math.PI * 180;
     }
     set pitch(pitch: number) {
-        const p = clamp(pitch, 0, 60) / 180 * Math.PI;
+        const p = clamp(pitch, this.minPitch, this.maxPitch) / 180 * Math.PI;
         if (this._pitch === p) return;
         this._unmodified = false;
         this._pitch = p;
@@ -244,9 +263,11 @@ class Transform {
      * @returns {number} zoom level
      */
     coveringZoomLevel(options: {roundZoom?: boolean, tileSize: number}) {
-        return (options.roundZoom ? Math.round : Math.floor)(
+        const z = (options.roundZoom ? Math.round : Math.floor)(
             this.zoom + this.scaleZoom(this.tileSize / options.tileSize)
         );
+        // At negative zoom levels load tiles from z0 because negative tile zoom levels don't exist.
+        return Math.max(0, z);
     }
 
     /**
@@ -308,15 +329,90 @@ class Transform {
 
         const centerCoord = MercatorCoordinate.fromLngLat(this.center);
         const numTiles = Math.pow(2, z);
-        const centerPoint = new Point(numTiles * centerCoord.x - 0.5, numTiles * centerCoord.y - 0.5);
-        const cornerCoords = [
-            this.pointCoordinate(new Point(0, 0)),
-            this.pointCoordinate(new Point(this.width, 0)),
-            this.pointCoordinate(new Point(this.width, this.height)),
-            this.pointCoordinate(new Point(0, this.height))
-        ];
-        return tileCover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._renderWorldCopies)
-            .sort((a, b) => centerPoint.dist(a.canonical) - centerPoint.dist(b.canonical));
+        const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
+        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
+
+        // No change of LOD behavior for pitch lower than 60: return only tile ids from the requested zoom level
+        let minZoom = options.minzoom || 0;
+        if (this.pitch <= 60.0)
+            minZoom = z;
+
+        // There should always be a certain number of maximum zoom level tiles surrounding the center location
+        const radiusOfMaxLvlLodInTiles = 3;
+
+        const newRootTile = (wrap: number): any => {
+            return {
+                // All tiles are on zero elevation plane => z difference is zero
+                aabb: new Aabb([wrap * numTiles, 0, 0], [(wrap + 1) * numTiles, numTiles, 0]),
+                zoom: 0,
+                x: 0,
+                y: 0,
+                wrap,
+                fullyVisible: false
+            };
+        };
+
+        // Do a depth-first traversal to find visible tiles and proper levels of detail
+        const stack = [];
+        const result = [];
+        const maxZoom = z;
+        const overscaledZ = options.reparseOverscaled ? actualZ : z;
+
+        if (this._renderWorldCopies) {
+            // Render copy of the globe thrice on both sides
+            for (let i = 1; i <= 3; i++) {
+                stack.push(newRootTile(-i));
+                stack.push(newRootTile(i));
+            }
+        }
+
+        stack.push(newRootTile(0));
+
+        while (stack.length > 0) {
+            const it = stack.pop();
+            const x = it.x;
+            const y = it.y;
+            let fullyVisible = it.fullyVisible;
+
+            // Visibility of a tile is not required if any of its ancestor if fully inside the frustum
+            if (!fullyVisible) {
+                const intersectResult = it.aabb.intersects(cameraFrustum);
+
+                if (intersectResult === 0)
+                    continue;
+
+                fullyVisible = intersectResult === 2;
+            }
+
+            const distanceX = it.aabb.distanceX(centerPoint);
+            const distanceY = it.aabb.distanceY(centerPoint);
+            const longestDim = Math.max(Math.abs(distanceX), Math.abs(distanceY));
+
+            // We're using distance based heuristics to determine if a tile should be split into quadrants or not.
+            // radiusOfMaxLvlLodInTiles defines that there's always a certain number of maxLevel tiles next to the map center.
+            // Using the fact that a parent node in quadtree is twice the size of its children (per dimension)
+            // we can define distance thresholds for each relative level:
+            // f(k) = offset + 2 + 4 + 8 + 16 + ... + 2^k. This is the same as "offset+2^(k+1)-2"
+            const distToSplit = radiusOfMaxLvlLodInTiles + (1 << (maxZoom - it.zoom)) - 2;
+
+            // Have we reached the target depth or is the tile too far away to be any split further?
+            if (it.zoom === maxZoom || (longestDim > distToSplit && it.zoom >= minZoom)) {
+                result.push({
+                    tileID: new OverscaledTileID(it.zoom === maxZoom ? overscaledZ : it.zoom, it.wrap, it.zoom, x, y),
+                    distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x, centerPoint[1] - 0.5 - y])
+                });
+                continue;
+            }
+
+            for (let i = 0; i < 4; i++) {
+                const childX = (x << 1) + (i % 2);
+                const childY = (y << 1) + (i >> 1);
+
+                stack.push({aabb: it.aabb.quadrant(i), zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible});
+            }
+        }
+
+        return result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
     }
 
     resize(width: number, height: number) {
@@ -581,7 +677,7 @@ class Transform {
         // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
         const groundAngle = Math.PI / 2 + this._pitch;
         const fovAboveCenter = this._fov * (0.5 + offset.y / this.height);
-        const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - fovAboveCenter);
+        const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * this.cameraToCenterDistance / Math.sin(clamp(Math.PI - groundAngle - fovAboveCenter, 0.01, Math.PI - 0.01));
         const point = this.point;
         const x = point.x, y = point.y;
 
@@ -621,6 +717,7 @@ class Transform {
         mat4.scale(m, m, [1, 1, mercatorZfromAltitude(1, this.center.lat) * this.worldSize, 1]);
 
         this.projMatrix = m;
+        this.invProjMatrix = mat4.invert([], this.projMatrix);
 
         // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.
         // We're rounding the (floating point) x/y values to achieve to avoid rendering raster images to fractional

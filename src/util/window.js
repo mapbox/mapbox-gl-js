@@ -76,7 +76,22 @@ function restore(): Window {
 
     window.URL.revokeObjectURL = function () {};
 
+    window.fakeWorkerPresence = function() {
+        global.WorkerGlobalScope = function() {};
+        global.self = new global.WorkerGlobalScope();
+    };
+    window.clearFakeWorkerPresence = function() {
+        global.WorkerGlobalScope = undefined;
+        global.self = undefined;
+    };
+
     window.restore = restore;
+
+    window.performance.getEntriesByName = function() {};
+    window.performance.mark = function() {};
+    window.performance.measure = function() {};
+    window.performance.clearMarks = function() {};
+    window.performance.clearMeasures = function() {};
 
     window.ImageData = window.ImageData || function() { return false; };
     window.ImageBitmap = window.ImageBitmap || function() { return false; };

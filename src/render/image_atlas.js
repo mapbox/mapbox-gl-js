@@ -8,7 +8,8 @@ import type {StyleImage} from '../style/style_image';
 import type ImageManager from './image_manager';
 import type Texture from './texture';
 
-const padding = 1;
+const IMAGE_PADDING: number = 1;
+export {IMAGE_PADDING};
 
 type Rect = {
     x: number,
@@ -21,24 +22,30 @@ export class ImagePosition {
     paddedRect: Rect;
     pixelRatio: number;
     version: number;
+    stretchY: ?Array<[number, number]>;
+    stretchX: ?Array<[number, number]>;
+    content: ?[number, number, number, number];
 
-    constructor(paddedRect: Rect, {pixelRatio, version}: StyleImage) {
+    constructor(paddedRect: Rect, {pixelRatio, version, stretchX, stretchY, content}: StyleImage) {
         this.paddedRect = paddedRect;
         this.pixelRatio = pixelRatio;
+        this.stretchX = stretchX;
+        this.stretchY = stretchY;
+        this.content = content;
         this.version = version;
     }
 
     get tl(): [number, number] {
         return [
-            this.paddedRect.x + padding,
-            this.paddedRect.y + padding
+            this.paddedRect.x + IMAGE_PADDING,
+            this.paddedRect.y + IMAGE_PADDING
         ];
     }
 
     get br(): [number, number] {
         return [
-            this.paddedRect.x + this.paddedRect.w - padding,
-            this.paddedRect.y + this.paddedRect.h - padding
+            this.paddedRect.x + this.paddedRect.w - IMAGE_PADDING,
+            this.paddedRect.y + this.paddedRect.h - IMAGE_PADDING
         ];
     }
 
@@ -48,8 +55,8 @@ export class ImagePosition {
 
     get displaySize(): [number, number] {
         return [
-            (this.paddedRect.w - padding * 2) / this.pixelRatio,
-            (this.paddedRect.h - padding * 2) / this.pixelRatio
+            (this.paddedRect.w - IMAGE_PADDING * 2) / this.pixelRatio,
+            (this.paddedRect.h - IMAGE_PADDING * 2) / this.pixelRatio
         ];
     }
 }
@@ -76,14 +83,14 @@ export default class ImageAtlas {
         for (const id in icons) {
             const src = icons[id];
             const bin = iconPositions[id].paddedRect;
-            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + padding, y: bin.y + padding}, src.data);
+            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + IMAGE_PADDING, y: bin.y + IMAGE_PADDING}, src.data);
         }
 
         for (const id in patterns) {
             const src = patterns[id];
             const bin = patternPositions[id].paddedRect;
-            const x = bin.x + padding,
-                y = bin.y + padding,
+            const x = bin.x + IMAGE_PADDING,
+                y = bin.y + IMAGE_PADDING,
                 w = src.data.width,
                 h = src.data.height;
 
@@ -106,8 +113,8 @@ export default class ImageAtlas {
             const bin = {
                 x: 0,
                 y: 0,
-                w: src.data.width + 2 * padding,
-                h: src.data.height + 2 * padding,
+                w: src.data.width + 2 * IMAGE_PADDING,
+                h: src.data.height + 2 * IMAGE_PADDING,
             };
             bins.push(bin);
             positions[id] = new ImagePosition(bin, src);
@@ -140,4 +147,3 @@ export default class ImageAtlas {
 
 register('ImagePosition', ImagePosition);
 register('ImageAtlas', ImageAtlas);
-

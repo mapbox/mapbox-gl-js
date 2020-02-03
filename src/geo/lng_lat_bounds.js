@@ -210,6 +210,24 @@ class LngLatBounds {
     }
 
     /**
+    * Check if the point is within the bounding box.
+    *
+    * @param {LngLatLike} lnglat geographic point to check against.
+    * @returns {boolean} True if the point is within the bounding box.
+    */
+    contains(lnglat: LngLatLike) {
+        const {lng, lat} = LngLat.convert(lnglat);
+
+        const containsLatitude = this._sw.lat <= lat && lat <= this._ne.lat;
+        let containsLongitude = this._sw.lng <= lng && lng <= this._ne.lng;
+        if (this._sw.lng > this._ne.lng) { // wrapped coordinates
+            containsLongitude = this._sw.lng >= lng && lng >= this._ne.lng;
+        }
+
+        return containsLatitude && containsLongitude;
+    }
+
+    /**
      * Converts an array to a `LngLatBounds` object.
      *
      * If a `LngLatBounds` object is passed in, the function returns it unchanged.

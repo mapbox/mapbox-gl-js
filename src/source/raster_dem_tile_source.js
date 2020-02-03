@@ -4,6 +4,8 @@ import {getImage, ResourceType} from '../util/ajax';
 import {extend} from '../util/util';
 import {Evented} from '../util/evented';
 import browser from '../util/browser';
+import window from '../util/window';
+import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
 import {OverscaledTileID} from './tile_id';
 import RasterTileSource from './raster_tile_source';
 // ensure DEMData is registered for worker transfer on main thread:
@@ -38,7 +40,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
+        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.tileSize);
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
@@ -54,7 +56,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
-                const rawImageData = browser.getImageData(img, 1);
+                const transfer = window.ImageBitmap && img instanceof window.ImageBitmap && offscreenCanvasSupported();
+                const rawImageData = transfer ? img : browser.getImageData(img, 1);
                 const params = {
                     uid: tile.uid,
                     coord: tile.tileID,
