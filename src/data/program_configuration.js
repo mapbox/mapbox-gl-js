@@ -3,7 +3,7 @@
 import {packUint8ToFloat} from '../shaders/encode_attribute';
 import Color from '../style-spec/util/color';
 import {supportsPropertyExpression} from '../style-spec/util/properties';
-import {register, serialize, deserialize} from '../util/web_worker_transfer';
+import {register} from '../util/web_worker_transfer';
 import {PossiblyEvaluatedPropertyValue} from '../style/properties';
 import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray} from './array_types';
 import {clamp} from '../util/util';
@@ -96,21 +96,19 @@ interface Binder<T> {
 
 class ConstantBinder<T> implements Binder<T> {
     value: T;
-    names: Array<string>;
     maxValue: number;
     type: string;
     uniformNames: Array<string>;
 
     constructor(value: T, names: Array<string>, type: string) {
         this.value = value;
-        this.names = names;
-        this.uniformNames = this.names.map(name => `u_${name}`);
+        this.uniformNames = names.map(name => `u_${name}`);
         this.type = type;
         this.maxValue = -Infinity;
     }
 
     defines() {
-        return this.names.map(name => `#define HAS_UNIFORM_u_${name}`);
+        return this.uniformNames.map(name => `#define HAS_UNIFORM_${name}`);
     }
     setConstantPatternPositions() {}
     populatePaintArray() {}
@@ -128,21 +126,10 @@ class ConstantBinder<T> implements Binder<T> {
             new UniformColor(context, location) :
             new Uniform1f(context, location);
     }
-
-    static serialize(binder: ConstantBinder<T>) {
-        const {value, names, type} = binder;
-        return {value: serialize(value), names, type};
-    }
-
-    static deserialize(serialized: {value: T, names: Array<string>, type: string}) {
-        const {value, names, type} = serialized;
-        return new ConstantBinder(deserialize(value), names, type);
-    }
 }
 
 class CrossFadedConstantBinder<T> implements Binder<T> {
     value: T;
-    names: Array<string>;
     uniformNames: Array<string>;
     patternPositions: {[string]: ?Array<number>};
     type: string;
@@ -150,15 +137,14 @@ class CrossFadedConstantBinder<T> implements Binder<T> {
 
     constructor(value: T, names: Array<string>, type: string) {
         this.value = value;
-        this.names = names;
-        this.uniformNames = this.names.map(name => `u_${name}`);
+        this.uniformNames = names.map(name => `u_${name}`);
         this.type = type;
         this.maxValue = -Infinity;
         this.patternPositions = {patternTo: null, patternFrom: null};
     }
 
     defines() {
-        return this.names.map(name => `#define HAS_UNIFORM_u_${name}`);
+        return this.uniformNames.map(name => `#define HAS_UNIFORM_${name}`);
     }
 
     populatePaintArray() {}
@@ -185,7 +171,6 @@ class CrossFadedConstantBinder<T> implements Binder<T> {
 
 class SourceExpressionBinder<T> implements Binder<T> {
     expression: SourceExpression;
-    names: Array<string>;
     uniformNames: Array<string>;
     type: string;
     maxValue: number;
@@ -196,9 +181,8 @@ class SourceExpressionBinder<T> implements Binder<T> {
 
     constructor(expression: SourceExpression, names: Array<string>, type: string, PaintVertexArray: Class<StructArray>) {
         this.expression = expression;
-        this.names = names;
         this.type = type;
-        this.uniformNames = this.names.map(name => `a_${name}`);
+        this.uniformNames = [];
         this.maxValue = -Infinity;
         this.paintVertexAttributes = names.map((name) =>
             ({
@@ -270,7 +254,6 @@ class SourceExpressionBinder<T> implements Binder<T> {
 
 class CompositeExpressionBinder<T> implements Binder<T> {
     expression: CompositeExpression;
-    names: Array<string>;
     uniformNames: Array<string>;
     type: string;
     useIntegerZoom: boolean;
@@ -283,8 +266,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
 
     constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, layout: Class<StructArray>) {
         this.expression = expression;
-        this.names = names;
-        this.uniformNames = this.names.map(name => `u_${name}_t`);
+        this.uniformNames = names.map(name => `u_${name}_t`);
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
@@ -371,7 +353,6 @@ class CompositeExpressionBinder<T> implements Binder<T> {
 
 class CrossFadedCompositeBinder<T> implements Binder<T> {
     expression: CompositeExpression;
-    names: Array<string>;
     uniformNames: Array<string>;
     type: string;
     useIntegerZoom: boolean;
@@ -388,9 +369,8 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
     constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, PaintVertexArray: Class<StructArray>, layerId: string) {
 
         this.expression = expression;
-        this.names = names;
         this.type = type;
-        this.uniformNames = this.names.map(name => `u_${name}_t`);
+        this.uniformNames = [];
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
         this.maxValue = -Infinity;
@@ -461,7 +441,6 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
     destroy() {
         if (this.zoomOutPaintVertexBuffer) this.zoomOutPaintVertexBuffer.destroy();
         if (this.zoomInPaintVertexBuffer) this.zoomInPaintVertexBuffer.destroy();
-
     }
 
     setUniforms(context: Context, uniform: Uniform<*>): void {
