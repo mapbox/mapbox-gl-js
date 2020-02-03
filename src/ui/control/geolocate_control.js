@@ -267,7 +267,9 @@ class GeolocateControl extends Evented {
             this._accuracyCircleMarker.setLngLat(center).addTo(this._map);
             this._userLocationDotMarker.setLngLat(center).addTo(this._map);
             this._accuracy = position.coords.accuracy;
-            this._onZoom();
+            if (this.options.trackUserLocation && this.options.showAccuracyCircle) {
+                this._updateCircleRadius();
+            }
         } else {
             this._userLocationDotMarker.remove();
             this._accuracyCircleMarker.remove();
@@ -275,6 +277,7 @@ class GeolocateControl extends Evented {
     }
 
     _updateCircleRadius() {
+        assert(this._circleElement);
         const y = this._map._container.clientHeight / 2;
         const a = this._map.unproject([0, y]);
         const b = this._map.unproject([1, y]);
@@ -286,7 +289,6 @@ class GeolocateControl extends Evented {
 
     _onZoom() {
         if (this.options.trackUserLocation && this.options.showAccuracyCircle) {
-            assert(this._circleElement);
             this._updateCircleRadius();
         }
     }
