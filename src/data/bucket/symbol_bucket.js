@@ -177,7 +177,18 @@ export class SymbolBuffers {
         this.placedSymbolArray = new PlacedSymbolArray();
     }
 
+    isEmpty() {
+        return this.layoutVertexArray.length === 0 &&
+            this.indexArray.length === 0 &&
+            this.dynamicLayoutVertexArray.length === 0 &&
+            this.opacityVertexArray.length === 0;
+    }
+
     upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean) {
+        if (this.isEmpty()) {
+            return;
+        }
+
         if (upload) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, symbolLayoutAttributes.members);
             this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
@@ -376,11 +387,6 @@ class SymbolBucket implements Bucket {
         this.text = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property)));
         this.icon = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property)));
 
-        this.textCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
-        this.iconCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
-        this.textCollisionCircle = new CollisionBuffers(CollisionCircleLayoutArray, collisionCircleLayout.members, TriangleIndexArray);
-        this.iconCollisionCircle = new CollisionBuffers(CollisionCircleLayoutArray, collisionCircleLayout.members, TriangleIndexArray);
-
         this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new SymbolLineVertexArray();
         this.symbolInstances = new SymbolInstanceArray();
@@ -539,7 +545,7 @@ class SymbolBucket implements Bucket {
     }
 
     upload(context: Context) {
-        if (!this.uploaded) {
+        if (!this.uploaded && this.hasDebugData()) {
             this.textCollisionBox.upload(context);
             this.iconCollisionBox.upload(context);
             this.textCollisionCircle.upload(context);
@@ -550,13 +556,20 @@ class SymbolBucket implements Bucket {
         this.uploaded = true;
     }
 
-    destroy() {
-        this.text.destroy();
-        this.icon.destroy();
+    destroyDebugData() {
         this.textCollisionBox.destroy();
         this.iconCollisionBox.destroy();
         this.textCollisionCircle.destroy();
         this.iconCollisionCircle.destroy();
+    }
+
+    destroy() {
+        this.text.destroy();
+        this.icon.destroy();
+
+        if (this.hasDebugData()) {
+            this.destroyDebugData();
+        }
     }
 
     addToLineVertexArray(anchor: Anchor, line: any) {
@@ -752,6 +765,15 @@ class SymbolBucket implements Bucket {
     }
 
     generateCollisionDebugBuffers() {
+        if (this.hasDebugData()) {
+            this.destroyDebugData();
+        }
+
+        this.textCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
+        this.iconCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
+        this.textCollisionCircle = new CollisionBuffers(CollisionCircleLayoutArray, collisionCircleLayout.members, TriangleIndexArray);
+        this.iconCollisionCircle = new CollisionBuffers(CollisionCircleLayoutArray, collisionCircleLayout.members, TriangleIndexArray);
+
         for (let i = 0; i < this.symbolInstances.length; i++) {
             const symbolInstance = this.symbolInstances.get(i);
             this.addDebugCollisionBoxes(symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance, true);
@@ -840,20 +862,24 @@ class SymbolBucket implements Bucket {
         return this.icon.segments.get().length > 0;
     }
 
+    hasDebugData() {
+        return this.textCollisionBox && this.iconCollisionBox && this.textCollisionCircle && this.iconCollisionCircle;
+    }
+
     hasTextCollisionBoxData() {
-        return this.textCollisionBox.segments.get().length > 0;
+        return this.hasDebugData() && this.textCollisionBox.segments.get().length > 0;
     }
 
     hasIconCollisionBoxData() {
-        return this.iconCollisionBox.segments.get().length > 0;
+        return this.hasDebugData() && this.iconCollisionBox.segments.get().length > 0;
     }
 
     hasTextCollisionCircleData() {
-        return this.textCollisionCircle.segments.get().length > 0;
+        return this.hasDebugData() && this.textCollisionCircle.segments.get().length > 0;
     }
 
     hasIconCollisionCircleData() {
-        return this.iconCollisionCircle.segments.get().length > 0;
+        return this.hasDebugData() && this.iconCollisionCircle.segments.get().length > 0;
     }
 
     addIndicesForPlacedSymbol(iconOrText: SymbolBuffers, placedSymbolIndex: number) {
