@@ -332,9 +332,10 @@ class Transform {
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
         const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
 
-        // No change of LOD behavior for pitch lower than 60: return only tile ids from the requested zoom level
+        // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         let minZoom = options.minzoom || 0;
-        if (this.pitch <= 60.0)
+        // Use 0.1 as an epsilon to avoid for explicit == 0.0 floating point checks
+        if (this.pitch <= 60.0 && this._edgeInsets.top < 0.1)
             minZoom = z;
 
         // There should always be a certain number of maximum zoom level tiles surrounding the center location
