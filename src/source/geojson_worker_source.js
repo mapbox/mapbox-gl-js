@@ -283,35 +283,26 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 
     getClusterExpansionZoom(params: {clusterId: number}, callback: Callback<number>) {
-        let result;
-
         try {
-            result = this._geoJSONIndex.getClusterExpansionZoom(params.clusterId);
-            callback(null, result);
+            callback(null, this._geoJSONIndex.getClusterExpansionZoom(params.clusterId));
         } catch (e) {
-            callback(e, result);
+            callback(e);
         }
     }
 
     getClusterChildren(params: {clusterId: number}, callback: Callback<Array<GeoJSONFeature>>) {
-        let result;
-
         try {
-            result = this._geoJSONIndex.getChildren(params.clusterId);
-            callback(null, result);
+            callback(null, this._geoJSONIndex.getChildren(params.clusterId));
         } catch (e) {
-            callback(e, result);
+            callback(e);
         }
     }
 
     getClusterLeaves(params: {clusterId: number, limit: number, offset: number}, callback: Callback<Array<GeoJSONFeature>>) {
-        let result;
-
         try {
-            result = this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset);
-            callback(null, result);
+            callback(null, this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset));
         } catch (e) {
-            callback(e, result);
+            callback(e);
         }
     }
 }
