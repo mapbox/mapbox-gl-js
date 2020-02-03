@@ -479,14 +479,11 @@ export default class ProgramConfiguration {
 
     _buffers: Array<VertexBuffer>;
 
-    constructor() {
+    constructor(layer: TypedStyleLayer, zoom: number, filterProperties: (string) => boolean, layoutAttributes: Array<StructArrayMember>) {
         this.binders = {};
         this.cacheKey = '';
         this._buffers = [];
-    }
-
-    static createDynamic<Layer: TypedStyleLayer>(layer: Layer, zoom: number, filterProperties: (string) => boolean) {
-        const self = new ProgramConfiguration();
+        this.layoutAttributes = layoutAttributes;
         const keys = [];
 
         for (const property in layer.paint._values) {
@@ -503,30 +500,28 @@ export default class ProgramConfiguration {
 
             if (isCrossFaded) {
                 if (value.value.kind === 'constant') {
-                    self.binders[property] = new CrossFadedConstantBinder(value.value.value, names, type);
+                    this.binders[property] = new CrossFadedConstantBinder(value.value.value, names, type);
                     keys.push(`/u_${property}`);
                 } else {
                     const StructArrayLayout = layoutType(property, type, 'source');
-                    self.binders[property] = new CrossFadedCompositeBinder(value.value, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id);
+                    this.binders[property] = new CrossFadedCompositeBinder(value.value, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id);
                     keys.push(`/a_${property}`);
                 }
             } else if (value.value.kind === 'constant') {
-                self.binders[property] = new ConstantBinder(value.value.value, names, type);
+                this.binders[property] = new ConstantBinder(value.value.value, names, type);
                 keys.push(`/u_${property}`);
             } else if (value.value.kind === 'source') {
                 const StructArrayLayout = layoutType(property, type, 'source');
-                self.binders[property] = new SourceExpressionBinder(value.value, names, type, StructArrayLayout);
+                this.binders[property] = new SourceExpressionBinder(value.value, names, type, StructArrayLayout);
                 keys.push(`/a_${property}`);
             } else {
                 const StructArrayLayout = layoutType(property, type, 'composite');
-                self.binders[property] = new CompositeExpressionBinder(value.value, names, type, useIntegerZoom, zoom, StructArrayLayout);
+                this.binders[property] = new CompositeExpressionBinder(value.value, names, type, useIntegerZoom, zoom, StructArrayLayout);
                 keys.push(`/z_${property}`);
             }
         }
 
-        self.cacheKey = keys.sort().join('');
-
-        return self;
+        this.cacheKey = keys.sort().join('');
     }
 
     populatePaintArrays(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
@@ -653,8 +648,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true) {
         this.programConfigurations = {};
         for (const layer of layers) {
-            this.programConfigurations[layer.id] = ProgramConfiguration.createDynamic(layer, zoom, filterProperties);
-            this.programConfigurations[layer.id].layoutAttributes = layoutAttributes;
+            this.programConfigurations[layer.id] = new ProgramConfiguration(layer, zoom, filterProperties, layoutAttributes);
         }
         this.needsUpload = false;
         this._featureMap = new FeaturePositionMap();
