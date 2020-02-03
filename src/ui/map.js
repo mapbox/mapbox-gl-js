@@ -6,7 +6,7 @@ import browser from '../util/browser';
 import window from '../util/window';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
 import DOM from '../util/dom';
-import {getImage, getJSON, ResourceType} from '../util/ajax';
+import {getImage, getImages, getJSON, ResourceType} from '../util/ajax';
 import {RequestManager} from '../util/mapbox';
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
@@ -1633,6 +1633,24 @@ class Map extends Camera {
      */
     loadImage(url: string, callback: Function) {
         getImage(this._requestManager.transformRequest(url, ResourceType.Image), callback);
+    }
+
+    addCubemap(cubemap: {positiveX: string, negativeX: string, positiveY: string, negativeY: string, positiveZ: string, negativeZ: string}, callback: Function) {
+        const cubemapRequests = [
+            this._requestManager.transformRequest(cubemap.positiveX, ResourceType.Image),
+            this._requestManager.transformRequest(cubemap.negativeX, ResourceType.Image),
+            this._requestManager.transformRequest(cubemap.positiveY, ResourceType.Image),
+            this._requestManager.transformRequest(cubemap.negativeY, ResourceType.Image),
+            this._requestManager.transformRequest(cubemap.positiveZ, ResourceType.Image),
+            this._requestManager.transformRequest(cubemap.negativeZ, ResourceType.Image)
+        ];
+        getImages(cubemapRequests, (error, images) => {
+            if (error) {
+                callback(error);
+            } else {
+                this.painter.loadCubemap(images);
+            }
+        });
     }
 
     /**

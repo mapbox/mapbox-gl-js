@@ -22,6 +22,7 @@ import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import Texture from './texture';
+import Skybox from './skybox';
 import {clippingMaskUniformValues} from './program/clipping_mask_program';
 import Color from '../style-spec/util/color';
 import symbol from './draw_symbol';
@@ -35,6 +36,7 @@ import raster from './draw_raster';
 import background from './draw_background';
 import debug from './draw_debug';
 import custom from './draw_custom';
+import drawSkybox from './draw_skybox';
 
 const draw = {
     symbol,
@@ -91,6 +93,7 @@ class Painter {
     emptyProgramConfiguration: ProgramConfiguration;
     width: number;
     height: number;
+    skybox: Skybox;
     depthRbo: WebGLRenderbuffer;
     depthRboNeedsClear: boolean;
     tileExtentBuffer: VertexBuffer;
@@ -140,6 +143,10 @@ class Painter {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this.gpuTimers = {};
+    }
+
+    loadCubemap(cubemapFaces: [ImageBitmap]) {
+        this.skybox = new Skybox(this.context, cubemapFaces);
     }
 
     /*
@@ -419,6 +426,11 @@ class Painter {
         // Clear buffers in preparation for drawing to the main framebuffer
         this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
         this.clearStencil();
+
+        // TODO: draw last
+        if (this.skybox) {
+            drawSkybox(this, this.skybox);
+        }
 
         this._showOverdrawInspector = options.showOverdrawInspector;
         this.depthRangeFor3D = [0, 1 - ((style._order.length + 2) * this.numSublayers * this.depthEpsilon)];

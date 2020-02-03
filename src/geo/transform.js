@@ -7,7 +7,7 @@ import Point from '@mapbox/point-geometry';
 import {wrap, clamp} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
-import {vec4, mat4, mat2, vec2} from 'gl-matrix';
+import {vec4, mat4, mat2, mat3, vec2} from 'gl-matrix';
 import {Aabb, Frustum} from '../util/primitives.js';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id';
@@ -37,6 +37,7 @@ class Transform {
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
+    skyboxMatrix: Float64Array;
     glCoordMatrix: Float32Array;
     labelPlaneMatrix: Float32Array;
     _fov: number;
@@ -62,7 +63,7 @@ class Transform {
         this._maxZoom = maxZoom || 22;
 
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
-        this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
+        this._maxPitch = 90;
 
         this.setMaxBounds();
 
@@ -661,6 +662,32 @@ class Transform {
 
         this.projMatrix = m;
         this.invProjMatrix = mat4.invert([], this.projMatrix);
+
+        // TODO: cleanup
+        let view = new Float64Array(16);
+        mat4.identity(view);
+        mat4.scale(view, view, [1, -1, 1]);
+        mat4.translate(view, view, [0, 0, -this.cameraToCenterDistance]);
+        mat4.rotateX(view, view, this._pitch);
+        mat4.rotateZ(view, view, this.angle);
+        mat4.translate(view, view, [-x, -y, 0]);
+
+        view[12] = 0;
+        view[13] = 0;
+        view[14] = 0;
+
+        let projection = new Float64Array(16);
+        mat4.perspective(projection, this._fov, this.width / this.height, nearZ, farZ);
+
+        this.skyboxMatrix = new Float64Array(16);
+        mat4.multiply(this.skyboxMatrix, projection, view);
+
+        //mat4.identity(this.skyboxMatrix);
+        //mat4.rotateX(this.skyboxMatrix, this.skyboxMatrix, this._pitch);
+        //mat4.rotateZ(this.skyboxMatrix, this.skyboxMatrix, this.angle);
+        //let projection = new Float64Array(16);
+        //mat4.perspective(projection, this._fov, this.width / this.height, 0.01, 5000);
+        //mat4.multiply(this.skyboxMatrix, projection, this.skyboxMatrix);
 
         // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.
         // We're rounding the (floating point) x/y values to achieve to avoid rendering raster images to fractional

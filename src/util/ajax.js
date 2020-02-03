@@ -288,6 +288,33 @@ export const resetImageRequestQueue = () => {
 };
 resetImageRequestQueue();
 
+export const getImages = function(requestParameters: [RequestParameters], callback: Callback<[ImageBitmap]>): Cancelable {
+    const images = [];
+    const imageRequests = [];
+    let numImageRequests = requestParameters.length;
+    for (let i = 0; i < numImageRequests; i++) {
+        const request = requestParameters[i];
+        imageRequests.push(getImage(request,  function(error, image) {
+            if (error) {
+                callback(error);
+            } else {
+                numImageRequests--;
+                images.push(image);
+                if (numImageRequests == 0) {
+                    callback(null, images);
+                }
+            }
+        }));
+    }
+    return {
+        cancel: () => {
+            for (let imageRequest in imageRequests) {
+                imageRequest.cancel();
+            }
+        }
+    };
+}
+
 export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement | ImageBitmap>): Cancelable {
     if (webpSupported.supported) {
         if (!requestParameters.headers) {

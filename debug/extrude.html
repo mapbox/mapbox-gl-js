@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>cubemap demo</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+ 
+<div id='map'></div>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = new mapboxgl.Map({
+  container: "map",
+  center: [-122.43118273810865, 37.79145848881167],
+  zoom: 15.899575291423961,
+  style: "mapbox://styles/mapbox/streets-v11"
+});
+
+map.on('load', function() {
+  map.addCubemap({
+    positiveX: '../debug/cubemap/cubemap-2_positivex.png',
+    negativeX: '../debug/cubemap/cubemap-2_negativex.png',
+    positiveY: '../debug/cubemap/cubemap-2_positivey.png',
+    negativeY: '../debug/cubemap/cubemap-2_negativey.png',
+    positiveZ: '../debug/cubemap/cubemap-2_positivez.png',
+    negativeZ: '../debug/cubemap/cubemap-2_negativez.png'
+  }, function(error) {
+    debugger;
+  });
+  map.addLayer(
+  {
+    'id': '3d-buildings',
+    'source': 'composite',
+    'source-layer': 'building',
+    'filter': ['==', 'extrude', 'true'],
+    'type': 'fill-extrusion',
+    'minzoom': 13,
+    'paint': {
+      'fill-extrusion-color': '#DDD',
+      'fill-extrusion-height': ['*', ['get', 'height'], 2.5],
+      'fill-extrusion-opacity': 0.6
+    }
+  });
+});
+
+</script>
+
+</body>
+</html>

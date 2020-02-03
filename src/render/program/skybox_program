@@ -1,0 +1,32 @@
+// @flow
+
+import {
+    UniformMatrix4f,
+    Uniform1i
+} from '../uniform_binding';
+
+import type {UniformValues, UniformLocations} from '../uniform_binding';
+import type Context from '../../gl/context';
+
+export type SkyboxUniformsType = {|
+    'u_matrix': UniformMatrix4f,
+    'u_cubemap': Uniform1i
+|};
+
+const skyboxUniforms = (context: Context, locations: UniformLocations): SkyboxUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_cubemap': new Uniform1i(context, locations.u_cubemap),
+});
+
+const skyboxUniformValues = (
+    matrix: Float32Array,
+    cubemap: number
+): UniformValues<SkyboxUniformsType> => ({
+    'u_matrix': matrix,
+    'u_cubemap': cubemap
+});
+
+export {
+    skyboxUniforms,
+    skyboxUniformValues,
+};

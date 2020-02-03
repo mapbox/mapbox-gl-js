@@ -1180,5 +1180,6 @@ export {
     StructArrayLayout2ub2f12 as CollisionVertexArray,
     StructArrayLayout3ui6 as TriangleIndexArray,
     StructArrayLayout2ui4 as LineIndexArray,
-    StructArrayLayout1ui2 as LineStripIndexArray
+    StructArrayLayout1ui2 as LineStripIndexArray,
+    StructArrayLayout3i6 as SkyboxVertexArray
 };
