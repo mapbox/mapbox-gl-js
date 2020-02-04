@@ -134,7 +134,15 @@ The conventions for module exports are:
 ### Version Control Conventions
 
 * We use [rebase merging](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) (as opposed to [basic merging](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merging)) to merge branches
-* To rebase your fork's PR branch onto master, the recommended approach is `git rebase origin/master`, `git push --force origin your-branch`
+
+Here is a recommended way to get setup:
+1. Fork this project
+2. Clone your new fork, `git clone git@github.com:GithubUser/mapbox-gl-js.git`
+3. `cd mapbox-gl-js`
+4. Add the Mapbox repository as an upstream repository: `git add remote upstream git@github.com:mapbox/mapbox-gl-js.git`
+5. Create a new branch `git checkout -b your-branch` for your contribution
+6. Write code
+7. When you need to rebase your fork's PR branch onto master: `git fetch upstream`, `git rebase upstream/master` and force push to Github `git push --force origin your-branch`
 
 ## Documentation Conventions
 
