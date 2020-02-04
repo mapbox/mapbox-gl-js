@@ -408,10 +408,11 @@ class Style extends Evented {
             this.sourceCaches[sourceId].used = false;
         }
 
+        const availableImages = this.imageManager.listImages();
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
-            layer.recalculate(parameters, this.imageManager.listImages());
+            layer.recalculate(parameters, availableImages);
             if (!layer.isHidden(parameters.zoom) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
