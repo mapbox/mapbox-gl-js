@@ -481,9 +481,9 @@ export default class ProgramConfiguration {
 
     constructor(layer: TypedStyleLayer, zoom: number, filterProperties: (string) => boolean, layoutAttributes: Array<StructArrayMember>) {
         this.binders = {};
-        this.cacheKey = '';
-        this._buffers = [];
         this.layoutAttributes = layoutAttributes;
+        this._buffers = [];
+
         const keys = [];
 
         for (const property in layer.paint._values) {
@@ -493,30 +493,28 @@ export default class ProgramConfiguration {
                 continue;
             }
             const names = paintAttributeNames(property, layer.type);
+            const expression = value.value;
             const type = value.property.specification.type;
             const useIntegerZoom = value.property.useIntegerZoom;
-            const isCrossFaded = value.property.specification['property-type'] === 'cross-faded' ||
-                                 value.property.specification['property-type'] === 'cross-faded-data-driven';
+            const propType = value.property.specification['property-type'];
+            const isCrossFaded = propType === 'cross-faded' || propType === 'cross-faded-data-driven';
 
-            if (isCrossFaded) {
-                if (value.value.kind === 'constant') {
-                    this.binders[property] = new CrossFadedConstantBinder(value.value.value, names, type);
-                    keys.push(`/u_${property}`);
-                } else {
-                    const StructArrayLayout = layoutType(property, type, 'source');
-                    this.binders[property] = new CrossFadedCompositeBinder(value.value, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id);
-                    keys.push(`/a_${property}`);
-                }
-            } else if (value.value.kind === 'constant') {
-                this.binders[property] = new ConstantBinder(value.value.value, names, type);
+            if (expression.kind === 'constant') {
+                this.binders[property] = isCrossFaded ?
+                    new CrossFadedConstantBinder(expression.value, names, type) :
+                    new ConstantBinder(expression.value, names, type);
                 keys.push(`/u_${property}`);
-            } else if (value.value.kind === 'source') {
+
+            } else if (expression.kind === 'source' || isCrossFaded) {
                 const StructArrayLayout = layoutType(property, type, 'source');
-                this.binders[property] = new SourceExpressionBinder(value.value, names, type, StructArrayLayout);
+                this.binders[property] = isCrossFaded ?
+                    new CrossFadedCompositeBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id) :
+                    new SourceExpressionBinder(expression, names, type, StructArrayLayout);
                 keys.push(`/a_${property}`);
+
             } else {
                 const StructArrayLayout = layoutType(property, type, 'composite');
-                this.binders[property] = new CompositeExpressionBinder(value.value, names, type, useIntegerZoom, zoom, StructArrayLayout);
+                this.binders[property] = new CompositeExpressionBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout);
                 keys.push(`/z_${property}`);
             }
         }
