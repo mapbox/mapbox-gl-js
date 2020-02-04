@@ -534,23 +534,19 @@ export default class ProgramConfiguration {
         }
     }
 
-    updatePatternPaintBuffers(crossfade: CrossfadeParameters) {
-        const buffers = [];
+    updatePaintBuffers(crossfade?: CrossfadeParameters) {
+        this._buffers = [];
 
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof CrossFadedCompositeBinder) {
+            if (crossfade && binder instanceof CrossFadedCompositeBinder) {
                 const patternVertexBuffer = crossfade.fromScale === 2 ? binder.zoomInPaintVertexBuffer : binder.zoomOutPaintVertexBuffer;
-                if (patternVertexBuffer) buffers.push(patternVertexBuffer);
-            } else if ((binder instanceof SourceExpressionBinder ||
-                binder instanceof CompositeExpressionBinder) &&
-                binder.paintVertexBuffer
-            ) {
-                buffers.push(binder.paintVertexBuffer);
+                if (patternVertexBuffer) this._buffers.push(patternVertexBuffer);
+
+            } else if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder) && binder.paintVertexBuffer) {
+                this._buffers.push(binder.paintVertexBuffer);
             }
         }
-
-        this._buffers = buffers;
     }
 
     upload(context: Context) {
@@ -559,18 +555,7 @@ export default class ProgramConfiguration {
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder)
                 binder.upload(context);
         }
-
-        const buffers = [];
-        for (const property in this.binders) {
-            const binder = this.binders[property];
-            if ((binder instanceof SourceExpressionBinder ||
-                binder instanceof CompositeExpressionBinder) &&
-                binder.paintVertexBuffer
-            ) {
-                buffers.push(binder.paintVertexBuffer);
-            }
-        }
-        this._buffers = buffers;
+        this.updatePaintBuffers();
     }
 
     destroy() {
