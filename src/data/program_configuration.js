@@ -88,9 +88,7 @@ interface Binder<T> {
     defines(): Array<string>;
     setConstantPatternPositions(posTo: ImagePosition, posFrom: ImagePosition): void;
 
-    setUniforms(context: Context, uniform: Uniform<*>, globals: GlobalProperties,
-        currentValue: PossiblyEvaluatedPropertyValue<T>, uniformName: string): void;
-
+    setUniforms(uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<T>, uniformName: string): void;
     getBinding(context: Context, location: WebGLUniformLocation): $Shape<Uniform<*>>;
 }
 
@@ -116,8 +114,7 @@ class ConstantBinder<T> implements Binder<T> {
     upload() {}
     destroy() {}
 
-    setUniforms(context: Context, uniform: Uniform<*>, globals: GlobalProperties,
-                currentValue: PossiblyEvaluatedPropertyValue<T>): void {
+    setUniforms(uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<T>): void {
         uniform.set(currentValue.constantOr(this.value));
     }
 
@@ -129,14 +126,12 @@ class ConstantBinder<T> implements Binder<T> {
 }
 
 class CrossFadedConstantBinder<T> implements Binder<T> {
-    value: T;
     uniformNames: Array<string>;
     patternPositions: {[string]: ?Array<number>};
     type: string;
     maxValue: number;
 
     constructor(value: T, names: Array<string>, type: string) {
-        this.value = value;
         this.uniformNames = names.map(name => `u_${name}`);
         this.type = type;
         this.maxValue = -Infinity;
@@ -157,8 +152,7 @@ class CrossFadedConstantBinder<T> implements Binder<T> {
         this.patternPositions.patternFrom = posFrom.tlbr;
     }
 
-    setUniforms(context: Context, uniform: Uniform<*>, globals: GlobalProperties,
-                currentValue: PossiblyEvaluatedPropertyValue<T>, uniformName: string) {
+    setUniforms(uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<T>, uniformName: string) {
         const pos = this.patternPositions;
         if (uniformName === "u_pattern_to" && pos.patternTo) uniform.set(pos.patternTo);
         if (uniformName === "u_pattern_from" && pos.patternFrom) uniform.set(pos.patternFrom);
@@ -243,7 +237,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
         }
     }
 
-    setUniforms(context: Context, uniform: Uniform<*>): void {
+    setUniforms(uniform: Uniform<*>): void {
         uniform.set(0);
     }
 
@@ -341,8 +335,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         return clamp(this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1), 0, 1);
     }
 
-    setUniforms(context: Context, uniform: Uniform<*>,
-                globals: GlobalProperties): void {
+    setUniforms(uniform: Uniform<*>, globals: GlobalProperties): void {
         uniform.set(this.interpolationFactor(globals.zoom));
     }
 
@@ -443,7 +436,7 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
         if (this.zoomInPaintVertexBuffer) this.zoomInPaintVertexBuffer.destroy();
     }
 
-    setUniforms(context: Context, uniform: Uniform<*>): void {
+    setUniforms(uniform: Uniform<*>): void {
         uniform.set(0);
     }
 
@@ -589,7 +582,7 @@ export default class ProgramConfiguration {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguraton's binder members.
         for (const {name, property, binding} of binderUniforms) {
-            this.binders[property].setUniforms(context, binding, globals, properties.get(property), name);
+            this.binders[property].setUniforms(binding, globals, properties.get(property), name);
         }
     }
 
