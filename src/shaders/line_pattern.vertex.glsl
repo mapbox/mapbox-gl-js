@@ -22,6 +22,7 @@ varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_linesofar;
 varying float v_gamma_scale;
+varying float v_width;
 
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
@@ -88,4 +89,5 @@ void main() {
 
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
+    v_width = width;
 }
