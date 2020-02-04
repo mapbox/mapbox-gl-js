@@ -152,14 +152,12 @@ class SourceExpressionBinder implements AttributeBinder {
         this.expression = expression;
         this.type = type;
         this.maxValue = 0;
-        this.paintVertexAttributes = names.map((name) =>
-            ({
-                name: `a_${name}`,
-                type: 'Float32',
-                components: type === 'color' ? 2 : 1,
-                offset: 0
-            })
-        );
+        this.paintVertexAttributes = names.map((name) => ({
+            name: `a_${name}`,
+            type: 'Float32',
+            components: type === 'color' ? 2 : 1,
+            offset: 0
+        }));
         this.paintVertexArray = new PaintVertexArray();
     }
 
@@ -218,22 +216,19 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: ?VertexBuffer;
 
-    constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, layout: Class<StructArray>) {
+    constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, PaintVertexArray: Class<StructArray>) {
         this.expression = expression;
         this.uniformNames = names.map(name => `u_${name}_t`);
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
         this.maxValue = 0;
-        const PaintVertexArray = layout;
-        this.paintVertexAttributes = names.map((name) => {
-            return {
-                name: `a_${name}`,
-                type: 'Float32',
-                components: type === 'color' ? 4 : 2,
-                offset: 0
-            };
-        });
+        this.paintVertexAttributes = names.map((name) => ({
+            name: `a_${name}`,
+            type: 'Float32',
+            components: type === 'color' ? 4 : 2,
+            offset: 0
+        }));
         this.paintVertexArray = new PaintVertexArray();
     }
 
@@ -282,15 +277,10 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         }
     }
 
-    interpolationFactor(currentZoom: number) {
-        if (this.useIntegerZoom) {
-            currentZoom = Math.floor(currentZoom);
-        }
-        return clamp(this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1), 0, 1);
-    }
-
     setUniform(uniform: Uniform<*>, globals: GlobalProperties): void {
-        uniform.set(this.interpolationFactor(globals.zoom));
+        const currentZoom = this.useIntegerZoom ? Math.floor(globals.zoom) : globals.zoom;
+        const factor = clamp(this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1), 0, 1);
+        uniform.set(factor);
     }
 
     getBinding(context: Context, location: WebGLUniformLocation): Uniform1f {
@@ -312,21 +302,18 @@ class CrossFadedCompositeBinder implements AttributeBinder {
     paintVertexAttributes: Array<StructArrayMember>;
 
     constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, PaintVertexArray: Class<StructArray>, layerId: string) {
-
         this.expression = expression;
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
         this.layerId = layerId;
 
-        this.paintVertexAttributes = names.map((name) =>
-            ({
-                name: `a_${name}`,
-                type: 'Uint16',
-                components: 4,
-                offset: 0
-            })
-        );
+        this.paintVertexAttributes = names.map((name) => ({
+            name: `a_${name}`,
+            type: 'Uint16',
+            components: 4,
+            offset: 0
+        }));
 
         this.zoomInPaintVertexArray = new PaintVertexArray();
         this.zoomOutPaintVertexArray = new PaintVertexArray();
@@ -360,7 +347,6 @@ class CrossFadedCompositeBinder implements AttributeBinder {
                 imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
                 imageMin.tl[0], imageMin.tl[1], imageMin.br[0], imageMin.br[1]
             );
-
             this.zoomOutPaintVertexArray.emplace(i,
                 imageMid.tl[0], imageMid.tl[1], imageMid.br[0], imageMid.br[1],
                 imageMax.tl[0], imageMax.tl[1], imageMax.br[0], imageMax.br[1]
@@ -639,8 +625,7 @@ function paintAttributeNames(property, type) {
         'fill-extrusion-pattern': ['pattern_to', 'pattern_from'],
     };
 
-    return attributeNameExceptions[property] ||
-        [property.replace(`${type}-`, '').replace(/-/g, '_')];
+    return attributeNameExceptions[property] || [property.replace(`${type}-`, '').replace(/-/g, '_')];
 }
 
 function getLayoutException(property) {
@@ -675,8 +660,7 @@ function layoutType(property, type, binderType) {
     };
 
     const layoutException = getLayoutException(property);
-    return  layoutException && layoutException[binderType] ||
-        defaultLayouts[type][binderType];
+    return  layoutException && layoutException[binderType] || defaultLayouts[type][binderType];
 }
 
 register('ConstantBinder', ConstantBinder);
