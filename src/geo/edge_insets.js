@@ -1,6 +1,7 @@
 // @flow
 import {number} from "../style-spec/util/interpolate";
 import Point  from "@mapbox/point-geometry";
+import { clamp } from "../util/util";
 
 /**
  * An `EdgeInset` object represents screen space padding applied to the edges of the viewport.
@@ -62,11 +63,8 @@ class EdgeInsets {
      */
     getCenter(width: number, height: number): Point {
         // Clamp insets so they never overflow width/height and always calculate a valid center
-        const totalXInset = Math.min(this.left + this.right, width);
-        const totalYInset = Math.min(this.top + this.bottom, height);
-
-        const x = Math.min(this.left, width) + 0.5 * (width - totalXInset);
-        const y = Math.min(this.top, height) + 0.5 * (height - totalYInset);
+        const x = clamp((this.left + width - this.right) / 2, 0, width);
+        const y = clamp((this.top + height - this.bottom) / 2, 0, height);
 
         return new Point(x, y);
     }

@@ -39,9 +39,9 @@ test('EdgeInsets', (t) => {
         t.test('center clamping', (t) => {
             const inset = new EdgeInsets(300, 200, 500, 200);
             const center = inset.getCenter(600, 400);
-            // Prefers top and left offsets and bottom and right when overflow occurs
-            t.equal(center.x, 500);
-            t.equal(center.y, 300);
+            // Midpoint of the overlap when padding overlaps
+            t.equal(center.x, 450);
+            t.equal(center.y, 250);
             t.end();
         });
         t.end();
