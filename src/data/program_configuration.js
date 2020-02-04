@@ -77,7 +77,6 @@ function packColor(color: Color): [number, number] {
  */
 
 interface Binder<T> {
-    maxValue: number;
     uniformNames: Array<string>;
 
     populatePaintArray(length: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection): void;
@@ -91,7 +90,6 @@ interface Binder<T> {
 
 class ConstantBinder<T> implements Binder<T> {
     value: T;
-    maxValue: number;
     type: string;
     uniformNames: Array<string>;
 
@@ -99,7 +97,6 @@ class ConstantBinder<T> implements Binder<T> {
         this.value = value;
         this.uniformNames = names.map(name => `u_${name}`);
         this.type = type;
-        this.maxValue = -Infinity;
     }
 
     populatePaintArray() {}
@@ -122,11 +119,9 @@ class CrossFadedConstantBinder<T> implements Binder<T> {
     uniformNames: Array<string>;
     patternFrom: ?Array<number>;
     patternTo: ?Array<number>;
-    maxValue: number;
 
     constructor(value: T, names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
-        this.maxValue = -Infinity;
         this.patternFrom = null;
         this.patternTo = null;
     }
@@ -167,7 +162,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
         this.expression = expression;
         this.type = type;
         this.uniformNames = [];
-        this.maxValue = -Infinity;
+        this.maxValue = 0;
         this.paintVertexAttributes = names.map((name) =>
             ({
                 name: `a_${name}`,
@@ -201,7 +196,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
             for (let i = start; i < end; i++) {
                 this.paintVertexArray.emplace(i, value);
             }
-            this.maxValue = Math.max(this.maxValue, value);
+            this.maxValue = Math.max(this.maxValue, Math.abs(value));
         }
     }
 
@@ -246,7 +241,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
-        this.maxValue = -Infinity;
+        this.maxValue = 0;
         const PaintVertexArray = layout;
         this.paintVertexAttributes = names.map((name) => {
             return {
@@ -284,7 +279,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
             for (let i = start; i < end; i++) {
                 this.paintVertexArray.emplace(i, min, max);
             }
-            this.maxValue = Math.max(this.maxValue, min, max);
+            this.maxValue = Math.max(this.maxValue, Math.abs(min), Math.abs(max));
         }
     }
 
@@ -326,7 +321,6 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
     type: string;
     useIntegerZoom: boolean;
     zoom: number;
-    maxValue: number;
     layerId: string;
 
     zoomInPaintVertexArray: StructArray;
@@ -342,7 +336,6 @@ class CrossFadedCompositeBinder<T> implements Binder<T> {
         this.uniformNames = [];
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
-        this.maxValue = -Infinity;
         this.layerId = layerId;
 
         this.paintVertexAttributes = names.map((name) =>
@@ -481,6 +474,11 @@ export default class ProgramConfiguration {
         }
 
         this.cacheKey = keys.sort().join('');
+    }
+
+    getMaxValue(property: string): number {
+        const binder = this.binders[property];
+        return binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ? binder.maxValue : 0;
     }
 
     populatePaintArrays(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
