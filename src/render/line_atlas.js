@@ -116,14 +116,25 @@ class LineAtlas {
             }
         }
 
-        for (let i = 0; i < ranges.length; i++) {
+        for (let i = ranges.length - 1; i > 0; i--) {
             const part = ranges[i];
-            const nextPart = ranges[(i + 1) % ranges.length];
-            const offset = i + 1 < ranges.length ? 0 : this.width;
-            if (part.isDash === nextPart.isDash) {
-                part.right = nextPart.right + offset;
-                nextPart.left = part.left - offset;
+            const prevPart = ranges[i - 1];
+            if (part.isDash === prevPart.isDash) {
+                prevPart.right = part.right;
+                ranges.splice(i, 1);
             }
+        }
+
+        const first = ranges[0];
+        const last = ranges[ranges.length - 1];
+        if (first.isDash === last.isDash) {
+            first.left = last.left - this.width;
+            last.right = first.right + this.width;
+        }
+
+        if (ranges.length === 1) {
+            ranges[0].left = -Infinity;
+            ranges[0].right = Infinity;
         }
 
         const index = this.width * this.nextRow;
