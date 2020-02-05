@@ -34,8 +34,8 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-77.01866, 38.888],
+    zoom: 15.36,
+    center: [-77.03139, 38.902856],
     style: 'mapbox://styles/mapbox/streets-v10',
     hash: true
 });
@@ -66,6 +66,7 @@ map.on('load', function() {
         "source": "geojson",
         "paint": {
             "line-color": "#EC8D8D",
+            "line-pattern": "bus-15",
             "line-width": {"base": 1.5, "stops": [[5, 0.75], [18, 32]]}
         }
     }, 'country-label-lg');
