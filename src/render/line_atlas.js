@@ -135,9 +135,6 @@ class LineAtlas {
         let currIndex = 0;
         let range = ranges[currIndex];
 
-        let prevRange = ranges[ranges.length - 1];
-        let nextRange = ranges[(currIndex + 1) % ranges.length];
-
         for (let x = 0; x < this.width; x++) {
             if (x / range.right > 1) {
                 range = ranges[++currIndex];
@@ -147,7 +144,7 @@ class LineAtlas {
             const distRight = Math.abs(x - range.right);
 
             const minDist = Math.min(distLeft, distRight);
-            let signedDistance = range.isDash ? minDist : -minDist;
+            const signedDistance = range.isDash ? minDist : -minDist;
 
             this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
         }
