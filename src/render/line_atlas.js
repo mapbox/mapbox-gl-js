@@ -109,32 +109,26 @@ class LineAtlas {
     }
 
     addRegularDash(ranges: Object) {
-        // Collapse any zero-length range
-        for (let i = ranges.length - 1; i >= 0; --i) {
-            if (ranges[i].zeroLength) {
-                ranges.splice(i,  1);
-            }
-        }
 
-        for (let i = ranges.length - 1; i > 0; i--) {
+        // Collapse any zero-length range
+        // Collapse neighbouring same-type parts into a single part
+        for (let i = ranges.length - 1; i >= 0; --i) {
             const part = ranges[i];
-            const prevPart = ranges[i - 1];
-            if (part.isDash === prevPart.isDash) {
-                prevPart.right = part.right;
+            const next = ranges[i + 1];
+            if (part.zeroLength) {
+                ranges.splice(i, 1);
+            } else if (next && next.isDash === part.isDash) {
+                next.left = part.left;
                 ranges.splice(i, 1);
             }
         }
 
+        // Combine the first and last parts if possible
         const first = ranges[0];
         const last = ranges[ranges.length - 1];
         if (first.isDash === last.isDash) {
             first.left = last.left - this.width;
             last.right = first.right + this.width;
-        }
-
-        if (ranges.length === 1) {
-            ranges[0].left = -Infinity;
-            ranges[0].right = Infinity;
         }
 
         const index = this.width * this.nextRow;
