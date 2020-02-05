@@ -109,44 +109,50 @@ class LineAtlas {
     }
 
     addRegularDash(ranges: Object) {
-        // Collapse any zero-length range
-        for (let i = ranges.length - 1; i >= 0; --i) {
-            if (ranges[i].zeroLength) {
-                ranges.splice(i,  1);
+
+        for (let i = 2; i < ranges.length; i++) {
+            const dash = ranges[i];
+            const gap = ranges[i + 1];
+            const prevDash = ranges[i - 2];
+            const prevGap = ranges[i - 1];
+
+            if (prevGap.left === prevGap.right) {
+                prevDash.right = dash.right;
+                ranges.splice(i - 1, 2);
+            } else if (dash.left === dash.right) {
+                if (gap) prevGap.right = gap.right;
+                ranges.splice(i, 2);
             }
+        }
+        const evenLength = 2 * Math.floor(ranges.length / 2);
+        const firstDash = ranges[0];
+        const firstGap = ranges[1];
+        const lastDash = ranges[evenLength - 2];
+        const lastGap = ranges[evenLength - 1];
+
+        if (lastGap && lastGap.left === lastGap.right) {
+            firstDash.left = lastDash.left - this.width;
+            lastDash.right = firstDash.right + this.width;
+        }
+        if (firstDash.left === firstDash.right) {
+            firstGap.left = lastGap.left - this.width;
+            lastGap.right = firstGap.right + this.width;
         }
 
         const index = this.width * this.nextRow;
         let currIndex = 0;
         let range = ranges[currIndex];
 
-        let prevRange = ranges[ranges.length - 1];
-        let nextRange = ranges[(currIndex + 1) % ranges.length];
-
         for (let x = 0; x < this.width; x++) {
             if (x / range.right > 1) {
                 range = ranges[++currIndex];
-
-                prevRange = ranges[currIndex - 1];
-                nextRange = ranges[(currIndex + 1) % ranges.length];
             }
 
             const distLeft = Math.abs(x - range.left);
             const distRight = Math.abs(x - range.right);
-            const leftSelect = distLeft < distRight;
-            const rightSelect = !leftSelect;
 
             const minDist = Math.min(distLeft, distRight);
             let signedDistance = range.isDash ? minDist : -minDist;
-
-            // Flatten the distance field to its maximum (127) or minimum (-127) value in two cases:
-            // 1. If we are on the left side of the slope of the distance field
-            //    and the previous dash signal is the same as the current one.
-            // 2. If we are on the right side of the slope of the distance field
-            //    and the next dash signal is the same as the current one.
-            if (leftSelect && prevRange.isDash === range.isDash || rightSelect && nextRange.isDash === range.isDash) {
-                signedDistance = range.isDash ? 127 : -127;
-            }
 
             this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
         }
