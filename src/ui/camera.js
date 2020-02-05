@@ -3,7 +3,6 @@
 import {
     bindAll,
     extend,
-    deepEqual,
     warnOnce,
     clamp,
     wrap,
@@ -456,13 +455,14 @@ class Camera extends Evented {
      * });
      */
     _cameraForBoxAndBearing(p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+        const defaultPadding = {
+            top: 0,
+            bottom: 0,
+            right: 0,
+            left: 0
+        };
         options = extend({
-            padding: {
-                top: 0,
-                bottom: 0,
-                right: 0,
-                left: 0
-            },
+            padding: defaultPadding,
             offset: [0, 0],
             maxZoom: this.transform.maxZoom
         }, options);
@@ -476,18 +476,10 @@ class Camera extends Evented {
                 left: p
             };
         }
-        if (!deepEqual(Object.keys(options.padding).sort((a, b) => {
-            if (a < b) return -1;
-            if (a > b) return 1;
-            return 0;
-        }), ["bottom", "left", "right", "top"])) {
-            warnOnce(
-                "options.padding must be a positive number, or an Object with keys 'bottom', 'left', 'right', 'top'"
-            );
-            return;
-        }
 
+        options.padding = extend(defaultPadding, options.padding);
         const tr = this.transform;
+        const edgePadding = tr.padding;
 
         // We want to calculate the upper right and lower left of the box defined by p0 and p1
         // in a coordinate system rotate to match the destination bearing.
@@ -501,8 +493,8 @@ class Camera extends Evented {
 
         // Calculate zoom: consider the original bbox and padding.
         const size = upperRight.sub(lowerLeft);
-        const scaleX = (tr.width - options.padding.left - options.padding.right) / size.x;
-        const scaleY = (tr.height - options.padding.top - options.padding.bottom) / size.y;
+        const scaleX = (tr.width - (edgePadding.left + edgePadding.right + options.padding.left + options.padding.right)) / size.x;
+        const scaleY = (tr.height - (edgePadding.top + edgePadding.bottom + options.padding.top + options.padding.bottom)) / size.y;
 
         if (scaleY < 0 || scaleX < 0) {
             warnOnce(
