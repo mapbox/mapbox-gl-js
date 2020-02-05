@@ -116,6 +116,16 @@ class LineAtlas {
             }
         }
 
+        for (let i = 0; i < ranges.length; i++) {
+            const part = ranges[i];
+            const nextPart = ranges[(i + 1) % ranges.length];
+            const offset = i + 1 < ranges.length ? 0 : this.width;
+            if (part.isDash === nextPart.isDash) {
+                part.right = nextPart.right + offset;
+                nextPart.left = part.left - offset;
+            }
+        }
+
         const index = this.width * this.nextRow;
         let currIndex = 0;
         let range = ranges[currIndex];
@@ -126,27 +136,13 @@ class LineAtlas {
         for (let x = 0; x < this.width; x++) {
             if (x / range.right > 1) {
                 range = ranges[++currIndex];
-
-                prevRange = ranges[currIndex - 1];
-                nextRange = ranges[(currIndex + 1) % ranges.length];
             }
 
             const distLeft = Math.abs(x - range.left);
             const distRight = Math.abs(x - range.right);
-            const leftSelect = distLeft < distRight;
-            const rightSelect = !leftSelect;
 
             const minDist = Math.min(distLeft, distRight);
             let signedDistance = range.isDash ? minDist : -minDist;
-
-            // Flatten the distance field to its maximum (127) or minimum (-127) value in two cases:
-            // 1. If we are on the left side of the slope of the distance field
-            //    and the previous dash signal is the same as the current one.
-            // 2. If we are on the right side of the slope of the distance field
-            //    and the next dash signal is the same as the current one.
-            if (leftSelect && prevRange.isDash === range.isDash || rightSelect && nextRange.isDash === range.isDash) {
-                signedDistance = range.isDash ? 127 : -127;
-            }
 
             this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
         }
