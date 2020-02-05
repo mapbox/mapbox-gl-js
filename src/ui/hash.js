@@ -119,10 +119,11 @@ class Hash {
     _onHashChange() {
         const loc = this._getCurrentHash();
         if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
+            const bearing = this._map.dragRotate.isEnabled() && this._map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : this._map.getBearing();
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
-                bearing: +(loc[3] || 0),
+                bearing,
                 pitch: +(loc[4] || 0)
             });
             return true;

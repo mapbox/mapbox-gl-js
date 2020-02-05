@@ -20,7 +20,7 @@ import {polygonIntersectsBox} from '../util/intersection_tests';
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
 import type Transform from '../geo/transform';
-import type {FilterSpecification} from '../style-spec/types';
+import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
 
 import {FeatureIndexArray} from './array_types';
 
@@ -46,6 +46,7 @@ class FeatureIndex {
     grid: Grid;
     grid3D: Grid;
     featureIndexArray: FeatureIndexArray;
+    promoteId: ?PromoteIdSpecification;
 
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
@@ -53,16 +54,15 @@ class FeatureIndex {
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
 
-    constructor(tileID: OverscaledTileID,
-                grid?: Grid,
-                featureIndexArray?: FeatureIndexArray) {
+    constructor(tileID: OverscaledTileID, promoteId?: ?PromoteIdSpecification) {
         this.tileID = tileID;
         this.x = tileID.canonical.x;
         this.y = tileID.canonical.y;
         this.z = tileID.canonical.z;
-        this.grid = grid || new Grid(EXTENT, 16, 0);
+        this.grid = new Grid(EXTENT, 16, 0);
         this.grid3D = new Grid(EXTENT, 16, 0);
-        this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
+        this.featureIndexArray = new FeatureIndexArray();
+        this.promoteId = promoteId;
     }
 
     insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, is3D?: boolean) {
@@ -146,14 +146,14 @@ class FeatureIndex {
                 filter,
                 params.layers,
                 styleLayers,
-                (feature: VectorTileFeature, styleLayer: StyleLayer) => {
+                (feature: VectorTileFeature, styleLayer: StyleLayer, id: string | number | void) => {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature);
                     }
                     let featureState = {};
-                    if (feature.id) {
+                    if (id !== undefined) {
                         // `feature-state` expression evaluation requires feature state to be available
-                        featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', feature.id);
+                        featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
                     }
                     return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.pixelPosMatrix);
                 }
@@ -171,7 +171,7 @@ class FeatureIndex {
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
-        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer) => boolean | number) {
+        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, id: string | number | void) => boolean | number) {
 
         const layerIDs = this.bucketLayerIDs[bucketIndex];
         if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs))
@@ -184,6 +184,8 @@ class FeatureIndex {
         if (!filter(new EvaluationParameters(this.tileID.overscaledZ), feature))
             return;
 
+        const id = this.getId(feature, sourceLayerName);
+
         for (let l = 0; l < layerIDs.length; l++) {
             const layerID = layerIDs[l];
 
@@ -194,13 +196,13 @@ class FeatureIndex {
             const styleLayer = styleLayers[layerID];
             if (!styleLayer) continue;
 
-            const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer);
+            const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, id);
             if (!intersectionZ) {
                 // Only applied for non-symbol features
                 continue;
             }
 
-            const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
+            const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y, id);
             (geojsonFeature: any).layer = styleLayer.serialize();
             let layerResult = result[layerID];
             if (layerResult === undefined) {
@@ -246,6 +248,16 @@ class FeatureIndex {
         }
 
         return false;
+    }
+
+    getId(feature: VectorTileFeature, sourceLayerId: string): string | number | void {
+        let id = feature.id;
+        if (this.promoteId) {
+            const propName = typeof this.promoteId === 'string' ? this.promoteId : this.promoteId[sourceLayerId];
+            id = feature.properties[propName];
+            if (typeof id === 'boolean') id =  Number(id);
+        }
+        return id;
     }
 }
 

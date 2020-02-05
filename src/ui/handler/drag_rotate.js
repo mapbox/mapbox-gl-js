@@ -29,6 +29,7 @@ class DragRotateHandler {
     _eventButton: number;
     _bearingSnap: number;
     _pitchWithRotate: boolean;
+    _clickTolerance: number;
 
     _startPos: Point;
     _prevPos: Point;
@@ -51,7 +52,8 @@ class DragRotateHandler {
         button?: 'right' | 'left',
         element?: HTMLElement,
         bearingSnap?: number,
-        pitchWithRotate?: boolean
+        pitchWithRotate?: boolean,
+        clickTolerance?: number
     }) {
         this._map = map;
         this._el = options.element || map.getCanvasContainer();
@@ -59,6 +61,7 @@ class DragRotateHandler {
         this._button = options.button || 'right';
         this._bearingSnap = options.bearingSnap || 0;
         this._pitchWithRotate = options.pitchWithRotate !== false;
+        this._clickTolerance = options.clickTolerance || 1;
 
         bindAll([
             'onMouseDown',
@@ -173,7 +176,7 @@ class DragRotateHandler {
 
     _onMouseMove(e: MouseEvent) {
         const pos = DOM.mousePos(this._el, e);
-        if (this._lastPos.equals(pos)) {
+        if (this._lastPos.equals(pos) || ((this._state === 'pending') && (pos.dist(this._startPos) < this._clickTolerance))) {
             return;
         }
 
@@ -239,7 +242,7 @@ class DragRotateHandler {
             this._el.click();
         }
 
-        if (DOM.mouseButton(e) !== this._eventButton) return;
+        if (!touchEvent && DOM.mouseButton(e) !== this._eventButton) return;
         switch (this._state) {
         case 'active':
             this._state = 'enabled';

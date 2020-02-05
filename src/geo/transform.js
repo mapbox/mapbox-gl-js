@@ -50,8 +50,8 @@ class Transform {
     _maxPitch: number;
     _center: LngLat;
     _constraining: boolean;
-    _posMatrixCache: {[number]: Float32Array};
-    _alignedPosMatrixCache: {[number]: Float32Array};
+    _posMatrixCache: {[string]: Float32Array};
+    _alignedPosMatrixCache: {[string]: Float32Array};
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant

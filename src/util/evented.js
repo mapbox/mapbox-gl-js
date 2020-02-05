@@ -93,7 +93,7 @@ export class Evented {
      * @param {Function} listener The function to be called when the event is fired the first time.
      * @returns {Object} `this`
      */
-    once(type: string, listener: Listener) {
+    once(type: *, listener: Listener) {
         this._oneTimeListeners = this._oneTimeListeners || {};
         _addEventListener(type, listener, this._oneTimeListeners);
 

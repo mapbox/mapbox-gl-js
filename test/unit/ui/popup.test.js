@@ -92,6 +92,32 @@ test('Popup has no close button if closeButton option is false', (t) => {
     t.end();
 });
 
+test('Popup does not close on map move events when the closeOnMove option is false', (t) => {
+    const map = createMap(t);
+    const popup = new Popup({closeOnMove: false})
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    map.setCenter([-10, 0]); // longitude bounds: [-370, 350]
+
+    t.ok(popup.isOpen());
+    t.end();
+});
+
+test('Popup closes on map move events when the closeOnMove option is true', (t) => {
+    const map = createMap(t);
+    const popup = new Popup({closeOnMove: true})
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    map.setCenter([-10, 0]); // longitude bounds: [-370, 350]
+
+    t.ok(!popup.isOpen());
+    t.end();
+});
+
 test('Popup fires close event when removed', (t) => {
     const map = createMap(t);
     const onClose = t.spy();

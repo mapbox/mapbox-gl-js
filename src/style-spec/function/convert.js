@@ -153,7 +153,12 @@ function convertPropertyFunction(parameters, propertySpec, stops) {
         ];
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        const expression = [getInterpolateOperator(parameters), ['exponential', base], ['number', get]];
+        const expression = [
+            getInterpolateOperator(parameters),
+            base === 1 ? ["linear"] : ["exponential", base],
+            ["number", get]
+        ];
+
         for (const stop of stops) {
             appendStopPair(expression, stop[0], stop[1], false);
         }
@@ -177,7 +182,8 @@ function convertZoomFunction(parameters, propertySpec, stops, input = ['zoom']) 
         isStep = true;
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        expression = [getInterpolateOperator(parameters), ['exponential', base], input];
+        expression = [getInterpolateOperator(parameters), base === 1 ? ["linear"] : ["exponential", base], input];
+
     } else {
         throw new Error(`Unknown zoom function type "${type}"`);
     }
