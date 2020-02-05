@@ -109,44 +109,42 @@ class LineAtlas {
     }
 
     addRegularDash(ranges: Object) {
+
         // Collapse any zero-length range
+        // Collapse neighbouring same-type parts into a single part
         for (let i = ranges.length - 1; i >= 0; --i) {
-            if (ranges[i].zeroLength) {
-                ranges.splice(i,  1);
+            const part = ranges[i];
+            const next = ranges[i + 1];
+            if (part.zeroLength) {
+                ranges.splice(i, 1);
+            } else if (next && next.isDash === part.isDash) {
+                next.left = part.left;
+                ranges.splice(i, 1);
             }
+        }
+
+        // Combine the first and last parts if possible
+        const first = ranges[0];
+        const last = ranges[ranges.length - 1];
+        if (first.isDash === last.isDash) {
+            first.left = last.left - this.width;
+            last.right = first.right + this.width;
         }
 
         const index = this.width * this.nextRow;
         let currIndex = 0;
         let range = ranges[currIndex];
 
-        let prevRange = ranges[ranges.length - 1];
-        let nextRange = ranges[(currIndex + 1) % ranges.length];
-
         for (let x = 0; x < this.width; x++) {
             if (x / range.right > 1) {
                 range = ranges[++currIndex];
-
-                prevRange = ranges[currIndex - 1];
-                nextRange = ranges[(currIndex + 1) % ranges.length];
             }
 
             const distLeft = Math.abs(x - range.left);
             const distRight = Math.abs(x - range.right);
-            const leftSelect = distLeft < distRight;
-            const rightSelect = !leftSelect;
 
             const minDist = Math.min(distLeft, distRight);
-            let signedDistance = range.isDash ? minDist : -minDist;
-
-            // Flatten the distance field to its maximum (127) or minimum (-127) value in two cases:
-            // 1. If we are on the left side of the slope of the distance field
-            //    and the previous dash signal is the same as the current one.
-            // 2. If we are on the right side of the slope of the distance field
-            //    and the next dash signal is the same as the current one.
-            if (leftSelect && prevRange.isDash === range.isDash || rightSelect && nextRange.isDash === range.isDash) {
-                signedDistance = range.isDash ? 127 : -127;
-            }
+            const signedDistance = range.isDash ? minDist : -minDist;
 
             this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
         }
