@@ -20,47 +20,53 @@ import type {OverscaledTileID} from '../source/tile_id';
 
 export default drawDebug;
 
-const topColor = new Color(1, 0, 0, 0.4);
-const btmColor = new Color(0, 1, 0, 0.4);
-const leftColor = new Color(0, 0, 1, 0.4);
-const rightColor = new Color(1, 0, 1, 0.4);
-const centerColor = new Color(0, 1, 1, 0.4);
+const topColor = new Color(1, 0, 0, 1);
+const btmColor = new Color(0, 1, 0, 1);
+const leftColor = new Color(0, 0, 1, 1);
+const rightColor = new Color(1, 0, 1, 1);
+const centerColor = new Color(0, 1, 1, 1);
 
 export function drawDebugPadding(painter: Painter) {
     const padding = painter.transform.padding;
+    const lineWidth = 3;
     // Top
-    drawDebugSSRect(painter, 0, 0, painter.transform.width, padding.top || 0, topColor);
+    drawHorizontalLine(painter, painter.transform.height - (padding.top || 0), lineWidth, topColor);
     // Bottom
-    drawDebugSSRect(painter, 0, painter.transform.height - (padding.bottom || 0), painter.transform.width, padding.bottom || 0, btmColor);
+    drawHorizontalLine(painter, padding.bottom || 0, lineWidth, btmColor);
     // Left
-    drawDebugSSRect(painter, 0, 0, padding.left || 0, painter.transform.height, leftColor);
+    drawVerticalLine(painter, padding.left || 0, lineWidth, leftColor);
     // Right
-    drawDebugSSRect(painter, painter.transform.width - (padding.right || 0), 0, padding.right || 0, painter.transform.height, rightColor);
+    drawVerticalLine(painter, painter.transform.width - (padding.right || 0), lineWidth, rightColor);
     // Center
     const center = painter.transform.centerPoint;
-    const centerSize = 10;
-    drawDebugSSRect(painter, center.x - centerSize / 2, center.y - centerSize / 2, centerSize, centerSize, centerColor);
+    drawCrosshair(painter, center.x, painter.transform.height - center.y, centerColor);
+}
+
+function drawCrosshair(painter: Painter, x: number, y: number, color: Color) {
+    const size = 20;
+    const lineWidth = 2;
+    //Vertical line
+    drawDebugSSRect(painter, x - lineWidth / 2, y - size / 2, lineWidth, size, color);
+    //Horizontal line
+    drawDebugSSRect(painter, x - size / 2, y - lineWidth / 2, size, lineWidth, color);
+}
+
+function drawHorizontalLine(painter: Painter, y: number, lineWidth: number, color: Color) {
+    drawDebugSSRect(painter, 0, y  + lineWidth / 2, painter.transform.width,  lineWidth, color);
+}
+
+function drawVerticalLine(painter: Painter, x: number, lineWidth: number, color: Color) {
+    drawDebugSSRect(painter, x - lineWidth / 2, 0, lineWidth,  painter.transform.height, color);
 }
 
 function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, height: number, color: Color) {
     const context = painter.context;
     const gl = context.gl;
 
-    const program = painter.useProgram('debugSSRect');
-
-    const depthMode = DepthMode.disabled;
-    const stencilMode = StencilMode.disabled;
-    const colorMode = ColorMode.alphaBlended;
-    const id = '$debug_ss_rect';
-    // convert pixel-space coordinates to gl coordinates
-    const glWidth = 2 * browser.devicePixelRatio * width / painter.width;
-    const glHeight = 2 * browser.devicePixelRatio * -height / painter.height;
-    const glX =  (2 * browser.devicePixelRatio * x / painter.width - 1);
-    const glY = -1 * (2 * browser.devicePixelRatio * y / painter.height - 1);
-
-    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        debugSSRectUniformValues(color, [glX, glY], [glWidth, glHeight]), id,
-        painter.viewportBuffer, painter.quadTriangleIndexBuffer, painter.viewportSegments);
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(x * browser.devicePixelRatio, y * browser.devicePixelRatio, width * browser.devicePixelRatio, height * browser.devicePixelRatio);
+    context.clear({color});
+    gl.disable(gl.SCISSOR_TEST);
 }
 
 function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
