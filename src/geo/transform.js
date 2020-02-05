@@ -12,7 +12,7 @@ import {Aabb, Frustum} from '../util/primitives.js';
 import EdgeInsets from './edge_insets';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id';
-import type {EdgeInsetLike, EdgeInsetJSON} from './edge_insets';
+import type {PaddingOptions} from './edge_insets';
 
 /**
  * A single transform, generally used for a single tile to be
@@ -209,8 +209,8 @@ class Transform {
         this._calcMatrices();
     }
 
-    get padding(): EdgeInsetJSON { return this._edgeInsets.toJSON(); }
-    set padding(padding: EdgeInsetLike) {
+    get padding(): PaddingOptions { return this._edgeInsets.toJSON(); }
+    set padding(padding: PaddingOptions) {
         if (this._edgeInsets.equals(padding)) return;
         this._unmodified = false;
         //Update edge-insets inplace
@@ -233,22 +233,22 @@ class Transform {
     /**
      * Returns if the padding params match
      *
-     * @param {EdgeInsetLike} padding
+     * @param {PaddingOptions} padding
      * @returns {boolean}
      * @memberof Transform
      */
-    isPaddingEqual(padding: EdgeInsetLike): boolean {
+    isPaddingEqual(padding: PaddingOptions): boolean {
         return this._edgeInsets.equals(padding);
     }
 
     /**
      * Helper method to upadte edge-insets inplace
      *
-     * @param {EdgeInsetLike} target
+     * @param {PaddingOptions} target
      * @param {number} t
      * @memberof Transform
      */
-    interpolatePadding(start: EdgeInsetJSON, target: EdgeInsetLike, t: number) {
+    interpolatePadding(start: PaddingOptions, target: PaddingOptions, t: number) {
         this._unmodified = false;
         this._edgeInsets.interpolate(start, target, t);
         this._constrain();

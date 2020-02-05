@@ -22,7 +22,7 @@ import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {TaskID} from '../util/task_queue';
 import type {PointLike} from '@mapbox/point-geometry';
-import type {EdgeInsetLike, EdgeInsetJSON} from '../geo/edge_insets';
+import type {PaddingOptions} from '../geo/edge_insets';
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
@@ -36,7 +36,7 @@ import type {EdgeInsetLike, EdgeInsetJSON} from '../geo/edge_insets';
  * is "up"; for example, a bearing of 90° orients the map so that east is up.
  * @property {number} pitch The desired pitch, in degrees.
  * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
- * @property {EdgeInsetLike} padding Dimensions in pixels applied on eachs side of the viewport for shifting the vanishing point.
+ * @property {PaddingOptions} padding Dimensions in pixels applied on eachs side of the viewport for shifting the vanishing point.
  */
 export type CameraOptions = {
     center?: LngLatLike,
@@ -44,7 +44,7 @@ export type CameraOptions = {
     bearing?: number,
     pitch?: number,
     around?: LngLatLike,
-    padding?: EdgeInsetLike
+    padding?: PaddingOptions
 };
 
 /**
@@ -294,7 +294,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns The current padding around the map viewport.
      */
-    getPadding(): EdgeInsetJSON { return this.transform.padding; }
+    getPadding(): PaddingOptions { return this.transform.padding; }
 
     /**
      * Sets the padding in pixels around the viewport.
@@ -311,7 +311,7 @@ class Camera extends Evented {
      * // Sets a left padding of 300px, and a top padding of 50px
      * map.setPadding({ left: 300, top: 50 });
      */
-    setPadding(padding: EdgeInsetLike, eventData?: Object) {
+    setPadding(padding: PaddingOptions, eventData?: Object) {
         this.jumpTo({padding}, eventData);
         return this;
     }

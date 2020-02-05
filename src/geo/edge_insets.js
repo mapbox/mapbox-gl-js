@@ -38,16 +38,16 @@ class EdgeInsets {
      * Interpolates the inset in-place.
      * This maintains the current inset value for any inset not present in `target`.
      *
-     * @param {EdgeInsetLike} target
+     * @param {PaddingOptions} target
      * @param {number} t
      * @returns {EdgeInsets}
      * @memberof EdgeInsets
      */
-    interpolate(start: EdgeInsetJSON | EdgeInsets, target: EdgeInsetLike, t: number): EdgeInsets {
-        if (target.top != null) this.top = number(start.top, target.top, t);
-        if (target.bottom != null) this.bottom = number(start.bottom, target.bottom, t);
-        if (target.left != null) this.left = number(start.left, target.left, t);
-        if (target.right != null) this.right = number(start.right, target.right, t);
+    interpolate(start: PaddingOptions | EdgeInsets, target: PaddingOptions, t: number): EdgeInsets {
+        if (target.top != null && start.top != null) this.top = number(start.top, target.top, t);
+        if (target.bottom != null && start.bottom != null) this.bottom = number(start.bottom, target.bottom, t);
+        if (target.left != null && start.left != null) this.left = number(start.left, target.left, t);
+        if (target.right != null && start.right != null) this.right = number(start.right, target.right, t);
 
         return this;
     }
@@ -69,7 +69,7 @@ class EdgeInsets {
         return new Point(x, y);
     }
 
-    equals(other: EdgeInsetLike): boolean {
+    equals(other: PaddingOptions): boolean {
         return this.top === other.top &&
             this.bottom === other.bottom &&
             this.left === other.left &&
@@ -84,10 +84,10 @@ class EdgeInsets {
      * Returns the current sdtate as json, useful when you want to have a
      * read-only representation of the inset.
      *
-     * @returns {EdgeInsetJSON}
+     * @returns {PaddingOptions}
      * @memberof EdgeInsets
      */
-    toJSON(): EdgeInsetJSON {
+    toJSON(): PaddingOptions {
         return {
             top: this.top,
             bottom: this.bottom,
@@ -97,7 +97,7 @@ class EdgeInsets {
     }
 }
 
-export type EdgeInsetLike = EdgeInsets | {top?: number, bottom?: number, right?: number, left?: number} | EdgeInsetJSON;
-export type EdgeInsetJSON = {top: number, bottom: number, right: number, left: number}
+export type PaddingOptions = {top: ?number, bottom: ?number, right: ?number, left: ?number};
+export type SerializedPadding = {top: number, bottom: number, right: number, left: number};
 
 export default EdgeInsets;

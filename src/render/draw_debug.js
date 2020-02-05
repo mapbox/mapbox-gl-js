@@ -29,13 +29,13 @@ const centerColor = new Color(0, 1, 1, 0.4);
 export function drawDebugPadding(painter: Painter) {
     const padding = painter.transform.padding;
     // Top
-    drawDebugSSRect(painter, 0, 0, painter.transform.width, padding.top, topColor);
+    drawDebugSSRect(painter, 0, 0, painter.transform.width, padding.top || 0, topColor);
     // Bottom
-    drawDebugSSRect(painter, 0, painter.transform.height - padding.bottom, painter.transform.width, padding.bottom, btmColor);
+    drawDebugSSRect(painter, 0, painter.transform.height - (padding.bottom || 0), painter.transform.width, padding.bottom || 0, btmColor);
     // Left
-    drawDebugSSRect(painter, 0, 0, padding.left, painter.transform.height, leftColor);
+    drawDebugSSRect(painter, 0, 0, padding.left || 0, painter.transform.height, leftColor);
     // Right
-    drawDebugSSRect(painter, painter.transform.width - padding.right, 0, padding.right, painter.transform.height, rightColor);
+    drawDebugSSRect(painter, painter.transform.width - (padding.right || 0), 0, padding.right || 0, painter.transform.height, rightColor);
     // Center
     const center = painter.transform.centerPoint;
     const centerSize = 10;
