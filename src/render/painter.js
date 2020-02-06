@@ -1,6 +1,7 @@
 // @flow
 
 import browser from '../util/browser';
+import window from '../util/window';
 
 import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache';
@@ -122,6 +123,9 @@ class Painter {
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
     gpuTimers: { [string]: any };
+    emptyTexture: Texture;
+    debugOverlayTexture: ?Texture;
+    debugOverlayCanvas: ?HTMLCanvasElement;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -214,6 +218,12 @@ class Painter {
         quadTriangleIndices.emplaceBack(0, 1, 2);
         quadTriangleIndices.emplaceBack(2, 1, 3);
         this.quadTriangleIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
+
+        this.emptyTexture = new Texture(context, {
+            width: 1,
+            height: 1,
+            data: new Uint8ClampedArray([0, 0, 0, 0])
+        }, context.gl.RGBA);
 
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
@@ -635,6 +645,23 @@ class Painter {
         this.context.cullFace.set(false);
         this.context.viewport.set([0, 0, this.width, this.height]);
         this.context.blendEquation.set(gl.FUNC_ADD);
+    }
+
+    initDebugOverlayCanvas() {
+        if (this.debugOverlayCanvas == null) {
+            this.debugOverlayCanvas = window.document.createElement('canvas');
+            this.debugOverlayCanvas.width = 512;
+            this.debugOverlayCanvas.height = 512;
+            const gl = this.context.gl;
+            this.debugOverlayTexture = new Texture(this.context, this.debugOverlayCanvas, gl.RGBA);
+        }
+    }
+
+    destroy() {
+        this.emptyTexture.destroy();
+        if (this.debugOverlayTexture) {
+            this.debugOverlayTexture.destroy();
+        }
     }
 }
 
