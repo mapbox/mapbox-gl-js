@@ -29,6 +29,7 @@ varying float v_width;
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define mediump float width
+#pragma mapbox: define lowp float floorwidth
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
 
@@ -38,6 +39,7 @@ void main() {
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize mediump float width
+    #pragma mapbox: initialize lowp float floorwidth
     #pragma mapbox: initialize mediump vec4 pattern_from
     #pragma mapbox: initialize mediump vec4 pattern_to
 
@@ -89,5 +91,5 @@ void main() {
 
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
-    v_width = width;
+    v_width = floorwidth;
 }
