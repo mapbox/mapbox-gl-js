@@ -479,3 +479,29 @@ test('GeolocateControl accuracy circle radius matches reported accuracy', (t) =>
     geolocate._geolocateButton.dispatchEvent(click);
     geolocation.send({latitude: 10, longitude: 20, accuracy: 700});
 });
+
+test('GeolocateControl shown even if trackUserLocation = false', (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: false,
+        showUserLocation: true,
+        showAccuracyCircle: true,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        map.jumpTo({
+            center: [10, 20]
+        });
+        map.once('zoomend', () => {
+            t.ok(geolocate._circleElement.style.width);
+            t.end();
+        });
+        map.zoomTo(10, {duration: 0});
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 700});
+});

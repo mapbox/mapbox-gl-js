@@ -267,7 +267,7 @@ class GeolocateControl extends Evented {
             this._accuracyCircleMarker.setLngLat(center).addTo(this._map);
             this._userLocationDotMarker.setLngLat(center).addTo(this._map);
             this._accuracy = position.coords.accuracy;
-            if (this.options.trackUserLocation && this.options.showAccuracyCircle) {
+            if (this.options.showUserLocation && this.options.showAccuracyCircle) {
                 this._updateCircleRadius();
             }
         } else {
@@ -288,7 +288,7 @@ class GeolocateControl extends Evented {
     }
 
     _onZoom() {
-        if (this.options.trackUserLocation && this.options.showAccuracyCircle) {
+        if (this.options.showUserLocation && this.options.showAccuracyCircle) {
             this._updateCircleRadius();
         }
     }
