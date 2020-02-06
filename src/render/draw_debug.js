@@ -9,8 +9,7 @@ import SegmentVector from '../data/segment';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import CullFaceMode from '../gl/cull_face_mode';
-import ColorMode from '../gl/color_mode';
-import {debugUniformValues, debugSSRectUniformValues} from './program/debug_program';
+import {debugUniformValues} from './program/debug_program';
 import Color from '../style-spec/util/color';
 import browser from '../util/browser';
 
