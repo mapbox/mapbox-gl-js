@@ -72,7 +72,7 @@
       "type": "fill",
       "source": "polygon",
       "paint": {
-          "fill-color": "white",
+          "fill-color": "black",
           "fill-opacity": 0.5
       }
     },
