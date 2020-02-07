@@ -48,7 +48,7 @@
       "result": "success"
     },
     "outputs": [false, true, false],
-    "serialized": ["Within", {
+    "serialized": ["within", {
         "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]],
         "type": "Polygon"
       }]
