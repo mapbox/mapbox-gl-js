@@ -2,12 +2,12 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 150,
-      "height": 150
+      "width": 64,
+      "height": 64
     }
   },
-  "zoom": 3,
-  "center": [3, 3],
+  "zoom": 2,
+  "center": [3.5, 3.5],
   "sources": {
     "points": {
       "type": "geojson",

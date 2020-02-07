@@ -24,5 +24,6 @@
   "render-tests/within/paint-circle" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
   "render-tests/within/paint-icon" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
   "render-tests/within/paint-text" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
-  "expression-tests/within/basic" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js"
+  "expression-tests/within/basic" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
+  "expression-tests/within/invalid-geojson" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js"
 }
