@@ -120,7 +120,7 @@ function setScale(container, maxWidth, maxDistance, unit) {
     const distance = getRoundNum(maxDistance);
     const ratio = distance / maxDistance;
     container.style.width = `${maxWidth * ratio}px`;
-    container.innerHTML = distance + unit;
+    container.innerHTML = `${distance} ${unit}`;
 }
 
 function getDecimalRoundNum(d) {
