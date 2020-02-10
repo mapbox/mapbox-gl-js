@@ -283,8 +283,10 @@ class GeolocateControl extends Evented {
         const b = this._map.unproject([1, y]);
         const metersPerPixel = a.distanceTo(b);
         const circleDiameter = Math.ceil(2.0 * this._accuracy / metersPerPixel);
-        this._circleElement.style.width = `${circleDiameter}px`;
-        this._circleElement.style.height = `${circleDiameter}px`;
+        if (this._circleElement) {
+          this._circleElement.style.width = `${circleDiameter}px`;
+          this._circleElement.style.height = `${circleDiameter}px`;
+        }
     }
 
     _onZoom() {
