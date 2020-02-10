@@ -38,6 +38,7 @@ import PauseablePlacement from './pauseable_placement';
 import ZoomHistory from './zoom_history';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
+import {PossiblyEvaluated} from './properties';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -1055,6 +1056,38 @@ class Style extends Evented {
         return features;
     }
 
+    evaluateQueryResults(queryResults, featureState) {
+        const availableImages = this.imageManager.listImages();
+        if (Object.keys(queryResults).length) {
+            for (const layerName in queryResults) {
+                const layer = this._layers[layerName];
+                const layoutValues = layer.layout._values;
+                const paintValues = layer.paint._values;
+
+                queryResults[layerName].forEach(result => {
+                    if (layoutValues) {
+                        const evaluatedLayout = {};
+                        Object.getOwnPropertyNames(layoutValues).forEach(property => {
+                            const possiblyEvaluatedProperty = layoutValues[property];
+                            evaluatedLayout[property] = possiblyEvaluatedProperty && possiblyEvaluatedProperty.evaluate ? possiblyEvaluatedProperty.evaluate(result.vtFeature, featureState, availableImages) : possiblyEvaluatedProperty;
+                        });
+                        result.feature.layer.layout = evaluatedLayout;
+                    }
+
+                    if (paintValues) {
+                        const evaluatedPaint = {};
+                        Object.getOwnPropertyNames(paintValues).forEach(property => {
+                            const possiblyEvaluatedProperty = paintValues[property]
+                            evaluatedPaint[property] = possiblyEvaluatedProperty && possiblyEvaluatedProperty.evaluate ? possiblyEvaluatedProperty.evaluate(result.vtFeature, featureState, availableImages) : possiblyEvaluatedProperty;
+                        });
+                        result.feature.layer.paint = evaluatedPaint;
+                    }
+                });
+            }
+        }
+        return queryResults;
+    }
+
     queryRenderedFeatures(queryGeometry: any, params: any, transform: Transform) {
         if (params && params.filter) {
             this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, null, params);
@@ -1078,17 +1111,22 @@ class Style extends Evented {
         }
 
         const sourceResults = [];
+        const serializedLayers = {};
+        for (const layer in this._layers) {
+            serializedLayers[layer] = this._layers[layer].serialize();
+        }
 
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
-            sourceResults.push(
-                queryRenderedFeatures(
-                    this.sourceCaches[id],
-                    this._layers,
-                    queryGeometry,
-                    params,
-                    transform)
-            );
+            let queryResults = queryRenderedFeatures(
+                                    this.sourceCaches[id],
+                                    this._layers,
+                                    serializedLayers,
+                                    queryGeometry,
+                                    params,
+                                    transform);
+            queryResults = this.evaluateQueryResults(queryResults, this.sourceCaches[id]._state);
+            sourceResults.push(queryResults);
         }
 
         if (this.placement) {
@@ -1097,6 +1135,7 @@ class Style extends Evented {
             sourceResults.push(
                 queryRenderedSymbols(
                     this._layers,
+                    serializedLayers,
                     this.sourceCaches,
                     queryGeometry,
                     params,

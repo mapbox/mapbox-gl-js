@@ -101,7 +101,7 @@ class FeatureIndex {
     }
 
     // Finds non-symbol features in this tile at a particular position.
-    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}, sourceFeatureState: SourceFeatureState): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}, serializedLayers: {[string]: Object}, sourceFeatureState: SourceFeatureState): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         this.loadVTLayers();
 
         const params = args.params || {},
@@ -146,6 +146,7 @@ class FeatureIndex {
                 filter,
                 params.layers,
                 styleLayers,
+                serializedLayers,
                 (feature: VectorTileFeature, styleLayer: StyleLayer, id: string | number | void) => {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature);
@@ -171,6 +172,7 @@ class FeatureIndex {
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
+        serializedLayers: {[string]: Object},
         intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, id: string | number | void) => boolean | number) {
 
         const layerIDs = this.bucketLayerIDs[bucketIndex];
@@ -202,19 +204,21 @@ class FeatureIndex {
                 continue;
             }
 
+            const serializedLayer = serializedLayers[layerID];
             const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y, id);
-            (geojsonFeature: any).layer = styleLayer.serialize();
+            (geojsonFeature: any).layer = serializedLayer;
             let layerResult = result[layerID];
             if (layerResult === undefined) {
                 layerResult = result[layerID] = [];
             }
-            layerResult.push({featureIndex, feature: geojsonFeature, intersectionZ});
+            layerResult.push({featureIndex, feature: geojsonFeature, vtFeature: feature, intersectionZ});
         }
     }
 
     // Given a set of symbol indexes that have already been looked up,
     // return a matching set of GeoJSONFeatures
     lookupSymbolFeatures(symbolFeatureIndexes: Array<number>,
+                         serializedLayers: {[string]: Object},
                          bucketIndex: number,
                          sourceLayerIndex: number,
                          filterSpec: FilterSpecification,
@@ -233,7 +237,8 @@ class FeatureIndex {
                 symbolFeatureIndex,
                 filter,
                 filterLayerIDs,
-                styleLayers
+                styleLayers,
+                serializedLayers
             );
 
         }
