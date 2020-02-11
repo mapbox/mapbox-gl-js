@@ -203,7 +203,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: apt-get install fonts-open-sans
+      - run: sudo apt-get install fonts-open-sans
       - run: yarn run test-render
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
