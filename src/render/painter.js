@@ -124,8 +124,8 @@ class Painter {
     symbolFadeChange: number;
     gpuTimers: { [string]: any };
     emptyTexture: Texture;
-    debugOverlayTexture: ?Texture;
-    debugOverlayCanvas: ?HTMLCanvasElement;
+    debugOverlayTexture: Texture;
+    debugOverlayCanvas: HTMLCanvasElement;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);

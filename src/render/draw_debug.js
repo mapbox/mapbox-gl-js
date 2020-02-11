@@ -19,9 +19,6 @@ function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<Ove
     }
 }
 
-let emptyTexture;
-let textTexture;
-
 function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     const context = painter.context;
     const gl = context.gl;
@@ -46,16 +43,16 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
     const tileSizeKb = Math.floor(tileByteLength / 1024);
     const tileSize = sourceCache.getTile(coord).tileSize;
-    const scaleRatio = 512 / Math.min(tileSize, 512);
+    const scaleRatio = (512 / Math.min(tileSize, 512) * (coord.overscaledZ / painter.transform.zoom)) * 0.5;
     let tileIdText = coord.canonical.toString();
     if (coord.overscaledZ !== coord.canonical.z) {
         tileIdText += ` => ${coord.overscaledZ}`;
     }
     const tileLabel = `${tileIdText} ${tileSizeKb}kb`;
-    drawTextToOverlay(painter, tileLabel);
+    drawTextToOverlay(painter, tileLabel, scaleRatio);
 
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
-        debugUniformValues(posMatrix, Color.transparent), id,
+        debugUniformValues(posMatrix, Color.transparent, scaleRatio), id,
         painter.debugBuffer, painter.quadTriangleIndexBuffer, painter.debugSegments);
 }
 
@@ -66,8 +63,14 @@ function drawTextToOverlay(painter: Painter, text: string) {
     const ctx2d = painter.debugOverlayCanvas.getContext('2d');
     ctx2d.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx2d.font='24px Arial';
-    ctx2d.fillText(text, 50, 50);
+    ctx2d.shadowColor = 'white';
+    ctx2d.shadowBlur = 2;
+    ctx2d.lineWidth = 1.5;
+    ctx2d.strokeStyle = 'white';
+    ctx2d.textBaseline = 'top';
+    ctx2d.font = `bold ${36}px Arial`;
+    ctx2d.fillText(text, 5, 5);
+    ctx2d.strokeText(text, 5, 5);
 
     painter.debugOverlayTexture.update(canvas);
     painter.debugOverlayTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
