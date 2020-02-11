@@ -204,6 +204,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: sudo apt-get install fonts-open-sans
+      - run: fc-cache
       - run: yarn run test-render
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
