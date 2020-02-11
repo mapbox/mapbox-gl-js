@@ -49,7 +49,7 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
         tileIdText += ` => ${coord.overscaledZ}`;
     }
     const tileLabel = `${tileIdText} ${tileSizeKb}kb`;
-    drawTextToOverlay(painter, tileLabel, scaleRatio);
+    drawTextToOverlay(painter, tileLabel);
 
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
         debugUniformValues(posMatrix, Color.transparent, scaleRatio), id,
