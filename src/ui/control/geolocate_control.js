@@ -127,7 +127,6 @@ class GeolocateControl extends Evented {
         this._map = map;
         this._container = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
         checkGeolocationSupport(this._setupUI);
-        this._map.on('zoom', this._onZoom);
         return this._container;
     }
 
@@ -369,6 +368,8 @@ class GeolocateControl extends Evented {
             this._accuracyCircleMarker = new Marker({element: this._circleElement, pitchAlignment: 'map'});
 
             if (this.options.trackUserLocation) this._watchState = 'OFF';
+
+            this._map.on('zoom', this._onZoom);
         }
 
         this._geolocateButton.addEventListener('click',
