@@ -143,7 +143,7 @@ class Transform {
     }
 
     get centerOffset(): Point {
-        return this._edgeInsets.getCenter(this.width, this.height).sub(this.size._div(2));
+        return this.centerPoint._sub(this.size._div(2));
     }
 
     get size(): Point {
