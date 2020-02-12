@@ -194,6 +194,11 @@ class GeolocateControl extends Evented {
     }
 
     _onSuccess(position: Position) {
+        if (!this._map) {
+            // control has since been removed
+            return;
+        }
+
         if (this._isOutOfMapMaxBounds(position)) {
             this._setErrorState();
 
@@ -294,6 +299,11 @@ class GeolocateControl extends Evented {
     }
 
     _onError(error: PositionError) {
+        if (!this._map) {
+            // control has since been removed
+            return;
+        }
+
         if (this.options.trackUserLocation) {
             if (error.code === 1) {
                 // PERMISSION_DENIED
