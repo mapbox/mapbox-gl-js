@@ -2,7 +2,8 @@
 
 import DOM from '../../util/dom';
 import {extend, bindAll} from '../../util/util';
-import DragRotateHandler from '../handler/drag_rotate';
+// TODO
+import DragRotateHandler from '../handler/old/drag_rotate';
 
 import type Map from '../map';
 

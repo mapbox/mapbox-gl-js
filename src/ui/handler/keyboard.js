@@ -1,8 +1,7 @@
 // @flow
 
 import {extend} from '../../util/util';
-import Handler from './handler.js';
-import type Map from '../map';
+import Point from '@mapbox/point-geometry';
 
 const defaultOptions = {
   panStep: 100,
@@ -24,8 +23,9 @@ const defaultOptions = {
  * - `Shift+⇡`: Increase the pitch by 10 degrees.
  * - `Shift+⇣`: Decrease the pitch by 10 degrees.
  */
-class KeyboardHandler extends Handler {
-    _map: Map;
+class KeyboardHandler {
+    _enabled: boolean;
+    _active: boolean;
     _panStep: number;
     _bearingStep: number;
     _pitchStep: number;
@@ -33,13 +33,16 @@ class KeyboardHandler extends Handler {
     /**
     * @private
     */
-    constructor(map: Map, options: ?Object) {
-      super(map, options);
-      this._map = map;
-      const stepOptions = extend(defaultOptions, options);
-      this._panStep = stepOptions.panStep;
-      this._bearingStep = stepOptions.bearingStep;
-      this._pitchStep = stepOptions.pitchStep;
+    constructor() {
+        const options = {}; // TODO
+        const stepOptions = extend(defaultOptions, options);
+        this._panStep = stepOptions.panStep;
+        this._bearingStep = stepOptions.bearingStep;
+        this._pitchStep = stepOptions.pitchStep;
+    }
+
+    reset() {
+        this._active = false;
     }
 
     keydown(e: KeyboardEvent) {
@@ -101,26 +104,41 @@ class KeyboardHandler extends Handler {
             return;
         }
 
-        const map = this._map;
-        const zoom = map.getZoom();
-
-        const easeOptions = {
+        return {
             duration: 300,
             delayEndEvents: 500,
             easing: easeOut,
 
-            zoom: zoomDir ? Math.round(zoom) + zoomDir * (e.shiftKey ? 2 : 1) : zoom,
-            bearing: map.getBearing() + bearingDir * this._bearingStep,
-            pitch: map.getPitch() + pitchDir * this._pitchStep,
-            offset: [-xDir * this._panStep, -yDir * this._panStep],
-            center: map.getCenter()
+            // TODO re-add zoom rounding
+            zoomDelta: zoomDir ? zoomDir * (e.shiftKey ? 2 : 1) : 0,
+            bearingDelta: bearingDir * this._bearingStep,
+            pitchDelta: pitchDir * this._pitchStep,
+            panDelta: new Point(
+                -xDir * this._panStep,
+                -yDir * this._panStep
+            )
         };
+    }
 
-        return { easeTo: easeOptions }
+    enable() {
+        this._enabled = true;
+    }
+
+    disable() {
+        this._enabled = false;
+        this.reset();
+    }
+
+    isEnabled() {
+        return this._enabled;
+    }
+
+    isActive() {
+        return this._active;
     }
 }
 
-function easeOut(t) {
+function easeOut(t: number) {
     return t * (2 - t);
 }
 

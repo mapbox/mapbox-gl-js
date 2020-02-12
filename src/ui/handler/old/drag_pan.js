@@ -1,4 +1,3 @@
-// @flow
 
 import DOM from '../../util/dom';
 import {bezier, bindAll, extend} from '../../util/util';

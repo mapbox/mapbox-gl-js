@@ -1,4 +1,3 @@
-// @flow
 
 import type Map from '../map';
 import type {InputEvent} from '../handler_manager';
@@ -91,10 +90,15 @@ class Handler {
    * @param {Event} [event] Mouse, Touch, Keyboard or Wheel event to be processed
    * @returns {Object | undefined} Data (e.g. new transform settings) to be used to update the map, or undefined if no update is required
    */
-  processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent) {
+  processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent, points) {
+    throw "";
     if (!e || !e.type) return console.warn('Invalid input event:', e);
     if (!this[e.type] || !(typeof this[e.type] === 'function')) return;
-    return this[e.type](e);
+    const ret = this[e.type](e, points);
+    if (ret && ret.transform) {
+        this.active = true;
+    }
+    return ret;
   }
 }
 

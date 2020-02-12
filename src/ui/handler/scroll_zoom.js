@@ -11,6 +11,7 @@ import LngLat from '../../geo/lng_lat';
 import {Event} from '../../util/evented';
 
 import type Map from '../map';
+import type HandlerManager from '../handler_manager';
 import type Point from '@mapbox/point-geometry';
 import type {TaskID} from '../../util/task_queue';
 
@@ -52,7 +53,8 @@ class ScrollZoomHandler {
     _easing: ?((number) => number);
     _prevEase: ?{start: number, duration: number, easing: (_: number) => number};
 
-    _frameId: ?TaskID;
+    _frameId: ?boolean;
+    _handler: HandlerManager;
 
     _defaultZoomRate: number;
     _wheelZoomRate: number;
@@ -60,14 +62,17 @@ class ScrollZoomHandler {
     /**
      * @private
      */
-    constructor(map: Map) {
+    constructor(map: Map, handler: HandlerManager) {
         this._map = map;
         this._el = map.getCanvasContainer();
+        this._handler = handler;
 
         this._delta = 0;
 
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
+        // TODO
+        this.enable();
 
         bindAll([
             '_onWheel',
@@ -142,7 +147,7 @@ class ScrollZoomHandler {
         this._enabled = false;
     }
 
-    onWheel(e: WheelEvent) {
+    wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
@@ -209,7 +214,6 @@ class ScrollZoomHandler {
         if (!this._delta) return;
 
         if (this._frameId) {
-            this._map._cancelRenderFrame(this._frameId);
             this._frameId = null;
         }
 
@@ -229,11 +233,17 @@ class ScrollZoomHandler {
         this._around = LngLat.convert(this._aroundCenter ? this._map.getCenter() : this._map.unproject(pos));
         this._aroundPoint = this._map.transform.locationPoint(this._around);
         if (!this._frameId) {
-            this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+            this._frameId = true;
+            this._handler.triggerRenderFrame();
         }
     }
 
+    renderFrame() {
+        return this._onScrollFrame();
+    }
+
     _onScrollFrame() {
+        if (!this._frameId) return;
         this._frameId = null;
 
         if (!this.isActive()) return;
@@ -271,28 +281,32 @@ class ScrollZoomHandler {
         const easing = this._easing;
 
         let finished = false;
+        let zoom;
         if (this._type === 'wheel' && startZoom && easing) {
             assert(easing && typeof startZoom === 'number');
 
             const t = Math.min((browser.now() - this._lastWheelEventTime) / 200, 1);
             const k = easing(t);
-            tr.zoom = interpolate(startZoom, targetZoom, k);
+            zoom = interpolate(startZoom, targetZoom, k);
             if (t < 1) {
                 if (!this._frameId) {
-                    this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+                    this._frameId = true;
                 }
             } else {
                 finished = true;
             }
         } else {
-            tr.zoom = targetZoom;
+            zoom = targetZoom;
             finished = true;
         }
 
-        tr.setLocationAtPoint(this._around, this._aroundPoint);
+        // tr.setLocationAtPoint(this._around, this._aroundPoint);
 
-        this._map.fire(new Event('move', {originalEvent: this._lastWheelEvent}));
-        this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
+        // TODO
+        // this._map.fire(new Event('move', {originalEvent: this._lastWheelEvent}));
+        // this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
+
+        this._active = true;
 
         if (finished) {
             this._active = false;
@@ -303,6 +317,14 @@ class ScrollZoomHandler {
                 delete this._targetZoom;
             }, 200);
         }
+
+        const ret = {
+            noInertia: true,
+            needsRenderFrame: !finished,
+            zoomDelta: zoom - tr.zoom,
+            around: this._aroundPoint
+        };
+        return ret;
     }
 
     _smoothOutEasing(duration: number) {
@@ -327,6 +349,10 @@ class ScrollZoomHandler {
         };
 
         return easing;
+    }
+
+    reset() {
+        this._active = false;
     }
 }
 

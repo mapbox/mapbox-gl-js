@@ -1076,6 +1076,10 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     stop(): this {
+        return this._stop();
+    }
+
+    _stop(allowGestures?: boolean): this {
         if (this._easeFrameId) {
             this._cancelRenderFrame(this._easeFrameId);
             delete this._easeFrameId;
@@ -1089,6 +1093,10 @@ class Camera extends Evented {
             const onEaseEnd = this._onEaseEnd;
             delete this._onEaseEnd;
             onEaseEnd.call(this);
+        }
+        if (!allowGestures) {
+            // TODO
+            (this: any).handlers.stop();
         }
         return this;
     }

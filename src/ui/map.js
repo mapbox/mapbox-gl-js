@@ -42,11 +42,11 @@ import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
-import type DragRotateHandler from './handler/drag_rotate';
-import type DragPanHandler, {DragPanOptions} from './handler/drag_pan';
+import type DragRotateHandler from './handler/shim_drag_rotate';
+import type DragPanHandler, {DragPanOptions} from './handler/shim_drag_pan';
 import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/dblclick_zoom';
-import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
+import type TouchZoomRotateHandler from './handler/shim_touch_zoom_rotate';
 import defaultLocale from './default_locale';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
@@ -2138,7 +2138,7 @@ class Map extends Camera {
      * @returns {Map} this
      * @private
      */
-    _render() {
+    _render(paintStartTimeStamp: number) {
         let gpuTimer, frameStartTime = 0;
         const extTimerQuery = this.painter.context.extTimerQuery;
         if (this.listens('gpu-timing-frame')) {
@@ -2151,7 +2151,7 @@ class Map extends Camera {
         this.painter.context.setDirty();
         this.painter.setBaseState();
 
-        this._renderTaskQueue.run();
+        this._renderTaskQueue.run(paintStartTimeStamp);
 
         let crossFading = false;
 
@@ -2312,10 +2312,10 @@ class Map extends Camera {
      */
     triggerRepaint() {
         if (this.style && !this._frame) {
-            this._frame = browser.frame((paintStartTimestamp: number) => {
-                PerformanceUtils.frame(paintStartTimestamp);
+            this._frame = browser.frame((paintStartTimeStamp: number) => {
+                PerformanceUtils.frame(paintStartTimeStamp);
                 this._frame = null;
-                this._render();
+                this._render(paintStartTimeStamp);
             });
         }
     }
