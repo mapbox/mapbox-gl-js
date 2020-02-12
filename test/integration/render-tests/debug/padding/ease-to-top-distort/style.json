@@ -6,16 +6,19 @@
       "height": 256,
       "operations": [
         [
-          "setPadding",
+          "easeTo",
           {
-            "top": 20,
-            "left": 125,
-            "bottom": 10,
-            "right": 15
+            "padding": {
+              "top": 100,
+              "left": 50,
+              "bottom": 10,
+              "right": 250
+            }
           }
         ],
         [
-          "wait"
+          "wait",
+          500
         ]
       ]
     }
@@ -54,6 +57,33 @@
               "coordinates": [
                 [ 0.2, -25],
                 [ 0.2, 25]
+              ]
+            }
+          },{
+            "type": "Feature",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [ -25, 0.2],
+                [ 25, 0.2]
+              ]
+            }
+          },{
+            "type": "Feature",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [ -25, -0.2],
+                [ 25, -0.2]
+              ]
+            }
+          },{
+            "type": "Feature",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [ -25, 0],
+                [ 25, 0]
               ]
             }
           }
