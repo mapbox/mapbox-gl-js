@@ -61,9 +61,9 @@ class LngLatBounds {
     }
 
     /**
-     * Extend the bounds to include a given LngLat or LngLatBounds.
+     * Extend the bounds to include a given LngLatLike or LngLatBoundsLike.
      *
-     * @param {LngLat|LngLatBounds} obj object to extend to
+     * @param {LngLatLike|LngLatBoundsLike} obj object to extend to
      * @returns {LngLatBounds} `this`
      */
     extend(obj: LngLatLike | LngLatBoundsLike) {
@@ -83,7 +83,7 @@ class LngLatBounds {
 
         } else {
             if (Array.isArray(obj)) {
-                // if every element in the Obj array is also an array or
+                // obj is LngLatBounds object if every element in the Obj array is also an array or
                 // if the LngLatBoundLike is defiend as a array of 4 numbers
                 if (obj.length > 2 || obj.every(Array.isArray)) {
                     return this.extend(LngLatBounds.convert(obj));
