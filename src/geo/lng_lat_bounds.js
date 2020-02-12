@@ -66,7 +66,7 @@ class LngLatBounds {
      * @param {LngLat|LngLatBounds} obj object to extend to
      * @returns {LngLatBounds} `this`
      */
-    extend(obj: LngLat | LngLatBounds) {
+    extend(obj: LngLatLike | LngLatBoundsLike) {
         const sw = this._sw,
             ne = this._ne;
         let sw2, ne2;
@@ -83,7 +83,9 @@ class LngLatBounds {
 
         } else {
             if (Array.isArray(obj)) {
-                if (obj.every(Array.isArray)) {
+                // if every element in the Obj array is also an array or
+                // if the LngLatBoundLike is defiend as a array of 4 numbers
+                if (obj.length > 2 || obj.every(Array.isArray)) {
                     return this.extend(LngLatBounds.convert(obj));
                 } else {
                     return this.extend(LngLat.convert(obj));

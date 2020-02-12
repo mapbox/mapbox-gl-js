@@ -66,6 +66,7 @@ test('LngLatBounds', (t) => {
     t.test('#extend with bounds', (t) => {
         const bounds1 = new LngLatBounds([0, 0], [10, 10]);
         const bounds2 = new LngLatBounds([-10, -10], [10, 10]);
+
         bounds1.extend(bounds2);
 
         t.equal(bounds1.getSouth(), -10);
@@ -80,6 +81,14 @@ test('LngLatBounds', (t) => {
         t.equal(bounds1.getWest(), -15);
         t.equal(bounds1.getNorth(), 15);
         t.equal(bounds1.getEast(), 15);
+
+        const bounds4 = new LngLatBounds([-20, -20, 20, 20]);
+        bounds1.extend(bounds4);
+
+        t.equal(bounds1.getSouth(), -20);
+        t.equal(bounds1.getWest(), -20);
+        t.equal(bounds1.getNorth(), 20);
+        t.equal(bounds1.getEast(), 20);
 
         t.end();
     });
