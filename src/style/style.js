@@ -114,6 +114,7 @@ class Style extends Evented {
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
     _layers: {[_: string]: StyleLayer};
+    _serializedLayers: {[_: string]: Object};
     _order: Array<string>;
     sourceCaches: {[_: string]: SourceCache};
     zoomHistory: ZoomHistory;
@@ -149,6 +150,7 @@ class Style extends Evented {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this._layers = {};
+        this._serializedLayers = {};
         this._order  = [];
         this.sourceCaches = {};
         this.zoomHistory = new ZoomHistory();
@@ -262,10 +264,12 @@ class Style extends Evented {
         this._order = layers.map((layer) => layer.id);
 
         this._layers = {};
+        this._serializedLayers = {};
         for (let layer of layers) {
             layer = createStyleLayer(layer);
             layer.setEventedParent(this, {layer: {id: layer.id}});
             this._layers[layer.id] = layer;
+            this._serializedLayers[layer.id] = layer.serialize();
         }
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
@@ -1088,10 +1092,6 @@ class Style extends Evented {
         }
 
         const sourceResults = [];
-        const serializedLayers = {};
-        for (const layer in this._layers) {
-            serializedLayers[layer] = this._layers[layer].serialize();
-        }
 
         params.availableImages = this.imageManager.listImages();
 
@@ -1101,7 +1101,7 @@ class Style extends Evented {
                 queryRenderedFeatures(
                     this.sourceCaches[id],
                     this._layers,
-                    serializedLayers,
+                    this._serializedLayers,
                     queryGeometry,
                     params,
                     transform)
@@ -1114,7 +1114,7 @@ class Style extends Evented {
             sourceResults.push(
                 queryRenderedSymbols(
                     this._layers,
-                    serializedLayers,
+                    this._serializedLayers,
                     this.sourceCaches,
                     queryGeometry,
                     params,
