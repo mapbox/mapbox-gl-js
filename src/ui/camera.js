@@ -679,12 +679,6 @@ class Camera extends Evented {
                 .fire(new Event('pitchend', eventData));
         }
 
-        if (paddingChanged) {
-            this.fire(new Event('paddingstart', eventData))
-                .fire(new Event('padding', eventData))
-                .fire(new Event('paddingend', eventData));
-        }
-
         return this.fire(new Event('moveend', eventData));
     }
 
@@ -819,9 +813,6 @@ class Camera extends Evented {
         if (this._pitching) {
             this.fire(new Event('pitchstart', eventData));
         }
-        if (this._padding) {
-            this.fire(new Event('paddingstart', eventData));
-        }
     }
 
     _fireMoveEvents(eventData?: Object) {
@@ -834,9 +825,6 @@ class Camera extends Evented {
         }
         if (this._pitching) {
             this.fire(new Event('pitch', eventData));
-        }
-        if (this._padding) {
-            this.fire(new Event('padding', eventData));
         }
     }
 
@@ -859,9 +847,6 @@ class Camera extends Evented {
         }
         if (wasPitching) {
             this.fire(new Event('pitchend', eventData));
-        }
-        if (wasPadding) {
-            this.fire(new Event('paddingend', eventData));
         }
         this.fire(new Event('moveend', eventData));
     }
