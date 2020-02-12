@@ -7,6 +7,7 @@ import browser from '../util/browser';
 import type Map from './map';
 import Handler from './handler/handler';
 import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
+import MousePanHandler from './handler/mouse_pan';
 import KeyboardHandler from './handler/keyboard';
 import {bezier, extend} from '../util/util';
 
@@ -77,11 +78,14 @@ class HandlerManager {
   }
 
   _addDefaultHandlers() {
+    this.add('mousepan', new MousePanHandler(this._map));
+    /*
     this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
     this.add('touchPitch', new TouchPitchHandler(this._map), ['touchRotate', 'touchPan']);
     this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
     this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch']);
     this.add('keyboard', new KeyboardHandler(this._map), ['touchPan', 'touchPitch', 'touchRotate', 'touchZoom']);
+    */
   }
 
   list() {
@@ -161,9 +165,13 @@ class HandlerManager {
     let preUpdateEvents = [];
     let postUpdateEvents = [];
 
+    let points = e.touches ?
+          DOM.touchPos(this._el, e) :
+          DOM.mousePos(this._el, e);
+
     for (const [name, handler] of this._handlers) {
       if (!handler.isEnabled()) continue;
-      let data = handler.processInputEvent(e);
+      let data = handler.processInputEvent(e, points);
       if (!data) continue;
 
       if (this._disableDuring[name]) {
@@ -214,10 +222,14 @@ class HandlerManager {
     this._drainInertiaBuffer();
     this._inertiaBuffer.push([browser.now(), settings]);
 
-    let { zoomDelta, bearingDelta, pitchDelta, setLocationAtPoint } = settings;
+    let { zoomDelta, bearingDelta, pitchDelta, setLocationAtPoint, around, panDelta } = settings;
     if (zoomDelta) tr.zoom += zoomDelta;
     if (bearingDelta) tr.bearing += bearingDelta;
     if (pitchDelta) tr.pitch += pitchDelta;
+    if (panDelta) {
+        around = around || new Point(0, 0);
+        tr.setLocationAtPoint(tr.pointLocation(around.sub(panDelta)), around);
+    }
     if (setLocationAtPoint && setLocationAtPoint.length === 2) {
       let [loc, pt] = setLocationAtPoint;
       tr.setLocationAtPoint(loc, pt);

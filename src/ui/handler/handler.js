@@ -91,10 +91,10 @@ class Handler {
    * @param {Event} [event] Mouse, Touch, Keyboard or Wheel event to be processed
    * @returns {Object | undefined} Data (e.g. new transform settings) to be used to update the map, or undefined if no update is required
    */
-  processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent) {
+  processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent, points) {
     if (!e || !e.type) return console.warn('Invalid input event:', e);
     if (!this[e.type] || !(typeof this[e.type] === 'function')) return;
-    return this[e.type](e);
+    return this[e.type](e, points);
   }
 }
 
