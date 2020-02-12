@@ -127,6 +127,7 @@ class Style extends Evented {
     _changedImages: {[_: string]: true};
     _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
+    _availableImages: Array<string>;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -155,6 +156,7 @@ class Style extends Evented {
         this.sourceCaches = {};
         this.zoomHistory = new ZoomHistory();
         this._loaded = false;
+        this._availableImages = [];
 
         this._resetUpdates();
 
@@ -291,7 +293,8 @@ class Style extends Evented {
             }
 
             this.imageManager.setLoaded(true);
-            this.dispatcher.broadcast('setImages', this.imageManager.listImages());
+            this._availableImages = this.imageManager.listImages();
+            this.dispatcher.broadcast('setImages', this._availableImages);
             this.fire(new Event('data', {dataType: 'style'}));
         });
     }
@@ -412,11 +415,11 @@ class Style extends Evented {
             this.sourceCaches[sourceId].used = false;
         }
 
-        const availableImages = this.imageManager.listImages();
+        // const availableImages = this.imageManager.listImages();
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
-            layer.recalculate(parameters, availableImages);
+            layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
@@ -1094,7 +1097,7 @@ class Style extends Evented {
 
         const sourceResults = [];
 
-        params.availableImages = this.imageManager.listImages();
+        params.availableImages = this._availableImages;
 
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
