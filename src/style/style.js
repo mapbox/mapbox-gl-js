@@ -515,6 +515,7 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
         this.imageManager.addImage(id, image);
+        this._availableImages = this.imageManager.listImages();
         this._changedImages[id] = true;
         this._changed = true;
         this.fire(new Event('data', {dataType: 'style'}));
@@ -533,6 +534,7 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
         this.imageManager.removeImage(id);
+        this._availableImages = this.imageManager.listImages();
         this._changedImages[id] = true;
         this._changed = true;
         this.fire(new Event('data', {dataType: 'style'}));
