@@ -157,7 +157,7 @@ export class MapTouchEvent extends Event {
      * @private
      */
     constructor(type: string, map: Map, originalEvent: TouchEvent) {
-        const points = DOM.touchPos(map.getCanvasContainer(), originalEvent);
+        const points = DOM.touchPos(map.getCanvasContainer(), originalEvent.touches);
         const lngLats = points.map((t) => map.unproject(t));
         const point = points.reduce((prev, curr, i, arr) => {
             return prev.add(curr.div(arr.length));

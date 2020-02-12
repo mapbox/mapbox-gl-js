@@ -41,11 +41,11 @@ events.dblclick = function (target, options) {
 };
 
 ['keydown', 'keyup', 'keypress'].forEach((event) => {
-  events[event] = function (target, options) {
-    options = Object.assign({bubbles: true}, options);
-    const KeyboardEvent = window(target).KeyboardEvent;
-    target.dispatchEvent(new KeyboardEvent(event, options));
-  };
+    events[event] = function (target, options) {
+        options = Object.assign({bubbles: true}, options);
+        const KeyboardEvent = window(target).KeyboardEvent;
+        target.dispatchEvent(new KeyboardEvent(event, options));
+    };
 });
 
 [ 'mouseup', 'mousedown', 'mouseover', 'mousemove', 'mouseout' ].forEach((event) => {

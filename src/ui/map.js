@@ -42,11 +42,13 @@ import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
-import type DragRotateHandler from './handler/drag_rotate';
-import type DragPanHandler, {DragPanOptions} from './handler/drag_pan';
+import type {TouchPitchHandler} from './handler/touch_zoom_rotate';
+import type SwipeZoomHandler from './handler/swipe_zoom';
+import type DragRotateHandler from './handler/shim/drag_rotate';
+import type DragPanHandler, {DragPanOptions} from './handler/shim/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
-import type DoubleClickZoomHandler from './handler/dblclick_zoom';
-import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
+import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom';
+import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
 import defaultLocale from './default_locale';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
@@ -134,6 +136,7 @@ const defaultOptions = {
 
     bearingSnap: 7,
     clickTolerance: 3,
+    pitchWithRotate: true,
 
     hash: false,
     attributionControl: true,
@@ -303,6 +306,7 @@ class Map extends Camera {
     _localIdeographFontFamily: string;
     _requestManager: RequestManager;
     _locale: Object;
+    _removed: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -346,6 +350,9 @@ class Map extends Camera {
      * Find more details and examples using `touchZoomRotate` in the {@link TouchZoomRotateHandler} section.
      */
     touchZoomRotate: TouchZoomRotateHandler;
+
+    touchPitch: TouchPitchHandler;
+    swipeZoom: SwipeZoomHandler;
 
     constructor(options: MapOptions) {
         PerformanceUtils.mark(PerformanceMarkers.create);
@@ -429,7 +436,6 @@ class Map extends Camera {
 
         // bindHandlers(this, options);
         this.handlers = new HandlerManager(this, options);
-
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         this._hash = options.hash && (new Hash(hashName)).addTo(this);
@@ -568,10 +574,17 @@ class Map extends Camera {
         this.transform.resize(width, height);
         this.painter.resize(width, height);
 
-        this.fire(new Event('movestart', eventData))
-            .fire(new Event('move', eventData))
-            .fire(new Event('resize', eventData))
-            .fire(new Event('moveend', eventData));
+        const fireMoving = !this._moving;
+        if (fireMoving) {
+            this.stop();
+            this.fire(new Event('movestart', eventData))
+                .fire(new Event('move', eventData));
+        }
+
+        this.fire(new Event('resize', eventData));
+
+        if (fireMoving) this.fire(new Event('moveend', eventData));
+
         return this;
     }
 
@@ -837,7 +850,7 @@ class Map extends Camera {
      * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving;
+        return this._moving || this.handlers.isActive();
     }
 
     /**
@@ -847,7 +860,7 @@ class Map extends Camera {
      * var isZooming = map.isZooming();
      */
     isZooming(): boolean {
-        return this._zooming;
+        return this._zooming || this.handlers.isZooming();
     }
 
     /**
@@ -857,7 +870,7 @@ class Map extends Camera {
      * map.isRotating();
      */
     isRotating(): boolean {
-        return this._rotating;
+        return this._rotating || this.handlers.isRotating();
     }
 
     _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
@@ -2148,7 +2161,7 @@ class Map extends Camera {
      * @returns {Map} this
      * @private
      */
-    _render() {
+    _render(paintStartTimeStamp: number) {
         let gpuTimer, frameStartTime = 0;
         const extTimerQuery = this.painter.context.extTimerQuery;
         if (this.listens('gpu-timing-frame')) {
@@ -2161,7 +2174,9 @@ class Map extends Camera {
         this.painter.context.setDirty();
         this.painter.setBaseState();
 
-        this._renderTaskQueue.run();
+        this._renderTaskQueue.run(paintStartTimeStamp);
+        // A task queue callback may have fired a user event which may have removed the map
+        if (this._removed) return;
 
         let crossFading = false;
 
@@ -2313,6 +2328,8 @@ class Map extends Camera {
         this._container.classList.remove('mapboxgl-map');
 
         PerformanceUtils.clearMetrics();
+
+        this._removed = true;
         this.fire(new Event('remove'));
     }
 
@@ -2323,10 +2340,10 @@ class Map extends Camera {
      */
     triggerRepaint() {
         if (this.style && !this._frame) {
-            this._frame = browser.frame((paintStartTimestamp: number) => {
-                PerformanceUtils.frame(paintStartTimestamp);
+            this._frame = browser.frame((paintStartTimeStamp: number) => {
+                PerformanceUtils.frame(paintStartTimeStamp);
                 this._frame = null;
-                this._render();
+                this._render(paintStartTimeStamp);
             });
         }
     }

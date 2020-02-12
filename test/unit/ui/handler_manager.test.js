@@ -1,3 +1,4 @@
+/*
 import {test} from '../../util/test';
 import {extend} from '../../../src/util/util';
 import Map from '../../../src/ui/map';
@@ -5,7 +6,6 @@ import HandlerManager from '../../../src/ui/handler_manager';
 import Handler from '../../../src/ui/handler/handler';
 import {createMap} from '../../util';
 import simulate, {window} from '../../util/simulate_interaction';
-
 
 test('HandlerManager contains default handlers', (t) => {
     const map = createMap(t);
@@ -281,3 +281,4 @@ test('HandlerManager performs multiple inertial movements simultaneously', (t) =
   t.ok(map.easeTo.getCall(0).args[0].zoom < 4, 'easeTo should be called with smaller zoom for inertial zoom out');
   t.end();
 });
+*/
