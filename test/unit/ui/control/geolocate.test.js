@@ -162,6 +162,17 @@ test('GeolocateControl geolocate fitBoundsOptions', (t) => {
     geolocation.send({latitude: 10, longitude: 20, accuracy: 1});
 });
 
+test('GeolocateControl with removed before Geolocation callback', (t) => {
+    const map = createMap(t);
+    t.plan(0);
+
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+    geolocate.trigger();
+    map.removeControl(geolocate);
+    t.end();
+});
+
 test('GeolocateControl non-zero bearing', (t) => {
     t.plan(3);
 
