@@ -101,7 +101,7 @@ class FeatureIndex {
     }
 
     // Finds non-symbol features in this tile at a particular position.
-    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}, sourceFeatureState: SourceFeatureState): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}, serializedLayers: {[string]: Object}, sourceFeatureState: SourceFeatureState): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         this.loadVTLayers();
 
         const params = args.params || {},
@@ -146,6 +146,7 @@ class FeatureIndex {
                 filter,
                 params.layers,
                 styleLayers,
+                serializedLayers,
                 (feature: VectorTileFeature, styleLayer: StyleLayer, id: string | number | void) => {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature);
@@ -171,6 +172,7 @@ class FeatureIndex {
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
+        serializedLayers: {[string]: Object},
         intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, id: string | number | void) => boolean | number) {
 
         const layerIDs = this.bucketLayerIDs[bucketIndex];
@@ -203,7 +205,7 @@ class FeatureIndex {
             }
 
             const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y, id);
-            (geojsonFeature: any).layer = styleLayer.serialize();
+            (geojsonFeature: any).layer = serializedLayers[layerID];
             let layerResult = result[layerID];
             if (layerResult === undefined) {
                 layerResult = result[layerID] = [];
@@ -219,7 +221,8 @@ class FeatureIndex {
                          sourceLayerIndex: number,
                          filterSpec: FilterSpecification,
                          filterLayerIDs: Array<string>,
-                         styleLayers: {[string]: StyleLayer}) {
+                         styleLayers: {[string]: StyleLayer},
+                         serializedLayers: {[string]: Object}) {
         const result = {};
         this.loadVTLayers();
 
@@ -233,7 +236,8 @@ class FeatureIndex {
                 symbolFeatureIndex,
                 filter,
                 filterLayerIDs,
-                styleLayers
+                styleLayers,
+                serializedLayers
             );
 
         }
