@@ -755,6 +755,7 @@ class Style extends Evented {
         this._changed = true;
         this._removedLayers[id] = layer;
         delete this._layers[id];
+        delete this._serializeLayers[id];
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
 
