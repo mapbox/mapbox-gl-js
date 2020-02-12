@@ -203,8 +203,9 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: sudo apt-get install fonts-open-sans
+      - run: sudo apt-get install ttf-mscorefonts-installer
       - run: fc-cache
+      - run: fc-match Arial
       - run: yarn run test-render
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
