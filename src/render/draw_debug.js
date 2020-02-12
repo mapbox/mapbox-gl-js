@@ -68,7 +68,7 @@ function drawTextToOverlay(painter: Painter, text: string) {
     ctx2d.lineWidth = 1.5;
     ctx2d.strokeStyle = 'white';
     ctx2d.textBaseline = 'top';
-    ctx2d.font = `bold ${36}px Arial`;
+    ctx2d.font = `bold ${36}px Open Sans`;
     ctx2d.fillText(text, 5, 5);
     ctx2d.strokeText(text, 5, 5);
 
