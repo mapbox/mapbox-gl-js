@@ -631,8 +631,7 @@ class Camera extends Evented {
         const tr = this.transform;
         let zoomChanged = false,
             bearingChanged = false,
-            pitchChanged = false,
-            paddingChanged = false;
+            pitchChanged = false;
 
         if ('zoom' in options && tr.zoom !== +options.zoom) {
             zoomChanged = true;
@@ -654,7 +653,6 @@ class Camera extends Evented {
         }
 
         if (options.padding != null && !tr.isPaddingEqual(options.padding)) {
-            paddingChanged = true;
             tr.padding = options.padding;
         }
 
@@ -832,7 +830,6 @@ class Camera extends Evented {
         const wasZooming = this._zooming;
         const wasRotating = this._rotating;
         const wasPitching = this._pitching;
-        const wasPadding = this._padding;
         this._moving = false;
         this._zooming = false;
         this._rotating = false;
