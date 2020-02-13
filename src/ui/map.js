@@ -271,6 +271,7 @@ class Map extends Camera {
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
     _showCollisionBoxes: ?boolean;
+    _showPadding: ?boolean;
     _showOverdrawInspector: boolean;
     _repaint: ?boolean;
     _vertices: ?boolean;
@@ -2198,8 +2199,9 @@ class Map extends Camera {
             rotating: this.isRotating(),
             zooming: this.isZooming(),
             moving: this.isMoving(),
+            fadeDuration: this._fadeDuration,
+            showPadding: this.showPadding,
             gpuTiming: !!this.listens('gpu-timing-layer'),
-            fadeDuration: this._fadeDuration
         });
 
         this.fire(new Event('render'));
@@ -2346,6 +2348,22 @@ class Map extends Camera {
     set showTileBoundaries(value: boolean) {
         if (this._showTileBoundaries === value) return;
         this._showTileBoundaries = value;
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will visualize
+     * the padding offsets.
+     *
+     * @name showPadding
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     */
+    get showPadding(): boolean { return !!this._showPadding; }
+    set showPadding(value: boolean) {
+        if (this._showPadding === value) return;
+        this._showPadding = value;
         this._update();
     }
 
