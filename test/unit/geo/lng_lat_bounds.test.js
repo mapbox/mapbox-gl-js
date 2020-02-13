@@ -60,6 +60,13 @@ test('LngLatBounds', (t) => {
         t.equal(bounds.getNorth(), 10);
         t.equal(bounds.getEast(), 10);
 
+        bounds.extend([-20, -20, 100]);
+
+        t.equal(bounds.getSouth(), -20);
+        t.equal(bounds.getWest(), -20);
+        t.equal(bounds.getNorth(), 10);
+        t.equal(bounds.getEast(), 10);
+
         t.end();
     });
 
@@ -130,6 +137,17 @@ test('LngLatBounds', (t) => {
         t.equal(bounds.getWest(), 0);
         t.equal(bounds.getNorth(), 15);
         t.equal(bounds.getEast(), 15);
+
+        t.end();
+    });
+
+    t.test('#extend with empty array', (t) => {
+        const point = new LngLat(0, 0);
+        const bounds = new LngLatBounds(point, point);
+
+        t.throws(() => {
+            bounds.extend([]);
+        }, "`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, an object {lon: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]", 'detects and throws on invalid input');
 
         t.end();
     });

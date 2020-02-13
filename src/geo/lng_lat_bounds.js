@@ -83,9 +83,7 @@ class LngLatBounds {
 
         } else {
             if (Array.isArray(obj)) {
-                // obj is LngLatBounds object if every element in the Obj array is also an array or
-                // if the LngLatBoundLike is defiend as a array of 4 numbers
-                if (obj.length > 2 || obj.every(Array.isArray)) {
+                if (obj.length === 4 || obj.every(Array.isArray)) {
                     return this.extend(LngLatBounds.convert(obj));
                 } else {
                     return this.extend(LngLat.convert(obj));
