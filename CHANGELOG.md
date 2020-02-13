@@ -1,28 +1,23 @@
 ## 1.8.0-beta.1
 
 ### ✨ Features and improvements
-* Level-of-detail support for tile coverage ([#8975](https://github.com/mapbox/mapbox-gl-js/pull/8975))
-* Update `image` expression SDK support table ([#9228](https://github.com/mapbox/mapbox-gl-js/pull/9228))
 * Reduce size of line atlas by removing unused channels ([#9232](https://github.com/mapbox/mapbox-gl-js/pull/9232))
 * Prevent empty buffers from being created for debug data when unused ([#9237](https://github.com/mapbox/mapbox-gl-js/pull/9237))
-* Add space between distance and unit in scale control ([#9276](https://github.com/mapbox/mapbox-gl-js/pull/9276)) (h/t [gely](https://api.github.com/users/gely))
-* Add circle to GeolocateControl showing accuracy of position ([#9253](https://github.com/mapbox/mapbox-gl-js/pull/9253)) (h/t [Meekohi](https://api.github.com/users/Meekohi))
+* Add space between distance and unit in scale control ([#9276](https://github.com/mapbox/mapbox-gl-js/pull/9276)) (h/t [gely](https://api.github.com/users/gely)) and ([#9284](https://github.com/mapbox/mapbox-gl-js/pull/9284)) (h/t [pakastin](https://api.github.com/users/pakastin))
+* Add a `showAccuracyCircle` option to GeolocateControl that shows the accuracy of the user's location as a transparent circle. Mapbox GL JS will show this circle by default. ([#9253](https://github.com/mapbox/mapbox-gl-js/pull/9253)) (h/t [Meekohi](https://api.github.com/users/Meekohi))
+* Implemented a new tile coverage algorithm to enable level-of-detail support in a future release ([#8975](https://github.com/mapbox/mapbox-gl-js/pull/8975))
 
 ### 🐞 Bug fixes
 * `line-dasharray` is now ignored correctly when `line-pattern` is set ([#9189](https://github.com/mapbox/mapbox-gl-js/pull/9189))
-* Remove `Object.values` usage that was causing IE11 to fail ([#9193](https://github.com/mapbox/mapbox-gl-js/pull/9193))
 * Fix line distances breaking gradient across tile boundaries ([#9220](https://github.com/mapbox/mapbox-gl-js/pull/9220))
-* Fix a bug where lines with duplicate endpoint could disappear at zoom 18+ ([#9218](https://github.com/mapbox/mapbox-gl-js/pull/9218))
-* Tile requests to Mapbox sources that don't use Mapbox URLs are now billed correctly ([#9217](https://github.com/mapbox/mapbox-gl-js/pull/9217))
-* Ctrl-click to drag rotate the map is disabled if the Alt, Cmd or Windows key is also pressed ([#9203](https://github.com/mapbox/mapbox-gl-js/pull/9203))
+* Fix a bug where lines with duplicate endpoints could disappear at zoom 18+ ([#9218](https://github.com/mapbox/mapbox-gl-js/pull/9218))
+* Fix a bug where Ctrl-click to drag rotate the map was disabled if the Alt, Cmd or Windows key is also pressed ([#9203](https://github.com/mapbox/mapbox-gl-js/pull/9203))
 * Pass errors to `getClusterExpansionZoom`, `getClusterChildren`, and `getClusterLeaves` callbacks ([#9251](https://github.com/mapbox/mapbox-gl-js/pull/9251))
 * Fix a rendering performance regression ([#9261](https://github.com/mapbox/mapbox-gl-js/pull/9261))
 * Fix visual artifact for `line-dasharray` ([#9246](https://github.com/mapbox/mapbox-gl-js/pull/9246))
-* Don't try to update the location indicator before the UI is set up ([#9288](https://github.com/mapbox/mapbox-gl-js/pull/9288)) (h/t [Meekohi](https://api.github.com/users/Meekohi))
-* Don't call `onSuccess` and `onError` callbacks after geolocate control was removed  ([#9291](https://github.com/mapbox/mapbox-gl-js/pull/9291))
+* Fixed a bug in the GeolocateControl which resulted in an error when `trackUserLocation` was `false` and the control was removed before the Geolocation API had returned a location ([#9291](https://github.com/mapbox/mapbox-gl-js/pull/9291))
 * Fix `promoteId` for line layers ([#9210](https://github.com/mapbox/mapbox-gl-js/pull/9210))
 * Improve accuracy of distance calculations ([#9202](https://github.com/mapbox/mapbox-gl-js/pull/9202)) (h/t [Meekohi](https://api.github.com/users/Meekohi))
-* Use non-breaking space between number and unit on scale control to prevent it from being spread over two lines ([#9284](https://github.com/mapbox/mapbox-gl-js/pull/9284)) (h/t [pakastin](https://api.github.com/users/pakastin))
 
 
 ## 1.7.0
