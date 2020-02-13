@@ -9,7 +9,7 @@
           "easeTo",
           {
             "padding": {
-              "top": 0,
+              "top": 10,
               "left": 50,
               "bottom": 100,
               "right": 10
