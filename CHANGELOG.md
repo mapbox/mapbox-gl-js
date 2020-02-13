@@ -1,19 +1,41 @@
+## 1.8.0
+
+### ✨ Features and improvements
+* Reduce size of line atlas by removing unused channels ([#9232](https://github.com/mapbox/mapbox-gl-js/pull/9232))
+* Prevent empty buffers from being created for debug data when unused ([#9237](https://github.com/mapbox/mapbox-gl-js/pull/9237))
+* Add space between distance and unit in scale control ([#9276](https://github.com/mapbox/mapbox-gl-js/pull/9276)) (h/t [gely](https://api.github.com/users/gely)) and ([#9284](https://github.com/mapbox/mapbox-gl-js/pull/9284)) (h/t [pakastin](https://api.github.com/users/pakastin))
+* Add a `showAccuracyCircle` option to GeolocateControl that shows the accuracy of the user's location as a transparent circle. Mapbox GL JS will show this circle by default. ([#9253](https://github.com/mapbox/mapbox-gl-js/pull/9253)) (h/t [Meekohi](https://api.github.com/users/Meekohi))
+* Implemented a new tile coverage algorithm to enable level-of-detail support in a future release ([#8975](https://github.com/mapbox/mapbox-gl-js/pull/8975))
+
+### 🐞 Bug fixes
+* `line-dasharray` is now ignored correctly when `line-pattern` is set ([#9189](https://github.com/mapbox/mapbox-gl-js/pull/9189))
+* Fix line distances breaking gradient across tile boundaries ([#9220](https://github.com/mapbox/mapbox-gl-js/pull/9220))
+* Fix a bug where lines with duplicate endpoints could disappear at zoom 18+ ([#9218](https://github.com/mapbox/mapbox-gl-js/pull/9218))
+* Fix a bug where Ctrl-click to drag rotate the map was disabled if the Alt, Cmd or Windows key is also pressed ([#9203](https://github.com/mapbox/mapbox-gl-js/pull/9203))
+* Pass errors to `getClusterExpansionZoom`, `getClusterChildren`, and `getClusterLeaves` callbacks ([#9251](https://github.com/mapbox/mapbox-gl-js/pull/9251))
+* Fix a rendering performance regression ([#9261](https://github.com/mapbox/mapbox-gl-js/pull/9261))
+* Fix visual artifact for `line-dasharray` ([#9246](https://github.com/mapbox/mapbox-gl-js/pull/9246))
+* Fixed a bug in the GeolocateControl which resulted in an error when `trackUserLocation` was `false` and the control was removed before the Geolocation API had returned a location ([#9291](https://github.com/mapbox/mapbox-gl-js/pull/9291))
+* Fix `promoteId` for line layers ([#9210](https://github.com/mapbox/mapbox-gl-js/pull/9210))
+* Improve accuracy of distance calculations ([#9202](https://github.com/mapbox/mapbox-gl-js/pull/9202)) (h/t [Meekohi](https://api.github.com/users/Meekohi))
+
+
 ## 1.7.0
 
-## ✨ Features
+### ✨ Features
 * Add `promoteId` option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
 * Add a new constructor option to `mapboxgl.Popup`, `closeOnMove`, that closes the popup when the map's position changes ([#9163](https://github.com/mapbox/mapbox-gl-js/pull/9163))
 * Allow creating a map without a style (an empty one will be created automatically) ( h/t @stepankuzmin ) ([#8924](https://github.com/mapbox/mapbox-gl-js/pull/8924))
 * `map.once()` now allows specifying a layer id as a third parameter making it consistent with `map.on()` ([#8875](https://github.com/mapbox/mapbox-gl-js/pull/8875))
 
-## 🍏 Improvements
+### 🍏 Improvements
 * Improve performance of raster layers on large screens ([#9050](https://github.com/mapbox/mapbox-gl-js/pull/9050))
 * Improve performance for hillshade and raster layers by implementing a progressive enhancement that utilizes `ImageBitmap` and `OffscreenCanvas` ([#8845](https://github.com/mapbox/mapbox-gl-js/pull/8845))
 * Improve performance for raster tile rendering by using the stencil buffer ([#9012](https://github.com/mapbox/mapbox-gl-js/pull/9012))
 * Update `symbol-avoid-edges` documentation to acknowledge the existence of global collision detection ([#9157](https://github.com/mapbox/mapbox-gl-js/pull/9157))
 * Remove reference to `in` function which has been replaced by the `in` expression ([#9102](https://github.com/mapbox/mapbox-gl-js/pull/9102))
 
-## 🐞 Bug Fixes
+### 🐞 Bug Fixes
 * Change the type of tile id key to string to prevent hash collisions ([#8979](https://github.com/mapbox/mapbox-gl-js/pull/8979))
 * Prevent changing bearing via URL hash when rotation is disabled ([#9156](https://github.com/mapbox/mapbox-gl-js/pull/9156))
 * Fix URL hash with no bearing causing map to fail to load ([#9170](https://github.com/mapbox/mapbox-gl-js/pull/9170))
@@ -25,14 +47,14 @@
 
 ## 1.6.1
 
-## 🐞 Bug Fixes
+### 🐞 Bug Fixes
 * Fix style validation error messages not being displayed ([#9073](https://github.com/mapbox/mapbox-gl-js/pull/9073))
 * Fix deferred loading of rtl-text-plugin not working for labels created from GeoJSON sources ([#9091](https://github.com/mapbox/mapbox-gl-js/pull/9091))
 * Fix RTL text not being rendered with the rtl-text-plugin on pages that don't allow `script-src: blob:` in their CSP.([#9122](https://github.com/mapbox/mapbox-gl-js/pull/9122))
 
 ## 1.6.0
 
-## ✨ Features
+### ✨ Features
 * Add ability to insert images into text labels using an `image` expression within a `format` expression: `"text-field": ["format", "Some text", ["image", "my-image"], "some more text"]` ([#8904](https://github.com/mapbox/mapbox-gl-js/pull/8904))
 * Add support for stretchable images (aka nine-part or nine-patch images). Stretchable images can be used with `icon-text-fit` to draw resized images with unstretched corners and borders. ([#8997](https://github.com/mapbox/mapbox-gl-js/pull/8997))
 * Add `in` expression. It can check if a value is in an array (`["in", value, array]`) or a substring is in a string (`["in", substring, string]`) ([#8876](https://github.com/mapbox/mapbox-gl-js/pull/8876))
@@ -45,13 +67,13 @@
 * Add option to load rtl-text-plugin lazily ([#8865](https://github.com/mapbox/mapbox-gl-js/pull/8865))
 * Add `essential` parameter to AnimationOptions that can override `prefers-reduced-motion: reduce` ([#8743](https://github.com/mapbox/mapbox-gl-js/issues/8743), fixed by [#8883](https://github.com/mapbox/mapbox-gl-js/pull/8883))
 
-## 🍏 Improvements
+### 🍏 Improvements
 * Allow rendering full world smaller than 512px. To restore the previous limit call `map.setMinZoom(0)` ([#9028](https://github.com/mapbox/mapbox-gl-js/pull/9028))
 * Add an es modules build for mapbox-gl-style-spec in dist/ ([#8247](https://github.com/mapbox/mapbox-gl-js/pull/8247)) (h/t [ahocevar](https://github.com/ahocevar))
 * Add 'image/webp,*/*' accept header to fetch/ajax image requests when webp supported ([#8262](https://github.com/mapbox/mapbox-gl-js/pull/8262))
 * Improve documentation for setStyle, getStyle, and isStyleLoaded ([#8807](https://github.com/mapbox/mapbox-gl-js/pull/8807))
 
-## 🐞 Bug Fixes
+### 🐞 Bug Fixes
 * Fix map rendering after addImage and removeImage are used to change a used image ([#9016](https://github.com/mapbox/mapbox-gl-js/pull/9016))
 * Fix visibility of controls in High Contrast mode in IE ([#8874](https://github.com/mapbox/mapbox-gl-js/pull/8874))
 * Fix customizable url hash string in IE 11 ([#8990](https://github.com/mapbox/mapbox-gl-js/pull/8990)) (h/t [pakastin](https://github.com/pakastin))
@@ -69,24 +91,24 @@
 ## 1.5.1
 This patch introduces two workarounds that address longstanding issues related to unbounded memory growth in Safari, including [#8771](https://github.com/mapbox/mapbox-gl-js/issues/8771) and [#4695](https://github.com/mapbox/mapbox-gl-js/issues/4695). We’ve identified two memory leaks in Safari: one in the [CacheStorage](https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage) API, addressed by [#8956](https://github.com/mapbox/mapbox-gl-js/pull/8956), and one in transferring data between web workers through [Transferables](https://developer.mozilla.org/en-US/docs/Web/API/Transferable), addressed by [#9003](https://github.com/mapbox/mapbox-gl-js/pull/9003).
 
-## 🍏 Improvements
+### 🍏 Improvements
 * Implement workaround for memory leak in Safari when using the `CacheStorage` API. ( [#8856](https://github.com/mapbox/mapbox-gl-js/pull/8956))
 * Implement workaround for memory leak in Safari when using `Transferable` objects to transfer `ArrayBuffers` to WebWorkers. If GL-JS detetcts that it is running in Safari, the use of `Transferables` to transfer data to WebWorkers is disabled. ( [#9003](https://github.com/mapbox/mapbox-gl-js/pull/9003))
 * Improve animation performance when using `map.setData`. ([#8913](https://github.com/mapbox/mapbox-gl-js/pull/8913)) (h/t [msbarry](https://github.com/msbarry))
 
 ## 1.5.0
 
-## ✨ Features
+### ✨ Features
 * Add disabled icon to GeolocateControl if user denies geolocation permission. [#8871](https://github.com/mapbox/mapbox-gl-js/pull/8871))
 * Add `outofmaxbounds` event to GeolocateControl, which is emitted when the user is outside of `map.maxBounds` ([#8756](https://github.com/mapbox/mapbox-gl-js/pull/8756)) (h/t [MoradiDavijani](https://github.com/MoradiDavijani))
 * Add `mapboxgl.getRTLTextPluginStatus()` to query the current status of the `rtl-text-plugin` to make it easier to allow clearing the plugin when necessary. (ref. [#7869](https://github.com/mapbox/mapbox-gl-js/issues/7869)) ([#8864](https://github.com/mapbox/mapbox-gl-js/pull/8864))
 * Allow `hash` Map option to be set as a string, which sets the map hash in the url to a custom query parameter. ([#8603](https://github.com/mapbox/mapbox-gl-js/pull/8603)) (h/t [SebCorbin](https://github.com/SebCorbin))
 
-## 🍏 Improvements
+### 🍏 Improvements
 * Fade symbols faster when zooming out quickly, reducing overlap. ([#8628](https://github.com/mapbox/mapbox-gl-js/pull/8628))
 * Reduce memory usage for vector tiles that contain long strings in feature properties. ( [#8863](https://github.com/mapbox/mapbox-gl-js/pull/8863))
 
-## 🐞 Bug Fixes
+### 🐞 Bug Fixes
 * Fix `text-variable-anchor` not trying multiple placements during collision with icons when `icon-text-fit` is enabled. ([#8803](https://github.com/mapbox/mapbox-gl-js/pull/8803))
 * Fix `icon-text-fit` not properly respecting vertical labels. ([#8835](https://github.com/mapbox/mapbox-gl-js/pull/8835))
 * Fix opacity interpolation for composition expressions. ([#8818](https://github.com/mapbox/mapbox-gl-js/pull/8818))
@@ -96,23 +118,23 @@ This patch introduces two workarounds that address longstanding issues related t
 
 ## 1.4.1
 
-## 🐞 Bug Fixes
+### 🐞 Bug Fixes
 * Fix the way that `coalesce` handles the `image` operator so available images are rendered properly ([#8839](https://github.com/mapbox/mapbox-gl-js/pull/8839))
 * Do not emit the `styleimagemissing` event for an empty string value ([#8840](https://github.com/mapbox/mapbox-gl-js/pull/8840))
 * Fix serialization of `ResolvedImage` type so `*-pattern` properties work properly ([#8833](https://github.com/mapbox/mapbox-gl-js/pull/8833))
 
 ## 1.4.0
 
-## ✨ Features
+### ✨ Features
 * Add `image` expression operator to determine image availability ([#8684](https://github.com/mapbox/mapbox-gl-js/pull/8684))
 * Enable `text-offset` with variable label placement ([#8642](https://github.com/mapbox/mapbox-gl-js/pull/8642))
 
-## 🍏 Improvements
+### 🍏 Improvements
 * Faster loading and better look of raster terrain ([#8694](https://github.com/mapbox/mapbox-gl-js/pull/8694))
 * Improved code documentation around resizing and {get/set}RenderedWorldCopies and more ([#8748](https://github.com/mapbox/mapbox-gl-js/pull/8748), [#8754](https://github.com/mapbox/mapbox-gl-js/pull/8754))
 * Improve single vs. multi-touch zoom & pan interaction (#7196) ([#8100](https://github.com/mapbox/mapbox-gl-js/pull/8100))
 
-## 🐞 Bug fixes
+### 🐞 Bug fixes
 * Fix rendering of `collisionBox` when `text-translate` or `icon-translate` is enabled  ([#8659](https://github.com/mapbox/mapbox-gl-js/pull/8659))
 * Fix `TypeError` when reloading a source and immediately removing the map ([#8711](https://github.com/mapbox/mapbox-gl-js/pull/8711))
 * Adding tooltip to the geolocation control button ([#8735](https://github.com/mapbox/mapbox-gl-js/pull/8735)) (h/t [BAByrne](https://github.com/BAByrne))
@@ -131,7 +153,7 @@ This patch introduces two workarounds that address longstanding issues related t
 
 ## 1.3.1
 
-## 🐞 Bug Fixes
+### 🐞 Bug Fixes
 
 - Fix a race condition that produced an error when a map was removed while reloading a source. [#8711](https://github.com/mapbox/mapbox-gl-js/pull/8711)
 - Fix a race condition were `render` event was sometimes not fired after `load` event in IE11. [#8708](https://github.com/mapbox/mapbox-gl-js/pull/8708)
@@ -155,7 +177,7 @@ This patch introduces two workarounds that address longstanding issues related t
 - Improve conversion of legacy filters with duplicate values. [#8542](https://github.com/mapbox/mapbox-gl-js/pull/8542)
 - Move out documentation & examples website source to a separate `mapbox-gl-js-docs` repo. [#8582](https://github.com/mapbox/mapbox-gl-js/pull/8582)
 
-## 🐞 Bug Fixes
+### 🐞 Bug Fixes
 
 - Fix a bug where local CJK fonts would switch to server-generated ones in overzoomed tiles. [#8657](https://github.com/mapbox/mapbox-gl-js/pull/8657)
 - Fix precision issues in [deck.gl](https://deck.gl)-powered custom layers. [#8502](https://github.com/mapbox/mapbox-gl-js/pull/8502)
