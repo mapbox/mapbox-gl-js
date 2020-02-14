@@ -6,10 +6,17 @@ import DOM from '../util/dom';
 import browser from '../util/browser';
 import type Map from './map';
 import Handler from './handler/handler';
-import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
+//import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
 import MousePanHandler from './handler/mouse_pan';
+import MousePitchHandler from './handler/mouse_pitch';
+import MouseRotateHandler from './handler/mouse_rotate';
+import TouchPanHandler from './handler/touch_pan';
+import TouchZoomHandler from './handler/touch_zoom';
+import TouchRotateHandler from './handler/touch_rotate';
+import TouchPitchHandler from './handler/touch_pitch';
 import KeyboardHandler from './handler/keyboard';
 import {bezier, extend} from '../util/util';
+import Point from '@mapbox/point-geometry';
 
 const defaultInertiaOptions = {
     linearity: 0.15,
@@ -75,11 +82,20 @@ class HandlerManager {
 
     this.addKeyboardListener('keydown');
     this.addKeyboardListener('keyup');
+
+       DOM.addEventListener(window.document, 'contextmenu', e => e.preventDefault());
   }
 
   _addDefaultHandlers() {
-    this.add('mousepan', new MousePanHandler(this._map));
+    //this.add('mousepitch', new MousePitchHandler(this._map));
+    //this.add('mouserotate', new MouseRotateHandler(this._map));
+    //this.add('mousepan', new MousePanHandler(this._map, this));
+    this.add('touchPitch', new TouchPitchHandler(this._map));
+    this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch']);
     /*
+    this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
+    this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
+
     this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
     this.add('touchPitch', new TouchPitchHandler(this._map), ['touchRotate', 'touchPan']);
     this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
@@ -276,13 +292,20 @@ class HandlerManager {
     let deltas = {
       zoom: 0,
       bearing: 0,
-      pitch: 0
+      pitch: 0,
+      pan: new Point(0, 0),
+      around: null
     };
     let firstPoint, lastPoint;
     for (const [time, settings] of this._inertiaBuffer) {
       deltas.zoom += settings.zoomDelta || 0;
       deltas.bearing += settings.bearingDelta || 0;
       deltas.pitch += settings.pitchDelta || 0;
+      if (settings.panDelta) deltas.pan._add(settings.panDelta);
+      if (settings.around) {
+        if (!firstPoint) firstPoint = settings.around;
+        lastPoint = settings.around;
+      }
       if (settings.setLocationAtPoint) {
         if (!firstPoint) firstPoint = settings.setLocationAtPoint[1];
         lastPoint = settings.setLocationAtPoint[1];
