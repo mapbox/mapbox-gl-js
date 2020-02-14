@@ -299,7 +299,7 @@ export const getImages = function(requestParameters: [RequestParameters], callba
                 callback(error);
             } else {
                 numImageRequests--;
-                images.push(image);
+                images[i] = image;
                 if (numImageRequests == 0) {
                     callback(null, images);
                 }

@@ -63,7 +63,7 @@ class Transform {
         this._maxZoom = maxZoom || 22;
 
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
-        this._maxPitch = 90;
+        this._maxPitch = 360;
 
         this.setMaxBounds();
 
@@ -72,7 +72,7 @@ class Transform {
         this._center = new LngLat(0, 0);
         this.zoom = 0;
         this.angle = 0;
-        this._fov = 0.6435011087932844;
+        this._fov = 0.8435011087932844;
         this._pitch = 0;
         this._unmodified = true;
         this._posMatrixCache = {};
