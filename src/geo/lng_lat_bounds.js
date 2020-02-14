@@ -61,9 +61,9 @@ class LngLatBounds {
     }
 
     /**
-     * Extend the bounds to include a given LngLatLike or LngLatBoundsLike.
+     * Extend the bounds to include a given LngLat, LngLatLike, LngLatBounds or LngLatBoundsLike.
      *
-     * @param {LngLatLike|LngLatBoundsLike} obj object to extend to
+     * @param {LngLat|LngLatLike|LngLatBounds|LngLatBoundsLike} obj object to extend to
      * @returns {LngLatBounds} `this`
      */
     extend(obj: LngLatLike | LngLatBoundsLike) {
