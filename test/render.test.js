@@ -8,6 +8,6 @@ require = require("esm")(module, true);
 const suite = require('./integration/lib/render');
 const suiteImplementation = require('./suite_implementation');
 const ignores = require('./ignores.json');
-registerFont('./node_modules/npm-font-open-sans/fonts/Bold/OpenSans-Bold.ttf', { family: 'Open Sans', weight: 'bold'});
+registerFont('./node_modules/npm-font-open-sans/fonts/Bold/OpenSans-Bold.ttf', {family: 'Open Sans', weight: 'bold'});
 
 suite.run('js', ignores, suiteImplementation);
