@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../../../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../../../dist/mapbox-gl-dev.js'></script>
+<script src='../../../debug/access_token_generated.js'></script>
+
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 1,
+    fadeDuration: 0,
+    center: [0, 0],
+    style: {
+        version: 8,
+        sources: {
+            land: {
+                type: 'geojson',
+                data: `${location.origin}/test/browser/fixtures/land.json`
+            }
+        },
+        layers: [
+            {
+                id: 'background',
+                type: 'background',
+                paint: {
+                    'background-color': '#72d0f2'
+                }
+            },
+            {
+                id: 'land',
+                type: 'fill',
+                source: 'land',
+                paint: {
+                    'fill-color': '#f0e9e1'
+                }
+            }
+        ]
+    }
+});
+
+</script>
+
+</body>
+</html>

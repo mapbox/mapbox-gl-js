@@ -761,6 +761,13 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     display: none;
 }
 
+.mapboxgl-user-location-accuracy-circle {
+    background-color: #1da1f233;
+    width: 1px;
+    height: 1px;
+    border-radius: 100%;
+}
+
 .mapboxgl-crosshair,
 .mapboxgl-crosshair .mapboxgl-interactive,
 .mapboxgl-crosshair .mapboxgl-interactive:active {

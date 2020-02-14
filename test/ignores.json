@@ -18,5 +18,12 @@
   "render-tests/text-variable-anchor/all-anchors-tile-map-mode": "skip - mapbox-gl-js does not need to render tiles",
   "render-tests/fill-pattern/update-feature-state": "https://github.com/mapbox/mapbox-gl-js/issues/7207",
   "render-tests/text-size/zero": "https://github.com/mapbox/mapbox-gl-js/issues/9161",
-  "render-tests/text-variable-anchor/left-top-right-buttom-offset-tile-map-mode": "skip - mapbox-gl-js does not need to render tiles"
+  "render-tests/text-variable-anchor/left-top-right-buttom-offset-tile-map-mode": "skip - mapbox-gl-js does not need to render tiles",
+  "render-tests/within/filter-with-inlined-geojson" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
+  "render-tests/within/layout-text" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
+  "render-tests/within/paint-circle" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
+  "render-tests/within/paint-icon" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
+  "render-tests/within/paint-text" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
+  "expression-tests/within/basic" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
+  "expression-tests/within/invalid-geojson" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js"
 }

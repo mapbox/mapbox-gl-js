@@ -34,7 +34,7 @@ import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
-import debug from './draw_debug';
+import debug, {drawDebugPadding} from './draw_debug';
 import custom from './draw_custom';
 
 const draw = {
@@ -70,6 +70,7 @@ export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
+    showPadding: boolean,
     rotating: boolean,
     zooming: boolean,
     moving: boolean,
@@ -140,8 +141,6 @@ class Painter {
         this.depthEpsilon = 1 / Math.pow(2, 16);
 
         this.depthRboNeedsClear = true;
-
-        this.emptyProgramConfiguration = new ProgramConfiguration();
 
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
@@ -485,6 +484,10 @@ class Painter {
             }
         }
 
+        if (this.options.showPadding) {
+            drawDebugPadding(this);
+        }
+
         // Set defaults for most GL values so that anyone using the state after the render
         // encounters more expected values.
         this.context.setDefault();
@@ -609,9 +612,9 @@ class Painter {
         return !imagePosA || !imagePosB;
     }
 
-    useProgram(name: string, programConfiguration: ProgramConfiguration = this.emptyProgramConfiguration): Program<any> {
+    useProgram(name: string, programConfiguration: ?ProgramConfiguration): Program<any> {
         this.cache = this.cache || {};
-        const key = `${name}${programConfiguration.cacheKey || ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
+        const key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
         if (!this.cache[key]) {
             this.cache[key] = new Program(this.context, shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector);
         }

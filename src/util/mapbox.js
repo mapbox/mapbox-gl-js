@@ -106,7 +106,7 @@ export class RequestManager {
             this._createSkuToken();
         }
 
-        if (tileURL && !isMapboxURL(tileURL) && !isMapboxHTTPURL(tileURL)) return tileURL;
+        if (tileURL && !isMapboxURL(tileURL)) return tileURL;
 
         const urlObject = parseUrl(tileURL);
         const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;

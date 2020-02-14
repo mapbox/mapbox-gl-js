@@ -15,6 +15,7 @@ type Options = {
     positionOptions?: PositionOptions,
     fitBoundsOptions?: AnimationOptions & CameraOptions,
     trackUserLocation?: boolean,
+    showAccuracyCircle?: boolean,
     showUserLocation?: boolean
 };
 
@@ -28,6 +29,7 @@ const defaultOptions: Options = {
         maxZoom: 15
     },
     trackUserLocation: false,
+    showAccuracyCircle: true,
     showUserLocation: true
 };
 
@@ -78,6 +80,7 @@ let noTimeout = false;
  * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
  * @param {Object} [options.fitBoundsOptions={maxZoom: 15}] A [`fitBounds`](#map#fitbounds) options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 15 to limit how far the map will zoom in for very accurate locations.
  * @param {Object} [options.trackUserLocation=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the user's location as it changes.
+ * @param {Object} [options.showAccuracyCircle=true] By default, if showUserLocation is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when showUserLocation is `false`.
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
  *
  * @example
@@ -94,12 +97,15 @@ class GeolocateControl extends Evented {
     options: Options;
     _container: HTMLElement;
     _dotElement: HTMLElement;
+    _circleElement: HTMLElement;
     _geolocateButton: HTMLButtonElement;
     _geolocationWatchID: number;
     _timeoutId: ?TimeoutID;
     _watchState: 'OFF' | 'ACTIVE_LOCK' | 'WAITING_ACTIVE' | 'ACTIVE_ERROR' | 'BACKGROUND' | 'BACKGROUND_ERROR';
     _lastKnownPosition: any;
     _userLocationDotMarker: Marker;
+    _accuracyCircleMarker: Marker;
+    _accuracy: number;
     _setup: boolean; // set to true once the control has been setup
 
     constructor(options: Options) {
@@ -109,6 +115,7 @@ class GeolocateControl extends Evented {
         bindAll([
             '_onSuccess',
             '_onError',
+            '_onZoom',
             '_finish',
             '_setupUI',
             '_updateCamera',
@@ -130,12 +137,16 @@ class GeolocateControl extends Evented {
             this._geolocationWatchID = (undefined: any);
         }
 
-        // clear the marker from the map
+        // clear the markers from the map
         if (this.options.showUserLocation && this._userLocationDotMarker) {
             this._userLocationDotMarker.remove();
         }
+        if (this.options.showAccuracyCircle && this._accuracyCircleMarker) {
+            this._accuracyCircleMarker.remove();
+        }
 
         DOM.remove(this._container);
+        this._map.off('zoom', this._onZoom);
         this._map = (undefined: any);
         numberOfWatches = 0;
         noTimeout = false;
@@ -182,6 +193,11 @@ class GeolocateControl extends Evented {
     }
 
     _onSuccess(position: Position) {
+        if (!this._map) {
+            // control has since been removed
+            return;
+        }
+
         if (this._isOutOfMapMaxBounds(position)) {
             this._setErrorState();
 
@@ -251,13 +267,42 @@ class GeolocateControl extends Evented {
 
     _updateMarker(position: ?Position) {
         if (position) {
-            this._userLocationDotMarker.setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this._map);
+            const center = new LngLat(position.coords.longitude, position.coords.latitude);
+            this._accuracyCircleMarker.setLngLat(center).addTo(this._map);
+            this._userLocationDotMarker.setLngLat(center).addTo(this._map);
+            this._accuracy = position.coords.accuracy;
+            if (this.options.showUserLocation && this.options.showAccuracyCircle) {
+                this._updateCircleRadius();
+            }
         } else {
             this._userLocationDotMarker.remove();
+            this._accuracyCircleMarker.remove();
+        }
+    }
+
+    _updateCircleRadius() {
+        assert(this._circleElement);
+        const y = this._map._container.clientHeight / 2;
+        const a = this._map.unproject([0, y]);
+        const b = this._map.unproject([1, y]);
+        const metersPerPixel = a.distanceTo(b);
+        const circleDiameter = Math.ceil(2.0 * this._accuracy / metersPerPixel);
+        this._circleElement.style.width = `${circleDiameter}px`;
+        this._circleElement.style.height = `${circleDiameter}px`;
+    }
+
+    _onZoom() {
+        if (this.options.showUserLocation && this.options.showAccuracyCircle) {
+            this._updateCircleRadius();
         }
     }
 
     _onError(error: PositionError) {
+        if (!this._map) {
+            // control has since been removed
+            return;
+        }
+
         if (this.options.trackUserLocation) {
             if (error.code === 1) {
                 // PERMISSION_DENIED
@@ -329,7 +374,12 @@ class GeolocateControl extends Evented {
 
             this._userLocationDotMarker = new Marker(this._dotElement);
 
+            this._circleElement = DOM.create('div', 'mapboxgl-user-location-accuracy-circle');
+            this._accuracyCircleMarker = new Marker({element: this._circleElement, pitchAlignment: 'map'});
+
             if (this.options.trackUserLocation) this._watchState = 'OFF';
+
+            this._map.on('zoom', this._onZoom);
         }
 
         this._geolocateButton.addEventListener('click',
