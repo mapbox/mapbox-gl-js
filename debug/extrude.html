@@ -19,12 +19,17 @@
 
 var map = new mapboxgl.Map({
   container: "map",
-  center: [-122.43118273810865, 37.79145848881167],
+  center: [-122.42983194637827, 37.78455485886424],
   zoom: 15.899575291423961,
-  style: "mapbox://styles/mapbox/streets-v11"
+  style: "mapbox://styles/mapbox/streets-v11",
+  pitch: 85,
 });
-
+function rotateCamera(timestamp) {
+  map.rotateTo(60+(timestamp / 500) % 360, { duration: 0 });
+  requestAnimationFrame(rotateCamera);
+}
 map.on('load', function() {
+  rotateCamera(0);
   map.addCubemap({
     positiveX: '../debug/cubemap/cubemap-2_positivex.png',
     negativeX: '../debug/cubemap/cubemap-2_negativex.png',
@@ -45,8 +50,8 @@ map.on('load', function() {
     'minzoom': 13,
     'paint': {
       'fill-extrusion-color': '#DDD',
-      'fill-extrusion-height': ['*', ['get', 'height'], 2.5],
-      'fill-extrusion-opacity': 0.6
+      'fill-extrusion-height': ['*', ['get', 'height'], 2],
+      'fill-extrusion-opacity': 0.7
     }
   });
 });
