@@ -63,6 +63,7 @@ type IControl = {
     onAdd(map: Map): HTMLElement;
     onRemove(map: Map): void;
 
+    +_updateCompact?: () => void;
     +getDefaultPosition?: () => ControlPosition;
 }
 /* eslint-enable no-use-before-define */
@@ -1990,7 +1991,9 @@ class Map extends Camera {
      */
     getEffectiveWidth(): number {
         const padding = this.getPadding();
-        return Math.max(this.getCanvasContainer().offsetWidth - padding.left - padding.right, 0);
+        const left = padding.left || 0;
+        const right = padding.right || 0;
+        return Math.max(this.getCanvasContainer().offsetWidth - left - right, 0);
     }
 
     _containerDimensions() {
@@ -2297,8 +2300,8 @@ class Map extends Camera {
             }
         }
 
-        for(const control of this._controls){
-            if(control._updateCompact) {
+        for (const control of this._controls) {
+            if (control._updateCompact) {
                 control._updateCompact();
             }
         }
