@@ -92,11 +92,11 @@ test('LogoControl appears in compact mode if container is less then 250 pixel wi
     const map = createMap(t);
     const container = map.getContainer();
 
-    Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 255, configurable: true});
+    const stub = t.stub(map, 'getEffectiveWidth').returns(255);
     map.resize();
     t.equal(container.querySelectorAll('.mapboxgl-ctrl-logo:not(.mapboxgl-compact)').length, 1);
 
-    Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 245, configurable: true});
+    stub.returns(245);
     map.resize();
     t.equal(container.querySelectorAll('.mapboxgl-ctrl-logo.mapboxgl-compact').length, 1);
 
