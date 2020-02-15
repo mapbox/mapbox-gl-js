@@ -61,9 +61,9 @@ class LngLatBounds {
     }
 
     /**
-     * Extend the bounds to include a given LngLat, LngLatLike, LngLatBounds or LngLatBoundsLike.
+     * Extend the bounds to include a given LngLatLike or LngLatBoundsLike.
      *
-     * @param {LngLat|LngLatLike|LngLatBounds|LngLatBoundsLike} obj object to extend to
+     * @param {LngLatLike|LngLatBoundsLike} obj object to extend to
      * @returns {LngLatBounds} `this`
      */
     extend(obj: LngLatLike | LngLatBoundsLike) {
@@ -84,9 +84,11 @@ class LngLatBounds {
         } else {
             if (Array.isArray(obj)) {
                 if (obj.length === 4 || obj.every(Array.isArray)) {
-                    return this.extend(LngLatBounds.convert(obj));
+                    const lngLatBoundsObj = ((obj: any): LngLatBoundsLike);
+                    return this.extend(LngLatBounds.convert(lngLatBoundsObj));
                 } else {
-                    return this.extend(LngLat.convert(obj));
+                    const lngLatObj = ((obj: any): LngLatLike);
+                    return this.extend(LngLat.convert(lngLatObj));
                 }
             }
             return this;
