@@ -94,7 +94,11 @@ class Handler {
   processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent, points) {
     if (!e || !e.type) return console.warn('Invalid input event:', e);
     if (!this[e.type] || !(typeof this[e.type] === 'function')) return;
-    return this[e.type](e, points);
+    const ret = this[e.type](e, points);
+    if (ret && ret.transform) {
+        this.active = true;
+    }
+    return ret;
   }
 }
 

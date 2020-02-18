@@ -16,8 +16,9 @@ export function getTouchesById(e, points, identifiers) {
     return identifiers.map(id => touches[id]);
 }
 
-export function log(message) {
+export function log(message, overwrite) {
     const log = document.getElementById('log');
-    log.innerHTML = log.innerHTML + '<br>' + message;
+    if (overwrite) log.innerHTML = message;
+    else log.innerHTML = log.innerHTML + '<br>' + message;
 }
 

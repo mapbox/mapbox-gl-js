@@ -10,6 +10,11 @@ export default class TouchZoomHandler extends Handler {
 
     constructor(map: Map, manager, options: ?Object) {
         super(map, options);
+        this.reset();
+    }
+
+    reset() {
+        this.active = false;
         this.firstTwoTouches = null;
     }
 
@@ -53,7 +58,7 @@ export default class TouchZoomHandler extends Handler {
         const [a, b] = getTouchesById(e, points, this.firstTwoTouches);
         if (a && b) return;
 
-        this.firstTwoTouches = null;
+        this.reset();
 
         return {
             events: ['dragend']

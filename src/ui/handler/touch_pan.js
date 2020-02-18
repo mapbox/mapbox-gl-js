@@ -3,23 +3,22 @@
 import Handler from './handler';
 import type Map from '../map';
 import Point from '@mapbox/point-geometry';
-import {indexTouches} from './handler_util';
+import {log, indexTouches} from './handler_util';
 
 export default class TouchPanHandler extends Handler {
 
     constructor(map: Map, manager, options: ?Object) {
         super(map, options);
-        this.touches = {};
         this.minTouches = 1;
+        this.reset();
     }
 
     touchstart(e, points) {
         const transform = this._calculateTransform(e, points);
 
         let events;
-        if (!this.yep && e.targetTouches.length >= this.minTouches) {
+        if (!this.active && e.targetTouches.length >= this.minTouches) {
             events = ['dragstart'];
-            this.yep = true;
         }
 
         return {
@@ -39,15 +38,21 @@ export default class TouchPanHandler extends Handler {
         const transform = this._calculateTransform(e, points);
 
         let events;
-        if (this.yep && e.targetTouches.length < this.minTouches) {
-            this.yep = false;
+        if (this.active && e.targetTouches.length < this.minTouches) {
+            this.reset();
             events = ['dragend'];
+            return {};
         }
+        log('end ' + e.targetTouches.length);
 
         return {
-            transform,
             events
         };
+    }
+
+    reset(transform) {
+        this.active = false;
+        this.touches = {};
     }
 
     _calculateTransform(e, points) {
@@ -70,7 +75,7 @@ export default class TouchPanHandler extends Handler {
 
         this.touches = touches;
 
-        if (touchDeltaCount < this.minTouches && touchDeltaSum.mag()) return;
+        if (touchDeltaCount < this.minTouches || !touchDeltaSum.mag()) return;
 
         const panDelta = touchDeltaSum.div(touchDeltaCount);
         const around = touchPointSum.div(touchDeltaCount);
