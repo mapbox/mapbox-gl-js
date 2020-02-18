@@ -38,12 +38,6 @@ export const collisionBox = createLayout([
     {type: 'Uint16', name: 'sourceLayerIndex'},
     // the bucket the feature appears in
     {type: 'Uint16', name: 'bucketIndex'},
-
-    // collision circles for lines store their distance to the anchor in tile units
-    // so that they can be ignored if the projected label doesn't extend into
-    // the box area
-    {type: 'Int16', name: 'radius'},
-    {type: 'Int16', name: 'signedDistanceFromAnchor'}
 ]);
 
 export const collisionBoxLayout = createLayout([ // used to render collision boxes for debugging purposes
@@ -53,10 +47,14 @@ export const collisionBoxLayout = createLayout([ // used to render collision box
 ], 4);
 
 export const collisionCircleLayout = createLayout([ // used to render collision circles for debugging purposes
-    {name: 'a_pos',        components: 2, type: 'Int16'},
-    {name: 'a_anchor_pos', components: 2, type: 'Int16'},
-    {name: 'a_extrude',    components: 2, type: 'Int16'}
+    {name: 'a_pos',        components: 2, type: 'Float32'},
+    {name: 'a_radius',     components: 1, type: 'Float32'},
+    {name: 'a_flags',      components: 2, type: 'Int16'}
 ], 4);
+
+export const quadTriangle = createLayout([
+    {name: 'triangle', components: 3, type: 'Uint16'},
+]);
 
 export const placement = createLayout([
     {type: 'Int16', name: 'anchorX'},
@@ -101,9 +99,11 @@ export const symbolInstance = createLayout([
     {type: 'Uint16', name: 'numVerticalGlyphVertices'},
     {type: 'Uint16', name: 'numIconVertices'},
     {type: 'Uint16', name: 'numVerticalIconVertices'},
+    {type: 'Uint16', name: 'useRuntimeCollisionCircles'},
     {type: 'Uint32', name: 'crossTileID'},
     {type: 'Float32', name: 'textBoxScale'},
-    {type: 'Float32', components: 2, name: 'textOffset'}
+    {type: 'Float32', components: 2, name: 'textOffset'},
+    {type: 'Float32', name: 'collisionCircleDiameter'},
 ]);
 
 export const glyphOffset = createLayout([
