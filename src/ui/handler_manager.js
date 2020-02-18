@@ -15,8 +15,10 @@ import TouchZoomHandler from './handler/touch_zoom';
 import TouchRotateHandler from './handler/touch_rotate';
 import TouchPitchHandler from './handler/touch_pitch';
 import KeyboardHandler from './handler/keyboard';
+import { log } from './handler/handler_util';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
+import assert from 'assert';
 
 const defaultInertiaOptions = {
     linearity: 0.15,
@@ -31,7 +33,7 @@ export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 class HandlerManager {
     _map: Map;
     _el: HTMLElement;
-    _handlers: Array<[string, Handler]>;
+    _handlers: Array<[string, Handler, allowed]>;
     _disableDuring: Object;
     _inertiaOptions: InertiaOptions;
     _inertiaBuffer: Array<[number, Object]>;
@@ -52,6 +54,12 @@ class HandlerManager {
         this._disableDuring = {};
         this._inertiaOptions = options.inertiaOptions || defaultInertiaOptions;
         this._inertiaBuffer = [];
+        this._sortedHandlers = [];
+        this.activeHandlers = {};
+
+        window.onerror = function(e) {
+            log(e);
+        }
 
         // Track whether map is currently moving, to compute start/move/end events
         this._eventsInProgress = {
@@ -87,14 +95,15 @@ class HandlerManager {
     }
 
     _addDefaultHandlers() {
-        //this.add('mousepitch', new MousePitchHandler(this._map));
-        //this.add('mouserotate', new MouseRotateHandler(this._map));
-        //this.add('mousepan', new MousePanHandler(this._map, this));
+        this.add('mousepan', new MousePanHandler(this._map, this));
+        this.add('mouserotate', new MouseRotateHandler(this._map));
+        this.add('mousepitch', new MousePitchHandler(this._map));
         this.add('touchPitch', new TouchPitchHandler(this._map));
-        this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch']);
+        this.add('touchPan', new TouchPanHandler(this._map), ['touchZoom','touchRotate']);
+        this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPan', 'touchRotate']);
+        this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPan', 'touchZoom']);
+        this.add('keyboard', new KeyboardHandler(this._map));
         /*
-    this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
-    this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
 
     this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
     this.add('touchPitch', new TouchPitchHandler(this._map), ['touchRotate', 'touchPan']);
@@ -102,14 +111,6 @@ class HandlerManager {
     this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch']);
     this.add('keyboard', new KeyboardHandler(this._map), ['touchPan', 'touchPitch', 'touchRotate', 'touchZoom']);
     */
-    }
-
-    list() {
-        return this._handlers.map(([name, handler]) => name);
-    }
-
-    get length() {
-        return this._handlers.length;
     }
 
     add(handlerName: string, handler: Handler, disableDuring: Array<string>) {
@@ -120,7 +121,7 @@ class HandlerManager {
         for (const [existingName, existingHandler] of this._handlers) {
             if (existingHandler === handler) throw new Error(`Cannot add ${handler} as ${handlerName}: handler already exists as ${existingName}`);
         }
-        this._handlers.push([handlerName, handler]);
+        this._handlers.push([handlerName, handler, disableDuring]);
         this[handlerName] = handler;
 
         if (disableDuring) {
@@ -173,8 +174,63 @@ class HandlerManager {
         this.addListener(eventType, null, extend({capture: false}, options)); // No such thing as MapKeyboardEvent to fire
     }
 
+    stop() {
+    }
+
+    blockedByActive(activeHandlers, allowed, myName) { 
+        for (const name in activeHandlers) {
+            if (name === myName) continue;
+            if (!allowed || allowed.indexOf(name) < 0) {
+                assert(activeHandlers[name].active, 'isreally');
+                //log("BLOCKER" + name);
+                return true;
+            }
+        }
+        return false;
+    }
 
     processInputEvent(e: InputEvent) {
+        //log('', true);
+        // TODO
+        if (e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) e.preventDefault();
+        let transformSettings = {};
+        let activeHandlers = {};
+
+        let points = e.touches ?
+            DOM.touchPos(this._el, e) :
+            DOM.mousePos(this._el, e);
+
+        try {
+        for (const [name, handler, allowed] of this._handlers) {
+            if (!handler.isEnabled()) continue;
+
+            if (this.blockedByActive(activeHandlers, allowed, name)) {
+                handler.reset();
+
+            } else {
+                let data = handler.processInputEvent(e, points);
+                if (data && data.transform) {
+                    extend(transformSettings, data.transform);
+                }
+            }
+
+            if (handler.active) {
+                activeHandlers[name] = handler;
+            } else {
+                delete activeHandlers[name];
+            }
+        }
+        } catch(e) {
+            log(e);
+        }
+
+        //log('active' + Object.keys(activeHandlers));
+        if (Object.keys(transformSettings).length) {
+            this.updateMapTransform(transformSettings);
+        }
+    }
+
+    processInputEvent1(e: InputEvent) {
         if (e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) e.preventDefault();
         let transformSettings;
         let activeHandlers = [];
@@ -189,6 +245,7 @@ class HandlerManager {
             if (!handler.isEnabled()) continue;
             let data = handler.processInputEvent(e, points);
             if (!data) continue;
+            console.log(data);
 
             if (this._disableDuring[name]) {
                 const conflicts = this._disableDuring[name].filter(otherHandler => activeHandlers.indexOf(otherHandler) > -1);
@@ -233,12 +290,38 @@ class HandlerManager {
     }
 
     updateMapTransform(settings: Object) {
+        const map = this._map;
         this._map.stop();
+
+        let { zoomDelta, bearingDelta, pitchDelta, setLocationAtPoint, around, panDelta } = settings;
+        if (settings.duration) {
+            const easeOptions = {
+                duration: settings.duration,
+                delayEndEvents: settings.delayEndEvents,
+                easing: settings.easing
+            };
+
+            if (zoomDelta) {
+                easeOptions.zoom = map.getZoom() + zoomDelta;
+            }
+
+            if (panDelta) {
+                console.log(map.project(map.getCenter()), panDelta);
+                easeOptions.center = map.unproject(map.project(map.getCenter()).sub(panDelta));
+            }
+
+            if (pitchDelta) {
+            }
+
+            map.easeTo(easeOptions);
+            return;
+        }
+
+
         const tr = this._map.transform;
         this._drainInertiaBuffer();
         this._inertiaBuffer.push([browser.now(), settings]);
 
-        let { zoomDelta, bearingDelta, pitchDelta, setLocationAtPoint, around, panDelta } = settings;
         if (zoomDelta) tr.zoom += zoomDelta;
         if (bearingDelta) tr.bearing += bearingDelta;
         if (pitchDelta) tr.pitch += pitchDelta;
@@ -281,6 +364,7 @@ class HandlerManager {
     }
 
     _onMoveEnd(originalEvent: *) {
+        return;
         this._drainInertiaBuffer();
         if (this._inertiaBuffer.length < 2) {
             this._map.fire(new Event('moveend', { originalEvent }));

@@ -3,6 +3,7 @@
 import {extend} from '../../util/util';
 import Handler from './handler.js';
 import type Map from '../map';
+import Point from '@mapbox/point-geometry';
 
 const defaultOptions = {
   panStep: 100,
@@ -109,13 +110,17 @@ class KeyboardHandler extends Handler {
             delayEndEvents: 500,
             easing: easeOut,
 
-            zoom: zoomDir ? Math.round(zoom) + zoomDir * (e.shiftKey ? 2 : 1) : zoom,
-            bearing: map.getBearing() + bearingDir * this._bearingStep,
-            pitch: map.getPitch() + pitchDir * this._pitchStep,
-            offset: [-xDir * this._panStep, -yDir * this._panStep],
-            center: map.getCenter()
+            // TODO re-add zoom rounding
+            zoomDelta: zoomDir ? zoomDir * (e.shiftKey ? 2 : 1) : 0,
+            bearingDelta: bearingDir * this._bearingStep,
+            pitchDelta: pitchDir * this._pitchStep,
+            panDelta: new Point(
+                -xDir * this._panStep,
+                -yDir * this._panStep
+            )
         };
 
+        return { transform: easeOptions };
         return { easeTo: easeOptions }
     }
 }
