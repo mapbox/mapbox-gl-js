@@ -750,6 +750,7 @@ class Style extends Evented {
         this._layerOrderChanged = true;
         this._changed = true;
         this._removedLayers[id] = layer;
+        this._updatedSources[layer.source] = 'clear';
         delete this._layers[id];
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
