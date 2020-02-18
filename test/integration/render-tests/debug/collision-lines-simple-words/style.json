@@ -1,0 +1,126 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "collisionDebug": true,
+            "width": 512,
+            "height": 128
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 4,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "maxzoom": 1,
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "properties": {
+                        "name": "a"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [ -5, 2 ], [ -1, 2 ]
+                        ]
+                    }
+
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "ab"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [ -5, 0 ], [ -1, 0 ]
+                        ]
+                    }
+
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "abc"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [ -5, -2 ], [ -1, -2 ]
+                        ]
+                    }
+
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "abcd"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [ 1, 2 ], [ 5, 2 ]
+                        ]
+                    }
+
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "abcde"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [ 1, 0 ], [ 5, 0 ]
+                        ]
+                    }
+
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "abcdef"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [ 1, -2 ], [ 5, -2 ]
+                        ]
+                    }
+
+                }]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "white"
+            }
+        },
+        {
+            "id": "line",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "text-field": "{name}",
+                "symbol-spacing": 30,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "symbol-placement": "line-center"
+            }
+        }
+    ]
+}
