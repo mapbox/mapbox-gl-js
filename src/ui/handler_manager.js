@@ -34,7 +34,6 @@ class HandlerManager {
     _map: Map;
     _el: HTMLElement;
     _handlers: Array<[string, Handler, allowed]>;
-    _disableDuring: Object;
     _inertiaOptions: InertiaOptions;
     _inertiaBuffer: Array<[number, Object]>;
     _eventsInProgress: Object;
@@ -51,10 +50,8 @@ class HandlerManager {
         this._map = map;
         this._el = this._map.getCanvasContainer();
         this._handlers = [];
-        this._disableDuring = {};
         this._inertiaOptions = options.inertiaOptions || defaultInertiaOptions;
         this._inertiaBuffer = [];
-        this._sortedHandlers = [];
         this.activeHandlers = {};
 
         window.onerror = function(e) {
@@ -103,30 +100,14 @@ class HandlerManager {
         this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPan', 'touchRotate']);
         this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPan', 'touchZoom']);
         this.add('keyboard', new KeyboardHandler(this._map));
-        /*
-
-    this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPitch']);
-    this.add('touchPitch', new TouchPitchHandler(this._map), ['touchRotate', 'touchPan']);
-    this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPitch']);
-    this.add('touchPan', new TouchPanHandler(this._map), ['touchPitch']);
-    this.add('keyboard', new KeyboardHandler(this._map), ['touchPan', 'touchPitch', 'touchRotate', 'touchZoom']);
-    */
     }
 
-    add(handlerName: string, handler: Handler, disableDuring: Array<string>) {
-        if (!handlerName || !(/^[a-z]+[a-zA-Z]*$/.test(handlerName))) throw new Error('Must provide a valid handlerName string');
+    add(handlerName: string, handler: Handler, allowed: Array<string>) {
         if (!handler || !(handler instanceof Handler)) throw new Error('Must provide a valid Handler instance');
 
         if (this[handlerName]) throw new Error(`Cannot add ${handlerName}: a handler with that name already exists`);
-        for (const [existingName, existingHandler] of this._handlers) {
-            if (existingHandler === handler) throw new Error(`Cannot add ${handler} as ${handlerName}: handler already exists as ${existingName}`);
-        }
-        this._handlers.push([handlerName, handler, disableDuring]);
+        this._handlers.push([handlerName, handler, allowed]);
         this[handlerName] = handler;
-
-        if (disableDuring) {
-            this._disableDuring[handlerName] = disableDuring;
-        }
     }
 
     remove(handlerName: string) {
@@ -230,65 +211,6 @@ class HandlerManager {
         }
     }
 
-    processInputEvent1(e: InputEvent) {
-        if (e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) e.preventDefault();
-        let transformSettings;
-        let activeHandlers = [];
-        let preUpdateEvents = [];
-        let postUpdateEvents = [];
-
-        let points = e.touches ?
-            DOM.touchPos(this._el, e) :
-            DOM.mousePos(this._el, e);
-
-        for (const [name, handler] of this._handlers) {
-            if (!handler.isEnabled()) continue;
-            let data = handler.processInputEvent(e, points);
-            if (!data) continue;
-            console.log(data);
-
-            if (this._disableDuring[name]) {
-                const conflicts = this._disableDuring[name].filter(otherHandler => activeHandlers.indexOf(otherHandler) > -1);
-                if (conflicts.length > 0) {
-                    // A handler that was active but is now overridden should still be able to return end events to fire
-                    if (data.events) {
-                        data.events.filter(e => e.endsWith('end') && postUpdateEvents.indexOf(e) < 0).map(e => postUpdateEvents.push(e));
-                    }
-                    handler.reset(e);
-                    continue;
-                }
-            }
-
-            // "Discrete" handlers (e.g. keyboard) should return easeTo options
-            if (data.easeTo) {
-                // Discrete handlers cannot compete; the first handler to match wins
-                return this._map.easeTo(data.easeTo, { originalEvent: e });
-            }
-
-            // "Continuous" handlers (e.g. touchPan) should return transform settings and/or events to fire
-            if (data.transform) {
-                const merged = data.transform
-                if (!!transformSettings) extend(merged, transformSettings)
-                transformSettings = merged;
-            }
-
-            if (data.events) {
-                for (const event of data.events) {
-                    if (event.endsWith('start')) {
-                        if (preUpdateEvents.indexOf(event) < 0) preUpdateEvents.push(event);
-                    } else if (postUpdateEvents.indexOf(event) < 0) {
-                        postUpdateEvents.push(event);
-                    }
-                }
-            }
-            activeHandlers.push(name);
-        }
-
-        if (preUpdateEvents.length > 0) this.fireMapEvents(preUpdateEvents, e); // movestart events
-        if (transformSettings) this.updateMapTransform(transformSettings);
-        if (postUpdateEvents.length > 0) this.fireMapEvents(postUpdateEvents, e); // move and moveend events
-    }
-
     updateMapTransform(settings: Object) {
         const map = this._map;
         this._map.stop();
@@ -343,11 +265,6 @@ class HandlerManager {
 
         while (inertia.length > 0 && now - inertia[0][0] > cutoff)
             inertia.shift();
-    }
-
-    get _moving() {
-        for (const e of ['zoom', 'rotate', 'pitch', 'drag']) { if (this._eventsInProgress[e]) return true; }
-        return false;
     }
 
     _clampSpeed(speed: number) {
@@ -453,46 +370,6 @@ class HandlerManager {
             noMoveStart: true
         }), { originalEvent });
 
-    }
-
-    fireMapEvents(events: Array<string>, originalEvent: *) {
-        let alreadyMoving = this._moving;
-        const moveEvents = [];
-
-        for (const event of events) {
-            const eventType = event.replace('start', '').replace('end', '');
-            if (event.endsWith('start')) {
-                if (this._eventsInProgress[eventType]) { continue; } // spurious start event, don't fire
-                else { this._eventsInProgress[eventType] = true; }
-                if (!alreadyMoving && moveEvents.indexOf('movestart') < 0) { moveEvents.push('movestart'); }
-
-            } else if (event.endsWith('end')) {
-                if (!this._eventsInProgress[eventType]) { continue; } // spurious end event, don't fire
-                else { this._eventsInProgress[eventType] = false; }
-                if (!this._moving && moveEvents.indexOf('moveend') < 0) { moveEvents.push('moveend'); }
-            } else {
-                if (!this._eventsInProgress[eventType]) {
-                    // We never got a corresponding start event for some reason; fire it now & update event progress state
-                    this._map.fire(new Event(eventType + 'start', { originalEvent }));
-                    if (!alreadyMoving) {
-                        this._map.fire(new Event('movestart', { originalEvent }));
-                        alreadyMoving = true;
-                    }
-                    this._eventsInProgress[eventType] = true;
-                }
-                if (moveEvents.indexOf('move') < 0) { moveEvents.push('move'); }
-            }
-
-            this._map.fire(new Event(event, { originalEvent }));
-        }
-        for (const moveEvent of moveEvents) {
-            if (moveEvent === 'moveend') {
-                const activeHandlers = this._handlers.filter(([name, handler]) => handler._state === 'active');
-                if (activeHandlers.length === 0) this._onMoveEnd(originalEvent);
-            } else {
-                this._map.fire(new Event(moveEvent, { originalEvent }))
-            }
-        }
     }
 }
 
