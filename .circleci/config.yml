@@ -236,7 +236,7 @@ jobs:
           environment:
             SELENIUM_BROWSER: chrome
             TAP_COLORS: 1
-          command: xvfb-run && yarn run test-browser
+          command: xvfb-run --server-args="-screen 0 1024x768x24" yarn run test-browser
       - run:
           name: Test Firefox
           environment:
