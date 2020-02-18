@@ -236,7 +236,7 @@ jobs:
           environment:
             SELENIUM_BROWSER: chrome
             TAP_COLORS: 1
-          command: yarn run test-browser
+          command: xvfb-run && yarn run test-browser
       - run:
           name: Test Firefox
           environment:
