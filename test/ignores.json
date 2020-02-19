@@ -19,11 +19,14 @@
   "render-tests/fill-pattern/update-feature-state": "https://github.com/mapbox/mapbox-gl-js/issues/7207",
   "render-tests/text-size/zero": "https://github.com/mapbox/mapbox-gl-js/issues/9161",
   "render-tests/text-variable-anchor/left-top-right-buttom-offset-tile-map-mode": "skip - mapbox-gl-js does not need to render tiles",
-  "render-tests/within/filter-with-inlined-geojson" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
-  "render-tests/within/layout-text" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
-  "render-tests/within/paint-circle" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
-  "render-tests/within/paint-icon" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
-  "render-tests/within/paint-text" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
-  "expression-tests/within/basic" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js",
-  "expression-tests/within/invalid-geojson" : "skip - TODO: Within Expression needs to be implemented in mapbox-gl-js"
+  "render-tests/within/filter-with-inlined-geojson": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
+  "render-tests/within/paint-circle": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
+  "render-tests/within/paint-icon": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
+  "render-tests/within/paint-text": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
+  "render-tests/within/layout-text": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16194",
+  "render-tests/within/paint-line": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16220",
+  "expression-tests/within/point-within-polygon": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
+  "expression-tests/within/invalid-geojson": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
+  "expression-tests/within/non-supported": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
+  "expression-tests/within/line-within-polygon": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16220"
 }

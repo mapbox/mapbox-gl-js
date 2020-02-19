@@ -12,32 +12,8 @@
         }
       }, {
         "geometry": {
-          "type": "Point",
-          "coordinates": [6, 6]
-        }
-      }], [{
-        "zoom": 3,
-        "canonicalID": {
-          "z": 3,
-          "x": 3,
-          "y": 3
-        }
-      }, {
-        "geometry": {
-          "type": "Point",
-          "coordinates": [2, 2]
-        }
-      }], [{
-        "zoom": 3,
-        "canonicalID": {
-          "z": 3,
-          "x": 3,
-          "y": 3
-        }
-      }, {
-        "geometry": {
-          "type": "LineString",
-          "coordinates": [[3, 3], [4, 1]]
+          "type": "Polygon",
+          "coordinates": [[[3, 3], [6, 6], [3, 3]]]
         }
       }]],
   "expected": {
@@ -47,7 +23,7 @@
       "isZoomConstant": true,
       "result": "success"
     },
-    "outputs": [false, true, false],
+    "outputs": [false],
     "serialized": ["within", {
         "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]],
         "type": "Polygon"
