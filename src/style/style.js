@@ -750,7 +750,6 @@ class Style extends Evented {
         this._layerOrderChanged = true;
         this._changed = true;
         this._removedLayers[id] = layer;
-        this._updatedSources[layer.source] = 'clear';
         delete this._layers[id];
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
@@ -768,6 +767,17 @@ class Style extends Evented {
      */
     getLayer(id: string): Object {
         return this._layers[id];
+    }
+
+    /**
+     * Return a boolean specifying if the layer is valid (not deleted) with the given `id`.
+     *
+     * @param {string} id - id of the desired layer
+     * @returns {boolean} a boolean specifying if the given layer is valid
+     */
+    isValidLayer(id: string): boolean {
+        const layerIds = Object.keys(this._layers);
+        return layerIds.includes(id, 0);
     }
 
     setLayerZoomRange(layerId: string, minzoom: ?number, maxzoom: ?number) {
