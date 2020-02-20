@@ -1,4 +1,4 @@
-## 13.12.0-beta.1
+## 13.12.0
 
 * Update `image` expression SDK support table ([#9228](https://github.com/mapbox/mapbox-gl-js/pull/9228))
 * Fix `promoteId` for line layers ([#9210](https://github.com/mapbox/mapbox-gl-js/pull/9210), [#9212](https://github.com/mapbox/mapbox-gl-js/pull/9212))

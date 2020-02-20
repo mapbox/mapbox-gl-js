@@ -1,4 +1,4 @@
-## 1.8.0-beta.1
+## 1.8.0
 
 ### ✨ Features and improvements
 * Reduce size of line atlas by removing unused channels ([#9232](https://github.com/mapbox/mapbox-gl-js/pull/9232))
