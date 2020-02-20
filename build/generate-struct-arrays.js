@@ -203,6 +203,13 @@ createStructArrayLayoutType(createLayout([{
     components: 1
 }], 4));
 
+// used by SourceBinder for boolean properties
+createStructArrayLayoutType(createLayout([{
+    name: 'dummy name (unused for StructArrayLayout)',
+    type: 'Uint8',
+    components: 1
+}], 1));
+
 // used by SourceBinder for color properties and CompositeBinder for float properties
 createStructArrayLayoutType(createLayout([{
     name: 'dummy name (unused for StructArrayLayout)',

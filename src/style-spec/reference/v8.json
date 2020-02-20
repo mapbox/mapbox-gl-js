@@ -4049,6 +4049,34 @@
       },
       "property-type": "data-driven"
     },
+    "fill-extrusion-occluded": {
+      "type": "boolean",
+      "default": true,
+      "transition": false,
+      "doc": "Whether the fill-extrusion will be occluded behind other fill extrusions",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0",
+          "android": "5.1.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
+        },
+        "data-driven styling": {
+          "js": "0.27.0",
+          "android": "5.1.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
+        }
+      },
+      "expression": {
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "fill-extrusion-vertical-gradient": {
       "type": "boolean",
       "default": true,

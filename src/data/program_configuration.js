@@ -5,7 +5,7 @@ import Color from '../style-spec/util/color';
 import {supportsPropertyExpression} from '../style-spec/util/properties';
 import {register} from '../util/web_worker_transfer';
 import {PossiblyEvaluatedPropertyValue} from '../style/properties';
-import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray} from './array_types';
+import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray, StructArrayLayout1ub1} from './array_types';
 import {clamp} from '../util/util';
 
 import EvaluationParameters from '../style/evaluation_parameters';
@@ -154,7 +154,7 @@ class SourceExpressionBinder implements AttributeBinder {
         this.maxValue = 0;
         this.paintVertexAttributes = names.map((name) => ({
             name: `a_${name}`,
-            type: 'Float32',
+            type: type === 'boolean' ?  'Uint8' : 'Float32',
             components: type === 'color' ? 2 : 1,
             offset: 0
         }));
@@ -655,6 +655,10 @@ function layoutType(property, type, binderType) {
         },
         'number': {
             'source': StructArrayLayout1f4,
+            'composite': StructArrayLayout2f8
+        },
+        'boolean': {
+            'source': StructArrayLayout1ub1,
             'composite': StructArrayLayout2f8
         }
     };

@@ -41,10 +41,17 @@ map.on('style.load', function() {
         'type': 'fill-extrusion',
         'minzoom': 15,
         'paint': {
-            'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+            'fill-extrusion-color': ['to-color',
+                                        [ 'case',
+                                            ['boolean', [ 'feature-state', 'occluded'], true],
+                                            '#aaa',
+                                            '#00f'
+                                        ],
+                                        '#aaa'
+                                    ],
             'fill-extrusion-height': ["get", "height"],
-            'fill-extrusion-opacity': 0.6
-
+            'fill-extrusion-opacity': 0.6,
+            'fill-extrusion-occluded': ['boolean', [ 'feature-state', 'occluded'], true]
         }
     });
 
@@ -76,6 +83,18 @@ map.on('style.load', function() {
                 'hover-b': i >= 2 ? 255 : r
             });
             i++;
+        }
+    });
+
+    window.addEventListener('click', function(e) {
+        const seen = {};
+        for (const feature of hovered) {
+            if (seen[feature.id]) continue;
+
+            seen[feature.id] = true;
+            map.setFeatureState(feature, {
+                'occluded': false
+            });
         }
     });
 });

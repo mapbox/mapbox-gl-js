@@ -745,6 +745,35 @@ register('StructArrayLayout1ui2', StructArrayLayout1ui2);
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Uint8[1]
+ *
+ * @private
+ */
+class StructArrayLayout1ub1 extends StructArray {
+    uint8: Uint8Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0);
+    }
+
+    emplace(i: number, v0: number) {
+        const o1 = i * 1;
+        this.uint8[o1 + 0] = v0;
+        return i;
+    }
+}
+
+StructArrayLayout1ub1.prototype.bytesPerElement = 1;
+register('StructArrayLayout1ub1', StructArrayLayout1ub1);
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Float32[2]
  *
  * @private
@@ -1162,6 +1191,7 @@ export {
     StructArrayLayout3ui6,
     StructArrayLayout2ui4,
     StructArrayLayout1ui2,
+    StructArrayLayout1ub1,
     StructArrayLayout2f8,
     StructArrayLayout4f16,
     StructArrayLayout2i4 as PosArray,
