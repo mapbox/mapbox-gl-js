@@ -294,6 +294,10 @@ class DragRotateHandler {
         DOM.enableDrag();
     }
 
+    teardown() {
+        this._unbind();
+    }
+
     _deactivate() {
         if (this._frameId) {
             this._map._cancelRenderFrame(this._frameId);

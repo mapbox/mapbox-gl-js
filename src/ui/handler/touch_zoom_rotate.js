@@ -217,8 +217,7 @@ class TouchZoomRotateHandler {
     }
 
     _onEnd(e: TouchEvent) {
-        DOM.removeEventListener(window.document, 'touchmove', this._onMove, {passive: false});
-        DOM.removeEventListener(window.document, 'touchend', this._onEnd);
+        this._unbind();
 
         const gestureIntent = this._gestureIntent;
         const startScale = this._startScale;
@@ -280,6 +279,15 @@ class TouchZoomRotateHandler {
             around: this._aroundCenter ? map.getCenter() : map.unproject(p),
             noMoveStart: true
         }, {originalEvent: e});
+    }
+
+    _unbind() {
+        DOM.removeEventListener(window.document, 'touchmove', this._onMove, {passive: false});
+        DOM.removeEventListener(window.document, 'touchend', this._onEnd);
+    }
+
+    teardown(){
+        this._unbind();
     }
 
     _drainInertiaBuffer() {

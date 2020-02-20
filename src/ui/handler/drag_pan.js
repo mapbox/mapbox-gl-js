@@ -345,6 +345,10 @@ class DragPanHandler {
         DOM.removeEventListener(window, 'blur', this._onBlur);
     }
 
+    teardown() {
+        this._unbind();
+    }
+
     _deactivate() {
         if (this._frameId) {
             this._map._cancelRenderFrame(this._frameId);
