@@ -316,6 +316,45 @@ test('camera', (t) => {
         t.end();
     });
 
+    t.test('#setPadding', (t) => {
+        t.test('sets padding', (t) => {
+            const camera = createCamera();
+            const padding = {left: 300, top: 100, right: 50, bottom: 10};
+            camera.setPadding(padding);
+            t.deepEqual(camera.getPadding(), padding);
+            t.end();
+        });
+
+        t.test('existing padding is retained if no new values are passed in', (t) => {
+            const camera = createCamera();
+            const padding = {left: 300, top: 100, right: 50, bottom: 10};
+            camera.setPadding(padding);
+            camera.setPadding({});
+
+            const currentPadding = camera.getPadding();
+            t.deepEqual(currentPadding, padding);
+            t.end();
+        });
+
+        t.test('doesnt change padding thats already present if new value isnt passed in', (t) => {
+            const camera = createCamera();
+            const padding = {left: 300, top: 100, right: 50, bottom: 10};
+            camera.setPadding(padding);
+            const padding1 = {right: 100};
+            camera.setPadding(padding1);
+
+            const currentPadding = camera.getPadding();
+            t.equal(currentPadding.left, padding.left);
+            t.equal(currentPadding.top, padding.top);
+            // padding1 here
+            t.equal(currentPadding.right, padding1.right);
+            t.equal(currentPadding.bottom, padding.bottom);
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('#panBy', (t) => {
         t.test('pans by specified amount', (t) => {
             const camera = createCamera();

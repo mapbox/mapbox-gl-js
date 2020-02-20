@@ -9,8 +9,10 @@ import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
 import {vec4, mat4, mat2, vec2} from 'gl-matrix';
 import {Aabb, Frustum} from '../util/primitives.js';
+import EdgeInsets from './edge_insets';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id';
+import type {PaddingOptions} from './edge_insets';
 
 /**
  * A single transform, generally used for a single tile to be
@@ -49,6 +51,7 @@ class Transform {
     _minPitch: number;
     _maxPitch: number;
     _center: LngLat;
+    _edgeInsets: EdgeInsets;
     _constraining: boolean;
     _posMatrixCache: {[string]: Float32Array};
     _alignedPosMatrixCache: {[string]: Float32Array};
@@ -74,6 +77,7 @@ class Transform {
         this._fov = 0.6435011087932844;
         this._pitch = 0;
         this._unmodified = true;
+        this._edgeInsets = new EdgeInsets();
         this._posMatrixCache = {};
         this._alignedPosMatrixCache = {};
     }
@@ -90,6 +94,7 @@ class Transform {
         clone._fov = this._fov;
         clone._pitch = this._pitch;
         clone._unmodified = this._unmodified;
+        clone._edgeInsets = this._edgeInsets.clone();
         clone._calcMatrices();
         return clone;
     }
@@ -137,8 +142,8 @@ class Transform {
         return this.tileSize * this.scale;
     }
 
-    get centerPoint(): Point {
-        return this.size._div(2);
+    get centerOffset(): Point {
+        return this.centerPoint._sub(this.size._div(2));
     }
 
     get size(): Point {
@@ -200,6 +205,52 @@ class Transform {
         if (center.lat === this._center.lat && center.lng === this._center.lng) return;
         this._unmodified = false;
         this._center = center;
+        this._constrain();
+        this._calcMatrices();
+    }
+
+    get padding(): PaddingOptions { return this._edgeInsets.toJSON(); }
+    set padding(padding: PaddingOptions) {
+        if (this._edgeInsets.equals(padding)) return;
+        this._unmodified = false;
+        //Update edge-insets inplace
+        this._edgeInsets.interpolate(this._edgeInsets, padding, 1);
+        this._calcMatrices();
+    }
+
+    /**
+     * The center of the screen in pixels with the top-left corner being (0,0)
+     * and +y axis pointing downwards. This accounts for padding.
+     *
+     * @readonly
+     * @type {Point}
+     * @memberof Transform
+     */
+    get centerPoint(): Point {
+        return this._edgeInsets.getCenter(this.width, this.height);
+    }
+
+    /**
+     * Returns if the padding params match
+     *
+     * @param {PaddingOptions} padding
+     * @returns {boolean}
+     * @memberof Transform
+     */
+    isPaddingEqual(padding: PaddingOptions): boolean {
+        return this._edgeInsets.equals(padding);
+    }
+
+    /**
+     * Helper method to upadte edge-insets inplace
+     *
+     * @param {PaddingOptions} target
+     * @param {number} t
+     * @memberof Transform
+     */
+    interpolatePadding(start: PaddingOptions, target: PaddingOptions, t: number) {
+        this._unmodified = false;
+        this._edgeInsets.interpolate(start, target, t);
         this._constrain();
         this._calcMatrices();
     }
@@ -281,9 +332,10 @@ class Transform {
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
         const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
 
-        // No change of LOD behavior for pitch lower than 60: return only tile ids from the requested zoom level
+        // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         let minZoom = options.minzoom || 0;
-        if (this.pitch <= 60.0)
+        // Use 0.1 as an epsilon to avoid for explicit == 0.0 floating point checks
+        if (this.pitch <= 60.0 && this._edgeInsets.top < 0.1)
             minZoom = z;
 
         // There should always be a certain number of maximum zoom level tiles surrounding the center location
@@ -616,15 +668,17 @@ class Transform {
     _calcMatrices() {
         if (!this.height) return;
 
-        this.cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+        const halfFov = this._fov / 2;
+        const offset = this.centerOffset;
+        this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height;
 
-        // Find the distance from the center point [width/2, height/2] to the
-        // center top point [width/2, 0] in Z units, using the law of sines.
+        // Find the distance from the center point [width/2 + offset.x, height/2 + offset.y] to the
+        // center top point [width/2 + offset.x, 0] in Z units, using the law of sines.
         // 1 Z unit is equivalent to 1 horizontal px at the center of the map
         // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
-        const halfFov = this._fov / 2;
         const groundAngle = Math.PI / 2 + this._pitch;
-        const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(clamp(Math.PI - groundAngle - halfFov, 0.01, Math.PI - 0.01));
+        const fovAboveCenter = this._fov * (0.5 + offset.y / this.height);
+        const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * this.cameraToCenterDistance / Math.sin(clamp(Math.PI - groundAngle - fovAboveCenter, 0.01, Math.PI - 0.01));
         const point = this.point;
         const x = point.x, y = point.y;
 
@@ -645,6 +699,10 @@ class Transform {
         // matrix for conversion from location to GL coordinates (-1 .. 1)
         let m = new Float64Array(16);
         mat4.perspective(m, this._fov, this.width / this.height, nearZ, farZ);
+
+        //Apply center of perspective offset
+        m[8] = -offset.x * 2 / this.width;
+        m[9] = offset.y * 2 / this.height;
 
         mat4.scale(m, m, [1, -1, 1]);
         mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);

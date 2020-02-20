@@ -33,7 +33,7 @@ import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
-import debug from './draw_debug';
+import debug, {drawDebugPadding} from './draw_debug';
 import custom from './draw_custom';
 
 const draw = {
@@ -69,6 +69,7 @@ export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
+    showPadding: boolean,
     rotating: boolean,
     zooming: boolean,
     moving: boolean,
@@ -471,6 +472,10 @@ class Painter {
             if (selectedSource) {
                 draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
             }
+        }
+
+        if (this.options.showPadding) {
+            drawDebugPadding(this);
         }
 
         // Set defaults for most GL values so that anyone using the state after the render

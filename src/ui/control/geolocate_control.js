@@ -127,7 +127,6 @@ class GeolocateControl extends Evented {
         this._map = map;
         this._container = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
         checkGeolocationSupport(this._setupUI);
-        this._map.on('zoom', this._onZoom);
         return this._container;
     }
 
@@ -194,6 +193,11 @@ class GeolocateControl extends Evented {
     }
 
     _onSuccess(position: Position) {
+        if (!this._map) {
+            // control has since been removed
+            return;
+        }
+
         if (this._isOutOfMapMaxBounds(position)) {
             this._setErrorState();
 
@@ -294,6 +298,11 @@ class GeolocateControl extends Evented {
     }
 
     _onError(error: PositionError) {
+        if (!this._map) {
+            // control has since been removed
+            return;
+        }
+
         if (this.options.trackUserLocation) {
             if (error.code === 1) {
                 // PERMISSION_DENIED
@@ -369,6 +378,8 @@ class GeolocateControl extends Evented {
             this._accuracyCircleMarker = new Marker({element: this._circleElement, pitchAlignment: 'map'});
 
             if (this.options.trackUserLocation) this._watchState = 'OFF';
+
+            this._map.on('zoom', this._onZoom);
         }
 
         this._geolocateButton.addEventListener('click',
