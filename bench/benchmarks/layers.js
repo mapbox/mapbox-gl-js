@@ -254,7 +254,7 @@ export class LayerSymbolWithSortKey extends LayerBenchmark {
         const generated = [];
         for (let i = 0; i < layerCount; i++) {
             generated.push({
-                'id': 'symbollayer' + i,
+                'id': `symbollayer${i}`,
                 'type': 'symbol',
                 'source': 'composite',
                 'source-layer': 'poi_label',
