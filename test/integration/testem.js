@@ -10,7 +10,8 @@ const chokidar = require('chokidar');
 const rollup = require('rollup');
 const notifier = require('node-notifier');
 const rollupDevConfig = require('../../rollup.config').default;
-const rollupTestConfig = require('./rollup.config.test').default;
+const rollupQueryConfig = require('./rollup.config.query').default;
+const rollupRenderConfig = require('./rollup.config.render').default;
 
 const rootFixturePath = 'test/integration/';
 const suitePath = 'query-tests';
@@ -144,7 +145,8 @@ function buildArtifactsDev() {
 
         return Promise.all([
             startRollupWatcher('mapbox-gl', rollupDevConfig),
-            startRollupWatcher('query-suite', rollupTestConfig),
+            startRollupWatcher('query-suite', rollupQueryConfig),
+            startRollupWatcher('render-suite', rollupRenderConfig),
         ]);
     });
 }
