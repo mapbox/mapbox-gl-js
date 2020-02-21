@@ -184,15 +184,6 @@ class SymbolStyleLayer extends StyleLayer {
 
         return hasOverrides;
     }
-
-    static hasPaintOverrides(layout: PossiblyEvaluated<LayoutProps>): boolean {
-        for (const overridable of properties.paint.overridableProperties) {
-            if (SymbolStyleLayer.hasPaintOverride(layout, overridable)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
 
 export default SymbolStyleLayer;

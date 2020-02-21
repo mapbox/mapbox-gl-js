@@ -92,7 +92,9 @@ function updateScale(map, container, options) {
     const maxWidth = options && options.maxWidth || 100;
 
     const y = map._container.clientHeight / 2;
-    const maxMeters = getDistance(map.unproject([0, y]), map.unproject([maxWidth, y]));
+    const left = map.unproject([0, y]);
+    const right = map.unproject([maxWidth, y]);
+    const maxMeters = left.distanceTo(right);
     // The real distance corresponding to 100px scale length is rounded off to
     // near pretty number and the scale length for the same is found out.
     // Default unit of the scale is based on User's locale.
@@ -118,22 +120,7 @@ function setScale(container, maxWidth, maxDistance, unit) {
     const distance = getRoundNum(maxDistance);
     const ratio = distance / maxDistance;
     container.style.width = `${maxWidth * ratio}px`;
-    container.innerHTML = distance + unit;
-}
-
-function getDistance(latlng1, latlng2) {
-    // Uses spherical law of cosines approximation.
-    const R = 6371000;
-
-    const rad = Math.PI / 180,
-        lat1 = latlng1.lat * rad,
-        lat2 = latlng2.lat * rad,
-        a = Math.sin(lat1) * Math.sin(lat2) +
-          Math.cos(lat1) * Math.cos(lat2) * Math.cos((latlng2.lng - latlng1.lng) * rad);
-
-    const maxMeters = R * Math.acos(Math.min(a, 1));
-    return maxMeters;
-
+    container.innerHTML = `${distance}&nbsp;${unit}`;
 }
 
 function getDecimalRoundNum(d) {

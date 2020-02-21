@@ -89,6 +89,7 @@ export type VectorSourceSpecification = {
     "minzoom"?: number,
     "maxzoom"?: number,
     "attribution"?: string,
+    "promoteId"?: PromoteIdSpecification,
     "zoomOffset"?: number
 }
 
@@ -115,7 +116,6 @@ export type RasterDEMSourceSpecification = {
     "tileSize"?: number,
     "attribution"?: string,
     "encoding"?: "terrarium" | "mapbox",
-    "promoteId"?: PromoteIdSpecification,
     "zoomOffset"?: number
 }
 

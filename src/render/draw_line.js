@@ -34,8 +34,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const crossfade = layer.getCrossfadeParameters();
 
     const programId =
-        dasharray ? 'lineSDF' :
         image ? 'linePattern' :
+        dasharray ? 'lineSDF' :
         gradient ? 'lineGradient' : 'line';
 
     const context = painter.context;
@@ -73,18 +73,18 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const uniformValues = dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray, crossfade) :
-            image ? linePatternUniformValues(painter, tile, layer, crossfade) :
+        const uniformValues = image ? linePatternUniformValues(painter, tile, layer, crossfade) :
+            dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray, crossfade) :
             gradient ? lineGradientUniformValues(painter, tile, layer) :
             lineUniformValues(painter, tile, layer);
 
-        if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
-            context.activeTexture.set(gl.TEXTURE0);
-            painter.lineAtlas.bind(context);
-        } else if (image) {
+        if (image) {
             context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePatternPaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers(crossfade);
+        } else if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
+            context.activeTexture.set(gl.TEXTURE0);
+            painter.lineAtlas.bind(context);
         }
 
         program.draw(context, gl.TRIANGLES, depthMode,

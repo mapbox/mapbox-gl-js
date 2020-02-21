@@ -25,9 +25,6 @@ function withFixedDate(t, now, fn) {
 }
 
 test("mapbox", (t) => {
-    const mapboxSource = 'mapbox://user.map';
-    const nonMapboxSource = 'http://www.example.com/tiles.json';
-
     t.beforeEach((callback) => {
         config.ACCESS_TOKEN = 'key';
         config.REQUIRE_ACCESS_TOKEN = true;
@@ -61,7 +58,7 @@ test("mapbox", (t) => {
             const ms13Hours = (13 * 60 * 60 * 1000);
             t.notOk(manager._isSkuTokenExpired());
             const token = manager._skuToken;
-            withFixedDate(t, now + ms13Hours, () => manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf", mapboxSource));
+            withFixedDate(t, now + ms13Hours, () => manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf"));
             t.notEqual(token, manager._skuToken);
             t.end();
         });
@@ -107,17 +104,17 @@ test("mapbox", (t) => {
 
         t.test('.normalizeSourceURL', (t) => {
             t.test('returns a v4 URL with access_token parameter', (t) => {
-                t.equal(manager.normalizeSourceURL(mapboxSource), 'https://api.mapbox.com/v4/user.map.json?secure&access_token=key');
+                t.equal(manager.normalizeSourceURL('mapbox://user.map'), 'https://api.mapbox.com/v4/user.map.json?secure&access_token=key');
                 t.end();
             });
 
             t.test('uses provided access token', (t) => {
-                t.equal(manager.normalizeSourceURL(mapboxSource, 'token'), 'https://api.mapbox.com/v4/user.map.json?secure&access_token=token');
+                t.equal(manager.normalizeSourceURL('mapbox://user.map', 'token'), 'https://api.mapbox.com/v4/user.map.json?secure&access_token=token');
                 t.end();
             });
 
             t.test('uses provided query parameters', (t) => {
-                t.equal(manager.normalizeSourceURL(`${mapboxSource}?foo=bar`, 'token'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&secure&access_token=token');
+                t.equal(manager.normalizeSourceURL('mapbox://user.map?foo=bar', 'token'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&secure&access_token=token');
                 t.end();
             });
 
@@ -128,14 +125,14 @@ test("mapbox", (t) => {
 
             t.test('throws an error if no access token is provided', (t) => {
                 config.ACCESS_TOKEN = null;
-                t.throws(() => { manager.normalizeSourceURL(mapboxSource); }, 'An API access token is required to use Mapbox GL.');
+                t.throws(() => { manager.normalizeSourceURL('mapbox://user.map'); }, 'An API access token is required to use Mapbox GL.');
                 config.ACCESS_TOKEN = 'key';
                 t.end();
             });
 
             t.test('throws an error if a secret access token is provided', (t) => {
                 config.ACCESS_TOKEN = 'sk.abc.123';
-                t.throws(() => { manager.normalizeSourceURL(mapboxSource); }, 'Use a public access token (pk.*) with Mapbox GL JS.');
+                t.throws(() => { manager.normalizeSourceURL('mapbox://user.map'); }, 'Use a public access token (pk.*) with Mapbox GL JS.');
                 config.ACCESS_TOKEN = 'key';
                 t.end();
             });
@@ -265,39 +262,41 @@ test("mapbox", (t) => {
         });
 
         t.test('.canonicalizeTileURL', (t) => {
-            t.equals(manager.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"),
+            const tileJSONURL = "mapbox://mapbox.streets";
+
+            t.equals(manager.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-            t.equals(manager.canonicalizeTileURL("http://b.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"),
+            t.equals(manager.canonicalizeTileURL("http://b.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-            t.equals(manager.canonicalizeTileURL("https://api.mapbox.cn/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key"),
+            t.equals(manager.canonicalizeTileURL("https://api.mapbox.cn/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b,c.d/{z}/{x}/{y}.vector.pbf?access_token=key"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b,c.d/{z}/{x}/{y}.vector.pbf?access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b,c.d/{z}/{x}/{y}.vector.pbf");
-            t.equals(manager.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key&custom=parameter"),
+            t.equals(manager.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key&custom=parameter", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter");
-            t.equals(manager.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key"),
+            t.equals(manager.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter");
-            t.equals(manager.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key&second=param"),
+            t.equals(manager.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key&second=param", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&second=param");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.jpg");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.jpg70");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.jpg");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.jpg70");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.png");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.png");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.png");
-            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key"),
+            t.equals(manager.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key", tileJSONURL),
                 "mapbox://tiles/a.b/{z}/{x}/{y}.png");
 
             // We don't ever expect to see these inputs, but be safe anyway.
@@ -312,9 +311,9 @@ test("mapbox", (t) => {
             t.test('.normalizeTileURL does nothing on 1x devices', (t) => {
                 config.API_URL = 'http://path.png';
                 config.REQUIRE_ACCESS_TOKEN = false;
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png', mapboxSource),   `http://path.png/v4/tile.png`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png32', mapboxSource), `http://path.png/v4/tile.png32`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), `http://path.png/v4/tile.jpg70`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png'),   `http://path.png/v4/tile.png`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png32'), `http://path.png/v4/tile.png32`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.jpg70'), `http://path.png/v4/tile.jpg70`);
                 t.end();
             });
 
@@ -322,10 +321,10 @@ test("mapbox", (t) => {
                 window.devicePixelRatio = 2;
                 config.API_URL = 'http://path.png';
                 config.REQUIRE_ACCESS_TOKEN = false;
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png', mapboxSource), `http://path.png/v4/tile@2x.png`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png32', mapboxSource), `http://path.png/v4/tile@2x.png32`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), `http://path.png/v4/tile@2x.jpg70`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), `http://path.png/v4/tile@2x.png?access_token=foo`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png'), `http://path.png/v4/tile@2x.png`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png32'), `http://path.png/v4/tile@2x.png32`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.jpg70'), `http://path.png/v4/tile@2x.jpg70`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png?access_token=foo'), `http://path.png/v4/tile@2x.png?access_token=foo`);
                 window.devicePixelRatio = 1;
                 t.end();
             });
@@ -333,10 +332,10 @@ test("mapbox", (t) => {
             t.test('.normalizeTileURL inserts @2x when tileSize == 512', (t) => {
                 config.API_URL = 'http://path.png';
                 config.REQUIRE_ACCESS_TOKEN = false;
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png', mapboxSource, 512), `http://path.png/v4/tile@2x.png`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png32', mapboxSource, 512), `http://path.png/v4/tile@2x.png32`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource, 512), `http://path.png/v4/tile@2x.jpg70`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource, 512), `http://path.png/v4/tile@2x.png?access_token=foo`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png', 512), `http://path.png/v4/tile@2x.png`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png32', 512), `http://path.png/v4/tile@2x.png32`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.jpg70', 512), `http://path.png/v4/tile@2x.jpg70`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png?access_token=foo', 512), `http://path.png/v4/tile@2x.png?access_token=foo`);
                 t.end();
             });
 
@@ -344,25 +343,25 @@ test("mapbox", (t) => {
                 webpSupported.supported = true;
                 config.API_URL = 'http://path.png';
                 config.REQUIRE_ACCESS_TOKEN = false;
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png', mapboxSource), `http://path.png/v4/tile.webp`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png32', mapboxSource), `http://path.png/v4/tile.webp`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), `http://path.png/v4/tile.webp`);
-                t.equal(manager.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), `http://path.png/v4/tile.webp?access_token=foo`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png'), `http://path.png/v4/tile.webp`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png32'), `http://path.png/v4/tile.webp`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.jpg70'), `http://path.png/v4/tile.webp`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png?access_token=foo'), `http://path.png/v4/tile.webp?access_token=foo`);
                 webpSupported.supported = false;
                 t.end();
             });
 
             t.test('.normalizeTileURL ignores non-mapbox:// sources', (t) => {
-                t.equal(manager.normalizeTileURL('http://path.png', nonMapboxSource), 'http://path.png');
+                t.equal(manager.normalizeTileURL('http://path.png'), 'http://path.png');
                 t.end();
             });
 
             t.test('.normalizeTileURL accounts for tileURLs w/ paths', (t) => {
                 // Add a path to the config:
                 config.API_URL = 'http://localhost:8080/mbx';
-                const input    = `https://localhost:8080/mbx/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/10/184/401.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
-                const expected =  `http://localhost:8080/mbx/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/10/184/401.vector.pbf?sku=${manager._skuToken}&access_token=${config.ACCESS_TOKEN}`;
-                t.equal(manager.normalizeTileURL(input, 'mapbox://mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7'), expected);
+                const input    = `mapbox://tiles/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/10/184/401.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
+                const expected = `http://localhost:8080/mbx/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/10/184/401.vector.pbf?sku=${manager._skuToken}&access_token=${config.ACCESS_TOKEN}`;
+                t.equal(manager.normalizeTileURL(input), expected);
                 t.end();
             });
 
@@ -373,13 +372,13 @@ test("mapbox", (t) => {
 
             t.test('.normalizeTileURL does not modify the access token for non-mapbox sources', (t) => {
                 config.API_URL = 'http://example.com';
-                t.equal(manager.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123', nonMapboxSource), 'http://example.com/tile.png?access_token=tk.abc.123');
+                t.equal(manager.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123'), 'http://example.com/tile.png?access_token=tk.abc.123');
                 t.end();
             });
 
             t.test('.normalizeTileURL throw error on falsy url input', (t) => {
                 t.throws(() => {
-                    manager.normalizeTileURL('', mapboxSource);
+                    manager.normalizeTileURL('');
                 }, new Error('Unable to parse URL object'));
                 t.end();
             });
@@ -388,16 +387,16 @@ test("mapbox", (t) => {
                 config.API_URL = 'https://api.mapbox.com/';
                 // ensure the token exists
                 t.ok(manager._skuToken);
-                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf", mapboxSource), `https://api.mapbox.com/v4/a.b/0/0/0.pbf?sku=${manager._skuToken}&access_token=key`);
-                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf?style=mapbox://styles/mapbox/streets-v9@0", mapboxSource), `https://api.mapbox.com/v4/a.b/0/0/0.pbf?style=mapbox://styles/mapbox/streets-v9@0&sku=${manager._skuToken}&access_token=key`);
-                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf?", mapboxSource), `https://api.mapbox.com/v4/a.b/0/0/0.pbf?sku=${manager._skuToken}&access_token=key`);
-                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.png", mapboxSource), `https://api.mapbox.com/v4/a.b/0/0/0.png?sku=${manager._skuToken}&access_token=key`);
-                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0@2x.png", mapboxSource), `https://api.mapbox.com/v4/a.b/0/0/0@2x.png?sku=${manager._skuToken}&access_token=key`);
-                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b,c.d/0/0/0.pbf", mapboxSource), `https://api.mapbox.com/v4/a.b,c.d/0/0/0.pbf?sku=${manager._skuToken}&access_token=key`);
+                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf"), `https://api.mapbox.com/v4/a.b/0/0/0.pbf?sku=${manager._skuToken}&access_token=key`);
+                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf?style=mapbox://styles/mapbox/streets-v9@0"), `https://api.mapbox.com/v4/a.b/0/0/0.pbf?style=mapbox://styles/mapbox/streets-v9@0&sku=${manager._skuToken}&access_token=key`);
+                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf?"), `https://api.mapbox.com/v4/a.b/0/0/0.pbf?sku=${manager._skuToken}&access_token=key`);
+                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.png"), `https://api.mapbox.com/v4/a.b/0/0/0.png?sku=${manager._skuToken}&access_token=key`);
+                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0@2x.png"), `https://api.mapbox.com/v4/a.b/0/0/0@2x.png?sku=${manager._skuToken}&access_token=key`);
+                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b,c.d/0/0/0.pbf"), `https://api.mapbox.com/v4/a.b,c.d/0/0/0.pbf?sku=${manager._skuToken}&access_token=key`);
 
                 config.API_URL = 'https://api.example.com/';
-                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.png", mapboxSource), `https://api.example.com/v4/a.b/0/0/0.png?sku=${manager._skuToken}&access_token=key`);
-                t.equal(manager.normalizeTileURL("http://path", nonMapboxSource), "http://path");
+                t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.png"), `https://api.example.com/v4/a.b/0/0/0.png?sku=${manager._skuToken}&access_token=key`);
+                t.equal(manager.normalizeTileURL("http://path"), "http://path");
 
                 t.end();
             });

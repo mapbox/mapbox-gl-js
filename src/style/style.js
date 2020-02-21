@@ -250,20 +250,7 @@ class Style extends Evented {
         }
 
         if (json.sprite) {
-            this._spriteRequest = loadSprite(json.sprite, this.map._requestManager, (err, images) => {
-                this._spriteRequest = null;
-                if (err) {
-                    this.fire(new ErrorEvent(err));
-                } else if (images) {
-                    for (const id in images) {
-                        this.imageManager.addImage(id, images[id]);
-                    }
-                }
-
-                this.imageManager.setLoaded(true);
-                this.dispatcher.broadcast('setImages', this.imageManager.listImages());
-                this.fire(new Event('data', {dataType: 'style'}));
-            });
+            this._loadSprite(json.sprite);
         } else {
             this.imageManager.setLoaded(true);
         }
@@ -286,6 +273,23 @@ class Style extends Evented {
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
+    }
+
+    _loadSprite(url: string) {
+        this._spriteRequest = loadSprite(url, this.map._requestManager, (err, images) => {
+            this._spriteRequest = null;
+            if (err) {
+                this.fire(new ErrorEvent(err));
+            } else if (images) {
+                for (const id in images) {
+                    this.imageManager.addImage(id, images[id]);
+                }
+            }
+
+            this.imageManager.setLoaded(true);
+            this.dispatcher.broadcast('setImages', this.imageManager.listImages());
+            this.fire(new Event('data', {dataType: 'style'}));
+        });
     }
 
     _validateLayer(layer: StyleLayer) {
@@ -404,10 +408,11 @@ class Style extends Evented {
             this.sourceCaches[sourceId].used = false;
         }
 
+        const availableImages = this.imageManager.listImages();
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
-            layer.recalculate(parameters, this.imageManager.listImages());
+            layer.recalculate(parameters, availableImages);
             if (!layer.isHidden(parameters.zoom) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }

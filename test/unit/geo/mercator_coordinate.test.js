@@ -35,7 +35,7 @@ test('LngLat', (t) => {
 
     t.test('#meterInMercatorCoordinateUnits', (t) => {
         const nullIsland = new LngLat(0, 0);
-        t.equal(MercatorCoordinate.fromLngLat(nullIsland).meterInMercatorCoordinateUnits(), 2.495320233665337e-8, 'length of 1 meter in MercatorCoordinate units at the equator');
+        t.equal(MercatorCoordinate.fromLngLat(nullIsland).meterInMercatorCoordinateUnits(), 2.4981121214570498e-8, 'length of 1 meter in MercatorCoordinate units at the equator');
         t.end();
     });
 

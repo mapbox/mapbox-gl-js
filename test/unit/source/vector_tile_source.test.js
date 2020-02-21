@@ -200,6 +200,33 @@ test('VectorTileSource', (t) => {
         window.server.respond();
     });
 
+    t.test('canonicalizes tile URLs in inline TileJSON', (t) => {
+        const source = createSource({
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: "Mapbox",
+            tiles: ["https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key"]
+        });
+        const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                t.deepEqual(source.tiles, ["mapbox://tiles/user.map/{z}/{x}/{y}.png?access_token=key"]);
+                const tile = {
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                    state: 'loading',
+                    loadVectorData () {},
+                    setExpiryData() {}
+                };
+                source.loadTile(tile, () => {});
+                t.ok(transformSpy.calledOnce);
+                t.equal(transformSpy.getCall(0).args[0], `https://api.mapbox.com/v4/user.map/10/5/5.png?sku=${source.map._requestManager._skuToken}&access_token=key`);
+                t.equal(transformSpy.getCall(0).args[1], 'Tile');
+                t.end();
+            }
+        });
+
+    });
+
     t.test('reloads a loading tile properly', (t) => {
         const source = createSource({
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
