@@ -392,7 +392,7 @@ class Tile {
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
 
         for (const id in this.buckets) {
-            if (!painter.style.isValidLayer(id)) continue;
+            if (!painter.style.hasLayer(id)) continue;
 
             const bucket = this.buckets[id];
             // Buckets are grouped by common source-layer

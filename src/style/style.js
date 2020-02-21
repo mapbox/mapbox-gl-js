@@ -770,12 +770,12 @@ class Style extends Evented {
     }
 
     /**
-     * Return a boolean specifying if the layer is valid (not deleted) with the given `id`.
+     * checks if a specific layer is present within the style.
      *
      * @param {string} id - id of the desired layer
-     * @returns {boolean} a boolean specifying if the given layer is valid
+     * @returns {boolean} a boolean specifying if the given layer is present
      */
-    isValidLayer(id: string): boolean {
+    hasLayer(id: string): boolean {
         const layerIds = Object.keys(this._layers);
         return layerIds.includes(id, 0);
     }
