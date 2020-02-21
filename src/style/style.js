@@ -769,6 +769,17 @@ class Style extends Evented {
         return this._layers[id];
     }
 
+    /**
+     * checks if a specific layer is present within the style.
+     *
+     * @param {string} id - id of the desired layer
+     * @returns {boolean} a boolean specifying if the given layer is present
+     */
+    hasLayer(id: string): boolean {
+        const layerIds = Object.keys(this._layers);
+        return layerIds.includes(id, 0);
+    }
+
     setLayerZoomRange(layerId: string, minzoom: ?number, maxzoom: ?number) {
         this._checkLoaded();
 

@@ -392,6 +392,8 @@ class Tile {
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
 
         for (const id in this.buckets) {
+            if (!painter.style.hasLayer(id)) continue;
+
             const bucket = this.buckets[id];
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
