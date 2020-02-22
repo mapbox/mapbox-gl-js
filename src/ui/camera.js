@@ -411,9 +411,9 @@ class Camera extends Evented {
 
     /**
      * @memberof Map#
-     * @param {LatLngBoundsLike} bounds Calculate the center for these bounds in the viewport and use
+     * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
      *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
-     *      in the viewport. LatLngBounds represent a box that is always axis-aligned with bearing 0.
+     *      in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
      * @param options
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
