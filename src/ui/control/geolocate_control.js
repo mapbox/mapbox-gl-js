@@ -70,10 +70,12 @@ let noTimeout = false;
  *
  * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
  *
- * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode the GeolocateControl has three states:
- * * active - the map's camera automatically updates as the user's location changes, keeping the location dot in the center.
- * * passive - the user's location dot automatically updates, but the map's camera does not.
- * * disabled
+ * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode the GeolocateControl has three interaction states:
+ * * active - the map's camera automatically updates as the user's location changes, keeping the location dot in the center. Initial state and upon clicking the `GeolocateControl` button.
+ * * passive - the user's location dot automatically updates, but the map's camera does not. Occurs upon the user initiating a map movement.
+ * * disabled - occurs if Geolocation is not available, disabled or denied.
+ *
+ * These interaction states can't be controlled programmatically, rather they are set based on user interactions.
  *
  * @implements {IControl}
  * @param {Object} [options]
