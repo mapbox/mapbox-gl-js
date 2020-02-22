@@ -1901,6 +1901,7 @@ class Map extends Camera {
      * feature ids, set the `generateId` option in the `GeoJSONSourceSpecification` to auto-assign them. This
      * option assigns ids based on a feature's index in the source data. If you change feature data using
      * `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
+     * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      */
     setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
         this.style.setFeatureState(feature, state);
