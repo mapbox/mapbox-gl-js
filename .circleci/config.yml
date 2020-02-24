@@ -299,4 +299,4 @@ jobs:
           at: .
       - run:
           name: Trigger metrics
-          command: curl -u ${cli}: -d build_parameters[CIRCLE_JOB]=prepare https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/tree/add-memory-metrics
+          command: "curl -u ${cli}: -d build_parameters[CIRCLE_JOB]=prepare https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/tree/add-memory-metrics"
