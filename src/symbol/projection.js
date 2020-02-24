@@ -185,15 +185,7 @@ function updateLineLabels(bucket: SymbolBucket,
             fontSize / perspectiveRatio;
 
         const tileAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
-        const transformedTileAnchor = project(tileAnchorPoint, labelPlaneMatrix);
-
-        // Skip labels behind the camera
-        if (transformedTileAnchor.signedDistanceFromCamera <= 0.0) {
-            hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
-            continue;
-        }
-
-        const anchorPoint = transformedTileAnchor.point;
+        const anchorPoint = project(tileAnchorPoint, labelPlaneMatrix).point;
         const projectionCache = {};
 
         const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
