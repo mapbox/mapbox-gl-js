@@ -291,3 +291,12 @@ jobs:
             upload mapbox-gl-csp.js.map        application/octet-stream
             upload mapbox-gl-csp-worker.js     application/javascript
             upload mapbox-gl-csp-worker.js.map application/octet-stream
+
+  trigger-web-metrics:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Trigger metrics
+          command: curl -u ${cli}: -d build_parameters[CIRCLE_JOB]=prepare https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/tree/add-memory-metrics
