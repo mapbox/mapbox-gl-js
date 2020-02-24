@@ -286,7 +286,7 @@ class TouchZoomRotateHandler {
         DOM.removeEventListener(window.document, 'touchend', this._onEnd);
     }
 
-    teardown(){
+    teardown() {
         this._unbind();
     }
 
