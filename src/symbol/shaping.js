@@ -237,9 +237,9 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
 }
 
 function shapeText(text: Formatted,
-                   glyphMap: {[string]: {[number]: ?StyleGlyph}},
-                   glyphPositions: {[string]: {[number]: GlyphPosition}},
-                   imagePositions: {[string]: ImagePosition},
+                   glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
+                   glyphPositions: {[_: string]: {[_: number]: GlyphPosition}},
+                   imagePositions: {[_: string]: ImagePosition},
                    defaultFontStack: string,
                    maxWidth: number,
                    lineHeight: number,
@@ -317,7 +317,7 @@ function shapeText(text: Formatted,
 // using computed properties due to https://github.com/facebook/flow/issues/380
 /* eslint no-useless-computed-key: 0 */
 
-const whitespace: {[number]: boolean} = {
+const whitespace: {[_: number]: boolean} = {
     [0x09]: true, // tab
     [0x0a]: true, // newline
     [0x0b]: true, // vertical tab
@@ -326,7 +326,7 @@ const whitespace: {[number]: boolean} = {
     [0x20]: true, // space
 };
 
-const breakable: {[number]: boolean} = {
+const breakable: {[_: number]: boolean} = {
     [0x0a]:   true, // newline
     [0x20]:   true, // space
     [0x26]:   true, // ampersand
@@ -348,8 +348,8 @@ const breakable: {[number]: boolean} = {
 
 function getGlyphAdvance(codePoint: number,
                          section: SectionOptions,
-                         glyphMap: {[string]: {[number]: ?StyleGlyph}},
-                         imagePositions: {[string]: ImagePosition},
+                         glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
+                         imagePositions: {[_: string]: ImagePosition},
                          spacing: number,
                          layoutTextSize: number): number {
     if (!section.imageName) {
@@ -367,8 +367,8 @@ function getGlyphAdvance(codePoint: number,
 function determineAverageLineWidth(logicalInput: TaggedString,
                                    spacing: number,
                                    maxWidth: number,
-                                   glyphMap: {[string]: {[number]: ?StyleGlyph}},
-                                   imagePositions: {[string]: ImagePosition},
+                                   glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
+                                   imagePositions: {[_: string]: ImagePosition},
                                    layoutTextSize: number) {
     let totalWidth = 0;
 
@@ -471,8 +471,8 @@ function leastBadBreaks(lastLineBreak: ?Break): Array<number> {
 function determineLineBreaks(logicalInput: TaggedString,
                              spacing: number,
                              maxWidth: number,
-                             glyphMap: {[string]: {[number]: ?StyleGlyph}},
-                             imagePositions: {[string]: ImagePosition},
+                             glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
+                             imagePositions: {[_: string]: ImagePosition},
                              symbolPlacement: string,
                              layoutTextSize: number): Array<number> {
     if (symbolPlacement !== 'point')
@@ -554,9 +554,9 @@ function getAnchorAlignment(anchor: SymbolAnchor) {
 }
 
 function shapeLines(shaping: Shaping,
-                    glyphMap: {[string]: {[number]: ?StyleGlyph}},
-                    glyphPositions: {[string]: {[number]: GlyphPosition}},
-                    imagePositions: {[string]: ImagePosition},
+                    glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
+                    glyphPositions: {[_: string]: {[_: number]: GlyphPosition}},
+                    imagePositions: {[_: string]: ImagePosition},
                     lines: Array<TaggedString>,
                     lineHeight: number,
                     textAnchor: SymbolAnchor,

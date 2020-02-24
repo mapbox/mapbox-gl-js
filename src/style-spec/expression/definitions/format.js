@@ -102,7 +102,7 @@ export default class FormatExpression implements Expression {
         return new Formatted(this.sections.map(evaluateSection));
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         for (const section of this.sections) {
             fn(section.content);
             if (section.scale) {

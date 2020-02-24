@@ -13,7 +13,7 @@ class EvaluationContext {
     formattedSection: ?FormattedSection;
     availableImages: ?Array<string>;
 
-    _parseColorCache: {[string]: ?Color};
+    _parseColorCache: {[_: string]: ?Color};
 
     constructor() {
         this.globals = (null: any);

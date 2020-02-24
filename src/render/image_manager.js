@@ -38,13 +38,13 @@ const padding = 1;
     to refactor this.
 */
 class ImageManager extends Evented {
-    images: {[string]: StyleImage};
-    updatedImages: {[string]: boolean};
-    callbackDispatchedThisFrame: {[string]: boolean};
+    images: {[_: string]: StyleImage};
+    updatedImages: {[_: string]: boolean};
+    callbackDispatchedThisFrame: {[_: string]: boolean};
     loaded: boolean;
-    requestors: Array<{ids: Array<string>, callback: Callback<{[string]: StyleImage}>}>;
+    requestors: Array<{ids: Array<string>, callback: Callback<{[_: string]: StyleImage}>}>;
 
-    patterns: {[string]: Pattern};
+    patterns: {[_: string]: Pattern};
     atlasImage: RGBAImage;
     atlasTexture: ?Texture;
     dirty: boolean;
@@ -156,7 +156,7 @@ class ImageManager extends Evented {
         return Object.keys(this.images);
     }
 
-    getImages(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
+    getImages(ids: Array<string>, callback: Callback<{[_: string]: StyleImage}>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
         // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
@@ -176,7 +176,7 @@ class ImageManager extends Evented {
         }
     }
 
-    _notify(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
+    _notify(ids: Array<string>, callback: Callback<{[_: string]: StyleImage}>) {
         const response = {};
 
         for (const id of ids) {

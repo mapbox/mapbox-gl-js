@@ -23,7 +23,7 @@ export type DrawMode =
 
 class Program<Us: UniformBindings> {
     program: WebGLProgram;
-    attributes: {[string]: number};
+    attributes: {[_: string]: number};
     numAttributes: number;
     fixedUniforms: Us;
     binderUniforms: Array<BinderUniform>;

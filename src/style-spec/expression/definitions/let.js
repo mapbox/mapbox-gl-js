@@ -20,7 +20,7 @@ class Let implements Expression {
         return this.result.evaluate(ctx);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         for (const binding of this.bindings) {
             fn(binding[1]);
         }

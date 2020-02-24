@@ -11,12 +11,12 @@ import EXTENT from '../data/extent';
 type Feature = {
     type: 1,
     id: mixed,
-    tags: {[string]: string | number | boolean},
+    tags: {[_: string]: string | number | boolean},
     geometry: Array<[number, number]>,
 } | {
     type: 2 | 3,
     id: mixed,
-    tags: {[string]: string | number | boolean},
+    tags: {[_: string]: string | number | boolean},
     geometry: Array<Array<[number, number]>>,
 }
 
@@ -26,7 +26,7 @@ class FeatureWrapper implements VectorTileFeature {
     extent: number;
     type: 1 | 2 | 3;
     id: number;
-    properties: {[string]: string | number | boolean};
+    properties: {[_: string]: string | number | boolean};
 
     constructor(feature: Feature) {
         this._feature = feature;
@@ -72,7 +72,7 @@ class FeatureWrapper implements VectorTileFeature {
 }
 
 class GeoJSONWrapper implements VectorTile, VectorTileLayer {
-    layers: {[string]: VectorTileLayer};
+    layers: {[_: string]: VectorTileLayer};
     name: string;
     extent: number;
     length: number;

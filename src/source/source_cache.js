@@ -44,20 +44,20 @@ class SourceCache extends Evented {
     _source: Source;
     _sourceLoaded: boolean;
     _sourceErrored: boolean;
-    _tiles: {[string]: Tile};
+    _tiles: {[_: string]: Tile};
     _prevLng: number | void;
     _cache: TileCache;
-    _timers: {[any]: TimeoutID};
-    _cacheTimers: {[any]: TimeoutID};
+    _timers: {[_: any]: TimeoutID};
+    _cacheTimers: {[_: any]: TimeoutID};
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
-    _coveredTiles: {[string]: boolean};
+    _coveredTiles: {[_: string]: boolean};
     transform: Transform;
     _isIdRenderable: (id: string, symbolLayer?: boolean) => boolean;
     used: boolean;
     _state: SourceFeatureState;
-    _loadedParentTiles: {[string]: ?Tile};
+    _loadedParentTiles: {[_: string]: ?Tile};
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
@@ -324,10 +324,10 @@ class SourceCache extends Evented {
      * between `zoom` (exclusive) and `maxCoveringZoom` (inclusive)
      */
     _retainLoadedChildren(
-        idealTiles: {[any]: OverscaledTileID},
+        idealTiles: {[_: any]: OverscaledTileID},
         zoom: number,
         maxCoveringZoom: number,
-        retain: {[any]: OverscaledTileID}
+        retain: {[_: any]: OverscaledTileID}
     ) {
         for (const id in this._tiles) {
             let tile = this._tiles[id];
@@ -439,7 +439,7 @@ class SourceCache extends Evented {
         this._prevLng = lng;
 
         if (wrapDelta) {
-            const tiles: {[string]: Tile} = {};
+            const tiles: {[_: string]: Tile} = {};
             for (const key in this._tiles) {
                 const tile = this._tiles[key];
                 tile.tileID = tile.tileID.unwrapTo(tile.tileID.wrap + wrapDelta);
@@ -505,7 +505,7 @@ class SourceCache extends Evented {
         const retain = this._updateRetainedTiles(idealTileIDs, zoom);
 
         if (isRasterType(this._source.type)) {
-            const parentsForFading: {[string]: OverscaledTileID} = {};
+            const parentsForFading: {[_: string]: OverscaledTileID} = {};
             const fadingTiles = {};
             const ids = Object.keys(retain);
             for (const id of ids) {
@@ -566,9 +566,9 @@ class SourceCache extends Evented {
         }
     }
 
-    _updateRetainedTiles(idealTileIDs: Array<OverscaledTileID>, zoom: number): { [string]: OverscaledTileID} {
-        const retain: {[string]: OverscaledTileID} = {};
-        const checked: {[string]: boolean } = {};
+    _updateRetainedTiles(idealTileIDs: Array<OverscaledTileID>, zoom: number): {[_: string]: OverscaledTileID} {
+        const retain: {[_: string]: OverscaledTileID} = {};
+        const checked: {[_: string]: boolean } = {};
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 

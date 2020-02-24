@@ -225,7 +225,7 @@ export function getGlyphQuads(anchor: Anchor,
                        layer: SymbolStyleLayer,
                        alongLine: boolean,
                        feature: Feature,
-                       imageMap: {[string]: StyleImage},
+                       imageMap: {[_: string]: StyleImage},
                        allowVerticalPlacement: boolean): Array<SymbolQuad> {
 
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;

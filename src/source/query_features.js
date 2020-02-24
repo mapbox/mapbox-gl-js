@@ -19,7 +19,7 @@ function getPixelPosMatrix(transform, tileID) {
     return mat4.multiply(t, t, transform.calculatePosMatrix(tileID.toUnwrapped()));
 }
 
-function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[string]: StyleLayer}, sourceID: string) {
+function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[_: string]: StyleLayer}, sourceID: string) {
     if (layers) {
         for (const layerID of layers) {
             const layer = styleLayers[layerID];
@@ -39,7 +39,7 @@ function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[string]: St
 }
 
 export function queryRenderedFeatures(sourceCache: SourceCache,
-                            styleLayers: {[string]: StyleLayer},
+                            styleLayers: {[_: string]: StyleLayer},
                             queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             transform: Transform) {
@@ -85,12 +85,12 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
     return result;
 }
 
-export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
-                            sourceCaches: {[string]: SourceCache},
+export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
+                            sourceCaches: {[_: string]: SourceCache},
                             queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             collisionIndex: CollisionIndex,
-                            retainedQueryData: {[number]: RetainedQueryData}) {
+                            retainedQueryData: {[_: number]: RetainedQueryData}) {
     const result = {};
     const renderedSymbols = collisionIndex.queryRenderedSymbols(queryGeometry);
     const bucketQueryData = [];

@@ -62,7 +62,7 @@ export type CameraOptions = {
  */
 export type AnimationOptions = {
     duration?: number,
-    easing?: (number) => number,
+    easing?: (_: number) => number,
     offset?: PointLike,
     animate?: boolean,
     essential?: boolean
@@ -90,14 +90,14 @@ class Camera extends Evented {
     _bearingSnap: number;
     _easeEndTimeoutID: TimeoutID;
     _easeStart: number;
-    _easeOptions: {duration: number, easing: (number) => number};
+    _easeOptions: {duration: number, easing: (_: number) => number};
 
-    _onEaseFrame: (number) => void;
+    _onEaseFrame: (_: number) => void;
     _onEaseEnd: () => void;
     _easeFrameId: ?TaskID;
 
     +_requestRenderFrame: (() => void) => TaskID;
-    +_cancelRenderFrame: (TaskID) => void;
+    +_cancelRenderFrame: (_: TaskID) => void;
 
     constructor(transform: Transform, options: {bearingSnap: number}) {
         super();
@@ -993,13 +993,13 @@ class Camera extends Evented {
 
         // w(s): Returns the visible span on the ground, measured in pixels with respect to the
         // initial scale. Assumes an angular field of view of 2 arctan ½ ≈ 53°.
-        let w: (number) => number = function (s) {
+        let w: (_: number) => number = function (s) {
             return (cosh(r0) / cosh(r0 + rho * s));
         };
 
         // u(s): Returns the distance along the flight path as projected onto the ground plane,
         // measured in pixels from the world image origin at the initial scale.
-        let u: (number) => number = function (s) {
+        let u: (_: number) => number = function (s) {
             return w0 * ((cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2) / u1;
         };
 
@@ -1093,9 +1093,9 @@ class Camera extends Evented {
         return this;
     }
 
-    _ease(frame: (number) => void,
+    _ease(frame: (_: number) => void,
           finish: () => void,
-          options: {animate: boolean, duration: number, easing: (number) => number}) {
+          options: {animate: boolean, duration: number, easing: (_: number) => number}) {
         if (options.animate === false || options.duration === 0) {
             frame(1);
             finish();

@@ -113,17 +113,17 @@ class Style extends Evented {
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
-    _layers: {[string]: StyleLayer};
+    _layers: {[_: string]: StyleLayer};
     _order: Array<string>;
-    sourceCaches: {[string]: SourceCache};
+    sourceCaches: {[_: string]: SourceCache};
     zoomHistory: ZoomHistory;
     _loaded: boolean;
     _rtlTextPluginCallback: Function;
     _changed: boolean;
-    _updatedSources: {[string]: 'clear' | 'reload'};
-    _updatedLayers: {[string]: true};
-    _removedLayers: {[string]: StyleLayer};
-    _changedImages: {[string]: true};
+    _updatedSources: {[_: string]: 'clear' | 'reload'};
+    _updatedLayers: {[_: string]: true};
+    _removedLayers: {[_: string]: StyleLayer};
+    _changedImages: {[_: string]: true};
     _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
 
@@ -1307,7 +1307,7 @@ class Style extends Evented {
 
     // Callbacks from web workers
 
-    getImages(mapId: string, params: {icons: Array<string>, source: string, tileID: OverscaledTileID, type: string}, callback: Callback<{[string]: StyleImage}>) {
+    getImages(mapId: string, params: {icons: Array<string>, source: string, tileID: OverscaledTileID, type: string}, callback: Callback<{[_: string]: StyleImage}>) {
 
         this.imageManager.getImages(params.icons, callback);
 
@@ -1327,7 +1327,7 @@ class Style extends Evented {
         }
     }
 
-    getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {[number]: ?StyleGlyph}}>) {
+    getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {[_: number]: ?StyleGlyph}}>) {
         this.glyphManager.getGlyphs(params.stacks, callback);
     }
 

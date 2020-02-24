@@ -73,7 +73,7 @@ class ImageSource extends Evented implements Source {
     url: string;
 
     coordinates: Coordinates;
-    tiles: {[string]: Tile};
+    tiles: {[_: string]: Tile};
     options: any;
     dispatcher: Dispatcher;
     map: Map;

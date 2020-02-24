@@ -101,7 +101,7 @@ class Assertion implements Expression {
         return null;
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         this.args.forEach(fn);
     }
 

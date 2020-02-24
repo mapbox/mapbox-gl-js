@@ -50,7 +50,7 @@ class ScrollZoomHandler {
     _targetZoom: ?number;
     _delta: number;
     _easing: ?((number) => number);
-    _prevEase: ?{start: number, duration: number, easing: (number) => number};
+    _prevEase: ?{start: number, duration: number, easing: (_: number) => number};
 
     _frameId: ?TaskID;
 

@@ -25,13 +25,13 @@ function getPropertyReference(propertyName): StylePropertySpecification {
     return (null: any);
 }
 
-export function eachSource(style: StyleSpecification, callback: (SourceSpecification) => void) {
+export function eachSource(style: StyleSpecification, callback: (_: SourceSpecification) => void) {
     for (const k in style.sources) {
         callback(style.sources[k]);
     }
 }
 
-export function eachLayer(style: StyleSpecification, callback: (LayerSpecification) => void) {
+export function eachLayer(style: StyleSpecification, callback: (_: LayerSpecification) => void) {
     for (const layer of style.layers) {
         callback(layer);
     }
