@@ -10,7 +10,7 @@ import loadGeometry from '../load_geometry';
 import EXTENT from '../extent';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
-
+import type {CanonicalTileID} from '../../source/tile_id';
 import type {
     Bucket,
     BucketParameters,
@@ -75,7 +75,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
     }
 
-    populate(features: Array<IndexedFeature>, options: PopulateParameters) {
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
         const styleLayer = this.layers[0];
         const bucketFeatures = [];
         let circleSortKey = null;
@@ -88,8 +88,9 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         for (const {feature, id, index, sourceLayerIndex} of features) {
             if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) {
                 const geometry = loadGeometry(feature);
+                const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
                 const sortKey = circleSortKey ?
-                    circleSortKey.evaluate(feature, {}) :
+                    circleSortKey.evaluate(newFeature, {}, canonical) :
                     undefined;
 
                 const bucketFeature: BucketFeature = {
@@ -118,7 +119,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
             const {geometry, index, sourceLayerIndex} = bucketFeature;
             const feature = features[index].feature;
 
-            this.addFeature(bucketFeature, geometry, index);
+            this.addFeature(bucketFeature, geometry, index, canonical);
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
@@ -153,7 +154,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID) {
         for (const ring of geometry) {
             for (const point of ring) {
                 const x = point.x;
@@ -186,8 +187,8 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 segment.primitiveLength += 2;
             }
         }
-
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, {});
+        // debugger;
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, canonical, {});
     }
 }
 

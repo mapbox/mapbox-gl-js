@@ -9,6 +9,7 @@ import Coercion from './definitions/coercion';
 import EvaluationContext from './evaluation_context';
 import CompoundExpression from './compound_expression';
 import CollatorExpression from './definitions/collator';
+import Within from './definitions/within';
 import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
 import Var from './definitions/var';
 
@@ -94,6 +95,7 @@ class ParsingContext {
             }
 
             const Expr = this.registry[op];
+
             if (Expr) {
                 let parsed = Expr.parse(expr, this);
                 if (!parsed) return null;
@@ -200,6 +202,8 @@ function isConstant(expression: Expression) {
         // Although the results of a Collator expression with fixed arguments
         // generally shouldn't change between executions, we can't serialize them
         // as constant expressions because results change based on environment.
+        return false;
+    } else if (expression instanceof Within) {
         return false;
     }
 

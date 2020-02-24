@@ -1,7 +1,7 @@
 // @flow
 
 import CompoundExpression from './compound_expression';
-
+import Within from './definitions/within';
 import type {Expression} from './expression.js';
 
 function isFeatureConstant(e: Expression) {
@@ -21,6 +21,10 @@ function isFeatureConstant(e: Expression) {
         } else if (/^filter-/.test(e.name)) {
             return false;
         }
+    }
+
+    if (e instanceof Within) {
+        return false;
     }
 
     let result = true;
