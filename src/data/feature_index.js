@@ -10,7 +10,7 @@ import DictionaryCoder from '../util/dictionary_coder';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import GeoJSONFeature from '../util/vectortile_to_geojson';
-import {arraysIntersect} from '../util/util';
+import {arraysIntersect, mapObject} from '../util/util';
 import {OverscaledTileID} from '../source/tile_id';
 import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from '../style/evaluation_parameters';
@@ -209,14 +209,8 @@ class FeatureIndex {
 
             const serializedLayer = serializedLayers[layerID];
 
-            const evaluationParameters = {
-                feature,
-                featureState,
-                availableImages
-            };
-
-            serializedLayer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, evaluationParameters);
-            serializedLayer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, evaluationParameters);
+            serializedLayer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
+            serializedLayer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
 
             const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState);
             if (!intersectionZ) {
@@ -295,14 +289,11 @@ register(
 
 export default FeatureIndex;
 
-function evaluateProperties(serializedProperties, styleLayerProperties, evaluationParameters) {
-    const evaluatedProperties = {};
-    for (const property in serializedProperties) {
-        const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(property) : null;
-        evaluatedProperties[property] = prop && prop.evaluate ? prop.evaluate(evaluationParameters.feature, evaluationParameters.featureState, evaluationParameters.availableImages) : prop;
-    }
-
-    return evaluatedProperties;
+function evaluateProperties(serializedProperties, styleLayerProperties, feature, featureState, availableImages) {
+    return mapObject(serializedProperties, (property, key, serializedProperties) => {
+        const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(key) : null;
+        return prop && prop.evaluate ? prop.evaluate(feature, featureState, availableImages) : prop;
+    });
 }
 
 function getBounds(geometry: Array<Point>) {
