@@ -86,9 +86,9 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         }
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) {
+            const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
+            if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), newFeature)) {
                 const geometry = loadGeometry(feature);
-                const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
                 const sortKey = circleSortKey ?
                     circleSortKey.evaluate(newFeature, {}, canonical) :
                     undefined;
@@ -187,7 +187,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 segment.primitiveLength += 2;
             }
         }
-        // debugger;
+
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, canonical, {});
     }
 }

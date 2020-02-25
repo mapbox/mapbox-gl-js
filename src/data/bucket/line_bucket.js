@@ -122,10 +122,10 @@ class LineBucket implements Bucket {
         const bucketFeatures = [];
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) continue;
+            const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
+            if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), newFeature)) continue;
 
             const geometry = loadGeometry(feature);
-            const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
             const sortKey = lineSortKey ?
                 lineSortKey.evaluate(newFeature, {}, canonical) :
                 undefined;

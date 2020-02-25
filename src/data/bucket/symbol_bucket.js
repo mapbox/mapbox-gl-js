@@ -430,10 +430,10 @@ class SymbolBucket implements Bucket {
         const globalProperties = new EvaluationParameters(this.zoom);
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            if (!layer._featureFilter(globalProperties, feature)) {
+            const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
+            if (!layer._featureFilter(globalProperties, newFeature)) {
                 continue;
             }
-            const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
             let text: Formatted | void;
             if (hasText) {
                 // Expression evaluation will automatically coerce to Formatted

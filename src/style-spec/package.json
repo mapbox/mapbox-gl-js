@@ -30,6 +30,7 @@
   "dependencies": {
     "@mapbox/jsonlint-lines-primitives": "~2.0.2",
     "@mapbox/unitbezier": "^0.0.0",
+    "@mapbox/point-geometry": "^0.1.0",
     "csscolorparser": "~1.0.2",
     "json-stringify-pretty-compact": "^2.0.0",
     "minimist": "0.0.8",

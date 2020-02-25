@@ -86,8 +86,8 @@ class Within implements Expression {
                 if (type === 'Polygon' || type === 'MultiPolygon') {
                     return new Within(geojson.feature.geometry);
                 }
-            } else if (geojson.geometry.type  === 'Polygon' || geojson.geometry.type === 'MultiPolygon') {
-                return new Within(geojson.geometry);
+            } else if (geojson.type  === 'Polygon' || geojson.type === 'MultiPolygon') {
+                return new Within(geojson);
             }
         }
         return context.error(`'within' expression requires valid geojson source that contains polygon geometry type.`);
