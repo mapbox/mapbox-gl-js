@@ -8,6 +8,7 @@ import type Map from './map';
 import Handler from './handler/handler';
 import HandlerInertia from './handler_inertia';
 //import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
+import TapZoomHandler from './handler/tap_zoom';
 import MousePanHandler from './handler/mouse_pan';
 import MousePitchHandler from './handler/mouse_pitch';
 import MouseRotateHandler from './handler/mouse_rotate';
@@ -17,6 +18,7 @@ import TouchRotateHandler from './handler/touch_rotate';
 import TouchPitchHandler from './handler/touch_pitch';
 import KeyboardHandler from './handler/keyboard';
 import ScrollZoomHandler from './handler/scroll_zoom';
+import ClickZoomHandler from './handler/click_zoom';
 import { log } from './handler/handler_util';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
@@ -81,12 +83,12 @@ class HandlerManager {
         this.addKeyboardListener('keydown');
         this.addKeyboardListener('keyup');
         this.addListener('wheel', null, {passive: false});
+        this.addListener('dblclick', null);
 
         DOM.addEventListener(window.document, 'contextmenu', e => e.preventDefault());
     }
 
     _addDefaultHandlers() {
-        this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('mousepan', new MousePanHandler(this._map, this));
         this.add('mouserotate', new MouseRotateHandler(this._map));
         this.add('mousepitch', new MousePitchHandler(this._map));
@@ -94,6 +96,9 @@ class HandlerManager {
         this.add('touchPan', new TouchPanHandler(this._map), ['touchZoom','touchRotate']);
         this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPan', 'touchRotate']);
         this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPan', 'touchZoom']);
+        this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
+        this.add('tapzoom', new TapZoomHandler(this._map, this));
+        this.add('clickzoom', new ClickZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler(this._map));
     }
 
@@ -176,7 +181,7 @@ class HandlerManager {
             DOM.touchPos(this._el, e) :
             DOM.mousePos(this._el, e)) : null;
 
-        //try {
+        try {
         for (const [name, handler, allowed] of this._handlers) {
             if (!handler.isEnabled()) continue;
 
@@ -194,9 +199,9 @@ class HandlerManager {
                 delete activeHandlers[name];
             }
         }
-        //} catch(e) {
-            //log(e);
-        //}
+        } catch(e) {
+            log(e);
+        }
 
 
         //log('active' + Object.keys(activeHandlers));
@@ -234,9 +239,9 @@ class HandlerManager {
         if (settings.duration) {
             const easeOptions = {
                 duration: settings.duration,
-                delayEndEvents: settings.delayEndEvents,
-                easing: settings.easing
-            };
+                delayEndEvents: settings.delayEndEvents
+            }
+            if (settings.easing) easeOptions.easing = settings.easing;
 
             if (zoomDelta) {
                 easeOptions.zoom = map.getZoom() + zoomDelta;
@@ -244,6 +249,10 @@ class HandlerManager {
 
             if (panDelta) {
                 easeOptions.center = map.unproject(map.project(map.getCenter()).sub(panDelta));
+            }
+
+            if (around) {
+                easeOptions.around = map.unproject(around);
             }
 
             if (pitchDelta) {
