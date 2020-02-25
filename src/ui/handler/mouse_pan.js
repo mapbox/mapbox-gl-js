@@ -11,6 +11,12 @@ export default class MousePanHandler extends Handler {
     constructor(map: Map, manager, options: ?Object) {
         this.manager = manager;
         super(map, options);
+        this.reset();
+    }
+
+    reset() {
+        this.active = false;
+        this._lastPoint = null;
     }
 
     _correctButton(e) {
@@ -44,7 +50,7 @@ export default class MousePanHandler extends Handler {
     mouseup(e, point) {
         if (!this._correctButton(e)) return;
 
-        this._lastPoint = null;
+        this.reset();
         return {
             events: ['dragend']
         }

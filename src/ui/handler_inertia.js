@@ -23,7 +23,6 @@ export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
 class HandlerManager {
     _map: Map;
-    _el: HTMLElement;
     _handlers: Array<[string, Handler, allowed]>;
     _inertiaOptions: InertiaOptions;
     _inertiaBuffer: Array<[number, Object]>;
@@ -35,9 +34,11 @@ class HandlerManager {
      */
     constructor(map: Map, options?: Object) {
         this._map = map;
-        this._el = this._map.getCanvasContainer();
-        this._handlers = [];
         this._inertiaOptions = options.inertiaOptions || defaultInertiaOptions;
+        this.clear();
+    }
+
+    clear() {
         this._inertiaBuffer = [];
     }
 

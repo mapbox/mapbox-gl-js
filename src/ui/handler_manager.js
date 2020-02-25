@@ -53,10 +53,6 @@ class HandlerManager {
 
         // Track whether map is currently moving, to compute start/move/end events
         this._eventsInProgress = {
-            zoom: false,
-            rotate: false,
-            pitch: false,
-            drag: false
         };
 
 
@@ -167,14 +163,14 @@ class HandlerManager {
         //log('', true);
         // TODO
         if (e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) e.preventDefault();
-        let transformSettings = {};
+        let transformSettings = { eventsInProgress: {} };
         let activeHandlers = {};
 
         let points = e.touches ?
             DOM.touchPos(this._el, e) :
             DOM.mousePos(this._el, e);
 
-        try {
+        //try {
         for (const [name, handler, allowed] of this._handlers) {
             if (!handler.isEnabled()) continue;
 
@@ -183,9 +179,7 @@ class HandlerManager {
 
             } else {
                 let data = handler.processInputEvent(e, points);
-                if (data && data.transform) {
-                    extend(transformSettings, data.transform);
-                }
+                this.mergeTransform(transformSettings, data, name);
             }
 
             if (handler.active) {
@@ -194,21 +188,38 @@ class HandlerManager {
                 delete activeHandlers[name];
             }
         }
-        } catch(e) {
-            log(e);
-        }
+        //} catch(e) {
+            //log(e);
+        //}
 
         //log('active' + Object.keys(activeHandlers));
         if (Object.keys(transformSettings).length) {
-            this.updateMapTransform(transformSettings);
+            this.updateMapTransform(transformSettings, e);
         }
-
-        const wasActive = this.isActive;
-        this.isActive = Boolean(Object.keys(activeHandlers).length);
-        if (wasActive && !this.active) this.inertia._onMoveEnd(e);
     }
 
-    updateMapTransform(settings: Object) {
+    mergeTransform(transformSettings, data, name) {
+        if (!data || !data.transform) return;
+
+        extend(transformSettings, data.transform);
+
+        const eventsInProgress = transformSettings.eventsInProgress;
+        if (data.transform.zoomDelta !== undefined) {
+            eventsInProgress.zoom = name;
+        }
+        if (data.transform.panDelta !== undefined) {
+            eventsInProgress.drag = name;
+        }
+        if (data.transform.pitchDelta !== undefined) {
+            eventsInProgress.pitch = name;
+        }
+        if (data.transform.rotateDelta !== undefined) {
+            eventsInProgress.rotate = name;
+        }
+
+    }
+
+    updateMapTransform(settings: Object, e) {
         const map = this._map;
         this._map.stop();
 
@@ -225,7 +236,6 @@ class HandlerManager {
             }
 
             if (panDelta) {
-                console.log(map.project(map.getCenter()), panDelta);
                 easeOptions.center = map.unproject(map.project(map.getCenter()).sub(panDelta));
             }
 
@@ -233,6 +243,7 @@ class HandlerManager {
             }
 
             map.easeTo(easeOptions);
+            this.inertia.clear();
             return;
         }
 
@@ -252,6 +263,52 @@ class HandlerManager {
             tr.setLocationAtPoint(loc, pt);
         }
         this._map._update();
+
+
+
+        const eventsInProgress = this._eventsInProgress;
+        const wasMoving = !!Object.keys(eventsInProgress).length;
+        const isMoving = !!Object.keys(settings.eventsInProgress).length;
+
+        if (!wasMoving && isMoving) {
+            this._fireEvent('movestart', e);
+        }
+
+        for (const eventName in settings.eventsInProgress) {
+            const handlerName = settings.eventsInProgress[eventName];
+            if (!eventsInProgress[name]) {
+                this._fireEvent(eventName + 'start', e);
+            }
+            eventsInProgress[eventName] = handlerName;
+        }
+
+        if (isMoving) {
+            this._fireEvent('move', e);
+        }
+
+        for (const eventName in settings.eventsInProgress) {
+            this._fireEvent(eventName, e);
+        }
+
+        for (const eventName in eventsInProgress) {
+            const handlerName = eventsInProgress[eventName];
+            if (!this[handlerName].active) {
+                delete eventsInProgress[eventName];
+                this._fireEvent(eventName + 'end', e);
+            }
+        }
+
+        const stillMoving = !!Object.keys(eventsInProgress).length;
+        if ((wasMoving || isMoving) && !stillMoving) {
+            this.inertia._onMoveEnd(e);
+            // TODO inertia handles this
+            //this._fireEvent('moveend');
+        }
+
+    }
+
+    _fireEvent(type: string, e: *) {
+        this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 
 }
