@@ -415,7 +415,6 @@ class Style extends Evented {
             this.sourceCaches[sourceId].used = false;
         }
 
-        // const availableImages = this.imageManager.listImages();
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
