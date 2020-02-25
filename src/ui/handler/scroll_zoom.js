@@ -61,9 +61,10 @@ class ScrollZoomHandler extends Handler {
     /**
      * @private
      */
-    constructor(map: Map) {
+    constructor(map: Map, handler) {
         this._map = map;
         this._el = map.getCanvasContainer();
+        this._handler = handler;
 
         this._delta = 0;
 
@@ -212,7 +213,6 @@ class ScrollZoomHandler extends Handler {
         if (!this._delta) return;
 
         if (this._frameId) {
-            this._map._cancelRenderFrame(this._frameId);
             this._frameId = null;
         }
 
@@ -232,11 +232,17 @@ class ScrollZoomHandler extends Handler {
         this._around = LngLat.convert(this._aroundCenter ? this._map.getCenter() : this._map.unproject(pos));
         this._aroundPoint = this._map.transform.locationPoint(this._around);
         if (!this._frameId) {
-            this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+            this._frameId = true;
+            this._handler.triggerRenderFrame();
         }
     }
 
+    renderFrame(e) {
+        return this._onScrollFrame();
+    }
+
     _onScrollFrame() {
+        if (!this._frameId) return;
         this._frameId = null;
 
         if (!this.isActive()) return;
@@ -274,28 +280,31 @@ class ScrollZoomHandler extends Handler {
         const easing = this._easing;
 
         let finished = false;
+        let zoom;
         if (this._type === 'wheel' && startZoom && easing) {
             assert(easing && typeof startZoom === 'number');
 
             const t = Math.min((browser.now() - this._lastWheelEventTime) / 200, 1);
             const k = easing(t);
-            tr.zoom = interpolate(startZoom, targetZoom, k);
+            zoom = interpolate(startZoom, targetZoom, k);
             if (t < 1) {
                 if (!this._frameId) {
-                    this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+                    this._frameId = true;
+                    this._handler.triggerRenderFrame();
                 }
             } else {
                 finished = true;
             }
         } else {
-            tr.zoom = targetZoom;
+            zoom = targetZoom;
             finished = true;
         }
 
-        tr.setLocationAtPoint(this._around, this._aroundPoint);
+        // tr.setLocationAtPoint(this._around, this._aroundPoint);
 
-        this._map.fire(new Event('move', {originalEvent: this._lastWheelEvent}));
-        this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
+        // TODO
+        // this._map.fire(new Event('move', {originalEvent: this._lastWheelEvent}));
+        // this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
 
         if (finished) {
             this._active = false;
@@ -306,6 +315,15 @@ class ScrollZoomHandler extends Handler {
                 delete this._targetZoom;
             }, 200);
         }
+
+        const ret = {
+            transform: {
+                zoomDelta: zoom - tr.zoom,
+                around: this._aroundPoint
+            }
+        };
+        console.log(ret);
+        return ret;
     }
 
     _smoothOutEasing(duration: number) {

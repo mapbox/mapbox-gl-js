@@ -198,6 +198,7 @@ class HandlerManager {
             //log(e);
         //}
 
+
         //log('active' + Object.keys(activeHandlers));
         if (Object.keys(transformSettings).length) {
             this.updateMapTransform(transformSettings, e);
@@ -257,7 +258,11 @@ class HandlerManager {
         const tr = this._map.transform;
         this.inertia.record(settings);
 
-        if (zoomDelta) tr.zoom += zoomDelta;
+        if (zoomDelta) {
+            const loc = around ? tr.pointLocation(around) : null;
+            tr.zoom += zoomDelta;
+            if (loc) tr.setLocationAtPoint(loc, around);
+        }
         if (bearingDelta) tr.bearing += bearingDelta;
         if (pitchDelta) tr.pitch += pitchDelta;
         if (panDelta) {
@@ -318,7 +323,8 @@ class HandlerManager {
     }
 
     onRenderFrame() {
-        this.processInputEvent();
+        this._frameId = null;
+        this.processInputEvent(new Event('renderFrame'));
     }
 
     triggerRenderFrame() {
