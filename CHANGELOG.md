@@ -1,3 +1,7 @@
+## 1.8.1
+
+* Fixed a bug where all labels showed up on a diagonal line on Windows when using an integrated Intel GPU from the Haswell generation ([#9327](https://github.com/mapbox/mapbox-gl-js/issues/9327), fixed by reverting [#9229](https://github.com/mapbox/mapbox-gl-js/pull/9229))
+
 ## 1.8.0
 
 ### ✨ Features and improvements
