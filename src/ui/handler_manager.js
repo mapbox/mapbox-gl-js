@@ -16,6 +16,7 @@ import TouchZoomHandler from './handler/touch_zoom';
 import TouchRotateHandler from './handler/touch_rotate';
 import TouchPitchHandler from './handler/touch_pitch';
 import KeyboardHandler from './handler/keyboard';
+import ScrollZoomHandler from './handler/scroll_zoom';
 import { log } from './handler/handler_util';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
@@ -45,7 +46,10 @@ class HandlerManager {
         this._handlers = [];
         this.activeHandlers = {};
 
+        this._frameId = null;
         this.inertia = new HandlerInertia(map, options);
+
+        this.onRenderFrame = this.onRenderFrame.bind(this);
 
         window.onerror = function(e) {
             log(e);
@@ -76,11 +80,13 @@ class HandlerManager {
 
         this.addKeyboardListener('keydown');
         this.addKeyboardListener('keyup');
+        this.addListener('wheel', null, {passive: false});
 
         DOM.addEventListener(window.document, 'contextmenu', e => e.preventDefault());
     }
 
     _addDefaultHandlers() {
+        this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('mousepan', new MousePanHandler(this._map, this));
         this.add('mouserotate', new MouseRotateHandler(this._map));
         this.add('mousepitch', new MousePitchHandler(this._map));
@@ -162,13 +168,13 @@ class HandlerManager {
     processInputEvent(e: InputEvent) {
         //log('', true);
         // TODO
-        if (e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) e.preventDefault();
+        if (e && e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) e.preventDefault();
         let transformSettings = { eventsInProgress: {} };
         let activeHandlers = {};
 
-        let points = e.touches ?
+        let points = e ? (e.touches ?
             DOM.touchPos(this._el, e) :
-            DOM.mousePos(this._el, e);
+            DOM.mousePos(this._el, e)) : null;
 
         //try {
         for (const [name, handler, allowed] of this._handlers) {
@@ -309,6 +315,16 @@ class HandlerManager {
 
     _fireEvent(type: string, e: *) {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
+    }
+
+    onRenderFrame() {
+        this.processInputEvent();
+    }
+
+    triggerRenderFrame() {
+        if (this._frameId === null) {
+            this._frameId = this._map._requestRenderFrame(this.onRenderFrame);
+        }
     }
 
 }
