@@ -86,7 +86,6 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         }
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
-            debugger;
             if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), newFeature, canonical)) {
                 const geometry = loadGeometry(feature);
                 const sortKey = circleSortKey ?
