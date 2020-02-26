@@ -50,13 +50,11 @@ function getMercatorPoint(coord: Point, canonical: CanonicalTileID) {
 }
 
 function pointsWithinPolygons(feature: Feature, canonical: CanonicalTileID, polygonGeometry: GeoJSONPolygons) {
-
     for (const points of feature.geometry) {
         for (const point of points) {
             if (!pointWithinPolygons(polygonGeometry, getMercatorPoint(point, canonical).toLngLat())) return false;
         }
     }
-
     return true;
 }
 
