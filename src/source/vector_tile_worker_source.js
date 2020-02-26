@@ -74,8 +74,8 @@ class VectorTileWorkerSource implements WorkerSource {
     layerIndex: StyleLayerIndex;
     availableImages: Array<string>;
     loadVectorData: LoadVectorData;
-    loading: { [string]: WorkerTile };
-    loaded: { [string]: WorkerTile };
+    loading: {[_: string]: WorkerTile };
+    loaded: {[_: string]: WorkerTile };
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile

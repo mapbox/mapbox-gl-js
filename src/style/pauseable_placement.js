@@ -85,7 +85,7 @@ class PauseablePlacement {
         return this._done;
     }
 
-    continuePlacement(order: Array<string>, layers: {[string]: StyleLayer}, layerTiles: {[string]: Array<Tile>}) {
+    continuePlacement(order: Array<string>, layers: {[_: string]: StyleLayer}, layerTiles: {[_: string]: Array<Tile>}) {
         const startTime = browser.now();
 
         const shouldPausePlacement = () => {

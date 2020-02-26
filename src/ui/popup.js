@@ -20,7 +20,7 @@ const defaultOptions = {
     maxWidth: "240px"
 };
 
-export type Offset = number | PointLike | {[Anchor]: PointLike};
+export type Offset = number | PointLike | {[_: Anchor]: PointLike};
 
 export type PopupOptions = {
     closeButton?: boolean,

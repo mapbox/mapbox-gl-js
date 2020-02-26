@@ -73,7 +73,7 @@ class WorkerTile {
         const featureIndex = new FeatureIndex(this.tileID, this.promoteId);
         featureIndex.bucketLayerIDs = [];
 
-        const buckets: {[string]: Bucket} = {};
+        const buckets: {[_: string]: Bucket} = {};
 
         const options = {
             featureIndex,
@@ -130,9 +130,9 @@ class WorkerTile {
         }
 
         let error: ?Error;
-        let glyphMap: ?{[string]: {[number]: ?StyleGlyph}};
-        let iconMap: ?{[string]: StyleImage};
-        let patternMap: ?{[string]: StyleImage};
+        let glyphMap: ?{[_: string]: {[_: number]: ?StyleGlyph}};
+        let iconMap: ?{[_: string]: StyleImage};
+        let patternMap: ?{[_: string]: StyleImage};
 
         const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
         if (Object.keys(stacks).length) {

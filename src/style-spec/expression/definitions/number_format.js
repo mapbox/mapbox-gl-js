@@ -103,7 +103,7 @@ export default class NumberFormat implements Expression {
             }).format(this.number.evaluate(ctx));
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.number);
         if (this.locale) {
             fn(this.locale);

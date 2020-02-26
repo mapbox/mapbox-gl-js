@@ -13,7 +13,7 @@ const {ImageData, ImageBitmap} = window;
 
 import type {Transferable} from '../types/transferable';
 
-type SerializedObject = { [string]: Serialized }; // eslint-disable-line
+type SerializedObject = {[_: string]: Serialized }; // eslint-disable-line
 export type Serialized =
     | null
     | void
@@ -32,7 +32,7 @@ export type Serialized =
     | SerializedObject;
 
 type Registry = {
-    [string]: {
+    [_: string]: {
         klass: Class<any>,
         omit: $ReadOnlyArray<string>,
         shallow: $ReadOnlyArray<string>

@@ -20,13 +20,13 @@ export type GlyphPosition = {
     metrics: GlyphMetrics
 };
 
-export type GlyphPositions = { [string]: { [number]: GlyphPosition } }
+export type GlyphPositions = {[_: string]: {[_: number]: GlyphPosition } }
 
 export default class GlyphAtlas {
     image: AlphaImage;
     positions: GlyphPositions;
 
-    constructor(stacks: { [string]: { [number]: ?StyleGlyph } }) {
+    constructor(stacks: {[_: string]: {[_: number]: ?StyleGlyph } }) {
         const positions = {};
         const bins = [];
 

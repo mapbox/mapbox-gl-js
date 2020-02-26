@@ -11,7 +11,7 @@ import browser from './browser';
 export default class WorkerPool {
     static workerCount: number;
 
-    active: {[number]: boolean};
+    active: {[_: number]: boolean};
     workers: Array<WorkerInterface>;
 
     constructor() {

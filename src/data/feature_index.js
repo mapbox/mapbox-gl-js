@@ -51,7 +51,7 @@ class FeatureIndex {
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
 
-    vtLayers: {[string]: VectorTileLayer};
+    vtLayers: {[_: string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
 
     constructor(tileID: OverscaledTileID, promoteId?: ?PromoteIdSpecification) {
@@ -92,7 +92,7 @@ class FeatureIndex {
         }
     }
 
-    loadVTLayers(): {[string]: VectorTileLayer} {
+    loadVTLayers(): {[_: string]: VectorTileLayer} {
         if (!this.vtLayers) {
             this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
             this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
@@ -101,7 +101,7 @@ class FeatureIndex {
     }
 
     // Finds non-symbol features in this tile at a particular position.
-    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}, sourceFeatureState: SourceFeatureState): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+    query(args: QueryParameters, styleLayers: {[_: string]: StyleLayer}, sourceFeatureState: SourceFeatureState): {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         this.loadVTLayers();
 
         const params = args.params || {},
@@ -164,13 +164,13 @@ class FeatureIndex {
     }
 
     loadMatchingFeature(
-        result: {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>},
+        result: {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>},
         bucketIndex: number,
         sourceLayerIndex: number,
         featureIndex: number,
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
-        styleLayers: {[string]: StyleLayer},
+        styleLayers: {[_: string]: StyleLayer},
         intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, id: string | number | void) => boolean | number) {
 
         const layerIDs = this.bucketLayerIDs[bucketIndex];
@@ -219,7 +219,7 @@ class FeatureIndex {
                          sourceLayerIndex: number,
                          filterSpec: FilterSpecification,
                          filterLayerIDs: Array<string>,
-                         styleLayers: {[string]: StyleLayer}) {
+                         styleLayers: {[_: string]: StyleLayer}) {
         const result = {};
         this.loadVTLayers();
 

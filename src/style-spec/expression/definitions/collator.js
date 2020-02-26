@@ -50,7 +50,7 @@ export default class CollatorExpression implements Expression {
         return new Collator(this.caseSensitive.evaluate(ctx), this.diacriticSensitive.evaluate(ctx), this.locale ? this.locale.evaluate(ctx) : null);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.caseSensitive);
         fn(this.diacriticSensitive);
         if (this.locale) {
