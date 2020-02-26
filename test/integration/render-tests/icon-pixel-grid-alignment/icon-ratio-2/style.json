@@ -1,0 +1,101 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 240,
+      "height": 36,
+      "pixelRatio": 2
+    }
+  },
+  "zoom": 2,
+  "sources": {
+    "shields": {
+      "type": "geojson",
+      "data": "local://geojson/shields.json"
+    }
+  },
+  "sprite": "local://sprites/shields",
+  "layers": [
+    {
+      "id": "a",
+      "type": "symbol",
+      "source": "shields",
+      "filter": ["==", "icon", "a"],
+      "layout": {
+        "icon-image": "a",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-rotation-alignment": "viewport",
+        "icon-pitch-alignment": "map"
+      }
+    },
+    {
+      "id": "b",
+      "type": "symbol",
+      "source": "shields",
+      "filter": ["==", "icon", "b"],
+      "layout": {
+        "icon-image": "b",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-rotation-alignment": "map",
+        "icon-pitch-alignment": "map"
+      }
+    },
+    {
+      "id": "c",
+      "type": "symbol",
+      "source": "shields",
+      "filter": ["==", "icon", "c"],
+      "layout": {
+        "icon-image": "c",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-rotation-alignment": "viewport",
+        "icon-pitch-alignment": "viewport",
+        "icon-rotate": 90
+      }
+    },
+    {
+      "id": "d",
+      "type": "symbol",
+      "source": "shields",
+      "filter": ["==", "icon", "d"],
+      "layout": {
+        "icon-image": "d",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-rotation-alignment": "map",
+        "icon-pitch-alignment": "viewport",
+        "icon-rotate": 90
+      }
+    },
+    {
+      "id": "e",
+      "type": "symbol",
+      "source": "shields",
+      "filter": ["==", "icon", "e"],
+      "layout": {
+        "icon-image": "e",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-rotation-alignment": "map",
+        "icon-pitch-alignment": "viewport",
+        "icon-keep-upright": true
+      }
+    },
+    {
+      "id": "f",
+      "type": "symbol",
+      "source": "shields",
+      "filter": ["==", "icon", "f"],
+      "layout": {
+        "icon-image": "f",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-rotation-alignment": "viewport",
+        "icon-pitch-alignment": "viewport"
+      }
+    }
+  ]
+}

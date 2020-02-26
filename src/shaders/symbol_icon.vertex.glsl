@@ -21,6 +21,9 @@ uniform mat4 u_label_plane_matrix;
 uniform mat4 u_coord_matrix;
 
 uniform bool u_is_text;
+uniform bool u_crisp;
+uniform float u_device_pixel_ratio;
+uniform vec2 u_canvas_size;
 uniform bool u_pitch_with_map;
 
 uniform vec2 u_texsize;
@@ -86,6 +89,12 @@ void main() {
 
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
     gl_Position = u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 32.0 * max(a_minFontScale, fontScale) + a_pxoffset / 16.0), 0.0, 1.0);
+
+    if (u_crisp) {
+        vec2 half_canvas_size = u_canvas_size / 2.0;
+        vec2 factor = half_canvas_size / gl_Position.w;
+        gl_Position.xy = (round_vec2(gl_Position.xy * factor) + fract(half_canvas_size)) / factor;
+    }
 
     v_tex = a_tex / u_texsize;
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);

@@ -71,3 +71,11 @@ vec2 get_pattern_pos(const vec2 pixel_coord_upper, const vec2 pixel_coord_lower,
     vec2 offset = mod(mod(mod(pixel_coord_upper, pattern_size) * 256.0, pattern_size) * 256.0 + pixel_coord_lower, pattern_size);
     return (tile_units_to_pixels * pos + offset) / pattern_size;
 }
+
+// OpenGL ES 2 doesn't have round().
+vec2 round_vec2(vec2 value) {
+    vec2 result = fract(value);
+    value.x += (result.x > 0.5 ? 1.0 : 0.0) - result.x;
+    value.y += (result.y > 0.5 ? 1.0 : 0.0) - result.y;
+    return value;
+}
