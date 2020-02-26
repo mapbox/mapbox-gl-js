@@ -66,6 +66,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
 
     if (options.debug) map.showTileBoundaries = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
+    if (options.showPadding) map.showPadding = true;
 
     const gl = map.painter.context.gl;
 

@@ -274,8 +274,8 @@ class LineBucket implements Bucket {
 
         for (let i = first; i < len; i++) {
 
-            nextVertex = isPolygon && i === len - 1 ?
-                vertices[first + 1] : // if the line is closed, we treat the last vertex like the first
+            nextVertex = i === len - 1 ?
+                (isPolygon ? vertices[first + 1] : (undefined: any)) : // if it's a polygon, treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
             // if two consecutive vertices exist, skip the current one

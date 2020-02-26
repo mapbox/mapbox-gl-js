@@ -66,6 +66,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-browser:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - deploy-benchmarks:
           requires:
             - lint
@@ -218,6 +224,26 @@ jobs:
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
 
+  test-browser:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: yarn run build-dev
+      - run: yarn run build-token
+      - run:
+          name: Test Chrome
+          environment:
+            SELENIUM_BROWSER: chrome
+            TAP_COLORS: 1
+          command: yarn run test-browser
+      - run:
+          name: Test Firefox
+          environment:
+            SELENIUM_BROWSER: firefox
+            TAP_COLORS: 1
+          command: yarn run test-browser
+
   test-expressions:
     <<: *defaults
     steps:
@@ -252,10 +278,6 @@ jobs:
           command: |
             function upload {
                 aws s3 cp --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js/$CIRCLE_TAG/$1
-
-                AWS_ACCESS_KEY_ID=$AWSCN_ACCESS_KEY_ID \
-                AWS_SECRET_ACCESS_KEY=$AWSCN_SECRET_ACCESS_KEY \
-                aws s3 cp --region cn-north-1 --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js-cn-north-1/$CIRCLE_TAG/$1
             }
 
             upload mapbox-gl.js     application/javascript

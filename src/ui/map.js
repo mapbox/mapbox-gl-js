@@ -271,6 +271,7 @@ class Map extends Camera {
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
     _showCollisionBoxes: ?boolean;
+    _showPadding: ?boolean;
     _showOverdrawInspector: boolean;
     _repaint: ?boolean;
     _vertices: ?boolean;
@@ -1059,7 +1060,7 @@ class Map extends Camera {
      * @param {Object} [options] Options object.
      * @param {Array<string>} [options.layers] An array of [style layer IDs](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-id) for the query to inspect.
      *   Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
-     * @param {Array} [options.filter] A [filter](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter)
+     * @param {Array} [options.filter] A [filter](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter)
      *   to limit query results.
      * @param {boolean} [options.validate=true] Whether to check if the [options.filter] conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      *
@@ -1168,7 +1169,7 @@ class Map extends Camera {
      * @param {Object} [parameters] Options object.
      * @param {string} [parameters.sourceLayer] The name of the [source layer](https://docs.mapbox.com/help/glossary/source-layer/)
      *   to query. *For vector tile sources, this parameter is required.* For GeoJSON sources, it is ignored.
-     * @param {Array} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter)
+     * @param {Array} [parameters.filter] A [filter](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter)
      *   to limit query results.
      * @param {boolean} [parameters.validate=true] Whether to check if the [parameters.filter] conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      *
@@ -1586,7 +1587,7 @@ class Map extends Camera {
     /**
      * Check whether or not an image with a specific ID exists in the style. This checks both images
      * in the style's original [sprite](https://docs.mapbox.com/help/glossary/sprite/) and any images
-     * that have been added at runtime using {@link addImage}.
+     * that have been added at runtime using {@link Map#addImage}.
      *
      * @param id The ID of the image.
      *
@@ -1608,7 +1609,7 @@ class Map extends Camera {
     /**
      * Remove an image from a style. This can be an image from the style's original
      * [sprite](https://docs.mapbox.com/help/glossary/sprite/) or any images
-     * that have been added at runtime using {@link addImage}.
+     * that have been added at runtime using {@link Map#addImage}.
      *
      * @param id The ID of the image.
      *
@@ -1622,7 +1623,7 @@ class Map extends Camera {
     }
 
     /**
-     * Load an image from an external URL to be used with `Map#addImage`. External
+     * Load an image from an external URL to be used with {@link Map#addImage}. External
      * domains must support [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
      *
      * @param {string} url The URL of the image file. Image file must be in png, webp, or jpg format.
@@ -1645,7 +1646,7 @@ class Map extends Camera {
     /**
     * Returns an Array of strings containing the IDs of all images currently available in the map.
     * This includes both images from the style's original [sprite](https://docs.mapbox.com/help/glossary/sprite/)
-    * and any images that have been added at runtime using {@link addImage}.
+    * and any images that have been added at runtime using {@link Map#addImage}.
     *
     * @returns {Array<string>} An Array of strings containing the names of all sprites/images currently available in the map.
     *
@@ -1781,7 +1782,7 @@ class Map extends Camera {
      *
      * @param {string} layerId The ID of the layer to which the filter will be applied.
      * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
-     *   [filter definition](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
+     *   [filter definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      *
@@ -1909,6 +1910,7 @@ class Map extends Camera {
      * feature ids, set the `generateId` option in the `GeoJSONSourceSpecification` to auto-assign them. This
      * option assigns ids based on a feature's index in the source data. If you change feature data using
      * `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
+     * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      */
     setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
         this.style.setFeatureState(feature, state);
@@ -2208,8 +2210,9 @@ class Map extends Camera {
             rotating: this.isRotating(),
             zooming: this.isZooming(),
             moving: this.isMoving(),
+            fadeDuration: this._fadeDuration,
+            showPadding: this.showPadding,
             gpuTiming: !!this.listens('gpu-timing-layer'),
-            fadeDuration: this._fadeDuration
         });
 
         this.fire(new Event('render'));
@@ -2356,6 +2359,22 @@ class Map extends Camera {
     set showTileBoundaries(value: boolean) {
         if (this._showTileBoundaries === value) return;
         this._showTileBoundaries = value;
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will visualize
+     * the padding offsets.
+     *
+     * @name showPadding
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     */
+    get showPadding(): boolean { return !!this._showPadding; }
+    set showPadding(value: boolean) {
+        if (this._showPadding === value) return;
+        this._showPadding = value;
         this._update();
     }
 

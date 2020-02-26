@@ -409,10 +409,11 @@ class Style extends Evented {
             this.sourceCaches[sourceId].used = false;
         }
 
+        const availableImages = this.imageManager.listImages();
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
-            layer.recalculate(parameters, this.imageManager.listImages());
+            layer.recalculate(parameters, availableImages);
             if (!layer.isHidden(parameters.zoom) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
@@ -771,6 +772,17 @@ class Style extends Evented {
      */
     getLayer(id: string): Object {
         return this._layers[id];
+    }
+
+    /**
+     * checks if a specific layer is present within the style.
+     *
+     * @param {string} id - id of the desired layer
+     * @returns {boolean} a boolean specifying if the given layer is present
+     */
+    hasLayer(id: string): boolean {
+        const layerIds = Object.keys(this._layers);
+        return layerIds.includes(id, 0);
     }
 
     setLayerZoomRange(layerId: string, minzoom: ?number, maxzoom: ?number) {

@@ -29,6 +29,10 @@ See [`test/integration/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/m
  - **You must not make network requests in test cases.** This rule holds in cases when result isn't used or is expected to fail. You may use `window.useFakeXMLHttpRequest` and `window.server` per the [Sinon API](http://sinonjs.org/docs/#server) to simulate network requests. This ensures that tests are reliable, able to be run in an isolated environment, and performant.
  - **You should use clear [input space partitioning](http://crystal.uta.edu/~ylei/cse4321/data/isp.pdf) schemes.** Look for edge cases! This ensures that tests suites are comprehensive and easy to understand.
 
+## Browser Tests
+
+See [`test/browser/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/browser/README.md).
+
 ## Spies, Stubs, and Mocks
 
 The test object is augmented with methods from Sinon.js for [spies](http://sinonjs.org/docs/#spies), [stubs](http://sinonjs.org/docs/#stubs), and [mocks](http://sinonjs.org/docs/#mocks). For example, to use Sinon's spy API, call `t.spy(...)` within a test.

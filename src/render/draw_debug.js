@@ -11,12 +11,62 @@ import StencilMode from '../gl/stencil_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {debugUniformValues} from './program/debug_program';
 import Color from '../style-spec/util/color';
+import browser from '../util/browser';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
 
 export default drawDebug;
+
+const topColor = new Color(1, 0, 0, 1);
+const btmColor = new Color(0, 1, 0, 1);
+const leftColor = new Color(0, 0, 1, 1);
+const rightColor = new Color(1, 0, 1, 1);
+const centerColor = new Color(0, 1, 1, 1);
+
+export function drawDebugPadding(painter: Painter) {
+    const padding = painter.transform.padding;
+    const lineWidth = 3;
+    // Top
+    drawHorizontalLine(painter, painter.transform.height - (padding.top || 0), lineWidth, topColor);
+    // Bottom
+    drawHorizontalLine(painter, padding.bottom || 0, lineWidth, btmColor);
+    // Left
+    drawVerticalLine(painter, padding.left || 0, lineWidth, leftColor);
+    // Right
+    drawVerticalLine(painter, painter.transform.width - (padding.right || 0), lineWidth, rightColor);
+    // Center
+    const center = painter.transform.centerPoint;
+    drawCrosshair(painter, center.x, painter.transform.height - center.y, centerColor);
+}
+
+function drawCrosshair(painter: Painter, x: number, y: number, color: Color) {
+    const size = 20;
+    const lineWidth = 2;
+    //Vertical line
+    drawDebugSSRect(painter, x - lineWidth / 2, y - size / 2, lineWidth, size, color);
+    //Horizontal line
+    drawDebugSSRect(painter, x - size / 2, y - lineWidth / 2, size, lineWidth, color);
+}
+
+function drawHorizontalLine(painter: Painter, y: number, lineWidth: number, color: Color) {
+    drawDebugSSRect(painter, 0, y  + lineWidth / 2, painter.transform.width,  lineWidth, color);
+}
+
+function drawVerticalLine(painter: Painter, x: number, lineWidth: number, color: Color) {
+    drawDebugSSRect(painter, x - lineWidth / 2, 0, lineWidth,  painter.transform.height, color);
+}
+
+function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, height: number, color: Color) {
+    const context = painter.context;
+    const gl = context.gl;
+
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(x * browser.devicePixelRatio, y * browser.devicePixelRatio, width * browser.devicePixelRatio, height * browser.devicePixelRatio);
+    context.clear({color});
+    gl.disable(gl.SCISSOR_TEST);
+}
 
 function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {

@@ -135,6 +135,15 @@ The conventions for module exports are:
 
 * We use [rebase merging](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) (as opposed to [basic merging](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merging)) to merge branches
 
+Here is a recommended way to get setup:
+1. Fork this project
+2. Clone your new fork, `git clone git@github.com:GithubUser/mapbox-gl-js.git`
+3. `cd mapbox-gl-js`
+4. Add the Mapbox repository as an upstream repository: `git add remote upstream git@github.com:mapbox/mapbox-gl-js.git`
+5. Create a new branch `git checkout -b your-branch` for your contribution
+6. Write code, open a PR from your branch when you're ready
+7. If you need to rebase your fork's PR branch onto master to resolve conflicts: `git fetch upstream`, `git rebase upstream/master` and force push to Github `git push --force origin your-branch`
+
 ## Documentation Conventions
 
 See [`README.md`](https://github.com/mapbox/mapbox-gl-js-docs/blob/publisher-production/README.md) from [`mapbox-gl-js-docs`](https://github.com/mapbox/mapbox-gl-js-docs/).
