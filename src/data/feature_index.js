@@ -290,7 +290,7 @@ register(
 export default FeatureIndex;
 
 function evaluateProperties(serializedProperties, styleLayerProperties, feature, featureState, availableImages) {
-    return mapObject(serializedProperties, (property, key, serializedProperties) => {
+    return mapObject(serializedProperties, (property, key) => {
         const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(key) : null;
         return prop && prop.evaluate ? prop.evaluate(feature, featureState, availableImages) : prop;
     });
