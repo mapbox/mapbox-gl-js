@@ -663,6 +663,7 @@ class Style extends Evented {
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});
+            this._serializedLayers[layer.id] = layer.serialize();
         }
 
         const index = before ? this._order.indexOf(before) : this._order.length;
@@ -675,7 +676,6 @@ class Style extends Evented {
         this._layerOrderChanged = true;
 
         this._layers[id] = layer;
-        this._serializedLayers[layer.id] = layer.serialize();
 
         if (this._removedLayers[id] && layer.source && layer.type !== 'custom') {
             // If, in the current batch, we have already removed this layer
