@@ -73,7 +73,6 @@ type PainterOptions = {
     rotating: boolean,
     zooming: boolean,
     moving: boolean,
-    gpuTiming: boolean,
     fadeDuration: number
 }
 
@@ -122,7 +121,6 @@ class Painter {
     cache: { [string]: Program<*> };
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
-    gpuTimers: { [string]: any };
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -139,8 +137,6 @@ class Painter {
         this.depthRboNeedsClear = true;
 
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
-
-        this.gpuTimers = {};
     }
 
     /*
@@ -496,52 +492,7 @@ class Painter {
         if (layer.type !== 'background' && layer.type !== 'custom' && !coords.length) return;
         this.id = layer.id;
 
-        this.gpuTimingStart(layer);
         draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets);
-        this.gpuTimingEnd();
-    }
-
-    gpuTimingStart(layer: StyleLayer) {
-        if (!this.options.gpuTiming) return;
-        const ext = this.context.extTimerQuery;
-        // This tries to time the draw call itself, but note that the cost for drawing a layer
-        // may be dominated by the cost of uploading vertices to the GPU.
-        // To instrument that, we'd need to pass the layerTimers object down into the bucket
-        // uploading logic.
-        let layerTimer = this.gpuTimers[layer.id];
-        if (!layerTimer) {
-            layerTimer = this.gpuTimers[layer.id] = {
-                calls: 0,
-                cpuTime: 0,
-                query: ext.createQueryEXT()
-            };
-        }
-        layerTimer.calls++;
-        ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, layerTimer.query);
-    }
-
-    gpuTimingEnd() {
-        if (!this.options.gpuTiming) return;
-        const ext = this.context.extTimerQuery;
-        ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
-    }
-
-    collectGpuTimers() {
-        const currentLayerTimers = this.gpuTimers;
-        this.gpuTimers = {};
-        return currentLayerTimers;
-    }
-
-    queryGpuTimers(gpuTimers: {[string]: any}) {
-        const layers = {};
-        for (const layerId in gpuTimers) {
-            const gpuTimer = gpuTimers[layerId];
-            const ext = this.context.extTimerQuery;
-            const gpuTime = ext.getQueryObjectEXT(gpuTimer.query, ext.QUERY_RESULT_EXT) / (1000 * 1000);
-            ext.deleteQueryEXT(gpuTimer.query);
-            layers[layerId] = gpuTime;
-        }
-        return layers;
     }
 
     /**

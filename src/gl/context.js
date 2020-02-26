@@ -63,7 +63,6 @@ class Context {
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
     extTextureHalfFloat: any;
-    extTimerQuery: any;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
@@ -114,8 +113,6 @@ class Context {
         if (this.extTextureHalfFloat) {
             gl.getExtension('OES_texture_half_float_linear');
         }
-
-        this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
     }
 
     setDefault() {
