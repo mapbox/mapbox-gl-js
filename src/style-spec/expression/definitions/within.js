@@ -7,7 +7,7 @@ import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type {CanonicalTileID} from '../../../source/tile_id';
-import type {GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
+import type {GeoJSON, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
 import type {Feature} from '../index';
 import MercatorCoordinate from '../../../geo/mercator_coordinate';
 import EXTENT from '../../../data/extent';
@@ -60,11 +60,13 @@ function pointsWithinPolygons(feature: Feature, canonical: CanonicalTileID, poly
 
 class Within implements Expression {
     type: Type;
-    geojson: GeoJSONPolygons;
+    geojson: GeoJSON
+    geometries: GeoJSONPolygons;
 
-    constructor(geojson: GeoJSONPolygons) {
+    constructor(geojson: GeoJSON, geometries: GeoJSONPolygons) {
         this.type = BooleanType;
         this.geojson = geojson;
+        this.geometries = geometries;
     }
 
     static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
@@ -76,16 +78,16 @@ class Within implements Expression {
                 for (let i = 0; i < geojson.features.length; ++i) {
                     const type = geojson.features[i].geometry.type;
                     if (type === 'Polygon' || type === 'MultiPolygon') {
-                        return new Within(geojson.features[i].geometry);
+                        return new Within(geojson, geojson.features[i].geometry);
                     }
                 }
             } else if (geojson.type === 'Feature') {
-                const type = geojson.feature.geometry.type;
+                const type = geojson.geometry.type;
                 if (type === 'Polygon' || type === 'MultiPolygon') {
-                    return new Within(geojson.feature.geometry);
+                    return new Within(geojson, geojson.geometry);
                 }
             } else if (geojson.type  === 'Polygon' || geojson.type === 'MultiPolygon') {
-                return new Within(geojson);
+                return new Within(geojson, geojson);
             }
         }
         return context.error(`'within' expression requires valid geojson source that contains polygon geometry type.`);
@@ -93,7 +95,7 @@ class Within implements Expression {
 
     evaluate(ctx: EvaluationContext) {
         if (ctx.feature != null && ctx.canonical != null && ctx.geometryType() === 'Point') {
-            return pointsWithinPolygons(ctx.feature, ctx.canonical, this.geojson);
+            return pointsWithinPolygons(ctx.feature, ctx.canonical, this.geometries);
         } else if (ctx.geometryType() === 'LineString') {
             return true;
         }

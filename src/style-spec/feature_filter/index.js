@@ -2,7 +2,8 @@
 
 import {createExpression} from '../expression';
 import type {GlobalProperties, Feature} from '../expression';
-export type FeatureFilter = (globalProperties: GlobalProperties, feature: Feature) => boolean;
+import type {CanonicalTileID} from '../../source/tile_id';
+export type FeatureFilter = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
 
 export default createFilter;
 export {isExpressionFilter};
@@ -83,7 +84,7 @@ function createFilter(filter: any): FeatureFilter {
         throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
 
-        return (globalProperties: GlobalProperties, feature: Feature) => compiled.value.evaluate(globalProperties, feature);
+        return (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiled.value.evaluate(globalProperties, feature, null, canonical);
     }
 }
 

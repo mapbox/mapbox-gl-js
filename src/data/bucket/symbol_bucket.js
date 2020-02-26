@@ -399,7 +399,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    populate(features: Array<IndexedFeature>, options: PopulateParameters) {
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
         const layer = this.layers[0];
         const layout = layer.layout;
 
@@ -431,7 +431,7 @@ class SymbolBucket implements Bucket {
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
-            if (!layer._featureFilter(globalProperties, newFeature)) {
+            if (!layer._featureFilter(globalProperties, newFeature, canonical)) {
                 continue;
             }
             let text: Formatted | void;
