@@ -599,7 +599,7 @@ export default class Marker extends Evented {
 
     /**
      * Returns the current `pitchAlignment` property of the marker.
-     * @returns {string} The current pitch alignment of the marker.
+     * @returns {string} The current pitch alignment of the marker in degrees.
      */
     getPitchAlignment() {
         return this._pitchAlignment;
