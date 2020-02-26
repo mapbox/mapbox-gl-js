@@ -2020,7 +2020,6 @@ class Map extends Camera {
         }
 
         this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
-        this._canvas.style.position = 'absolute';
         this._canvas.addEventListener('webglcontextlost', this._contextLost, false);
         this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
         this._canvas.setAttribute('tabindex', '0');
