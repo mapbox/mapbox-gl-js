@@ -111,7 +111,13 @@ class FillExtrusionBucket implements Bucket {
             }
 
             if (this.hasPattern) {
-                this.features.push(addPatternDependencies('fill-extrusion', this.layers, patternFeature, this.zoom, options));
+                addPatternDependencies('fill-extrusion', this.layers, patternFeature, this.zoom, options, 'roof');
+                const roof = patternFeature.patterns;
+                patternFeature.patterns = {};
+                addPatternDependencies('fill-extrusion', this.layers, patternFeature, this.zoom, options, 'wall');
+                const wall = patternFeature.patterns;
+                patternFeature.patterns = {roof, wall};
+                this.features.push(patternFeature);
             } else {
                 this.addFeature(patternFeature, geometry, index, {});
             }
@@ -158,18 +164,15 @@ class FillExtrusionBucket implements Bucket {
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, imagePositions: {[_: string]: ImagePosition}) {
-        for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
-            let numVertices = 0;
-            for (const ring of polygon) {
-                numVertices += ring.length;
-            }
+        const polygons = classifyRings(geometry, EARCUT_MAX_RINGS);
+
+        for (const polygon of polygons) {
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
             for (const ring of polygon) {
                 if (ring.length === 0) {
                     continue;
                 }
-
                 if (isEntirelyOutside(ring)) {
                     continue;
                 }
@@ -215,15 +218,20 @@ class FillExtrusionBucket implements Bucket {
                     }
                 }
             }
+        }
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, undefined, 'wall');
 
-            if (segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
-                segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
-            }
-
+        for (const polygon of polygons) {
             //Only triangulate and draw the area of the feature if it is a polygon
             //Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
             if (vectorTileFeatureTypes[feature.type] !== 'Polygon')
                 continue;
+
+            let numVertices = 0;
+            for (const ring of polygon) {
+                numVertices += ring.length;
+            }
+            const segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
 
             const flattened = [];
             const holeIndices = [];
@@ -263,7 +271,7 @@ class FillExtrusionBucket implements Bucket {
             segment.vertexLength += numVertices;
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, undefined, 'roof');
     }
 }
 

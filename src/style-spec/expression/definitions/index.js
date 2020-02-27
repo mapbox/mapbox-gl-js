@@ -210,6 +210,11 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.globals.accumulated === undefined ? null : ctx.globals.accumulated
     ],
+    'feature-part': [
+        StringType,
+        [],
+        (ctx) => ctx.globals.featurePart || ''
+    ],
     '+': [
         NumberType,
         varargs(NumberType),

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map, html, body { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = new mapboxgl.Map({
+    style: 'mapbox://styles/mapbox/dark-v10',
+    center: [-74.0066, 40.7135],
+    zoom: 15.5,
+    pitch: 45,
+    bearing: -17.6,
+    container: 'map',
+    antialias: true
+});
+
+map.loadImage('hirise.jpg', function(error, image) {
+    if (error) throw error;
+    map.addImage('hirise', image);
+    map.loadImage('grey.jpg', function(error, image) {
+        if (error) throw error;
+        map.addImage('grey', image);
+        map.loadImage('medium.jpg', function(error, image) {
+            if (error) throw error;
+            map.addImage('medium', image);
+            map.loadImage('red.jpg', function(error, image) {
+                if (error) throw error;
+                map.addImage('red', image);
+                map.loadImage('low.jpg', function(error, image) {
+                    if (error) throw error;
+                    map.addImage('low', image);
+                });
+            });
+        });
+    });
+});
+
+map.on('load', function() {
+    // map.setLight({intensity: 0.7});
+    map.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+'fill-extrusion-pattern': ['case',
+    ['==', ['feature-part'], 'roof'],
+    ['case', ['<', ['get', 'height'], 50], 'red', 'grey'],
+    ['case', ['<', ['get', 'height'], 50], 'low',
+        ['case', ['<', ['get', 'height'], 100], 'medium', 'hirise']]],
+
+            // use an 'interpolate' expression to add a smooth transition effect to the
+            // buildings as the user zooms in
+            'fill-extrusion-height': ['get', 'height'],
+            'fill-extrusion-base': ['get', 'min_height'],
+            // 'fill-extrusion-opacity': 0.6
+        }
+    }, 'road-label');
+});
+
+</script>
+</body>
+</html>

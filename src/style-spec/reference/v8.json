@@ -3037,6 +3037,14 @@
           }
         }
       },
+      "feature-part": {
+        "doc": "Gets the name of a feature part (e.g. roof of an extrusion).",
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+          }
+        }
+      },
       "accumulated": {
         "doc": "Gets the value of a cluster property accumulated so far. Can only be used in the `clusterProperties` option of a clustered GeoJSON source.",
         "group": "Feature data",
