@@ -19,6 +19,7 @@ import TouchPitchHandler from './handler/touch_pitch';
 import KeyboardHandler from './handler/keyboard';
 import ScrollZoomHandler from './handler/scroll_zoom';
 import ClickZoomHandler from './handler/click_zoom';
+import SwipeZoomHandler from './handler/swipe_zoom';
 import { log } from './handler/handler_util';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
@@ -93,14 +94,17 @@ class HandlerManager {
         this.add('mouserotate', new MouseRotateHandler(), ['mousepitch']);
         this.add('mousepitch', new MousePitchHandler(), ['mouserotate']);
         this.add('mousepan', new MousePanHandler());
+        this.add('tapzoom', new TapZoomHandler(this._map, this));
+        this.add('swipeZoom', new SwipeZoomHandler(this._map, this));
         this.add('touchPitch', new TouchPitchHandler());
         this.add('touchPan', new TouchPanHandler(), ['touchZoom','touchRotate']);
         this.add('touchRotate', new TouchRotateHandler(), ['touchPan', 'touchZoom']);
         this.add('touchZoom', new TouchZoomHandler(), ['touchPan', 'touchRotate']);
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
-        this.add('tapzoom', new TapZoomHandler(this._map, this));
         this.add('clickzoom', new ClickZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler(this._map));
+    /*
+        */
     }
 
     add(handlerName: string, handler: Handler, allowed: Array<string>) {

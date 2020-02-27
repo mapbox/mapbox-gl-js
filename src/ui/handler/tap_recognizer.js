@@ -51,7 +51,7 @@ export class SingleTapRecognizer {
     touchmove(e, points) {
         if (this.aborted || !this.centroid) return;
 
-        log(getCentroid(points).dist(this.centroid));
+        //log(getCentroid(points).dist(this.centroid));
         if (getCentroid(points).dist(this.centroid) > this.maxDist) {
             this.aborted = true;
         }
@@ -102,7 +102,7 @@ export class TapRecognizer {
 
             const soonEnough = now - this.lastTime < this.maxTapInterval;
             const closeEnough = !this.lastTap || this.lastTap.dist(tap) < this.maxDist;
-            log('' + soonEnough + closeEnough + now + this.lastTime + this.maxTapInterval);
+            //log('' + soonEnough + closeEnough + now + this.lastTime + this.maxTapInterval);
 
             if (!soonEnough || !closeEnough) {
                 this.reset();

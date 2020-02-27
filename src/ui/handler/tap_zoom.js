@@ -41,6 +41,7 @@ export default class TapZoomHandler {
 
         if (zoomInPoint) {
             this._active = true;
+            setTimeout(() => this.reset(), 0);
             return {
                 transform: {
                     duration: 300,
@@ -48,9 +49,9 @@ export default class TapZoomHandler {
                     around: zoomInPoint
                 }
             };
-            setTimeout(() => this.reset(), 0);
         } else if (zoomOutPoint) {
             this._active = true;
+            setTimeout(() => this.reset(), 0);
             return {
                 transform: {
                     duration: 300,
@@ -58,7 +59,6 @@ export default class TapZoomHandler {
                     around: zoomOutPoint
                 }
             };
-            setTimeout(() => this.reset(), 0);
         }
     }
 
