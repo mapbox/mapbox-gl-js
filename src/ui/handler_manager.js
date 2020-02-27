@@ -89,13 +89,14 @@ class HandlerManager {
     }
 
     _addDefaultHandlers() {
-        this.add('mousepan', new MousePanHandler(this._map, this));
-        this.add('mouserotate', new MouseRotateHandler(this._map));
-        this.add('mousepitch', new MousePitchHandler(this._map));
-        this.add('touchPitch', new TouchPitchHandler(this._map));
-        this.add('touchPan', new TouchPanHandler(this._map), ['touchZoom','touchRotate']);
-        this.add('touchZoom', new TouchZoomHandler(this._map), ['touchPan', 'touchRotate']);
-        this.add('touchRotate', new TouchRotateHandler(this._map), ['touchPan', 'touchZoom']);
+        const el = this._map.getCanvasContainer();
+        this.add('mouserotate', new MouseRotateHandler(), ['mousepitch']);
+        this.add('mousepitch', new MousePitchHandler(), ['mouserotate']);
+        this.add('mousepan', new MousePanHandler());
+        this.add('touchPitch', new TouchPitchHandler());
+        this.add('touchPan', new TouchPanHandler(), ['touchZoom','touchRotate']);
+        this.add('touchRotate', new TouchRotateHandler(), ['touchPan', 'touchZoom']);
+        this.add('touchZoom', new TouchZoomHandler(), ['touchPan', 'touchRotate']);
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('tapzoom', new TapZoomHandler(this._map, this));
         this.add('clickzoom', new ClickZoomHandler(this._map, this));
@@ -103,11 +104,11 @@ class HandlerManager {
     }
 
     add(handlerName: string, handler: Handler, allowed: Array<string>) {
-        if (!handler || !(handler instanceof Handler)) throw new Error('Must provide a valid Handler instance');
 
         if (this[handlerName]) throw new Error(`Cannot add ${handlerName}: a handler with that name already exists`);
         this._handlers.push([handlerName, handler, allowed]);
         this[handlerName] = handler;
+        handler.enable();
     }
 
     remove(handlerName: string) {
@@ -162,8 +163,6 @@ class HandlerManager {
         for (const name in activeHandlers) {
             if (name === myName) continue;
             if (!allowed || allowed.indexOf(name) < 0) {
-                assert(activeHandlers[name].active, 'isreally');
-                //log("BLOCKER" + name);
                 return true;
             }
         }
@@ -185,15 +184,18 @@ class HandlerManager {
         for (const [name, handler, allowed] of this._handlers) {
             if (!handler.isEnabled()) continue;
 
+            let data;
             if (this.blockedByActive(activeHandlers, allowed, name)) {
                 handler.reset();
 
             } else {
-                let data = handler.processInputEvent(e, points);
-                this.mergeTransform(transformSettings, data, name);
+                if (handler[e.type]) {
+                    data = handler[e.type](e, points);
+                    this.mergeTransform(transformSettings, data, name);
+                }
             }
 
-            if (handler.active) {
+            if ((data && data.transform) || handler.isActive()) {
                 activeHandlers[name] = handler;
             } else {
                 delete activeHandlers[name];
@@ -312,7 +314,7 @@ class HandlerManager {
 
         for (const eventName in eventsInProgress) {
             const handlerName = eventsInProgress[eventName];
-            if (!this[handlerName].active) {
+            if (!this[handlerName].isActive()) {
                 delete eventsInProgress[eventName];
                 this._fireEvent(eventName + 'end', e);
             }

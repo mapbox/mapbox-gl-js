@@ -306,6 +306,8 @@ class ScrollZoomHandler extends Handler {
         // this._map.fire(new Event('move', {originalEvent: this._lastWheelEvent}));
         // this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
 
+        this._active = true;
+
         if (finished) {
             this._active = false;
             this._finishTimeout = setTimeout(() => {
@@ -322,7 +324,6 @@ class ScrollZoomHandler extends Handler {
                 around: this._aroundPoint
             }
         };
-        console.log(ret);
         return ret;
     }
 

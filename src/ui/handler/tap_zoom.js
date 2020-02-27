@@ -1,18 +1,10 @@
 // @flow
 
-import Handler from './handler';
-import type Map from '../map';
-import DOM from '../../util/dom';
-import Point from '@mapbox/point-geometry';
-import {log} from './handler_util';
-
 import {TapRecognizer} from './tap_recognizer';
 
-export default class TapZoomHandler extends Handler {
+export default class TapZoomHandler {
 
-    constructor(map: Map, manager, options: ?Object) {
-        this.manager = manager;
-        super(map, options);
+    constructor() {
 
         this.zoomIn = new TapRecognizer({
             numTouches: 1,
@@ -28,7 +20,7 @@ export default class TapZoomHandler extends Handler {
     }
 
     reset() {
-        this.active = false;
+        this._active = false;
         this.zoomIn.reset();
         this.zoomOut.reset();
     }
@@ -48,6 +40,7 @@ export default class TapZoomHandler extends Handler {
         const zoomOutPoint = this.zoomOut.touchend(e, points);
 
         if (zoomInPoint) {
+            this._active = true;
             return {
                 transform: {
                     duration: 300,
@@ -57,6 +50,7 @@ export default class TapZoomHandler extends Handler {
             };
             setTimeout(() => this.reset(), 0);
         } else if (zoomOutPoint) {
+            this._active = true;
             return {
                 transform: {
                     duration: 300,
@@ -66,5 +60,22 @@ export default class TapZoomHandler extends Handler {
             };
             setTimeout(() => this.reset(), 0);
         }
+    }
+
+    enable() {
+        this._enabled = true;
+    }
+
+    disable() {
+        this._enabled = false;
+        this.reset();
+    }
+
+    isEnabled() {
+        return this._enabled;
+    }
+
+    isActive() {
+        return this._active;
     }
 }

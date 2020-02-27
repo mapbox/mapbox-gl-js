@@ -1,19 +1,13 @@
 // @flow
 
-import Handler from './handler';
-import type Map from '../map';
-import DOM from '../../util/dom';
+export default class ClickZoomHandler {
 
-export default class ClickZoomHandler extends Handler {
-
-    constructor(map: Map, manager, options: ?Object) {
-        this.manager = manager;
-        super(map, options);
+    constructor() {
         this.reset();
     }
 
     reset() {
-        this.active = false;
+        this._active = false;
     }
 
     dblclick(e, point) {
@@ -26,5 +20,22 @@ export default class ClickZoomHandler extends Handler {
                 around: point
             }
         }
+    }
+
+    enable() {
+        this._enabled = true;
+    }
+
+    disable() {
+        this._enabled = false;
+        this.reset();
+    }
+
+    isEnabled() {
+        return this._enabled;
+    }
+
+    isActive() {
+        return this._active;
     }
 }
