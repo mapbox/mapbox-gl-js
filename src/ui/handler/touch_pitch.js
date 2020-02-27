@@ -1,7 +1,5 @@
 // @flow
 
-import Handler from './handler';
-import type Map from '../map';
 import DOM from '../../util/dom';
 import Point from '@mapbox/point-geometry';
 import {log, getTouchesById} from './handler_util';
@@ -10,23 +8,18 @@ function isVertical(vector) {
     return Math.abs(vector.y) > Math.abs(vector.x);
 }
 
-function sameDirection(vectorA, vectorB) {
+export default class TouchPitchHandler {
 
-}
-
-export default class TouchPitchHandler extends Handler {
-
-    constructor(map: Map, manager, options: ?Object) {
-        super(map, options);
+    constructor() {
         this.reset();
         this.minTouches = 2;
         this.allowedSingleTouchTime = 100;
     }
 
     reset() {
+        this._active = false;
         this.firstTwoTouches = null;
         this.valid = undefined;
-        this.active = false;
         this.firstSkip = null;
     }
 
@@ -94,6 +87,8 @@ export default class TouchPitchHandler extends Handler {
         this.a = a;
         this.b = b;
 
+        this._active = true;
+
         return {
             transform: {
                 pitchDelta
@@ -108,9 +103,22 @@ export default class TouchPitchHandler extends Handler {
         if (a && b && e.targetTouches.length >= this.minTouches) return;
 
         this.reset();
+    }
 
-        return {
-            events: ['dragend']
-        }
+    enable() {
+        this._enabled = true;
+    }
+
+    disable() {
+        this._enabled = false;
+        this.reset();
+    }
+
+    isEnabled() {
+        return this._enabled;
+    }
+
+    isActive() {
+        return this._active;
     }
 }

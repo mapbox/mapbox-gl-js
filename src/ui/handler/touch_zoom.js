@@ -1,21 +1,18 @@
 // @flow
 
-import Handler from './handler';
-import type Map from '../map';
 import DOM from '../../util/dom';
 import Point from '@mapbox/point-geometry';
 import {getTouchesById} from './handler_util';
 
-export default class TouchZoomHandler extends Handler {
+export default class TouchZoomHandler {
 
-    constructor(map: Map, manager, options: ?Object) {
-        super(map, options);
+    constructor() {
         this.reset();
     }
 
     reset() {
         this.firstTwoTouches = null;
-        this.active = false;
+        this._active = false;
     }
 
     touchstart(e, points) {
@@ -28,10 +25,6 @@ export default class TouchZoomHandler extends Handler {
 
         const [a, b] = getTouchesById(e, points, this.firstTwoTouches);
         this.distance = a.dist(b);
-
-        return {
-            events: ['dragstart']
-        }
     }
 
     touchmove(e, points) {
@@ -46,6 +39,8 @@ export default class TouchZoomHandler extends Handler {
         const around = a.add(b).div(2);
 
         this.distance = distance;
+
+        this._active = true;
 
         return {
             transform: {
@@ -62,9 +57,22 @@ export default class TouchZoomHandler extends Handler {
         if (a && b) return;
 
         this.reset();
+    }
 
-        return {
-            events: ['dragend']
-        }
+    enable() {
+        this._enabled = true;
+    }
+
+    disable() {
+        this._enabled = false;
+        this.reset();
+    }
+
+    isEnabled() {
+        return this._enabled;
+    }
+
+    isActive() {
+        return this._active;
     }
 }

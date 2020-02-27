@@ -1,58 +1,38 @@
 // @flow
 
-import Handler from './handler';
-import type Map from '../map';
 import Point from '@mapbox/point-geometry';
 import {log, indexTouches} from './handler_util';
 
-export default class TouchPanHandler extends Handler {
+export default class TouchPanHandler {
 
-    constructor(map: Map, manager, options: ?Object) {
-        super(map, options);
+    constructor() {
         this.minTouches = 1;
         this.reset();
     }
 
+    reset(transform) {
+        this._active = false;
+        this.touches = {};
+    }
+
     touchstart(e, points) {
-        const transform = this._calculateTransform(e, points);
-
-        let events;
-        if (!this.active && e.targetTouches.length >= this.minTouches) {
-            events = ['dragstart'];
-        }
-
         return {
-            transform,
-            events
+            transform: this._calculateTransform(e, points)
         };
     }
 
     touchmove(e, points) {
-        const transform = this._calculateTransform(e, points);
         return {
-            transform
+            transform: this._calculateTransform(e, points)
         };
     }
 
     touchend(e, points) {
         const transform = this._calculateTransform(e, points);
 
-        let events;
-        if (this.active && e.targetTouches.length < this.minTouches) {
+        if (this._active && e.targetTouches.length < this.minTouches) {
             this.reset();
-            events = ['dragend'];
-            return {};
         }
-        log('end ' + e.targetTouches.length);
-
-        return {
-            events
-        };
-    }
-
-    reset(transform) {
-        this.active = false;
-        this.touches = {};
     }
 
     _calculateTransform(e, points) {
@@ -84,5 +64,22 @@ export default class TouchPanHandler extends Handler {
             around,
             panDelta
         };
+    }
+
+    enable() {
+        this._enabled = true;
+    }
+
+    disable() {
+        this._enabled = false;
+        this.reset();
+    }
+
+    isEnabled() {
+        return this._enabled;
+    }
+
+    isActive() {
+        return this._active;
     }
 }

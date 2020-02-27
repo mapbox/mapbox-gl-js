@@ -1,20 +1,16 @@
 // @flow
 
-import Handler from './handler';
-import type Map from '../map';
 import Point from '@mapbox/point-geometry';
-import assert from 'assert';
 import {getTouchesById} from './handler_util';
 
-export default class TouchZoomHandler extends Handler {
+export default class TouchZoomHandler {
 
-    constructor(map: Map, manager, options: ?Object) {
-        super(map, options);
+    constructor() {
         this.reset();
     }
 
     reset() {
-        this.active = false;
+        this._active = false;
         this.firstTwoTouches = null;
     }
 
@@ -28,10 +24,6 @@ export default class TouchZoomHandler extends Handler {
 
         const [a, b] = getTouchesById(e, points, this.firstTwoTouches);
         this.vector = a.sub(b);
-
-        return {
-            events: ['dragstart']
-        }
     }
 
     touchmove(e, points) {
@@ -43,6 +35,8 @@ export default class TouchZoomHandler extends Handler {
         const around = a.add(b).div(2);
 
         this.vector = vector;
+
+        this._active = true;
 
         return {
             transform: {
@@ -59,9 +53,22 @@ export default class TouchZoomHandler extends Handler {
         if (a && b) return;
 
         this.reset();
+    }
 
-        return {
-            events: ['dragend']
-        }
+    enable() {
+        this._enabled = true;
+    }
+
+    disable() {
+        this._enabled = false;
+        this.reset();
+    }
+
+    isEnabled() {
+        return this._enabled;
+    }
+
+    isActive() {
+        return this._active;
     }
 }
