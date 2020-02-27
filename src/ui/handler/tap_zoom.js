@@ -13,7 +13,6 @@ export default class TapZoomHandler extends Handler {
     constructor(map: Map, manager, options: ?Object) {
         this.manager = manager;
         super(map, options);
-        this.reset();
 
         this.zoomIn = new TapRecognizer({
             numTouches: 1,
@@ -24,10 +23,14 @@ export default class TapZoomHandler extends Handler {
             numTouches: 2,
             numTaps: 1
         });
+
+        this.reset();
     }
 
     reset() {
         this.active = false;
+        this.zoomIn.reset();
+        this.zoomOut.reset();
     }
 
     touchstart(e, points) {

@@ -84,6 +84,7 @@ export class TapRecognizer {
         this.lastTime = Infinity;
         this.lastTap = null;
         this.count = 0;
+        this.singleTap.reset();
     }
 
     touchstart(e, points) {
