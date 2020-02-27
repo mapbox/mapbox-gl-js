@@ -1,40 +1,38 @@
 // @flow
 
-import Handler from './handler';
 import type Map from '../map';
 import DOM from '../../util/dom';
 
 const LEFT_BUTTON = 0;
 
-export default class MousePanHandler extends Handler {
+export default class MousePanHandler {
 
-    constructor(map: Map, manager, options: ?Object) {
-        this.manager = manager;
-        super(map, options);
+    constructor(el, manager) {
         this.reset();
     }
 
     reset() {
-        this.active = false;
+        this._active = false;
         this._lastPoint = null;
-    }
-
-    _correctButton(e) {
-        const eventButton = DOM.mouseButton(e);
-        return eventButton === LEFT_BUTTON && !e.ctrlKey;
+        this._eventButton = null;
     }
 
     mousedown(e, point) {
-        if (!this._correctButton(e)) return;
+        if (this._lastPoint !== null) return;
+
+        const eventButton = DOM.mouseButton(e);
+        if (eventButton !== LEFT_BUTTON || e.ctrlKey) {
+            return;
+        }
 
         this._lastPoint = point;
-        return {
-            events: ['dragstart']
-        }
+        this._eventButton = eventButton;
     }
 
     mousemove(e, point) {
         if (!this._lastPoint) return;
+
+        this._active = true;
 
         const panDelta = point.sub(this._lastPoint);
         this._lastPoint = point;
@@ -48,11 +46,25 @@ export default class MousePanHandler extends Handler {
     }
 
     mouseup(e, point) {
-        if (!this._correctButton(e)) return;
-
+        const eventButton = DOM.mouseButton(e);
+        if (eventButton !== this._eventButton) return;
         this.reset();
-        return {
-            events: ['dragend']
-        }
+    }
+
+    enable() {
+        this._enabled = true;
+    }
+
+    disable() {
+        this._enabled = false;
+        this.reset();
+    }
+
+    isEnabled() {
+        return this._enabled;
+    }
+
+    isActive() {
+        return this._active;
     }
 }

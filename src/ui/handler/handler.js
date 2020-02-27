@@ -92,6 +92,7 @@ class Handler {
    * @returns {Object | undefined} Data (e.g. new transform settings) to be used to update the map, or undefined if no update is required
    */
   processInputEvent(e: MouseEvent | TouchEvent | KeyboardEvent | WheelEvent, points) {
+    throw "";
     if (!e || !e.type) return console.warn('Invalid input event:', e);
     if (!this[e.type] || !(typeof this[e.type] === 'function')) return;
     const ret = this[e.type](e, points);
