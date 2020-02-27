@@ -80,8 +80,8 @@ class In implements Expression {
         fn(this.haystack);
     }
 
-    possibleOutputs() {
-        return [true, false];
+    outputDefined() {
+        return true;
     }
 
     serialize() {

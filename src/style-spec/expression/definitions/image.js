@@ -43,9 +43,9 @@ export default class ImageExpression implements Expression {
         fn(this.input);
     }
 
-    possibleOutputs() {
+    outputDefined() {
         // The output of image is determined by the list of available images in the evaluation context
-        return [undefined];
+        return false;
     }
 
     serialize() {

@@ -55,8 +55,8 @@ class Let implements Expression {
         return new Let(bindings, result);
     }
 
-    possibleOutputs() {
-        return this.result.possibleOutputs();
+    outputDefined() {
+        return this.result.outputDefined();
     }
 
     serialize() {
