@@ -14,6 +14,7 @@ import {register} from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import EvaluationParameters from '../../style/evaluation_parameters';
+
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {
     Bucket,
@@ -79,12 +80,12 @@ class FillBucket implements Bucket {
         const bucketFeatures = [];
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
-            if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), newFeature, canonical)) continue;
-
             const geometry = loadGeometry(feature);
+            const evaluationFeature = {type: feature.type, id: ('id' in feature ? feature.id : null), properties: feature.properties, geometry};
+            if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
+
             const sortKey = fillSortKey ?
-                fillSortKey.evaluate(newFeature, {}, canonical, options.availableImages) :
+                fillSortKey.evaluate(evaluationFeature, {}, canonical, options.availableImages) :
                 undefined;
 
             const bucketFeature: BucketFeature = {
@@ -130,7 +131,7 @@ class FillBucket implements Bucket {
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, imagePositions);
     }
 
-    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[string]: ImagePosition}) {
+    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
         for (const feature of this.patternFeatures) {
             this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions);
         }
@@ -163,7 +164,7 @@ class FillBucket implements Bucket {
         this.segments2.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[string]: ImagePosition}) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
             for (const ring of polygon) {
@@ -217,7 +218,7 @@ class FillBucket implements Bucket {
             triangleSegment.vertexLength += numVertices;
             triangleSegment.primitiveLength += indices.length / 3;
         }
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, canonical, imagePositions);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
     }
 }
 

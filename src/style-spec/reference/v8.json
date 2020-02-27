@@ -2827,15 +2827,6 @@
           }
         }
       },
-      "within": {
-        "doc": "Determines whether feature is within provided geometry boundary or not.",
-        "group": "Decision",
-        "sdk-support": {
-          "basic functionality": {
-            "js": "1.6.0"
-          }
-        }
-      },
       "number-format": {
         "doc": "Converts the input number into a string representation using the providing formatting rules. If set, the `locale` argument specifies the locale to use, as a BCP 47 language tag. If set, the `currency` argument specifies an ISO 4217 code to use for currency-style formatting. If set, the `min-fraction-digits` and `max-fraction-digits` arguments specify the minimum and maximum number of fractional digits to include.",
         "group": "Types",
@@ -3460,6 +3451,15 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          }
+        }
+      },
+      "within": {
+        "doc": "Returns `true` if the feature being evaluated is inside the pre-defined geometry boundary, `false` otherwise. The arguments are required to be valid GeoJSON object which contains `Polygon` geometries. Currently only features with `Point` or `LineString` geometry types are supported.",
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.9.0"
           }
         }
       },

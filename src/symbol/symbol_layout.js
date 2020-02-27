@@ -151,7 +151,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              glyphMap: {[string]: {[number]: ?StyleGlyph}},
                              glyphPositions: {[string]: {[number]: GlyphPosition}},
                              imageMap: {[string]: StyleImage},
-                             imagePositions: {[string]: ImagePosition},
+                             imagePositions: {[_: string]: ImagePosition},
                              showCollisionBoxes: boolean,
                              canonical: CanonicalTileID) {
     bucket.createArrays();

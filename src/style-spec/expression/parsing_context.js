@@ -95,7 +95,6 @@ class ParsingContext {
             }
 
             const Expr = this.registry[op];
-
             if (Expr) {
                 let parsed = Expr.parse(expr, this);
                 if (!parsed) return null;

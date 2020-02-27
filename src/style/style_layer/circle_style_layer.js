@@ -15,7 +15,7 @@ import type Transform from '../../geo/transform';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './circle_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
-import loadGeometry from '../../data/load_geometry';
+
 class CircleStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
     layout: PossiblyEvaluated<LayoutProps>;
@@ -40,7 +40,7 @@ class CircleStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature(queryGeometry: Array<Point>,
-                           vFeature: VectorTileFeature,
+                           feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
@@ -51,7 +51,6 @@ class CircleStyleLayer extends StyleLayer {
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
             transform.angle, pixelsToTileUnits);
-        const feature = {type: vFeature.type, properties: vFeature.properties, geometry: loadGeometry(vFeature)};
         const radius = this.paint.get('circle-radius').evaluate(feature, featureState);
         const stroke = this.paint.get('circle-stroke-width').evaluate(feature, featureState);
         const size  = radius + stroke;

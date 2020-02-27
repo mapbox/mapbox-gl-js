@@ -15,7 +15,6 @@ import type {BucketParameters} from '../../data/bucket';
 import type {PaintProps} from './fill_extrusion_style_layer_properties';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
-import loadGeometry from '../../data/load_geometry';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -39,7 +38,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature(queryGeometry: Array<Point>,
-                           vfeature: VectorTileFeature,
+                           feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
@@ -51,7 +50,6 @@ class FillExtrusionStyleLayer extends StyleLayer {
             this.paint.get('fill-extrusion-translate'),
             this.paint.get('fill-extrusion-translate-anchor'),
             transform.angle, pixelsToTileUnits);
-        const feature = {type: vfeature.type, properties: vfeature.properties, geometry: loadGeometry(vfeature)};
         const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
         const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);
 

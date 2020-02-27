@@ -27,6 +27,7 @@ import type {
     WorkerTileCallback,
 } from '../source/worker_source';
 import type {PromoteIdSpecification} from '../style-spec/types';
+
 class WorkerTile {
     tileID: OverscaledTileID;
     uid: string;
@@ -65,6 +66,7 @@ class WorkerTile {
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
         this.status = 'parsing';
         this.data = data;
+
         this.collisionBoxArray = new CollisionBoxArray();
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
@@ -121,6 +123,7 @@ class WorkerTile {
                     sourceLayerIndex,
                     sourceID: this.source
                 });
+
                 bucket.populate(features, options, this.tileID.canonical);
                 featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
             }

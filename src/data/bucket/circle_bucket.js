@@ -10,6 +10,7 @@ import loadGeometry from '../load_geometry';
 import EXTENT from '../extent';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
+
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {
     Bucket,
@@ -85,11 +86,11 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
             circleSortKey = ((styleLayer: any): CircleStyleLayer).layout.get('circle-sort-key');
         }
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
-            if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), newFeature, canonical)) {
-                const geometry = loadGeometry(feature);
+            const geometry = loadGeometry(feature);
+            const evaluationFeature = {type: feature.type, id: ('id' in feature ? feature.id : null), properties: feature.properties, geometry};
+            if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) {
                 const sortKey = circleSortKey ?
-                    circleSortKey.evaluate(newFeature, {}, canonical) :
+                    circleSortKey.evaluate(evaluationFeature, {}, canonical) :
                     undefined;
 
                 const bucketFeature: BucketFeature = {
@@ -187,7 +188,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
             }
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, canonical, {});
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, {}, canonical);
     }
 }
 

@@ -6,9 +6,7 @@ import {BooleanType} from '../types';
 import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type {CanonicalTileID} from '../../../source/tile_id';
 import type {GeoJSON, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
-import type {Feature} from '../index';
 import MercatorCoordinate from '../../../geo/mercator_coordinate';
 import EXTENT from '../../../data/extent';
 import Point from '@mapbox/point-geometry';
@@ -30,7 +28,6 @@ function calcBBox(bbox: BBox, geom, type) {
                 updateBBox(bbox, geom[i][j]);
             }
         }
-
     } else if (type === 'MultiPolygon') {
         for (let i = 0; i < geom.length; i++) {
             for (let j = 0; j < geom[i].length; j++) {
@@ -171,29 +168,27 @@ function lineStringWithinPolygons(line, polygons) {
     return true;
 }
 
-function pointsWithinPolygons(feature: Feature, canonical: CanonicalTileID, polygonGeometry: GeoJSONPolygons, polyBBox: BBox) {
+function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons, polyBBox: BBox) {
     const pointBBox = [Infinity, Infinity, -Infinity, -Infinity];
     const lngLatPoints = [];
-    for (const points of feature.geometry) {
+    for (const points of ctx.geometry()) {
         for (const point of points) {
-            lngLatPoints.push(getLngLatPoint(point, canonical));
+            lngLatPoints.push(getLngLatPoint(point, ctx.canonicalID()));
             updateBBox(pointBBox, point);
         }
     }
     if (!boxWithinBox(pointBBox, polyBBox)) return false;
-    for (const points of feature.geometry) {
-        for (const point of points) {
-            if (!pointWithinPolygons(getLngLatPoint(point, canonical), polygonGeometry)) return false;
-        }
+    for (let i = 0; i < lngLatPoints.length; ++i) {
+        if (!pointWithinPolygons(lngLatPoints[i], polygonGeometry)) return false;
     }
     return true;
 }
 
-function linesWithinPolygons(feature: Feature, canonical: CanonicalTileID, polygonGeometry: GeoJSONPolygons, polyBBox: BBox) {
+function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons, polyBBox: BBox) {
     const lineBBox = [Infinity, Infinity, -Infinity, -Infinity];
     const lineCoords = [];
-    for (const line of feature.geometry) {
-        const lineCoord = getLngLatPoints(line, canonical);
+    for (const line of ctx.geometry()) {
+        const lineCoord = getLngLatPoints(line, ctx.canonicalID());
         lineCoords.push(lineCoord);
         calcBBox(lineBBox, lineCoord, 'LineString');
     }
@@ -243,10 +238,12 @@ class Within implements Expression {
     }
 
     evaluate(ctx: EvaluationContext) {
-        if (ctx.feature != null && ctx.canonical != null && ctx.geometryType() === 'Point') {
-            return pointsWithinPolygons(ctx.feature, ctx.canonical, this.geometries, this.polyBBox);
-        } else if (ctx.feature != null && ctx.canonical != null && ctx.geometryType() === 'LineString') {
-            return linesWithinPolygons(ctx.feature, ctx.canonical, this.geometries, this.polyBBox);
+        if (ctx.geometry() != null && ctx.canonicalID() != null) {
+            if (ctx.geometryType() === 'Point') {
+                return pointsWithinPolygons(ctx, this.geometries, this.polyBBox);
+            } else if (ctx.geometryType() === 'LineString') {
+                return linesWithinPolygons(ctx, this.geometries, this.polyBBox);
+            }
         }
         return false;
     }

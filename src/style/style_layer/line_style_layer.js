@@ -19,7 +19,6 @@ import type {LayoutProps, PaintProps} from './line_style_layer_properties';
 import type Transform from '../../geo/transform';
 import type Texture from '../../render/texture';
 import type {LayerSpecification} from '../../style-spec/types';
-import loadGeometry from '../../data/load_geometry';
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: true;
@@ -91,7 +90,7 @@ class LineStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature(queryGeometry: Array<Point>,
-                           vfeature: VectorTileFeature,
+                           feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
@@ -101,7 +100,6 @@ class LineStyleLayer extends StyleLayer {
             this.paint.get('line-translate'),
             this.paint.get('line-translate-anchor'),
             transform.angle, pixelsToTileUnits);
-        const feature = {type: vfeature.type, properties: vfeature.properties, geometry: loadGeometry(vfeature)};
         const halfWidth = pixelsToTileUnits / 2 * getLineWidth(
             this.paint.get('line-width').evaluate(feature, featureState),
             this.paint.get('line-gap-width').evaluate(feature, featureState));

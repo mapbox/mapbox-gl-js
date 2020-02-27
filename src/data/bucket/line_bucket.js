@@ -13,6 +13,7 @@ import {register} from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import EvaluationParameters from '../../style/evaluation_parameters';
+
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {
     Bucket,
@@ -122,12 +123,12 @@ class LineBucket implements Bucket {
         const bucketFeatures = [];
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const newFeature = {type: feature.type, id: feature.id, properties: feature.properties, geometry: loadGeometry(feature)};
-            if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), newFeature, canonical)) continue;
-
             const geometry = loadGeometry(feature);
+            const evaluationFeature = {type: feature.type, id: ('id' in feature ? feature.id : null), properties: feature.properties, geometry};
+            if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
+
             const sortKey = lineSortKey ?
-                lineSortKey.evaluate(newFeature, {}, canonical) :
+                lineSortKey.evaluate(evaluationFeature, {}, canonical) :
                 undefined;
 
             const bucketFeature: BucketFeature = {
@@ -173,7 +174,7 @@ class LineBucket implements Bucket {
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, imagePositions);
     }
 
-    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[string]: ImagePosition}) {
+    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
         for (const feature of this.patternFeatures) {
             this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions);
         }
@@ -204,7 +205,7 @@ class LineBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[string]: ImagePosition}) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
         const layout = this.layers[0].layout;
         const join = layout.get('line-join').evaluate(feature, {});
         const cap = layout.get('line-cap');
@@ -216,7 +217,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number, index: number, canonical: CanonicalTileID, imagePositions: {[string]: ImagePosition}) {
+    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
         this.distance = 0;
         this.scaledDistance = 0;
         this.totalDistance = 0;
@@ -462,7 +463,7 @@ class LineBucket implements Bucket {
             }
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, canonical, imagePositions);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
     }
 
     /**

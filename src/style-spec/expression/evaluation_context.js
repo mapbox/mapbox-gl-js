@@ -35,6 +35,14 @@ class EvaluationContext {
         return this.feature ? typeof this.feature.type === 'number' ? geometryTypes[this.feature.type] : this.feature.type : null;
     }
 
+    geometry() {
+        return this.feature && 'geometry' in this.feature ? this.feature.geometry : null;
+    }
+
+    canonicalID() {
+        return this.canonical;
+    }
+
     properties() {
         return this.feature && this.feature.properties || {};
     }

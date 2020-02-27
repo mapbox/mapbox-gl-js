@@ -19,7 +19,6 @@ export type FilterSpecification =
     | ['>=', string, string | number | boolean]
     | ['<', string, string | number | boolean]
     | ['<=', string, string | number | boolean]
-    | ['within', {}]
     | Array<string | FilterSpecification>; // Can't type in, !in, all, any, none -- https://github.com/facebook/flow/issues/2443
 
 export type TransitionSpecification = {

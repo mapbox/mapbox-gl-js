@@ -31,9 +31,9 @@ import type {CanonicalTileID} from '../../source/tile_id';
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
     +id?: any,
-    +properties: {[string]: any},
-    +patterns?: {[string]: {"min": string, "mid": string, "max": string}},
-    +geometry: Array<Array<Point>>
+    +properties: {[_: string]: any},
+    +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}},
+    +geometry?: Array<Array<Point>>
 };
 
 export type FeatureState = {[_: string]: any};
