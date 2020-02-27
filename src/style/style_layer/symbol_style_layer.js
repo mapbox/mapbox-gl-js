@@ -29,6 +29,7 @@ import type EvaluationParameters from '../evaluation_parameters';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression';
 import type {Expression} from '../../style-spec/expression/expression';
+import type {CanonicalTileID} from '../../source/tile_id';
 import {FormattedType} from '../../style-spec/expression/types';
 import {typeOf} from '../../style-spec/expression/values';
 import Formatted from '../../style-spec/expression/types/formatted';
@@ -92,8 +93,8 @@ class SymbolStyleLayer extends StyleLayer {
         this._setPaintOverrides();
     }
 
-    getValueAndResolveTokens(name: *, feature: Feature, availableImages: Array<string>) {
-        const value = this.layout.get(name).evaluate(feature, {}, availableImages);
+    getValueAndResolveTokens(name: *, feature: Feature, canonical: CanonicalTileID, availableImages: Array<string>) {
+        const value = this.layout.get(name).evaluate(feature, {}, canonical, availableImages);
         const unevaluated = this._unevaluatedLayout._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
             return resolveTokens(feature.properties, value);

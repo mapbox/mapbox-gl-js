@@ -439,7 +439,7 @@ class SymbolBucket implements Bucket {
                 // Expression evaluation will automatically coerce to Formatted
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
-                const resolvedTokens = layer.getValueAndResolveTokens('text-field', newFeature, availableImages);
+                const resolvedTokens = layer.getValueAndResolveTokens('text-field', newFeature, canonical, availableImages);
                 const formattedText = Formatted.factory(resolvedTokens);
                 if (containsRTLText(formattedText)) {
                     this.hasRTLText = true;
@@ -458,7 +458,7 @@ class SymbolBucket implements Bucket {
                 // Expression evaluation will automatically coerce to Image
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
-                const resolvedTokens = layer.getValueAndResolveTokens('icon-image', newFeature, availableImages);
+                const resolvedTokens = layer.getValueAndResolveTokens('icon-image', newFeature, canonical, availableImages);
                 if (resolvedTokens instanceof ResolvedImage) {
                     icon = resolvedTokens;
                 } else {
@@ -470,7 +470,7 @@ class SymbolBucket implements Bucket {
                 continue;
             }
             const sortKey = this.sortFeaturesByKey ?
-                symbolSortKey.evaluate(newFeature, {}) :
+                symbolSortKey.evaluate(newFeature, {}, canonical) :
                 undefined;
 
             const symbolFeature: SymbolFeature = {
@@ -491,7 +491,7 @@ class SymbolBucket implements Bucket {
             }
 
             if (text) {
-                const fontStack = textFont.evaluate(newFeature, {}).join(',');
+                const fontStack = textFont.evaluate(newFeature, {}, canonical).join(',');
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
                 this.allowVerticalPlacement = this.writingModes && this.writingModes.indexOf(WritingMode.vertical) >= 0;
                 for (const section of text.sections) {
