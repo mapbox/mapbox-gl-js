@@ -23,6 +23,7 @@ import {Debug} from './util/debug';
 import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
+import {initializeWorkerPool} from './util/global_worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
 import {PerformanceUtils} from './util/performance';
 
@@ -46,6 +47,7 @@ const exported = {
     MercatorCoordinate,
     Evented,
     config,
+    initializeWorkerPool,
 
     /**
      * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
