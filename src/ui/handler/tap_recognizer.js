@@ -38,7 +38,7 @@ export class SingleTapRecognizer {
         }
 
         if (this.startTime === null) {
-            this.startTime = Date.now();
+            this.startTime = e.timeStamp;
         }
 
         if (e.targetTouches.length === this.numTouches) {
@@ -56,7 +56,7 @@ export class SingleTapRecognizer {
     }
 
     touchend(e, points) {
-        if (!this.centroid || Date.now() - this.startTime > this.maxTouchTime) {
+        if (!this.centroid || e.timeStamp - this.startTime > this.maxTouchTime) {
             this.aborted = true;
         }
 
@@ -96,18 +96,15 @@ export class TapRecognizer {
     touchend(e, points) {
         const tap = this.singleTap.touchend(e, points);
         if (tap) {
-            const now = Date.now();
-
-            const soonEnough = now - this.lastTime < this.maxTapInterval;
+            const soonEnough = e.timeStamp - this.lastTime < this.maxTapInterval;
             const closeEnough = !this.lastTap || this.lastTap.dist(tap) < this.maxDist;
-            //log('' + soonEnough + closeEnough + now + this.lastTime + this.maxTapInterval);
 
             if (!soonEnough || !closeEnough) {
                 this.reset();
             }
 
             this.count++;
-            this.lastTime = now;
+            this.lastTime = e.timeStamp;
             this.lastTap = tap;
 
             if (this.count === this.numTaps) {

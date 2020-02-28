@@ -26,7 +26,7 @@ export default class TapZoomHandler {
     touchstart(e, points) {
         if (this.swipePoint) return;
 
-        if (this.tapTime && Date.now() - this.tapTime > 300) {
+        if (this.tapTime && e.timeStamp - this.tapTime > 300) {
             this.reset();
         }
 
@@ -67,7 +67,7 @@ export default class TapZoomHandler {
         if (!this.tapTime) {
             const point = this.tap.touchend(e, points);;
             if (point) {
-                this.tapTime = Date.now();
+                this.tapTime = e.timeStamp;
             }
         } else if (this.swipePoint) {
             if (e.targetTouches.length === 0) {

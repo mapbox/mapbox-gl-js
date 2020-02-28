@@ -43,16 +43,16 @@ export default class TouchPitchHandler {
         this.b = b;
     }
 
-    gestureBeginsVertically(vectorA, vectorB) {
+    gestureBeginsVertically(vectorA, vectorB, timeStamp) {
         if (this.valid !== undefined) return this.valid;
 
         if (vectorA.mag() === 0 || vectorB.mag() === 0) {
 
             if (this.firstSkip === null) {
-                this.firstSkip = Date.now();
+                this.firstSkip = timeStamp;
             }
 
-            if (Date.now() - this.firstSkip < this.allowedSingleTouchTime) {
+            if (timeStamp - this.firstSkip < this.allowedSingleTouchTime) {
                 // still waiting for a movement from the second finger
                 return undefined;
             } else {
@@ -78,7 +78,7 @@ export default class TouchPitchHandler {
         const vectorA = a.sub(this.a);
         const vectorB = b.sub(this.b);
 
-        this.valid = this.gestureBeginsVertically(vectorA, vectorB);
+        this.valid = this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
         if (!this.valid) return;
 
         const vector = vectorA.add(vectorB).div(2);
