@@ -1,7 +1,5 @@
 // @flow
 
-import Handler from './handler';
-import type Map from '../map';
 import DOM from '../../util/dom';
 import Point from '@mapbox/point-geometry';
 import {log} from './handler_util';

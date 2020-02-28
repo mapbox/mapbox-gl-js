@@ -5,7 +5,6 @@ import {Event} from '../util/evented';
 import DOM from '../util/dom';
 import browser from '../util/browser';
 import type Map from './map';
-import Handler from './handler/handler';
 import { log } from './handler/handler_util';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
@@ -23,7 +22,6 @@ export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
 class HandlerManager {
     _map: Map;
-    _handlers: Array<[string, Handler, allowed]>;
     _inertiaOptions: InertiaOptions;
     _inertiaBuffer: Array<[number, Object]>;
     _eventsInProgress: Object;

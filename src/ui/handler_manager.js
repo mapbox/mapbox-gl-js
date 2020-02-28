@@ -5,7 +5,6 @@ import {Event} from '../util/evented';
 import DOM from '../util/dom';
 import browser from '../util/browser';
 import type Map from './map';
-import Handler from './handler/handler';
 import HandlerInertia from './handler_inertia';
 //import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
 import BoxZoomHandler from './handler/box_zoom';
@@ -178,6 +177,7 @@ class HandlerManager {
     processInputEvent(e: InputEvent) {
 
         assert(e.timeStamp !== undefined);
+        console.log(e.type);
 
         //log('', true);
         // TODO
@@ -195,7 +195,8 @@ class HandlerManager {
 
             let data;
             if (this.blockedByActive(activeHandlers, allowed, name)) {
-                handler.reset();
+                if (!handler.reset) console.log(handler);
+                else handler.reset();
 
             } else {
                 if (handler[e.type]) {

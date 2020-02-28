@@ -1,16 +1,16 @@
 // @flow
 
-import DOM from '../../util/dom';
+import DOM from '../../../util/dom';
 
-import {bezier, bindAll} from '../../util/util';
-import window from '../../util/window';
-import browser from '../../util/browser';
-import {Event} from '../../util/evented';
+import {bezier, bindAll} from '../../../util/util';
+import window from '../../../util/window';
+import browser from '../../../util/browser';
+import {Event} from '../../../util/evented';
 import assert from 'assert';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
-import type {TaskID} from '../../util/task_queue';
+import type {TaskID} from '../../../util/task_queue';
 
 const inertiaLinearity = 0.25,
     inertiaEasing = bezier(0, 0, inertiaLinearity, 1),

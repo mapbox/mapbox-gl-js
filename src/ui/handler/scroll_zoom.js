@@ -2,7 +2,6 @@
 
 import assert from 'assert';
 import DOM from '../../util/dom';
-import Handler from './handler';
 
 import {ease as _ease, bindAll, bezier} from '../../util/util';
 import browser from '../../util/browser';
@@ -30,7 +29,7 @@ const maxScalePerFrame = 2;
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
  */
-class ScrollZoomHandler extends Handler {
+class ScrollZoomHandler {
     _map: Map;
     _el: HTMLElement;
     _enabled: boolean;
@@ -349,6 +348,10 @@ class ScrollZoomHandler extends Handler {
         };
 
         return easing;
+    }
+
+    reset() {
+        this._active = false;
     }
 }
 
