@@ -46,8 +46,12 @@ for (const {name, member, component} of components) {
     const componentAccess = `this._structArray.${member.view}[${index}]`;
 -%>
     get <%=name%>() { return <%=componentAccess%>; }
+<%
+if (name === 'crossTileID' || name === 'placedOrientation' || name === 'hidden') {
+-%>
     set <%=name%>(x: number) { <%=componentAccess%> = x; }
 <%
+}
 }
 // Special case used for the CollisionBoxArray type
 if (hasAnchorPoint) {
