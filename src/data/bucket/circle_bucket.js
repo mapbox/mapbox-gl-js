@@ -85,27 +85,34 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         if (styleLayer.type === 'circle') {
             circleSortKey = ((styleLayer: any): CircleStyleLayer).layout.get('circle-sort-key');
         }
+
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const geometry = loadGeometry(feature);
-            const evaluationFeature = {type: feature.type, id: ('id' in feature ? feature.id : null), properties: feature.properties, geometry};
-            if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) {
-                const sortKey = circleSortKey ?
-                    circleSortKey.evaluate(evaluationFeature, {}, canonical) :
-                    undefined;
+            const needGeometry = this.layers[0]._featureFilter.needGeometry;
+            const evaluationFeature = {type: feature.type,
+                id: ('id' in feature ? feature.id : null),
+                properties: feature.properties,
+                geometry: needGeometry ? loadGeometry(feature) : []};
 
-                const bucketFeature: BucketFeature = {
-                    id,
-                    properties: feature.properties,
-                    type: feature.type,
-                    sourceLayerIndex,
-                    index,
-                    geometry,
-                    patterns: {},
-                    sortKey
-                };
+            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
 
-                bucketFeatures.push(bucketFeature);
-            }
+            if (!needGeometry)  evaluationFeature.geometry = loadGeometry(feature);
+            const sortKey = circleSortKey ?
+                circleSortKey.evaluate(evaluationFeature, {}, canonical) :
+                undefined;
+
+            const bucketFeature: BucketFeature = {
+                id,
+                properties: feature.properties,
+                type: feature.type,
+                sourceLayerIndex,
+                index,
+                geometry : evaluationFeature.geometry,
+                patterns: {},
+                sortKey
+            };
+
+            bucketFeatures.push(bucketFeature);
+
         }
 
         if (circleSortKey) {

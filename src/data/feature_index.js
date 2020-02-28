@@ -183,8 +183,9 @@ class FeatureIndex {
 
         const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);
         const sourceLayer = this.vtLayers[sourceLayerName];
+
         const feature = sourceLayer.feature(featureIndex);
-        if (!filter(new EvaluationParameters(this.tileID.overscaledZ), feature))
+        if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature))
             return;
 
         const id = this.getId(feature, sourceLayerName);

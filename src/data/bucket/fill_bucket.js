@@ -80,9 +80,15 @@ class FillBucket implements Bucket {
         const bucketFeatures = [];
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const geometry = loadGeometry(feature);
-            const evaluationFeature = {type: feature.type, id: ('id' in feature ? feature.id : null), properties: feature.properties, geometry};
-            if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
+            const needGeometry = this.layers[0]._featureFilter.needGeometry;
+            const evaluationFeature = {type: feature.type,
+                id: ('id' in feature ? feature.id : null),
+                properties: feature.properties,
+                geometry: needGeometry ? loadGeometry(feature) : []};
+
+            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
+
+            if (!needGeometry)  evaluationFeature.geometry = loadGeometry(feature);
 
             const sortKey = fillSortKey ?
                 fillSortKey.evaluate(evaluationFeature, {}, canonical, options.availableImages) :
@@ -94,7 +100,7 @@ class FillBucket implements Bucket {
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                geometry,
+                geometry: evaluationFeature.geometry,
                 patterns: {},
                 sortKey
             };

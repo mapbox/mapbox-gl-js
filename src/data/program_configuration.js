@@ -8,7 +8,6 @@ import {PossiblyEvaluatedPropertyValue} from '../style/properties';
 import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray} from './array_types';
 import {clamp} from '../util/util';
 
-import loadGeometry from './load_geometry';
 import EvaluationParameters from '../style/evaluation_parameters';
 import FeaturePositionMap from './feature_position_map';
 import {
@@ -474,8 +473,7 @@ export default class ProgramConfiguration {
                         //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                         const value = layer.paint.get(property);
                         (binder: any).expression = value.value;
-                        const evaluationFeature = {type: feature.type, id: ('id' in feature ? feature.id : null), properties: feature.properties, geometry: loadGeometry(feature)};
-                        (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, evaluationFeature, featureStates[id], imagePositions);
+                        (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, feature, featureStates[id], imagePositions);
                         dirty = true;
                     }
                 }

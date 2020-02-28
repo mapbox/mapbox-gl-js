@@ -93,15 +93,19 @@ class FillExtrusionBucket implements Bucket {
         this.hasPattern = hasPattern('fill-extrusion', this.layers, options);
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const geometry = loadGeometry(feature);
-            const evaluationFeature = {type: feature.type, id: ('id' in feature ? feature.id : null), properties: feature.properties, geometry};
-            if (!this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
+            const needGeometry = this.layers[0]._featureFilter.needGeometry;
+            const evaluationFeature = {type: feature.type,
+                id: ('id' in feature ? feature.id : null),
+                properties: feature.properties,
+                geometry: needGeometry ? loadGeometry(feature) : []};
+
+            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
 
             const patternFeature: BucketFeature = {
                 id,
                 sourceLayerIndex,
                 index,
-                geometry,
+                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature),
                 properties: feature.properties,
                 type: feature.type,
                 patterns: {}
@@ -114,10 +118,10 @@ class FillExtrusionBucket implements Bucket {
             if (this.hasPattern) {
                 this.features.push(addPatternDependencies('fill-extrusion', this.layers, patternFeature, this.zoom, options));
             } else {
-                this.addFeature(patternFeature, geometry, index, canonical, {});
+                this.addFeature(patternFeature, patternFeature.geometry, index, canonical, {});
             }
 
-            options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index, true);
+            options.featureIndex.insert(feature, patternFeature.geometry, index, sourceLayerIndex, this.index, true);
         }
     }
 

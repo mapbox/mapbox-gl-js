@@ -69,7 +69,7 @@ class StyleLayer extends Evented {
 
         this.id = layer.id;
         this.type = layer.type;
-        this._featureFilter = () => true;
+        this._featureFilter = {filter: () => true, needGeometry: false};
 
         if (layer.type === 'custom') return;
 
