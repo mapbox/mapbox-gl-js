@@ -49,7 +49,7 @@ class TaskQueue {
 
         for (const task of queue) {
             if (task.cancelled) continue;
-            task.callback();
+            task.callback.apply(task, arguments);
             if (this._cleared) break;
         }
 
