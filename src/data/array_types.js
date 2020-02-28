@@ -998,47 +998,14 @@ export class SymbolInstanceArray extends StructArrayLayout8i14ui1ul3f60 {
 
 register('SymbolInstanceArray', SymbolInstanceArray);
 
-class GlyphOffsetStruct extends Struct {
-    _structArray: GlyphOffsetArray;
-    offsetX: number;
-    get offsetX() { return this._structArray.float32[this._pos4 + 0]; }
-}
-
-GlyphOffsetStruct.prototype.size = 4;
-
-export type GlyphOffset = GlyphOffsetStruct;
-
 /**
  * @private
  */
 export class GlyphOffsetArray extends StructArrayLayout1f4 {
     getoffsetX(index: number) { return this.float32[index * 1 + 0]; }
-    /**
-     * Return the GlyphOffsetStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): GlyphOffsetStruct {
-        assert(!this.isTransferred);
-        return new GlyphOffsetStruct(this, index);
-    }
 }
 
 register('GlyphOffsetArray', GlyphOffsetArray);
-
-class SymbolLineVertexStruct extends Struct {
-    _structArray: SymbolLineVertexArray;
-    x: number;
-    y: number;
-    tileUnitDistanceFromAnchor: number;
-    get x() { return this._structArray.int16[this._pos2 + 0]; }
-    get y() { return this._structArray.int16[this._pos2 + 1]; }
-    get tileUnitDistanceFromAnchor() { return this._structArray.int16[this._pos2 + 2]; }
-}
-
-SymbolLineVertexStruct.prototype.size = 6;
-
-export type SymbolLineVertex = SymbolLineVertexStruct;
 
 /**
  * @private
@@ -1047,15 +1014,6 @@ export class SymbolLineVertexArray extends StructArrayLayout3i6 {
     getx(index: number) { return this.int16[index * 3 + 0]; }
     gety(index: number) { return this.int16[index * 3 + 1]; }
     gettileUnitDistanceFromAnchor(index: number) { return this.int16[index * 3 + 2]; }
-    /**
-     * Return the SymbolLineVertexStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): SymbolLineVertexStruct {
-        assert(!this.isTransferred);
-        return new SymbolLineVertexStruct(this, index);
-    }
 }
 
 register('SymbolLineVertexArray', SymbolLineVertexArray);

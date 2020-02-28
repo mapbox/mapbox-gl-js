@@ -26,7 +26,7 @@ for (const member of members) {
     }
 }
 
-if (includeStructAccessors) {
+if (includeStructAccessors && StructArrayClass !== 'GlyphOffsetArray' && StructArrayClass !== 'SymbolLineVertexArray') {
 -%>
 class <%=StructTypeClass%> extends Struct {
     _structArray: <%=StructArrayClass%>;
@@ -65,10 +65,10 @@ if (hasAnchorPoint) {
 <%=StructTypeClass%>.prototype.size = <%=size%>;
 
 export type <%=StructTypeClass.replace('Struct', '')%> = <%=StructTypeClass%>;
+
 <%
 } // end 'if (includeStructAccessors)'
 -%>
-
 /**
  * @private
  */
@@ -90,14 +90,12 @@ if (StructArrayClass === 'GlyphOffsetArray' || StructArrayClass === 'SymbolLineV
 <%
         }
     }
-}
-
-// get(i)
-if (includeStructAccessors) {
+} else if (includeStructAccessors) { // get(i)
 -%>
     /**
      * Return the <%=StructTypeClass%> at the given location in the array.
      * @param {number} index The index of the element.
+     * @private
      */
     get(index: number): <%=StructTypeClass%> {
         assert(!this.isTransferred);
