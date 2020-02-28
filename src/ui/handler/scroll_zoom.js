@@ -289,7 +289,7 @@ class ScrollZoomHandler {
             if (t < 1) {
                 if (!this._frameId) {
                     this._frameId = true;
-                    this._handler.triggerRenderFrame();
+                    //this._handler.triggerRenderFrame();
                 }
             } else {
                 finished = true;
@@ -318,6 +318,7 @@ class ScrollZoomHandler {
         }
 
         const ret = {
+            needsRenderFrame: !finished,
             transform: {
                 zoomDelta: zoom - tr.zoom,
                 around: this._aroundPoint

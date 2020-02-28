@@ -7,6 +7,7 @@ import browser from '../util/browser';
 import type Map from './map';
 import HandlerInertia from './handler_inertia';
 //import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
+/*
 import BoxZoomHandler from './handler/box_zoom';
 import TapZoomHandler from './handler/tap_zoom';
 import MousePanHandler from './handler/mouse_pan';
@@ -20,6 +21,7 @@ import KeyboardHandler from './handler/keyboard';
 import ScrollZoomHandler from './handler/scroll_zoom';
 import ClickZoomHandler from './handler/click_zoom';
 import SwipeZoomHandler from './handler/swipe_zoom';
+*/
 import { log } from './handler/handler_util';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
@@ -29,11 +31,24 @@ export type InertiaOptions = typeof defaultInertiaOptions;
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
+export type CameraDeltaOptions = {
+    panDelta?: Point,
+    zoomDelta?: number,
+    bearingDelta?: number,
+    pitchDelta?: number,
+    around?: Point 
+};
+
+export type HandlerResult = CameraDeltaOptions & AnimationOptions & {
+    originalEvent?: any,
+    needsRenderFrame?: boolean
+};
+
 class HandlerManager {
     _map: Map;
     _el: HTMLElement;
     _handlers: Array<[string, Handler, allowed]>;
-    _eventsInProgress: Object;
+    eventsInProgress: Object;
     touchPan: TouchPanHandler;
     touchZoom: TouchZoomHandler;
     touchRotate: TouchRotateHandler;
@@ -47,7 +62,6 @@ class HandlerManager {
         this._map = map;
         this._el = this._map.getCanvasContainer();
         this._handlers = [];
-        this.activeHandlers = {};
 
         this._frameId = null;
         this.inertia = new HandlerInertia(map, options);
@@ -59,7 +73,7 @@ class HandlerManager {
         }
 
         // Track whether map is currently moving, to compute start/move/end events
-        this._eventsInProgress = {
+        this.eventsInProgress = {
         };
 
 
@@ -91,6 +105,7 @@ class HandlerManager {
 
     _addDefaultHandlers() {
         const el = this._map.getCanvasContainer();
+        /*
         this.add('boxZoom', new BoxZoomHandler(this._map, this));
         this.add('tapzoom', new TapZoomHandler(this._map, this));
         this.add('swipeZoom', new SwipeZoomHandler(this._map, this));
@@ -104,7 +119,6 @@ class HandlerManager {
         this.add('touchZoom', new TouchZoomHandler(), ['touchPan', 'touchRotate']);
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler(this._map));
-        /*
         */
     }
 
@@ -162,6 +176,12 @@ class HandlerManager {
     }
 
     stop() {
+        return;
+        for (const [name, handler] of this._handlers) {
+            handler.reset();
+        }
+        this.inertia.clear();
+        this.fireEvents({});
     }
 
     blockedByActive(activeHandlers, allowed, myName) { 
@@ -202,6 +222,10 @@ class HandlerManager {
                 if (handler[e.type]) {
                     data = handler[e.type](e, points);
                     this.mergeTransform(transformSettings, data, name);
+                    if (data && data.needsRenderFrame) {
+                        console.log("HERE");
+                        this.triggerRenderFrame();
+                    }
                 }
             }
 
@@ -301,41 +325,43 @@ class HandlerManager {
         }
         this._map._update();
 
+        this.fireEvents(settings.eventsInProgress);
+    }
 
 
-        const eventsInProgress = this._eventsInProgress;
-        const wasMoving = !!Object.keys(eventsInProgress).length;
-        const isMoving = !!Object.keys(settings.eventsInProgress).length;
+    fireEvents(newEventsInProgress, e) {
+        const wasMoving = !!Object.keys(this.eventsInProgress).length;
+        const isMoving = !!Object.keys(newEventsInProgress).length;
 
         if (!wasMoving && isMoving) {
             this._fireEvent('movestart', e);
         }
 
-        for (const eventName in settings.eventsInProgress) {
-            const handlerName = settings.eventsInProgress[eventName];
-            if (!eventsInProgress[name]) {
+        for (const eventName in newEventsInProgress) {
+            const handlerName = newEventsInProgress[eventName];
+            if (!this.eventsInProgress[name]) {
                 this._fireEvent(eventName + 'start', e);
             }
-            eventsInProgress[eventName] = handlerName;
+            this.eventsInProgress[eventName] = handlerName;
         }
 
         if (isMoving) {
             this._fireEvent('move', e);
         }
 
-        for (const eventName in settings.eventsInProgress) {
+        for (const eventName in newEventsInProgress) {
             this._fireEvent(eventName, e);
         }
 
-        for (const eventName in eventsInProgress) {
-            const handlerName = eventsInProgress[eventName];
+        for (const eventName in this.eventsInProgress) {
+            const handlerName = this.eventsInProgress[eventName];
             if (!this[handlerName].isActive()) {
-                delete eventsInProgress[eventName];
+                delete this.eventsInProgress[eventName];
                 this._fireEvent(eventName + 'end', e);
             }
         }
 
-        const stillMoving = !!Object.keys(eventsInProgress).length;
+        const stillMoving = !!Object.keys(this.eventsInProgress).length;
         if ((wasMoving || isMoving) && !stillMoving) {
             this.inertia._onMoveEnd(e);
             // TODO inertia handles this
