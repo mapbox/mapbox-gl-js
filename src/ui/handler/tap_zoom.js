@@ -1,17 +1,23 @@
 // @flow
 
 import {TapRecognizer} from './tap_recognizer';
+import type Point from '@mapbox/point-geometry';
 
 export default class TapZoomHandler {
 
+    _enabled: boolean;
+    _active: boolean;
+    _zoomIn: TapRecognizer;
+    _zoomOut: TapRecognizer;
+
     constructor() {
 
-        this.zoomIn = new TapRecognizer({
+        this._zoomIn = new TapRecognizer({
             numTouches: 1,
             numTaps: 2
         });
 
-        this.zoomOut = new TapRecognizer({
+        this._zoomOut = new TapRecognizer({
             numTouches: 2,
             numTaps: 1
         });
@@ -21,23 +27,23 @@ export default class TapZoomHandler {
 
     reset() {
         this._active = false;
-        this.zoomIn.reset();
-        this.zoomOut.reset();
+        this._zoomIn.reset();
+        this._zoomOut.reset();
     }
 
-    touchstart(e, points) {
-        this.zoomIn.touchstart(e, points);
-        this.zoomOut.touchstart(e, points);
+    touchstart(e: TouchEvent, points: Array<Point>) {
+        this._zoomIn.touchstart(e, points);
+        this._zoomOut.touchstart(e, points);
     }
 
-    touchmove(e, points) {
-        this.zoomIn.touchmove(e, points);
-        this.zoomOut.touchmove(e, points);
+    touchmove(e: TouchEvent, points: Array<Point>) {
+        this._zoomIn.touchmove(e, points);
+        this._zoomOut.touchmove(e, points);
     }
 
-    touchend(e, points) {
-        const zoomInPoint = this.zoomIn.touchend(e, points);
-        const zoomOutPoint = this.zoomOut.touchend(e, points);
+    touchend(e: TouchEvent, points: Array<Point>) {
+        const zoomInPoint = this._zoomIn.touchend(e, points);
+        const zoomOutPoint = this._zoomOut.touchend(e, points);
 
         if (zoomInPoint) {
             this._active = true;

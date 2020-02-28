@@ -6,39 +6,45 @@ import {getTouchesById} from './handler_util';
 
 export default class TouchZoomHandler {
 
+    _enabled: boolean;
+    _active: boolean;
+    _firstTwoTouches: [number, number];
+    _distance: number;
+
     constructor() {
         this.reset();
     }
 
     reset() {
-        this.firstTwoTouches = null;
         this._active = false;
+        delete this._firstTwoTouches;
+        delete this._distance;
     }
 
-    touchstart(e, points) {
-        if (this.firstTwoTouches || e.targetTouches.length < 2) return;
+    touchstart(e: TouchEvent, points: Array<Point>) {
+        if (this._firstTwoTouches || e.targetTouches.length < 2) return;
 
-        this.firstTwoTouches = [
+        this._firstTwoTouches = [
             e.targetTouches[0].identifier,
             e.targetTouches[1].identifier
         ];
 
-        const [a, b] = getTouchesById(e, points, this.firstTwoTouches);
-        this.distance = a.dist(b);
+        const [a, b] = getTouchesById(e, points, this._firstTwoTouches);
+        this._distance = a.dist(b);
     }
 
-    touchmove(e, points) {
+    touchmove(e: TouchEvent, points: Array<Point>) {
 
-        if (!this.firstTwoTouches) return;
+        if (!this._firstTwoTouches) return;
 
-        const [a, b] = getTouchesById(e, points, this.firstTwoTouches)
+        const [a, b] = getTouchesById(e, points, this._firstTwoTouches)
         if (!a || !b) return;
 
         const distance = a.dist(b);
-        const zoomDelta = Math.log(distance / this.distance) / Math.LN2;
+        const zoomDelta = Math.log(distance / this._distance) / Math.LN2;
         const around = a.add(b).div(2);
 
-        this.distance = distance;
+        this._distance = distance;
 
         this._active = true;
 
@@ -50,10 +56,10 @@ export default class TouchZoomHandler {
         };
     }
 
-    touchend(e, points) {
-        if (!this.firstTwoTouches) return;
+    touchend(e: TouchEvent, points: Array<Point>) {
+        if (!this._firstTwoTouches) return;
 
-        const [a, b] = getTouchesById(e, points, this.firstTwoTouches);
+        const [a, b] = getTouchesById(e, points, this._firstTwoTouches);
         if (a && b) return;
 
         this.reset();

@@ -7,7 +7,6 @@ import browser from '../util/browser';
 import type Map from './map';
 import HandlerInertia from './handler_inertia';
 //import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
-/*
 import BoxZoomHandler from './handler/box_zoom';
 import TapZoomHandler from './handler/tap_zoom';
 import MousePanHandler from './handler/mouse_pan';
@@ -19,17 +18,18 @@ import TouchRotateHandler from './handler/touch_rotate';
 import TouchPitchHandler from './handler/touch_pitch';
 import KeyboardHandler from './handler/keyboard';
 import ScrollZoomHandler from './handler/scroll_zoom';
-import ClickZoomHandler from './handler/click_zoom';
+import ClickZoomHandler from './handler/dblclick_zoom';
 import SwipeZoomHandler from './handler/swipe_zoom';
-*/
 import { log } from './handler/handler_util';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
-
-export type InertiaOptions = typeof defaultInertiaOptions;
+import type AnimationOptions from './camera';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
+
+// TODO
+export type Handler = any;
 
 export type CameraDeltaOptions = {
     panDelta?: Point,
@@ -42,17 +42,20 @@ export type CameraDeltaOptions = {
 export type HandlerResult = CameraDeltaOptions & AnimationOptions & {
     originalEvent?: any,
     needsRenderFrame?: boolean
-};
+} & any; // TODO
 
 class HandlerManager {
     _map: Map;
     _el: HTMLElement;
-    _handlers: Array<[string, Handler, allowed]>;
+    _handlers: Array<[string, Handler, any]>; // TODO
     eventsInProgress: Object;
     touchPan: TouchPanHandler;
     touchZoom: TouchZoomHandler;
     touchRotate: TouchRotateHandler;
     touchPitch: TouchPitchHandler;
+    _frameId: number;
+    inertia: HandlerInertia;
+    handlers: { [string]: Handler };
 
     /**
      * @private
@@ -65,8 +68,6 @@ class HandlerManager {
 
         this._frameId = null;
         this.inertia = new HandlerInertia(map, options);
-
-        this.onRenderFrame = this.onRenderFrame.bind(this);
 
         window.onerror = function(e) {
             log(e);
@@ -97,8 +98,8 @@ class HandlerManager {
 
         this.addKeyboardListener('keydown');
         this.addKeyboardListener('keyup');
-        this.addListener('wheel', null, {passive: false});
-        this.addListener('dblclick', null);
+        this.addListener('wheel', undefined, {passive: false});
+        this.addListener('dblclick', undefined);
 
         DOM.addEventListener(window.document, 'contextmenu', e => e.preventDefault());
     }
@@ -124,18 +125,18 @@ class HandlerManager {
 
     add(handlerName: string, handler: Handler, allowed: Array<string>) {
 
-        if (this[handlerName]) throw new Error(`Cannot add ${handlerName}: a handler with that name already exists`);
+        if (this.handlers[handlerName]) throw new Error(`Cannot add ${handlerName}: a handler with that name already exists`);
         this._handlers.push([handlerName, handler, allowed]);
-        this[handlerName] = handler;
+        this.handlers[handlerName] = handler;
         handler.enable();
     }
 
     remove(handlerName: string) {
         if (!handlerName || typeof handlerName !== 'string') throw new Error('Must provide a valid handlerName string');
-        if (!this[handlerName]) throw new Error(`Handler ${handlerName} not found`);
+        if (!this.handlers[handlerName]) throw new Error(`Handler ${handlerName} not found`);
         const newHandlers = this._handlers.filter(([existingName, existingHandler]) => {
             if (existingName === handlerName) {
-                delete this[handlerName];
+                delete this.handlers[handlerName];
                 return false;
             }
             return true;
@@ -155,7 +156,7 @@ class HandlerManager {
         for (const [_, handler] of this._handlers) handler.enable();
     }
 
-    addListener(eventType: string, mapEventClass?: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, options?: Object, el) {
+    addListener(eventType: string, mapEventClass?: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, options?: Object, el: any) {
         const listener = (e: *) => {
             if (mapEventClass) this._map.fire(new mapEventClass(eventType, this._map, e));
             this.processInputEvent(e);
@@ -167,16 +168,15 @@ class HandlerManager {
         this.addListener(eventType, MapTouchEvent, options);
     }
 
-    addMouseListener(eventType: string, options?: Object, el) {
+    addMouseListener(eventType: string, options?: Object, el: any) {
         this.addListener(eventType, MapMouseEvent, options, el);
     }
 
     addKeyboardListener(eventType: string, options?: Object) {
-        this.addListener(eventType, null, extend({capture: false}, options)); // No such thing as MapKeyboardEvent to fire
+        this.addListener(eventType, undefined, extend({capture: false}, options)); // No such thing as MapKeyboardEvent to fire
     }
 
     stop() {
-        return;
         for (const [name, handler] of this._handlers) {
             handler.reset();
         }
@@ -207,7 +207,7 @@ class HandlerManager {
 
         let points = e ? (e.touches ?
             DOM.touchPos(this._el, e) :
-            DOM.mousePos(this._el, e)) : null;
+            DOM.mousePos(this._el, e.targetTouches)) : null;
 
         //try {
         for (const [name, handler, allowed] of this._handlers) {
@@ -274,7 +274,7 @@ class HandlerManager {
         let { zoomDelta, bearingDelta, pitchDelta, setLocationAtPoint, around, panDelta } = settings;
         
         if (zoomDelta || bearingDelta || pitchDelta || panDelta || settings.duration) {
-            this._map.stop();
+            this._map._stop(true);
         }
 
         if (settings.duration) {
@@ -355,7 +355,7 @@ class HandlerManager {
 
         for (const eventName in this.eventsInProgress) {
             const handlerName = this.eventsInProgress[eventName];
-            if (!this[handlerName].isActive()) {
+            if (!this.handlers[handlerName].isActive()) {
                 delete this.eventsInProgress[eventName];
                 this._fireEvent(eventName + 'end', e);
             }
@@ -374,14 +374,12 @@ class HandlerManager {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 
-    onRenderFrame(timeStamp) {
-        this._frameId = null;
-        this.processInputEvent(new Event('renderFrame', { timeStamp }));
-    }
-
     triggerRenderFrame() {
         if (this._frameId === null) {
-            this._frameId = this._map._requestRenderFrame(this.onRenderFrame);
+            this._frameId = this._map._requestRenderFrame(timestamp => {
+                this._frameId = null;
+                this.processInputEvent(new Event('renderFrame', { timeStamp }));
+            });
         }
     }
 

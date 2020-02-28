@@ -1,7 +1,6 @@
 // @flow
 
 import {extend} from '../../util/util';
-import type Map from '../map';
 import Point from '@mapbox/point-geometry';
 
 const defaultOptions = {
@@ -25,7 +24,8 @@ const defaultOptions = {
  * - `Shift+⇣`: Decrease the pitch by 10 degrees.
  */
 class KeyboardHandler {
-    _map: Map;
+    _enabled: boolean;
+    _active: boolean;
     _panStep: number;
     _bearingStep: number;
     _pitchStep: number;
@@ -33,12 +33,12 @@ class KeyboardHandler {
     /**
     * @private
     */
-    constructor(map: Map, options: ?Object) {
-      this._map = map;
-      const stepOptions = extend(defaultOptions, options);
-      this._panStep = stepOptions.panStep;
-      this._bearingStep = stepOptions.bearingStep;
-      this._pitchStep = stepOptions.pitchStep;
+    constructor() {
+        const options = {}; // TODO
+        const stepOptions = extend(defaultOptions, options);
+        this._panStep = stepOptions.panStep;
+        this._bearingStep = stepOptions.bearingStep;
+        this._pitchStep = stepOptions.pitchStep;
     }
 
     reset() {
@@ -104,9 +104,6 @@ class KeyboardHandler {
             return;
         }
 
-        const map = this._map;
-        const zoom = map.getZoom();
-
         const easeOptions = {
             duration: 300,
             delayEndEvents: 500,
@@ -143,7 +140,7 @@ class KeyboardHandler {
     }
 }
 
-function easeOut(t) {
+function easeOut(t: number) {
     return t * (2 - t);
 }
 

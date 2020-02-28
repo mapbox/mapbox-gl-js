@@ -1,4 +1,3 @@
-// @flow
 
 import Handler from './handler';
 import DOM from '../../util/dom';

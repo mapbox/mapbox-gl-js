@@ -32,7 +32,7 @@ class HandlerManager {
      */
     constructor(map: Map, options?: Object) {
         this._map = map;
-        this._inertiaOptions = options.inertiaOptions || defaultInertiaOptions;
+        this._inertiaOptions = (options && options.inertiaOptions) || defaultInertiaOptions;
         this.clear();
     }
 
@@ -40,7 +40,7 @@ class HandlerManager {
         this._inertiaBuffer = [];
     }
 
-    record(settings) {
+    record(settings: any) {
         this._drainInertiaBuffer();
         this._inertiaBuffer.push([browser.now(), settings]);
     }

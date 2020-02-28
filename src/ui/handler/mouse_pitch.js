@@ -1,25 +1,30 @@
 // @flow
 
-import type Map from '../map';
 import DOM from '../../util/dom';
+import type Point from '@mapbox/point-geometry';
 
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
 
 export default class MousePitchHandler {
 
-    constructor(el, manager) {
+    _enabled: boolean;
+    _active: boolean;
+    _lastPoint: Point;
+    _eventButton: number;
+
+    constructor() {
         this.reset();
     }
 
     reset() {
         this._active = false;
-        this._lastPoint = null;
-        this._eventButton = null;
+        delete this._lastPoint;
+        delete this._eventButton;
     }
 
-    mousedown(e, point) {
-        if (this._lastPoint !== null) return;
+    mousedown(e: MouseEvent, point: Point) {
+        if (this._lastPoint) return;
 
         const eventButton = DOM.mouseButton(e);
         if (eventButton !== LEFT_BUTTON && eventButton !== RIGHT_BUTTON) return;
@@ -29,7 +34,7 @@ export default class MousePitchHandler {
         this._eventButton = eventButton;
     }
 
-    mousemove(e, point) {
+    mousemove(e: MouseEvent, point: Point) {
         if (!this._lastPoint) return;
 
         this._active = true;
@@ -44,7 +49,7 @@ export default class MousePitchHandler {
         };
     }
 
-    mouseup(e, point) {
+    mouseup(e: MouseEvent, point: Point) {
         const eventButton = DOM.mouseButton(e);
         if (this._eventButton !== eventButton) return;
         this.reset();
@@ -55,7 +60,7 @@ export default class MousePitchHandler {
     }
 
     disable() {
-        this._disabled = true;
+        this._enabled = false;
         this.reset();
     }
 

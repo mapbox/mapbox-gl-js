@@ -1,6 +1,11 @@
 // @flow
 
+import type Point from '@mapbox/point-geometry';
+
 export default class ClickZoomHandler {
+
+    _enabled: boolean;
+    _active: boolean;
 
     constructor() {
         this.reset();
@@ -10,7 +15,7 @@ export default class ClickZoomHandler {
         this._active = false;
     }
 
-    dblclick(e, point) {
+    dblclick(e: MouseEvent, point: Point) {
         e.preventDefault();
         return {
             transform: {

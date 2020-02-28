@@ -11,6 +11,7 @@ import LngLat from '../../geo/lng_lat';
 import {Event} from '../../util/evented';
 
 import type Map from '../map';
+import type HandlerManager from '../handler_manager';
 import type Point from '@mapbox/point-geometry';
 import type {TaskID} from '../../util/task_queue';
 
@@ -52,7 +53,8 @@ class ScrollZoomHandler {
     _easing: ?((number) => number);
     _prevEase: ?{start: number, duration: number, easing: (number) => number};
 
-    _frameId: ?TaskID;
+    _frameId: ?boolean;
+    _handler: HandlerManager;
 
     _defaultZoomRate: number;
     _wheelZoomRate: number;
@@ -60,7 +62,7 @@ class ScrollZoomHandler {
     /**
      * @private
      */
-    constructor(map: Map, handler) {
+    constructor(map: Map, handler: HandlerManager) {
         this._map = map;
         this._el = map.getCanvasContainer();
         this._handler = handler;
@@ -236,7 +238,7 @@ class ScrollZoomHandler {
         }
     }
 
-    renderFrame(e) {
+    renderFrame() {
         return this._onScrollFrame();
     }
 
@@ -289,7 +291,6 @@ class ScrollZoomHandler {
             if (t < 1) {
                 if (!this._frameId) {
                     this._frameId = true;
-                    //this._handler.triggerRenderFrame();
                 }
             } else {
                 finished = true;

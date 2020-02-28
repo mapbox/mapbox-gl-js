@@ -1,11 +1,10 @@
 // @flow
 
-import DOM from '../../util/dom';
 import Point from '@mapbox/point-geometry';
 import {log} from './handler_util';
 
 
-function getCentroid(points) {
+function getCentroid(points: Array<Point>) {
     const sum = new Point(0, 0);
     for (const point of points) {
         sum._add(point);
@@ -13,22 +12,29 @@ function getCentroid(points) {
     return sum.div(points.length);
 }
 
+const MAX_TAP_INTERVAL = 300;
+const MAX_TOUCH_TIME = 300;
+const MAX_DIST = 30;
+
 export class SingleTapRecognizer {
-    constructor(options) {
+
+    numTouches: number;
+    centroid: Point;
+    startTime: number;
+    aborted: boolean;
+
+    constructor(options: { numTouches: number }) {
         this.reset();
         this.numTouches = options.numTouches;
-        this.maxTouchTime = 300;
-        this.maxDist = 30;
     }
 
     reset() {
-        this.active = false;
-        this.centroid = null;
-        this.startTime = null;
+        delete this.centroid;
+        delete this.startTime;
         this.aborted = false;
     }
 
-    touchstart(e, points) {
+    touchstart(e: TouchEvent, points: Array<Point>) {
 
         if (this.centroid || e.targetTouches.length > this.numTouches) {
             this.aborted = true;
@@ -37,7 +43,7 @@ export class SingleTapRecognizer {
             return;
         }
 
-        if (this.startTime === null) {
+        if (this.startTime === undefined) {
             this.startTime = e.timeStamp;
         }
 
@@ -46,17 +52,16 @@ export class SingleTapRecognizer {
         }
     }
 
-    touchmove(e, points) {
+    touchmove(e: TouchEvent, points: Array<Point>) {
         if (this.aborted || !this.centroid) return;
 
-        //log(getCentroid(points).dist(this.centroid));
-        if (getCentroid(points).dist(this.centroid) > this.maxDist) {
+        if (getCentroid(points).dist(this.centroid) > MAX_DIST) {
             this.aborted = true;
         }
     }
 
-    touchend(e, points) {
-        if (!this.centroid || e.timeStamp - this.startTime > this.maxTouchTime) {
+    touchend(e: TouchEvent, points: Array<Point>) {
+        if (!this.centroid || e.timeStamp - this.startTime > MAX_TOUCH_TIME) {
             this.aborted = true;
         }
 
@@ -70,34 +75,39 @@ export class SingleTapRecognizer {
 }
 
 export class TapRecognizer {
-    constructor(options) {
+
+    singleTap: SingleTapRecognizer;
+    numTaps: number;
+    lastTime: number;
+    lastTap: Point;
+    count: number;
+
+    constructor(options: { numTaps: number, numTouches: number }) {
         this.singleTap = new SingleTapRecognizer(options);
         this.numTaps = options.numTaps;
-        this.maxTapInterval = 300;
-        this.maxDist = 30;
         this.reset();
     }
 
     reset() {
         this.lastTime = Infinity;
-        this.lastTap = null;
+        delete this.lastTap;
         this.count = 0;
         this.singleTap.reset();
     }
 
-    touchstart(e, points) {
+    touchstart(e: TouchEvent, points: Array<Point>) {
         this.singleTap.touchstart(e, points);
     }
 
-    touchmove(e, points) {
+    touchmove(e: TouchEvent, points: Array<Point>) {
         this.singleTap.touchmove(e, points);
     }
 
-    touchend(e, points) {
+    touchend(e: TouchEvent, points: Array<Point>) {
         const tap = this.singleTap.touchend(e, points);
         if (tap) {
-            const soonEnough = e.timeStamp - this.lastTime < this.maxTapInterval;
-            const closeEnough = !this.lastTap || this.lastTap.dist(tap) < this.maxDist;
+            const soonEnough = e.timeStamp - this.lastTime < MAX_TAP_INTERVAL;
+            const closeEnough = !this.lastTap || this.lastTap.dist(tap) < MAX_DIST;
 
             if (!soonEnough || !closeEnough) {
                 this.reset();

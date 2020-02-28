@@ -112,10 +112,9 @@ DOM.mousePos = function (el: HTMLElement, e: MouseEvent | window.TouchEvent | To
     );
 };
 
-DOM.touchPos = function (el: HTMLElement, e: TouchEvent) {
+DOM.touchPos = function (el: HTMLElement, touches: TouchList) {
     const rect = el.getBoundingClientRect(),
         points = [];
-    const touches = e.targetTouches;
     for (let i = 0; i < touches.length; i++) {
         points.push(new Point(
             touches[i].clientX - rect.left - el.clientLeft,

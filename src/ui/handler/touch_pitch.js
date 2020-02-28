@@ -10,32 +10,44 @@ function isVertical(vector) {
 
 export default class TouchPitchHandler {
 
+    _enabled: boolean;
+    _active: boolean;
+    _minTouches: number;
+    _allowedSingleTouchTime: number;
+    _firstTwoTouches: [number, number];
+    _valid: true | false | typeof undefined;
+    _firstSkip: number;
+    a: Point;
+    b: Point;
+
     constructor() {
         this.reset();
-        this.minTouches = 2;
-        this.allowedSingleTouchTime = 100;
+        this._minTouches = 2;
+        this._allowedSingleTouchTime = 100;
     }
 
     reset() {
         this._active = false;
-        this.firstTwoTouches = null;
-        this.valid = undefined;
-        this.firstSkip = null;
+        delete this._firstTwoTouches;
+        this._valid = undefined;
+        delete this._firstSkip;
+        delete this.a;
+        delete this.b;
     }
 
-    touchstart(e, points) {
-        if (this.firstTwoTouches || e.targetTouches.length < this.minTouches) return;
+    touchstart(e: TouchEvent, points: Array<Point>) {
+        if (this._firstTwoTouches || e.targetTouches.length < this._minTouches) return;
 
-        this.firstTwoTouches = [
+        this._firstTwoTouches = [
             e.targetTouches[0].identifier,
             e.targetTouches[1].identifier
         ];
 
-        const [a, b] = getTouchesById(e, points, this.firstTwoTouches);
+        const [a, b] = getTouchesById(e, points, this._firstTwoTouches);
 
         if (isVertical(a.sub(b))) {
             // fingers are more horizontal than vertical
-            this.valid = false;
+            this._valid = false;
             return;
         }
 
@@ -43,16 +55,16 @@ export default class TouchPitchHandler {
         this.b = b;
     }
 
-    gestureBeginsVertically(vectorA, vectorB, timeStamp) {
-        if (this.valid !== undefined) return this.valid;
+    gestureBeginsVertically(vectorA: Point, vectorB: Point, timeStamp: number) {
+        if (this._valid !== undefined) return this._valid;
 
         if (vectorA.mag() === 0 || vectorB.mag() === 0) {
 
-            if (this.firstSkip === null) {
-                this.firstSkip = timeStamp;
+            if (this._firstSkip === null) {
+                this._firstSkip = timeStamp;
             }
 
-            if (timeStamp - this.firstSkip < this.allowedSingleTouchTime) {
+            if (timeStamp - this._firstSkip < this._allowedSingleTouchTime) {
                 // still waiting for a movement from the second finger
                 return undefined;
             } else {
@@ -68,18 +80,18 @@ export default class TouchPitchHandler {
         }
     }
 
-    touchmove(e, points) {
+    touchmove(e: TouchEvent, points: Array<Point>) {
 
-        if (!this.firstTwoTouches || this.valid === false) return;
+        if (!this._firstTwoTouches || this._valid === false) return;
 
-        const [a, b] = getTouchesById(e, points, this.firstTwoTouches)
+        const [a, b] = getTouchesById(e, points, this._firstTwoTouches)
         if (!a || !b) return;
 
         const vectorA = a.sub(this.a);
         const vectorB = b.sub(this.b);
 
-        this.valid = this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
-        if (!this.valid) return;
+        this._valid = this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
+        if (!this._valid) return;
 
         const vector = vectorA.add(vectorB).div(2);
         const pitchDelta = vector.y * -0.5;
@@ -96,11 +108,11 @@ export default class TouchPitchHandler {
         };
     }
 
-    touchend(e, points) {
-        if (!this.firstTwoTouches) return;
+    touchend(e: TouchEvent, points: Array<Point>) {
+        if (!this._firstTwoTouches) return;
 
-        const [a, b] = getTouchesById(e, points, this.firstTwoTouches);
-        if (a && b && e.targetTouches.length >= this.minTouches) return;
+        const [a, b] = getTouchesById(e, points, this._firstTwoTouches);
+        if (a && b && e.targetTouches.length >= this._minTouches) return;
 
         this.reset();
     }

@@ -1,4 +1,3 @@
-// @flow
 
 import type Map from '../map';
 import type {InputEvent} from '../handler_manager';

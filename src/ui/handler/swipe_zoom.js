@@ -2,12 +2,20 @@
 
 import {TapRecognizer} from './tap_recognizer';
 import {log} from './handler_util';
+import type Point from '@mapbox/point-geometry';
 
 export default class TapZoomHandler {
 
+    _enabled: boolean;
+    _active: boolean;
+    _swipePoint: Point;
+    _swipeTouch: number;
+    _tapTime: number;
+    _tap: TapRecognizer;
+
     constructor() {
 
-        this.tap = new TapRecognizer({
+        this._tap = new TapRecognizer({
             numTouches: 1,
             numTaps: 1
         });
@@ -17,41 +25,41 @@ export default class TapZoomHandler {
 
     reset() {
         this._active = false;
-        this.swipePoint = null;
-        this.swipeTime = null;
-        this.tapTime = null;
-        this.tap.reset();
+        delete this._swipePoint;
+        delete this._swipeTouch;
+        delete this._tapTime;
+        this._tap.reset();
     }
 
-    touchstart(e, points) {
-        if (this.swipePoint) return;
+    touchstart(e: TouchEvent, points: Array<Point>) {
+        if (this._swipePoint) return;
 
-        if (this.tapTime && e.timeStamp - this.tapTime > 300) {
+        if (this._tapTime && e.timeStamp - this._tapTime > 300) {
             this.reset();
         }
 
-        if (!this.tapTime) {
-            this.tap.touchstart(e, points);
+        if (!this._tapTime) {
+            this._tap.touchstart(e, points);
         } else if (e.targetTouches.length > 0) {
-            this.swipePoint = points[0];
-            this.swipeTouch = e.targetTouches[0].identifier;
+            this._swipePoint = points[0];
+            this._swipeTouch = e.targetTouches[0].identifier;
         } else {
             log(e.targetTouches.length);
         }
 
     }
 
-    touchmove(e, points) {
-        if (!this.tapTime) {
-            this.tap.touchmove(e, points);
-        } else if (this.swipePoint) {
-            if (e.targetTouches[0].identifier !== this.swipeTouch) {
+    touchmove(e: TouchEvent, points: Array<Point>) {
+        if (!this._tapTime) {
+            this._tap.touchmove(e, points);
+        } else if (this._swipePoint) {
+            if (e.targetTouches[0].identifier !== this._swipeTouch) {
                 return;
             }
 
             const newSwipePoint = points[0];
-            const dist = newSwipePoint.y - this.swipePoint.y;
-            this.swipePoint = newSwipePoint;
+            const dist = newSwipePoint.y - this._swipePoint.y;
+            this._swipePoint = newSwipePoint;
 
             this._active = true;
 
@@ -63,13 +71,13 @@ export default class TapZoomHandler {
         }
     }
 
-    touchend(e, points) {
-        if (!this.tapTime) {
-            const point = this.tap.touchend(e, points);;
+    touchend(e: TouchEvent, points: Array<Point>) {
+        if (!this._tapTime) {
+            const point = this._tap.touchend(e, points);;
             if (point) {
-                this.tapTime = e.timeStamp;
+                this._tapTime = e.timeStamp;
             }
-        } else if (this.swipePoint) {
+        } else if (this._swipePoint) {
             if (e.targetTouches.length === 0) {
                 this.reset();
             }
