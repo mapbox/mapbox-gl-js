@@ -33,12 +33,6 @@ class BoxZoomHandler {
         this._el = map.getCanvasContainer();
         this._container = map.getContainer();
         this._clickTolerance = options.clickTolerance || 1;
-
-        bindAll([
-            '_onMouseMove',
-            '_onMouseUp',
-            '_onKeyDown'
-        ], this);
     }
 
     /**
@@ -81,21 +75,19 @@ class BoxZoomHandler {
         this._enabled = false;
     }
 
-    onMouseDown(e: MouseEvent) {
+    mousedown(e: MouseEvent, point) {
         if (!this.isEnabled()) return;
         if (!(e.shiftKey && e.button === 0)) return;
 
-        window.document.addEventListener('mousemove', this._onMouseMove, false);
-        window.document.addEventListener('keydown', this._onKeyDown, false);
-        window.document.addEventListener('mouseup', this._onMouseUp, false);
-
         DOM.disableDrag();
-        this._startPos = this._lastPos = DOM.mousePos(this._el, e);
+        this._startPos = this._lastPos = point;
         this._active = true;
     }
 
-    _onMouseMove(e: MouseEvent) {
-        const pos = DOM.mousePos(this._el, e);
+    mousemove(e: MouseEvent, point) {
+        if (!this._active) return;
+
+        const pos = point;
 
         if (this._lastPos.equals(pos) || (!this._box && pos.dist(this._startPos) < this._clickTolerance)) {
             return;
@@ -121,13 +113,16 @@ class BoxZoomHandler {
         this._box.style.height = `${maxY - minY}px`;
     }
 
-    _onMouseUp(e: MouseEvent) {
+    mouseup(e: MouseEvent, point) {
+        if (!this._active) return;
+
         if (e.button !== 0) return;
 
-        const p0 = this._startPos,
-            p1 = DOM.mousePos(this._el, e);
 
-        this._finish();
+        const p0 = this._startPos,
+            p1 = point;
+
+        this.reset();
 
         DOM.suppressClick();
 
@@ -140,19 +135,17 @@ class BoxZoomHandler {
         }
     }
 
-    _onKeyDown(e: KeyboardEvent) {
+    keydown(e: KeyboardEvent) {
+        if (!this._active) return;
+
         if (e.keyCode === 27) {
             this._finish();
             this._fireEvent('boxzoomcancel', e);
         }
     }
 
-    _finish() {
+    reset() {
         this._active = false;
-
-        window.document.removeEventListener('mousemove', this._onMouseMove, false);
-        window.document.removeEventListener('keydown', this._onKeyDown, false);
-        window.document.removeEventListener('mouseup', this._onMouseUp, false);
 
         this._container.classList.remove('mapboxgl-crosshair');
 

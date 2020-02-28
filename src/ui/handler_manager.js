@@ -8,6 +8,7 @@ import type Map from './map';
 import Handler from './handler/handler';
 import HandlerInertia from './handler_inertia';
 //import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
+import BoxZoomHandler from './handler/box_zoom';
 import TapZoomHandler from './handler/tap_zoom';
 import MousePanHandler from './handler/mouse_pan';
 import MousePitchHandler from './handler/mouse_pitch';
@@ -76,8 +77,8 @@ class HandlerManager {
         this.addTouchListener('touchcancel');
 
         this.addMouseListener('mousedown');
-        this.addMouseListener('mousemove');
-        this.addMouseListener('mouseup');
+        this.addMouseListener('mousemove', {}, window);
+        this.addMouseListener('mouseup', {}, window);
         this.addMouseListener('mouseover');
         this.addMouseListener('mouseout');
 
@@ -91,19 +92,20 @@ class HandlerManager {
 
     _addDefaultHandlers() {
         const el = this._map.getCanvasContainer();
+        this.add('boxZoom', new BoxZoomHandler(this._map, this));
+        this.add('tapzoom', new TapZoomHandler(this._map, this));
+        this.add('swipeZoom', new SwipeZoomHandler(this._map, this));
+        this.add('clickzoom', new ClickZoomHandler(this._map, this));
         this.add('mouserotate', new MouseRotateHandler(), ['mousepitch']);
         this.add('mousepitch', new MousePitchHandler(), ['mouserotate']);
         this.add('mousepan', new MousePanHandler());
-        this.add('tapzoom', new TapZoomHandler(this._map, this));
-        this.add('swipeZoom', new SwipeZoomHandler(this._map, this));
         this.add('touchPitch', new TouchPitchHandler());
         this.add('touchPan', new TouchPanHandler(), ['touchZoom','touchRotate']);
         this.add('touchRotate', new TouchRotateHandler(), ['touchPan', 'touchZoom']);
         this.add('touchZoom', new TouchZoomHandler(), ['touchPan', 'touchRotate']);
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
-        this.add('clickzoom', new ClickZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler(this._map));
-    /*
+        /*
         */
     }
 
@@ -140,20 +142,20 @@ class HandlerManager {
         for (const [_, handler] of this._handlers) handler.enable();
     }
 
-    addListener(eventType: string, mapEventClass?: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, options?: Object) {
+    addListener(eventType: string, mapEventClass?: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, options?: Object, el) {
         const listener = (e: *) => {
             if (mapEventClass) this._map.fire(new mapEventClass(eventType, this._map, e));
             this.processInputEvent(e);
         };
-        DOM.addEventListener(this._el, eventType, listener, options);
+        DOM.addEventListener(el || this._el, eventType, listener, options);
     }
 
     addTouchListener(eventType: string, options?: Object) {
         this.addListener(eventType, MapTouchEvent, options);
     }
 
-    addMouseListener(eventType: string, options?: Object) {
-        this.addListener(eventType, MapMouseEvent, options);
+    addMouseListener(eventType: string, options?: Object, el) {
+        this.addListener(eventType, MapMouseEvent, options, el);
     }
 
     addKeyboardListener(eventType: string, options?: Object) {
@@ -187,7 +189,7 @@ class HandlerManager {
             DOM.touchPos(this._el, e) :
             DOM.mousePos(this._el, e)) : null;
 
-        try {
+        //try {
         for (const [name, handler, allowed] of this._handlers) {
             if (!handler.isEnabled()) continue;
 
@@ -208,9 +210,9 @@ class HandlerManager {
                 delete activeHandlers[name];
             }
         }
-        } catch(e) {
-            log(e);
-        }
+        //} catch(e) {
+            //log(e);
+        //}
 
 
         //log('active' + Object.keys(activeHandlers));
@@ -242,9 +244,14 @@ class HandlerManager {
 
     updateMapTransform(settings: Object, e) {
         const map = this._map;
-        this._map.stop();
+
 
         let { zoomDelta, bearingDelta, pitchDelta, setLocationAtPoint, around, panDelta } = settings;
+        
+        if (zoomDelta || bearingDelta || pitchDelta || panDelta || settings.duration) {
+            this._map.stop();
+        }
+
         if (settings.duration) {
             const easeOptions = {
                 duration: settings.duration,

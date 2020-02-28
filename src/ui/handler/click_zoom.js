@@ -12,7 +12,6 @@ export default class ClickZoomHandler {
 
     dblclick(e, point) {
         e.preventDefault();
-        setTimeout(() => this.reset(), 300);
         return {
             transform: {
                 duration: 300, // TODO
