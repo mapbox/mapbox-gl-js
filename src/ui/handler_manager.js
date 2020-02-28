@@ -174,6 +174,9 @@ class HandlerManager {
     }
 
     processInputEvent(e: InputEvent) {
+
+        assert(e.timeStamp !== undefined);
+
         //log('', true);
         // TODO
         if (e && e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) e.preventDefault();
@@ -337,9 +340,9 @@ class HandlerManager {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 
-    onRenderFrame() {
+    onRenderFrame(timeStamp) {
         this._frameId = null;
-        this.processInputEvent(new Event('renderFrame'));
+        this.processInputEvent(new Event('renderFrame', { timeStamp }));
     }
 
     triggerRenderFrame() {
