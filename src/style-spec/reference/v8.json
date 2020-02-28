@@ -3455,7 +3455,7 @@
         }
       },
       "within": {
-        "doc": "Returns `true` if the feature being evaluated is inside the pre-defined geometry boundary, `false` otherwise. The arguments are required to be valid GeoJSON object which contains `Polygon` geometries. Currently only features with `Point` or `LineString` geometry types are supported.",
+        "doc": "Returns `true` if the feature being evaluated is inside the pre-defined geometry boundary, `false` otherwise. The expression has one argument which must be a valid GeoJSON Polygon/Multi-Polygon object. The expression only evaluates on `Point` or `LineString` feature. For `Point` feature, The expression will return false if any point of the feature is on the boundary or outside the boundary. For `LineString` feature, the expression will return false if the line is fully outside the boundary, or the line is partially intersecting the boundary, which means either part of the line is outside of the boundary, or end point of the line lies on the boundary.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {

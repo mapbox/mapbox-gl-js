@@ -5,13 +5,12 @@ import type {GlobalProperties, Feature} from '../expression';
 import type {CanonicalTileID} from '../../source/tile_id';
 
 type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
-export type FeatureFilter ={filter: FilterExpression,
-                            needGeometry: boolean};
+export type FeatureFilter ={filter: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
 export {isExpressionFilter};
 
-function isExpressionFilter(filter: any, needGeometry: boolean) {
+function isExpressionFilter(filter: any) {
     if (filter === true || filter === false) {
         return true;
     }
@@ -42,14 +41,12 @@ function isExpressionFilter(filter: any, needGeometry: boolean) {
     case 'any':
     case 'all':
         for (const f of filter.slice(1)) {
-            if (!isExpressionFilter(f, needGeometry) && typeof f !== 'boolean') {
+            if (!isExpressionFilter(f) && typeof f !== 'boolean') {
                 return false;
             }
         }
         return true;
-    case 'within':
-        needGeometry = true;
-        return true;
+
     default:
         return true;
     }
@@ -80,8 +77,7 @@ function createFilter(filter: any): FeatureFilter {
         return {filter: () => true, needGeometry: false};
     }
 
-    const withinExpr = false;
-    if (!isExpressionFilter(filter, withinExpr)) {
+    if (!isExpressionFilter(filter)) {
         filter = convertFilter(filter);
     }
 
@@ -89,9 +85,20 @@ function createFilter(filter: any): FeatureFilter {
     if (compiled.result === 'error') {
         throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
+        const needGeometry = filterNeedGeometry(filter);
         return {filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiled.value.evaluate(globalProperties, feature, {}, canonical),
-            needGeometry: withinExpr};
+            needGeometry};
     }
+}
+
+function filterNeedGeometry(filter) {
+    if (filter === true || filter === false) {
+        return false;
+    }
+    if (!Array.isArray(filter) || filter.length === 0) {
+        return false;
+    }
+    return filter[0] === 'within';
 }
 
 // Comparison function to sort numbers and strings

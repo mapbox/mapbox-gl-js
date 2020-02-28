@@ -71,6 +71,14 @@ function getLngLatPoints(line, canonical) {
     return coords;
 }
 
+function onBoundary(p, p1, p2) {
+    const x1 = p[0] - p1[0];
+    const y1 = p[1] - p1[1];
+    const x2 = p[0] - p2[0];
+    const y2 = p[1] - p2[1];
+    return (x1 * y2 - x2 * y1 === 0) && (x1 * x2 <= 0) && (y1 * y2 <= 0);
+}
+
 function rayIntersect(p, p1, p2) {
     return ((p1[1] > p[1]) !== (p2[1] > p[1])) && (p[0] < (p2[0] - p1[0]) * (p[1] - p1[1]) / (p2[1] - p1[1]) + p1[0]);
 }
@@ -80,8 +88,9 @@ function pointWithinPolygon(point, rings) {
     let inside = false;
     for (let i = 0, len = rings.length; i < len; i++) {
         const ring = rings[i];
-        for (let j = 0, len2 = ring.length, k = len2 - 1; j < len2; k = j++) {
-            if (rayIntersect(point, ring[j], ring[k])) inside = !inside;
+        for (let j = 0, len2 = ring.length; j < len2 - 1; j++) {
+            if (onBoundary(point, ring[j], ring[j + 1])) return false;
+            if (rayIntersect(point, ring[j], ring[j + 1])) inside = !inside;
         }
     }
     return inside;
@@ -173,8 +182,9 @@ function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPo
     const lngLatPoints = [];
     for (const points of ctx.geometry()) {
         for (const point of points) {
-            lngLatPoints.push(getLngLatPoint(point, ctx.canonicalID()));
-            updateBBox(pointBBox, point);
+            const p = getLngLatPoint(point, ctx.canonicalID());
+            lngLatPoints.push(p);
+            updateBBox(pointBBox, p);
         }
     }
     if (!boxWithinBox(pointBBox, polyBBox)) return false;
@@ -234,7 +244,7 @@ class Within implements Expression {
                 return new Within(geojson, geojson);
             }
         }
-        return context.error(`'within' expression requires valid geojson source that contains polygon geometry type.`);
+        return context.error(`'within' expression requires valid geojson object that contains polygon geometry type.`);
     }
 
     evaluate(ctx: EvaluationContext) {

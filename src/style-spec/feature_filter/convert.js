@@ -64,8 +64,7 @@ export default function convertFilter(filter: FilterSpecification): mixed {
  * produce a `false` result.
  */
 function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedTypes): mixed {
-    const needGeo = false;
-    if (isExpressionFilter(filter, needGeo)) { return filter; }
+    if (isExpressionFilter(filter)) { return filter; }
 
     if (!filter) return true;
     const op = filter[0];

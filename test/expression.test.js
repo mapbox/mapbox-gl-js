@@ -29,7 +29,7 @@ function convertLines(lines, canonical, out) {
     }
 }
 
-function getGeomtry(feature, geometry, canonical) {
+function getGeometry(feature, geometry, canonical) {
     if (geometry.coordinates) {
         const coords = geometry.coordinates;
         const type = geometry.type;
@@ -114,7 +114,7 @@ run('js', {ignores, tests}, (fixture) => {
                 }
                 if ('geometry' in input[1]) {
                     if (canonical !== null) {
-                        getGeomtry(feature, input[1].geometry, canonical);
+                        getGeometry(feature, input[1].geometry, canonical);
                     } else {
                         feature.type = input[1].geometry.type;
                     }

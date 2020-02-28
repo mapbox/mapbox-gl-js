@@ -148,9 +148,9 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
-                             glyphMap: {[string]: {[number]: ?StyleGlyph}},
-                             glyphPositions: {[string]: {[number]: GlyphPosition}},
-                             imageMap: {[string]: StyleImage},
+                             glyphMap: {[_: string]: {[number]: ?StyleGlyph}},
+                             glyphPositions: {[_: string]: {[number]: GlyphPosition}},
+                             imageMap: {[_: string]: StyleImage},
                              imagePositions: {[_: string]: ImagePosition},
                              showCollisionBoxes: boolean,
                              canonical: CanonicalTileID) {
