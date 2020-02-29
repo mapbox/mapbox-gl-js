@@ -75,7 +75,7 @@ class BoxZoomHandler {
         this._enabled = false;
     }
 
-    mousedown(e: MouseEvent, point) {
+    mousedown(e: MouseEvent, point: Point) {
         if (!this.isEnabled()) return;
         if (!(e.shiftKey && e.button === 0)) return;
 
@@ -84,7 +84,7 @@ class BoxZoomHandler {
         this._active = true;
     }
 
-    mousemove(e: MouseEvent, point) {
+    mousemove(e: MouseEvent, point: Point) {
         if (!this._active) return;
 
         const pos = point;
@@ -113,7 +113,7 @@ class BoxZoomHandler {
         this._box.style.height = `${maxY - minY}px`;
     }
 
-    mouseup(e: MouseEvent, point) {
+    mouseup(e: MouseEvent, point: Point) {
         if (!this._active) return;
 
         if (e.button !== 0) return;
@@ -139,7 +139,7 @@ class BoxZoomHandler {
         if (!this._active) return;
 
         if (e.keyCode === 27) {
-            this._finish();
+            this.reset();
             this._fireEvent('boxzoomcancel', e);
         }
     }

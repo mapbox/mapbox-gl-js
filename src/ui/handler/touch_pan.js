@@ -7,7 +7,7 @@ export default class TouchPanHandler {
 
     _enabled: boolean;
     _active: boolean;
-    _touches: { [number]: Point };
+    _touches: { [string | number]: Point };
     _minTouches: number;
     
     constructor() {
@@ -21,15 +21,11 @@ export default class TouchPanHandler {
     }
 
     touchstart(e: TouchEvent, points: Array<Point>) {
-        return {
-            transform: this._calculateTransform(e, points)
-        };
+        return this._calculateTransform(e, points)
     }
 
     touchmove(e: TouchEvent, points: Array<Point>) {
-        return {
-            transform: this._calculateTransform(e, points)
-        };
+        return this._calculateTransform(e, points)
     }
 
     touchend(e: TouchEvent, points: Array<Point>) {

@@ -320,10 +320,8 @@ class ScrollZoomHandler {
 
         const ret = {
             needsRenderFrame: !finished,
-            transform: {
-                zoomDelta: zoom - tr.zoom,
-                around: this._aroundPoint
-            }
+            zoomDelta: zoom - tr.zoom,
+            around: this._aroundPoint
         };
         return ret;
     }

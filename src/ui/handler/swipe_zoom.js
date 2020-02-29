@@ -64,9 +64,7 @@ export default class TapZoomHandler {
             this._active = true;
 
             return {
-                transform: {
-                    zoomDelta: dist / -128
-                }
+                zoomDelta: dist / -128
             }
         }
     }

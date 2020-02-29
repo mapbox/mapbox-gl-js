@@ -43,9 +43,7 @@ export default class MousePitchHandler {
         this._lastPoint = point;
 
         return {
-            transform: {
-                pitchDelta
-            }
+            pitchDelta
         };
     }
 

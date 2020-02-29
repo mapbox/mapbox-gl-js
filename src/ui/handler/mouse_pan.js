@@ -12,7 +12,7 @@ export default class MousePanHandler {
     _lastPoint: Point;
     _eventButton: number;
 
-    constructor(el, manager) {
+    constructor() {
         this.reset();
     }
 
@@ -43,10 +43,8 @@ export default class MousePanHandler {
         this._lastPoint = point;
 
         return {
-            transform: {
-                around: point,
-                panDelta
-            }
+            around: point,
+            panDelta
         };
     }
 

@@ -49,21 +49,17 @@ export default class TapZoomHandler {
             this._active = true;
             setTimeout(() => this.reset(), 0);
             return {
-                transform: {
-                    duration: 300,
-                    zoomDelta: 1,
-                    around: zoomInPoint
-                }
+                duration: 300,
+                zoomDelta: 1,
+                around: zoomInPoint
             };
         } else if (zoomOutPoint) {
             this._active = true;
             setTimeout(() => this.reset(), 0);
             return {
-                transform: {
-                    duration: 300,
-                    zoomDelta: -1,
-                    around: zoomOutPoint
-                }
+                duration: 300,
+                zoomDelta: -1,
+                around: zoomOutPoint
             };
         }
     }

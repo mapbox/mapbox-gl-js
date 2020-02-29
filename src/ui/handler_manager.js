@@ -24,25 +24,48 @@ import { log } from './handler/handler_util';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
-import type AnimationOptions from './camera';
+import type {AnimationOptions} from './camera';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
-// TODO
-export type Handler = any;
+class RenderFrameEvent extends Event {
+    type: 'renderFrame';
+    timeStamp: number;
+}
 
-export type CameraDeltaOptions = {
+// TODO
+export interface Handler {
+    enable(): void;
+    disable(): void;
+    isEnabled(): boolean;
+    isActive(): boolean;
+    reset(): void;
+    +touchstart?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
+    +touchmove?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
+    +touchend?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
+    +touchcancel?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
+    +mousedown?: (e: MouseEvent, point: Point) => HandlerResult | void;
+    +mousemove?: (e: MouseEvent, point: Point) => HandlerResult | void;
+    +mouseup?: (e: MouseEvent, point: Point) => HandlerResult | void;
+    +dblclick?: (e: MouseEvent, point: Point) => HandlerResult | void;
+    +wheel?: (e: WheelEvent, point: Point) => HandlerResult | void;
+    +keydown?: (e: KeyboardEvent) => HandlerResult | void;
+    +keyup?: (e: KeyboardEvent) => HandlerResult | void;
+    +renderFrame?: () => HandlerResult | void;
+}
+
+export type HandlerResult = {|
     panDelta?: Point,
     zoomDelta?: number,
     bearingDelta?: number,
     pitchDelta?: number,
-    around?: Point 
-};
-
-export type HandlerResult = CameraDeltaOptions & AnimationOptions & {
+    around?: Point,
+    duration?: number,
+    easing?: (number) => number,
     originalEvent?: any,
+    delayEndEvents?: number,
     needsRenderFrame?: boolean
-} & any; // TODO
+|};
 
 class HandlerManager {
     _map: Map;
@@ -56,6 +79,7 @@ class HandlerManager {
     _frameId: number;
     inertia: HandlerInertia;
     handlers: { [string]: Handler };
+    updating: boolean;
 
     /**
      * @private
@@ -65,8 +89,8 @@ class HandlerManager {
         this._map = map;
         this._el = this._map.getCanvasContainer();
         this._handlers = [];
+        this.handlers = {};
 
-        this._frameId = null;
         this.inertia = new HandlerInertia(map, options);
 
         window.onerror = function(e) {
@@ -106,11 +130,10 @@ class HandlerManager {
 
     _addDefaultHandlers() {
         const el = this._map.getCanvasContainer();
-        /*
         this.add('boxZoom', new BoxZoomHandler(this._map, this));
-        this.add('tapzoom', new TapZoomHandler(this._map, this));
-        this.add('swipeZoom', new SwipeZoomHandler(this._map, this));
-        this.add('clickzoom', new ClickZoomHandler(this._map, this));
+        this.add('tapzoom', new TapZoomHandler());
+        this.add('swipeZoom', new SwipeZoomHandler());
+        this.add('clickzoom', new ClickZoomHandler());
         this.add('mouserotate', new MouseRotateHandler(), ['mousepitch']);
         this.add('mousepitch', new MousePitchHandler(), ['mouserotate']);
         this.add('mousepan', new MousePanHandler());
@@ -119,11 +142,12 @@ class HandlerManager {
         this.add('touchRotate', new TouchRotateHandler(), ['touchPan', 'touchZoom']);
         this.add('touchZoom', new TouchZoomHandler(), ['touchPan', 'touchRotate']);
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
-        this.add('keyboard', new KeyboardHandler(this._map));
+        this.add('keyboard', new KeyboardHandler());
+        /*
         */
     }
 
-    add(handlerName: string, handler: Handler, allowed: Array<string>) {
+    add(handlerName: string, handler: Handler, allowed?: Array<string>) {
 
         if (this.handlers[handlerName]) throw new Error(`Cannot add ${handlerName}: a handler with that name already exists`);
         this._handlers.push([handlerName, handler, allowed]);
@@ -177,6 +201,7 @@ class HandlerManager {
     }
 
     stop() {
+        if (this.updating) return;
         for (const [name, handler] of this._handlers) {
             handler.reset();
         }
@@ -184,7 +209,7 @@ class HandlerManager {
         this.fireEvents({});
     }
 
-    blockedByActive(activeHandlers, allowed, myName) { 
+    blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string) { 
         for (const name in activeHandlers) {
             if (name === myName) continue;
             if (!allowed || allowed.indexOf(name) < 0) {
@@ -194,33 +219,34 @@ class HandlerManager {
         return false;
     }
 
-    processInputEvent(e: InputEvent) {
+    processInputEvent(e: InputEvent | RenderFrameEvent) {
 
         assert(e.timeStamp !== undefined);
         console.log(e.type);
 
         //log('', true);
         // TODO
-        if (e && e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) e.preventDefault();
+        if (e && e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) ((e: any): MouseEvent).preventDefault();
         let transformSettings = { eventsInProgress: {} };
         let activeHandlers = {};
 
-        let points = e ? (e.touches ?
-            DOM.touchPos(this._el, e) :
-            DOM.mousePos(this._el, e.targetTouches)) : null;
+        let points = e ? (e.targetTouches ?
+            DOM.touchPos(this._el, ((e: any): TouchEvent).targetTouches) :
+            DOM.mousePos(this._el, ((e: any): MouseEvent))) : null;
 
         //try {
         for (const [name, handler, allowed] of this._handlers) {
             if (!handler.isEnabled()) continue;
 
-            let data;
+            let data: HandlerResult | void;
             if (this.blockedByActive(activeHandlers, allowed, name)) {
                 if (!handler.reset) console.log(handler);
                 else handler.reset();
 
             } else {
-                if (handler[e.type]) {
-                    data = handler[e.type](e, points);
+                if ((handler: any)[e.type]) {
+                    // TODO
+                    data = (handler: any)[e.type](e, points);
                     this.mergeTransform(transformSettings, data, name);
                     if (data && data.needsRenderFrame) {
                         console.log("HERE");
@@ -229,7 +255,7 @@ class HandlerManager {
                 }
             }
 
-            if ((data && data.transform) || handler.isActive()) {
+            if ((data) || handler.isActive()) {
                 activeHandlers[name] = handler;
             } else {
                 delete activeHandlers[name];
@@ -246,30 +272,31 @@ class HandlerManager {
         }
     }
 
-    mergeTransform(transformSettings, data, name) {
-        if (!data || !data.transform) return;
+    mergeTransform(transformSettings: any, data: any, name: string) {
+        if (!data) return;
 
-        extend(transformSettings, data.transform);
+        extend(transformSettings, data);
 
         const eventsInProgress = transformSettings.eventsInProgress;
-        if (data.transform.zoomDelta !== undefined) {
+        if (data.zoomDelta !== undefined) {
             eventsInProgress.zoom = name;
         }
-        if (data.transform.panDelta !== undefined) {
+        if (data.panDelta !== undefined) {
             eventsInProgress.drag = name;
         }
-        if (data.transform.pitchDelta !== undefined) {
+        if (data.pitchDelta !== undefined) {
             eventsInProgress.pitch = name;
         }
-        if (data.transform.rotateDelta !== undefined) {
+        if (data.rotateDelta !== undefined) {
             eventsInProgress.rotate = name;
         }
 
     }
 
-    updateMapTransform(settings: Object, e) {
+    updateMapTransform(settings: any, e?: InputEvent | RenderFrameEvent) {
         const map = this._map;
 
+        this.updating = true;
 
         let { zoomDelta, bearingDelta, pitchDelta, setLocationAtPoint, around, panDelta } = settings;
         
@@ -278,10 +305,11 @@ class HandlerManager {
         }
 
         if (settings.duration) {
-            const easeOptions = {
-                duration: settings.duration,
-                delayEndEvents: settings.delayEndEvents
-            }
+            const easeOptions = {};
+
+            easeOptions.duration = settings.duration;
+            easeOptions.delayEndEvents = settings.delayEndEvents;
+
             if (settings.easing) easeOptions.easing = settings.easing;
 
             if (zoomDelta) {
@@ -301,8 +329,7 @@ class HandlerManager {
 
             map.easeTo(easeOptions);
             this.inertia.clear();
-            return;
-        }
+        } else {
 
 
         const tr = this._map.transform;
@@ -326,10 +353,13 @@ class HandlerManager {
         this._map._update();
 
         this.fireEvents(settings.eventsInProgress);
+        }
+        this.updating = false;
+
     }
 
 
-    fireEvents(newEventsInProgress, e) {
+    fireEvents(newEventsInProgress: { [string]: string }, e?: InputEvent) {
         const wasMoving = !!Object.keys(this.eventsInProgress).length;
         const isMoving = !!Object.keys(newEventsInProgress).length;
 
@@ -339,7 +369,7 @@ class HandlerManager {
 
         for (const eventName in newEventsInProgress) {
             const handlerName = newEventsInProgress[eventName];
-            if (!this.eventsInProgress[name]) {
+            if (!this.eventsInProgress[eventName]) {
                 this._fireEvent(eventName + 'start', e);
             }
             this.eventsInProgress[eventName] = handlerName;
@@ -375,10 +405,10 @@ class HandlerManager {
     }
 
     triggerRenderFrame() {
-        if (this._frameId === null) {
-            this._frameId = this._map._requestRenderFrame(timestamp => {
-                this._frameId = null;
-                this.processInputEvent(new Event('renderFrame', { timeStamp }));
+        if (this._frameId === undefined) {
+            this._frameId = this._map._requestRenderFrame(timeStamp => {
+                delete this._frameId;
+                this.processInputEvent(new RenderFrameEvent('renderFrame', { timeStamp }));
             });
         }
     }

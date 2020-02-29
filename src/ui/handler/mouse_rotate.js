@@ -43,9 +43,7 @@ export default class MouseRotateHandler  {
         this._lastPoint = point;
 
         return {
-            transform: {
-                bearingDelta
-            }
+            bearingDelta
         };
     }
 

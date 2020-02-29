@@ -104,7 +104,7 @@ class KeyboardHandler {
             return;
         }
 
-        const easeOptions = {
+        return {
             duration: 300,
             delayEndEvents: 500,
             easing: easeOut,
@@ -118,8 +118,6 @@ class KeyboardHandler {
                 -yDir * this._panStep
             )
         };
-
-        return { transform: easeOptions };
     }
 
     enable() {

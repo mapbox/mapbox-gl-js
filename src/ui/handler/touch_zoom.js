@@ -49,10 +49,8 @@ export default class TouchZoomHandler {
         this._active = true;
 
         return {
-            transform: {
-                around,
-                zoomDelta
-            }
+            around,
+            zoomDelta
         };
     }
 

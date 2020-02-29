@@ -60,7 +60,7 @@ export default class TouchPitchHandler {
 
         if (vectorA.mag() === 0 || vectorB.mag() === 0) {
 
-            if (this._firstSkip === null) {
+            if (this._firstSkip === undefined) {
                 this._firstSkip = timeStamp;
             }
 
@@ -102,9 +102,7 @@ export default class TouchPitchHandler {
         this._active = true;
 
         return {
-            transform: {
-                pitchDelta
-            }
+            pitchDelta
         };
     }
 

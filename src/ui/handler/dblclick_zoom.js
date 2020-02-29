@@ -18,11 +18,9 @@ export default class ClickZoomHandler {
     dblclick(e: MouseEvent, point: Point) {
         e.preventDefault();
         return {
-            transform: {
-                duration: 300, // TODO
-                zoomDelta: e.shiftKey ? -1 : 1,
-                around: point
-            }
+            duration: 300, // TODO
+            zoomDelta: e.shiftKey ? -1 : 1,
+            around: point
         }
     }
 

@@ -1027,7 +1027,7 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     stop(): this {
-        this._stop();
+        return this._stop();
     }
 
     _stop(allowGestures?: boolean): this {
@@ -1046,7 +1046,8 @@ class Camera extends Evented {
             onEaseEnd.call(this);
         }
         if (!allowGestures) {
-            this.handlers.stop();
+            // TODO
+            (this: any).handlers.stop();
         }
         return this;
     }
