@@ -2302,11 +2302,11 @@ class Map extends Camera {
         removeNode(this._missingCSSCanary);
         this._container.classList.remove('mapboxgl-map');
 
-        //Teardown input handlers
-        this.dragPan.teardown();
-        this.boxZoom.teardown();
-        this.dragRotate.teardown();
-        this.touchZoomRotate.teardown();
+        //remove input handlers
+        this.dragPan.remove();
+        this.boxZoom.remove();
+        this.dragRotate.remove();
+        this.touchZoomRotate.remove();
 
         PerformanceUtils.clearMetrics();
         this.fire(new Event('remove'));

@@ -345,7 +345,7 @@ class DragPanHandler {
         DOM.removeEventListener(window, 'blur', this._onBlur);
     }
 
-    teardown() {
+    remove() {
         this._unbind();
     }
 

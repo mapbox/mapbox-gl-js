@@ -153,7 +153,7 @@ class BoxZoomHandler {
         window.document.removeEventListener('mouseup', this._onMouseUp, false);
     }
 
-    teardown() {
+    remove() {
         this._unbind();
     }
 

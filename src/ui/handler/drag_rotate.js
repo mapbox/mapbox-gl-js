@@ -294,7 +294,7 @@ class DragRotateHandler {
         DOM.enableDrag();
     }
 
-    teardown() {
+    remove() {
         this._unbind();
     }
 
