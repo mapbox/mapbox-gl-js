@@ -1,0 +1,33 @@
+[
+  {
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          0,
+          0
+        ],
+        [
+          5.009765625,
+          14.987239525774243
+        ]
+      ]
+    },
+    "type": "Feature",
+    "properties": {},
+    "id": 1,
+    "layer": {
+      "id": "line",
+      "type": "line",
+      "source": "mapbox",
+      "paint": {
+        "line-width": 20
+      },
+      "layout": {}
+    },
+    "source": "mapbox",
+    "state": {
+      "big": true
+    }
+  }
+]

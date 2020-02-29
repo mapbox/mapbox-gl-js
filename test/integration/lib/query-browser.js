@@ -22,6 +22,7 @@ function testFunc(t) {
     const style = fixtures[currentTestName].style;
     const expected = fixtures[currentTestName].expected;
     const options = style.metadata.test;
+    const skipLayerDelete = style.metadata.skipLayerDelete;
 
     window.devicePixelRatio = options.pixelRatio;
 
@@ -60,7 +61,7 @@ function testFunc(t) {
 
             const actual = results.map((feature) => {
                 const featureJson = JSON.parse(JSON.stringify(feature.toJSON()));
-                delete featureJson.layer;
+                if (!skipLayerDelete) delete featureJson.layer;
                 return featureJson;
             });
 
