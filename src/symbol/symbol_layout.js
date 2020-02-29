@@ -148,10 +148,10 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
-                             glyphMap: {[string]: {[number]: ?StyleGlyph}},
-                             glyphPositions: {[string]: {[number]: GlyphPosition}},
-                             imageMap: {[string]: StyleImage},
-                             imagePositions: {[string]: ImagePosition},
+                             glyphMap: {[_: string]: {[_: number]: ?StyleGlyph}},
+                             glyphPositions: {[_: string]: {[_: number]: GlyphPosition}},
+                             imageMap: {[_: string]: StyleImage},
+                             imagePositions: {[_: string]: ImagePosition},
                              showCollisionBoxes: boolean) {
     bucket.createArrays();
 
@@ -351,7 +351,7 @@ function addFeature(bucket: SymbolBucket,
                     feature: SymbolFeature,
                     shapedTextOrientations: any,
                     shapedIcon: PositionedIcon | void,
-                    imageMap: {[string]: StyleImage},
+                    imageMap: {[_: string]: StyleImage},
                     sizes: Sizes,
                     layoutTextSize: number,
                     layoutIconSize: number,
@@ -476,7 +476,7 @@ export {MAX_PACKED_SIZE};
 function addTextVertices(bucket: SymbolBucket,
                          anchor: Point,
                          shapedText: Shaping,
-                         imageMap: {[string]: StyleImage},
+                         imageMap: {[_: string]: StyleImage},
                          layer: SymbolStyleLayer,
                          textAlongLine: boolean,
                          feature: SymbolFeature,
@@ -484,7 +484,7 @@ function addTextVertices(bucket: SymbolBucket,
                          lineArray: {lineStartIndex: number, lineLength: number},
                          writingMode: number,
                          placementTypes: Array<'vertical' | 'center' | 'left' | 'right'>,
-                         placedTextSymbolIndices: {[string]: number},
+                         placedTextSymbolIndices: {[_: string]: number},
                          placedIconIndex: number,
                          sizes: Sizes) {
     const glyphQuads = getGlyphQuads(anchor, shapedText, textOffset,
@@ -532,7 +532,7 @@ function addTextVertices(bucket: SymbolBucket,
     return glyphQuads.length * 4;
 }
 
-function getDefaultHorizontalShaping(horizontalShaping: {[TextJustify]: Shaping}): Shaping | null {
+function getDefaultHorizontalShaping(horizontalShaping: {[_: TextJustify]: Shaping}): Shaping | null {
     // We don't care which shaping we get because this is used for collision purposes
     // and all the justifications have the same collision box
     for (const justification: any in horizontalShaping) {
@@ -551,7 +551,7 @@ function addSymbol(bucket: SymbolBucket,
                    line: Array<Point>,
                    shapedTextOrientations: any,
                    shapedIcon: PositionedIcon | void,
-                   imageMap: {[string]: StyleImage},
+                   imageMap: {[_: string]: StyleImage},
                    verticallyShapedIcon: PositionedIcon | void,
                    layer: SymbolStyleLayer,
                    collisionBoxArray: CollisionBoxArray,

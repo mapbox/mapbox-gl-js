@@ -167,12 +167,12 @@ class LineBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[string]: ImagePosition}) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}) {
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, imagePositions);
     }
 
-    addFeatures(options: PopulateParameters, imagePositions: {[string]: ImagePosition}) {
+    addFeatures(options: PopulateParameters, imagePositions: {[_: string]: ImagePosition}) {
         for (const feature of this.patternFeatures) {
             this.addFeature(feature, feature.geometry, feature.index, imagePositions);
         }
@@ -203,7 +203,7 @@ class LineBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, imagePositions: {[string]: ImagePosition}) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, imagePositions: {[_: string]: ImagePosition}) {
         const layout = this.layers[0].layout;
         const join = layout.get('line-join').evaluate(feature, {});
         const cap = layout.get('line-cap');
@@ -215,7 +215,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number, index: number, imagePositions: {[string]: ImagePosition}) {
+    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number, index: number, imagePositions: {[_: string]: ImagePosition}) {
         this.distance = 0;
         this.scaledDistance = 0;
         this.totalDistance = 0;

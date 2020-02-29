@@ -77,8 +77,8 @@ function packColor(color: Color): [number, number] {
  */
 
 interface AttributeBinder {
-    populatePaintArray(length: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection): void;
-    updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState, imagePositions: {[string]: ImagePosition}): void;
+    populatePaintArray(length: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, formattedSection?: FormattedSection): void;
+    updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState, imagePositions: {[_: string]: ImagePosition}): void;
     upload(Context): void;
     destroy(): void;
 }
@@ -161,7 +161,7 @@ class SourceExpressionBinder implements AttributeBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, formattedSection?: FormattedSection) {
         const start = this.paintVertexArray.length;
         const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, [], formattedSection);
         this.paintVertexArray.resize(newLength);
@@ -232,7 +232,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, formattedSection?: FormattedSection) {
         const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, [], formattedSection);
         const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, [], formattedSection);
         const start = this.paintVertexArray.length;
@@ -319,14 +319,14 @@ class CrossFadedCompositeBinder implements AttributeBinder {
         this.zoomOutPaintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(length: number, feature: Feature, imagePositions: {[string]: ImagePosition}) {
+    populatePaintArray(length: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}) {
         const start = this.zoomInPaintVertexArray.length;
         this.zoomInPaintVertexArray.resize(length);
         this.zoomOutPaintVertexArray.resize(length);
         this._setPaintValues(start, length, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, imagePositions: {[string]: ImagePosition}) {
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, imagePositions: {[_: string]: ImagePosition}) {
         this._setPaintValues(start, end, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
@@ -388,13 +388,13 @@ class CrossFadedCompositeBinder implements AttributeBinder {
  * @private
  */
 export default class ProgramConfiguration {
-    binders: { [string]: (AttributeBinder | UniformBinder) };
+    binders: {[_: string]: (AttributeBinder | UniformBinder) };
     cacheKey: string;
     layoutAttributes: Array<StructArrayMember>;
 
     _buffers: Array<VertexBuffer>;
 
-    constructor(layer: TypedStyleLayer, zoom: number, filterProperties: (string) => boolean, layoutAttributes: Array<StructArrayMember>) {
+    constructor(layer: TypedStyleLayer, zoom: number, filterProperties: (_: string) => boolean, layoutAttributes: Array<StructArrayMember>) {
         this.binders = {};
         this.layoutAttributes = layoutAttributes;
         this._buffers = [];
@@ -442,7 +442,7 @@ export default class ProgramConfiguration {
         return binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ? binder.maxValue : 0;
     }
 
-    populatePaintArrays(newLength: number, feature: Feature, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
+    populatePaintArrays(newLength: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, formattedSection?: FormattedSection) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder)
@@ -457,7 +457,7 @@ export default class ProgramConfiguration {
         }
     }
 
-    updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: VectorTileLayer, layer: TypedStyleLayer, imagePositions: {[string]: ImagePosition}): boolean {
+    updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: VectorTileLayer, layer: TypedStyleLayer, imagePositions: {[_: string]: ImagePosition}): boolean {
         let dirty: boolean = false;
         for (const id in featureStates) {
             const positions = featureMap.getPositions(id);
@@ -554,12 +554,12 @@ export default class ProgramConfiguration {
 }
 
 export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
-    programConfigurations: {[string]: ProgramConfiguration};
+    programConfigurations: {[_: string]: ProgramConfiguration};
     needsUpload: boolean;
     _featureMap: FeaturePositionMap;
     _bufferOffset: number;
 
-    constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true) {
+    constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (_: string) => boolean = () => true) {
         this.programConfigurations = {};
         for (const layer of layers) {
             this.programConfigurations[layer.id] = new ProgramConfiguration(layer, zoom, filterProperties, layoutAttributes);
@@ -569,7 +569,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         this._bufferOffset = 0;
     }
 
-    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: {[string]: ImagePosition}, formattedSection?: FormattedSection) {
+    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: {[_: string]: ImagePosition}, formattedSection?: FormattedSection) {
         for (const key in this.programConfigurations) {
             this.programConfigurations[key].populatePaintArrays(length, feature, imagePositions, formattedSection);
         }
@@ -582,7 +582,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         this.needsUpload = true;
     }
 
-    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: $ReadOnlyArray<TypedStyleLayer>, imagePositions: {[string]: ImagePosition}) {
+    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: $ReadOnlyArray<TypedStyleLayer>, imagePositions: {[_: string]: ImagePosition}) {
         for (const layer of layers) {
             this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, vtLayer, layer, imagePositions) || this.needsUpload;
         }

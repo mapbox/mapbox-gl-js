@@ -87,7 +87,7 @@ type PainterOptions = {
 class Painter {
     context: Context;
     transform: Transform;
-    _tileTextures: { [number]: Array<Texture> };
+    _tileTextures: {[_: number]: Array<Texture> };
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration: ProgramConfiguration;
@@ -105,7 +105,7 @@ class Painter {
     viewportSegments: SegmentVector;
     quadTriangleIndexBuffer: IndexBuffer;
     tileBorderIndexBuffer: IndexBuffer;
-    _tileClippingMaskIDs: { [string]: number };
+    _tileClippingMaskIDs: {[_: string]: number };
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -120,10 +120,10 @@ class Painter {
     nextStencilID: number;
     id: string;
     _showOverdrawInspector: boolean;
-    cache: { [string]: Program<*> };
+    cache: {[_: string]: Program<*> };
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
-    gpuTimers: { [string]: any };
+    gpuTimers: {[_: string]: any };
     emptyTexture: Texture;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
@@ -314,7 +314,7 @@ class Painter {
      *
      * Returns [StencilMode for tile overscaleZ map, sortedCoords].
      */
-    stencilConfigForOverlap(tileIDs: Array<OverscaledTileID>): [{[number]: $ReadOnly<StencilMode>}, Array<OverscaledTileID>] {
+    stencilConfigForOverlap(tileIDs: Array<OverscaledTileID>): [{[_: number]: $ReadOnly<StencilMode>}, Array<OverscaledTileID>] {
         const gl = this.context.gl;
         const coords = tileIDs.sort((a, b) => b.overscaledZ - a.overscaledZ);
         const minTileZ = coords[coords.length - 1].overscaledZ;
@@ -387,9 +387,9 @@ class Painter {
             }
         }
 
-        const coordsAscending: {[string]: Array<OverscaledTileID>} = {};
-        const coordsDescending: {[string]: Array<OverscaledTileID>} = {};
-        const coordsDescendingSymbol: {[string]: Array<OverscaledTileID>} = {};
+        const coordsAscending: {[_: string]: Array<OverscaledTileID>} = {};
+        const coordsDescending: {[_: string]: Array<OverscaledTileID>} = {};
+        const coordsDescendingSymbol: {[_: string]: Array<OverscaledTileID>} = {};
 
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
@@ -542,7 +542,7 @@ class Painter {
         return currentLayerTimers;
     }
 
-    queryGpuTimers(gpuTimers: {[string]: any}) {
+    queryGpuTimers(gpuTimers: {[_: string]: any}) {
         const layers = {};
         for (const layerId in gpuTimers) {
             const gpuTimer = gpuTimers[layerId];

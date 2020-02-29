@@ -43,7 +43,7 @@ class Length implements Expression {
         }
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
     }
 

@@ -29,17 +29,17 @@ import type {FormattedSection} from './types/formatted';
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
     +id?: any,
-    +properties: {[string]: any},
-    +patterns?: {[string]: {"min": string, "mid": string, "max": string}}
+    +properties: {[_: string]: any},
+    +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}}
 };
 
-export type FeatureState = {[string]: any};
+export type FeatureState = {[_: string]: any};
 
 export type GlobalProperties = $ReadOnly<{
     zoom: number,
     heatmapDensity?: number,
     lineProgress?: number,
-    isSupportedScript?: (string) => boolean,
+    isSupportedScript?: (_: string) => boolean,
     accumulated?: Value
 }>;
 
@@ -49,7 +49,7 @@ export class StyleExpression {
     _evaluator: EvaluationContext;
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
-    _enumValues: ?{[string]: any};
+    _enumValues: ?{[_: string]: any};
 
     constructor(expression: Expression, propertySpec: ?StylePropertySpecification) {
         this.expression = expression;

@@ -106,7 +106,7 @@ class Match implements Expression {
         return output.evaluate(ctx);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
         this.outputs.forEach(fn);
         fn(this.otherwise);

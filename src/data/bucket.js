@@ -41,7 +41,7 @@ export type BucketFeature = {|
     properties: Object,
     type: 1 | 2 | 3,
     id?: any,
-    +patterns: {[string]: {"min": string, "mid": string, "max": string}},
+    +patterns: {[_: string]: {"min": string, "mid": string, "max": string}},
     sortKey?: number
 |};
 
@@ -75,7 +75,7 @@ export interface Bucket {
     +stateDependentLayers: Array<any>;
     +stateDependentLayerIds: Array<string>;
     populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
-    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[string]: ImagePosition}): void;
+    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}): void;
     isEmpty(): boolean;
 
     upload(context: Context): void;
@@ -91,7 +91,7 @@ export interface Bucket {
     destroy(): void;
 }
 
-export function deserialize(input: Array<Bucket>, style: Style): {[string]: Bucket} {
+export function deserialize(input: Array<Bucket>, style: Style): {[_: string]: Bucket} {
     const output = {};
 
     // Guard against the case where the map's style has been set to null while

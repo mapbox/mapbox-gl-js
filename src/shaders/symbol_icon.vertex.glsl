@@ -87,10 +87,6 @@ void main() {
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
     gl_Position = u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 32.0 * max(a_minFontScale, fontScale) + a_pxoffset / 16.0), 0.0, 1.0);
 
-    // Symbols might end up being behind the camera. Modify z-value to be out of visible bounds
-    // if this is the case, otherwise ignore depth. -1.1 is safely out of the visible depth range [-1, 1]
-    gl_Position.z = mix(-1.1 * gl_Position.w, gl_Position.z, float(projected_pos.w > 0.0));
-
     v_tex = a_tex / u_texsize;
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;

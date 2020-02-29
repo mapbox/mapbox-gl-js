@@ -13,7 +13,7 @@ export type Segment = {
     primitiveOffset: number,
     vertexLength: number,
     primitiveLength: number,
-    vaos: {[string]: VertexArrayObject}
+    vaos: {[_: string]: VertexArrayObject}
 }
 
 class SegmentVector {

@@ -64,7 +64,7 @@ class Case implements Expression {
         return this.otherwise.evaluate(ctx);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         for (const [test, expression] of this.branches) {
             fn(test);
             fn(expression);

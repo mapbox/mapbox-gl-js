@@ -53,7 +53,7 @@ class At implements Expression {
         return array[index];
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.index);
         fn(this.input);
     }

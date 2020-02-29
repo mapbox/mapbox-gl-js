@@ -26,4 +26,4 @@ export interface Expression {
 
 export type ExpressionParser = (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Expression;
 export type ExpressionRegistration = Class<Expression> & { +parse: ExpressionParser };
-export type ExpressionRegistry = {[string]: ExpressionRegistration};
+export type ExpressionRegistry = {[_: string]: ExpressionRegistration};

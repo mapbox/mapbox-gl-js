@@ -30,11 +30,11 @@ import type {PluginState} from './rtl_text_plugin';
 export default class Worker {
     self: WorkerGlobalScopeInterface;
     actor: Actor;
-    layerIndexes: { [string]: StyleLayerIndex };
-    availableImages: { [string]: Array<string> };
-    workerSourceTypes: { [string]: Class<WorkerSource> };
-    workerSources: { [string]: { [string]: { [string]: WorkerSource } } };
-    demWorkerSources: { [string]: { [string]: RasterDEMTileWorkerSource } };
+    layerIndexes: {[_: string]: StyleLayerIndex };
+    availableImages: {[_: string]: Array<string> };
+    workerSourceTypes: {[_: string]: Class<WorkerSource> };
+    workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
+    demWorkerSources: {[_: string]: {[_: string]: RasterDEMTileWorkerSource } };
     referrer: ?string;
 
     constructor(self: WorkerGlobalScopeInterface) {

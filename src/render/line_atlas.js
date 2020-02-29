@@ -19,7 +19,7 @@ class LineAtlas {
     nextRow: number;
     bytes: number;
     data: Uint8Array;
-    dashEntry: {[string]: any};
+    dashEntry: {[_: string]: any};
     dirty: boolean;
     texture: WebGLTexture;
 

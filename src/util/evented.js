@@ -3,7 +3,7 @@
 import {extend} from './util';
 
 type Listener = (Object) => any;
-type Listeners = { [string]: Array<Listener> };
+type Listeners = {[_: string]: Array<Listener> };
 
 function _addEventListener(type: string, listener: Listener, listenerList: Listeners) {
     const listenerExists = listenerList[type] && listenerList[type].indexOf(listener) !== -1;

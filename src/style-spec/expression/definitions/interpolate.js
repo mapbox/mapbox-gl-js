@@ -180,7 +180,7 @@ class Interpolate implements Expression {
         }
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
         for (const expression of this.outputs) {
             fn(expression);

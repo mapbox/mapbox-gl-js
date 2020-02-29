@@ -25,7 +25,7 @@ export interface WorkerGlobalScopeInterface {
     importScripts(...urls: Array<string>): void;
 
     registerWorkerSource: (string, Class<WorkerSource>) => void,
-    registerRTLTextPlugin: (any) => void
+    registerRTLTextPlugin: (_: any) => void
 }
 
 class MessageBus implements WorkerInterface, WorkerGlobalScopeInterface {

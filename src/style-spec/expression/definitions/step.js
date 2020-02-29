@@ -95,7 +95,7 @@ class Step implements Expression {
         return outputs[index].evaluate(ctx);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
         for (const expression of this.outputs) {
             fn(expression);

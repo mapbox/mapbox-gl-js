@@ -120,14 +120,14 @@ class FillExtrusionBucket implements Bucket {
         }
     }
 
-    addFeatures(options: PopulateParameters, imagePositions: {[string]: ImagePosition}) {
+    addFeatures(options: PopulateParameters, imagePositions: {[_: string]: ImagePosition}) {
         for (const feature of this.features) {
             const {geometry} = feature;
             this.addFeature(feature, geometry, feature.index, imagePositions);
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[string]: ImagePosition}) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}) {
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, imagePositions);
     }
@@ -157,7 +157,7 @@ class FillExtrusionBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, imagePositions: {[string]: ImagePosition}) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, imagePositions: {[_: string]: ImagePosition}) {
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
             for (const ring of polygon) {

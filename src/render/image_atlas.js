@@ -63,12 +63,12 @@ export class ImagePosition {
 
 export default class ImageAtlas {
     image: RGBAImage;
-    iconPositions: {[string]: ImagePosition};
-    patternPositions: {[string]: ImagePosition};
+    iconPositions: {[_: string]: ImagePosition};
+    patternPositions: {[_: string]: ImagePosition};
     haveRenderCallbacks: Array<string>;
     uploaded: ?boolean;
 
-    constructor(icons: {[string]: StyleImage}, patterns: {[string]: StyleImage}) {
+    constructor(icons: {[_: string]: StyleImage}, patterns: {[_: string]: StyleImage}) {
         const iconPositions = {}, patternPositions = {};
         this.haveRenderCallbacks = [];
 
@@ -107,7 +107,7 @@ export default class ImageAtlas {
         this.patternPositions = patternPositions;
     }
 
-    addImages(images: {[string]: StyleImage}, positions: {[string]: ImagePosition}, bins: Array<Rect>) {
+    addImages(images: {[_: string]: StyleImage}, positions: {[_: string]: ImagePosition}, bins: Array<Rect>) {
         for (const id in images) {
             const src = images[id];
             const bin = {

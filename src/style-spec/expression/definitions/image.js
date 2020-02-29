@@ -39,7 +39,7 @@ export default class ImageExpression implements Expression {
         return new ResolvedImage({name: evaluatedImageName, available});
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
     }
 

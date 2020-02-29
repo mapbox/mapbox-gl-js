@@ -94,7 +94,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     loadGeoJSON: LoadGeoJSON;
     _state: SourceState;
     _pendingCallback: Callback<{
-        resourceTiming?: {[string]: Array<PerformanceResourceTiming>},
+        resourceTiming?: {[_: string]: Array<PerformanceResourceTiming>},
         abandoned?: boolean }>;
     _pendingLoadDataParams: LoadGeoJSONParameters;
     _geoJSONIndex: GeoJSONIndex
@@ -128,7 +128,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param callback
      */
     loadData(params: LoadGeoJSONParameters, callback: Callback<{
-        resourceTiming?: {[string]: Array<PerformanceResourceTiming>},
+        resourceTiming?: {[_: string]: Array<PerformanceResourceTiming>},
         abandoned?: boolean }>) {
         if (this._pendingCallback) {
             // Tell the foreground the previous call has been abandoned
