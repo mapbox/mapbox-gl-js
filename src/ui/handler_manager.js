@@ -6,7 +6,6 @@ import DOM from '../util/dom';
 import browser from '../util/browser';
 import type Map from './map';
 import HandlerInertia from './handler_inertia';
-//import { TouchPanHandler, TouchZoomHandler, TouchRotateHandler, TouchPitchHandler } from './handler/touch';
 import BoxZoomHandler from './handler/box_zoom';
 import TapZoomHandler from './handler/tap_zoom';
 import MousePanHandler from './handler/mouse_pan';
@@ -20,7 +19,6 @@ import KeyboardHandler from './handler/keyboard';
 import ScrollZoomHandler from './handler/scroll_zoom';
 import ClickZoomHandler from './handler/dblclick_zoom';
 import SwipeZoomHandler from './handler/swipe_zoom';
-import { log } from './handler/handler_util';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
@@ -67,19 +65,20 @@ export type HandlerResult = {|
     needsRenderFrame?: boolean
 |};
 
+function hasChange(result: HandlerResult) {
+    return (result.panDelta && result.panDelta.mag()) || result.zoomDelta || result.bearingDelta || result.pitchDelta;
+}
+
 class HandlerManager {
     _map: Map;
     _el: HTMLElement;
-    _handlers: Array<[string, Handler, any]>; // TODO
+    _handlers: Array<[string, Handler, any]>;
     eventsInProgress: Object;
-    touchPan: TouchPanHandler;
-    touchZoom: TouchZoomHandler;
-    touchRotate: TouchRotateHandler;
-    touchPitch: TouchPitchHandler;
     _frameId: number;
     inertia: HandlerInertia;
-    handlers: { [string]: Handler };
-    updating: boolean;
+    _handlersById: { [string]: Handler };
+    _updatingCamera: boolean;
+    _changes: Array<[HandlerResult, Object, any]>;
 
     /**
      * @private
@@ -89,18 +88,13 @@ class HandlerManager {
         this._map = map;
         this._el = this._map.getCanvasContainer();
         this._handlers = [];
-        this.handlers = {};
+        this._handlersById = {};
+        this._changes = [];
 
         this.inertia = new HandlerInertia(map, options);
 
-        window.onerror = function(e) {
-            log(e);
-        }
-
         // Track whether map is currently moving, to compute start/move/end events
-        this.eventsInProgress = {
-        };
-
+        this.eventsInProgress = {};
 
         this._addDefaultHandlers();
 
@@ -138,46 +132,20 @@ class HandlerManager {
         this.add('mousepitch', new MousePitchHandler(), ['mouserotate']);
         this.add('mousepan', new MousePanHandler());
         this.add('touchPitch', new TouchPitchHandler());
-        this.add('touchPan', new TouchPanHandler(), ['touchZoom','touchRotate']);
         this.add('touchRotate', new TouchRotateHandler(), ['touchPan', 'touchZoom']);
         this.add('touchZoom', new TouchZoomHandler(), ['touchPan', 'touchRotate']);
+        this.add('touchPan', new TouchPanHandler(), ['touchZoom','touchRotate']);
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler());
-        /*
-        */
     }
 
     add(handlerName: string, handler: Handler, allowed?: Array<string>) {
-
-        if (this.handlers[handlerName]) throw new Error(`Cannot add ${handlerName}: a handler with that name already exists`);
+        if (this._handlersById[handlerName]) {
+            throw new Error(`Cannot add ${handlerName}: a handler with that name already exists`);
+        }
         this._handlers.push([handlerName, handler, allowed]);
-        this.handlers[handlerName] = handler;
+        this._handlersById[handlerName] = handler;
         handler.enable();
-    }
-
-    remove(handlerName: string) {
-        if (!handlerName || typeof handlerName !== 'string') throw new Error('Must provide a valid handlerName string');
-        if (!this.handlers[handlerName]) throw new Error(`Handler ${handlerName} not found`);
-        const newHandlers = this._handlers.filter(([existingName, existingHandler]) => {
-            if (existingName === handlerName) {
-                delete this.handlers[handlerName];
-                return false;
-            }
-            return true;
-        });
-        this._handlers = newHandlers;
-    }
-
-    removeAll() {
-        for (const [handlerName, _] of this._handlers) this.remove(handlerName);
-    }
-
-    disableAll() {
-        for (const [_, handler] of this._handlers) handler.disable();
-    }
-
-    enableAll() {
-        for (const [_, handler] of this._handlers) handler.enable();
     }
 
     addListener(eventType: string, mapEventClass?: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, options?: Object, el: any) {
@@ -201,12 +169,15 @@ class HandlerManager {
     }
 
     stop() {
-        if (this.updating) return;
+        // do nothing if this method was triggered by a gesture update
+        if (this._updatingCamera) return;
+
         for (const [name, handler] of this._handlers) {
             handler.reset();
         }
         this.inertia.clear();
         this.fireEvents({});
+        this._changes = [];
     }
 
     blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string) { 
@@ -222,140 +193,140 @@ class HandlerManager {
     processInputEvent(e: InputEvent | RenderFrameEvent) {
 
         assert(e.timeStamp !== undefined);
-        console.log(e.type);
 
-        //log('', true);
         // TODO
         if (e && e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) ((e: any): MouseEvent).preventDefault();
-        let transformSettings = { eventsInProgress: {} };
-        let activeHandlers = {};
 
-        let points = e ? (e.targetTouches ?
+        const mergedHandlerResult: HandlerResult = {needsRenderFrame: false};
+        const eventsInProgress = {};
+        const activeHandlers = {};
+
+        const points = e ? (e.targetTouches ?
             DOM.touchPos(this._el, ((e: any): TouchEvent).targetTouches) :
             DOM.mousePos(this._el, ((e: any): MouseEvent))) : null;
 
-        //try {
         for (const [name, handler, allowed] of this._handlers) {
             if (!handler.isEnabled()) continue;
 
             let data: HandlerResult | void;
             if (this.blockedByActive(activeHandlers, allowed, name)) {
-                if (!handler.reset) console.log(handler);
-                else handler.reset();
+                handler.reset();
 
             } else {
                 if ((handler: any)[e.type]) {
-                    // TODO
                     data = (handler: any)[e.type](e, points);
-                    this.mergeTransform(transformSettings, data, name);
+                    this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data, name);
                     if (data && data.needsRenderFrame) {
-                        console.log("HERE");
                         this.triggerRenderFrame();
                     }
                 }
             }
 
-            if ((data) || handler.isActive()) {
+            if (data || handler.isActive()) {
                 activeHandlers[name] = handler;
             } else {
                 delete activeHandlers[name];
             }
         }
-        //} catch(e) {
-            //log(e);
-        //}
 
-
-        //log('active' + Object.keys(activeHandlers));
-        if (Object.keys(transformSettings).length) {
-            this.updateMapTransform(transformSettings, e);
+        if (hasChange(mergedHandlerResult)) {
+            this._changes.push([mergedHandlerResult, eventsInProgress, e]);
+            this.triggerRenderFrame();
         }
     }
 
-    mergeTransform(transformSettings: any, data: any, name: string) {
-        if (!data) return;
+    mergeHandlerResult(mergedHandlerResult: HandlerResult, eventsInProgress: Object, handlerResult: HandlerResult, name: string) {
+        if (!handlerResult) return;
 
-        extend(transformSettings, data);
+        extend(mergedHandlerResult, handlerResult);
 
-        const eventsInProgress = transformSettings.eventsInProgress;
-        if (data.zoomDelta !== undefined) {
+        // track which handler changed which camera property
+        if (handlerResult.zoomDelta !== undefined) {
             eventsInProgress.zoom = name;
         }
-        if (data.panDelta !== undefined) {
+        if (handlerResult.panDelta !== undefined) {
             eventsInProgress.drag = name;
         }
-        if (data.pitchDelta !== undefined) {
+        if (handlerResult.pitchDelta !== undefined) {
             eventsInProgress.pitch = name;
         }
-        if (data.rotateDelta !== undefined) {
+        if (handlerResult.bearingDelta !== undefined) {
             eventsInProgress.rotate = name;
         }
 
     }
 
-    updateMapTransform(settings: any, e?: InputEvent | RenderFrameEvent) {
-        const map = this._map;
+    applyChanges() {
+        let combined = {};
+        let combinedEventsInProgress = {};
 
-        this.updating = true;
+        for (const [change, eventsInProgress, e] of this._changes) {
 
-        let { zoomDelta, bearingDelta, pitchDelta, setLocationAtPoint, around, panDelta } = settings;
-        
-        if (zoomDelta || bearingDelta || pitchDelta || panDelta || settings.duration) {
-            this._map._stop(true);
+            if (change.duration && combined.duration) {
+                // an animated change overrides all previous changes
+                combined = {};
+                combinedEventsInProgress = {};
+            }
+
+            if (change.duration) combined.duration = change.duration;
+            if (change.easing) combined.easing = change.easing;
+            if (change.panDelta) combined.panDelta = (combined.panDelta || new Point(0, 0))._add(change.panDelta);
+            if (change.zoomDelta) combined.zoomDelta = (combined.zoomDelta || 0) + change.zoomDelta;
+            if (change.bearingDelta) combined.bearingDelta = (combined.bearingDelta || 0) + change.bearingDelta;
+            if (change.pitchDelta) combined.pitchDelta = (combined.pitchDelta || 0) + change.pitchDelta;
+            if (change.around) combined.around = change.around;
+
+            extend(combinedEventsInProgress, eventsInProgress);
         }
+        
+        // TODO pass original event
+        this.updateMapTransform(combined, combinedEventsInProgress);
+        this._changes = [];
+    }
 
-        if (settings.duration) {
+    updateMapTransform(combinedResult: any, combinedEventsInProgress: Object, e?: InputEvent | RenderFrameEvent) {
+        
+        if (!hasChange(combinedResult)) return;
+        const map = this._map;
+        const tr = map.transform;
+
+        this._updatingCamera = true;
+
+        // stop any ongoing camera animations (easeTo, flyTo)
+        map._stop(true);
+
+        let { panDelta, zoomDelta, bearingDelta, pitchDelta, around } = combinedResult;
+
+        if (combinedResult.duration) {
             const easeOptions = {};
+            easeOptions.duration = combinedResult.duration;
+            if (combinedResult.delayEndEvents) easeOptions.delayEndEvents = combinedResult.delayEndEvents;
+            if (combinedResult.easing) easeOptions.easing = combinedResult.easing;
 
-            easeOptions.duration = settings.duration;
-            easeOptions.delayEndEvents = settings.delayEndEvents;
+            if (panDelta) easeOptions.center = map.unproject(tr.centerPoint.sub(panDelta));
+            if (zoomDelta) easeOptions.zoom = tr.zoom + zoomDelta;
+            if (bearingDelta) easeOptions.bearing = tr.bearing + bearingDelta;
+            if (pitchDelta) easeOptions.pitch = tr.pitch + pitchDelta;
+            if (around) easeOptions.around = map.unproject(around);
 
-            if (settings.easing) easeOptions.easing = settings.easing;
-
-            if (zoomDelta) {
-                easeOptions.zoom = map.getZoom() + zoomDelta;
-            }
-
-            if (panDelta) {
-                easeOptions.center = map.unproject(map.project(map.getCenter()).sub(panDelta));
-            }
-
-            if (around) {
-                easeOptions.around = map.unproject(around);
-            }
-
-            if (pitchDelta) {
-            }
-
-            map.easeTo(easeOptions);
             this.inertia.clear();
+            map.easeTo(easeOptions);
+
         } else {
 
+            around = around || map.transform.centerPoint;
+            const loc = tr.pointLocation(panDelta ? around.sub(panDelta) : around);
+            if (bearingDelta) tr.bearing += bearingDelta;
+            if (pitchDelta) tr.pitch += pitchDelta;
+            if (zoomDelta) tr.zoom += zoomDelta;
+            tr.setLocationAtPoint(loc, around);
 
-        const tr = this._map.transform;
-        this.inertia.record(settings);
+            this._map._update();
+            this.inertia.record(combinedResult);
+            this.fireEvents(combinedEventsInProgress);
+        }
 
-        if (zoomDelta) {
-            const loc = around ? tr.pointLocation(around) : null;
-            tr.zoom += zoomDelta;
-            if (loc) tr.setLocationAtPoint(loc, around);
-        }
-        if (bearingDelta) tr.bearing += bearingDelta;
-        if (pitchDelta) tr.pitch += pitchDelta;
-        if (panDelta) {
-            around = around || new Point(0, 0);
-            tr.setLocationAtPoint(tr.pointLocation(around.sub(panDelta)), around);
-        }
-        if (setLocationAtPoint && setLocationAtPoint.length === 2) {
-            let [loc, pt] = setLocationAtPoint;
-            tr.setLocationAtPoint(loc, pt);
-        }
-        this._map._update();
-
-        this.fireEvents(settings.eventsInProgress);
-        }
-        this.updating = false;
-
+        this._updatingCamera = false;
     }
 
 
@@ -385,7 +356,7 @@ class HandlerManager {
 
         for (const eventName in this.eventsInProgress) {
             const handlerName = this.eventsInProgress[eventName];
-            if (!this.handlers[handlerName].isActive()) {
+            if (!this._handlersById[handlerName].isActive()) {
                 delete this.eventsInProgress[eventName];
                 this._fireEvent(eventName + 'end', e);
             }
@@ -409,6 +380,7 @@ class HandlerManager {
             this._frameId = this._map._requestRenderFrame(timeStamp => {
                 delete this._frameId;
                 this.processInputEvent(new RenderFrameEvent('renderFrame', { timeStamp }));
+                this.applyChanges();
             });
         }
     }

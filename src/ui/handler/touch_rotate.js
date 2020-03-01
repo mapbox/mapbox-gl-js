@@ -3,7 +3,7 @@
 import Point from '@mapbox/point-geometry';
 import {getTouchesById} from './handler_util';
 
-export default class TouchZoomHandler {
+export default class TouchRotateHandler {
 
     _enabled: boolean;
     _active: boolean;
