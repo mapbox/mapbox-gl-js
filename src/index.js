@@ -51,6 +51,7 @@ const exported = {
      * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
      *
      * @var {string} accessToken
+     * @returns {string} The currently set access token.
      * @example
      * mapboxgl.accessToken = myAccessToken;
      * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
@@ -67,6 +68,7 @@ const exported = {
      * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
      *
      * @var {string} baseApiUrl
+     * @returns {string} The current base API URL.
      * @example
      * mapboxgl.baseApiUrl = 'https://api.mapbox.com';
      */
@@ -84,6 +86,7 @@ const exported = {
      * Make sure to set this property before creating any map instances for it to have effect.
      *
      * @var {string} workerCount
+     * @returns {number} Number of workers currently configured.
      * @example
      * mapboxgl.workerCount = 2;
      */
@@ -100,6 +103,7 @@ const exported = {
      * which affects performance in raster-heavy maps. 16 by default.
      *
      * @var {string} maxParallelImageRequests
+     * @returns {number} Number of parallel requests currently configured.
      * @example
      * mapboxgl.maxParallelImageRequests = 10;
      */

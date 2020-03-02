@@ -217,7 +217,7 @@ export default class Marker extends Evented {
 
     /**
      * Attaches the marker to a map
-     * @param {Map} map
+     * @param {Map} map The Mapbox GL JS map to add the marker to.
      * @returns {Marker} `this`
      */
     addTo(map: Map) {
@@ -269,7 +269,7 @@ export default class Marker extends Evented {
      * set by `setLngLat` because `Marker` wraps the anchor longitude across copies of the world to keep
      * the marker on screen.
      *
-     * @returns {LngLat}
+     * @returns {LngLat} A {@link LngLat} describing the marker's location.
      */
     getLngLat() {
         return this._lngLat;
@@ -277,6 +277,7 @@ export default class Marker extends Evented {
 
     /**
      * Set the marker's geographical position and move it.
+     * @param {LngLat} lnglat A {@link LngLat} describing where the marker should be located.
      * @returns {Marker} `this`
      */
     setLngLat(lnglat: LngLatLike) {
@@ -418,7 +419,7 @@ export default class Marker extends Evented {
 
     /**
      * Get the marker's offset.
-     * @returns {Point}
+     * @returns {Point} The marker's screen coordinates in pixels.
      */
     getOffset() {
         return this._offset;
@@ -541,7 +542,7 @@ export default class Marker extends Evented {
 
     /**
      * Returns true if the marker can be dragged
-     * @returns {boolean}
+     * @returns {boolean} True if the marker is draggable.
      */
     isDraggable() {
         return this._draggable;
@@ -560,7 +561,7 @@ export default class Marker extends Evented {
 
     /**
      * Returns the current rotation angle of the marker (in degrees).
-     * @returns {number}
+     * @returns {number} The current rotation angle of the marker.
      */
     getRotation() {
         return this._rotation;
@@ -579,7 +580,7 @@ export default class Marker extends Evented {
 
     /**
      * Returns the current `rotationAlignment` property of the marker.
-     * @returns {string}
+     * @returns {string} The current rotational alignment of the marker.
      */
     getRotationAlignment() {
         return this._rotationAlignment;
@@ -598,7 +599,7 @@ export default class Marker extends Evented {
 
     /**
      * Returns the current `pitchAlignment` property of the marker.
-     * @returns {string}
+     * @returns {string} The current pitch alignment of the marker in degrees.
      */
     getPitchAlignment() {
         return this._pitchAlignment;

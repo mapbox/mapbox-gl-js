@@ -65,6 +65,7 @@ export class MapMouseEvent extends Event {
 
     /**
      * `true` if `preventDefault` has been called.
+     * @private
      */
     get defaultPrevented(): boolean {
         return this._defaultPrevented;
@@ -144,6 +145,7 @@ export class MapTouchEvent extends Event {
 
     /**
      * `true` if `preventDefault` has been called.
+     * @private
      */
     get defaultPrevented(): boolean {
         return this._defaultPrevented;
@@ -197,6 +199,7 @@ export class MapWheelEvent extends Event {
 
     /**
      * `true` if `preventDefault` has been called.
+     * @private
      */
     get defaultPrevented(): boolean {
         return this._defaultPrevented;
