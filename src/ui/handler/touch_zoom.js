@@ -10,6 +10,7 @@ export default class TouchZoomHandler {
     _active: boolean;
     _firstTwoTouches: [number, number];
     _distance: number;
+    _aroundCenter: boolean;
 
     constructor() {
         this.reset();
@@ -42,14 +43,14 @@ export default class TouchZoomHandler {
 
         const distance = a.dist(b);
         const zoomDelta = Math.log(distance / this._distance) / Math.LN2;
-        const around = a.add(b).div(2);
+        const pinchAround = this._aroundCenter ? null : a.add(b).div(2);
 
         this._distance = distance;
 
         this._active = true;
 
         return {
-            around,
+            pinchAround,
             zoomDelta
         };
     }
@@ -63,8 +64,9 @@ export default class TouchZoomHandler {
         this.reset();
     }
 
-    enable() {
+    enable(options: ?{around?: 'center'}) {
         this._enabled = true;
+        this._aroundCenter = !!options && options.around === 'center';
     }
 
     disable() {

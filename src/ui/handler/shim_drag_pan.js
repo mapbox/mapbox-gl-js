@@ -1,7 +1,8 @@
 // @flow
 
 import {bezier} from '../../util/util';
-export type DragPanOptions = any;
+import type MousePanHandler from './mouse_pan';
+import type TouchPanHandler from './touch_pan';
 
 const defaultInertia = {
     linearity: 0.3,

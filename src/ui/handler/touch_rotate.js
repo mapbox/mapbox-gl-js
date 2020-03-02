@@ -9,6 +9,7 @@ export default class TouchRotateHandler {
     _active: boolean;
     _firstTwoTouches: [number, number];
     _vector: Point;
+    _aroundCenter: boolean;
 
     constructor() {
         this.reset();
@@ -37,14 +38,14 @@ export default class TouchRotateHandler {
         const [a, b] = getTouchesById(e, points, this._firstTwoTouches);
         const vector = a.sub(b);
         const bearingDelta = vector.angleWith(this._vector) * 180 / Math.PI;
-        const around = a.add(b).div(2);
+        const pinchAround = this._aroundCenter ? null : a.add(b).div(2);
 
         this._vector = vector;
 
         this._active = true;
 
         return {
-            around,
+            pinchAround,
             bearingDelta
         };
     }
@@ -58,8 +59,9 @@ export default class TouchRotateHandler {
         this.reset();
     }
 
-    enable() {
+    enable(options: ?{around?: 'center'}) {
         this._enabled = true;
+        this._aroundCenter = !!options && options.around === 'center';
     }
 
     disable() {

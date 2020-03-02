@@ -59,7 +59,8 @@ export type HandlerResult = {|
     zoomDelta?: number,
     bearingDelta?: number,
     pitchDelta?: number,
-    around?: Point,
+    around?: Point | null,
+    pinchAround?: Point | null,
     duration?: number,
     easing?: (number) => number,
     originalEvent?: any,
@@ -136,12 +137,12 @@ class HandlerManager {
         const mousePan = new MousePanHandler();
         this.add('mousePan', mousePan);
         this.add('touchPitch', new TouchPitchHandler());
+        const touchPan = new TouchPanHandler();
+        this.add('touchPan', touchPan, ['touchZoom','touchRotate']);
         const touchRotate = new TouchRotateHandler();
         this.add('touchRotate', touchRotate, ['touchPan', 'touchZoom']);
         const touchZoom = new TouchZoomHandler();
         this.add('touchZoom', touchZoom, ['touchPan', 'touchRotate']);
-        const touchPan = new TouchPanHandler();
-        this.add('touchPan', touchPan, ['touchZoom','touchRotate']);
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler());
 
@@ -288,8 +289,8 @@ class HandlerManager {
             if (change.zoomDelta) combined.zoomDelta = (combined.zoomDelta || 0) + change.zoomDelta;
             if (change.bearingDelta) combined.bearingDelta = (combined.bearingDelta || 0) + change.bearingDelta;
             if (change.pitchDelta) combined.pitchDelta = (combined.pitchDelta || 0) + change.pitchDelta;
-            if (change.around) combined.around = change.around;
-            // TODO take the most common value
+            if (change.around !== undefined) combined.around = change.around;
+            if (change.pinchAround !== undefined) combined.pinchAround = change.pinchAround;
             if (change.noInertia) combined.noInertia = change.noInertia;
 
             extend(combinedEventsInProgress, eventsInProgress);
@@ -310,7 +311,11 @@ class HandlerManager {
         // stop any ongoing camera animations (easeTo, flyTo)
         map._stop(true);
 
-        let { panDelta, zoomDelta, bearingDelta, pitchDelta, around } = combinedResult;
+        let { panDelta, zoomDelta, bearingDelta, pitchDelta, around, pinchAround } = combinedResult;
+
+        if (pinchAround !== undefined) {
+            around = pinchAround;
+        }
 
         if (combinedResult.duration) {
             const easeOptions = {};

@@ -74,7 +74,6 @@ class HandlerManager {
             return;
         }
 
-        const {linearity, easing, maxSpeed, deceleration} = this._inertiaOptions;
 
         let deltas = {
             zoom: 0,
@@ -83,7 +82,7 @@ class HandlerManager {
             pan: new Point(0, 0),
             around: null
         };
-        let firstPoint, lastPoint;
+        let firstPoint, lastPoint, lastPinchPoint;
         for (const [time, settings] of this._inertiaBuffer) {
             deltas.zoom += settings.zoomDelta || 0;
             deltas.bearing += settings.bearingDelta || 0;
@@ -92,6 +91,9 @@ class HandlerManager {
             if (settings.around) {
                 if (!firstPoint) firstPoint = settings.around;
                 lastPoint = settings.around;
+            }
+            if (settings.pinchAround !== undefined) {
+                lastPinchPoint = settings.pinchAround;
             }
             if (settings.setLocationAtPoint) {
                 if (!firstPoint) firstPoint = settings.setLocationAtPoint[1];
@@ -102,6 +104,7 @@ class HandlerManager {
         const lastEntry = this._inertiaBuffer[this._inertiaBuffer.length - 1];
         const duration = (lastEntry[0] - this._inertiaBuffer[0][0]) / 1000;
 
+        const {linearity, easing, maxSpeed, deceleration} = this._inertiaOptions;
         const easeOptions = {};
 
         // calculate speeds and adjust for increased initial animation speed when easing
@@ -148,7 +151,8 @@ class HandlerManager {
         }
 
         if (easeOptions.zoom || easeOptions.bearing) {
-            easeOptions.around = lastPoint ? this._map.unproject(lastPoint) : this._map.getCenter();
+            const last = lastPinchPoint === undefined ? lastPoint : lastPinchPoint;
+            easeOptions.around = last ? this._map.unproject(last) : this._map.getCenter();
         }
 
         this._map.easeTo(extend(easeOptions, {
