@@ -20,6 +20,7 @@ import ScrollZoomHandler from './handler/scroll_zoom';
 import ClickZoomHandler from './handler/dblclick_zoom';
 import SwipeZoomHandler from './handler/swipe_zoom';
 import DragPanHandler from './handler/shim_drag_pan';
+import TouchZoomRotateHandler from './handler/shim_touch_zoom_rotate';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
@@ -130,17 +131,22 @@ class HandlerManager {
         this.add('tapzoom', new TapZoomHandler());
         this.add('swipeZoom', new SwipeZoomHandler());
         this.add('clickZoom', new ClickZoomHandler());
-        this.add('mouseRotate', new MouseRotateHandler(), ['mousepitch']);
-        this.add('mousePitch', new MousePitchHandler(), ['mouserotate']);
-        this.add('mousePan', new MousePanHandler());
+        this.add('mouseRotate', new MouseRotateHandler(), ['mousePitch']);
+        this.add('mousePitch', new MousePitchHandler(), ['mouseRotate']);
+        const mousePan = new MousePanHandler();
+        this.add('mousePan', mousePan);
         this.add('touchPitch', new TouchPitchHandler());
-        this.add('touchRotate', new TouchRotateHandler(), ['touchPan', 'touchZoom']);
-        this.add('touchZoom', new TouchZoomHandler(), ['touchPan', 'touchRotate']);
-        this.add('touchPan', new TouchPanHandler(), ['touchZoom','touchRotate']);
+        const touchRotate = new TouchRotateHandler();
+        this.add('touchRotate', touchRotate, ['touchPan', 'touchZoom']);
+        const touchZoom = new TouchZoomHandler();
+        this.add('touchZoom', touchZoom, ['touchPan', 'touchRotate']);
+        const touchPan = new TouchPanHandler();
+        this.add('touchPan', touchPan, ['touchZoom','touchRotate']);
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler());
 
-        this._map.dragPan = new DragPanHandler(this._handlersById.mousePan, this._handlersById.touchPan);
+        this._map.dragPan = new DragPanHandler(mousePan, touchPan);
+        this._map.touchZoomRotate = new TouchZoomRotateHandler(touchZoom, touchRotate);
     }
 
     add(handlerName: string, handler: Handler, allowed?: Array<string>) {
