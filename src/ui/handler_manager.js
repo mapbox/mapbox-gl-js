@@ -19,6 +19,7 @@ import KeyboardHandler from './handler/keyboard';
 import ScrollZoomHandler from './handler/scroll_zoom';
 import ClickZoomHandler from './handler/dblclick_zoom';
 import SwipeZoomHandler from './handler/swipe_zoom';
+import DragPanHandler from './handler/shim_drag_pan';
 import {bezier, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
@@ -128,16 +129,18 @@ class HandlerManager {
         this.add('boxZoom', new BoxZoomHandler(this._map, this));
         this.add('tapzoom', new TapZoomHandler());
         this.add('swipeZoom', new SwipeZoomHandler());
-        this.add('clickzoom', new ClickZoomHandler());
-        this.add('mouserotate', new MouseRotateHandler(), ['mousepitch']);
-        this.add('mousepitch', new MousePitchHandler(), ['mouserotate']);
-        this.add('mousepan', new MousePanHandler());
+        this.add('clickZoom', new ClickZoomHandler());
+        this.add('mouseRotate', new MouseRotateHandler(), ['mousepitch']);
+        this.add('mousePitch', new MousePitchHandler(), ['mouserotate']);
+        this.add('mousePan', new MousePanHandler());
         this.add('touchPitch', new TouchPitchHandler());
         this.add('touchRotate', new TouchRotateHandler(), ['touchPan', 'touchZoom']);
         this.add('touchZoom', new TouchZoomHandler(), ['touchPan', 'touchRotate']);
         this.add('touchPan', new TouchPanHandler(), ['touchZoom','touchRotate']);
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler());
+
+        this._map.dragPan = new DragPanHandler(this._handlersById.mousePan, this._handlersById.touchPan);
     }
 
     add(handlerName: string, handler: Handler, allowed?: Array<string>) {
