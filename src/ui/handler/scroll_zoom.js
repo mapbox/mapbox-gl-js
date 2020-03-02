@@ -319,6 +319,7 @@ class ScrollZoomHandler {
         }
 
         const ret = {
+            noInertia: true,
             needsRenderFrame: !finished,
             zoomDelta: zoom - tr.zoom,
             around: this._aroundPoint

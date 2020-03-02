@@ -1,7 +1,7 @@
 // @flow
 
 import Point from '@mapbox/point-geometry';
-import {log} from './handler_util';
+import {indexTouches} from './handler_util';
 
 
 function getCentroid(points: Array<Point>) {
@@ -22,6 +22,7 @@ export class SingleTapRecognizer {
     centroid: Point;
     startTime: number;
     aborted: boolean;
+    touches: { [number | string]: Point };
 
     constructor(options: { numTouches: number }) {
         this.reset();
@@ -31,6 +32,7 @@ export class SingleTapRecognizer {
     reset() {
         delete this.centroid;
         delete this.startTime;
+        delete this.touches;
         this.aborted = false;
     }
 
@@ -49,14 +51,20 @@ export class SingleTapRecognizer {
 
         if (e.targetTouches.length === this.numTouches) {
             this.centroid = getCentroid(points);
+            this.touches = indexTouches(e.targetTouches, points);
         }
     }
 
     touchmove(e: TouchEvent, points: Array<Point>) {
         if (this.aborted || !this.centroid) return;
 
-        if (getCentroid(points).dist(this.centroid) > MAX_DIST) {
-            this.aborted = true;
+        const newTouches = indexTouches(e.targetTouches, points);
+        for (const id in this.touches) {
+            const prevPos = this.touches[id];
+            const pos = newTouches[id];
+            if (!pos || pos.dist(prevPos) > MAX_DIST) {
+                this.aborted = true;
+            }
         }
     }
 

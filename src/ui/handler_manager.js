@@ -62,7 +62,8 @@ export type HandlerResult = {|
     easing?: (number) => number,
     originalEvent?: any,
     delayEndEvents?: number,
-    needsRenderFrame?: boolean
+    needsRenderFrame?: boolean,
+    noInertia?: boolean
 |};
 
 function hasChange(result: HandlerResult) {
@@ -192,6 +193,7 @@ class HandlerManager {
 
     processInputEvent(e: InputEvent | RenderFrameEvent) {
 
+        this._updatingCamera = true;
         assert(e.timeStamp !== undefined);
 
         // TODO
@@ -233,6 +235,9 @@ class HandlerManager {
             this._changes.push([mergedHandlerResult, eventsInProgress, e]);
             this.triggerRenderFrame();
         }
+
+        this.fireEvents({});
+        this._updatingCamera = false;
     }
 
     mergeHandlerResult(mergedHandlerResult: HandlerResult, eventsInProgress: Object, handlerResult: HandlerResult, name: string) {
@@ -275,6 +280,8 @@ class HandlerManager {
             if (change.bearingDelta) combined.bearingDelta = (combined.bearingDelta || 0) + change.bearingDelta;
             if (change.pitchDelta) combined.pitchDelta = (combined.pitchDelta || 0) + change.pitchDelta;
             if (change.around) combined.around = change.around;
+            // TODO take the most common value
+            if (change.noInertia) combined.noInertia = change.noInertia;
 
             extend(combinedEventsInProgress, eventsInProgress);
         }
@@ -290,7 +297,6 @@ class HandlerManager {
         const map = this._map;
         const tr = map.transform;
 
-        this._updatingCamera = true;
 
         // stop any ongoing camera animations (easeTo, flyTo)
         map._stop(true);
@@ -322,11 +328,10 @@ class HandlerManager {
             tr.setLocationAtPoint(loc, around);
 
             this._map._update();
-            this.inertia.record(combinedResult);
+            if (!combinedResult.noInertia) this.inertia.record(combinedResult);
             this.fireEvents(combinedEventsInProgress);
         }
 
-        this._updatingCamera = false;
     }
 
 

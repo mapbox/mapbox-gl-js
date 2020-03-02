@@ -61,6 +61,8 @@ export default class TouchPanHandler {
         const panDelta = touchDeltaSum.div(touchDeltaCount);
         const around = touchPointSum.div(touchDeltaCount);
 
+        this._active = true;
+
         return {
             around,
             panDelta

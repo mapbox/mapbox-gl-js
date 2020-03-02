@@ -1,7 +1,6 @@
 // @flow
 
 import {TapRecognizer} from './tap_recognizer';
-import {log} from './handler_util';
 import type Point from '@mapbox/point-geometry';
 
 export default class TapZoomHandler {
@@ -43,8 +42,6 @@ export default class TapZoomHandler {
         } else if (e.targetTouches.length > 0) {
             this._swipePoint = points[0];
             this._swipeTouch = e.targetTouches[0].identifier;
-        } else {
-            log(e.targetTouches.length);
         }
 
     }
