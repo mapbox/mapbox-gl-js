@@ -1,7 +1,7 @@
 uniform lowp float u_device_pixel_ratio;
 uniform vec2 u_texsize;
 uniform float u_fade;
-uniform mediump vec4 u_scale;
+uniform mediump vec3 u_scale;
 
 uniform sampler2D u_image;
 
@@ -13,12 +13,16 @@ varying float v_width;
 
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
+#pragma mapbox: define lowp float pixel_ratio_from
+#pragma mapbox: define lowp float pixel_ratio_to
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 
 void main() {
     #pragma mapbox: initialize mediump vec4 pattern_from
     #pragma mapbox: initialize mediump vec4 pattern_to
+    #pragma mapbox: initialize lowp float pixel_ratio_from
+    #pragma mapbox: initialize lowp float pixel_ratio_to
 
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
@@ -28,13 +32,12 @@ void main() {
     vec2 pattern_tl_b = pattern_to.xy;
     vec2 pattern_br_b = pattern_to.zw;
 
-    float pixelRatio = u_scale.x;
-    float tileZoomRatio = u_scale.y;
-    float fromScale = u_scale.z;
-    float toScale = u_scale.w;
+    float tileZoomRatio = u_scale.x;
+    float fromScale = u_scale.y;
+    float toScale = u_scale.z;
 
-    vec2 display_size_a = (pattern_br_a - pattern_tl_a) / pixelRatio;
-    vec2 display_size_b = (pattern_br_b - pattern_tl_b) / pixelRatio;
+    vec2 display_size_a = (pattern_br_a - pattern_tl_a) / pixel_ratio_from;
+    vec2 display_size_b = (pattern_br_b - pattern_tl_b) / pixel_ratio_to;
 
     vec2 pattern_size_a = vec2(display_size_a.x * fromScale / tileZoomRatio, display_size_a.y);
     vec2 pattern_size_b = vec2(display_size_b.x * toScale / tileZoomRatio, display_size_b.y);
