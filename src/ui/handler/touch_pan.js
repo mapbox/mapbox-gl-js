@@ -11,15 +11,20 @@ export default class TouchPanHandler {
     _touches: { [string | number]: Point };
     _minTouches: number;
     _options: InertiaOptions;
+    _clickTolerance: number;
+    _sum: Point;
     
-    constructor() {
+    constructor(options: { clickTolerance?: number }) {
         this._minTouches = 1;
-        this.reset();
+        this._clickTolerance = options.clickTolerance || 1;
+        this.reset('init');
     }
 
-    reset() {
+    reset(s) {
+        console.log("RESET", s);
         this._active = false;
         this._touches = {};
+        this._sum = new Point(0, 0);
     }
 
     touchstart(e: TouchEvent, points: Array<Point>) {
@@ -27,6 +32,7 @@ export default class TouchPanHandler {
     }
 
     touchmove(e: TouchEvent, points: Array<Point>) {
+        console.log("MOVE");
         return this._calculateTransform(e, points)
     }
 
@@ -34,7 +40,7 @@ export default class TouchPanHandler {
         const transform = this._calculateTransform(e, points);
 
         if (this._active && e.targetTouches.length < this._minTouches) {
-            this.reset();
+            this.reset('end');
         }
     }
 
@@ -61,6 +67,9 @@ export default class TouchPanHandler {
         if (touchDeltaCount < this._minTouches || !touchDeltaSum.mag()) return;
 
         const panDelta = touchDeltaSum.div(touchDeltaCount);
+        this._sum._add(panDelta);
+        if (this._sum.mag() < this._clickTolerance) return;
+
         const around = touchPointSum.div(touchDeltaCount);
 
         this._active = true;

@@ -126,6 +126,7 @@ class HandlerManager {
         this.addMouseListener('dblclick');
 
         DOM.addEventListener(window.document, 'contextmenu', e => e.preventDefault());
+        DOM.addEventListener(window, 'blur', () => this.stop());
     }
 
     _addDefaultHandlers() {
@@ -135,12 +136,14 @@ class HandlerManager {
         this.add('tapzoom', new TapZoomHandler());
         this.add('swipeZoom', new SwipeZoomHandler());
         this.add('clickZoom', new ClickZoomHandler());
-        this.add('mouseRotate', new MouseRotateHandler(), ['mousePitch']);
+        const mouseRotate = new MouseRotateHandler();
+        this.add('mouseRotate', mouseRotate, ['mousePitch']);
         this.add('mousePitch', new MousePitchHandler(), ['mouseRotate']);
-        const mousePan = new MousePanHandler();
+        const mousePan = new MousePanHandler(this.options);
         this.add('mousePan', mousePan);
-        this.add('touchPitch', new TouchPitchHandler());
-        const touchPan = new TouchPanHandler();
+        const touchPitch = this._map.touchPitch = new TouchPitchHandler();
+        this.add('touchPitch', touchPitch);
+        const touchPan = new TouchPanHandler(this.options);
         this.add('touchPan', touchPan, ['touchZoom','touchRotate']);
         const touchRotate = new TouchRotateHandler();
         this.add('touchRotate', touchRotate, ['touchPan', 'touchZoom']);
@@ -149,6 +152,7 @@ class HandlerManager {
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler());
 
+        this._map.dragRotate = mouseRotate; // TODO
         this._map.dragPan = new DragPanHandler(mousePan, touchPan);
         this._map.touchZoomRotate = new TouchZoomRotateHandler(touchZoom, touchRotate);
     }
@@ -165,9 +169,11 @@ class HandlerManager {
     addListener(eventType: string, mapEventClass?: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, options?: Object, el: any) {
         const listener = (e: *) => {
             if (mapEventClass) {
-                const mapEvent = new mapEventClass(eventType, this._map, e);
-                this._map.fire(mapEvent);
-                if (mapEvent.defaultPrevented) return;
+                if (!((eventType === 'mousemove' || eventType === 'touchmove') && this._map.dragPan.isActive())) {
+                    const mapEvent = new mapEventClass(eventType, this._map, e);
+                    this._map.fire(mapEvent);
+                    if (mapEvent.defaultPrevented) return;
+                }
             }
             this.processInputEvent(e);
         };
@@ -191,7 +197,7 @@ class HandlerManager {
         if (this._updatingCamera) return;
 
         for (const [name, handler] of this._handlers) {
-            handler.reset();
+            handler.reset('stop');
         }
         this.inertia.clear();
         this.fireEvents({});
@@ -202,6 +208,7 @@ class HandlerManager {
         for (const name in activeHandlers) {
             if (name === myName) continue;
             if (!allowed || allowed.indexOf(name) < 0) {
+                return name;
                 return true;
             }
         }
@@ -229,7 +236,7 @@ class HandlerManager {
 
             let data: HandlerResult | void;
             if (this.blockedByActive(activeHandlers, allowed, name)) {
-                handler.reset();
+                handler.reset(this.blockedByActive(activeHandlers, allowed, name));
 
             } else {
                 if ((handler: any)[e.type]) {

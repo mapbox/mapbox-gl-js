@@ -13,13 +13,16 @@ export default class MousePanHandler {
     _lastPoint: Point;
     _eventButton: number;
     _options: InertiaOptions;
+    _clickTolerance: number;
 
-    constructor() {
+    constructor(options: { clickTolerance?: number }) {
         this.reset();
+        this._clickTolerance = options.clickTolerance || 1;
     }
 
     reset() {
         this._active = false;
+        this._notMoved = true;
         delete this._lastPoint;
         delete this._eventButton;
     }
@@ -34,14 +37,18 @@ export default class MousePanHandler {
 
         this._lastPoint = point;
         this._eventButton = eventButton;
+        this._active = true;
     }
 
     mousemove(e: MouseEvent, point: Point) {
         if (!this._lastPoint) return;
 
-        this._active = true;
 
         const panDelta = point.sub(this._lastPoint);
+
+        if (this._notMoved && panDelta.mag() < this._clickTolerance) return;
+        this._notMoved = false;
+
         this._lastPoint = point;
 
         return {
