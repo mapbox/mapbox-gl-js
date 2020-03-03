@@ -114,9 +114,6 @@ class CollisionIndex {
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
 
-        // Use conservative placement to cover both flipped and non-flipped cases as the final usage is not known yet
-        const conservativePlacement = true;
-
         const firstAndLastGlyph = projection.placeFirstAndLastGlyph(
             labelPlaneFontScale,
             glyphOffsetArray,
@@ -128,8 +125,7 @@ class CollisionIndex {
             symbol,
             lineVertexArray,
             labelPlaneMatrix,
-            projectionCache,
-            conservativePlacement);
+            projectionCache);
 
         let collisionDetected = false;
         let inGrid = false;

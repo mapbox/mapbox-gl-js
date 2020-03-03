@@ -207,19 +207,13 @@ function updateLineLabels(bucket: SymbolBucket,
     }
 }
 
-function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: mat4, projectionCache: any, conservativePlacement: boolean) {
+function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: mat4, projectionCache: any) {
     const glyphEndIndex = symbol.glyphStartIndex + symbol.numGlyphs;
     const lineStartIndex = symbol.lineStartIndex;
     const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
 
-    let firstGlyphOffset = glyphOffsetArray.getoffsetX(symbol.glyphStartIndex);
-    let lastGlyphOffset = glyphOffsetArray.getoffsetX(glyphEndIndex - 1);
-
-    if (conservativePlacement) {
-        const maxOffset = Math.max(Math.abs(firstGlyphOffset), Math.abs(lastGlyphOffset));
-        firstGlyphOffset = -maxOffset;
-        lastGlyphOffset = maxOffset;
-    }
+    const firstGlyphOffset = glyphOffsetArray.getoffsetX(symbol.glyphStartIndex);
+    const lastGlyphOffset = glyphOffsetArray.getoffsetX(glyphEndIndex - 1);
 
     const firstPlacedGlyph = placeGlyphAlongLine(fontScale * firstGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
         lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
@@ -268,7 +262,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
 
         // Place the first and the last glyph in the label first, so we can figure out
         // the overall orientation of the label and determine whether it needs to be flipped in keepUpright mode
-        const firstAndLastGlyph = placeFirstAndLastGlyph(fontScale, glyphOffsetArray, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol, lineVertexArray, labelPlaneMatrix, projectionCache, false);
+        const firstAndLastGlyph = placeFirstAndLastGlyph(fontScale, glyphOffsetArray, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol, lineVertexArray, labelPlaneMatrix, projectionCache);
         if (!firstAndLastGlyph) {
             return {notEnoughRoom: true};
         }
