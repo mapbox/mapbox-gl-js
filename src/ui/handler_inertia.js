@@ -6,21 +6,45 @@ import DOM from '../util/dom';
 import browser from '../util/browser';
 import type Map from './map';
 import { log } from './handler/handler_util';
-import {bezier, extend} from '../util/util';
+import {bezier, clamp, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 
 const defaultInertiaOptions = {
-    linearity: 0.15,
-    easing: bezier(0, 0, 0.15, 1),
-    deceleration: 3,
-    maxSpeed: 1.5
+    linearity: 0.3,
+    easing: bezier(0, 0, 0.3, 1),
 };
-export type InertiaOptions = typeof defaultInertiaOptions;
+
+const defaultPanInertiaOptions = extend({
+    deceleration: 2500,
+    maxSpeed: 1400
+}, defaultInertiaOptions);
+
+const defaultZoomInertiaOptions = extend({
+    deceleration: 20,
+    maxSpeed: 1400
+}, defaultInertiaOptions);
+
+const defaultBearingInertiaOptions = extend({
+    deceleration: 1000,
+    maxSpeed: 360
+}, defaultInertiaOptions);
+
+const defaultPitchInertiaOptions = extend({
+    deceleration: 1000,
+    maxSpeed: 90
+}, defaultInertiaOptions);
+
+export type InertiaOptions = {
+    linearity: number;
+    easing: (t: number) => number;
+    deceleration: number;
+    maxSpeed: number;
+};
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
-class HandlerManager {
+export default class HandlerInertia {
     _map: Map;
     _inertiaOptions: InertiaOptions;
     _inertiaBuffer: Array<[number, Object]>;
@@ -54,19 +78,6 @@ class HandlerManager {
             inertia.shift();
     }
 
-    _clampSpeed(speed: number) {
-        const { maxSpeed } = this._inertiaOptions;
-        if (Math.abs(speed) > maxSpeed) {
-            if (speed > 0) {
-                return maxSpeed;
-            } else {
-                return -maxSpeed;
-            }
-        } else {
-            return speed;
-        }
-    }
-
     _onMoveEnd(originalEvent: *) {
         this._drainInertiaBuffer();
         if (this._inertiaBuffer.length < 2) {
@@ -74,94 +85,85 @@ class HandlerManager {
             return;
         }
 
-
         let deltas = {
             zoom: 0,
             bearing: 0,
             pitch: 0,
             pan: new Point(0, 0),
-            around: null
+            pinchAround: undefined,
+            around: undefined
         };
-        let firstPoint, lastPoint, lastPinchPoint;
+
         for (const [time, settings] of this._inertiaBuffer) {
             deltas.zoom += settings.zoomDelta || 0;
             deltas.bearing += settings.bearingDelta || 0;
             deltas.pitch += settings.pitchDelta || 0;
             if (settings.panDelta) deltas.pan._add(settings.panDelta);
-            if (settings.around) {
-                if (!firstPoint) firstPoint = settings.around;
-                lastPoint = settings.around;
-            }
-            if (settings.pinchAround !== undefined) {
-                lastPinchPoint = settings.pinchAround;
-            }
-            if (settings.setLocationAtPoint) {
-                if (!firstPoint) firstPoint = settings.setLocationAtPoint[1];
-                lastPoint = settings.setLocationAtPoint[1];
-            }
+            if (settings.around) deltas.around = settings.around;
+            if (settings.pinchAround) deltas.pinchAround = settings.pinchAround;
         };
 
         const lastEntry = this._inertiaBuffer[this._inertiaBuffer.length - 1];
-        const duration = (lastEntry[0] - this._inertiaBuffer[0][0]) / 1000;
+        const duration = (lastEntry[0] - this._inertiaBuffer[0][0]);
 
-        const {linearity, easing, maxSpeed, deceleration} = this._inertiaOptions;
         const easeOptions = {};
 
-        // calculate speeds and adjust for increased initial animation speed when easing
-
-        if (firstPoint && lastPoint) {
-
-            let panOffset = lastPoint.sub(firstPoint);
-            const velocity = panOffset.mult(linearity / duration);
-            let panSpeed = velocity.mag(); // px/s
-
-            if (panSpeed > (maxSpeed * 1000)) {
-                panSpeed = maxSpeed * 1000;
-                velocity._unit()._mult(panSpeed);
-            }
-
-            const panEaseDuration = (panSpeed / (deceleration * 1000 * linearity));
-            easeOptions.easeDuration = Math.max(easeOptions.easeDuration || 0, panEaseDuration);
-            easeOptions.offset = velocity.mult(panEaseDuration / 2);
+        if (deltas.pan.mag()) {
+            const result = calculateEasing(deltas.pan.mag(), duration, defaultPanInertiaOptions);
+            easeOptions.offset = deltas.pan.mult(result.amount / deltas.pan.mag());
             easeOptions.center = this._map.transform.center;
+            extendDuration(easeOptions, result);
         }
 
         if (deltas.zoom) {
-            let zoomSpeed = this._clampSpeed((deltas.zoom * linearity) / duration);
-            const zoomEaseDuration = Math.abs(zoomSpeed / (deceleration * linearity)) * 1000;
-            const targetZoom = (this._map.transform.zoom) + zoomSpeed * zoomEaseDuration / 2000;
-            easeOptions.easeDuration = Math.max(easeOptions.easeDuration || 0, zoomEaseDuration);
-            easeOptions.zoom = targetZoom;
+            const result = calculateEasing(deltas.zoom, duration, defaultZoomInertiaOptions);
+            easeOptions.zoom = this._map.transform.zoom + result.amount;
+            extendDuration(easeOptions, result);
         }
 
         if (deltas.bearing) {
-            let bearingSpeed = this._clampSpeed((deltas.bearing * linearity) / duration);
-            const bearingEaseDuration = Math.abs(bearingSpeed / (deceleration * linearity)) * 1000;
-            const targetBearing = (this._map.transform.bearing) + bearingSpeed * bearingEaseDuration / 2000;
-            easeOptions.easeDuration = Math.max(easeOptions.easeDuration || 0, bearingEaseDuration);
-            easeOptions.bearing = targetBearing;
+            const result = calculateEasing(deltas.bearing, duration, defaultBearingInertiaOptions);
+            easeOptions.bearing = this._map.transform.bearing + clamp(result.amount, -179, 179);
+            extendDuration(easeOptions, result);
         }
 
         if (deltas.pitch) {
-            let pitchSpeed = this._clampSpeed((deltas.pitch * linearity) / duration);
-            const pitchEaseDuration = Math.abs(pitchSpeed / (deceleration * linearity)) * 1000;
-            const targetPitch = (this._map.transform.pitch) + pitchSpeed * pitchEaseDuration / 2000;
-            easeOptions.easeDuration = Math.max(easeOptions.easeDuration || 0, pitchEaseDuration);
-            easeOptions.pitch = targetPitch;
+            const result = calculateEasing(deltas.pitch, duration, defaultPitchInertiaOptions);
+            easeOptions.pitch = this._map.transform.pitch + result.amount;
+            extendDuration(easeOptions, result);
         }
 
         if (easeOptions.zoom || easeOptions.bearing) {
-            const last = lastPinchPoint === undefined ? lastPoint : lastPinchPoint;
+            const last = deltas.pinchAround === undefined ? deltas.around : deltas.pinchAround;
             easeOptions.around = last ? this._map.unproject(last) : this._map.getCenter();
         }
 
         this._map.easeTo(extend(easeOptions, {
-            easing,
             noMoveStart: true
         }), { originalEvent });
 
     }
 }
 
+// Unfortunately zoom, bearing, etc can't have different durations and easings so
+// we need to choose one. We use the longest duration and it's corresponding easing.
+function extendDuration(easeOptions, result) {
+    if (!easeOptions.duration || easeOptions.duration < result.duration) {
+        easeOptions.duration = result.duration;
+        easeOptions.easing = result.easing;
+    }
+};
 
-export default HandlerManager;
+function calculateEasing(amount, inertiaDuration: number, inertiaOptions) {
+    const { maxSpeed, linearity, deceleration } = inertiaOptions;
+    const speed = clamp(
+        amount * linearity / (inertiaDuration / 1000),
+        -maxSpeed,
+        maxSpeed);
+    const duration = Math.abs(speed) / (deceleration * linearity);
+    return {
+        easing: inertiaOptions.easing,
+        duration: duration * 1000,
+        amount: speed * (duration / 2)
+    };
+}
