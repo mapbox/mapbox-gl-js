@@ -36,7 +36,7 @@ class Quickstart extends React.Component {
 mapboxgl.accessToken = '${this.state.userAccessToken}';
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9'
+    style: 'mapbox://styles/mapbox/streets-v11'
 });
 </script>
 `}</Copyable>
