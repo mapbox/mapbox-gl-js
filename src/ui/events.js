@@ -570,7 +570,7 @@ export type MapEvent =
     | 'pitchstart'
 
     /**
-     * Fired whenever the map's pitch (tilt) changes as.
+     * Fired whenever the map's pitch (tilt) changes as
      * the result of either user interaction or methods such as {@link Map#flyTo}.
      *
      * @event pitch
