@@ -39,7 +39,7 @@ class TaskQueue {
         }
     }
 
-    run(timeStamp: number) {
+    run(timeStamp: number = 0) {
         assert(!this._currentlyRunning);
         const queue = this._currentlyRunning = this._queue;
 

@@ -64,6 +64,10 @@ export default class TapZoomHandler {
         }
     }
 
+    touchcancel() {
+        this.reset();
+    }
+
     enable() {
         this._enabled = true;
     }

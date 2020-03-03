@@ -22,6 +22,7 @@ import SwipeZoomHandler from './handler/swipe_zoom';
 import DragPanHandler from './handler/shim_drag_pan';
 import TouchZoomRotateHandler from './handler/shim_touch_zoom_rotate';
 import {bezier, extend} from '../util/util';
+import window from '../util/window';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import type {AnimationOptions} from './camera';
@@ -88,7 +89,7 @@ class HandlerManager {
      * @private
      * options.inertiaOptions - linearity, easing, duration, maxSpeed
      */
-    constructor(map: Map, options?: Object) {
+    constructor(map: Map, options?: { clickTolerance?: number }) {
         this._map = map;
         this._el = this._map.getCanvasContainer();
         this._handlers = [];
@@ -96,6 +97,7 @@ class HandlerManager {
         this._changes = [];
 
         this.inertia = new HandlerInertia(map, options);
+        this.options = options;
 
         // Track whether map is currently moving, to compute start/move/end events
         this.eventsInProgress = {};
@@ -121,14 +123,15 @@ class HandlerManager {
         this.addKeyboardListener('keydown');
         this.addKeyboardListener('keyup');
         this.addListener('wheel', undefined, {passive: false});
-        this.addListener('dblclick', undefined);
+        this.addMouseListener('dblclick');
 
         DOM.addEventListener(window.document, 'contextmenu', e => e.preventDefault());
     }
 
     _addDefaultHandlers() {
         const el = this._map.getCanvasContainer();
-        this.add('boxZoom', new BoxZoomHandler(this._map, this));
+        const boxZoom = this._map.boxZoom = new BoxZoomHandler(this._map, this.options);
+        this.add('boxZoom', boxZoom);
         this.add('tapzoom', new TapZoomHandler());
         this.add('swipeZoom', new SwipeZoomHandler());
         this.add('clickZoom', new ClickZoomHandler());
@@ -161,7 +164,11 @@ class HandlerManager {
 
     addListener(eventType: string, mapEventClass?: Class<MapMouseEvent | MapTouchEvent | MapWheelEvent>, options?: Object, el: any) {
         const listener = (e: *) => {
-            if (mapEventClass) this._map.fire(new mapEventClass(eventType, this._map, e));
+            if (mapEventClass) {
+                const mapEvent = new mapEventClass(eventType, this._map, e);
+                this._map.fire(mapEvent);
+                if (mapEvent.defaultPrevented) return;
+            }
             this.processInputEvent(e);
         };
         DOM.addEventListener(el || this._el, eventType, listener, options);
