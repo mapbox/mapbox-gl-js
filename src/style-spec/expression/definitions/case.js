@@ -7,7 +7,6 @@ import {BooleanType} from '../types';
 import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type {Value} from '../values';
 import type {Type} from '../types';
 
 type Branches = Array<[Expression, Expression]>;
@@ -72,10 +71,8 @@ class Case implements Expression {
         fn(this.otherwise);
     }
 
-    possibleOutputs(): Array<Value | void> {
-        return []
-            .concat(...this.branches.map(([_, out]) => out.possibleOutputs()))
-            .concat(this.otherwise.possibleOutputs());
+    outputDefined(): boolean {
+        return this.branches.every(([_, out]) => out.outputDefined()) && this.otherwise.outputDefined();
     }
 
     serialize() {

@@ -58,8 +58,8 @@ class At implements Expression {
         fn(this.input);
     }
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

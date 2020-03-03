@@ -49,8 +49,8 @@ class Literal implements Expression {
 
     eachChild() {}
 
-    possibleOutputs() {
-        return [this.value];
+    outputDefined() {
+        return true;
     }
 
     serialize(): Array<mixed> {

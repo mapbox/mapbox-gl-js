@@ -58,12 +58,12 @@ export default class CollatorExpression implements Expression {
         }
     }
 
-    possibleOutputs() {
+    outputDefined() {
         // Technically the set of possible outputs is the combinatoric set of Collators produced
-        // by all possibleOutputs of locale/caseSensitive/diacriticSensitive
+        // by all possible outputs of locale/caseSensitive/diacriticSensitive
         // But for the primary use of Collators in comparison operators, we ignore the Collator's
-        // possibleOutputs anyway, so we can get away with leaving this undefined for now.
-        return [undefined];
+        // possible outputs anyway, so we can get away with leaving this false for now.
+        return false;
     }
 
     serialize() {

@@ -164,8 +164,8 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
             }
         }
 
-        possibleOutputs() {
-            return [true, false];
+        outputDefined(): boolean {
+            return true;
         }
 
         serialize() {

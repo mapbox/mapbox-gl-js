@@ -119,8 +119,8 @@ export default class NumberFormat implements Expression {
         }
     }
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

@@ -117,10 +117,10 @@ export default class FormatExpression implements Expression {
         }
     }
 
-    possibleOutputs() {
+    outputDefined() {
         // Technically the combinatoric set of all children
         // Usually, this.text will be undefined anyway
-        return [undefined];
+        return false;
     }
 
     serialize() {

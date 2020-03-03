@@ -39,8 +39,8 @@ class CompoundExpression implements Expression {
         this.args.forEach(fn);
     }
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize(): Array<mixed> {
