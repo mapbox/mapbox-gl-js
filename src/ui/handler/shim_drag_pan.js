@@ -4,15 +4,9 @@ import {bezier} from '../../util/util';
 import type MousePanHandler from './mouse_pan';
 import type TouchPanHandler from './touch_pan';
 
-const defaultInertia = {
-    linearity: 0.3,
-    easing: bezier(0, 0, 0.3, 1),
-    maxSpeed: 1400,
-    deceleration: 2500,
-};
-export type PanInertiaOptions = typeof defaultInertia;
+import type InertiaOptions from '../handler_inertia';
 
-export type DragPanOptions = boolean | PanInertiaOptions;
+export type DragPanOptions = InertiaOptions;
 
 /**
  * The `DragPanHandler` allows the user to pan the map by clicking and dragging
@@ -26,7 +20,7 @@ export default class DragPanHandler {
     /**
      * @private
     */
-    constructor(mousePan: MousePanHandler, touchPan: touchPanHandler) {
+    constructor(mousePan: MousePanHandler, touchPan: TouchPanHandler) {
         this._mousePan = mousePan;
         this._touchPan = touchPan;
     }

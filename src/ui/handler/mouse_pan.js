@@ -2,6 +2,7 @@
 
 import DOM from '../../util/dom';
 import type Point from '@mapbox/point-geometry';
+import type InertiaOptions from '../handler_inertia';
 
 const LEFT_BUTTON = 0;
 
@@ -11,6 +12,7 @@ export default class MousePanHandler {
     _active: boolean;
     _lastPoint: Point;
     _eventButton: number;
+    _options: InertiaOptions;
 
     constructor() {
         this.reset();
@@ -54,8 +56,9 @@ export default class MousePanHandler {
         this.reset();
     }
 
-    enable() {
+    enable(options?: InertiaOptions) {
         this._enabled = true;
+        if (!!options) this._options = options;
     }
 
     disable() {

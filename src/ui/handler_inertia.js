@@ -46,7 +46,6 @@ export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
 export default class HandlerInertia {
     _map: Map;
-    _inertiaOptions: InertiaOptions;
     _inertiaBuffer: Array<[number, Object]>;
     _eventsInProgress: Object;
 
@@ -56,7 +55,6 @@ export default class HandlerInertia {
      */
     constructor(map: Map, options?: Object) {
         this._map = map;
-        this._inertiaOptions = (options && options.inertiaOptions) || defaultInertiaOptions;
         this.clear();
     }
 
