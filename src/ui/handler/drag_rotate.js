@@ -112,7 +112,7 @@ class DragRotateHandler {
         switch (this._state) {
         case 'active':
             this._state = 'disabled';
-            this._unbind();
+            this.remove();
             this._deactivate();
             this._fireEvent('rotateend');
             if (this._pitchWithRotate) {
@@ -122,7 +122,7 @@ class DragRotateHandler {
             break;
         case 'pending':
             this._state = 'disabled';
-            this._unbind();
+            this.remove();
             break;
         default:
             this._state = 'disabled';
@@ -249,13 +249,13 @@ class DragRotateHandler {
         case 'active':
             this._state = 'enabled';
             DOM.suppressClick();
-            this._unbind();
+            this.remove();
             this._deactivate();
             this._inertialRotate(e);
             break;
         case 'pending':
             this._state = 'enabled';
-            this._unbind();
+            this.remove();
             break;
         default:
             assert(false);
@@ -267,7 +267,7 @@ class DragRotateHandler {
         switch (this._state) {
         case 'active':
             this._state = 'enabled';
-            this._unbind();
+            this.remove();
             this._deactivate();
             this._fireEvent('rotateend', e);
             if (this._pitchWithRotate) {
@@ -277,7 +277,7 @@ class DragRotateHandler {
             break;
         case 'pending':
             this._state = 'enabled';
-            this._unbind();
+            this.remove();
             break;
         default:
             assert(false);
@@ -285,17 +285,13 @@ class DragRotateHandler {
         }
     }
 
-    _unbind() {
+    remove() {
         window.document.removeEventListener('mousemove', this._onMouseMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onMouseUp);
         window.document.removeEventListener('touchmove', this._onMouseMove, {capture: true});
         window.document.removeEventListener('touchend', this._onMouseUp);
         window.removeEventListener('blur', this._onBlur);
         DOM.enableDrag();
-    }
-
-    remove() {
-        this._unbind();
     }
 
     _deactivate() {

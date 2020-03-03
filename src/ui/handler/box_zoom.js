@@ -147,20 +147,16 @@ class BoxZoomHandler {
         }
     }
 
-    _unbind() {
+    remove() {
         window.document.removeEventListener('mousemove', this._onMouseMove, false);
         window.document.removeEventListener('keydown', this._onKeyDown, false);
         window.document.removeEventListener('mouseup', this._onMouseUp, false);
     }
 
-    remove() {
-        this._unbind();
-    }
-
     _finish() {
         this._active = false;
 
-        this._unbind();
+        this.remove();
         this._container.classList.remove('mapboxgl-crosshair');
 
         if (this._box) {

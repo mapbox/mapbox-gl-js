@@ -217,7 +217,7 @@ class TouchZoomRotateHandler {
     }
 
     _onEnd(e: TouchEvent) {
-        this._unbind();
+        this.remove();
 
         const gestureIntent = this._gestureIntent;
         const startScale = this._startScale;
@@ -281,13 +281,9 @@ class TouchZoomRotateHandler {
         }, {originalEvent: e});
     }
 
-    _unbind() {
+    remove() {
         DOM.removeEventListener(window.document, 'touchmove', this._onMove, {passive: false});
         DOM.removeEventListener(window.document, 'touchend', this._onEnd);
-    }
-
-    remove() {
-        this._unbind();
     }
 
     _drainInertiaBuffer() {

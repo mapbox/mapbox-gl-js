@@ -119,14 +119,14 @@ class DragPanHandler {
         switch (this._state) {
         case 'active':
             this._state = 'disabled';
-            this._unbind();
+            this.remove();
             this._deactivate();
             this._fireEvent('dragend');
             this._fireEvent('moveend');
             break;
         case 'pending':
             this._state = 'disabled';
-            this._unbind();
+            this.remove();
             break;
         default:
             this._state = 'disabled';
@@ -252,13 +252,13 @@ class DragPanHandler {
         case 'active':
             this._state = 'enabled';
             DOM.suppressClick();
-            this._unbind();
+            this.remove();
             this._deactivate();
             this._inertialPan(e);
             break;
         case 'pending':
             this._state = 'enabled';
-            this._unbind();
+            this.remove();
             break;
         default:
             assert(false);
@@ -271,16 +271,16 @@ class DragPanHandler {
             switch (this._state) {
             case 'active':
                 this._state = 'enabled';
-                this._unbind();
+                this.remove();
                 this._deactivate();
                 this._inertialPan(e);
                 break;
             case 'pending':
                 this._state = 'enabled';
-                this._unbind();
+                this.remove();
                 break;
             case 'enabled':
-                this._unbind();
+                this.remove();
                 break;
             default:
                 assert(false);
@@ -312,7 +312,7 @@ class DragPanHandler {
                 this._fireEvent('dragend', e);
                 this._fireEvent('moveend', e);
             }
-            this._unbind();
+            this.remove();
             this._deactivate();
             if ((window.TouchEvent && e instanceof window.TouchEvent) && e.touches.length > 1) {
                 // If there are multiple fingers touching, reattach touchend listener in case
@@ -322,10 +322,10 @@ class DragPanHandler {
             break;
         case 'pending':
             this._state = 'enabled';
-            this._unbind();
+            this.remove();
             break;
         case 'enabled':
-            this._unbind();
+            this.remove();
             break;
         default:
             assert(false);
@@ -337,16 +337,12 @@ class DragPanHandler {
         this._abort(e);
     }
 
-    _unbind() {
+    remove() {
         DOM.removeEventListener(window.document, 'touchmove', this._onMove, {capture: true, passive: false});
         DOM.removeEventListener(window.document, 'touchend', this._onTouchEnd);
         DOM.removeEventListener(window.document, 'mousemove', this._onMove, {capture: true});
         DOM.removeEventListener(window.document, 'mouseup', this._onMouseUp);
         DOM.removeEventListener(window, 'blur', this._onBlur);
-    }
-
-    remove() {
-        this._unbind();
     }
 
     _deactivate() {
