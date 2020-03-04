@@ -77,7 +77,7 @@ class GlyphManager {
             }
 
             if (entry.ranges[range]) {
-                callback(null, {stack, id, glyph: null});
+                callback(null, {stack, id, glyph});
                 return;
             }
 
