@@ -144,8 +144,6 @@ class Painter {
      * for a new width and height value.
      */
     resize(width: number, height: number) {
-        const gl = this.context.gl;
-
         this.width = width * browser.devicePixelRatio;
         this.height = height * browser.devicePixelRatio;
         this.context.viewport.set([0, 0, this.width, this.height]);
@@ -471,10 +469,6 @@ class Painter {
         // Set defaults for most GL values so that anyone using the state after the render
         // encounters more expected values.
         this.context.setDefault();
-    }
-
-    setupOffscreenDepthRenderbuffer(): void {
-        const context = this.context;
     }
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
