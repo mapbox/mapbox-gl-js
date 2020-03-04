@@ -2153,6 +2153,8 @@ class Map extends Camera {
         this.painter.setBaseState();
 
         this._renderTaskQueue.run(paintStartTimeStamp);
+        // A task queue callback may have fired a user event which may have removed the map
+        if (this._removed) return;
 
         let crossFading = false;
 
@@ -2303,6 +2305,8 @@ class Map extends Camera {
         this._container.classList.remove('mapboxgl-map');
 
         PerformanceUtils.clearMetrics();
+
+        this._removed = true;
         this.fire(new Event('remove'));
     }
 

@@ -113,7 +113,7 @@ class ScrollZoomHandler {
     * progress.
     */
     isActive() {
-        return !!this._active;
+        return !!this._active || this._finishTimeout !== undefined;
     }
 
     isZooming() {
@@ -194,7 +194,7 @@ class ScrollZoomHandler {
         if (this._type) {
             this._lastWheelEvent = e;
             this._delta -= value;
-            if (!this.isActive()) {
+            if (!this._active) {
                 this._start(e);
             }
         }
@@ -205,7 +205,7 @@ class ScrollZoomHandler {
     _onTimeout(initialEvent: any) {
         this._type = 'wheel';
         this._delta -= this._lastValue;
-        if (!this.isActive()) {
+        if (!this._active) {
             this._start(initialEvent);
         }
     }
@@ -220,12 +220,13 @@ class ScrollZoomHandler {
         this._active = true;
         if (!this.isZooming()) {
             this._zooming = true;
-            this._map.fire(new Event('movestart', {originalEvent: e}));
-            this._map.fire(new Event('zoomstart', {originalEvent: e}));
+            //this._map.fire(new Event('movestart', {originalEvent: e}));
+            //this._map.fire(new Event('zoomstart', {originalEvent: e}));
         }
 
         if (this._finishTimeout) {
             clearTimeout(this._finishTimeout);
+            delete this._finishTimeout;
         }
 
         const pos = DOM.mousePos(this._el, e);
@@ -312,9 +313,11 @@ class ScrollZoomHandler {
             this._active = false;
             this._finishTimeout = setTimeout(() => {
                 this._zooming = false;
-                this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
-                this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
+                this._handler.triggerRenderFrame();
+                //this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
+                //this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
                 delete this._targetZoom;
+                delete this._finishTimeout;
             }, 200);
         }
 

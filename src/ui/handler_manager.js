@@ -123,7 +123,7 @@ class HandlerManager {
 
         this.addKeyboardListener('keydown');
         this.addKeyboardListener('keyup');
-        this.addListener('wheel', undefined, {passive: false});
+        this.addListener('wheel', MapWheelEvent, {passive: false});
         this.addMouseListener('dblclick');
 
         DOM.addEventListener(window.document, 'contextmenu', e => e.preventDefault());
