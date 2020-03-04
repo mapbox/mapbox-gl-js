@@ -57,7 +57,6 @@ class GlyphManager {
                 };
             }
 
-
             let glyph = entry.glyphs[id];
             if (glyph !== undefined) {
                 callback(null, {stack, id, glyph});
