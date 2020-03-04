@@ -53,7 +53,7 @@ class GlyphManager {
                 entry = this.entries[stack] = {
                     glyphs: {},
                     requests: {},
-                    ranges: {},
+                    ranges: {}
                 };
             }
 
