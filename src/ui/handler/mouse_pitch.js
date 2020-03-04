@@ -12,9 +12,11 @@ export default class MousePitchHandler {
     _active: boolean;
     _lastPoint: Point;
     _eventButton: number;
+    _clickTolerance: number;
 
-    constructor() {
+    constructor(options: { clickTolerance?: number }) {
         this.reset();
+        this._clickTolerance = options.clickTolerance || 1;
     }
 
     reset() {
@@ -37,9 +39,12 @@ export default class MousePitchHandler {
     mousemove(e: MouseEvent, point: Point) {
         if (!this._lastPoint) return;
 
+        const yDelta = this._lastPoint.y - point.y;
+        if (Math.abs(yDelta) < this._clickTolerance) return 
+
         this._active = true;
 
-        const pitchDelta = (this._lastPoint.y - point.y) * 0.5;
+        const pitchDelta = yDelta * 0.5;
         this._lastPoint = point;
 
         return {

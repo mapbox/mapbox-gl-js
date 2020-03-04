@@ -150,14 +150,14 @@ test('DragRotateHandler doesn\'t fire pitch event when rotating only', (t) => {
     map.on('pitch',      pitch);
     map.on('pitchend',   pitchend);
 
-    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 0, clientY: 10});
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
-    t.equal(pitchstart.callCount, 1);
+    t.equal(pitchstart.callCount, 0);
     t.equal(pitch.callCount, 0);
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
-    t.equal(pitchend.callCount, 1);
+    t.equal(pitchend.callCount, 0);
 
     map.remove();
     t.end();
@@ -295,20 +295,20 @@ test('DragRotateHandler doesn\'t fire rotate event when pitching only', (t) => {
     const pitch       = t.spy();
     const rotateend   = t.spy();
 
-    map.on('movestart', rotatestart);
+    map.on('rotatestart', rotatestart);
     map.on('rotate',    rotate);
     map.on('pitch',     pitch);
     map.on('rotateend', rotateend);
 
-    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 0, clientY: 0});
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 0, clientY: -10});
     map._renderTaskQueue.run();
-    t.equal(rotatestart.callCount, 1);
+    t.equal(rotatestart.callCount, 0);
     t.equal(rotate.callCount, 0);
     t.equal(pitch.callCount, 1);
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
-    t.equal(rotateend.callCount, 1);
+    t.equal(rotateend.callCount, 0);
 
     map.remove();
     t.end();
@@ -875,7 +875,7 @@ test('DragRotateHandler does not begin a mouse drag if moved less than click tol
     t.equal(pitch.callCount, 0);
     t.equal(pitchend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 14, clientY: 13 - 4});
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 14, clientY: 10 - 4});
     map._renderTaskQueue.run();
     t.equal(rotatestart.callCount, 1);
     t.equal(rotate.callCount, 1);

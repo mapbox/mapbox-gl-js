@@ -134,6 +134,7 @@ const defaultOptions = {
 
     bearingSnap: 7,
     clickTolerance: 3,
+    pitchWithRotate: true,
 
     hash: false,
     attributionControl: true,
@@ -834,7 +835,7 @@ class Map extends Camera {
      * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving;
+        return this._moving || this.handlers.isActive();
     }
 
     /**

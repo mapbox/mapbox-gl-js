@@ -12,8 +12,10 @@ export default class MouseRotateHandler  {
     _active: boolean;
     _lastPoint: Point;
     _eventButton: number;
+    _clickTolerance: boolean;
 
-    constructor() {
+    constructor(options: { clickTolerance?: boolean }) {
+        this._clickTolerance = options.clickTolerance || 1;
         this.reset();
     }
 
@@ -37,8 +39,11 @@ export default class MouseRotateHandler  {
     mousemove(e: MouseEvent, point: Point) {
         if (!this._lastPoint) return;
 
-        this._active = true;
+        const xDelta = this._lastPoint.x - point.x;
 
+        if (Math.abs(xDelta) < this._clickTolerance) return;
+
+        this._active = true;
         const bearingDelta = (this._lastPoint.x - point.x) * -0.8;
         this._lastPoint = point;
 

@@ -20,6 +20,7 @@ import ScrollZoomHandler from './handler/scroll_zoom';
 import ClickZoomHandler from './handler/dblclick_zoom';
 import SwipeZoomHandler from './handler/swipe_zoom';
 import DragPanHandler from './handler/shim_drag_pan';
+import DragRotateHandler from './handler/shim_drag_rotate';
 import TouchZoomRotateHandler from './handler/shim_touch_zoom_rotate';
 import {bezier, extend} from '../util/util';
 import window from '../util/window';
@@ -136,9 +137,10 @@ class HandlerManager {
         this.add('tapzoom', new TapZoomHandler());
         this.add('swipeZoom', new SwipeZoomHandler());
         this.add('clickZoom', new ClickZoomHandler());
-        const mouseRotate = new MouseRotateHandler();
+        const mouseRotate = new MouseRotateHandler(this.options);
         this.add('mouseRotate', mouseRotate, ['mousePitch']);
-        this.add('mousePitch', new MousePitchHandler(), ['mouseRotate']);
+        const mousePitch = new MousePitchHandler(this.options);
+        this.add('mousePitch', mousePitch, ['mouseRotate']);
         const mousePan = new MousePanHandler(this.options);
         this.add('mousePan', mousePan);
         const touchPitch = this._map.touchPitch = new TouchPitchHandler();
@@ -152,7 +154,11 @@ class HandlerManager {
         this.add('scrollzoom', new ScrollZoomHandler(this._map, this));
         this.add('keyboard', new KeyboardHandler());
 
-        this._map.dragRotate = mouseRotate; // TODO
+        this._map.dragRotate = new DragRotateHandler(this.options, mouseRotate, mousePitch);
+        mouseRotate.disable();
+        mousePitch.disable();
+        this._map.dragRotate.enable();
+
         this._map.dragPan = new DragPanHandler(mousePan, touchPan);
         this._map.dragPan.enable(this.options.dragPan);
         this._map.touchZoomRotate = new TouchZoomRotateHandler(touchZoom, touchRotate);
@@ -203,6 +209,13 @@ class HandlerManager {
         this.inertia.clear();
         this.fireEvents({});
         this._changes = [];
+    }
+
+    isActive() {
+        for (const [name, handler] of this._handlers) {
+            if (handler.isActive()) return true;
+        }
+        return false;
     }
 
     blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string) { 
