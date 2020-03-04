@@ -17,11 +17,10 @@ export default class TouchPanHandler {
     constructor(options: { clickTolerance?: number }) {
         this._minTouches = 1;
         this._clickTolerance = options.clickTolerance || 1;
-        this.reset('init');
+        this.reset();
     }
 
-    reset(s) {
-        console.log("RESET", s);
+    reset() {
         this._active = false;
         this._touches = {};
         this._sum = new Point(0, 0);
@@ -32,7 +31,6 @@ export default class TouchPanHandler {
     }
 
     touchmove(e: TouchEvent, points: Array<Point>) {
-        console.log("MOVE");
         return this._calculateTransform(e, points)
     }
 
@@ -40,7 +38,7 @@ export default class TouchPanHandler {
         const transform = this._calculateTransform(e, points);
 
         if (this._active && e.targetTouches.length < this._minTouches) {
-            this.reset('end');
+            this.reset();
         }
     }
 

@@ -154,6 +154,7 @@ class HandlerManager {
 
         this._map.dragRotate = mouseRotate; // TODO
         this._map.dragPan = new DragPanHandler(mousePan, touchPan);
+        this._map.dragPan.enable(this.options.dragPan);
         this._map.touchZoomRotate = new TouchZoomRotateHandler(touchZoom, touchRotate);
     }
 

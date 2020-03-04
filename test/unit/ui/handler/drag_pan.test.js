@@ -14,7 +14,6 @@ function createMap(t, clickTolerance, dragPan) {
     });
 }
 
-/*
 test('DragPanHandler fires dragstart, drag, and dragend events at appropriate times in response to a mouse-triggered drag', (t) => {
     const map = createMap(t);
 
@@ -438,10 +437,10 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
-    simulate.touchstart(map.getCanvas());
+    simulate.touchstart(map.getCanvas(), {targetTouches: [{clientX: 0, clientY: 0}]});
     map._renderTaskQueue.run();
 
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    simulate.touchmove(map.getCanvas(), {targetTouches: [{clientX: 10, clientY: 10}]});
     map._renderTaskQueue.run();
 
     simulate.touchend(map.getCanvas());
@@ -475,10 +474,10 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
-    simulate.touchstart(map.getCanvas());
+    simulate.touchstart(map.getCanvas(), {targetTouches: [{clientX: 0, clientY: 0}]});
     map._renderTaskQueue.run();
 
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    simulate.touchmove(map.getCanvas(), {targetTouches: [{clientX: 10, clientY: 10}]});
     map._renderTaskQueue.run();
 
     simulate.touchend(map.getCanvas());
@@ -492,6 +491,7 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     t.end();
 });
 
+/* TODO
 ['dragstart', 'drag'].forEach(event => {
     test(`DragPanHandler can be disabled on ${event} (#2419)`, (t) => {
         const map = createMap(t);
@@ -531,6 +531,7 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
         t.end();
     });
 });
+*/
 
 test(`DragPanHandler can be disabled after mousedown (#2419)`, (t) => {
     const map = createMap(t);
@@ -615,19 +616,19 @@ test('DragPanHandler does not begin a drag on spurious touchmove events', (t) =>
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
-    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    simulate.touchstart(map.getCanvas(), {targetTouches: [{clientX: 10, clientY: 10}]});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    simulate.touchmove(map.getCanvas(), {targetTouches: [{clientX: 10, clientY: 10}]});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.touchend(map.getCanvas(), {touches: []});
+    simulate.touchend(map.getCanvas(), {targetTouches: []});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
@@ -715,7 +716,6 @@ test('DragPanHandler does not begin a touch drag if moved less than click tolera
     t.end();
 });
 
-*/
 /*
  * TODO
 test('DragPanHandler does not begin a touch drag on multi-finger touch event if zooming', (t) => {
@@ -751,7 +751,6 @@ test('DragPanHandler does not begin a touch drag on multi-finger touch event if 
     t.end();
 });
 */
-/*
 
 test('DragPanHandler starts a drag on a multi-finger no-zoom touch, and continues if it becomes a single-finger touch', (t) => {
     const map = createMap(t);
@@ -899,7 +898,6 @@ test('DragPanHandler fires dragstart, drag, dragend events in response to multi-
     t.end();
 });
 
-*/
 test('DragPanHander#enable gets called with dragPan map option parameters', (t) => {
     const enableSpy = t.spy(DragPanHandler.prototype, 'enable');
     const customParams = {
