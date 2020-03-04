@@ -203,8 +203,8 @@ class Context {
         return rbo;
     }
 
-    createFramebuffer(width: number, height: number) {
-        return new Framebuffer(this, width, height);
+    createFramebuffer(width: number, height: number, hasDepth: boolean) {
+        return new Framebuffer(this, width, height, hasDepth);
     }
 
     clear({color, depth}: ClearArgs) {
