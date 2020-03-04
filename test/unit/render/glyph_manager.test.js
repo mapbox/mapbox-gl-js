@@ -47,7 +47,7 @@ test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', (t) 
         t.equal(stub.calledOnce, true);
 
         // We remove all requests as in getGlyphs code.
-        delete manager.entries['Arial Unicode MS'].requests;
+        delete manager.entries['Arial Unicode MS'].requests[0];
 
         manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err, glyphs) => {
             t.ifError(err);

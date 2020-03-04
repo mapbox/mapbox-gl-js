@@ -57,6 +57,20 @@ class GlyphManager {
                 };
             }
 
+
+            let glyph = entry.glyphs[id];
+            if (glyph !== undefined) {
+                callback(null, {stack, id, glyph});
+                return;
+            }
+
+            glyph = this._tinySDF(entry, stack, id);
+            if (glyph) {
+                entry.glyphs[id] = glyph;
+                callback(null, {stack, id, glyph});
+                return;
+            }
+
             const range = Math.floor(id / 256);
             if (range * 256 > 65535) {
                 callback(new Error('glyphs > 65535 not supported'));
@@ -64,14 +78,7 @@ class GlyphManager {
             }
 
             if (entry.ranges[range]) {
-                callback(null, {stack, id, glyph: entry.glyphs[id]});
-                return;
-            }
-
-            const glyph = this._tinySDF(entry, stack, id);
-            if (glyph) {
-                entry.glyphs[id] = glyph;
-                callback(null, {stack, id, glyph});
+                callback(null, {stack, id, glyph: null});
                 return;
             }
 
