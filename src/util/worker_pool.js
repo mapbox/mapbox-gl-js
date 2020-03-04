@@ -4,6 +4,8 @@ import WebWorker from './web_worker';
 import type {WorkerInterface} from './web_worker';
 import browser from './browser';
 
+export const PRELOAD_POOL_ID = 'mapboxgl_preloaded_worker_pool';
+
 /**
  * Constructs a worker pool.
  * @private

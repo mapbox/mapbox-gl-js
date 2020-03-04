@@ -1,7 +1,6 @@
 // @flow
 
-import WorkerPool from './worker_pool';
-import {uniqueId} from './util';
+import WorkerPool, {PRELOAD_POOL_ID} from './worker_pool';
 
 let globalWorkerPool;
 
@@ -18,7 +17,8 @@ export default function getGlobalWorkerPool () {
 }
 
 
-export function initializeWorkerPool() {
+export function preloadWorkerPool() {
     const workerPool = getGlobalWorkerPool();
-    workerPool.acquire(uniqueId());
+    workerPool.acquire(PRELOAD_POOL_ID);
 }
+
