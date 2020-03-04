@@ -1,4 +1,4 @@
-import {test} from '../../util/test';
+import {test, only} from '../../util/test';
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
 import GlyphManager from '../../../src/render/glyph_manager';
 import fs from 'fs';
@@ -25,6 +25,36 @@ test('GlyphManager requests 0-255 PBF', (t) => {
         t.ifError(err);
         t.equal(glyphs['Arial Unicode MS']['55'].metrics.advance, 12);
         t.end();
+    });
+});
+
+test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', (t) => {
+    const identityTransform = (url) => ({url});
+    const stub = t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
+        t.equal(stack, 'Arial Unicode MS');
+        t.equal(range, 0);
+        t.equal(urlTemplate, 'https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+        t.equal(transform, identityTransform);
+        setImmediate(() => callback(null, glyphs));
+    });
+
+    const manager = new GlyphManager(identityTransform);
+    manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+
+    manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err, glyphs) => {
+        t.ifError(err);
+        t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
+        t.equal(stub.calledOnce, true);
+
+        // We remove all requests as in getGlyphs code.
+        delete manager.entries['Arial Unicode MS'].requests;
+
+        manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err, glyphs) => {
+            t.ifError(err);
+            t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
+            t.equal(stub.calledOnce, true);
+            t.end();
+        });
     });
 });
 
