@@ -26,7 +26,10 @@ for (const member of members) {
     }
 }
 
-if (includeStructAccessors) {
+// exceptions for which we generate accessors on the array rather than a separate struct for performance
+const useComponentGetters = StructArrayClass === 'GlyphOffsetArray' || StructArrayClass === 'SymbolLineVertexArray';
+
+if (includeStructAccessors && !useComponentGetters) {
 -%>
 class <%=StructTypeClass%> extends Struct {
     _structArray: <%=StructArrayClass%>;
@@ -46,8 +49,13 @@ for (const {name, member, component} of components) {
     const componentAccess = `this._structArray.${member.view}[${index}]`;
 -%>
     get <%=name%>() { return <%=componentAccess%>; }
+<%
+// generate setters for properties that are updated during runtime symbol placement; others are read-only
+if (name === 'crossTileID' || name === 'placedOrientation' || name === 'hidden') {
+-%>
     set <%=name%>(x: number) { <%=componentAccess%> = x; }
 <%
+}
 }
 // Special case used for the CollisionBoxArray type
 if (hasAnchorPoint) {
@@ -61,17 +69,16 @@ if (hasAnchorPoint) {
 <%=StructTypeClass%>.prototype.size = <%=size%>;
 
 export type <%=StructTypeClass.replace('Struct', '')%> = <%=StructTypeClass%>;
+
 <%
 } // end 'if (includeStructAccessors)'
 -%>
-
 /**
  * @private
  */
 export class <%=StructArrayClass%> extends <%=StructArrayLayoutClass%> {
 <%
-if (StructArrayClass === 'GlyphOffsetArray' || StructArrayClass === 'SymbolLineVertexArray') {
-    // component getters
+if (useComponentGetters) {
     for (const member of members) {
         for (let c = 0; c < member.components; c++) {
             if (!includeStructAccessors) continue;
@@ -86,14 +93,12 @@ if (StructArrayClass === 'GlyphOffsetArray' || StructArrayClass === 'SymbolLineV
 <%
         }
     }
-}
-
-// get(i)
-if (includeStructAccessors) {
+} else if (includeStructAccessors) { // get(i)
 -%>
     /**
      * Return the <%=StructTypeClass%> at the given location in the array.
      * @param {number} index The index of the element.
+     * @private
      */
     get(index: number): <%=StructTypeClass%> {
         assert(!this.isTransferred);

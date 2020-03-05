@@ -824,27 +824,16 @@ class CollisionBoxStruct extends Struct {
     signedDistanceFromAnchor: number;
     anchorPoint: Point;
     get anchorPointX() { return this._structArray.int16[this._pos2 + 0]; }
-    set anchorPointX(x: number) { this._structArray.int16[this._pos2 + 0] = x; }
     get anchorPointY() { return this._structArray.int16[this._pos2 + 1]; }
-    set anchorPointY(x: number) { this._structArray.int16[this._pos2 + 1] = x; }
     get x1() { return this._structArray.int16[this._pos2 + 2]; }
-    set x1(x: number) { this._structArray.int16[this._pos2 + 2] = x; }
     get y1() { return this._structArray.int16[this._pos2 + 3]; }
-    set y1(x: number) { this._structArray.int16[this._pos2 + 3] = x; }
     get x2() { return this._structArray.int16[this._pos2 + 4]; }
-    set x2(x: number) { this._structArray.int16[this._pos2 + 4] = x; }
     get y2() { return this._structArray.int16[this._pos2 + 5]; }
-    set y2(x: number) { this._structArray.int16[this._pos2 + 5] = x; }
     get featureIndex() { return this._structArray.uint32[this._pos4 + 3]; }
-    set featureIndex(x: number) { this._structArray.uint32[this._pos4 + 3] = x; }
     get sourceLayerIndex() { return this._structArray.uint16[this._pos2 + 8]; }
-    set sourceLayerIndex(x: number) { this._structArray.uint16[this._pos2 + 8] = x; }
     get bucketIndex() { return this._structArray.uint16[this._pos2 + 9]; }
-    set bucketIndex(x: number) { this._structArray.uint16[this._pos2 + 9] = x; }
     get radius() { return this._structArray.int16[this._pos2 + 10]; }
-    set radius(x: number) { this._structArray.int16[this._pos2 + 10] = x; }
     get signedDistanceFromAnchor() { return this._structArray.int16[this._pos2 + 11]; }
-    set signedDistanceFromAnchor(x: number) { this._structArray.int16[this._pos2 + 11] = x; }
     get anchorPoint() { return new Point(this.anchorPointX, this.anchorPointY); }
 }
 
@@ -889,31 +878,18 @@ class PlacedSymbolStruct extends Struct {
     crossTileID: number;
     associatedIconIndex: number;
     get anchorX() { return this._structArray.int16[this._pos2 + 0]; }
-    set anchorX(x: number) { this._structArray.int16[this._pos2 + 0] = x; }
     get anchorY() { return this._structArray.int16[this._pos2 + 1]; }
-    set anchorY(x: number) { this._structArray.int16[this._pos2 + 1] = x; }
     get glyphStartIndex() { return this._structArray.uint16[this._pos2 + 2]; }
-    set glyphStartIndex(x: number) { this._structArray.uint16[this._pos2 + 2] = x; }
     get numGlyphs() { return this._structArray.uint16[this._pos2 + 3]; }
-    set numGlyphs(x: number) { this._structArray.uint16[this._pos2 + 3] = x; }
     get vertexStartIndex() { return this._structArray.uint32[this._pos4 + 2]; }
-    set vertexStartIndex(x: number) { this._structArray.uint32[this._pos4 + 2] = x; }
     get lineStartIndex() { return this._structArray.uint32[this._pos4 + 3]; }
-    set lineStartIndex(x: number) { this._structArray.uint32[this._pos4 + 3] = x; }
     get lineLength() { return this._structArray.uint32[this._pos4 + 4]; }
-    set lineLength(x: number) { this._structArray.uint32[this._pos4 + 4] = x; }
     get segment() { return this._structArray.uint16[this._pos2 + 10]; }
-    set segment(x: number) { this._structArray.uint16[this._pos2 + 10] = x; }
     get lowerSize() { return this._structArray.uint16[this._pos2 + 11]; }
-    set lowerSize(x: number) { this._structArray.uint16[this._pos2 + 11] = x; }
     get upperSize() { return this._structArray.uint16[this._pos2 + 12]; }
-    set upperSize(x: number) { this._structArray.uint16[this._pos2 + 12] = x; }
     get lineOffsetX() { return this._structArray.float32[this._pos4 + 7]; }
-    set lineOffsetX(x: number) { this._structArray.float32[this._pos4 + 7] = x; }
     get lineOffsetY() { return this._structArray.float32[this._pos4 + 8]; }
-    set lineOffsetY(x: number) { this._structArray.float32[this._pos4 + 8] = x; }
     get writingMode() { return this._structArray.uint8[this._pos1 + 36]; }
-    set writingMode(x: number) { this._structArray.uint8[this._pos1 + 36] = x; }
     get placedOrientation() { return this._structArray.uint8[this._pos1 + 37]; }
     set placedOrientation(x: number) { this._structArray.uint8[this._pos1 + 37] = x; }
     get hidden() { return this._structArray.uint8[this._pos1 + 38]; }
@@ -921,7 +897,6 @@ class PlacedSymbolStruct extends Struct {
     get crossTileID() { return this._structArray.uint32[this._pos4 + 10]; }
     set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 10] = x; }
     get associatedIconIndex() { return this._structArray.int16[this._pos2 + 22]; }
-    set associatedIconIndex(x: number) { this._structArray.int16[this._pos2 + 22] = x; }
 }
 
 PlacedSymbolStruct.prototype.size = 48;
@@ -974,57 +949,32 @@ class SymbolInstanceStruct extends Struct {
     textOffset0: number;
     textOffset1: number;
     get anchorX() { return this._structArray.int16[this._pos2 + 0]; }
-    set anchorX(x: number) { this._structArray.int16[this._pos2 + 0] = x; }
     get anchorY() { return this._structArray.int16[this._pos2 + 1]; }
-    set anchorY(x: number) { this._structArray.int16[this._pos2 + 1] = x; }
     get rightJustifiedTextSymbolIndex() { return this._structArray.int16[this._pos2 + 2]; }
-    set rightJustifiedTextSymbolIndex(x: number) { this._structArray.int16[this._pos2 + 2] = x; }
     get centerJustifiedTextSymbolIndex() { return this._structArray.int16[this._pos2 + 3]; }
-    set centerJustifiedTextSymbolIndex(x: number) { this._structArray.int16[this._pos2 + 3] = x; }
     get leftJustifiedTextSymbolIndex() { return this._structArray.int16[this._pos2 + 4]; }
-    set leftJustifiedTextSymbolIndex(x: number) { this._structArray.int16[this._pos2 + 4] = x; }
     get verticalPlacedTextSymbolIndex() { return this._structArray.int16[this._pos2 + 5]; }
-    set verticalPlacedTextSymbolIndex(x: number) { this._structArray.int16[this._pos2 + 5] = x; }
     get placedIconSymbolIndex() { return this._structArray.int16[this._pos2 + 6]; }
-    set placedIconSymbolIndex(x: number) { this._structArray.int16[this._pos2 + 6] = x; }
     get verticalPlacedIconSymbolIndex() { return this._structArray.int16[this._pos2 + 7]; }
-    set verticalPlacedIconSymbolIndex(x: number) { this._structArray.int16[this._pos2 + 7] = x; }
     get key() { return this._structArray.uint16[this._pos2 + 8]; }
-    set key(x: number) { this._structArray.uint16[this._pos2 + 8] = x; }
     get textBoxStartIndex() { return this._structArray.uint16[this._pos2 + 9]; }
-    set textBoxStartIndex(x: number) { this._structArray.uint16[this._pos2 + 9] = x; }
     get textBoxEndIndex() { return this._structArray.uint16[this._pos2 + 10]; }
-    set textBoxEndIndex(x: number) { this._structArray.uint16[this._pos2 + 10] = x; }
     get verticalTextBoxStartIndex() { return this._structArray.uint16[this._pos2 + 11]; }
-    set verticalTextBoxStartIndex(x: number) { this._structArray.uint16[this._pos2 + 11] = x; }
     get verticalTextBoxEndIndex() { return this._structArray.uint16[this._pos2 + 12]; }
-    set verticalTextBoxEndIndex(x: number) { this._structArray.uint16[this._pos2 + 12] = x; }
     get iconBoxStartIndex() { return this._structArray.uint16[this._pos2 + 13]; }
-    set iconBoxStartIndex(x: number) { this._structArray.uint16[this._pos2 + 13] = x; }
     get iconBoxEndIndex() { return this._structArray.uint16[this._pos2 + 14]; }
-    set iconBoxEndIndex(x: number) { this._structArray.uint16[this._pos2 + 14] = x; }
     get verticalIconBoxStartIndex() { return this._structArray.uint16[this._pos2 + 15]; }
-    set verticalIconBoxStartIndex(x: number) { this._structArray.uint16[this._pos2 + 15] = x; }
     get verticalIconBoxEndIndex() { return this._structArray.uint16[this._pos2 + 16]; }
-    set verticalIconBoxEndIndex(x: number) { this._structArray.uint16[this._pos2 + 16] = x; }
     get featureIndex() { return this._structArray.uint16[this._pos2 + 17]; }
-    set featureIndex(x: number) { this._structArray.uint16[this._pos2 + 17] = x; }
     get numHorizontalGlyphVertices() { return this._structArray.uint16[this._pos2 + 18]; }
-    set numHorizontalGlyphVertices(x: number) { this._structArray.uint16[this._pos2 + 18] = x; }
     get numVerticalGlyphVertices() { return this._structArray.uint16[this._pos2 + 19]; }
-    set numVerticalGlyphVertices(x: number) { this._structArray.uint16[this._pos2 + 19] = x; }
     get numIconVertices() { return this._structArray.uint16[this._pos2 + 20]; }
-    set numIconVertices(x: number) { this._structArray.uint16[this._pos2 + 20] = x; }
     get numVerticalIconVertices() { return this._structArray.uint16[this._pos2 + 21]; }
-    set numVerticalIconVertices(x: number) { this._structArray.uint16[this._pos2 + 21] = x; }
     get crossTileID() { return this._structArray.uint32[this._pos4 + 11]; }
     set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 11] = x; }
     get textBoxScale() { return this._structArray.float32[this._pos4 + 12]; }
-    set textBoxScale(x: number) { this._structArray.float32[this._pos4 + 12] = x; }
     get textOffset0() { return this._structArray.float32[this._pos4 + 13]; }
-    set textOffset0(x: number) { this._structArray.float32[this._pos4 + 13] = x; }
     get textOffset1() { return this._structArray.float32[this._pos4 + 14]; }
-    set textOffset1(x: number) { this._structArray.float32[this._pos4 + 14] = x; }
 }
 
 SymbolInstanceStruct.prototype.size = 60;
@@ -1048,51 +998,14 @@ export class SymbolInstanceArray extends StructArrayLayout8i14ui1ul3f60 {
 
 register('SymbolInstanceArray', SymbolInstanceArray);
 
-class GlyphOffsetStruct extends Struct {
-    _structArray: GlyphOffsetArray;
-    offsetX: number;
-    get offsetX() { return this._structArray.float32[this._pos4 + 0]; }
-    set offsetX(x: number) { this._structArray.float32[this._pos4 + 0] = x; }
-}
-
-GlyphOffsetStruct.prototype.size = 4;
-
-export type GlyphOffset = GlyphOffsetStruct;
-
 /**
  * @private
  */
 export class GlyphOffsetArray extends StructArrayLayout1f4 {
     getoffsetX(index: number) { return this.float32[index * 1 + 0]; }
-    /**
-     * Return the GlyphOffsetStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): GlyphOffsetStruct {
-        assert(!this.isTransferred);
-        return new GlyphOffsetStruct(this, index);
-    }
 }
 
 register('GlyphOffsetArray', GlyphOffsetArray);
-
-class SymbolLineVertexStruct extends Struct {
-    _structArray: SymbolLineVertexArray;
-    x: number;
-    y: number;
-    tileUnitDistanceFromAnchor: number;
-    get x() { return this._structArray.int16[this._pos2 + 0]; }
-    set x(x: number) { this._structArray.int16[this._pos2 + 0] = x; }
-    get y() { return this._structArray.int16[this._pos2 + 1]; }
-    set y(x: number) { this._structArray.int16[this._pos2 + 1] = x; }
-    get tileUnitDistanceFromAnchor() { return this._structArray.int16[this._pos2 + 2]; }
-    set tileUnitDistanceFromAnchor(x: number) { this._structArray.int16[this._pos2 + 2] = x; }
-}
-
-SymbolLineVertexStruct.prototype.size = 6;
-
-export type SymbolLineVertex = SymbolLineVertexStruct;
 
 /**
  * @private
@@ -1101,15 +1014,6 @@ export class SymbolLineVertexArray extends StructArrayLayout3i6 {
     getx(index: number) { return this.int16[index * 3 + 0]; }
     gety(index: number) { return this.int16[index * 3 + 1]; }
     gettileUnitDistanceFromAnchor(index: number) { return this.int16[index * 3 + 2]; }
-    /**
-     * Return the SymbolLineVertexStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): SymbolLineVertexStruct {
-        assert(!this.isTransferred);
-        return new SymbolLineVertexStruct(this, index);
-    }
 }
 
 register('SymbolLineVertexArray', SymbolLineVertexArray);
@@ -1120,11 +1024,8 @@ class FeatureIndexStruct extends Struct {
     sourceLayerIndex: number;
     bucketIndex: number;
     get featureIndex() { return this._structArray.uint32[this._pos4 + 0]; }
-    set featureIndex(x: number) { this._structArray.uint32[this._pos4 + 0] = x; }
     get sourceLayerIndex() { return this._structArray.uint16[this._pos2 + 2]; }
-    set sourceLayerIndex(x: number) { this._structArray.uint16[this._pos2 + 2] = x; }
     get bucketIndex() { return this._structArray.uint16[this._pos2 + 3]; }
-    set bucketIndex(x: number) { this._structArray.uint16[this._pos2 + 3] = x; }
 }
 
 FeatureIndexStruct.prototype.size = 8;
