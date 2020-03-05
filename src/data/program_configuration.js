@@ -391,6 +391,7 @@ export default class ProgramConfiguration {
     binders: {[_: string]: (AttributeBinder | UniformBinder) };
     cacheKey: string;
     layoutAttributes: Array<StructArrayMember>;
+    numAttributes: number;
 
     _buffers: Array<VertexBuffer>;
 
@@ -398,6 +399,7 @@ export default class ProgramConfiguration {
         this.binders = {};
         this.layoutAttributes = layoutAttributes;
         this._buffers = [];
+        this.numAttributes = 0;
 
         const keys = [];
 
@@ -426,11 +428,13 @@ export default class ProgramConfiguration {
                     new CrossFadedCompositeBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id) :
                     new SourceExpressionBinder(expression, names, type, StructArrayLayout);
                 keys.push(`/a_${property}`);
+                this.numAttributes++;
 
             } else {
                 const StructArrayLayout = layoutType(property, type, 'composite');
                 this.binders[property] = new CompositeExpressionBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout);
                 keys.push(`/z_${property}`);
+                this.numAttributes++;
             }
         }
 
@@ -490,6 +494,18 @@ export default class ProgramConfiguration {
             }
         }
         return result;
+    }
+
+
+    attributeCt(): number {
+        let ct = 0;
+        for (const property in this.binders) {
+            const binder = this.binders[property];
+            if (binder instanceof CrossFadedCompositeBinder || binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder) {
+                ct += binder.paintVertexAttributes.length;
+            }
+        }
+        return ct;
     }
 
     getPaintVertexBuffers(): Array<VertexBuffer> {

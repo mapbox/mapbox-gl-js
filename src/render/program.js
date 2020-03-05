@@ -1,6 +1,6 @@
 // @flow
 
-import {prelude} from '../shaders';
+import {prelude, shaderMetaData} from '../shaders';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration';
 import VertexArrayObject from './vertex_array_object';
@@ -30,6 +30,7 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
 
     constructor(context: Context,
+                name: string,
                 source: {fragmentSource: string, vertexSource: string},
                 configuration: ?ProgramConfiguration,
                 fixedUniforms: (Context, UniformLocations) => Us,
@@ -76,7 +77,11 @@ class Program<Us: UniformBindings> {
         gl.linkProgram(this.program);
         assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program): any));
 
-        this.numAttributes = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
+        let start = performance.now();
+        const fixedAttributes = shaderMetaData[name];
+        const variableAttributes = configuration ? configuration.attributeCt() : 0;
+        this.numAttributes = fixedAttributes + variableAttributes;//gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
+        console.log(`attr time: ${performance.now() - start}, num: ${this.numAttributes}`);
 
         this.attributes = {};
         const uniformLocations = {};
@@ -87,8 +92,9 @@ class Program<Us: UniformBindings> {
                 this.attributes[attribute.name] = gl.getAttribLocation(this.program, attribute.name);
             }
         }
-
+        start = performance.now();
         const numUniforms = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
+        console.log(`uniforms time: ${performance.now() - start}, num: ${numUniforms}`);
         for (let i = 0; i < numUniforms; i++) {
             const uniform = gl.getActiveUniform(this.program, i);
             if (uniform) {

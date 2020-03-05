@@ -82,6 +82,14 @@ export const symbolIcon = compile(symbolIconFrag, symbolIconVert);
 export const symbolSDF = compile(symbolSDFFrag, symbolSDFVert);
 export const symbolTextAndIcon = compile(symbolTextAndIconFrag, symbolTextAndIconVert);
 
+export const shaderMetaData = {
+    line: 2,
+    lineGradient: 2,
+    linePattern: 2,
+    lineSDF: 2,
+    clippingMask: 1
+}
+
 // Expand #pragmas to #ifdefs.
 
 function compile(fragmentSource, vertexSource) {
