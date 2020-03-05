@@ -30,13 +30,11 @@ export default class ImageExpression implements Expression {
 
     evaluate(ctx: EvaluationContext) {
         const evaluatedImageName = this.input.evaluate(ctx);
-        let available = false;
 
-        if (ctx.availableImages && ctx.availableImages.indexOf(evaluatedImageName) > -1) {
-            available = true;
-        }
+        const value = ResolvedImage.fromString(evaluatedImageName);
+        if (value && ctx.availableImages) value.available = ctx.availableImages.indexOf(evaluatedImageName) > -1;
 
-        return new ResolvedImage({name: evaluatedImageName, available});
+        return value;
     }
 
     eachChild(fn: (_: Expression) => void) {

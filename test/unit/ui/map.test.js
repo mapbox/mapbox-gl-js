@@ -2075,6 +2075,33 @@ test('Map', (t) => {
         });
     });
 
+    t.test('map does not fire `styleimagemissing` for empty icon values', (t) => {
+        const map = createMap(t);
+
+        map.on('load', () => {
+            map.on('idle', () => {
+                t.end();
+            });
+
+            map.addSource('foo', {
+                type: 'geojson',
+                data: {type: 'Point', coordinates: [0, 0]}
+            });
+            map.addLayer({
+                id: 'foo',
+                type: 'symbol',
+                source: 'foo',
+                layout: {
+                    'icon-image': ['case', true, '', '']
+                }
+            });
+
+            map.on('styleimagemissing', ({id}) => {
+                t.fail(`styleimagemissing fired for value ${id}`);
+            });
+        });
+    });
+
     t.end();
 });
 

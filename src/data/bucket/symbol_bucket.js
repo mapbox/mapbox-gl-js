@@ -81,7 +81,7 @@ export type CollisionArrays = {
 export type SymbolFeature = {|
     sortKey: number | void,
     text: Formatted | void,
-    icon: ResolvedImage | void,
+    icon: ?ResolvedImage,
     index: number,
     sourceLayerIndex: number,
     geometry: Array<Array<Point>>,
@@ -453,7 +453,7 @@ class SymbolBucket implements Bucket {
                 }
             }
 
-            let icon: ResolvedImage | void;
+            let icon: ?ResolvedImage;
             if (hasIcon) {
                 // Expression evaluation will automatically coerce to Image
                 // but plain string token evaluation skips that pathway so do the
