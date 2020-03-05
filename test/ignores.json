@@ -19,6 +19,7 @@
   "render-tests/fill-pattern/update-feature-state": "https://github.com/mapbox/mapbox-gl-js/issues/7207",
   "render-tests/text-size/zero": "https://github.com/mapbox/mapbox-gl-js/issues/9161",
   "render-tests/text-variable-anchor/left-top-right-buttom-offset-tile-map-mode": "skip - mapbox-gl-js does not need to render tiles",
+  "render-tests/tile-mode/streets-v11": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/within/filter-with-inlined-geojson": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
   "render-tests/within/paint-circle": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
   "render-tests/within/paint-icon": "skip - port https://github.com/mapbox/mapbox-gl-native/pull/16157",
