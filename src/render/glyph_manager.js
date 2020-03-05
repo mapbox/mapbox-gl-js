@@ -15,6 +15,7 @@ type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.
     glyphs: {[id: number]: StyleGlyph | null},
     requests: {[range: number]: Array<Callback<{[_: number]: StyleGlyph | null}>>},
+    ranges: {[range: number]: boolean | null},
     tinySDF?: TinySDF
 };
 
