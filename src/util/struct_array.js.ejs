@@ -26,7 +26,10 @@ for (const member of members) {
     }
 }
 
-if (includeStructAccessors && StructArrayClass !== 'GlyphOffsetArray' && StructArrayClass !== 'SymbolLineVertexArray') {
+// exceptions for which we generate accessors on the array rather than a separate struct for performance
+const useComponentGetters = StructArrayClass === 'GlyphOffsetArray' || StructArrayClass === 'SymbolLineVertexArray';
+
+if (includeStructAccessors && !useComponentGetters) {
 -%>
 class <%=StructTypeClass%> extends Struct {
     _structArray: <%=StructArrayClass%>;
@@ -47,6 +50,7 @@ for (const {name, member, component} of components) {
 -%>
     get <%=name%>() { return <%=componentAccess%>; }
 <%
+// generate setters for properties that are updated during runtime symbol placement; others are read-only
 if (name === 'crossTileID' || name === 'placedOrientation' || name === 'hidden') {
 -%>
     set <%=name%>(x: number) { <%=componentAccess%> = x; }
@@ -74,8 +78,7 @@ export type <%=StructTypeClass.replace('Struct', '')%> = <%=StructTypeClass%>;
  */
 export class <%=StructArrayClass%> extends <%=StructArrayLayoutClass%> {
 <%
-if (StructArrayClass === 'GlyphOffsetArray' || StructArrayClass === 'SymbolLineVertexArray') {
-    // component getters
+if (useComponentGetters) {
     for (const member of members) {
         for (let c = 0; c < member.components; c++) {
             if (!includeStructAccessors) continue;
