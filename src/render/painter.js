@@ -92,8 +92,6 @@ class Painter {
     emptyProgramConfiguration: ProgramConfiguration;
     width: number;
     height: number;
-    depthRbo: WebGLRenderbuffer;
-    depthRboNeedsClear: boolean;
     tileExtentBuffer: VertexBuffer;
     tileExtentSegments: SegmentVector;
     debugBuffer: VertexBuffer;
@@ -136,8 +134,6 @@ class Painter {
         this.numSublayers = SourceCache.maxUnderzooming + SourceCache.maxOverzooming + 1;
         this.depthEpsilon = 1 / Math.pow(2, 16);
 
-        this.depthRboNeedsClear = true;
-
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this.gpuTimers = {};
@@ -148,8 +144,6 @@ class Painter {
      * for a new width and height value.
      */
     resize(width: number, height: number) {
-        const gl = this.context.gl;
-
         this.width = width * browser.devicePixelRatio;
         this.height = height * browser.devicePixelRatio;
         this.context.viewport.set([0, 0, this.width, this.height]);
@@ -158,11 +152,6 @@ class Painter {
             for (const layerId of this.style._order) {
                 this.style._layers[layerId].resize();
             }
-        }
-
-        if (this.depthRbo) {
-            gl.deleteRenderbuffer(this.depthRbo);
-            this.depthRbo = null;
         }
     }
 
@@ -402,7 +391,6 @@ class Painter {
         // framebuffer, and then save those for rendering back to the map
         // later: in doing this we avoid doing expensive framebuffer restores.
         this.renderPass = 'offscreen';
-        this.depthRboNeedsClear = true;
 
         for (const layerId of layerIds) {
             const layer = this.style._layers[layerId];
@@ -481,14 +469,6 @@ class Painter {
         // Set defaults for most GL values so that anyone using the state after the render
         // encounters more expected values.
         this.context.setDefault();
-    }
-
-    setupOffscreenDepthRenderbuffer(): void {
-        const context = this.context;
-        // All of the 3D textures will use the same depth renderbuffer.
-        if (!this.depthRbo) {
-            this.depthRbo = context.createRenderbuffer(context.gl.DEPTH_COMPONENT16, this.width, this.height);
-        }
     }
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
