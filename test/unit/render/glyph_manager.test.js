@@ -41,7 +41,7 @@ test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', (t) 
     const manager = new GlyphManager(identityTransform);
     manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
 
-    manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err, glyphs) => {
+    manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err) => {
         t.ifError(err);
         t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
         t.equal(stub.calledOnce, true);
@@ -49,7 +49,7 @@ test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', (t) 
         // We remove all requests as in getGlyphs code.
         delete manager.entries['Arial Unicode MS'].requests[0];
 
-        manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err, glyphs) => {
+        manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err) => {
             t.ifError(err);
             t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
             t.equal(stub.calledOnce, true);
