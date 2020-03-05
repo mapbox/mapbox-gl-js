@@ -148,16 +148,18 @@ Here is a recommended way to get setup:
 
 What warrants a changelog entry?
 
-- Any change that introduces changes to the public API *must* have a changelog entry.
-- Any change that affects user security *must* have a changelog entry
-- Any user-facing or visually impacting change *must* have a changelog entry
-- Any performance improvement *should* have a changelog entry
-- Any bugfix *should* have a changelog entry
+- Any change that affects the public API, visual appearance or user security *must* have a changelog entry
+- Any performance improvement or bugfix *should* have a changelog entry
 - Any contribution from a community member *may* have a changelog entry, no matter how small
 - Any documentation related changes *should not* have a changelog entry
 - Any regression change introduced and fixed within the same release *should not* have a changelog entry
-- Any internal refactoring, technical debt reduction, render test or benchmark related change *should not* have a changelog entry
+- Any internal refactoring, technical debt reduction, render test, unit test or benchmark related change *should not* have a changelog entry
+
+How to add your changelog?
+
 - Any changelog entry should be descriptive and concise; it should explain the change to a reader without context
+- Any changelog entry should be added to the pull request in the following format: `<changelog>Changelog description</changelog>`
+- Any change that does not require a changelog should be labelled `skip changelog`
 
 ## Documentation Conventions
 
