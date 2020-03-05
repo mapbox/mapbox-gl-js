@@ -144,6 +144,21 @@ Here is a recommended way to get setup:
 6. Write code, open a PR from your branch when you're ready
 7. If you need to rebase your fork's PR branch onto master to resolve conflicts: `git fetch upstream`, `git rebase upstream/master` and force push to Github `git push --force origin your-branch`
 
+## Changelog Conventions
+
+What warrants a changelog entry?
+
+- Any change that introduces changes to the public API *must* have a changelog entry.
+- Any change that affects user security *must* have a changelog entry
+- Any user-facing or visually impacting change *must* have a changelog entry
+- Any performance improvement *should* have a changelog entry
+- Any bugfix *should* have a changelog entry
+- Any contribution from a community member *may* have a changelog entry, no matter how small
+- Any documentation related changes *should not* have a changelog entry
+- Any regression change introduced and fixed within the same release *should not* have a changelog entry
+- Any internal refactoring, technical debt reduction, render test or benchmark related change *should not* have a changelog entry
+- Any changelog entry should be descriptive and concise; it should explain the change to a reader without context
+
 ## Documentation Conventions
 
 See [`README.md`](https://github.com/mapbox/mapbox-gl-js-docs/blob/publisher-production/README.md) from [`mapbox-gl-js-docs`](https://github.com/mapbox/mapbox-gl-js-docs/).
