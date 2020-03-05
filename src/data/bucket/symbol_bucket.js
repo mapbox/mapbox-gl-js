@@ -81,7 +81,7 @@ export type CollisionArrays = {
 export type SymbolFeature = {|
     sortKey: number | void,
     text: Formatted | void,
-    icon: ResolvedImage | void,
+    icon: ?ResolvedImage,
     index: number,
     sourceLayerIndex: number,
     geometry: Array<Array<Point>>,
@@ -415,7 +415,7 @@ class SymbolBucket implements Bucket {
         // this allows us to fire the styleimagemissing event if image evaluation returns null
         // the only way to distinguish between null returned from a coalesce statement with no valid images
         // and null returned because icon-image wasn't defined is to check whether or not iconImage.parameters is an empty object
-        const hasIcon = (iconImage.value.kind !== 'constant' || !!iconImage.value.value) && Object.keys(iconImage.parameters).length > 0;
+        const hasIcon = iconImage.value.kind !== 'constant' || !!iconImage.value.value || Object.keys(iconImage.parameters).length > 0;
         const symbolSortKey = layout.get('symbol-sort-key');
 
         this.features = [];
@@ -453,7 +453,7 @@ class SymbolBucket implements Bucket {
                 }
             }
 
-            let icon: ResolvedImage | void;
+            let icon: ?ResolvedImage;
             if (hasIcon) {
                 // Expression evaluation will automatically coerce to Image
                 // but plain string token evaluation skips that pathway so do the
