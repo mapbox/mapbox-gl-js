@@ -36,7 +36,7 @@ export const operationHandlers = {
 };
 
 export function applyOperations(map, operations, doneCb) {
-    // No operations specified, end immediately adn invoke doneCb.
+    // No operations specified, end immediately and invoke doneCb.
     if (!operations || operations.length === 0) {
         doneCb();
         return;

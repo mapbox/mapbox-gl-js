@@ -3,7 +3,7 @@ import {plugins} from '../../build/rollup_plugins';
 export default {
     input: 'test/integration/lib/render-browser.js',
     output: {
-        name: 'queryTests',
+        name: 'renderTests',
         format: 'iife',
         sourcemap: 'inline',
         indent: false,

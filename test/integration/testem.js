@@ -14,7 +14,7 @@ const rollupQueryConfig = require('./rollup.config.query').default;
 const rollupRenderConfig = require('./rollup.config.render').default;
 
 const rootFixturePath = 'test/integration/';
-const suitePath = 'query-tests';
+const suitePath = 'render-tests';
 const fixtureBuildInterval = 2000;
 
 let beforeHookInvoked = false;
@@ -27,7 +27,8 @@ module.exports =  {
     "test_page": "test/integration/testem_page.html",
     "src_files": [
         "dist/mapbox-gl-dev.js",
-        "test/integration/dist/query-test.js"
+        "test/integration/dist/query-test.js",
+        "test/integration/dist/render-test.js"
     ],
     "launch_in_dev": [],
     "launch_in_ci": [ "Chrome" ],
@@ -85,7 +86,7 @@ function buildArtifactsCi() {
     //2. Build tape
     const tapePromise = buildTape();
     //3. Build test artifacts in parallel
-    const rollupPromise = runAll(['build-query-suite', 'build-dev'], {parallel: true});
+    const rollupPromise = runAll(['build-query-suite', 'build-render-suite', 'build-dev'], {parallel: true});
 
     return Promise.all([tapePromise, rollupPromise]);
 }
