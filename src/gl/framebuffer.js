@@ -23,8 +23,7 @@ class Framebuffer {
         if (hasDepth) {
             this.depthAttachment = new DepthAttachment(context, fbo);
         }
-        const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-        assert(status === gl.FRAMEBUFFER_COMPLETE);
+        assert(gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE);
     }
 
     destroy() {
