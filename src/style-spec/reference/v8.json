@@ -1025,7 +1025,7 @@
     },
     "symbol-sort-key": {
       "type": "number",
-      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above other features when they overlap. Features with a lower sort key will have priority over other features during placement when they do not overlap.",
+      "doc": "Sorts features in ascending order based on this value. When `*-allow-overlap` is enabled for symbols, features with a higher sort key will appear above other features. When overlap is disabled, features with a lower sort key will have priority over other features during placement.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.53.0",
