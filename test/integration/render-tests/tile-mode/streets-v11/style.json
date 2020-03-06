@@ -4,7 +4,6 @@
         "test": {
             "mapMode":"tile",
             "debug": "true",
-            "collisionDebug": "true",
             "operations": [
                 [ "setStyle",  "mapbox://styles/mapbox/streets-v11"]
             ],
