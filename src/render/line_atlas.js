@@ -162,13 +162,15 @@ class LineAtlas {
         let length = 0;
         for (let i = 0; i < dasharray.length; i++) { length += dasharray[i]; }
 
-        const stretch = this.width / length;
-        const ranges = this.getDashRanges(dasharray, this.width, stretch);
+        if (length !== 0) {
+            const stretch = this.width / length;
+            const ranges = this.getDashRanges(dasharray, this.width, stretch);
 
-        if (round) {
-            this.addRoundDash(ranges, stretch, n);
-        } else {
-            this.addRegularDash(ranges);
+            if (round) {
+                this.addRoundDash(ranges, stretch, n);
+            } else {
+                this.addRegularDash(ranges);
+            }
         }
 
         const dashEntry = {
