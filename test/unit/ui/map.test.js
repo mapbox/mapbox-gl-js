@@ -1065,7 +1065,7 @@ test('Map', (t) => {
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.ok(args[0]);
-                t.deepEqual(args[1], {});
+                t.deepEqual(args[1], {availableImages: []});
                 t.deepEqual(output, []);
 
                 t.end();
@@ -1081,7 +1081,7 @@ test('Map', (t) => {
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.deepEqual(args[0], [{x: 100, y: 100}]); // query geometry
-                t.deepEqual(args[1], {}); // params
+                t.deepEqual(args[1], {availableImages: []}); // params
                 t.deepEqual(args[2], map.transform); // transform
                 t.deepEqual(output, []);
 
@@ -1098,7 +1098,7 @@ test('Map', (t) => {
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.ok(args[0]);
-                t.deepEqual(args[1], {filter: ['all']});
+                t.deepEqual(args[1], {availableImages: [], filter: ['all']});
                 t.deepEqual(output, []);
 
                 t.end();
@@ -1114,7 +1114,7 @@ test('Map', (t) => {
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.ok(args[0]);
-                t.deepEqual(args[1], {filter: ['all']});
+                t.deepEqual(args[1], {availableImages: [], filter: ['all']});
                 t.deepEqual(output, []);
 
                 t.end();
@@ -2072,6 +2072,33 @@ test('Map', (t) => {
             t.equals(called, id);
             t.ok(map.hasImage(id));
             t.end();
+        });
+    });
+
+    t.test('map does not fire `styleimagemissing` for empty icon values', (t) => {
+        const map = createMap(t);
+
+        map.on('load', () => {
+            map.on('idle', () => {
+                t.end();
+            });
+
+            map.addSource('foo', {
+                type: 'geojson',
+                data: {type: 'Point', coordinates: [0, 0]}
+            });
+            map.addLayer({
+                id: 'foo',
+                type: 'symbol',
+                source: 'foo',
+                layout: {
+                    'icon-image': ['case', true, '', '']
+                }
+            });
+
+            map.on('styleimagemissing', ({id}) => {
+                t.fail(`styleimagemissing fired for value ${id}`);
+            });
         });
     });
 

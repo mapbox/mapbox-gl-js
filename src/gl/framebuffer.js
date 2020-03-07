@@ -1,5 +1,6 @@
 // @flow
 import {ColorAttachment, DepthAttachment} from './value';
+import assert from 'assert';
 
 import type Context from './context';
 
@@ -11,7 +12,7 @@ class Framebuffer {
     colorAttachment: ColorAttachment;
     depthAttachment: DepthAttachment;
 
-    constructor(context: Context, width: number, height: number) {
+    constructor(context: Context, width: number, height: number, hasDepth: boolean) {
         this.context = context;
         this.width = width;
         this.height = height;
@@ -19,7 +20,10 @@ class Framebuffer {
         const fbo = this.framebuffer = gl.createFramebuffer();
 
         this.colorAttachment = new ColorAttachment(context, fbo);
-        this.depthAttachment = new DepthAttachment(context, fbo);
+        if (hasDepth) {
+            this.depthAttachment = new DepthAttachment(context, fbo);
+        }
+        assert(gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE);
     }
 
     destroy() {
@@ -28,8 +32,10 @@ class Framebuffer {
         const texture = this.colorAttachment.get();
         if (texture) gl.deleteTexture(texture);
 
-        const renderbuffer = this.depthAttachment.get();
-        if (renderbuffer) gl.deleteRenderbuffer(renderbuffer);
+        if (this.depthAttachment) {
+            const renderbuffer = this.depthAttachment.get();
+            if (renderbuffer) gl.deleteRenderbuffer(renderbuffer);
+        }
 
         gl.deleteFramebuffer(this.framebuffer);
     }

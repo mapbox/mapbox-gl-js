@@ -17,7 +17,7 @@ export default function validateExpression(options: any): Array<ValidationError>
     const expressionObj = (expression.value: any).expression || (expression.value: any)._styleExpression.expression;
 
     if (options.expressionContext === 'property' && (options.propertyKey === 'text-font') &&
-        expressionObj.possibleOutputs().indexOf(undefined) !== -1) {
+        !expressionObj.outputDefined()) {
         return [new ValidationError(options.key, options.value, `Invalid data expression for "${options.propertyKey}". Output values must be contained as literals within the expression.`)];
     }
 

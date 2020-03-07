@@ -10,7 +10,7 @@ import groupByLayout from '../style-spec/group_by_layout';
 import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 import type {LayerSpecification} from '../style-spec/types';
 
-export type LayerConfigs = { [string]: LayerSpecification };
+export type LayerConfigs = {[_: string]: LayerSpecification };
 export type Family<Layer: TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
@@ -18,7 +18,7 @@ class StyleLayerIndex {
     keyCache: { [source: string]: string };
 
     _layerConfigs: LayerConfigs;
-    _layers: { [string]: StyleLayer };
+    _layers: {[_: string]: StyleLayer };
 
     constructor(layerConfigs: ?Array<LayerSpecification>) {
         this.keyCache = {};

@@ -25,6 +25,7 @@ class CollisionFeature {
      * @param boxScale A magic number used to convert from glyph metrics units to geometry units.
      * @param padding The amount of padding to add around the label edges.
      * @param alignLine Whether the label is aligned with the line or the viewport.
+     * @private
      */
     constructor(collisionBoxArray: CollisionBoxArray,
                 line: Array<Point>,

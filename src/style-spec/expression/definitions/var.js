@@ -34,8 +34,8 @@ class Var implements Expression {
 
     eachChild() {}
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

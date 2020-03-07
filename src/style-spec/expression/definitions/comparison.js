@@ -156,7 +156,7 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
                 compareBasic(ctx, lhs, rhs);
         }
 
-        eachChild(fn: (Expression) => void) {
+        eachChild(fn: (_: Expression) => void) {
             fn(this.lhs);
             fn(this.rhs);
             if (this.collator) {
@@ -164,8 +164,8 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
             }
         }
 
-        possibleOutputs() {
-            return [true, false];
+        outputDefined(): boolean {
+            return true;
         }
 
         serialize() {

@@ -103,7 +103,7 @@ class SourceFeatureState {
         tile.setFeatureState(this.state, painter);
     }
 
-    coalesceChanges(tiles: {[any]: Tile}, painter: any) {
+    coalesceChanges(tiles: {[_: any]: Tile}, painter: any) {
         //track changes with full state objects, but only for features that got modified
         const featuresChanged: LayerFeatureStates = {};
 

@@ -8,7 +8,7 @@ export type FormattedSpecification = string;
 
 export type ResolvedImageSpecification = string;
 
-export type PromoteIdSpecification = {[string]: string} | string;
+export type PromoteIdSpecification = {[_: string]: string} | string;
 
 export type FilterSpecification =
     | ['has', string]
@@ -66,7 +66,7 @@ export type StyleSpecification = {|
     "bearing"?: number,
     "pitch"?: number,
     "light"?: LightSpecification,
-    "sources": {[string]: SourceSpecification},
+    "sources": {[_: string]: SourceSpecification},
     "sprite"?: string,
     "glyphs"?: string,
     "transition"?: TransitionSpecification,

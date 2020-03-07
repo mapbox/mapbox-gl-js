@@ -50,7 +50,7 @@ class ScrollZoomHandler {
     _targetZoom: ?number;
     _delta: number;
     _easing: ?((number) => number);
-    _prevEase: ?{start: number, duration: number, easing: (number) => number};
+    _prevEase: ?{start: number, duration: number, easing: (_: number) => number};
 
     _frameId: ?TaskID;
 
@@ -79,7 +79,7 @@ class ScrollZoomHandler {
 
     /**
      * Set the zoom rate of a trackpad
-     * @param {number} [zoomRate = 1/100]
+     * @param {number} [zoomRate=1/100] The rate used to scale trackpad movement to a zoom value.
      */
     setZoomRate(zoomRate: number) {
         this._defaultZoomRate = zoomRate;
@@ -87,7 +87,7 @@ class ScrollZoomHandler {
 
     /**
      * Set the zoom rate of a mouse wheel
-     * @param {number} [wheelZoomRate = 1/450]
+     * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
      */
     setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
@@ -117,7 +117,7 @@ class ScrollZoomHandler {
     /**
      * Enables the "scroll to zoom" interaction.
      *
-     * @param {Object} [options]
+     * @param {Object} [options] Options object.
      * @param {string} [options.around] If "center" is passed, map will zoom around center of map
      *
      * @example

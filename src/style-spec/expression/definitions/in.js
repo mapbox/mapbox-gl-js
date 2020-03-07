@@ -75,13 +75,13 @@ class In implements Expression {
         return haystack.indexOf(needle) >= 0;
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.needle);
         fn(this.haystack);
     }
 
-    possibleOutputs() {
-        return [true, false];
+    outputDefined() {
+        return true;
     }
 
     serialize() {

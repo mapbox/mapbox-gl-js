@@ -1,5 +1,6 @@
 import {test} from '../../util/test';
-import createFilter from '../../../src/style-spec/feature_filter';
+import {default as createFilter, isExpressionFilter} from '../../../src/style-spec/feature_filter';
+
 import convertFilter from '../../../src/style-spec/feature_filter/convert';
 
 test('filter', t => {
@@ -67,6 +68,36 @@ test('filter', t => {
     });
 
     legacyFilterTests(t, createFilter);
+
+    t.end();
+});
+
+test('legacy filter detection', t => {
+    t.test('definitely legacy filters', t => {
+        // Expressions with more than two arguments.
+        t.notOk(isExpressionFilter(["in", "color", "red", "blue"]));
+
+        // Expressions where the second argument is not a string or array.
+        t.notOk(isExpressionFilter(["in", "value", 42]));
+        t.notOk(isExpressionFilter(["in", "value", true]));
+        t.end();
+    });
+
+    t.test('ambiguous value', t => {
+        // Should err on the side of reporting as a legacy filter. Style authors can force filters
+        // by using a literal expression as the first argument.
+        t.notOk(isExpressionFilter(["in", "color", "red"]));
+        t.end();
+    });
+
+    t.test('definitely expressions', t => {
+        t.ok(isExpressionFilter(["in", ["get", "color"], "reddish"]));
+        t.ok(isExpressionFilter(["in", ["get", "color"], ["red", "blue"]]));
+        t.ok(isExpressionFilter(["in", 42, 42]));
+        t.ok(isExpressionFilter(["in", true, true]));
+        t.ok(isExpressionFilter(["in", "red", ["get", "colors"]]));
+        t.end();
+    });
 
     t.end();
 });

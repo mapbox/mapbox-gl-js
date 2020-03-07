@@ -13,7 +13,7 @@ export const PRELOAD_POOL_ID = 'mapboxgl_preloaded_worker_pool';
 export default class WorkerPool {
     static workerCount: number;
 
-    active: {[number | string]: boolean};
+    active: {[_: number | string]: boolean};
     workers: Array<WorkerInterface>;
 
     constructor() {

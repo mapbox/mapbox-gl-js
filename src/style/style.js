@@ -113,19 +113,21 @@ class Style extends Evented {
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
-    _layers: {[string]: StyleLayer};
+    _layers: {[_: string]: StyleLayer};
+    _serializedLayers: {[_: string]: Object};
     _order: Array<string>;
-    sourceCaches: {[string]: SourceCache};
+    sourceCaches: {[_: string]: SourceCache};
     zoomHistory: ZoomHistory;
     _loaded: boolean;
     _rtlTextPluginCallback: Function;
     _changed: boolean;
-    _updatedSources: {[string]: 'clear' | 'reload'};
-    _updatedLayers: {[string]: true};
-    _removedLayers: {[string]: StyleLayer};
-    _changedImages: {[string]: true};
+    _updatedSources: {[_: string]: 'clear' | 'reload'};
+    _updatedLayers: {[_: string]: true};
+    _removedLayers: {[_: string]: StyleLayer};
+    _changedImages: {[_: string]: true};
     _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
+    _availableImages: Array<string>;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -149,10 +151,12 @@ class Style extends Evented {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this._layers = {};
+        this._serializedLayers = {};
         this._order  = [];
         this.sourceCaches = {};
         this.zoomHistory = new ZoomHistory();
         this._loaded = false;
+        this._availableImages = [];
 
         this._resetUpdates();
 
@@ -262,10 +266,12 @@ class Style extends Evented {
         this._order = layers.map((layer) => layer.id);
 
         this._layers = {};
+        this._serializedLayers = {};
         for (let layer of layers) {
             layer = createStyleLayer(layer);
             layer.setEventedParent(this, {layer: {id: layer.id}});
             this._layers[layer.id] = layer;
+            this._serializedLayers[layer.id] = layer.serialize();
         }
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
@@ -287,7 +293,8 @@ class Style extends Evented {
             }
 
             this.imageManager.setLoaded(true);
-            this.dispatcher.broadcast('setImages', this.imageManager.listImages());
+            this._availableImages = this.imageManager.listImages();
+            this.dispatcher.broadcast('setImages', this._availableImages);
             this.fire(new Event('data', {dataType: 'style'}));
         });
     }
@@ -369,6 +376,7 @@ class Style extends Evented {
 
     /**
      * Apply queued style updates in a batch and recalculate zoom-dependent paint properties.
+     * @private
      */
     update(parameters: EvaluationParameters) {
         if (!this._loaded) {
@@ -408,11 +416,10 @@ class Style extends Evented {
             this.sourceCaches[sourceId].used = false;
         }
 
-        const availableImages = this.imageManager.listImages();
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
-            layer.recalculate(parameters, availableImages);
+            layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
@@ -508,6 +515,7 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
         this.imageManager.addImage(id, image);
+        this._availableImages = this.imageManager.listImages();
         this._changedImages[id] = true;
         this._changed = true;
         this.fire(new Event('data', {dataType: 'style'}));
@@ -526,6 +534,7 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
         this.imageManager.removeImage(id);
+        this._availableImages = this.imageManager.listImages();
         this._changedImages[id] = true;
         this._changed = true;
         this.fire(new Event('data', {dataType: 'style'}));
@@ -569,6 +578,7 @@ class Style extends Evented {
      * Remove a source from this stylesheet, given its id.
      * @param {string} id id of the source to remove
      * @throws {Error} if no source is found with the given ID
+     * @returns {Map} The {@link Map} object.
      */
     removeSource(id: string) {
         this._checkLoaded();
@@ -621,7 +631,10 @@ class Style extends Evented {
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
+     * @param {Object | CustomLayerInterface} layerObject The style layer to add.
      * @param {string} [before] ID of an existing layer to insert before
+     * @param {Object} options Style setter options.
+     * @returns {Map} The {@link Map} object.
      */
     addLayer(layerObject: LayerSpecification | CustomLayerInterface, before?: string, options: StyleSetterOptions = {}) {
         this._checkLoaded();
@@ -655,6 +668,7 @@ class Style extends Evented {
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});
+            this._serializedLayers[layer.id] = layer.serialize();
         }
 
         const index = before ? this._order.indexOf(before) : this._order.length;
@@ -751,6 +765,7 @@ class Style extends Evented {
         this._changed = true;
         this._removedLayers[id] = layer;
         delete this._layers[id];
+        delete this._serializedLayers[id];
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
 
@@ -776,8 +791,7 @@ class Style extends Evented {
      * @returns {boolean} a boolean specifying if the given layer is present
      */
     hasLayer(id: string): boolean {
-        const layerIds = Object.keys(this._layers);
-        return layerIds.includes(id, 0);
+        return id in this._layers;
     }
 
     setLayerZoomRange(layerId: string, minzoom: ?number, maxzoom: ?number) {
@@ -1090,12 +1104,15 @@ class Style extends Evented {
 
         const sourceResults = [];
 
+        params.availableImages = this._availableImages;
+
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
             sourceResults.push(
                 queryRenderedFeatures(
                     this.sourceCaches[id],
                     this._layers,
+                    this._serializedLayers,
                     queryGeometry,
                     params,
                     transform)
@@ -1108,6 +1125,7 @@ class Style extends Evented {
             sourceResults.push(
                 queryRenderedSymbols(
                     this._layers,
+                    this._serializedLayers,
                     this.sourceCaches,
                     queryGeometry,
                     params,
@@ -1307,7 +1325,7 @@ class Style extends Evented {
 
     // Callbacks from web workers
 
-    getImages(mapId: string, params: {icons: Array<string>, source: string, tileID: OverscaledTileID, type: string}, callback: Callback<{[string]: StyleImage}>) {
+    getImages(mapId: string, params: {icons: Array<string>, source: string, tileID: OverscaledTileID, type: string}, callback: Callback<{[_: string]: StyleImage}>) {
 
         this.imageManager.getImages(params.icons, callback);
 
@@ -1327,7 +1345,7 @@ class Style extends Evented {
         }
     }
 
-    getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {[number]: ?StyleGlyph}}>) {
+    getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {[_: number]: ?StyleGlyph}}>) {
         this.glyphManager.getGlyphs(params.stacks, callback);
     }
 

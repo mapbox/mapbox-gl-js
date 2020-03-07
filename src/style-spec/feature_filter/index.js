@@ -21,7 +21,8 @@ function isExpressionFilter(filter: any) {
         return filter.length >= 2 && filter[1] !== '$id' && filter[1] !== '$type';
 
     case 'in':
-        return filter.length >= 3 && Array.isArray(filter[2]);
+        return filter.length >= 3 && (typeof filter[1] !== 'string' || Array.isArray(filter[2]));
+
     case '!in':
     case '!has':
     case 'none':

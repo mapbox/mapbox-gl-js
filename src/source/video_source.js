@@ -114,6 +114,7 @@ class VideoSource extends ImageSource {
 
     /**
      * Sets playback to a timestamp, in seconds.
+     * @private
      */
     seek(seconds: number) {
         if (this.video) {
@@ -149,10 +150,6 @@ class VideoSource extends ImageSource {
      * @method setCoordinates
      * @instance
      * @memberof VideoSource
-     * @param {Array<Array<number>>} coordinates Four geographical coordinates,
-     *   represented as arrays of longitude and latitude numbers, which define the corners of the video.
-     *   The coordinates start at the top left corner of the video and proceed in clockwise order.
-     *   They do not have to represent a rectangle.
      * @returns {VideoSource} this
      */
     // setCoordinates inherited from ImageSource

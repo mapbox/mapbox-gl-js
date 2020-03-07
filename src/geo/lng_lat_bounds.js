@@ -41,7 +41,7 @@ class LngLatBounds {
     /**
      * Set the northeast corner of the bounding box
      *
-     * @param {LngLatLike} ne
+     * @param {LngLatLike} ne a {@link LngLatLike} object describing the northeast corner of the bounding box.
      * @returns {LngLatBounds} `this`
      */
     setNorthEast(ne: LngLatLike) {
@@ -52,7 +52,7 @@ class LngLatBounds {
     /**
      * Set the southwest corner of the bounding box
      *
-     * @param {LngLatLike} sw
+     * @param {LngLatLike} sw a {@link LngLatLike} object describing the southwest corner of the bounding box.
      * @returns {LngLatBounds} `this`
      */
     setSouthWest(sw: LngLatLike) {

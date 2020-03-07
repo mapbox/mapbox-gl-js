@@ -28,7 +28,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const context = painter.context;
         const gl = context.gl;
 
-        const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
         // Allow kernels to be drawn across boundaries, so that
         // large kernels are not clipped to tiles
         const stencilMode = StencilMode.disabled;
@@ -55,7 +54,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const program = painter.useProgram('heatmap', programConfiguration);
             const {zoom} = painter.transform;
 
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
                 heatmapUniformValues(coord.posMatrix,
                     tile, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
@@ -88,7 +87,7 @@ function bindFramebuffer(context, painter, layer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        fbo = layer.heatmapFbo = context.createFramebuffer(painter.width / 4, painter.height / 4);
+        fbo = layer.heatmapFbo = context.createFramebuffer(painter.width / 4, painter.height / 4, false);
 
         bindTextureToFramebuffer(context, painter, texture, fbo);
 

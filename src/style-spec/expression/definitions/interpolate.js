@@ -11,7 +11,6 @@ import type {Stops} from '../stops';
 import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type {Value} from '../values';
 import type {Type} from '../types';
 
 export type InterpolationType =
@@ -180,15 +179,15 @@ class Interpolate implements Expression {
         }
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
         for (const expression of this.outputs) {
             fn(expression);
         }
     }
 
-    possibleOutputs(): Array<Value | void> {
-        return [].concat(...this.outputs.map((output) => output.possibleOutputs()));
+    outputDefined(): boolean {
+        return this.outputs.every(out => out.outputDefined());
     }
 
     serialize(): Array<mixed> {

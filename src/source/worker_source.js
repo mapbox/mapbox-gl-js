@@ -48,8 +48,8 @@ export type WorkerTileResult = {
     rawTileData?: ArrayBuffer,
     resourceTiming?: Array<PerformanceResourceTiming>,
     // Only used for benchmarking:
-    glyphMap?: {[string]: {[number]: ?StyleGlyph}} | null,
-    iconMap?: {[string]: StyleImage} | null,
+    glyphMap?: {[_: string]: {[_: number]: ?StyleGlyph}} | null,
+    iconMap?: {[_: string]: StyleImage} | null,
     glyphPositions?: GlyphPositions | null
 };
 

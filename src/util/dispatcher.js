@@ -38,6 +38,7 @@ class Dispatcher {
 
     /**
      * Broadcast a message to all Workers.
+     * @private
      */
     broadcast(type: string, data: mixed, cb?: Function) {
         assert(this.actors.length);

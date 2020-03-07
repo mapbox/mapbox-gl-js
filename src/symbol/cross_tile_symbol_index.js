@@ -29,7 +29,7 @@ const roundingFactor = 512 / EXTENT / 2;
 
 class TileLayerIndex {
     tileID: OverscaledTileID;
-    indexedSymbolInstances: {[number]: Array<{
+    indexedSymbolInstances: {[_: number]: Array<{
         crossTileID: number,
         coord: {
             x: number,
@@ -243,7 +243,7 @@ class CrossTileSymbolIndex {
     layerIndexes: {[layerId: string]: CrossTileSymbolLayerIndex};
     crossTileIDs: CrossTileIDs;
     maxBucketInstanceId: number;
-    bucketsInCurrentPlacement: {[number]: boolean};
+    bucketsInCurrentPlacement: {[_: number]: boolean};
 
     constructor() {
         this.layerIndexes = {};

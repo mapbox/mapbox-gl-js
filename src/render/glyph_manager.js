@@ -14,14 +14,14 @@ import type {Callback} from '../types/callback';
 type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.
     glyphs: {[id: number]: StyleGlyph | null},
-    requests: {[range: number]: Array<Callback<{[number]: StyleGlyph | null}>>},
+    requests: {[range: number]: Array<Callback<{[_: number]: StyleGlyph | null}>>},
     tinySDF?: TinySDF
 };
 
 class GlyphManager {
     requestManager: RequestManager;
     localIdeographFontFamily: ?string;
-    entries: {[string]: Entry};
+    entries: {[_: string]: Entry};
     url: ?string;
 
     // exposed as statics to enable stubbing in unit tests
@@ -79,7 +79,7 @@ class GlyphManager {
             if (!requests) {
                 requests = entry.requests[range] = [];
                 GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestManager,
-                    (err, response: ?{[number]: StyleGlyph | null}) => {
+                    (err, response: ?{[_: number]: StyleGlyph | null}) => {
                         if (response) {
                             for (const id in response) {
                                 if (!this._doesCharSupportLocalGlyph(+id)) {
@@ -94,7 +94,7 @@ class GlyphManager {
                     });
             }
 
-            requests.push((err, result: ?{[number]: StyleGlyph | null}) => {
+            requests.push((err, result: ?{[_: number]: StyleGlyph | null}) => {
                 if (err) {
                     callback(err);
                 } else if (result) {
