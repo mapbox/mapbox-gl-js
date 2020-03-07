@@ -13,14 +13,14 @@ export const PRELOAD_POOL_ID = 'mapboxgl_preloaded_worker_pool';
 export default class WorkerPool {
     static workerCount: number;
 
-    active: {[number]: boolean};
+    active: {[number | string]: boolean};
     workers: Array<WorkerInterface>;
 
     constructor() {
         this.active = {};
     }
 
-    acquire(mapId: number): Array<WorkerInterface> {
+    acquire(mapId: number | string): Array<WorkerInterface> {
         if (!this.workers) {
             // Lazily look up the value of mapboxgl.workerCount so that
             // client code has had a chance to set it.
@@ -34,7 +34,7 @@ export default class WorkerPool {
         return this.workers.slice();
     }
 
-    release(mapId: number) {
+    release(mapId: number | string) {
         delete this.active[mapId];
         if (this.numActive() === 0) {
             this.workers.forEach((w) => {
