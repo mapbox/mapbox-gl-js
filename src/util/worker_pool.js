@@ -36,12 +36,20 @@ export default class WorkerPool {
 
     release(mapId: number) {
         delete this.active[mapId];
-        if (Object.keys(this.active).length === 0) {
+        if (this.numActive() === 0) {
             this.workers.forEach((w) => {
                 w.terminate();
             });
             this.workers = (null: any);
         }
+    }
+
+    isPreloaded(): boolean {
+        return !!this.active[PRELOAD_POOL_ID];
+    }
+
+    numActive(): number {
+        return Object.keys(this.active).length;
     }
 }
 
