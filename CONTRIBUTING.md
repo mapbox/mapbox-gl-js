@@ -9,7 +9,7 @@ Install the Xcode Command Line Tools Package
 xcode-select --install
 ```
 
-Install [node.js](https://nodejs.org/) version 10
+Install [node.js](https://nodejs.org/) version ^10.15 ( Minimum 10.15 while sticking only to major version 10.0 )
 ```bash
 brew install node
 ```
