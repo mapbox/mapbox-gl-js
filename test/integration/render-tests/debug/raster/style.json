@@ -3,7 +3,8 @@
   "metadata": {
     "test": {
       "debug": true,
-      "height": 256
+      "height": 256,
+      "allowed": 0.0062
     }
   },
   "center": [
