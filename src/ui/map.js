@@ -71,6 +71,7 @@ type MapOptions = {
     hash?: boolean | string,
     interactive?: boolean,
     container: HTMLElement | string,
+    customContainer?: HTMLElement | string,
     bearingSnap?: number,
     attributionControl?: boolean,
     customAttribution?: string | Array<string>,
@@ -264,6 +265,7 @@ class Map extends Camera {
     painter: Painter;
 
     _container: HTMLElement;
+    _customContainer: HTMLElement;
     _missingCSSCanary: HTMLElement;
     _canvasContainer: HTMLElement;
     _controlContainer: HTMLElement;
@@ -396,6 +398,16 @@ class Map extends Camera {
             this._container = options.container;
         } else {
             throw new Error(`Invalid type: 'container' must be a String or HTMLElement.`);
+        }
+        // custom container for controller
+
+        if (options.customContainer && typeof options.customContainer === 'string') {
+            this._customContainer = window.document.getElementById(options.customContainer);
+            if (!this._customContainer) {
+                throw new Error(`Container '${options.container}' not found.`);
+            }
+        } else if (options.customContainer && options.customContainer instanceof HTMLElement) {
+            this._customContainer = options.customContainer;
         }
 
         if (options.maxBounds) {
@@ -1970,6 +1982,10 @@ class Map extends Camera {
         return this._canvasContainer;
     }
 
+    getControlContainer() {
+        return this._customContainer;
+    }
+
     /**
      * Returns the map's `<canvas>` element.
      *
@@ -2027,7 +2043,14 @@ class Map extends Camera {
         const dimensions = this._containerDimensions();
         this._resizeCanvas(dimensions[0], dimensions[1]);
 
-        const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
+        let controlContainer;
+        if (!this._customContainer) {
+            controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
+        } else {
+            controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', this._customContainer);
+            // controlContainer = this._customContainer;
+            controlContainer.style.position = 'absolute';
+        }
         const positions = this._controlPositions = {};
         ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
             positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
@@ -2041,9 +2064,21 @@ class Map extends Camera {
         this._canvas.width = pixelRatio * width;
         this._canvas.height = pixelRatio * height;
 
+        if (this._customContainer) {
+            this._customContainer.width = pixelRatio * width;
+            // this._customContainer.height = pixelRatio * height;
+        }
+
         // Maintain the same canvas size, potentially downscaling it for HiDPI displays
         this._canvas.style.width = `${width}px`;
         this._canvas.style.height = `${height}px`;
+
+        if (this._customContainer) {
+            this._customContainer.style.width = `${width}px`;
+            // this._customContainer.style.height = `${height}px`;
+            // this._customContainer.style.top = `${this._container.clientTop}px`;
+            // this._customContainer.style.left = `${this._container.clientLeft}px`;
+        }
     }
 
     _setupPainter() {

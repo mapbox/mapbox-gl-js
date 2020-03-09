@@ -12,7 +12,7 @@
 </head>
 
 <body>
-<div id='map'></div>
+<div id='map' style="width: 700px; height: 700px;"></div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -26,10 +26,15 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-var popup = new mapboxgl.Popup({closeButton: false, closeOnClick: false})
-    .trackPointer()
-    .setHTML('<h1>Hello World!</h1>')
-    .addTo(map);
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(
+new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true
+    },
+    trackUserLocation: true
+})
+);
 </script>
 </body>
 </html>

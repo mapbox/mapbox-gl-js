@@ -177,7 +177,8 @@ class AttributionControl {
     }
 
     _updateCompact() {
-        if (this._map.getCanvasContainer().offsetWidth <= 640) {
+        if (this._map.getCanvasContainer().offsetWidth <= 640 &&
+        !this._map.getControlContainer()) {
             this._container.classList.add('mapboxgl-compact');
         } else {
             this._container.classList.remove('mapboxgl-compact');
