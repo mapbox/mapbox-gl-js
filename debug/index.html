@@ -9,6 +9,12 @@
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
 
+        .rounded-rect {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 50px -25px black;
+        }
+
         .flex-center{
             position: absolute;
             display: flex;
@@ -44,23 +50,63 @@
             position: absolute;
             width: 95%;
             height: 95%;
-            background: white;
             z-index: 1;
-            border-radius: 10px;
-            box-shadow: 0 0 50px -25px gray;
             font-family: Arial, Helvetica, sans-serif;
             font-size: 32px;
             color: gray;
+        }
+
+        .sidbear-toggle {
+            position: absolute;
+            width: 1.3em;
+            height: 1.3em;
+            overflow: visible;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .sidbear-toggle.left {
+            right: -1.5em;
+        }
+        .sidbear-toggle.right {
+            left: -1.5em;
+        }
+        .sidbear-toggle.top {
+            bottom: -1.5em;
+        }
+        .sidbear-toggle.btm {
+            top: -1.5em;
         }
     </style>
 </head>
 
 <body>
 <div id='map'>
-    <div id='left' class = 'flex-center left'><div class='sidebar-content flex-center'>Left Sidebar</div></div>
-    <div id='right' class = 'flex-center right'><div class='sidebar-content flex-center'>Right Sidebar</div></div>
-    <div id='top' class = 'flex-center top'><div class='sidebar-content flex-center'>Top Sidebar</div></div>
-    <div id='btm' class = 'flex-center btm'><div class='sidebar-content flex-center'>Bottom Sidebar</div></div>
+    <div id='left' class = 'flex-center left'>
+        <div class='sidebar-content rounded-rect flex-center'>
+            Left Sidebar
+            <div class='sidbear-toggle rounded-rect left'>&rarr;</div>
+        </div>
+    </div>
+    <div id='right' class = 'flex-center right'>
+        <div class='sidebar-content rounded-rect flex-center'>
+            Right Sidebar
+                <div class='sidbear-toggle rounded-rect right'>&larr;</div>
+        </div>
+    </div>
+    <div id='top' class = 'flex-center top'>
+        <div class='sidebar-content rounded-rect flex-center'>
+            Top Sidebar
+            <div class='sidbear-toggle rounded-rect top'>&darr;</div>
+        </div>
+    </div>
+    <div id='btm' class = 'flex-center btm'>
+        <div class='sidebar-content rounded-rect flex-center'>
+            Bottom Sidebar
+            <div class='sidbear-toggle rounded-rect btm'>&uarr;</div>
+        </div>
+    </div>
 </div>
 
 
