@@ -1,0 +1,99 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "quadrants": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "ABC",
+              "color": "red"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [-180, -90],
+                [-180, 0],
+                [0, 0],
+                [0, -90],
+                [-180, -90]
+              ]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "DEF",
+              "color": "#00ff00"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [-180, 90],
+                [-180, 0],
+                [0, 0],
+                [0, 90],
+                [-180, 90]
+              ]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "GHI",
+              "color": "#0000ff"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [180, -90],
+                [180, 0],
+                [0, 0],
+                [0, -90],
+                [180, -90]
+              ]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "GHI",
+              "color": "#ffff00"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [180, 90],
+                [180, 0],
+                [0, 0],
+                [0, 90],
+                [180, 90]
+              ]]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "colors",
+      "type": "fill",
+      "source": "quadrants",
+      "filter": ["in", "#", ["get", "color"]],
+      "paint": {
+        "fill-color": ["get", "color"]
+      }
+    }
+  ]
+}
