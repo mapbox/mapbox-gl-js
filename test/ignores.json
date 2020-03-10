@@ -12,6 +12,8 @@
   "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
   "render-tests/mixed-zoom/z10-z11": "current behavior conflicts with https://github.com/mapbox/mapbox-gl-js/pull/6803. can be fixed when https://github.com/mapbox/api-maps/issues/1480 is done",
   "render-tests/fill-extrusion-pattern/tile-buffer": "https://github.com/mapbox/mapbox-gl-js/issues/4403",
+  "render-tests/symbol-placement/line-center-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
+  "render-tests/symbol-placement/line-center-buffer-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/symbol-sort-key/text-ignore-placement": "skip - text drawn over icons",
   "render-tests/text-variable-anchor/remember-last-placement": "skip - not sure this is correct behavior",
   "render-tests/icon-image/icon-sdf-non-sdf-one-layer": "skip - render sdf icon and normal icon in one layer",
