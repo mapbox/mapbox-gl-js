@@ -8,11 +8,61 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+
+        .flex-center{
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flex-center.left{
+            width: 300px;
+            height: 100%;
+            left: 0px;
+        }
+
+        .flex-center.right{
+            width: 300px;
+            height: 100%;
+            right: 0px;
+        }
+
+        .flex-center.top{
+            width: 100%;
+            height: 100px;
+            top: 0px;
+        }
+
+        .flex-center.btm{
+            width: 100%;
+            height: 100px;
+            bottom: 0px;
+        }
+
+        .sidebar-content{
+            position: absolute;
+            width: 95%;
+            height: 95%;
+            background: white;
+            z-index: 1;
+            border-radius: 10px;
+            box-shadow: 0 0 50px -25px gray;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 32px;
+            color: gray;
+        }
     </style>
 </head>
 
 <body>
-<div id='map'></div>
+<div id='map'>
+    <div id='left' class = 'flex-center left'><div class='sidebar-content flex-center'>Left Sidebar</div></div>
+    <div id='right' class = 'flex-center right'><div class='sidebar-content flex-center'>Right Sidebar</div></div>
+    <div id='top' class = 'flex-center top'><div class='sidebar-content flex-center'>Top Sidebar</div></div>
+    <div id='btm' class = 'flex-center btm'><div class='sidebar-content flex-center'>Bottom Sidebar</div></div>
+</div>
+
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
