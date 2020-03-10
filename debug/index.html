@@ -9,6 +9,10 @@
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
 
+        .mapboxgl-canvas {
+            position: static;
+        }
+
         .rounded-rect {
             background: white;
             border-radius: 10px;
@@ -78,30 +82,50 @@
         .sidbear-toggle.btm {
             top: -1.5em;
         }
+
+        .sidebar {
+            transition: transform 1s;
+        }
+
+        .left.collapsed{
+            transform: translateX(-295px);
+        }
+
+        .right.collapsed{
+            transform: translateX(295px);
+        }
+
+        .top.collapsed{
+            transform: translateY(-95px);
+        }
+
+        .btm.collapsed{
+            transform: translateY(95px);
+        }
     </style>
 </head>
 
 <body>
 <div id='map'>
-    <div id='left' class = 'flex-center left'>
+    <div id='left' class = 'sidebar flex-center left collapsed'>
         <div class='sidebar-content rounded-rect flex-center'>
             Left Sidebar
-            <div class='sidbear-toggle rounded-rect left'>&rarr;</div>
+            <div class='sidbear-toggle rounded-rect left' onclick="toggleSidebar('left')">&rarr;</div>
         </div>
     </div>
-    <div id='right' class = 'flex-center right'>
+    <div id='right' class = 'sidebar flex-center right collapsed'>
         <div class='sidebar-content rounded-rect flex-center'>
             Right Sidebar
-                <div class='sidbear-toggle rounded-rect right'>&larr;</div>
+            <div class='sidbear-toggle rounded-rect right'>&larr;</div>
         </div>
     </div>
-    <div id='top' class = 'flex-center top'>
+    <div id='top' class = 'sidebar sidebar flex-center top collapsed'>
         <div class='sidebar-content rounded-rect flex-center'>
             Top Sidebar
             <div class='sidbear-toggle rounded-rect top'>&darr;</div>
         </div>
     </div>
-    <div id='btm' class = 'flex-center btm'>
+    <div id='btm' class = 'sidebar flex-center btm collapsed'>
         <div class='sidebar-content rounded-rect flex-center'>
             Bottom Sidebar
             <div class='sidbear-toggle rounded-rect btm'>&uarr;</div>
@@ -121,6 +145,19 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v10',
     hash: true
 });
+
+function toggleSidebar(id){
+    var elem = document.getElementById(id);
+    var classes = elem.className.split(' ');
+    var collapsed = classes.indexOf('collapsed') !== -1;
+    if(collapsed){
+        classes.splice(classes.indexOf('collapsed'), 1);
+    }else{
+        classes.push('collapsed');
+    }
+    elem.className = classes.join(' ');
+}
+
 
 </script>
 </body>
