@@ -106,29 +106,30 @@ function pointWithinPolygons(point, polygons) {
     return true;
 }
 
+function perp(v1, v2) {
+    return (v1[0] * v2[1] - v1[1] * v2[0]);
+}
+
+// check if p1 and p2 are in different sides of line segment q1->q2
+function  twoSided(p1, p2, q1, q2) {
+    // q1->p1 (x1, y1), q1->p2 (x2, y2), q1->q2 (x3, y3)
+    const x1 = p1[0] - q1[0];
+    const y1 = p1[1] - q1[1];
+    const x2 = p2[0] - q1[0];
+    const y2 = p2[1] - q1[1];
+    const x3 = q2[0] - q1[0];
+    const y3 = q2[1] - q1[1];
+    if ((x1 * y3 - x3 * y1) * (x2 * y3 - x3 * y2) < 0) return true;
+    return false;
+}
 // a, b are end points for line segment1, c and d are end points for line segment2
 function lineIntersectLine(a, b, c, d) {
-    const perp = (v1, v2) => { return (v1[0] * v2[1] - v1[1] * v2[0]); };
-
     // check if two segments are parallel or not
     // precondition is end point a, b is inside polygon, if line a->b is
     // parallel to polygon edge c->d, then a->b won't intersect with c->d
     const vectorP = [b[0] - a[0], b[1] - a[1]];
     const vectorQ = [d[0] - c[0], d[1] - c[1]];
     if (perp(vectorQ, vectorP) === 0) return false;
-
-    // check if p1 and p2 are in different sides of line segment q1->q2
-    const twoSided = (p1, p2, q1, q2)  => {
-        // q1->p1 (x1, y1), q1->p2 (x2, y2), q1->q2 (x3, y3)
-        const x1 = p1[0] - q1[0];
-        const y1 = p1[1] - q1[1];
-        const x2 = p2[0] - q1[0];
-        const y2 = p2[1] - q1[1];
-        const x3 = q2[0] - q1[0];
-        const y3 = q2[1] - q1[1];
-        if ((x1 * y3 - x3 * y1) * (x2 * y3 - x3 * y2) < 0) return true;
-        return false;
-    };
 
     // If lines are intersecting with each other, the relative location should be:
     // a and b lie in different sides of segment c->d
@@ -138,8 +139,7 @@ function lineIntersectLine(a, b, c, d) {
 }
 
 function lineIntersectPolygon(p1, p2, polygon) {
-    for (let i = 0; i < polygon.length; ++i) {
-        const ring = polygon[i];
+    for (const ring of polygon) {
         // loop through every edge of the ring
         for (let j = 0; j < ring.length - 1; ++j) {
             if (lineIntersectLine(p1, p2, ring[j], ring[j + 1])) {
@@ -260,8 +260,8 @@ class Within implements Expression {
 
     eachChild() {}
 
-    possibleOutputs() {
-        return [true, false];
+    outputDefined(): boolean {
+        return true;
     }
 
     serialize(): Array<mixed> {

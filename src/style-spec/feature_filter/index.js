@@ -85,20 +85,10 @@ function createFilter(filter: any): FeatureFilter {
     if (compiled.result === 'error') {
         throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
-        const needGeometry = filterNeedGeometry(filter);
+        const needGeometry = Array.isArray(filter) && filter.length !== 0 && filter[0] === 'within';
         return {filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiled.value.evaluate(globalProperties, feature, {}, canonical),
             needGeometry};
     }
-}
-
-function filterNeedGeometry(filter) {
-    if (filter === true || filter === false) {
-        return false;
-    }
-    if (!Array.isArray(filter) || filter.length === 0) {
-        return false;
-    }
-    return filter[0] === 'within';
 }
 
 // Comparison function to sort numbers and strings
