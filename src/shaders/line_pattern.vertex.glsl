@@ -22,12 +22,14 @@ varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_linesofar;
 varying float v_gamma_scale;
+varying float v_width;
 
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define mediump float width
+#pragma mapbox: define lowp float floorwidth
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
 
@@ -37,6 +39,7 @@ void main() {
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize mediump float width
+    #pragma mapbox: initialize lowp float floorwidth
     #pragma mapbox: initialize mediump vec4 pattern_from
     #pragma mapbox: initialize mediump vec4 pattern_to
 
@@ -88,4 +91,5 @@ void main() {
 
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
+    v_width = floorwidth;
 }
