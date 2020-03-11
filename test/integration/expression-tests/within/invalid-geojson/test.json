@@ -44,7 +44,7 @@
     "compiled": {
       "errors": [{
           "key": "",
-          "error": "'within' expression requires valid geojson source that contains polygon geometry type."
+          "error": "'within' expression requires valid geojson object that contains polygon geometry type."
         }],
       "result": "error"
     }

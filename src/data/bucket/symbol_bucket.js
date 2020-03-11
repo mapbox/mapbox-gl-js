@@ -40,6 +40,7 @@ import Formatted from '../../style-spec/expression/types/formatted';
 import ResolvedImage from '../../style-spec/expression/types/resolved_image';
 import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin';
 
+import type {CanonicalTileID} from '../../source/tile_id';
 import type {
     Bucket,
     BucketParameters,
@@ -399,7 +400,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    populate(features: Array<IndexedFeature>, options: PopulateParameters) {
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
         const layer = this.layers[0];
         const layout = layer.layout;
 
@@ -430,16 +431,25 @@ class SymbolBucket implements Bucket {
         const globalProperties = new EvaluationParameters(this.zoom);
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            if (!layer._featureFilter(globalProperties, feature)) {
+
+            const needGeometry = layer._featureFilter.needGeometry;
+            const evaluationFeature = {type: feature.type,
+                id,
+                properties: feature.properties,
+                geometry: needGeometry ? loadGeometry(feature) : []};
+
+            if (!layer._featureFilter.filter(globalProperties, evaluationFeature, canonical)) {
                 continue;
             }
+
+            if (!needGeometry)  evaluationFeature.geometry = loadGeometry(feature);
 
             let text: Formatted | void;
             if (hasText) {
                 // Expression evaluation will automatically coerce to Formatted
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
-                const resolvedTokens = layer.getValueAndResolveTokens('text-field', feature, availableImages);
+                const resolvedTokens = layer.getValueAndResolveTokens('text-field', evaluationFeature, canonical, availableImages);
                 const formattedText = Formatted.factory(resolvedTokens);
                 if (containsRTLText(formattedText)) {
                     this.hasRTLText = true;
@@ -449,7 +459,7 @@ class SymbolBucket implements Bucket {
                     getRTLTextPluginStatus() === 'unavailable' || // We don't intend to lazy-load the rtl text plugin, so proceed with incorrect shaping
                     this.hasRTLText && globalRTLTextPlugin.isParsed() // Use the rtlText plugin to shape text
                 ) {
-                    text = transformText(formattedText, layer, feature);
+                    text = transformText(formattedText, layer, evaluationFeature);
                 }
             }
 
@@ -458,7 +468,7 @@ class SymbolBucket implements Bucket {
                 // Expression evaluation will automatically coerce to Image
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
-                const resolvedTokens = layer.getValueAndResolveTokens('icon-image', feature, availableImages);
+                const resolvedTokens = layer.getValueAndResolveTokens('icon-image', evaluationFeature, canonical, availableImages);
                 if (resolvedTokens instanceof ResolvedImage) {
                     icon = resolvedTokens;
                 } else {
@@ -469,9 +479,8 @@ class SymbolBucket implements Bucket {
             if (!text && !icon) {
                 continue;
             }
-
             const sortKey = this.sortFeaturesByKey ?
-                symbolSortKey.evaluate(feature, {}) :
+                symbolSortKey.evaluate(evaluationFeature, {}, canonical) :
                 undefined;
 
             const symbolFeature: SymbolFeature = {
@@ -492,7 +501,7 @@ class SymbolBucket implements Bucket {
             }
 
             if (text) {
-                const fontStack = textFont.evaluate(feature, {}).join(',');
+                const fontStack = textFont.evaluate(evaluationFeature, {}, canonical).join(',');
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
                 this.allowVerticalPlacement = this.writingModes && this.writingModes.indexOf(WritingMode.vertical) >= 0;
                 for (const section of text.sections) {
@@ -606,7 +615,8 @@ class SymbolBucket implements Bucket {
                labelAnchor: Anchor,
                lineStartIndex: number,
                lineLength: number,
-               associatedIconIndex: number) {
+               associatedIconIndex: number,
+               canonical: CanonicalTileID) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
@@ -639,7 +649,7 @@ class SymbolBucket implements Bucket {
             this.glyphOffsetArray.emplaceBack(glyphOffset[0]);
 
             if (i === quads.length - 1 || sectionIndex !== quads[i + 1].sectionIndex) {
-                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, sections && sections[sectionIndex]);
+                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, canonical, sections && sections[sectionIndex]);
             }
         }
 

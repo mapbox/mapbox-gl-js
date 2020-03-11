@@ -307,7 +307,7 @@ class Tile {
 
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i);
-            if (filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
+            if (filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
                 const id = featureIndex.getId(feature, sourceLayer);
                 const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
                 (geojsonFeature: any).tile = coord;

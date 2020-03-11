@@ -1,7 +1,6 @@
 // @flow
 
 import assert from 'assert';
-
 import {clone, extend, easeCubicInOut} from '../util/util';
 import * as interpolate from '../style-spec/util/interpolate';
 import {normalizePropertyExpression} from '../style-spec/expression';
@@ -9,6 +8,7 @@ import Color from '../style-spec/util/color';
 import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from './evaluation_parameters';
 
+import type {CanonicalTileID} from '../source/tile_id';
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {
     TransitionSpecification,
@@ -67,7 +67,7 @@ export type CrossFaded<T> = {
  */
 export interface Property<T, R> {
     specification: StylePropertySpecification;
-    possiblyEvaluate(value: PropertyValue<T, R>, parameters: EvaluationParameters, availableImages?: Array<string>): R;
+    possiblyEvaluate(value: PropertyValue<T, R>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): R;
     interpolate(a: R, b: R, t: number): R;
 }
 
@@ -105,8 +105,8 @@ export class PropertyValue<T, R> {
         return this.expression.kind === 'source' || this.expression.kind === 'composite';
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters, availableImages?: Array<string>): R {
-        return this.property.possiblyEvaluate(this, parameters, availableImages);
+    possiblyEvaluate(parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): R {
+        return this.property.possiblyEvaluate(this, parameters, canonical, availableImages);
     }
 }
 
@@ -264,9 +264,9 @@ class TransitioningPropertyValue<T, R> {
         }
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters, availableImages: Array<string>): R {
+    possiblyEvaluate(parameters: EvaluationParameters, canonical: CanonicalTileID, availableImages: Array<string>): R {
         const now = parameters.now || 0;
-        const finalValue = this.value.possiblyEvaluate(parameters, availableImages);
+        const finalValue = this.value.possiblyEvaluate(parameters, canonical, availableImages);
         const prior = this.prior;
         if (!prior) {
             // No prior value.
@@ -283,11 +283,11 @@ class TransitioningPropertyValue<T, R> {
             return finalValue;
         } else if (now < this.begin) {
             // Transition hasn't started yet.
-            return prior.possiblyEvaluate(parameters, availableImages);
+            return prior.possiblyEvaluate(parameters, canonical, availableImages);
         } else {
             // Interpolate between recursively-calculated prior value and final.
             const t = (now - this.begin) / (this.end - this.begin);
-            return this.property.interpolate(prior.possiblyEvaluate(parameters, availableImages), finalValue, easeCubicInOut(t));
+            return this.property.interpolate(prior.possiblyEvaluate(parameters, canonical, availableImages), finalValue, easeCubicInOut(t));
         }
     }
 }
@@ -453,8 +453,8 @@ export class PossiblyEvaluatedPropertyValue<T> {
         }
     }
 
-    evaluate(feature: Feature, featureState: FeatureState, availableImages?: Array<string>): T {
-        return this.property.evaluate(this.value, this.parameters, feature, featureState, availableImages);
+    evaluate(feature: Feature, featureState: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>): T {
+        return this.property.evaluate(this.value, this.parameters, feature, featureState, canonical, availableImages);
     }
 }
 
@@ -542,9 +542,9 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         this.overrides = overrides;
     }
 
-    possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<T> {
+    possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, (null: any), {}, availableImages)}, parameters);
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages)}, parameters);
         } else {
             return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
         }
@@ -577,11 +577,11 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         }
     }
 
-    evaluate(value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, feature: Feature, featureState: FeatureState, availableImages?: Array<string>): T {
+    evaluate(value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, feature: Feature, featureState: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>): T {
         if (value.kind === 'constant') {
             return value.value;
         } else {
-            return value.evaluate(parameters, feature, featureState, availableImages);
+            return value.evaluate(parameters, feature, featureState, canonical, availableImages);
         }
     }
 }
@@ -595,11 +595,11 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
 
 export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFaded<T>> {
 
-    possiblyEvaluate(value: PropertyValue<?CrossFaded<T>, PossiblyEvaluatedPropertyValue<?CrossFaded<T>>>, parameters: EvaluationParameters, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
+    possiblyEvaluate(value: PropertyValue<?CrossFaded<T>, PossiblyEvaluatedPropertyValue<?CrossFaded<T>>>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
         if (value.value === undefined) {
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: undefined}, parameters);
         } else if (value.expression.kind === 'constant') {
-            const evaluatedValue = value.expression.evaluate(parameters, (null: any), {}, availableImages);
+            const evaluatedValue = value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages);
             const isImageExpression = value.property.specification.type === 'resolvedImage';
             const constantValue = isImageExpression && typeof evaluatedValue !== 'string' ? evaluatedValue.name : evaluatedValue;
             const constant = this._calculate(constantValue, constantValue, constantValue, parameters);
@@ -617,9 +617,9 @@ export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFa
         }
     }
 
-    evaluate(value: PossiblyEvaluatedValue<?CrossFaded<T>>, globals: EvaluationParameters, feature: Feature, featureState: FeatureState, availableImages?: Array<string>): ?CrossFaded<T> {
+    evaluate(value: PossiblyEvaluatedValue<?CrossFaded<T>>, globals: EvaluationParameters, feature: Feature, featureState: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>): ?CrossFaded<T> {
         if (value.kind === 'source') {
-            const constant = value.evaluate(globals, feature, featureState, availableImages);
+            const constant = value.evaluate(globals, feature, featureState, canonical, availableImages);
             return this._calculate(constant, constant, constant, globals);
         } else if (value.kind === 'composite') {
             return this._calculate(
@@ -654,11 +654,11 @@ export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
         this.specification = specification;
     }
 
-    possiblyEvaluate(value: PropertyValue<T, ?CrossFaded<T>>, parameters: EvaluationParameters, availableImages?: Array<string>): ?CrossFaded<T> {
+    possiblyEvaluate(value: PropertyValue<T, ?CrossFaded<T>>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): ?CrossFaded<T> {
         if (value.value === undefined) {
             return undefined;
         } else if (value.expression.kind === 'constant') {
-            const constant = value.expression.evaluate(parameters, (null: any), {}, availableImages);
+            const constant = value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages);
             return this._calculate(constant, constant, constant, parameters);
         } else {
             assert(!value.isDataDriven());
@@ -695,8 +695,8 @@ export class ColorRampProperty implements Property<Color, boolean> {
         this.specification = specification;
     }
 
-    possiblyEvaluate(value: PropertyValue<Color, boolean>, parameters: EvaluationParameters, availableImages?: Array<string>): boolean {
-        return !!value.expression.evaluate(parameters, (null: any), {}, availableImages);
+    possiblyEvaluate(value: PropertyValue<Color, boolean>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): boolean {
+        return !!value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages);
     }
 
     interpolate(): boolean { return false; }

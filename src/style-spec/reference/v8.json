@@ -3454,6 +3454,15 @@
           }
         }
       },
+      "within": {
+        "doc": "Returns `true` if the feature being evaluated is inside the pre-defined geometry boundary, `false` otherwise. The expression has one argument which must be a valid GeoJSON Polygon/Multi-Polygon object. The expression only evaluates on `Point` or `LineString` feature. For `Point` feature, The expression will return false if any point of the feature is on the boundary or outside the boundary. For `LineString` feature, the expression will return false if the line is fully outside the boundary, or the line is partially intersecting the boundary, which means either part of the line is outside of the boundary, or end point of the line lies on the boundary.",
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.9.0"
+          }
+        }
+      },
       "is-supported-script": {
         "doc": "Returns `true` if the input string is expected to render legibly. Returns `false` if the input string contains sections that cannot be rendered without potential loss of meaning (e.g. Indic scripts that require complex text shaping, or right-to-left scripts if the the `mapbox-gl-rtl-text` plugin is not in use in Mapbox GL JS).",
         "group": "String",

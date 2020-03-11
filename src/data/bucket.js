@@ -7,6 +7,7 @@ import type FeatureIndex from './feature_index';
 import type Context from '../gl/context';
 import type {FeatureStates} from '../source/source_state';
 import type {ImagePosition} from '../render/image_atlas';
+import type {CanonicalTileID} from '../source/tile_id';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
@@ -74,7 +75,7 @@ export interface Bucket {
     +layers: Array<any>;
     +stateDependentLayers: Array<any>;
     +stateDependentLayerIds: Array<string>;
-    populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID): void;
     update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}): void;
     isEmpty(): boolean;
 

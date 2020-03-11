@@ -1,9 +1,11 @@
 // @flow
 
 import {createExpression} from '../expression';
+import type {GlobalProperties, Feature} from '../expression';
+import type {CanonicalTileID} from '../../source/tile_id';
 
-import type {GlobalProperties} from '../expression';
-export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
+type FilterExpression = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => boolean;
+export type FeatureFilter ={filter: FilterExpression, needGeometry: boolean};
 
 export default createFilter;
 export {isExpressionFilter};
@@ -72,7 +74,7 @@ const filterSpec = {
  */
 function createFilter(filter: any): FeatureFilter {
     if (filter === null || filter === undefined) {
-        return () => true;
+        return {filter: () => true, needGeometry: false};
     }
 
     if (!isExpressionFilter(filter)) {
@@ -83,7 +85,9 @@ function createFilter(filter: any): FeatureFilter {
     if (compiled.result === 'error') {
         throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
-        return (globalProperties: GlobalProperties, feature: VectorTileFeature) => compiled.value.evaluate(globalProperties, feature);
+        const needGeometry = Array.isArray(filter) && filter.length !== 0 && filter[0] === 'within';
+        return {filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiled.value.evaluate(globalProperties, feature, {}, canonical),
+            needGeometry};
     }
 }
 

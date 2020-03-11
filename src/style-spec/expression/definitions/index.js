@@ -42,6 +42,7 @@ import NumberFormat from './number_format';
 import FormatExpression from './format';
 import ImageExpression from './image';
 import Length from './length';
+import Within from './within';
 
 import type {Varargs} from '../compound_expression';
 import type {ExpressionRegistry} from '../expression';
@@ -79,7 +80,8 @@ const expressions: ExpressionRegistry = {
     'to-color': Coercion,
     'to-number': Coercion,
     'to-string': Coercion,
-    'var': Var
+    'var': Var,
+    'within': Within
 };
 
 function rgba(ctx, [r, g, b, a]) {
@@ -455,7 +457,7 @@ CompoundExpression.register(expressions, {
     'filter-has-id': [
         BooleanType,
         [],
-        (ctx) => ctx.id() !== null
+        (ctx) => (ctx.id() !== null && ctx.id() !== undefined)
     ],
     'filter-type-in': [
         BooleanType,
