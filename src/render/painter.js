@@ -207,11 +207,12 @@ class Painter {
         quadTriangleIndices.emplaceBack(2, 1, 3);
         this.quadTriangleIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
 
-        this.emptyTexture = new Texture(context, {
-            width: 1,
-            height: 1,
-            data: new Uint8ClampedArray([0, 0, 0, 0])
-        }, context.gl.RGBA);
+        // Use canvas to create a 1x1 empty texture,
+        // IE11 doesnt like using a native array since it thinks its a non-power of two texture.
+        const emptyCanvas = window.document.createElement('canvas');
+        emptyCanvas.width = 1;
+        emptyCanvas.height = 1;
+        this.emptyTexture = new Texture(context, emptyCanvas, context.gl.RGBA);
 
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
