@@ -434,7 +434,7 @@ class SymbolBucket implements Bucket {
 
             const needGeometry = layer._featureFilter.needGeometry;
             const evaluationFeature = {type: feature.type,
-                id: ('id' in feature ? feature.id : null),
+                id,
                 properties: feature.properties,
                 geometry: needGeometry ? loadGeometry(feature) : []};
 

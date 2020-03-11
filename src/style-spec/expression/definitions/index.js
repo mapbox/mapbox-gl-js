@@ -457,7 +457,7 @@ CompoundExpression.register(expressions, {
     'filter-has-id': [
         BooleanType,
         [],
-        (ctx) => ctx.id() !== null
+        (ctx) => (ctx.id() !== null && ctx.id() !== undefined)
     ],
     'filter-type-in': [
         BooleanType,
