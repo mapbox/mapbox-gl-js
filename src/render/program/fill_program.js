@@ -5,7 +5,7 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
-    Uniform4f,
+    Uniform3f,
     UniformMatrix4f
 } from '../uniform_binding';
 import {extend} from '../../util/util';
@@ -32,7 +32,7 @@ export type FillPatternUniformsType = {|
     'u_image': Uniform1i,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f,
-    'u_scale': Uniform4f,
+    'u_scale': Uniform3f,
     'u_fade': Uniform1f
 |};
 
@@ -44,7 +44,7 @@ export type FillOutlinePatternUniformsType = {|
     'u_image': Uniform1i,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f,
-    'u_scale': Uniform4f,
+    'u_scale': Uniform3f,
     'u_fade': Uniform1f
 |};
 
@@ -58,7 +58,7 @@ const fillPatternUniforms = (context: Context, locations: UniformLocations): Fil
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_pixel_coord_upper': new Uniform2f(context, locations.u_pixel_coord_upper),
     'u_pixel_coord_lower': new Uniform2f(context, locations.u_pixel_coord_lower),
-    'u_scale': new Uniform4f(context, locations.u_scale),
+    'u_scale': new Uniform3f(context, locations.u_scale),
     'u_fade': new Uniform1f(context, locations.u_fade)
 
 });
@@ -75,7 +75,7 @@ const fillOutlinePatternUniforms = (context: Context, locations: UniformLocation
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_pixel_coord_upper': new Uniform2f(context, locations.u_pixel_coord_upper),
     'u_pixel_coord_lower': new Uniform2f(context, locations.u_pixel_coord_lower),
-    'u_scale': new Uniform4f(context, locations.u_scale),
+    'u_scale': new Uniform3f(context, locations.u_scale),
     'u_fade': new Uniform1f(context, locations.u_fade)
 });
 

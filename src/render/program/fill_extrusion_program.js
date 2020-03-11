@@ -6,7 +6,6 @@ import {
     Uniform1f,
     Uniform2f,
     Uniform3f,
-    Uniform4f,
     UniformMatrix4f
 } from '../uniform_binding';
 
@@ -41,7 +40,7 @@ export type FillExtrusionPatternUniformsType = {|
     'u_image': Uniform1i,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f,
-    'u_scale': Uniform4f,
+    'u_scale': Uniform3f,
     'u_fade': Uniform1f,
     'u_opacity': Uniform1f
 |};
@@ -67,7 +66,7 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_pixel_coord_upper': new Uniform2f(context, locations.u_pixel_coord_upper),
     'u_pixel_coord_lower': new Uniform2f(context, locations.u_pixel_coord_lower),
-    'u_scale': new Uniform4f(context, locations.u_scale),
+    'u_scale': new Uniform3f(context, locations.u_scale),
     'u_fade': new Uniform1f(context, locations.u_fade),
     'u_opacity': new Uniform1f(context, locations.u_opacity)
 });

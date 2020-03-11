@@ -1,0 +1,93 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "pixelRatio": 1,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "addImage",
+          "pattern",
+          "./image/marker.png",
+          {
+            "pixelRatio": 1.5
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "addSource",
+          "geojson",
+          {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "properties": {
+                    "property": 20
+                  },
+                  "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      [
+                        [
+                          -0.0001,
+                          -0.0001
+                        ],
+                        [
+                          -0.0001,
+                          0.0001
+                        ],
+                        [
+                          0.0001,
+                          0.0001
+                        ],
+                        [
+                          0.0001,
+                          -0.0001
+                        ],
+                        [
+                          -0.0001,
+                          -0.0001
+                        ]
+                      ]
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "extrusion",
+            "type": "fill-extrusion",
+            "source": "geojson",
+            "paint": {
+              "fill-extrusion-pattern": "pattern",
+              "fill-extrusion-height": 10
+            }
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "pitch": 60,
+  "zoom": 19,
+  "sources": {},
+  "layers": []
+}
