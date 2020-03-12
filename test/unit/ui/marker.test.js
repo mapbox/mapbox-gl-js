@@ -27,6 +27,12 @@ test('Marker uses a default marker element with custom color', (t) => {
     t.end();
 });
 
+test('Marker uses a default marker element with custom scale', (t) => {
+    const marker = new Marker({scale: 0.8});
+    t.ok(marker.getElement().innerHTML.includes('0.8'));
+    t.end();
+});
+
 test('Marker uses a default marker with custom offset', (t) => {
     const marker = new Marker({offset: [1, 2]});
     t.ok(marker.getElement());
