@@ -1,4 +1,4 @@
-## 1.9.0
+## 1.9.0-beta.1
 
 ## Features and improvements
 * Map API functions such as `easeTo` and `flyTo` now support `padding: PaddingOptions` which lets developers shift the center of perspective for a map when building floating sidebars ([#8638](https://github.com/mapbox/mapbox-gl-js/pull/8638))

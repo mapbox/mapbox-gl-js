@@ -1,4 +1,4 @@
-## 13.13.0
+## 13.13.0-beta.1
 
 ### ✨ Features and improvements
 * Introduce `within` expression ([#9352](https://github.com/mapbox/mapbox-gl-js/pull/9352))
