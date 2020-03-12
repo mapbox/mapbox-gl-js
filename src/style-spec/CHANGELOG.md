@@ -1,3 +1,15 @@
+## 13.13.0
+
+### ✨ Features and improvements
+* Introduce `within` expression ([#9352](https://github.com/mapbox/mapbox-gl-js/pull/9352))
+* Clarify differences in `symbol-sort-key` with and without overlap ([#9379](https://github.com/mapbox/mapbox-gl-js/pull/9379))
+
+### 🐛 Bug fixes
+* Allow needle argument to `in` expression to be false ([#9295](https://github.com/mapbox/mapbox-gl-js/pull/9295))
+* Fix a bug where `icon-image` expression that evaluates to `''` produced a warning. ([#9380](https://github.com/mapbox/mapbox-gl-js/pull/9380))
+* Prevent exception resulting from `line-dash-array` of empty length ([#9385](https://github.com/mapbox/mapbox-gl-js/pull/9385))
+* Improve scaling of patterns used in `line-pattern` on all device resolutions and pixel ratios ([#9266](https://github.com/mapbox/mapbox-gl-js/pull/9266))
+
 ## 13.12.0
 
 * Update `image` expression SDK support table ([#9228](https://github.com/mapbox/mapbox-gl-js/pull/9228))
