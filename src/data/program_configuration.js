@@ -144,7 +144,7 @@ class CrossFadedConstantBinder implements UniformBinder {
     }
 
     getBinding(context: Context, location: WebGLUniformLocation, name: string): $Shape<Uniform<any>> {
-        return name.startsWith('u_pattern') ?
+        return name.substr(0, 9) === 'u_pattern' ?
             new Uniform4f(context, location) :
             new Uniform1f(context, location);
     }
