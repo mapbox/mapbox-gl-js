@@ -210,7 +210,7 @@ class Painter {
         this.emptyTexture = new Texture(context, {
             width: 1,
             height: 1,
-            data: new Uint8ClampedArray([0, 0, 0, 0])
+            data: new Uint8Array([0, 0, 0, 0])
         }, context.gl.RGBA);
 
         const gl = this.context.gl;
