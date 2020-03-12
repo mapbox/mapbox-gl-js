@@ -1,7 +1,7 @@
 ## 1.9.0-beta.1
 With this release, we're adding [a new changelog policy](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md#changelog-conventions) to our contribution guidelines.
 
-This release also fixes several longstanding bugs and unintentional rendering behavior with line-pattern. The fixes come with a visual change to how patterns added with line-pattern scale. Previously, patterns that became larger than the line would be clipped, sometimes distorting the pattern, particularly on mobile and retina devices. Now, the pattern will be scaled to fit under all circumstances. #9266 showcases examples of the visual differences. For more information and to provide feedback on this change, see #9394.
+This release also fixes several longstanding bugs and unintentional rendering behavior with line-pattern. The fixes come with a visual change to how patterns added with line-pattern scale. Previously, patterns that became larger than the line would be clipped, sometimes distorting the pattern, particularly on mobile and retina devices. Now, the pattern will be scaled to fit under all circumstances. [#9266](https://github.com/mapbox/mapbox-gl-js/pull/9266) showcases examples of the visual differences. For more information and to provide feedback on this change, see [#9394](https://github.com/mapbox/mapbox-gl-js/pull/9394).
 
 ## Features and improvements
 * Add `within` expression for testing whether an evaluated feature lies within a given GeoJSON object ([#9352](https://github.com/mapbox/mapbox-gl-js/pull/9352)). For example:<br>
