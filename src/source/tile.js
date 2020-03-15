@@ -51,7 +51,7 @@ class Tile {
     uid: number;
     uses: number;
     tileSize: number;
-    buckets: {[string]: Bucket};
+    buckets: {[_: string]: Bucket};
     latestFeatureIndex: ?FeatureIndex;
     latestRawTileData: ?ArrayBuffer;
     imageAtlas: ?ImageAtlas;
@@ -68,7 +68,7 @@ class Tile {
     showCollisionBoxes: boolean;
     placementSource: any;
     actor: ?Actor;
-    vtLayers: {[string]: VectorTileLayer};
+    vtLayers: {[_: string]: VectorTileLayer};
 
     neighboringTiles: ?Object;
     dem: ?DEMData;
@@ -91,6 +91,7 @@ class Tile {
     /**
      * @param {OverscaledTileID} tileID
      * @param size
+     * @private
      */
     constructor(tileID: OverscaledTileID, size: number) {
         this.tileID = tileID;
@@ -264,15 +265,16 @@ class Tile {
 
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
-    queryRenderedFeatures(layers: {[string]: StyleLayer},
+    queryRenderedFeatures(layers: {[_: string]: StyleLayer},
+                          serializedLayers: {[string]: Object},
                           sourceFeatureState: SourceFeatureState,
                           queryGeometry: Array<Point>,
                           cameraQueryGeometry: Array<Point>,
                           scale: number,
-                          params: { filter: FilterSpecification, layers: Array<string> },
+                          params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                           transform: Transform,
                           maxPitchScaleFactor: number,
-                          pixelPosMatrix: Float32Array): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          pixelPosMatrix: Float32Array): {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData)
             return {};
 
@@ -285,7 +287,7 @@ class Tile {
             transform,
             params,
             queryPadding: this.queryPadding * maxPitchScaleFactor
-        }, layers, sourceFeatureState);
+        }, layers, serializedLayers, sourceFeatureState);
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
@@ -305,7 +307,7 @@ class Tile {
 
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i);
-            if (filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
+            if (filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
                 const id = featureIndex.getId(feature, sourceLayer);
                 const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
                 (geojsonFeature: any).tile = coord;
@@ -392,6 +394,8 @@ class Tile {
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
 
         for (const id in this.buckets) {
+            if (!painter.style.hasLayer(id)) continue;
+
             const bucket = this.buckets[id];
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';

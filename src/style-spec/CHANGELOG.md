@@ -1,3 +1,23 @@
+## 13.12.0
+
+* Update `image` expression SDK support table ([#9228](https://github.com/mapbox/mapbox-gl-js/pull/9228))
+* Fix `promoteId` for line layers ([#9210](https://github.com/mapbox/mapbox-gl-js/pull/9210), [#9212](https://github.com/mapbox/mapbox-gl-js/pull/9212))
+
+## 13.11.0
+
+### ✨ Features and improvements
+* Add `promoteId` option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
+* Update `symbol-avoid-edges` documentation regarding global collision detection ([#9157](https://github.com/mapbox/mapbox-gl-js/pull/9157))
+* Remove reference to `in` function which has been replaced by the `in` expression ([#9102](https://github.com/mapbox/mapbox-gl-js/pull/9102))
+
+### 🐛 Bug fixes
+* Fix bug where `symbol-sort-key` was not used for collisions that crossed tile boundaries ([#9054](https://github.com/mapbox/mapbox-gl-js/pull/9054))
+
+## 13.10.2
+
+### 🐛 Bug fixes
+* Fix style validation error messages not being displayed ([#9073](https://github.com/mapbox/mapbox-gl-js/pull/9073))
+
 ## 13.10.0
 
 ### ✨ Features and improvements

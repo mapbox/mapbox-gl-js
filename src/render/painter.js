@@ -1,6 +1,7 @@
 // @flow
 
 import browser from '../util/browser';
+import window from '../util/window';
 
 import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache';
@@ -33,7 +34,7 @@ import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
-import debug from './draw_debug';
+import debug, {drawDebugPadding} from './draw_debug';
 import custom from './draw_custom';
 
 const draw = {
@@ -69,6 +70,7 @@ export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
+    showPadding: boolean,
     rotating: boolean,
     zooming: boolean,
     moving: boolean,
@@ -85,14 +87,12 @@ type PainterOptions = {
 class Painter {
     context: Context;
     transform: Transform;
-    _tileTextures: { [number]: Array<Texture> };
+    _tileTextures: {[_: number]: Array<Texture> };
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration: ProgramConfiguration;
     width: number;
     height: number;
-    depthRbo: WebGLRenderbuffer;
-    depthRboNeedsClear: boolean;
     tileExtentBuffer: VertexBuffer;
     tileExtentSegments: SegmentVector;
     debugBuffer: VertexBuffer;
@@ -103,7 +103,7 @@ class Painter {
     viewportSegments: SegmentVector;
     quadTriangleIndexBuffer: IndexBuffer;
     tileBorderIndexBuffer: IndexBuffer;
-    _tileClippingMaskIDs: { [string]: number };
+    _tileClippingMaskIDs: {[_: string]: number };
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -118,10 +118,13 @@ class Painter {
     nextStencilID: number;
     id: string;
     _showOverdrawInspector: boolean;
-    cache: { [string]: Program<*> };
+    cache: {[_: string]: Program<*> };
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
-    gpuTimers: { [string]: any };
+    gpuTimers: {[_: string]: any };
+    emptyTexture: Texture;
+    debugOverlayTexture: Texture;
+    debugOverlayCanvas: HTMLCanvasElement;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -135,10 +138,6 @@ class Painter {
         this.numSublayers = SourceCache.maxUnderzooming + SourceCache.maxOverzooming + 1;
         this.depthEpsilon = 1 / Math.pow(2, 16);
 
-        this.depthRboNeedsClear = true;
-
-        this.emptyProgramConfiguration = new ProgramConfiguration();
-
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this.gpuTimers = {};
@@ -149,8 +148,6 @@ class Painter {
      * for a new width and height value.
      */
     resize(width: number, height: number) {
-        const gl = this.context.gl;
-
         this.width = width * browser.devicePixelRatio;
         this.height = height * browser.devicePixelRatio;
         this.context.viewport.set([0, 0, this.width, this.height]);
@@ -159,11 +156,6 @@ class Painter {
             for (const layerId of this.style._order) {
                 this.style._layers[layerId].resize();
             }
-        }
-
-        if (this.depthRbo) {
-            gl.deleteRenderbuffer(this.depthRbo);
-            this.depthRbo = null;
         }
     }
 
@@ -214,6 +206,12 @@ class Painter {
         quadTriangleIndices.emplaceBack(0, 1, 2);
         quadTriangleIndices.emplaceBack(2, 1, 3);
         this.quadTriangleIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
+
+        this.emptyTexture = new Texture(context, {
+            width: 1,
+            height: 1,
+            data: new Uint8Array([0, 0, 0, 0])
+        }, context.gl.RGBA);
 
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
@@ -305,7 +303,7 @@ class Painter {
      *
      * Returns [StencilMode for tile overscaleZ map, sortedCoords].
      */
-    stencilConfigForOverlap(tileIDs: Array<OverscaledTileID>): [{[number]: $ReadOnly<StencilMode>}, Array<OverscaledTileID>] {
+    stencilConfigForOverlap(tileIDs: Array<OverscaledTileID>): [{[_: number]: $ReadOnly<StencilMode>}, Array<OverscaledTileID>] {
         const gl = this.context.gl;
         const coords = tileIDs.sort((a, b) => b.overscaledZ - a.overscaledZ);
         const minTileZ = coords[coords.length - 1].overscaledZ;
@@ -378,9 +376,9 @@ class Painter {
             }
         }
 
-        const coordsAscending: {[string]: Array<OverscaledTileID>} = {};
-        const coordsDescending: {[string]: Array<OverscaledTileID>} = {};
-        const coordsDescendingSymbol: {[string]: Array<OverscaledTileID>} = {};
+        const coordsAscending: {[_: string]: Array<OverscaledTileID>} = {};
+        const coordsDescending: {[_: string]: Array<OverscaledTileID>} = {};
+        const coordsDescendingSymbol: {[_: string]: Array<OverscaledTileID>} = {};
 
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
@@ -403,7 +401,6 @@ class Painter {
         // framebuffer, and then save those for rendering back to the map
         // later: in doing this we avoid doing expensive framebuffer restores.
         this.renderPass = 'offscreen';
-        this.depthRboNeedsClear = true;
 
         for (const layerId of layerIds) {
             const layer = this.style._layers[layerId];
@@ -475,17 +472,13 @@ class Painter {
             }
         }
 
+        if (this.options.showPadding) {
+            drawDebugPadding(this);
+        }
+
         // Set defaults for most GL values so that anyone using the state after the render
         // encounters more expected values.
         this.context.setDefault();
-    }
-
-    setupOffscreenDepthRenderbuffer(): void {
-        const context = this.context;
-        // All of the 3D textures will use the same depth renderbuffer.
-        if (!this.depthRbo) {
-            this.depthRbo = context.createRenderbuffer(context.gl.DEPTH_COMPONENT16, this.width, this.height);
-        }
     }
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
@@ -529,7 +522,7 @@ class Painter {
         return currentLayerTimers;
     }
 
-    queryGpuTimers(gpuTimers: {[string]: any}) {
+    queryGpuTimers(gpuTimers: {[_: string]: any}) {
         const layers = {};
         for (const layerId in gpuTimers) {
             const gpuTimer = gpuTimers[layerId];
@@ -545,6 +538,7 @@ class Painter {
      * Transform a matrix to incorporate the *-translate and *-translate-anchor properties into it.
      * @param inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
      * @returns {Float32Array} matrix
+     * @private
      */
     translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {
         if (!translate[0] && !translate[1]) return matrix;
@@ -591,6 +585,7 @@ class Painter {
      * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
      *
      * @returns true if a needed image is missing and rendering needs to be skipped.
+     * @private
      */
     isPatternMissing(image: ?CrossFaded<ResolvedImage>): boolean {
         if (!image) return false;
@@ -599,9 +594,9 @@ class Painter {
         return !imagePosA || !imagePosB;
     }
 
-    useProgram(name: string, programConfiguration: ProgramConfiguration = this.emptyProgramConfiguration): Program<any> {
+    useProgram(name: string, programConfiguration: ?ProgramConfiguration): Program<any> {
         this.cache = this.cache || {};
-        const key = `${name}${programConfiguration.cacheKey || ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
+        const key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
         if (!this.cache[key]) {
             this.cache[key] = new Program(this.context, shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector);
         }
@@ -635,6 +630,23 @@ class Painter {
         this.context.cullFace.set(false);
         this.context.viewport.set([0, 0, this.width, this.height]);
         this.context.blendEquation.set(gl.FUNC_ADD);
+    }
+
+    initDebugOverlayCanvas() {
+        if (this.debugOverlayCanvas == null) {
+            this.debugOverlayCanvas = window.document.createElement('canvas');
+            this.debugOverlayCanvas.width = 512;
+            this.debugOverlayCanvas.height = 512;
+            const gl = this.context.gl;
+            this.debugOverlayTexture = new Texture(this.context, this.debugOverlayCanvas, gl.RGBA);
+        }
+    }
+
+    destroy() {
+        this.emptyTexture.destroy();
+        if (this.debugOverlayTexture) {
+            this.debugOverlayTexture.destroy();
+        }
     }
 }
 

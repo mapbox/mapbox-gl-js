@@ -66,6 +66,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-browser:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - deploy-benchmarks:
           requires:
             - lint
@@ -217,6 +223,26 @@ jobs:
           path: test/integration/query-tests
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
+
+  test-browser:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: yarn run build-dev
+      - run: yarn run build-token
+      - run:
+          name: Test Chrome
+          environment:
+            SELENIUM_BROWSER: chrome
+            TAP_COLORS: 1
+          command: yarn run test-browser
+      - run:
+          name: Test Firefox
+          environment:
+            SELENIUM_BROWSER: firefox
+            TAP_COLORS: 1
+          command: yarn run test-browser
 
   test-expressions:
     <<: *defaults

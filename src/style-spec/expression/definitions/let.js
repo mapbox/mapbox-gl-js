@@ -20,7 +20,7 @@ class Let implements Expression {
         return this.result.evaluate(ctx);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         for (const binding of this.bindings) {
             fn(binding[1]);
         }
@@ -55,8 +55,8 @@ class Let implements Expression {
         return new Let(bindings, result);
     }
 
-    possibleOutputs() {
-        return this.result.possibleOutputs();
+    outputDefined() {
+        return this.result.outputDefined();
     }
 
     serialize() {

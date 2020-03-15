@@ -63,7 +63,7 @@ class TouchZoomRotateHandler {
     /**
      * Enables the "pinch to rotate and zoom" interaction.
      *
-     * @param {Object} [options]
+     * @param {Object} [options] Options object.
      * @param {string} [options.around] If "center" is passed, map will zoom around the center
      *
      * @example
@@ -114,8 +114,7 @@ class TouchZoomRotateHandler {
 
     /**
      * Returns true if the handler is enabled and has detected the start of a zoom/rotate gesture.
-     *
-     * @returns {boolean}
+     * @returns {boolean} //eslint-disable-line
      * @memberof TouchZoomRotateHandler
      */
     isActive(): boolean {

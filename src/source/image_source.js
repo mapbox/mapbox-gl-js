@@ -73,7 +73,7 @@ class ImageSource extends Evented implements Source {
     url: string;
 
     coordinates: Coordinates;
-    tiles: {[string]: Tile};
+    tiles: {[_: string]: Tile};
     options: any;
     dispatcher: Dispatcher;
     map: Map;
@@ -137,7 +137,7 @@ class ImageSource extends Evented implements Source {
      * Updates the image URL and, optionally, the coordinates. To avoid having the image flash after changing,
      * set the `raster-fade-duration` paint property on the raster layer to 0.
      *
-     * @param {Object} options
+     * @param {Object} options Options object.
      * @param {string} [options.url] Required image URL.
      * @param {Array<Array<number>>} [options.coordinates] Four geographical coordinates,
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.

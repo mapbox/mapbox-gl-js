@@ -140,6 +140,8 @@ class DragRotateHandler {
         } else {
             if (this._button === 'right') {
                 this._eventButton = DOM.mouseButton(e);
+
+                if (e.altKey || e.metaKey) return;
                 if (this._eventButton !== (e.ctrlKey ? 0 : 2)) return;
             } else {
                 if (e.ctrlKey || DOM.mouseButton(e) !== 0) return;

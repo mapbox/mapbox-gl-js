@@ -1,0 +1,52 @@
+{
+  "expression": ["within", {
+      "type": "LineString",
+      "coordinates": [[0, 0], [0, 5], [5, 5], [5, 0]]
+    }],
+  "inputs": [[{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [6, 6]
+        }
+      }], [{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [2, 2]
+        }
+      }], [{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [[3, 3], [4, 1]]
+        }
+      }]],
+  "expected": {
+    "compiled": {
+      "errors": [{
+          "key": "",
+          "error": "'within' expression requires valid geojson object that contains polygon geometry type."
+        }],
+      "result": "error"
+    }
+  }
+}

@@ -3,7 +3,6 @@
 import assert from 'assert';
 import type {Expression} from '../expression';
 import type EvaluationContext from '../evaluation_context';
-import type {Value} from '../values';
 import type {Type} from '../types';
 import type {ZoomConstantExpression} from '../../expression';
 import {NullType} from '../types';
@@ -35,7 +34,7 @@ export default class FormatSectionOverride<T> implements Expression {
         return this.defaultValue.property.specification.default;
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         if (!this.defaultValue.isConstant()) {
             const expr: ZoomConstantExpression<'source'> = ((this.defaultValue.value): any);
             fn(expr._styleExpression.expression);
@@ -43,8 +42,8 @@ export default class FormatSectionOverride<T> implements Expression {
     }
 
     // Cannot be statically evaluated, as the output depends on the evaluation context.
-    possibleOutputs(): Array<Value | void> {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

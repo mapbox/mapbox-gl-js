@@ -19,7 +19,7 @@ function getPixelPosMatrix(transform, tileID) {
     return mat4.multiply(t, t, transform.calculatePosMatrix(tileID.toUnwrapped()));
 }
 
-function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[string]: StyleLayer}, sourceID: string) {
+function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[_: string]: StyleLayer}, sourceID: string) {
     if (layers) {
         for (const layerID of layers) {
             const layer = styleLayers[layerID];
@@ -39,24 +39,24 @@ function queryIncludes3DLayer(layers?: Array<string>, styleLayers: {[string]: St
 }
 
 export function queryRenderedFeatures(sourceCache: SourceCache,
-                            styleLayers: {[string]: StyleLayer},
+                            styleLayers: {[_: string]: StyleLayer},
+                            serializedLayers: {[_: string]: Object},
                             queryGeometry: Array<Point>,
-                            params: { filter: FilterSpecification, layers: Array<string> },
+                            params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                             transform: Transform) {
 
     const has3DLayer = queryIncludes3DLayer(params && params.layers, styleLayers, sourceCache.id);
-
     const maxPitchScaleFactor = transform.maxPitchScaleFactor();
     const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor, has3DLayer);
 
     tilesIn.sort(sortTilesIn);
-
     const renderedFeatureLayers = [];
     for (const tileIn of tilesIn) {
         renderedFeatureLayers.push({
             wrappedTileID: tileIn.tileID.wrapped().key,
             queryResults: tileIn.tile.queryRenderedFeatures(
                 styleLayers,
+                serializedLayers,
                 sourceCache._state,
                 tileIn.queryGeometry,
                 tileIn.cameraQueryGeometry,
@@ -85,12 +85,13 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
     return result;
 }
 
-export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
-                            sourceCaches: {[string]: SourceCache},
+export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
+                            serializedLayers: {[_: string]: StyleLayer},
+                            sourceCaches: {[_: string]: SourceCache},
                             queryGeometry: Array<Point>,
-                            params: { filter: FilterSpecification, layers: Array<string> },
+                            params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                             collisionIndex: CollisionIndex,
-                            retainedQueryData: {[number]: RetainedQueryData}) {
+                            retainedQueryData: {[_: number]: RetainedQueryData}) {
     const result = {};
     const renderedSymbols = collisionIndex.queryRenderedSymbols(queryGeometry);
     const bucketQueryData = [];
@@ -102,10 +103,12 @@ export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
     for (const queryData of bucketQueryData) {
         const bucketSymbols = queryData.featureIndex.lookupSymbolFeatures(
                 renderedSymbols[queryData.bucketInstanceId],
+                serializedLayers,
                 queryData.bucketIndex,
                 queryData.sourceLayerIndex,
                 params.filter,
                 params.layers,
+                params.availableImages,
                 styleLayers);
 
         for (const layerID in bucketSymbols) {

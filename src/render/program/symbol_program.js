@@ -26,7 +26,7 @@ export type SymbolIconUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_label_plane_matrix': UniformMatrix4f,
     'u_coord_matrix': UniformMatrix4f,
-    'u_is_text': Uniform1f,
+    'u_is_text': Uniform1i,
     'u_pitch_with_map': Uniform1i,
     'u_texsize': Uniform2f,
     'u_texture': Uniform1i
@@ -45,13 +45,13 @@ export type SymbolSDFUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_label_plane_matrix': UniformMatrix4f,
     'u_coord_matrix': UniformMatrix4f,
-    'u_is_text': Uniform1f,
+    'u_is_text': Uniform1i,
     'u_pitch_with_map': Uniform1i,
     'u_texsize': Uniform2f,
     'u_texture': Uniform1i,
     'u_gamma_scale': Uniform1f,
     'u_device_pixel_ratio': Uniform1f,
-    'u_is_halo': Uniform1f
+    'u_is_halo': Uniform1i
 |};
 
 export type symbolTextAndIconUniformsType = {|
@@ -67,7 +67,7 @@ export type symbolTextAndIconUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_label_plane_matrix': UniformMatrix4f,
     'u_coord_matrix': UniformMatrix4f,
-    'u_is_text': Uniform1f,
+    'u_is_text': Uniform1i,
     'u_pitch_with_map': Uniform1i,
     'u_texsize': Uniform2f,
     'u_texsize_icon': Uniform2f,
@@ -75,7 +75,7 @@ export type symbolTextAndIconUniformsType = {|
     'u_texture_icon': Uniform1i,
     'u_gamma_scale': Uniform1f,
     'u_device_pixel_ratio': Uniform1f,
-    'u_is_halo': Uniform1f
+    'u_is_halo': Uniform1i
 |};
 
 const symbolIconUniforms = (context: Context, locations: UniformLocations): SymbolIconUniformsType => ({
@@ -91,7 +91,7 @@ const symbolIconUniforms = (context: Context, locations: UniformLocations): Symb
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_label_plane_matrix': new UniformMatrix4f(context, locations.u_label_plane_matrix),
     'u_coord_matrix': new UniformMatrix4f(context, locations.u_coord_matrix),
-    'u_is_text': new Uniform1f(context, locations.u_is_text),
+    'u_is_text': new Uniform1i(context, locations.u_is_text),
     'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_texture': new Uniform1i(context, locations.u_texture)
@@ -110,13 +110,13 @@ const symbolSDFUniforms = (context: Context, locations: UniformLocations): Symbo
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_label_plane_matrix': new UniformMatrix4f(context, locations.u_label_plane_matrix),
     'u_coord_matrix': new UniformMatrix4f(context, locations.u_coord_matrix),
-    'u_is_text': new Uniform1f(context, locations.u_is_text),
+    'u_is_text': new Uniform1i(context, locations.u_is_text),
     'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_texture': new Uniform1i(context, locations.u_texture),
     'u_gamma_scale': new Uniform1f(context, locations.u_gamma_scale),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_is_halo': new Uniform1f(context, locations.u_is_halo)
+    'u_is_halo': new Uniform1i(context, locations.u_is_halo)
 });
 
 const symbolTextAndIconUniforms = (context: Context, locations: UniformLocations): symbolTextAndIconUniformsType => ({
@@ -132,7 +132,7 @@ const symbolTextAndIconUniforms = (context: Context, locations: UniformLocations
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_label_plane_matrix': new UniformMatrix4f(context, locations.u_label_plane_matrix),
     'u_coord_matrix': new UniformMatrix4f(context, locations.u_coord_matrix),
-    'u_is_text': new Uniform1f(context, locations.u_is_text),
+    'u_is_text': new Uniform1i(context, locations.u_is_text),
     'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_texsize_icon': new Uniform2f(context, locations.u_texsize_icon),
@@ -140,7 +140,7 @@ const symbolTextAndIconUniforms = (context: Context, locations: UniformLocations
     'u_texture_icon': new Uniform1i(context, locations.u_texture_icon),
     'u_gamma_scale': new Uniform1f(context, locations.u_gamma_scale),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_is_halo': new Uniform1f(context, locations.u_is_halo)
+    'u_is_halo': new Uniform1i(context, locations.u_is_halo)
 });
 
 const symbolIconUniformValues = (

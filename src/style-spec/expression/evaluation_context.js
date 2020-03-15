@@ -3,6 +3,7 @@
 import {Color} from './values';
 import type {FormattedSection} from './types/formatted';
 import type {GlobalProperties, Feature, FeatureState} from './index';
+import type {CanonicalTileID} from '../../source/tile_id';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
@@ -12,8 +13,9 @@ class EvaluationContext {
     featureState: ?FeatureState;
     formattedSection: ?FormattedSection;
     availableImages: ?Array<string>;
+    canonical: ?CanonicalTileID;
 
-    _parseColorCache: {[string]: ?Color};
+    _parseColorCache: {[_: string]: ?Color};
 
     constructor() {
         this.globals = (null: any);
@@ -22,6 +24,7 @@ class EvaluationContext {
         this.formattedSection = null;
         this._parseColorCache = {};
         this.availableImages = null;
+        this.canonical = null;
     }
 
     id() {
@@ -30,6 +33,14 @@ class EvaluationContext {
 
     geometryType() {
         return this.feature ? typeof this.feature.type === 'number' ? geometryTypes[this.feature.type] : this.feature.type : null;
+    }
+
+    geometry() {
+        return this.feature && 'geometry' in this.feature ? this.feature.geometry : null;
+    }
+
+    canonicalID() {
+        return this.canonical;
     }
 
     properties() {

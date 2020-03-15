@@ -110,6 +110,7 @@ class StructArray {
      * Serialize a StructArray instance.  Serializes both the raw data and the
      * metadata needed to reconstruct the StructArray base class during
      * deserialization.
+     * @private
      */
     static serialize(array: StructArray, transferables?: Array<Transferable>): SerializedStructArray {
         assert(!array.isTransferred);

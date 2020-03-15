@@ -191,6 +191,8 @@ class TileCache {
     /**
      * Remove entries that do not pass a filter function. Used for removing
      * stale tiles from the cache.
+     *
+     * @param {function} filterFn Determines whether the tile is filtered. If the supplied function returns false, the tile will be filtered out.
      */
     filter(filterFn: (tile: Tile) => boolean) {
         const removed = [];

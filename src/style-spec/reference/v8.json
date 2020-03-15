@@ -177,6 +177,10 @@
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
+    "promoteId": {
+      "type": "promoteId",
+      "doc": "A property to use as a feature id (for feature state). Either a property name, or an object of the form `{<sourceLayer>: <propertyName>}`. If specified as a string for a vector tile source, the same property is used across all its source layers."
+    },
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."
@@ -316,10 +320,6 @@
       },
       "default": "mapbox",
       "doc": "The encoding used by this source. Mapbox Terrain RGB is used by default"
-    },
-    "promoteId": {
-      "type": "promoteId",
-      "doc": "A property to use as a feature id (for feature state). Either a property name, or an object of the form `{<sourceLayer>: <propertyName>}`."
     },
     "*": {
       "type": "*",
@@ -1025,7 +1025,7 @@
     },
     "symbol-sort-key": {
       "type": "number",
-      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key when they overlap. Features with a lower sort key will have priority over other features when doing placement.",
+      "doc": "Sorts features in ascending order based on this value. Features with lower sort keys are drawn and placed first.  When `icon-allow-overlap` or `text-allow-overlap` is `false`, features with a lower sort key will have priority during placement. When `icon-allow-overlap` or `text-allow-overlap` is set to `true`, features with a higher sort key will overlap over features with a lower sort key.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.53.0",
@@ -2821,7 +2821,9 @@
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
-            "js": "1.4.0"
+            "js": "1.4.0",
+            "android": "8.6.0",
+            "ios": "5.6.0"
           }
         }
       },
@@ -3449,6 +3451,15 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          }
+        }
+      },
+      "within": {
+        "doc": "Returns `true` if the feature being evaluated is inside the pre-defined geometry boundary, `false` otherwise. The expression has one argument which must be a valid GeoJSON Polygon/Multi-Polygon object. The expression only evaluates on `Point` or `LineString` feature. For `Point` feature, The expression will return false if any point of the feature is on the boundary or outside the boundary. For `LineString` feature, the expression will return false if the line is fully outside the boundary, or the line is partially intersecting the boundary, which means either part of the line is outside of the boundary, or end point of the line lies on the boundary.",
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.9.0"
           }
         }
       },
@@ -5785,6 +5796,12 @@
     "constant": {
       "type": "property-type",
       "doc": "Property is constant across all zoom levels and property values."
+    }
+  },
+  "promoteId": {
+    "*": {
+      "type": "string",
+      "doc": "A name of a feature property to use as ID for feature state."
     }
   }
 }

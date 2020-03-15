@@ -81,7 +81,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         if (image) {
             context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePatternPaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers(crossfade);
         } else if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
             context.activeTexture.set(gl.TEXTURE0);
             painter.lineAtlas.bind(context);

@@ -25,21 +25,24 @@ import type {Result} from '../util/result';
 import type {InterpolationType} from './definitions/interpolate';
 import type {PropertyValueSpecification} from '../types';
 import type {FormattedSection} from './types/formatted';
+import type Point from '@mapbox/point-geometry';
+import type {CanonicalTileID} from '../../source/tile_id';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
     +id?: any,
-    +properties: {[string]: any},
-    +patterns?: {[string]: {"min": string, "mid": string, "max": string}}
+    +properties: {[_: string]: any},
+    +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}},
+    +geometry?: Array<Array<Point>>
 };
 
-export type FeatureState = {[string]: any};
+export type FeatureState = {[_: string]: any};
 
 export type GlobalProperties = $ReadOnly<{
     zoom: number,
     heatmapDensity?: number,
     lineProgress?: number,
-    isSupportedScript?: (string) => boolean,
+    isSupportedScript?: (_: string) => boolean,
     accumulated?: Value
 }>;
 
@@ -49,7 +52,7 @@ export class StyleExpression {
     _evaluator: EvaluationContext;
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
-    _enumValues: ?{[string]: any};
+    _enumValues: ?{[_: string]: any};
 
     constructor(expression: Expression, propertySpec: ?StylePropertySpecification) {
         this.expression = expression;
@@ -59,20 +62,22 @@ export class StyleExpression {
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
         this._evaluator.featureState = featureState;
+        this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
+        this._evaluator.canonical = canonical;
         this._evaluator.availableImages = availableImages || null;
         this._evaluator.formattedSection = formattedSection || null;
 
@@ -138,12 +143,12 @@ export class ZoomConstantExpression<Kind: EvaluationKind> {
         this.isStateDependent = kind !== ('constant': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, availableImages, formattedSection);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
-        return this._styleExpression.evaluate(globals, feature, featureState, availableImages, formattedSection);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 }
 
@@ -163,12 +168,12 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
         this.interpolationType = interpolationType;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, availableImages, formattedSection);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
-        return this._styleExpression.evaluate(globals, feature, featureState, availableImages, formattedSection);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+        return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 
     interpolationFactor(input: number, lower: number, upper: number): number {
@@ -182,18 +187,18 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
 
 export type ConstantExpression = {
     kind: 'constant',
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
 }
 
 export type SourceExpression = {
     kind: 'source',
     isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
 };
 
 export type CameraExpression = {
     kind: 'camera',
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>,
     interpolationType: ?InterpolationType
@@ -202,7 +207,7 @@ export type CameraExpression = {
 export type CompositeExpression = {
     kind: 'composite',
     isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>,
     interpolationType: ?InterpolationType

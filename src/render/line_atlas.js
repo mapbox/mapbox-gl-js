@@ -19,7 +19,7 @@ class LineAtlas {
     nextRow: number;
     bytes: number;
     data: Uint8Array;
-    positions: {[string]: any};
+    dashEntry: {[_: string]: any};
     dirty: boolean;
     texture: WebGLTexture;
 
@@ -28,10 +28,9 @@ class LineAtlas {
         this.height = height;
         this.nextRow = 0;
 
-        this.bytes = 4;
-        this.data = new Uint8Array(this.width * this.height * this.bytes);
+        this.data = new Uint8Array(this.width * this.height);
 
-        this.positions = {};
+        this.dashEntry = {};
     }
 
     /**
@@ -45,17 +44,115 @@ class LineAtlas {
     getDash(dasharray: Array<number>, round: boolean) {
         const key = dasharray.join(",") + String(round);
 
-        if (!this.positions[key]) {
-            this.positions[key] = this.addDash(dasharray, round);
+        if (!this.dashEntry[key]) {
+            this.dashEntry[key] = this.addDash(dasharray, round);
         }
-        return this.positions[key];
+        return this.dashEntry[key];
+    }
+
+    getDashRanges(dasharray: Array<number>, lineAtlasWidth: number, stretch: number) {
+        // If dasharray has an odd length, both the first and last parts
+        // are dashes and should be joined seamlessly.
+        const oddDashArray = dasharray.length % 2 === 1;
+
+        const ranges = [];
+
+        let left = oddDashArray ? -dasharray[dasharray.length - 1] * stretch : 0;
+        let right = dasharray[0] * stretch;
+        let isDash = true;
+
+        ranges.push({left, right, isDash, zeroLength: dasharray[0] === 0});
+
+        let currentDashLength = dasharray[0];
+        for (let i = 1; i < dasharray.length; i++) {
+            isDash = !isDash;
+
+            const dashLength = dasharray[i];
+            left = currentDashLength * stretch;
+            currentDashLength += dashLength;
+            right = currentDashLength * stretch;
+
+            ranges.push({left, right, isDash, zeroLength: dashLength === 0});
+        }
+
+        return ranges;
+    }
+
+    addRoundDash(ranges: Object, stretch: number, n: number) {
+        const halfStretch = stretch / 2;
+
+        for (let y = -n; y <= n; y++) {
+            const row = this.nextRow + n + y;
+            const index = this.width * row;
+            let currIndex = 0;
+            let range = ranges[currIndex];
+
+            for (let x = 0; x < this.width; x++) {
+                if (x / range.right > 1) { range = ranges[++currIndex]; }
+
+                const distLeft = Math.abs(x - range.left);
+                const distRight = Math.abs(x - range.right);
+                const minDist = Math.min(distLeft, distRight);
+                let signedDistance;
+
+                const distMiddle =  y / n * (halfStretch + 1);
+                if (range.isDash) {
+                    const distEdge = halfStretch - Math.abs(distMiddle);
+                    signedDistance = Math.sqrt(minDist * minDist + distEdge * distEdge);
+                } else {
+                    signedDistance = halfStretch - Math.sqrt(minDist * minDist + distMiddle * distMiddle);
+                }
+
+                this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
+            }
+        }
+    }
+
+    addRegularDash(ranges: Object) {
+
+        // Collapse any zero-length range
+        // Collapse neighbouring same-type parts into a single part
+        for (let i = ranges.length - 1; i >= 0; --i) {
+            const part = ranges[i];
+            const next = ranges[i + 1];
+            if (part.zeroLength) {
+                ranges.splice(i, 1);
+            } else if (next && next.isDash === part.isDash) {
+                next.left = part.left;
+                ranges.splice(i, 1);
+            }
+        }
+
+        // Combine the first and last parts if possible
+        const first = ranges[0];
+        const last = ranges[ranges.length - 1];
+        if (first.isDash === last.isDash) {
+            first.left = last.left - this.width;
+            last.right = first.right + this.width;
+        }
+
+        const index = this.width * this.nextRow;
+        let currIndex = 0;
+        let range = ranges[currIndex];
+
+        for (let x = 0; x < this.width; x++) {
+            if (x / range.right > 1) {
+                range = ranges[++currIndex];
+            }
+
+            const distLeft = Math.abs(x - range.left);
+            const distRight = Math.abs(x - range.right);
+
+            const minDist = Math.min(distLeft, distRight);
+            const signedDistance = range.isDash ? minDist : -minDist;
+
+            this.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
+        }
     }
 
     addDash(dasharray: Array<number>, round: boolean) {
-
         const n = round ? 7 : 0;
         const height = 2 * n + 1;
-        const offset = 128;
 
         if (this.nextRow + height > this.height) {
             warnOnce('LineAtlas out of space');
@@ -63,62 +160,20 @@ class LineAtlas {
         }
 
         let length = 0;
-        for (let i = 0; i < dasharray.length; i++) {
-            length += dasharray[i];
-        }
+        for (let i = 0; i < dasharray.length; i++) { length += dasharray[i]; }
 
-        const stretch = this.width / length;
-        const halfWidth = stretch / 2;
+        if (length !== 0) {
+            const stretch = this.width / length;
+            const ranges = this.getDashRanges(dasharray, this.width, stretch);
 
-        // If dasharray has an odd length, both the first and last parts
-        // are dashes and should be joined seamlessly.
-        const oddLength = dasharray.length % 2 === 1;
-
-        for (let y = -n; y <= n; y++) {
-            const row = this.nextRow + n + y;
-            const index = this.width * row;
-
-            let left = oddLength ? -dasharray[dasharray.length - 1] : 0;
-            let right = dasharray[0];
-            let partIndex = 1;
-
-            for (let x = 0; x < this.width; x++) {
-
-                while (right < x / stretch) {
-                    left = right;
-                    right = right + dasharray[partIndex];
-
-                    if (oddLength && partIndex === dasharray.length - 1) {
-                        right += dasharray[0];
-                    }
-
-                    partIndex++;
-                }
-
-                const distLeft = Math.abs(x - left * stretch);
-                const distRight = Math.abs(x - right * stretch);
-                const dist = Math.min(distLeft, distRight);
-                const inside = (partIndex % 2) === 1;
-                let signedDistance;
-
-                if (round) {
-                    // Add circle caps
-                    const distMiddle = n ? y / n * (halfWidth + 1) : 0;
-                    if (inside) {
-                        const distEdge = halfWidth - Math.abs(distMiddle);
-                        signedDistance = Math.sqrt(dist * dist + distEdge * distEdge);
-                    } else {
-                        signedDistance = halfWidth - Math.sqrt(dist * dist + distMiddle * distMiddle);
-                    }
-                } else {
-                    signedDistance = (inside ? 1 : -1) * dist;
-                }
-
-                this.data[3 + (index + x) * 4] = Math.max(0, Math.min(255, signedDistance + offset));
+            if (round) {
+                this.addRoundDash(ranges, stretch, n);
+            } else {
+                this.addRegularDash(ranges);
             }
         }
 
-        const pos = {
+        const dashEntry = {
             y: (this.nextRow + n + 0.5) / this.height,
             height: 2 * n / this.height,
             width: length
@@ -127,7 +182,7 @@ class LineAtlas {
         this.nextRow += height;
         this.dirty = true;
 
-        return pos;
+        return dashEntry;
     }
 
     bind(context: Context) {
@@ -139,14 +194,14 @@ class LineAtlas {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, this.width, this.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
 
         } else {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
             if (this.dirty) {
                 this.dirty = false;
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
             }
         }
     }

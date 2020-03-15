@@ -3,7 +3,12 @@
     overflow: hidden;
     position: relative;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    text-align: left;
+}
+
+.mapboxgl-canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
 }
 
 .mapboxgl-map:-webkit-full-screen {
@@ -759,6 +764,13 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
 .mapboxgl-user-location-dot-stale::after {
     display: none;
+}
+
+.mapboxgl-user-location-accuracy-circle {
+    background-color: #1da1f233;
+    width: 1px;
+    height: 1px;
+    border-radius: 100%;
 }
 
 .mapboxgl-crosshair,

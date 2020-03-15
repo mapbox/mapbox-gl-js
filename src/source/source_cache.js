@@ -44,20 +44,20 @@ class SourceCache extends Evented {
     _source: Source;
     _sourceLoaded: boolean;
     _sourceErrored: boolean;
-    _tiles: {[string]: Tile};
+    _tiles: {[_: string]: Tile};
     _prevLng: number | void;
     _cache: TileCache;
-    _timers: {[any]: TimeoutID};
-    _cacheTimers: {[any]: TimeoutID};
+    _timers: {[_: any]: TimeoutID};
+    _cacheTimers: {[_: any]: TimeoutID};
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
-    _coveredTiles: {[string]: boolean};
+    _coveredTiles: {[_: string]: boolean};
     transform: Transform;
     _isIdRenderable: (id: string, symbolLayer?: boolean) => boolean;
     used: boolean;
     _state: SourceFeatureState;
-    _loadedParentTiles: {[string]: ?Tile};
+    _loadedParentTiles: {[_: string]: ?Tile};
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
@@ -117,6 +117,7 @@ class SourceCache extends Evented {
     /**
      * Return true if no tile data is pending, tiles will not change unless
      * an additional API call is received.
+     * @private
      */
     loaded(): boolean {
         if (this._sourceErrored) { return true; }
@@ -180,6 +181,7 @@ class SourceCache extends Evented {
 
     /**
      * Return all tile ids ordered with z-order, and cast to numbers
+     * @private
      */
     getIds(): Array<string> {
         return (values(this._tiles): any).map((tile: Tile) => tile.tileID).sort(compareTileId).map(id => id.key);
@@ -307,6 +309,7 @@ class SourceCache extends Evented {
     }
     /**
      * Get a specific tile by TileID
+     * @private
      */
     getTile(tileID: OverscaledTileID): Tile {
         return this.getTileByID(tileID.key);
@@ -314,6 +317,7 @@ class SourceCache extends Evented {
 
     /**
      * Get a specific tile by id
+     * @private
      */
     getTileByID(id: string): Tile {
         return this._tiles[id];
@@ -322,12 +326,13 @@ class SourceCache extends Evented {
     /**
      * For a given set of tiles, retain children that are loaded and have a zoom
      * between `zoom` (exclusive) and `maxCoveringZoom` (inclusive)
+     * @private
      */
     _retainLoadedChildren(
-        idealTiles: {[any]: OverscaledTileID},
+        idealTiles: {[_: any]: OverscaledTileID},
         zoom: number,
         maxCoveringZoom: number,
-        retain: {[any]: OverscaledTileID}
+        retain: {[_: any]: OverscaledTileID}
     ) {
         for (const id in this._tiles) {
             let tile = this._tiles[id];
@@ -367,6 +372,7 @@ class SourceCache extends Evented {
 
     /**
      * Find a loaded parent of the given tile (up to minCoveringZoom)
+     * @private
      */
     findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number): ?Tile {
         if (tileID.key in this._loadedParentTiles) {
@@ -403,6 +409,7 @@ class SourceCache extends Evented {
      * Larger viewports use more tiles and need larger caches. Larger viewports
      * are more likely to be found on devices with more memory and on pages where
      * the map is more important.
+     * @private
      */
     updateCacheSize(transform: Transform) {
         const widthInTiles = Math.ceil(transform.width / this._source.tileSize) + 1;
@@ -439,7 +446,7 @@ class SourceCache extends Evented {
         this._prevLng = lng;
 
         if (wrapDelta) {
-            const tiles: {[string]: Tile} = {};
+            const tiles: {[_: string]: Tile} = {};
             for (const key in this._tiles) {
                 const tile = this._tiles[key];
                 tile.tileID = tile.tileID.unwrapTo(tile.tileID.wrap + wrapDelta);
@@ -462,6 +469,7 @@ class SourceCache extends Evented {
     /**
      * Removes tiles that are outside the viewport and adds new tiles that
      * are inside the viewport.
+     * @private
      */
     update(transform: Transform) {
         this.transform = transform;
@@ -505,7 +513,7 @@ class SourceCache extends Evented {
         const retain = this._updateRetainedTiles(idealTileIDs, zoom);
 
         if (isRasterType(this._source.type)) {
-            const parentsForFading: {[string]: OverscaledTileID} = {};
+            const parentsForFading: {[_: string]: OverscaledTileID} = {};
             const fadingTiles = {};
             const ids = Object.keys(retain);
             for (const id of ids) {
@@ -566,9 +574,9 @@ class SourceCache extends Evented {
         }
     }
 
-    _updateRetainedTiles(idealTileIDs: Array<OverscaledTileID>, zoom: number): { [string]: OverscaledTileID} {
-        const retain: {[string]: OverscaledTileID} = {};
-        const checked: {[string]: boolean } = {};
+    _updateRetainedTiles(idealTileIDs: Array<OverscaledTileID>, zoom: number): {[_: string]: OverscaledTileID} {
+        const retain: {[_: string]: OverscaledTileID} = {};
+        const checked: {[_: string]: boolean } = {};
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
@@ -783,6 +791,7 @@ class SourceCache extends Evented {
      * cover the given bounds.
      * @param pointQueryGeometry coordinates of the corners of bounding rectangle
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
+     * @private
      */
     tilesIn(pointQueryGeometry: Array<Point>, maxPitchScaleFactor: number, has3DLayer: boolean) {
 
@@ -901,6 +910,7 @@ class SourceCache extends Evented {
     /**
      * Sets the set of keys that the tile depends on. This allows tiles to
      * be reloaded when their dependencies change.
+     * @private
      */
     setDependencies(tileKey: string, namespace: string, dependencies: Array<string>) {
         const tile = this._tiles[tileKey];
@@ -911,6 +921,7 @@ class SourceCache extends Evented {
 
     /**
      * Reloads all tiles that depend on the given keys.
+     * @private
      */
     reloadTilesForDependencies(namespaces: Array<string>, keys: Array<string>) {
         for (const id in this._tiles) {

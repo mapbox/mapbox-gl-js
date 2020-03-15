@@ -23,7 +23,12 @@ export const plugins = (minified, production) => [
     }) : false,
     glsl('./src/shaders/*.glsl', production),
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
-    minified ? terser() : false,
+    minified ? terser({
+        compress: {
+            pure_getters: true,
+            passes: 3
+        }
+    }) : false,
     production ? unassert() : false,
     resolve({
         browser: true,

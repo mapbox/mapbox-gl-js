@@ -73,7 +73,7 @@ class WorkerTile {
         const featureIndex = new FeatureIndex(this.tileID, this.promoteId);
         featureIndex.bucketLayerIDs = [];
 
-        const buckets: {[string]: Bucket} = {};
+        const buckets: {[_: string]: Bucket} = {};
 
         const options = {
             featureIndex,
@@ -124,15 +124,15 @@ class WorkerTile {
                     sourceID: this.source
                 });
 
-                bucket.populate(features, options);
+                bucket.populate(features, options, this.tileID.canonical);
                 featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
             }
         }
 
         let error: ?Error;
-        let glyphMap: ?{[string]: {[number]: ?StyleGlyph}};
-        let iconMap: ?{[string]: StyleImage};
-        let patternMap: ?{[string]: StyleImage};
+        let glyphMap: ?{[_: string]: {[_: number]: ?StyleGlyph}};
+        let iconMap: ?{[_: string]: StyleImage};
+        let patternMap: ?{[_: string]: StyleImage};
 
         const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
         if (Object.keys(stacks).length) {
@@ -186,13 +186,13 @@ class WorkerTile {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
-                        performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, iconMap, imageAtlas.iconPositions, this.showCollisionBoxes);
+                        performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, iconMap, imageAtlas.iconPositions, this.showCollisionBoxes, this.tileID.canonical);
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||
                          bucket instanceof FillExtrusionBucket)) {
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
-                        bucket.addFeatures(options, imageAtlas.patternPositions);
+                        bucket.addFeatures(options, this.tileID.canonical, imageAtlas.patternPositions);
                     }
                 }
 

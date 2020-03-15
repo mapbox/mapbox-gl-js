@@ -65,6 +65,7 @@ export class MapMouseEvent extends Event {
 
     /**
      * `true` if `preventDefault` has been called.
+     * @private
      */
     get defaultPrevented(): boolean {
         return this._defaultPrevented;
@@ -144,6 +145,7 @@ export class MapTouchEvent extends Event {
 
     /**
      * `true` if `preventDefault` has been called.
+     * @private
      */
     get defaultPrevented(): boolean {
         return this._defaultPrevented;
@@ -197,6 +199,7 @@ export class MapWheelEvent extends Event {
 
     /**
      * `true` if `preventDefault` has been called.
+     * @private
      */
     get defaultPrevented(): boolean {
         return this._defaultPrevented;
@@ -567,7 +570,7 @@ export type MapEvent =
     | 'pitchstart'
 
     /**
-     * Fired whenever the map's pitch (tilt) changes as.
+     * Fired whenever the map's pitch (tilt) changes as
      * the result of either user interaction or methods such as {@link Map#flyTo}.
      *
      * @event pitch

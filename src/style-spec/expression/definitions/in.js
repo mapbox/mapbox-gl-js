@@ -62,7 +62,7 @@ class In implements Expression {
         const needle = (this.needle.evaluate(ctx): any);
         const haystack = (this.haystack.evaluate(ctx): any);
 
-        if (!needle || !haystack) return false;
+        if (needle == null || !haystack) return false;
 
         if (!isComparableRuntimeValue(needle)) {
             throw new RuntimeError(`Expected first argument to be of type boolean, string or number, but found ${toString(typeOf(needle))} instead.`);
@@ -75,13 +75,13 @@ class In implements Expression {
         return haystack.indexOf(needle) >= 0;
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.needle);
         fn(this.haystack);
     }
 
-    possibleOutputs() {
-        return [true, false];
+    outputDefined() {
+        return true;
     }
 
     serialize() {

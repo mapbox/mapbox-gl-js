@@ -22,14 +22,18 @@ varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_linesofar;
 varying float v_gamma_scale;
+varying float v_width;
 
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define mediump float width
+#pragma mapbox: define lowp float floorwidth
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
+#pragma mapbox: define lowp float pixel_ratio_from
+#pragma mapbox: define lowp float pixel_ratio_to
 
 void main() {
     #pragma mapbox: initialize lowp float blur
@@ -37,8 +41,11 @@ void main() {
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize mediump float width
+    #pragma mapbox: initialize lowp float floorwidth
     #pragma mapbox: initialize mediump vec4 pattern_from
     #pragma mapbox: initialize mediump vec4 pattern_to
+    #pragma mapbox: initialize lowp float pixel_ratio_from
+    #pragma mapbox: initialize lowp float pixel_ratio_to
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -47,7 +54,7 @@ void main() {
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
     float a_linesofar = (floor(a_data.z / 4.0) + a_data.w * 64.0) * LINE_DISTANCE_SCALE;
-    // float tileRatio = u_scale.y;
+    // float tileRatio = u_scale.x;
     vec2 pos = floor(a_pos_normal * 0.5);
 
     // x is 1 if it's a round cap, 0 otherwise
@@ -88,4 +95,5 @@ void main() {
 
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
+    v_width = floorwidth;
 }

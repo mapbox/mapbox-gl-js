@@ -23,7 +23,7 @@ export type DrawMode =
 
 class Program<Us: UniformBindings> {
     program: WebGLProgram;
-    attributes: {[string]: number};
+    attributes: {[_: string]: number};
     numAttributes: number;
     fixedUniforms: Us;
     binderUniforms: Array<BinderUniform>;
@@ -31,13 +31,13 @@ class Program<Us: UniformBindings> {
 
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
-                configuration: ProgramConfiguration,
+                configuration: ?ProgramConfiguration,
                 fixedUniforms: (Context, UniformLocations) => Us,
                 showOverdrawInspector: boolean) {
         const gl = context.gl;
         this.program = gl.createProgram();
 
-        const defines = configuration.defines();
+        const defines = configuration ? configuration.defines() : [];
         if (showOverdrawInspector) {
             defines.push('#define OVERDRAW_INSPECTOR;');
         }
@@ -68,7 +68,7 @@ class Program<Us: UniformBindings> {
         // ProgramInterface so that we don't dynamically link an unused
         // attribute at position 0, which can cause rendering to fail for an
         // entire layer (see #4607, #4728)
-        const layoutAttributes = configuration.layoutAttributes || [];
+        const layoutAttributes = configuration ? configuration.layoutAttributes : [];
         for (let i = 0; i < layoutAttributes.length; i++) {
             gl.bindAttribLocation(this.program, i, layoutAttributes[i].name);
         }
@@ -97,7 +97,7 @@ class Program<Us: UniformBindings> {
         }
 
         this.fixedUniforms = fixedUniforms(context, uniformLocations);
-        this.binderUniforms = configuration.getUniforms(context, uniformLocations);
+        this.binderUniforms = configuration ? configuration.getUniforms(context, uniformLocations) : [];
     }
 
     draw(context: Context,

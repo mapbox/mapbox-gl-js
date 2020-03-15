@@ -6,7 +6,7 @@ import type Context from '../gl/context';
 
 export type UniformValues<Us: Object>
     = $Exact<$ObjMap<Us, <V>(u: Uniform<V>) => V>>;
-export type UniformLocations = {[string]: WebGLUniformLocation};
+export type UniformLocations = {[_: string]: WebGLUniformLocation};
 
 class Uniform<T> {
     gl: WebGLRenderingContext;
@@ -144,4 +144,4 @@ export {
     UniformMatrix4f
 };
 
-export type UniformBindings = {[string]: Uniform<any>};
+export type UniformBindings = {[_: string]: Uniform<any>};

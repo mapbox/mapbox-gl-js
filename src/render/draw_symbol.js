@@ -52,7 +52,7 @@ type SymbolTileRenderState = {
     }
 };
 
-function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>, variableOffsets: {[CrossTileID]: VariableOffset}) {
+function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>, variableOffsets: {[_: CrossTileID]: VariableOffset}) {
     if (painter.renderPass !== 'translucent') return;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.

@@ -101,12 +101,12 @@ export class RequestManager {
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
-    normalizeTileURL(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
+    normalizeTileURL(tileURL: string, tileSize?: ?number): string {
         if (this._isSkuTokenExpired()) {
             this._createSkuToken();
         }
 
-        if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
+        if (tileURL && !isMapboxURL(tileURL)) return tileURL;
 
         const urlObject = parseUrl(tileURL);
         const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
@@ -121,14 +121,15 @@ export class RequestManager {
         urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
         urlObject.path = `/v4${urlObject.path}`;
 
-        if (config.REQUIRE_ACCESS_TOKEN && (config.ACCESS_TOKEN || this._customAccessToken) && this._skuToken) {
+        const accessToken = this._customAccessToken || getAccessToken(urlObject.params) || config.ACCESS_TOKEN;
+        if (config.REQUIRE_ACCESS_TOKEN && accessToken && this._skuToken) {
             urlObject.params.push(`sku=${this._skuToken}`);
         }
 
-        return this._makeAPIURL(urlObject, this._customAccessToken);
+        return this._makeAPIURL(urlObject, accessToken);
     }
 
-    canonicalizeTileURL(url: string) {
+    canonicalizeTileURL(url: string, removeAccessToken: boolean) {
         const version = "/v4/";
         // matches any file extension specified by a dot and one or more alphanumeric characters
         const extensionRe = /\.[\w]+$/;
@@ -145,17 +146,23 @@ export class RequestManager {
         result +=  urlObject.path.replace(version, '');
 
         // Append the query string, minus the access token parameter.
-        const params = urlObject.params.filter(p => !p.match(/^access_token=/));
+        let params = urlObject.params;
+        if (removeAccessToken) {
+            params = params.filter(p => !p.match(/^access_token=/));
+        }
         if (params.length) result += `?${params.join('&')}`;
         return result;
     }
 
-    canonicalizeTileset(tileJSON: TileJSON, sourceURL: string) {
-        if (!isMapboxURL(sourceURL)) return tileJSON.tiles || [];
+    canonicalizeTileset(tileJSON: TileJSON, sourceURL?: string) {
+        const removeAccessToken = sourceURL ? isMapboxURL(sourceURL) : false;
         const canonical = [];
-        for (const url of tileJSON.tiles) {
-            const canonicalUrl = this.canonicalizeTileURL(url);
-            canonical.push(canonicalUrl);
+        for (const url of tileJSON.tiles || []) {
+            if (isMapboxHTTPURL(url)) {
+                canonical.push(this.canonicalizeTileURL(url, removeAccessToken));
+            } else {
+                canonical.push(url);
+            }
         }
         return canonical;
     }
@@ -195,6 +202,16 @@ function isMapboxHTTPURL(url: string): boolean {
 
 function hasCacheDefeatingSku(url: string) {
     return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
+}
+
+function getAccessToken(params: Array<string>): string | null {
+    for (const param of params) {
+        const match = param.match(/^access_token=(.*)$/);
+        if (match) {
+            return match[1];
+        }
+    }
+    return null;
 }
 
 const urlRe = /^(\w+):\/\/([^/?]*)(\/[^?]+)?\??(.+)?/;
@@ -315,7 +332,7 @@ class TelemetryEvent {
     * to the values that should be saved. For this reason, the callback should be invoked prior to the call
     * to TelemetryEvent#saveData
     */
-    postEvent(timestamp: number, additionalPayload: {[string]: any}, callback: (err: ?Error) => void, customAccessToken?: ?string) {
+    postEvent(timestamp: number, additionalPayload: {[_: string]: any}, callback: (err: ?Error) => void, customAccessToken?: ?string) {
         if (!config.EVENTS_URL) return;
         const eventsUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
         eventsUrlObject.params.push(`access_token=${customAccessToken || config.ACCESS_TOKEN || ''}`);
@@ -353,7 +370,7 @@ class TelemetryEvent {
 }
 
 export class MapLoadEvent extends TelemetryEvent {
-    +success: {[number]: boolean};
+    +success: {[_: number]: boolean};
     skuToken: string;
 
     constructor() {
