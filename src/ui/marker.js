@@ -609,18 +609,20 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Sets the current `color` property of the marker.
-     * @param {string} [color] Sets the `color` property of the marker. If alignment is 'auto', it will automatically match `rotationAlignment`.
+     * Sets the color of the Marker if using a default marker.
+     * @param {string} [color='#3FB1CE'] The color as a string to use for the default marker. If `color` is not provided the default is light blue.
      * @returns {Marker} `this`
      */
     setColor(color: ?string) {
-        if (color) {
-            this._color = color;
-        } else {
-            this._color = this._defaultColor;
-        }
+        if ('undefined' !== typeof this._background) {
+            if (color) {
+                this._color = color;
+            } else {
+                this._color = this._defaultColor;
+            }
 
-        this._background.setAttributeNS(null, 'fill', this._color);
+            this._background.setAttributeNS(null, 'fill', this._color);
+        }
 
         return this;
     }
