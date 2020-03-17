@@ -133,13 +133,13 @@ export default class Marker extends Evented {
                 shadow.appendChild(ellipse);
             }
 
-            const background = DOM.createNS('http://www.w3.org/2000/svg', 'g');
-            background.setAttributeNS(null, 'fill', this._color);
+            this._background = DOM.createNS('http://www.w3.org/2000/svg', 'g');
+            this.setColor(this._color);
 
             const bgPath = DOM.createNS('http://www.w3.org/2000/svg', 'path');
             bgPath.setAttributeNS(null, 'd', 'M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z');
 
-            background.appendChild(bgPath);
+            this._background.appendChild(bgPath);
 
             const border = DOM.createNS('http://www.w3.org/2000/svg', 'g');
             border.setAttributeNS(null, 'opacity', '0.25');
@@ -174,7 +174,7 @@ export default class Marker extends Evented {
             circleContainer.appendChild(circle2);
 
             page1.appendChild(shadow);
-            page1.appendChild(background);
+            page1.appendChild(this._background);
             page1.appendChild(border);
             page1.appendChild(maki);
             page1.appendChild(circleContainer);
@@ -603,5 +603,23 @@ export default class Marker extends Evented {
      */
     getPitchAlignment() {
         return this._pitchAlignment;
+    }
+
+    /**
+     * Sets the current `color` property of the marker.
+     * @param {string} [color] Sets the `color` property of the marker. If alignment is 'auto', it will automatically match `rotationAlignment`.
+     * @returns {Marker} `this`
+     */
+    setColor(color: string) {
+        this._background.setAttributeNS(null, 'fill', color);
+        return this;
+    }
+
+    /**
+     * Returns the current `color` property of the marker.
+     * @returns {string} The current color of the marker.
+     */
+    getColor() {
+        return this._color;
     }
 }
