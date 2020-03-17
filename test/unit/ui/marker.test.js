@@ -623,3 +623,23 @@ test('Marker pitchAlignment when set to auto defaults to rotationAlignment (sett
     map.remove();
     t.end();
 });
+
+test('Marker uses a default marker element and that can set color by setColor()', (t) => {
+    const marker = new Marker();
+    marker.setColor('#123456')
+    t.ok(marker.getElement().innerHTML.includes('#123456'));
+    t.end();
+});
+
+test('Marker uses a default marker element and can get current color', (t) => {
+    const marker = new Marker();
+    marker.setColor('#123456')
+    t.equal('#123456', marker.getColor());
+    t.end();
+});
+
+test('Marker uses a default marker element and can get default color', (t) => {
+    const marker = new Marker();
+    t.equal('#3FB1CE', marker.getColor());
+    t.end();
+});

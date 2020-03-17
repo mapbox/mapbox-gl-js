@@ -611,7 +611,8 @@ export default class Marker extends Evented {
      * @returns {Marker} `this`
      */
     setColor(color: string) {
-        this._background.setAttributeNS(null, 'fill', color);
+        this._color = color;
+        this._background.setAttributeNS(null, 'fill', this._color);
         return this;
     }
 
