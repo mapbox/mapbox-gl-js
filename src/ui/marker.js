@@ -61,6 +61,7 @@ export default class Marker extends Evented {
     _pitchAlignment: string;
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
+    _background: HTMLElement;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -610,9 +611,12 @@ export default class Marker extends Evented {
      * @param {string} [color] Sets the `color` property of the marker. If alignment is 'auto', it will automatically match `rotationAlignment`.
      * @returns {Marker} `this`
      */
-    setColor(color: string) {
-        this._color = color;
-        this._background.setAttributeNS(null, 'fill', this._color);
+    setColor(color: ?string) {
+        if (color) {
+            this._color = color;
+            this._background.setAttributeNS(null, 'fill', this._color);
+        }
+
         return this;
     }
 
