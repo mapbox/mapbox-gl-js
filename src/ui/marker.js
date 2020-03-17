@@ -52,7 +52,7 @@ export default class Marker extends Evented {
     _popup: ?Popup;
     _lngLat: LngLat;
     _pos: ?Point;
-    _color: ?string;
+    _color: string;
     _defaultMarker: boolean;
     _draggable: boolean;
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
@@ -62,6 +62,7 @@ export default class Marker extends Evented {
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
     _background: HTMLElement;
+    _defaultColor: string;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -80,8 +81,9 @@ export default class Marker extends Evented {
             '_onKeyPress'
         ], this);
 
+        this._defaultColor = '#3FB1CE';
         this._anchor = options && options.anchor || 'center';
-        this._color = options && options.color || '#3FB1CE';
+        this._color = options && options.color || this._defaultColor;
         this._draggable = options && options.draggable || false;
         this._state = 'inactive';
         this._rotation = options && options.rotation || 0;
@@ -614,8 +616,11 @@ export default class Marker extends Evented {
     setColor(color: ?string) {
         if (color) {
             this._color = color;
-            this._background.setAttributeNS(null, 'fill', this._color);
+        } else {
+            this._color = this._defaultColor;
         }
+
+        this._background.setAttributeNS(null, 'fill', this._color);
 
         return this;
     }
