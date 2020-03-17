@@ -7,9 +7,15 @@ import ignores from './ignores.json';
 import {CanonicalTileID} from '../src/source/tile_id';
 import MercatorCoordinate from '../src/geo/mercator_coordinate';
 
-function convertPoint(coord, canonical, out) {
+function getPoint(coord, canonical) {
     const p = canonical.getTilePoint(MercatorCoordinate.fromLngLat({lng: coord[0], lat: coord[1]}, 0));
-    out.push([p]);
+    p.x = Math.round(p.x);
+    p.y = Math.round(p.y);
+    return p;
+}
+
+function convertPoint(coord, canonical, out) {
+    out.push([getPoint(coord, canonical)]);
 }
 
 function convertPoints(coords, canonical, out) {
@@ -18,14 +24,17 @@ function convertPoints(coords, canonical, out) {
     }
 }
 
+function convertLine(line, canonical, out) {
+    const l = [];
+    for (let i = 0; i < line.length; i++) {
+        l.push(getPoint(line[i], canonical));
+    }
+    out.push(l);
+}
+
 function convertLines(lines, canonical, out) {
     for (let i = 0; i < lines.length; i++) {
-        const geom = [];
-        const ring = lines[i];
-        for (let j = 0; j < ring.length; j++) {
-            convertPoint(ring[j], canonical, geom);
-        }
-        out.push(geom);
+        convertLine(lines[i], canonical, out);
     }
 }
 
@@ -38,15 +47,17 @@ function getGeometry(feature, geometry, canonical) {
         if (type === 'Point') {
             convertPoint(coords, canonical, feature.geometry);
         } else if (type === 'MultiPoint') {
+            feature.type = 'Point';
             convertPoints(coords, canonical, feature.geometry);
         } else if (type === 'LineString') {
-            convertPoints(coords, canonical, feature.geometry);
+            convertLine(coords, canonical, feature.geometry);
         } else if (type === 'MultiLineString') {
+            feature.type = 'LineString';
             convertLines(coords, canonical, feature.geometry);
         } else if (type === 'Polygon') {
             convertLines(coords, canonical, feature.geometry);
-
         } else if (type === 'MultiPolygon') {
+            feature.type = 'Polygon';
             for (let i = 0; i < coords.length; i++) {
                 const polygon = [];
                 convertLines(coords[i], canonical, polygon);

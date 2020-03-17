@@ -225,7 +225,7 @@ function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPol
 
     if (polygonGeometry.type === 'MultiPolygon') {
         const tilePolygons = getTilePolygons(polygonGeometry.coordinates, polyBBox, canonical);
- 
+
         if (!boxWithinBox(lineBBox, polyBBox)) return false;
 
         for (const line of tileLines) {
