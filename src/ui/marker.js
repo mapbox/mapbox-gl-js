@@ -614,7 +614,7 @@ export default class Marker extends Evented {
      * @returns {Marker} `this`
      */
     setColor(color: ?string) {
-        if ('undefined' !== typeof this._background) {
+        if (typeof this._background !== 'undefined') {
             if (color) {
                 this._color = color;
             } else {
