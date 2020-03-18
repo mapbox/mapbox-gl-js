@@ -404,7 +404,8 @@ class Tile {
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
             bucket.update(sourceLayerStates, sourceLayer, this.imageAtlas && this.imageAtlas.patternPositions || {});
-            if (painter && painter.style) {
+
+            if (painter && painter.style && painter.style.getLayer(id).paint) {
                 this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(id).queryRadius(bucket));
             }
         }
