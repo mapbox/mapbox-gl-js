@@ -1,7 +1,7 @@
-## 1.9.0-beta.1
+## 1.9.0
 With this release, we're adding [a new changelog policy](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md#changelog-conventions) to our contribution guidelines.
 
-This release also fixes several longstanding bugs and unintentional rendering behavior with line-pattern. The fixes come with a visual change to how patterns added with line-pattern scale. Previously, patterns that became larger than the line would be clipped, sometimes distorting the pattern, particularly on mobile and retina devices. Now, the pattern will be scaled to fit under all circumstances. [#9266](https://github.com/mapbox/mapbox-gl-js/pull/9266) showcases examples of the visual differences. For more information and to provide feedback on this change, see [#9394](https://github.com/mapbox/mapbox-gl-js/pull/9394).
+This release also fixes several long-standing bugs and unintentional rendering behavior with `line-pattern`. The fixes come with a visual change to how patterns added with `line-pattern` scale. Previously, patterns that became larger than the line would be clipped, sometimes distorting the pattern, particularly on mobile and retina devices. Now, the pattern will be scaled to fit under all circumstances. [#9266](https://github.com/mapbox/mapbox-gl-js/pull/9266) showcases examples of the visual differences. For more information and to provide feedback on this change, see [#9394](https://github.com/mapbox/mapbox-gl-js/pull/9394).
 
 ### ✨ Features
 * Add `within` expression for testing whether an evaluated feature lies within a given GeoJSON object ([#9352](https://github.com/mapbox/mapbox-gl-js/pull/9352)). For example:<br>
@@ -24,6 +24,7 @@ This release also fixes several longstanding bugs and unintentional rendering be
 * Fix a rendering error for very old versions of Chrome (ca. 2016) where text would appear much bigger than intended ([#9349](https://github.com/mapbox/mapbox-gl-js/pull/9349))
 * Prevent exception resulting from `line-dash-array` of empty length ([#9385](https://github.com/mapbox/mapbox-gl-js/pull/9385))
 * Fix a bug where `icon-image` expression that evaluates to an empty string (`''`) produced a warning ([#9380](https://github.com/mapbox/mapbox-gl-js/pull/9380))
+* Fix a bug where certain `popup` methods threw errors when accessing the container element before it was created, fixes [#9429](https://github.com/mapbox/mapbox-gl-js/issues/9429)([#9433](https://github.com/mapbox/mapbox-gl-js/pull/9433))
 
 ## 1.8.0
 
