@@ -309,7 +309,7 @@ export default class Popup extends Evented {
      * @returns {string} The maximum width of the popup.
      */
     getMaxWidth() {
-        return this._container.style.maxWidth;
+        return this._container && this._container.style.maxWidth;
     }
 
     /**
@@ -356,7 +356,9 @@ export default class Popup extends Evented {
      * popup.addClassName('some-class')
      */
     addClassName(className: string) {
-        this._container.classList.add(className);
+        if (this._container) {
+            this._container.classList.add(className);
+        }
     }
 
     /**
@@ -369,7 +371,9 @@ export default class Popup extends Evented {
      * popup.removeClassName('some-class')
      */
     removeClassName(className: string) {
-        this._container.classList.remove(className);
+        if (this._container) {
+            this._container.classList.remove(className);
+        }
     }
 
     /**
@@ -384,7 +388,9 @@ export default class Popup extends Evented {
      * popup.toggleClassName('toggleClass')
      */
     toggleClassName(className: string) {
-        return this._container.classList.toggle(className);
+        if (this._container) {
+            return this._container.classList.toggle(className);
+        }
     }
 
     _createContent() {
