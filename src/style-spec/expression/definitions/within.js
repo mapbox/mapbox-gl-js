@@ -10,35 +10,12 @@ import type {GeoJSON, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson
 import MercatorCoordinate from '../../../geo/mercator_coordinate';
 import EXTENT from '../../../data/extent';
 import Point from '@mapbox/point-geometry';
+import type {CanonicalTileID} from '../../../source/tile_id';
 
 type GeoJSONPolygons =| GeoJSONPolygon | GeoJSONMultiPolygon;
 
+// minX, minY, maxX, maxY
 type BBox = [number, number, number, number];
-
-function calcBBox(bbox: BBox, geom, type) {
-    if (type === 'Point') {
-        updateBBox(bbox, geom);
-    } else if (type === 'MultiPoint' || type === 'LineString') {
-        for (let i = 0; i < geom.length; ++i) {
-            updateBBox(bbox, geom[i]);
-        }
-    } else if (type === 'Polygon' || type === 'MultiLineString') {
-        for (let i = 0; i < geom.length; i++) {
-            for (let j = 0; j < geom[i].length; j++) {
-                updateBBox(bbox, geom[i][j]);
-            }
-        }
-    } else if (type === 'MultiPolygon') {
-        for (let i = 0; i < geom.length; i++) {
-            for (let j = 0; j < geom[i].length; j++) {
-                for (let k = 0; k < geom[i][j].length; k++) {
-                    updateBBox(bbox, geom[i][j][k]);
-                }
-            }
-        }
-    }
-}
-
 function updateBBox(bbox: BBox, coord: Point) {
     bbox[0] = Math.min(bbox[0], coord[0]);
     bbox[1] = Math.min(bbox[1], coord[1]);
@@ -46,7 +23,7 @@ function updateBBox(bbox: BBox, coord: Point) {
     bbox[3] = Math.max(bbox[3], coord[1]);
 }
 
-function boxWithinBox(bbox1, bbox2) {
+function boxWithinBox(bbox1: BBox, bbox2: BBox) {
     if (bbox1[0] <= bbox2[0]) return false;
     if (bbox1[2] >= bbox2[2]) return false;
     if (bbox1[1] <= bbox2[1]) return false;
@@ -54,21 +31,10 @@ function boxWithinBox(bbox1, bbox2) {
     return true;
 }
 
-function getLngLatPoint(coord: Point, canonical) {
+function getTileCoordinates(p, canonical: CanonicalTileID) {
+    const coord = MercatorCoordinate.fromLngLat({lng: p[0], lat: p[1]}, 0);
     const tilesAtZoom = Math.pow(2, canonical.z);
-    const x = (coord.x / EXTENT + canonical.x) / tilesAtZoom;
-    const y = (coord.y / EXTENT + canonical.y) / tilesAtZoom;
-    const p = new MercatorCoordinate(x, y).toLngLat();
-
-    return [p.lng, p.lat];
-}
-
-function getLngLatPoints(line, canonical) {
-    const coords = [];
-    for (let i = 0; i < line.length; ++i) {
-        coords.push(getLngLatPoint(line[i], canonical));
-    }
-    return coords;
+    return [Math.round(coord.x * tilesAtZoom * EXTENT), Math.round(coord.y * tilesAtZoom * EXTENT)];
 }
 
 function onBoundary(p, p1, p2) {
@@ -97,13 +63,10 @@ function pointWithinPolygon(point, rings) {
 }
 
 function pointWithinPolygons(point, polygons) {
-    if (polygons.type === 'Polygon') {
-        return pointWithinPolygon(point, polygons.coordinates);
+    for (let i = 0; i < polygons.length; i++) {
+        if (pointWithinPolygon(point, polygons[i])) return true;
     }
-    for (let i = 0; i < polygons.coordinates.length; i++) {
-        if (!pointWithinPolygon(point, polygons.coordinates[i])) return false;
-    }
-    return true;
+    return false;
 }
 
 function perp(v1, v2) {
@@ -168,59 +131,120 @@ function lineStringWithinPolygon(line, polygon) {
 }
 
 function lineStringWithinPolygons(line, polygons) {
-    if (polygons.type === 'Polygon') {
-        return lineStringWithinPolygon(line, polygons.coordinates);
+    for (let i = 0; i < polygons.length; i++) {
+        if (lineStringWithinPolygon(line, polygons[i])) return true;
     }
-    for (let i = 0; i < polygons.coordinates.length; i++) {
-        if (!lineStringWithinPolygon(line, polygons.coordinates[i])) return false;
-    }
-    return true;
+    return false;
 }
 
-function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons, polyBBox: BBox) {
+function getTilePolygon(coordinates, bbox, canonical) {
+    const polygon = [];
+    for (let i = 0; i < coordinates.length; i++) {
+        const ring = [];
+        for (let j = 0; j < coordinates[i].length; j++) {
+            const coord = getTileCoordinates(coordinates[i][j], canonical);
+            updateBBox(bbox, coord);
+            ring.push(coord);
+        }
+        polygon.push(ring);
+    }
+    return polygon;
+}
+
+function getTilePolygons(coordinates, bbox, canonical) {
+    const polygons = [];
+    for (let i = 0; i < coordinates.length; i++) {
+        const polygon = getTilePolygon(coordinates[i], bbox, canonical);
+        polygons.push(polygon);
+    }
+    return polygons;
+}
+
+function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons) {
     const pointBBox = [Infinity, Infinity, -Infinity, -Infinity];
-    const lngLatPoints = [];
+    const polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
+    const canonical = ctx.canonicalID();
+    const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
+    const tilePoints = [];
+
     for (const points of ctx.geometry()) {
         for (const point of points) {
-            const p = getLngLatPoint(point, ctx.canonicalID());
-            lngLatPoints.push(p);
+            const p = [point.x + shifts[0], point.y + shifts[1]];
             updateBBox(pointBBox, p);
+            tilePoints.push(p);
         }
     }
-    if (!boxWithinBox(pointBBox, polyBBox)) return false;
-    for (let i = 0; i < lngLatPoints.length; ++i) {
-        if (!pointWithinPolygons(lngLatPoints[i], polygonGeometry)) return false;
+
+    if (polygonGeometry.type === 'Polygon') {
+        const tilePolygon = getTilePolygon(polygonGeometry.coordinates, polyBBox, canonical);
+        if (!boxWithinBox(pointBBox, polyBBox)) return false;
+
+        for (const point of tilePoints) {
+            if (!pointWithinPolygon(point, tilePolygon)) return false;
+        }
     }
+
+    if (polygonGeometry.type === 'MultiPolygon') {
+        const tilePolygons = getTilePolygons(polygonGeometry.coordinates, polyBBox, canonical);
+        if (!boxWithinBox(pointBBox, polyBBox)) return false;
+
+        for (const point of tilePoints) {
+            if (!pointWithinPolygons(point, tilePolygons)) return false;
+        }
+    }
+
     return true;
 }
 
-function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons, polyBBox: BBox) {
+function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons) {
     const lineBBox = [Infinity, Infinity, -Infinity, -Infinity];
-    const lineCoords = [];
+    const polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
+
+    const canonical = ctx.canonicalID();
+    const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
+    const tileLines = [];
+
     for (const line of ctx.geometry()) {
-        const lineCoord = getLngLatPoints(line, ctx.canonicalID());
-        lineCoords.push(lineCoord);
-        calcBBox(lineBBox, lineCoord, 'LineString');
+        const tileLine = [];
+        for (const point of line) {
+            const p = [point.x + shifts[0], point.y + shifts[1]];
+            updateBBox(lineBBox, p);
+            tileLine.push(p);
+        }
+        tileLines.push(tileLine);
     }
-    if (!boxWithinBox(lineBBox, polyBBox)) return false;
-    for (let i = 0; i < lineCoords.length; ++i) {
-        if (!lineStringWithinPolygons(lineCoords[i], polygonGeometry)) return false;
+
+    if (polygonGeometry.type === 'Polygon') {
+        const tilePolygon = getTilePolygon(polygonGeometry.coordinates, polyBBox, canonical);
+        if (!boxWithinBox(lineBBox, polyBBox)) return false;
+
+        for (const line of tileLines) {
+            if (!lineStringWithinPolygon(line, tilePolygon)) return false;
+        }
+    }
+
+    if (polygonGeometry.type === 'MultiPolygon') {
+        const tilePolygons = getTilePolygons(polygonGeometry.coordinates, polyBBox, canonical);
+
+        if (!boxWithinBox(lineBBox, polyBBox)) return false;
+
+        for (const line of tileLines) {
+            if (!lineStringWithinPolygons(line, tilePolygons)) return false;
+        }
     }
     return true;
+
 }
 
 class Within implements Expression {
     type: Type;
     geojson: GeoJSON
     geometries: GeoJSONPolygons;
-    polyBBox: BBox;
 
     constructor(geojson: GeoJSON, geometries: GeoJSONPolygons) {
         this.type = BooleanType;
         this.geojson = geojson;
         this.geometries = geometries;
-        this.polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
-        calcBBox(this.polyBBox, this.geometries.coordinates, this.geometries.type);
     }
 
     static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
@@ -250,9 +274,9 @@ class Within implements Expression {
     evaluate(ctx: EvaluationContext) {
         if (ctx.geometry() != null && ctx.canonicalID() != null) {
             if (ctx.geometryType() === 'Point') {
-                return pointsWithinPolygons(ctx, this.geometries, this.polyBBox);
+                return pointsWithinPolygons(ctx, this.geometries);
             } else if (ctx.geometryType() === 'LineString') {
-                return linesWithinPolygons(ctx, this.geometries, this.polyBBox);
+                return linesWithinPolygons(ctx, this.geometries);
             }
         }
         return false;
