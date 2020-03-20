@@ -75,7 +75,7 @@ function perp(v1, v2) {
 
 // check if p1 and p2 are in different sides of line segment q1->q2
 function  twoSided(p1, p2, q1, q2) {
-    // q1->p1 (x1, y1), q1->p2 (x2, y2), q2->q1 (x3, y3)
+    // q1->p1 (x1, y1), q1->p2 (x2, y2), q1->q2 (x3, y3)
     const x1 = p1[0] - q1[0];
     const y1 = p1[1] - q1[1];
     const x2 = p2[0] - q1[0];
