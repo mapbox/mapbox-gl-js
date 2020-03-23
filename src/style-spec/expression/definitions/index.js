@@ -26,6 +26,7 @@ import At from './at';
 import In from './in';
 import Match from './match';
 import Case from './case';
+import Slice from './slice';
 import Step from './step';
 import Interpolate from './interpolate';
 import Coalesce from './coalesce';
@@ -74,6 +75,7 @@ const expressions: ExpressionRegistry = {
     'number': Assertion,
     'number-format': NumberFormat,
     'object': Assertion,
+    'slice': Slice,
     'step': Step,
     'string': Assertion,
     'to-boolean': Coercion,
