@@ -15,6 +15,7 @@ type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.
     glyphs: {[id: number]: StyleGlyph | null},
     requests: {[range: number]: Array<Callback<{[_: number]: StyleGlyph | null}>>},
+    ranges: {[range: number]: boolean | null},
     tinySDF?: TinySDF
 };
 
@@ -52,7 +53,8 @@ class GlyphManager {
             if (!entry) {
                 entry = this.entries[stack] = {
                     glyphs: {},
-                    requests: {}
+                    requests: {},
+                    ranges: {}
                 };
             }
 
@@ -75,6 +77,11 @@ class GlyphManager {
                 return;
             }
 
+            if (entry.ranges[range]) {
+                callback(null, {stack, id, glyph});
+                return;
+            }
+
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
@@ -86,6 +93,7 @@ class GlyphManager {
                                     entry.glyphs[+id] = response[+id];
                                 }
                             }
+                            entry.ranges[range] = true;
                         }
                         for (const cb of requests) {
                             cb(err, response);

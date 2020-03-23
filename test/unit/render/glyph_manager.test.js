@@ -8,18 +8,27 @@ for (const glyph of parseGlyphPBF(fs.readFileSync('./test/fixtures/0-255.pbf')))
     glyphs[glyph.id] = glyph;
 }
 
-test('GlyphManager requests 0-255 PBF', (t) => {
-    const identityTransform = (url) => ({url});
-    t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
+const identityTransform = (url) => ({url});
+
+const createLoadGlyphRangeStub = (t) => {
+    return t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
         t.equal(stack, 'Arial Unicode MS');
         t.equal(range, 0);
         t.equal(urlTemplate, 'https://localhost/fonts/v1/{fontstack}/{range}.pbf');
         t.equal(transform, identityTransform);
         setImmediate(() => callback(null, glyphs));
     });
+};
 
-    const manager = new GlyphManager(identityTransform);
+const createGlyphManager = (font) => {
+    const manager = new GlyphManager(identityTransform, font);
     manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    return manager;
+};
+
+test('GlyphManager requests 0-255 PBF', (t) => {
+    createLoadGlyphRangeStub(t);
+    const manager = createGlyphManager();
 
     manager.getGlyphs({'Arial Unicode MS': [55]}, (err, glyphs) => {
         t.ifError(err);
@@ -28,13 +37,33 @@ test('GlyphManager requests 0-255 PBF', (t) => {
     });
 });
 
+test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', (t) => {
+    const stub = createLoadGlyphRangeStub(t);
+    const manager = createGlyphManager();
+
+    manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err) => {
+        t.ifError(err);
+        t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
+        t.equal(stub.calledOnce, true);
+
+        // We remove all requests as in getGlyphs code.
+        delete manager.entries['Arial Unicode MS'].requests[0];
+
+        manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err) => {
+            t.ifError(err);
+            t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
+            t.equal(stub.calledOnce, true);
+            t.end();
+        });
+    });
+});
+
 test('GlyphManager requests remote CJK PBF', (t) => {
     t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
         setImmediate(() => callback(null, glyphs));
     });
 
-    const manager = new GlyphManager((url) => ({url}));
-    manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    const manager = createGlyphManager();
 
     manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, (err, glyphs) => {
         t.ifError(err);
@@ -59,8 +88,7 @@ test('GlyphManager does not cache CJK chars that should be rendered locally', (t
             return new Uint8ClampedArray(900);
         }
     });
-    const manager = new GlyphManager((url) => ({url}), 'sans-serif');
-    manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    const manager = createGlyphManager('sans-serif');
 
     //Request char that overlaps Katakana range
     manager.getGlyphs({'Arial Unicode MS': [0x3005]}, (err, glyphs) => {
@@ -86,8 +114,7 @@ test('GlyphManager generates CJK PBF locally', (t) => {
         }
     });
 
-    const manager = new GlyphManager((url) => ({url}), 'sans-serif');
-    manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    const manager = createGlyphManager('sans-serif');
 
     manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, (err, glyphs) => {
         t.ifError(err);
@@ -104,8 +131,7 @@ test('GlyphManager generates Katakana PBF locally', (t) => {
         }
     });
 
-    const manager = new GlyphManager((url) => ({url}), 'sans-serif');
-    manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    const manager = createGlyphManager('sans-serif');
 
     // Katakana letter te
     manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, (err, glyphs) => {
@@ -123,8 +149,7 @@ test('GlyphManager generates Hiragana PBF locally', (t) => {
         }
     });
 
-    const manager = new GlyphManager((url) => ({url}), 'sans-serif');
-    manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    const manager = createGlyphManager('sans-serif');
 
     //Hiragana letter te
     manager.getGlyphs({'Arial Unicode MS': [0x3066]}, (err, glyphs) => {
@@ -144,8 +169,7 @@ test('GlyphManager caches locally generated glyphs', (t) => {
         }
     });
 
-    const manager = new GlyphManager((url) => ({url}), 'sans-serif');
-    manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    const manager = createGlyphManager('sans-serif');
 
     // Katakana letter te
     manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, (err, glyphs) => {
