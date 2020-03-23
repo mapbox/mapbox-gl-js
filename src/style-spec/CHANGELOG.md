@@ -1,4 +1,4 @@
-## 13.13.0-beta.1
+## 13.13.0
 
 ### ✨ Features and improvements
 * Add `within` expression for testing whether an evaluated feature lies within a given GeoJSON object ([#9352](https://github.com/mapbox/mapbox-gl-js/pull/9352)). For example:<br>
