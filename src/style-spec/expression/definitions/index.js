@@ -24,6 +24,7 @@ import Assertion from './assertion';
 import Coercion from './coercion';
 import At from './at';
 import In from './in';
+import IndexOf from './index_of';
 import Match from './match';
 import Case from './case';
 import Slice from './slice';
@@ -65,6 +66,7 @@ const expressions: ExpressionRegistry = {
     'format': FormatExpression,
     'image': ImageExpression,
     'in': In,
+    'index-of': IndexOf,
     'interpolate': Interpolate,
     'interpolate-hcl': Interpolate,
     'interpolate-lab': Interpolate,
