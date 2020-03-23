@@ -219,11 +219,13 @@ class LineBucket implements Bucket {
         const roundLimit = layout.get('line-round-limit');
 
         for (const line of geometry) {
-            this.addLine(line, feature, join, cap, miterLimit, roundLimit, index, canonical, imagePositions);
+            this.addLine(line, feature, join, cap, miterLimit, roundLimit);
         }
+
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
     }
 
-    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
+    addLine(vertices: Array<Point>, feature: BucketFeature, join: string, cap: string, miterLimit: number, roundLimit: number) {
         this.distance = 0;
         this.scaledDistance = 0;
         this.totalDistance = 0;
@@ -468,8 +470,6 @@ class LineBucket implements Bucket {
                 }
             }
         }
-
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
     }
 
     /**
