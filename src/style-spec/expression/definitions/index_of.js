@@ -34,9 +34,9 @@ class IndexOf implements Expression {
     type: Type;
     needle: Expression;
     haystack: Expression;
-    fromIndex: Expression;
+    fromIndex: ?Expression;
 
-    constructor(needle: Expression, haystack: Expression, fromIndex: Expression) {
+    constructor(needle: Expression, haystack: Expression, fromIndex?: Expression) {
         this.type = NumberType;
         this.needle = needle;
         this.haystack = haystack;
@@ -52,16 +52,18 @@ class IndexOf implements Expression {
 
         const haystack = context.parse(args[2], 2, ValueType);
 
-        const fromIndex = args.length === 4 ? context.parse(args[3], 3, NumberType) : undefined;
-
-        if (args.length === 3 && (!needle || !haystack)) return null;
-        if (args.length === 4 && (!needle || !haystack || !fromIndex)) return null;
-
+        if (!needle || !haystack) return null;
         if (!isComparableType(needle.type)) {
             return context.error(`Expected first argument to be of type boolean, string, number or null, but found ${toString(needle.type)} instead`);
         }
 
-        return new IndexOf(needle, haystack, fromIndex);
+        if (args.length === 4) {
+            const fromIndex = context.parse(args[3], 3, NumberType);
+            if (!fromIndex) return null;
+            return new IndexOf(needle, haystack, fromIndex);
+        } else {
+            return new IndexOf(needle, haystack);
+        }
     }
 
     evaluate(ctx: EvaluationContext) {
@@ -76,7 +78,7 @@ class IndexOf implements Expression {
             throw new RuntimeError(`Expected second argument to be of type array or string, but found ${toString(typeOf(haystack))} instead.`);
         }
 
-        if (this.fromIndex !== undefined) {
+        if (this.fromIndex) {
             const fromIndex = (this.fromIndex.evaluate(ctx): number);
             return haystack.indexOf(needle, fromIndex);
         }
@@ -87,7 +89,7 @@ class IndexOf implements Expression {
     eachChild(fn: (_: Expression) => void) {
         fn(this.needle);
         fn(this.haystack);
-        if (this.fromIndex !== undefined) {
+        if (this.fromIndex) {
             fn(this.fromIndex);
         }
     }
@@ -97,10 +99,11 @@ class IndexOf implements Expression {
     }
 
     serialize() {
-        if (this.fromIndex === undefined) {
-            return ["index-of", this.needle.serialize(), this.haystack.serialize()];
+        if (this.fromIndex != null && this.fromIndex !== undefined) {
+            const fromIndex = this.fromIndex.serialize();
+            return ["index-of", this.needle.serialize(), this.haystack.serialize(), fromIndex];
         }
-        return ["index-of", this.needle.serialize(), this.haystack.serialize(), this.fromIndex.serialize()];
+        return ["index-of", this.needle.serialize(), this.haystack.serialize()];
     }
 }
 

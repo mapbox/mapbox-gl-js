@@ -24,9 +24,9 @@ class Slice implements Expression {
     type: Type;
     input: Expression;
     beginIndex: Expression;
-    endIndex: Expression;
+    endIndex: ?Expression;
 
-    constructor(type: Type, input: Expression, beginIndex: Expression, endIndex: Expression) {
+    constructor(type: Type, input: Expression, beginIndex: Expression, endIndex?: Expression) {
         this.type = type;
         this.input = input;
         this.beginIndex = beginIndex;
@@ -41,27 +41,30 @@ class Slice implements Expression {
 
         const input = context.parse(args[1], 1, ValueType);
         const beginIndex = context.parse(args[2], 2, NumberType);
-        const endIndex = args.length === 4 ? context.parse(args[3], 3, NumberType) : undefined;
 
-        if (args.length === 3 && (!input || !beginIndex)) return null;
-        if (args.length === 4 && (!input || !beginIndex || !endIndex)) return null;
-
+        if (!input || !beginIndex) return null;
         if (!isSliceableType(input.type)) {
             return context.error(`Expected first argument to be of type array or string, but found ${toString(input.type)} instead`);
         }
 
-        return new Slice(input.type, input, beginIndex, endIndex);
+        if (args.length === 4) {
+            const endIndex = context.parse(args[3], 3, NumberType);
+            if (!endIndex) return null;
+            return new Slice(input.type, input, beginIndex, endIndex);
+        } else {
+            return new Slice(input.type, input, beginIndex);
+        }
     }
 
     evaluate(ctx: EvaluationContext) {
-        const input = (this.input.evaluate(ctx): Value);
+        const input = (this.input.evaluate(ctx): any);
         const beginIndex = (this.beginIndex.evaluate(ctx): number);
 
         if (!isAcceptableInputRuntimeValue(input)) {
             throw new RuntimeError(`Expected first argument to be of type array or string, but found ${toString(typeOf(input))} instead.`);
         }
 
-        if (this.endIndex !== undefined) {
+        if (this.endIndex) {
             const endIndex = (this.endIndex.evaluate(ctx): number);
             return input.slice(beginIndex, endIndex);
         }
@@ -72,7 +75,7 @@ class Slice implements Expression {
     eachChild(fn: (_: Expression) => void) {
         fn(this.input);
         fn(this.beginIndex);
-        if (this.endIndex !== undefined) {
+        if (this.endIndex) {
             fn(this.endIndex);
         }
     }
@@ -82,10 +85,11 @@ class Slice implements Expression {
     }
 
     serialize() {
-        if (this.endIndex === undefined) {
-            return ["slice", this.input.serialize(), this.beginIndex.serialize()];
+        if (this.endIndex != null && this.endIndex !== undefined) {
+            const endIndex = this.endIndex.serialize();
+            return ["slice", this.input.serialize(), this.beginIndex.serialize(), endIndex];
         }
-        return ["slice", this.input.serialize(), this.beginIndex.serialize(), this.endIndex.serialize()];
+        return ["slice", this.input.serialize(), this.beginIndex.serialize()];
     }
 }
 
