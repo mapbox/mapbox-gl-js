@@ -554,6 +554,25 @@ export default class Marker extends Evented {
     }
 
     /**
+     * Sets the `scale` property of the marker.
+     * @param {number} [scale=1] The scale of the marker, relative to its default size.
+     * @returns {Marker} `this`
+     */
+    setScale(scale: number) {
+        this._scale = scale || 1;
+        this._update();
+        return this;
+    }
+
+    /**
+     * Returns the current `scale` property of the marker.
+     * @returns {number} The current scale of the marker.
+     */
+    getScale() {
+        return this._scale;
+    }
+
+    /**
      * Sets the `rotation` property of the marker.
      * @param {number} [rotation=0] The rotation angle of the marker (clockwise, in degrees), relative to its respective {@link Marker#rotationAlignment} setting.
      * @returns {Marker} `this`
