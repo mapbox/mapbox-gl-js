@@ -13,10 +13,10 @@
     },
     "outputs": [
       {
-        "error": "Expected first argument to be of type boolean, string or number, but found object instead."
+        "error": "Expected first argument to be of type boolean, string, number or null, but found object instead."
       },
       {
-        "error": "Expected first argument to be of type boolean, string or number, but found object instead."
+        "error": "Expected first argument to be of type boolean, string, number or null, but found object instead."
       }
     ],
     "serialized": ["index-of", ["get", "needle"], ["get", "haystack"]]

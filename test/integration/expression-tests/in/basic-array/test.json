@@ -5,6 +5,7 @@
   ],
   "inputs": [
     [{}, {"properties": {"i": null, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": null, "arr": [9, null, 8, 7]}}],
     [{}, {"properties": {"i": 1, "arr": [9, 8, 7]}}],
     [{}, {"properties": {"i": 9, "arr": [9, 8, 7]}}],
     [{}, {"properties": {"i": "foo", "arr": ["baz", "bar", "hello", "foo", "world"]}}],
@@ -20,6 +21,7 @@
     },
     "outputs": [
       false,
+      true,
       false,
       true,
       true,
