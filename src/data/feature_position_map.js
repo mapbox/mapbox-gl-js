@@ -95,25 +95,42 @@ function getNumericId(value: mixed) {
 }
 
 // custom quicksort that sorts ids, indices and offsets together (by ids)
-function sort(ids, positions, left, right) {
-    if (left >= right) return;
+// implemented using iterative method rather than recursive
+function sort(ids, positions, _left, _right) {
 
-    const pivot = ids[(left + right) >> 1];
-    let i = left - 1;
-    let j = right + 1;
+    const stack = [];
 
-    while (true) {
-        do i++; while (ids[i] < pivot);
-        do j--; while (ids[j] > pivot);
-        if (i >= j) break;
-        swap(ids, i, j);
-        swap(positions, 3 * i, 3 * j);
-        swap(positions, 3 * i + 1, 3 * j + 1);
-        swap(positions, 3 * i + 2, 3 * j + 2);
+    stack.push(_left);
+    stack.push(_right);
+
+    while (stack.length > 0) {
+        const left = stack.shift();
+        const right = stack.shift();
+
+        if (left >= right) {
+            continue;
+        }
+
+        const pivot = ids[(left + right) >> 1];
+        let i = left - 1;
+        let j = right + 1;
+
+        while (true) {
+            do { i++; } while (ids[i] < pivot);
+            do { j--; } while (ids[j] > pivot);
+            if (i >= j) { break; }
+            swap(ids, i, j);
+            swap(positions, 3 * i, 3 * j);
+            swap(positions, 3 * i + 1, 3 * j + 1);
+            swap(positions, 3 * i + 2, 3 * j + 2);
+        }
+
+        stack.push(left);
+        stack.push(j);
+
+        stack.push(j + 1);
+        stack.push(right);
     }
-
-    sort(ids, positions, left, j);
-    sort(ids, positions, j + 1, right);
 }
 
 function swap(arr, i, j) {
