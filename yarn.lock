@@ -2074,7 +2074,7 @@ browserify-zlib@~0.2.0:
   dependencies:
     pako "~1.0.5"
 
-browserify@^16.2.3:
+browserify@^16.5.0:
   version "16.5.0"
   resolved "https://registry.yarnpkg.com/browserify/-/browserify-16.5.0.tgz#a1c2bc0431bec11fd29151941582e3f645ede881"
   integrity sha512-6bfI3cl76YLAnCZ75AGu/XPOsqUhRyc0F/olGIJeCxtfxF2HvPKEcmjU9M8oAPxl4uBY1U7Nry33Q6koV3f2iw==
@@ -6801,6 +6801,13 @@ minipass@^2.2.0, minipass@^2.3.5, minipass@^2.6.0, minipass@^2.8.6, minipass@^2.
     safe-buffer "^5.1.2"
     yallist "^3.0.0"
 
+minipass@^3.0.0:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/minipass/-/minipass-3.1.1.tgz#7607ce778472a185ad6d89082aa2070f79cedcd5"
+  integrity sha512-UFqVihv6PQgwj8/yTGvl9kPz7xIAY+R5z6XYjRInD3Gk3qx6QGSD6zEcpeG4Dy/lQnv1J6zv8ejV90hyYIKf3w==
+  dependencies:
+    yallist "^4.0.0"
+
 minizlib@^1.2.1:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/minizlib/-/minizlib-1.3.3.tgz#2290de96818a34c29551c8a8d301216bd65a861d"
@@ -7017,6 +7024,22 @@ node-notifier@^5.0.1, node-notifier@^5.4.3:
     semver "^5.5.0"
     shellwords "^0.1.1"
     which "^1.3.0"
+
+node-pre-gyp@*:
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.14.0.tgz#9a0596533b877289bcad4e143982ca3d904ddc83"
+  integrity sha512-+CvDC7ZttU/sSt9rFjix/P05iS43qHCOOGzcr3Ry99bXG7VX953+vFyEuph/tfqoYu8dttBkE86JSKBO2OzcxA==
+  dependencies:
+    detect-libc "^1.0.2"
+    mkdirp "^0.5.1"
+    needle "^2.2.1"
+    nopt "^4.0.1"
+    npm-packlist "^1.1.6"
+    npmlog "^4.0.2"
+    rc "^1.2.7"
+    rimraf "^2.6.1"
+    semver "^5.3.0"
+    tar "^4.4.2"
 
 node-pre-gyp@^0.11.0:
   version "0.11.0"
@@ -8420,9 +8443,9 @@ qs@6.7.0:
   integrity sha512-VCdBRNFTX1fyE7Nb6FYoURo/SPe62QCaAyzJvUjwRaIsc+NePBEniHlvxFmmX56+HZphIGtV0XeCirBtpDrTyQ==
 
 qs@^6.4.0:
-  version "6.9.2"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.2.tgz#a27b695006544a04bf0e6c6a7e8120778926d5bd"
-  integrity sha512-2eQ6zajpK7HwqrY1rRtGw5IZvjgtELXzJECaEDuzDFo2jjnIXpJSimzd4qflWZq6bLLi+Zgfj5eDrAzl/lptyg==
+  version "6.9.3"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.3.tgz#bfadcd296c2d549f1dffa560619132c977f5008e"
+  integrity sha512-EbZYNarm6138UKKq46tdx08Yo/q9ZhFoAXAI1meAFd2GtbRDhbZY2WQSICskT0c5q99aFzLG1D4nvTk9tqfXIw==
 
 qs@~6.5.2:
   version "6.5.2"
@@ -10088,6 +10111,15 @@ tap-mocha-reporter@^3.0.7:
   optionalDependencies:
     readable-stream "^2.1.5"
 
+tap-parser@^10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/tap-parser/-/tap-parser-10.0.1.tgz#b63c2500eeef2be8fbf09d512914196d1f12ebec"
+  integrity sha512-qdT15H0DoJIi7zOqVXDn9X0gSM68JjNy1w3VemwTJlDnETjbi6SutnqmBfjDJAwkFS79NJ97gZKqie00ZCGmzg==
+  dependencies:
+    events-to-array "^1.0.1"
+    minipass "^3.0.0"
+    tap-yaml "^1.0.0"
+
 tap-parser@^5.1.0:
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/tap-parser/-/tap-parser-5.4.0.tgz#6907e89725d7b7fa6ae41ee2c464c3db43188aec"
@@ -10106,15 +10138,6 @@ tap-parser@^7.0.0:
     events-to-array "^1.0.1"
     js-yaml "^3.2.7"
     minipass "^2.2.0"
-
-tap-parser@^9.3.3:
-  version "9.3.3"
-  resolved "https://registry.yarnpkg.com/tap-parser/-/tap-parser-9.3.3.tgz#f47a27cf07bafc48c53e33de65a9a97fd76d6cf8"
-  integrity sha512-VlC7tlSZ3EGt2qPLSa9CTJepNkc2yCh7uzhzAF5DxnuujeKbFbKxMA+fxtTWEN2j/KgfGi+mgooiZPKkOhEQyw==
-  dependencies:
-    events-to-array "^1.0.1"
-    minipass "^2.2.0"
-    tap-yaml "^1.0.0"
 
 tap-yaml@^1.0.0:
   version "1.0.0"
@@ -10169,7 +10192,7 @@ tape-filter@^1.0.4:
   dependencies:
     minimist "^1.2.0"
 
-tape@^4.11.0:
+tape@^4.13.2:
   version "4.13.2"
   resolved "https://registry.yarnpkg.com/tape/-/tape-4.13.2.tgz#eb419b9d9bc004025b1a81a5b63093e07f425629"
   integrity sha512-waWwC/OqYVE9TS6r1IynlP2sEdk4Lfo6jazlgkuNkPTHIbuG2BTABIaKdlQWwPeB6Oo4ksZ1j33Yt0NTOAlYMQ==
@@ -10211,7 +10234,7 @@ tar-stream@^2.0.0:
     inherits "^2.0.3"
     readable-stream "^3.1.1"
 
-tar@^4, tar@^4.4.8:
+tar@^4, tar@^4.4.2, tar@^4.4.8:
   version "4.4.13"
   resolved "https://registry.yarnpkg.com/tar/-/tar-4.4.13.tgz#43b364bc52888d555298637b10d60790254ab525"
   integrity sha512-w2VwSrBoHa5BsSyH+KxEqeQBAllHhccyMFVHtGtdMpF4W7IRWfZjFiQceJPChOeTsSDVUpER2T8FA93pr0L+QA==
@@ -10243,10 +10266,10 @@ test-exclude@^5.1.0:
     read-pkg-up "^4.0.0"
     require-main-filename "^2.0.0"
 
-testem@^2.17.0:
-  version "2.17.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-2.17.0.tgz#1cb4a2a90524a088803dfe52fbf197a6fd73c883"
-  integrity sha512-PLkIlT523w5rTJPWwR4TL1EiAEa941ECV7d4pMqsB0YdnH+sCTz0loWMKCUSdhR+VijveAZ6anE/JHehE7KqMQ==
+testem@^3.0.0:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.0.3.tgz#d59f1ffbcf497909aca5580b0496e6506350d7b8"
+  integrity sha512-mdBCCn8LlTmgFDpexemyGP4cjO1V0VASs/qbPGZk8Qo05EBnmch29LIqxvWUDih/nA6eau3reXp0rNEef7qpCw==
   dependencies:
     backbone "^1.1.2"
     bluebird "^3.4.6"
@@ -11233,6 +11256,11 @@ yallist@^3.0.0, yallist@^3.0.3:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/yallist/-/yallist-3.1.1.tgz#dbb7daf9bfd8bac9ab45ebf602b8cbad0d5d08fd"
   integrity sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==
+
+yallist@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/yallist/-/yallist-4.0.0.tgz#9bb92790d9c0effec63be73519e11a35019a3a72"
+  integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
 
 yaml@^1.5.0:
   version "1.8.3"

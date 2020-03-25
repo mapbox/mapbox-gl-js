@@ -49,7 +49,7 @@
     "babel-eslint": "^10.0.1",
     "babelify": "^10.0.0",
     "benchmark": "^2.1.4",
-    "browserify": "^16.2.3",
+    "browserify": "^16.5.0",
     "canvas": "^2.6.1",
     "chalk": "^3.0.0",
     "chokidar": "^3.0.2",
@@ -107,10 +107,10 @@
     "stylelint": "^9.10.1",
     "stylelint-config-standard": "^18.2.0",
     "tap": "~12.4.1",
-    "tap-parser": "^9.3.3",
-    "tape": "^4.11.0",
+    "tap-parser": "^10.0.1",
+    "tape": "^4.13.2",
     "tape-filter": "^1.0.4",
-    "testem": "^2.17.0"
+    "testem": "^3.0.0"
   },
   "browser": {
     "./src/shaders/index.js": "./src/shaders/shaders.js",
