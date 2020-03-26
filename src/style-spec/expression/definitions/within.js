@@ -82,9 +82,9 @@ function  twoSided(p1, p2, q1, q2) {
     const y2 = p2[1] - q1[1];
     const x3 = q2[0] - q1[0];
     const y3 = q2[1] - q1[1];
-    const ret1 = (x1 * y3 - x3 * y1);
-    const ret2 =  (x2 * y3 - x3 * y2);
-    if ((ret1 > 0 && ret2 < 0) || (ret1 < 0 && ret2 > 0)) return true;
+    const det1 = (x1 * y3 - x3 * y1);
+    const det2 =  (x2 * y3 - x3 * y2);
+    if ((det1 > 0 && det2 < 0) || (det1 < 0 && det2 > 0)) return true;
     return false;
 }
 // a, b are end points for line segment1, c and d are end points for line segment2
@@ -164,9 +164,10 @@ function getTilePolygons(coordinates, bbox, canonical) {
 
 function updatePoint(p, bbox, polyBBox, worldSize) {
     if (p[0] < polyBBox[0] || p[0] > polyBBox[2]) {
-        let shift = (p[0] - polyBBox[0] > worldSize / 2) ? -worldSize : (polyBBox[0] - p[0] > worldSize / 2) ? worldSize : 0;
+        const halfWorldSize = worldSize * 0.5;
+        let shift = (p[0] - polyBBox[0] > halfWorldSize) ? -worldSize : (polyBBox[0] - p[0] > halfWorldSize) ? worldSize : 0;
         if (shift === 0) {
-            shift = (p[0] - polyBBox[2] > worldSize / 2) ? -worldSize : (polyBBox[2] - p[0] > worldSize / 2) ? worldSize : 0;
+            shift = (p[0] - polyBBox[2] > halfWorldSize) ? -worldSize : (polyBBox[2] - p[0] > halfWorldSize) ? worldSize : 0;
         }
         p[0] += shift;
     }
