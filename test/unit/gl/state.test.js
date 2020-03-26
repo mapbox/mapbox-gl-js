@@ -3,8 +3,9 @@ import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask,
 import Context from '../../../src/gl/context';
 import Color from '../../../src/style-spec/util/color';
 import {deepEqual} from '../../../src/util/util';
+import gl from 'gl';
 
-const context = new Context(require('gl')(10, 10));
+const context = new Context(gl(10, 10));
 
 function ValueTest(Constructor, options, t) {
     t.test('#constructor', (t) => {
