@@ -82,7 +82,9 @@ function  twoSided(p1, p2, q1, q2) {
     const y2 = p2[1] - q1[1];
     const x3 = q2[0] - q1[0];
     const y3 = q2[1] - q1[1];
-    if ((x1 * y3 - x3 * y1) * (x2 * y3 - x3 * y2) < 0) return true;
+    const det1 = (x1 * y3 - x3 * y1);
+    const det2 =  (x2 * y3 - x3 * y2);
+    if ((det1 > 0 && det2 < 0) || (det1 < 0 && det2 > 0)) return true;
     return false;
 }
 // a, b are end points for line segment1, c and d are end points for line segment2
@@ -160,32 +162,79 @@ function getTilePolygons(coordinates, bbox, canonical) {
     return polygons;
 }
 
-function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons) {
-    const pointBBox = [Infinity, Infinity, -Infinity, -Infinity];
-    const polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
-    const canonical = ctx.canonicalID();
+function updatePoint(p, bbox, polyBBox, worldSize) {
+    if (p[0] < polyBBox[0] || p[0] > polyBBox[2]) {
+        const halfWorldSize = worldSize * 0.5;
+        let shift = (p[0] - polyBBox[0] > halfWorldSize) ? -worldSize : (polyBBox[0] - p[0] > halfWorldSize) ? worldSize : 0;
+        if (shift === 0) {
+            shift = (p[0] - polyBBox[2] > halfWorldSize) ? -worldSize : (polyBBox[2] - p[0] > halfWorldSize) ? worldSize : 0;
+        }
+        p[0] += shift;
+    }
+    updateBBox(bbox, p);
+}
+
+function resetBBox(bbox) {
+    bbox[0] = bbox[1] = Infinity;
+    bbox[2] = bbox[3] = -Infinity;
+}
+
+function getTilePoints(geometry, pointBBox, polyBBox, canonical) {
+    const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
     const tilePoints = [];
-
-    for (const points of ctx.geometry()) {
+    for (const points of geometry) {
         for (const point of points) {
             const p = [point.x + shifts[0], point.y + shifts[1]];
-            updateBBox(pointBBox, p);
+            updatePoint(p, pointBBox, polyBBox, worldSize);
             tilePoints.push(p);
         }
     }
+    return tilePoints;
+}
+
+function getTileLines(geometry, lineBBox, polyBBox, canonical) {
+    const worldSize = Math.pow(2, canonical.z) * EXTENT;
+    const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
+    const tileLines = [];
+    for (const line of geometry) {
+        const tileLine = [];
+        for (const point of line) {
+            const p = [point.x + shifts[0], point.y + shifts[1]];
+            updateBBox(lineBBox, p);
+            tileLine.push(p);
+        }
+        tileLines.push(tileLine);
+    }
+    if (lineBBox[2] - lineBBox[0] <= worldSize / 2) {
+        resetBBox(lineBBox);
+        for (const line of tileLines) {
+            for (const p of line) {
+                updatePoint(p, lineBBox, polyBBox, worldSize);
+            }
+        }
+    }
+    return tileLines;
+}
+
+function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons) {
+    const pointBBox = [Infinity, Infinity, -Infinity, -Infinity];
+    const polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
+
+    const canonical = ctx.canonicalID();
 
     if (polygonGeometry.type === 'Polygon') {
         const tilePolygon = getTilePolygon(polygonGeometry.coordinates, polyBBox, canonical);
+        const tilePoints = getTilePoints(ctx.geometry(), pointBBox, polyBBox, canonical);
         if (!boxWithinBox(pointBBox, polyBBox)) return false;
 
         for (const point of tilePoints) {
             if (!pointWithinPolygon(point, tilePolygon)) return false;
         }
     }
-
     if (polygonGeometry.type === 'MultiPolygon') {
         const tilePolygons = getTilePolygons(polygonGeometry.coordinates, polyBBox, canonical);
+        const tilePoints = getTilePoints(ctx.geometry(), pointBBox, polyBBox, canonical);
         if (!boxWithinBox(pointBBox, polyBBox)) return false;
 
         for (const point of tilePoints) {
@@ -201,31 +250,19 @@ function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPol
     const polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
 
     const canonical = ctx.canonicalID();
-    const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
-    const tileLines = [];
-
-    for (const line of ctx.geometry()) {
-        const tileLine = [];
-        for (const point of line) {
-            const p = [point.x + shifts[0], point.y + shifts[1]];
-            updateBBox(lineBBox, p);
-            tileLine.push(p);
-        }
-        tileLines.push(tileLine);
-    }
 
     if (polygonGeometry.type === 'Polygon') {
         const tilePolygon = getTilePolygon(polygonGeometry.coordinates, polyBBox, canonical);
+        const tileLines = getTileLines(ctx.geometry(), lineBBox, polyBBox, canonical);
         if (!boxWithinBox(lineBBox, polyBBox)) return false;
 
         for (const line of tileLines) {
             if (!lineStringWithinPolygon(line, tilePolygon)) return false;
         }
     }
-
     if (polygonGeometry.type === 'MultiPolygon') {
         const tilePolygons = getTilePolygons(polygonGeometry.coordinates, polyBBox, canonical);
-
+        const tileLines = getTileLines(ctx.geometry(), lineBBox, polyBBox, canonical);
         if (!boxWithinBox(lineBBox, polyBBox)) return false;
 
         for (const line of tileLines) {
@@ -233,7 +270,6 @@ function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPol
         }
     }
     return true;
-
 }
 
 class Within implements Expression {
