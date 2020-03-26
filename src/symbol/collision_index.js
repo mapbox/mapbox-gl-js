@@ -103,11 +103,12 @@ class CollisionIndex {
                           textPixelPadding: number): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
         const placedCollisionCircles = [];
 
-        const perspectiveRatio = this.projectAnchor(posMatrix, symbol.anchorX, symbol.anchorY).perspectiveRatio;
+        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        const screenAnchorPoint = projection.project(tileUnitAnchorPoint, posMatrix);
+        const perspectiveRatio = projection.getPerspectiveRatio(this.transform.cameraToCenterDistance, screenAnchorPoint.signedDistanceFromCamera);
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
 
-        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
         const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix).point;
 
         const projectionCache = {};
@@ -328,15 +329,6 @@ class CollisionIndex {
         for (let k = 0; k < collisionCircles.length; k += 4) {
             grid.insertCircle(key, collisionCircles[k], collisionCircles[k + 1], collisionCircles[k + 2]);
         }
-    }
-
-    projectAnchor(posMatrix: mat4, x: number, y: number) {
-        const p = [x, y, 0, 1];
-        projection.xyTransformMat4(p, p, posMatrix);
-        return {
-            perspectiveRatio: 0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3]),
-            cameraDistance: p[3]
-        };
     }
 
     projectPoint(posMatrix: mat4, x: number, y: number) {

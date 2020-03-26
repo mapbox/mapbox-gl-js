@@ -16,7 +16,7 @@ import type {
 } from '../data/array_types';
 import {WritingMode} from '../symbol/shaping';
 
-export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
+export {updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 /*
  * # Overview of coordinate spaces
@@ -113,6 +113,10 @@ function project(point: Point, matrix: mat4) {
     };
 }
 
+function getPerspectiveRatio(cameraToCenterDistance: number, signedDistanceFromCamera: number): number {
+    return 0.5 + 0.5 * (cameraToCenterDistance / signedDistanceFromCamera);
+}
+
 function isVisible(anchorPos: [number, number, number, number],
                    clippingBuffer: [number, number]) {
     const x = anchorPos[0] / anchorPos[3];
@@ -178,7 +182,7 @@ function updateLineLabels(bucket: SymbolBucket,
         }
 
         const cameraToAnchorDistance = anchorPos[3];
-        const perspectiveRatio = 0.5 + 0.5 * (painter.transform.cameraToCenterDistance / cameraToAnchorDistance);
+        const perspectiveRatio = getPerspectiveRatio(painter.transform.cameraToCenterDistance, cameraToAnchorDistance);
 
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
