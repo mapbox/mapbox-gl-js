@@ -76,6 +76,9 @@ class Program<Us: UniformBindings> {
         gl.linkProgram(this.program);
         assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program): any));
 
+        gl.deleteShader(vertexShader);
+        gl.deleteShader(fragmentShader);
+
         this.numAttributes = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
 
         this.attributes = {};
