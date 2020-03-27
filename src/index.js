@@ -23,7 +23,7 @@ import {Debug} from './util/debug';
 import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
-import {preloadWorkerPool, removePreloadedWorkerPool} from './util/global_worker_pool';
+import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
 import {PerformanceUtils} from './util/performance';
 
@@ -47,8 +47,32 @@ const exported = {
     MercatorCoordinate,
     Evented,
     config,
-    preloadWorkerPool,
-    removePreloadedWorkerPool,
+    /**
+     * Create's shared resources, primarily WebWorkers, for the Map ahead of time, this significantly improves load times in certain situations.
+     * `mapboxgl.workerUrl` and `mapboxgl.workerCount`, if being used, must be set before `prewarm()` is called in order to have an effect.
+     *
+     * By default, the lifecycle these resources is managed automatically, and they are lazily initialized when a Map is first created.
+     * By invoking `prewarm()`, these resources can be created ahead of time, and will not be cleared when Map is removed.
+     * This allows them to be re-used by new instances of Map that are created later. These resources can be manually cleared
+     * by calling `mapboxgl.clearPrewarmedResources()`, though this will typically not be necessary.
+     *
+     * This is primarily useful when using GL-JS maps in a single page app, wherein a user would naviate
+     * bewteen various views that can cause Map instances to constantly be created and destroyed.
+     *
+     * @function prewarm
+     * @example
+     * mapboxgl.prewarm()
+     */
+    prewarm,
+    /**
+     * Clears up resources that have been previously created by `mapboxgl.prewarm()`.
+     * This should typically not be necessary, and only be used if you expect the user of your app to not return to a Map view at any point in your application.
+     *
+     * @function clearPrewarmedResources
+     * @example
+     * mapboxgl.clearPrewarmedResources()
+     */
+    clearPrewarmedResources,
 
     /**
      * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
