@@ -173,7 +173,7 @@ class CollisionIndex {
                 // Quickly check if the path is fully inside or outside of the padded collision region.
                 // For overlapping paths we'll only create collision circles for the visible segments
                 const minPoint = projectedPath[0].clone();
-                const maxPoint = projectedPath[1].clone();
+                const maxPoint = projectedPath[0].clone();
 
                 for (let i = 1; i < projectedPath.length; i++) {
                     minPoint.x = Math.min(minPoint.x, projectedPath[i].x);
@@ -182,13 +182,16 @@ class CollisionIndex {
                     maxPoint.y = Math.max(maxPoint.y, projectedPath[i].y);
                 }
 
-                const region = computeRectClipRegion(minPoint, maxPoint, screenPlaneMin, screenPlaneMax);
-
-                // 0 == fully visible, -1 == partly visible, >= 1 not visble at all
-                if (region === 0) {
+                if (minPoint.x >= screenPlaneMin.x && maxPoint.x <= screenPlaneMax.x &&
+                    minPoint.y >= screenPlaneMin.y && maxPoint.y <= screenPlaneMax.y) {
+                    // Quad fully visible
                     segments = [projectedPath];
-                } else if (region < 0) {
-                    segments = clipLine([projectedPath], screenPlaneMin.x, screenPlaneMin.x, screenPlaneMax.x, screenPlaneMax.y);
+                } else if (maxPoint.x < screenPlaneMin.x || minPoint.x > screenPlaneMax.x ||
+                    maxPoint.y < screenPlaneMin.y || minPoint.y > screenPlaneMax.y) {
+                    // Not visible
+                    segments = [];
+                } else {
+                    segments = clipLine([projectedPath], screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
                 }
             }
 
@@ -331,15 +334,6 @@ class CollisionIndex {
         }
     }
 
-    projectPoint(posMatrix: mat4, x: number, y: number) {
-        const p = [x, y, 0, 1];
-        projection.xyTransformMat4(p, p, posMatrix);
-        return new Point(
-            (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
-            (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
-        );
-    }
-
     projectAndGetPerspectiveRatio(posMatrix: mat4, x: number, y: number) {
         const p = [x, y, 0, 1];
         projection.xyTransformMat4(p, p, posMatrix);
@@ -374,58 +368,6 @@ class CollisionIndex {
         mat4.translate(m, m, [-viewportPadding, -viewportPadding, 0.0]);
         return m;
     }
-}
-
-/*
-* Computes a region code for a point in a rectangular area using Cohen–Sutherland clipping algorithm
-*/
-function computePointClipRegion(point: Point, minBoundary: Point, maxBoundary: Point) {
-    const LEFT   = 1 << 0;
-    const RIGHT  = 1 << 1;
-    const BOTTOM = 1 << 2;
-    const TOP    = 1 << 3;
-
-    const min = minBoundary;
-    const max = maxBoundary;
-    let region = 0;
-
-    if (point.x < min.x) {
-        region |= LEFT;
-    }
-    if (point.x > max.x) {
-        region |= RIGHT;
-    }
-    if (point.y < min.y) {
-        region |= TOP;
-    }
-    if (point.y > max.y) {
-        region |= BOTTOM;
-    }
-
-    return region;
-}
-
-/*
-* Computes a region code for a rect in a rectangular area using Cohen–Sutherland clipping algorithm.
-* A rectangle inside a single region is not overlapping with any of the borders.
-*
-* Returns a negative value if the rect is overlapping with multiple regions
-*/
-function computeRectClipRegion(minPoint: Point, maxPoint: Point, minBoundary: Point, maxBoundary: Point) {
-    const p0 = new Point(minPoint.x, minPoint.y);
-    const p1 = new Point(minPoint.x, maxPoint.y);
-    const p2 = new Point(maxPoint.x, maxPoint.y);
-    const p3 = new Point(maxPoint.x, minPoint.y);
-
-    const region = computePointClipRegion(p0, minBoundary, maxBoundary);
-    if (region !== computePointClipRegion(p1, minBoundary, maxBoundary))
-        return -1;
-    else if (region !== computePointClipRegion(p2, minBoundary, maxBoundary))
-        return -1;
-    else if (region !== computePointClipRegion(p3, minBoundary, maxBoundary))
-        return -1;
-
-    return region;
 }
 
 export default CollisionIndex;

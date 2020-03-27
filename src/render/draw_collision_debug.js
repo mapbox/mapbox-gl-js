@@ -19,24 +19,56 @@ import IndexBuffer from '../gl/index_buffer';
 
 export default drawCollisionDebug;
 
+type TileBatch = {
+    circleArray: Array<number>,
+    circleOffset: number,
+    transform: mat4,
+    invTransform: mat4
+};
+
 let quadTriangles: ?QuadTriangleArray;
 
 function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>, translate: [number, number], translateAnchor: 'map' | 'viewport', isText: boolean) {
     const context = painter.context;
     const gl = context.gl;
     const program = painter.useProgram('collisionBox');
+    const tileBatches: Array<TileBatch> = [];
+    let circleCount = 0;
+    let circleOffset = 0;
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
         const tile = sourceCache.getTile(coord);
         const bucket: ?SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        const buffers = isText ? bucket.textCollisionBox : bucket.iconCollisionBox;
-        if (!buffers) continue;
         let posMatrix = coord.posMatrix;
         if (translate[0] !== 0 || translate[1] !== 0) {
             posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor);
         }
+        const buffers = isText ? bucket.textCollisionBox : bucket.iconCollisionBox;
+        // Get collision circle data of this bucket
+        const circleArray: Array<number> = bucket.collisionCircleArray;
+        if (circleArray.length > 0) {
+            // We need to know the projection matrix that was used for projecting collision circles to the screen.
+            // This might vary between buckets as the symbol placement is a continous process. This matrix is
+            // required for transforming points from previous screen space to the current one
+            const invTransform = mat4.create();
+            const transform = posMatrix;
+
+            mat4.mul(invTransform, bucket.placementInvProjMatrix, painter.transform.glCoordMatrix);
+            mat4.mul(invTransform, invTransform, bucket.placementViewportMatrix);
+
+            tileBatches.push({
+                circleArray,
+                circleOffset,
+                transform,
+                invTransform
+            });
+
+            circleCount += circleArray.length / 4;  // 4 values per circle
+            circleOffset = circleCount;
+        }
+        if (!buffers) continue;
         program.draw(context, gl.LINES,
             DepthMode.disabled, StencilMode.disabled,
             painter.colorModeForRenderPass(),
@@ -50,65 +82,11 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
             buffers.collisionVertexBuffer);
     }
 
-    if (isText)
-        drawCollisionCircles(painter, sourceCache, layer, coords, translate, translateAnchor);
-}
-
-type TileBatch = {
-    circleArray: Array<number>,
-    circleOffset: number,
-    transform: mat4,
-    invTransform: mat4
-};
-
-function drawCollisionCircles(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>, translate: [number, number], translateAnchor: 'map' | 'viewport') {
-
-    const tileBatches: Array<TileBatch> = [];
-    let circleCount = 0;
-    let circleOffset = 0;
-
-    for (let i = 0; i < coords.length; i++) {
-        const coord = coords[i];
-        const tile = sourceCache.getTile(coord);
-        const bucket: ?SymbolBucket = (tile.getBucket(layer): any);
-        if (!bucket) continue;
-
-        const circleArray: Array<number> = bucket.collisionCircleArray;
-
-        if (!circleArray.length)
-            continue;
-
-        let posMatrix = coord.posMatrix;
-
-        if (translate[0] !== 0 || translate[1] !== 0) {
-            posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor);
-        }
-
-        // We need to know the projection matrix that was used for projecting collision circles to the screen.
-        // This might vary between buckets as the symbol placement is a continous process. This matrix is
-        // required for transforming points from previous screen space to the current one
-        const invTransform = mat4.create();
-        const transform = posMatrix;
-
-        mat4.mul(invTransform, bucket.placementInvProjMatrix, painter.transform.glCoordMatrix);
-        mat4.mul(invTransform, invTransform, bucket.placementViewportMatrix);
-
-        tileBatches.push({
-            circleArray,
-            circleOffset,
-            transform,
-            invTransform
-        });
-
-        circleCount += circleArray.length / 4;  // 4 values per circle
-        circleOffset = circleCount;
+    if (!isText || !tileBatches.length) {
+        return;
     }
 
-    if (!tileBatches.length)
-        return;
-
-    const context = painter.context;
-    const gl = context.gl;
+    // Render collision circles
     const circleProgram = painter.useProgram('collisionCircle');
 
     // Construct vertex data
