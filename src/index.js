@@ -70,8 +70,10 @@ const exported = {
      */
     prewarm,
     /**
-     * Clears up resources that have been previously created by `mapboxgl.prewarm()`.
-     * This should typically not be necessary, and only be used if you expect the user of your app to not return to a Map view at any point in your application.
+     * Clears up resources that have previously been created by `mapboxgl.prewarm()`.
+     * Note that this is typically not necessary. You should only call this function
+     * if you expect the user of your app to not return to a Map view at any point
+     * in your application.
      *
      * @function clearPrewarmedResources
      * @example
