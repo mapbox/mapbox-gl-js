@@ -304,11 +304,10 @@ register('StructArrayLayout1ul4', StructArrayLayout1ul4);
  * [0]: Int16[6]
  * [12]: Uint32[1]
  * [16]: Uint16[2]
- * [20]: Int16[2]
  *
  * @private
  */
-class StructArrayLayout6i1ul2ui2i24 extends StructArray {
+class StructArrayLayout6i1ul2ui20 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint32: Uint32Array;
@@ -321,15 +320,15 @@ class StructArrayLayout6i1ul2ui2i24 extends StructArray {
         this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number) {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number) {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number) {
-        const o2 = i * 12;
-        const o4 = i * 6;
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number) {
+        const o2 = i * 10;
+        const o4 = i * 5;
         this.int16[o2 + 0] = v0;
         this.int16[o2 + 1] = v1;
         this.int16[o2 + 2] = v2;
@@ -339,14 +338,12 @@ class StructArrayLayout6i1ul2ui2i24 extends StructArray {
         this.uint32[o4 + 3] = v6;
         this.uint16[o2 + 8] = v7;
         this.uint16[o2 + 9] = v8;
-        this.int16[o2 + 10] = v9;
-        this.int16[o2 + 11] = v10;
         return i;
     }
 }
 
-StructArrayLayout6i1ul2ui2i24.prototype.bytesPerElement = 24;
-register('StructArrayLayout6i1ul2ui2i24', StructArrayLayout6i1ul2ui2i24);
+StructArrayLayout6i1ul2ui20.prototype.bytesPerElement = 20;
+register('StructArrayLayout6i1ul2ui20', StructArrayLayout6i1ul2ui20);
 
 /**
  * Implementation of the StructArray layout:
@@ -388,6 +385,46 @@ register('StructArrayLayout2i2i2i12', StructArrayLayout2i2i2i12);
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Float32[2]
+ * [8]: Float32[1]
+ * [12]: Int16[2]
+ *
+ * @private
+ */
+class StructArrayLayout2f1f2i16 extends StructArray {
+    uint8: Uint8Array;
+    float32: Float32Array;
+    int16: Int16Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
+        this.int16 = new Int16Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2, v3, v4);
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number) {
+        const o4 = i * 4;
+        const o2 = i * 8;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        this.int16[o2 + 6] = v3;
+        this.int16[o2 + 7] = v4;
+        return i;
+    }
+}
+
+StructArrayLayout2f1f2i16.prototype.bytesPerElement = 16;
+register('StructArrayLayout2f1f2i16', StructArrayLayout2f1f2i16);
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Uint8[2]
  * [4]: Float32[2]
  *
@@ -421,6 +458,39 @@ class StructArrayLayout2ub2f12 extends StructArray {
 
 StructArrayLayout2ub2f12.prototype.bytesPerElement = 12;
 register('StructArrayLayout2ub2f12', StructArrayLayout2ub2f12);
+
+/**
+ * Implementation of the StructArray layout:
+ * [0]: Uint16[3]
+ *
+ * @private
+ */
+class StructArrayLayout3ui6 extends StructArray {
+    uint8: Uint8Array;
+    uint16: Uint16Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.uint16 = new Uint16Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2);
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number) {
+        const o2 = i * 3;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
+        return i;
+    }
+}
+
+StructArrayLayout3ui6.prototype.bytesPerElement = 6;
+register('StructArrayLayout3ui6', StructArrayLayout3ui6);
 
 /**
  * Implementation of the StructArray layout:
@@ -487,13 +557,13 @@ register('StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48', StructArrayLayout2i2ui3ul3u
 /**
  * Implementation of the StructArray layout:
  * [0]: Int16[8]
- * [16]: Uint16[14]
- * [44]: Uint32[1]
- * [48]: Float32[3]
+ * [16]: Uint16[15]
+ * [48]: Uint32[1]
+ * [52]: Float32[4]
  *
  * @private
  */
-class StructArrayLayout8i14ui1ul3f60 extends StructArray {
+class StructArrayLayout8i15ui1ul4f68 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint16: Uint16Array;
@@ -508,15 +578,15 @@ class StructArrayLayout8i14ui1ul3f60 extends StructArray {
         this.float32 = new Float32Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number, v17: number, v18: number, v19: number, v20: number, v21: number, v22: number, v23: number, v24: number, v25: number) {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number, v17: number, v18: number, v19: number, v20: number, v21: number, v22: number, v23: number, v24: number, v25: number, v26: number, v27: number) {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number, v17: number, v18: number, v19: number, v20: number, v21: number, v22: number, v23: number, v24: number, v25: number) {
-        const o2 = i * 30;
-        const o4 = i * 15;
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number, v16: number, v17: number, v18: number, v19: number, v20: number, v21: number, v22: number, v23: number, v24: number, v25: number, v26: number, v27: number) {
+        const o2 = i * 34;
+        const o4 = i * 17;
         this.int16[o2 + 0] = v0;
         this.int16[o2 + 1] = v1;
         this.int16[o2 + 2] = v2;
@@ -539,16 +609,18 @@ class StructArrayLayout8i14ui1ul3f60 extends StructArray {
         this.uint16[o2 + 19] = v19;
         this.uint16[o2 + 20] = v20;
         this.uint16[o2 + 21] = v21;
-        this.uint32[o4 + 11] = v22;
-        this.float32[o4 + 12] = v23;
+        this.uint16[o2 + 22] = v22;
+        this.uint32[o4 + 12] = v23;
         this.float32[o4 + 13] = v24;
         this.float32[o4 + 14] = v25;
+        this.float32[o4 + 15] = v26;
+        this.float32[o4 + 16] = v27;
         return i;
     }
 }
 
-StructArrayLayout8i14ui1ul3f60.prototype.bytesPerElement = 60;
-register('StructArrayLayout8i14ui1ul3f60', StructArrayLayout8i14ui1ul3f60);
+StructArrayLayout8i15ui1ul4f68.prototype.bytesPerElement = 68;
+register('StructArrayLayout8i15ui1ul4f68', StructArrayLayout8i15ui1ul4f68);
 
 /**
  * Implementation of the StructArray layout:
@@ -650,39 +722,6 @@ class StructArrayLayout1ul2ui8 extends StructArray {
 
 StructArrayLayout1ul2ui8.prototype.bytesPerElement = 8;
 register('StructArrayLayout1ul2ui8', StructArrayLayout1ul2ui8);
-
-/**
- * Implementation of the StructArray layout:
- * [0]: Uint16[3]
- *
- * @private
- */
-class StructArrayLayout3ui6 extends StructArray {
-    uint8: Uint8Array;
-    uint16: Uint16Array;
-
-    _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.uint16 = new Uint16Array(this.arrayBuffer);
-    }
-
-    emplaceBack(v0: number, v1: number, v2: number) {
-        const i = this.length;
-        this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2);
-    }
-
-    emplace(i: number, v0: number, v1: number, v2: number) {
-        const o2 = i * 3;
-        this.uint16[o2 + 0] = v0;
-        this.uint16[o2 + 1] = v1;
-        this.uint16[o2 + 2] = v2;
-        return i;
-    }
-}
-
-StructArrayLayout3ui6.prototype.bytesPerElement = 6;
-register('StructArrayLayout3ui6', StructArrayLayout3ui6);
 
 /**
  * Implementation of the StructArray layout:
@@ -824,8 +863,6 @@ class CollisionBoxStruct extends Struct {
     featureIndex: number;
     sourceLayerIndex: number;
     bucketIndex: number;
-    radius: number;
-    signedDistanceFromAnchor: number;
     anchorPoint: Point;
     get anchorPointX() { return this._structArray.int16[this._pos2 + 0]; }
     get anchorPointY() { return this._structArray.int16[this._pos2 + 1]; }
@@ -836,19 +873,17 @@ class CollisionBoxStruct extends Struct {
     get featureIndex() { return this._structArray.uint32[this._pos4 + 3]; }
     get sourceLayerIndex() { return this._structArray.uint16[this._pos2 + 8]; }
     get bucketIndex() { return this._structArray.uint16[this._pos2 + 9]; }
-    get radius() { return this._structArray.int16[this._pos2 + 10]; }
-    get signedDistanceFromAnchor() { return this._structArray.int16[this._pos2 + 11]; }
     get anchorPoint() { return new Point(this.anchorPointX, this.anchorPointY); }
 }
 
-CollisionBoxStruct.prototype.size = 24;
+CollisionBoxStruct.prototype.size = 20;
 
 export type CollisionBox = CollisionBoxStruct;
 
 /**
  * @private
  */
-export class CollisionBoxArray extends StructArrayLayout6i1ul2ui2i24 {
+export class CollisionBoxArray extends StructArrayLayout6i1ul2ui20 {
     /**
      * Return the CollisionBoxStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -948,10 +983,12 @@ class SymbolInstanceStruct extends Struct {
     numVerticalGlyphVertices: number;
     numIconVertices: number;
     numVerticalIconVertices: number;
+    useRuntimeCollisionCircles: number;
     crossTileID: number;
     textBoxScale: number;
     textOffset0: number;
     textOffset1: number;
+    collisionCircleDiameter: number;
     get anchorX() { return this._structArray.int16[this._pos2 + 0]; }
     get anchorY() { return this._structArray.int16[this._pos2 + 1]; }
     get rightJustifiedTextSymbolIndex() { return this._structArray.int16[this._pos2 + 2]; }
@@ -974,21 +1011,23 @@ class SymbolInstanceStruct extends Struct {
     get numVerticalGlyphVertices() { return this._structArray.uint16[this._pos2 + 19]; }
     get numIconVertices() { return this._structArray.uint16[this._pos2 + 20]; }
     get numVerticalIconVertices() { return this._structArray.uint16[this._pos2 + 21]; }
-    get crossTileID() { return this._structArray.uint32[this._pos4 + 11]; }
-    set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 11] = x; }
-    get textBoxScale() { return this._structArray.float32[this._pos4 + 12]; }
-    get textOffset0() { return this._structArray.float32[this._pos4 + 13]; }
-    get textOffset1() { return this._structArray.float32[this._pos4 + 14]; }
+    get useRuntimeCollisionCircles() { return this._structArray.uint16[this._pos2 + 22]; }
+    get crossTileID() { return this._structArray.uint32[this._pos4 + 12]; }
+    set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 12] = x; }
+    get textBoxScale() { return this._structArray.float32[this._pos4 + 13]; }
+    get textOffset0() { return this._structArray.float32[this._pos4 + 14]; }
+    get textOffset1() { return this._structArray.float32[this._pos4 + 15]; }
+    get collisionCircleDiameter() { return this._structArray.float32[this._pos4 + 16]; }
 }
 
-SymbolInstanceStruct.prototype.size = 60;
+SymbolInstanceStruct.prototype.size = 68;
 
 export type SymbolInstance = SymbolInstanceStruct;
 
 /**
  * @private
  */
-export class SymbolInstanceArray extends StructArrayLayout8i14ui1ul3f60 {
+export class SymbolInstanceArray extends StructArrayLayout8i15ui1ul4f68 {
     /**
      * Return the SymbolInstanceStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -1062,15 +1101,16 @@ export {
     StructArrayLayout4i4ui4i24,
     StructArrayLayout3f12,
     StructArrayLayout1ul4,
-    StructArrayLayout6i1ul2ui2i24,
+    StructArrayLayout6i1ul2ui20,
     StructArrayLayout2i2i2i12,
+    StructArrayLayout2f1f2i16,
     StructArrayLayout2ub2f12,
+    StructArrayLayout3ui6,
     StructArrayLayout2i2ui3ul3ui2f3ub1ul1i48,
-    StructArrayLayout8i14ui1ul3f60,
+    StructArrayLayout8i15ui1ul4f68,
     StructArrayLayout1f4,
     StructArrayLayout3i6,
     StructArrayLayout1ul2ui8,
-    StructArrayLayout3ui6,
     StructArrayLayout2ui4,
     StructArrayLayout1ui2,
     StructArrayLayout2f8,
@@ -1087,8 +1127,9 @@ export {
     StructArrayLayout3f12 as SymbolDynamicLayoutArray,
     StructArrayLayout1ul4 as SymbolOpacityArray,
     StructArrayLayout2i2i2i12 as CollisionBoxLayoutArray,
-    StructArrayLayout2i2i2i12 as CollisionCircleLayoutArray,
+    StructArrayLayout2f1f2i16 as CollisionCircleLayoutArray,
     StructArrayLayout2ub2f12 as CollisionVertexArray,
+    StructArrayLayout3ui6 as QuadTriangleArray,
     StructArrayLayout3ui6 as TriangleIndexArray,
     StructArrayLayout2ui4 as LineIndexArray,
     StructArrayLayout1ui2 as LineStripIndexArray
