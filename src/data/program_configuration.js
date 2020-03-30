@@ -312,7 +312,7 @@ class CrossFadedCompositeBinder implements AttributeBinder {
     zoomOutPaintVertexBuffer: ?VertexBuffer;
     paintVertexAttributes: Array<StructArrayMember>;
 
-    constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, PaintVertexArray: Class<StructArray>, layerId: string) {
+    constructor(expression: CompositeExpression, type: string, useIntegerZoom: boolean, zoom: number, PaintVertexArray: Class<StructArray>, layerId: string) {
         this.expression = expression;
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
@@ -431,7 +431,7 @@ export default class ProgramConfiguration {
             } else if (expression.kind === 'source' || isCrossFaded) {
                 const StructArrayLayout = layoutType(property, type, 'source');
                 this.binders[property] = isCrossFaded ?
-                    new CrossFadedCompositeBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id) :
+                    new CrossFadedCompositeBinder(expression, type, useIntegerZoom, zoom, StructArrayLayout, layer.id) :
                     new SourceExpressionBinder(expression, names, type, StructArrayLayout);
                 keys.push(`/a_${property}`);
 
