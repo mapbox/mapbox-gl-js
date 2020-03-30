@@ -48,16 +48,21 @@ const exported = {
     Evented,
     config,
     /**
-     * Create's shared resources, primarily WebWorkers, for the Map ahead of time, this significantly improves load times in certain situations.
-     * `mapboxgl.workerUrl` and `mapboxgl.workerCount`, if being used, must be set before `prewarm()` is called in order to have an effect.
+     * Initializes resources like WebWorkers that can be shared across maps to lower load
+     * times in some situations. `mapboxgl.workerUrl` and `mapboxgl.workerCount`, if being
+     * used, must be set before `prewarm()` is called to have an effect.
      *
-     * By default, the lifecycle these resources is managed automatically, and they are lazily initialized when a Map is first created.
-     * By invoking `prewarm()`, these resources can be created ahead of time, and will not be cleared when Map is removed.
-     * This allows them to be re-used by new instances of Map that are created later. These resources can be manually cleared
-     * by calling `mapboxgl.clearPrewarmedResources()`, though this will typically not be necessary.
+     * By default, the lifecycle of these resources is managed automatically, and they are
+     * lazily initialized when a Map is first created. By invoking `prewarm()`, these
+     * resources will be created ahead of time, and will not be cleared when the last Map
+     * is removed from the page. This allows them to be re-used by new Map instances that
+     * are created later. They can be manually cleared by calling
+     * `mapboxgl.clearPrewarmedResources()`. This is only necessary if your web page remains
+     * active but stops using maps altogether.
      *
-     * This is primarily useful when using GL-JS maps in a single page app, wherein a user would naviate
-     * bewteen various views that can cause Map instances to constantly be created and destroyed.
+     * This is primarily useful when using GL-JS maps in a single page app, wherein a user
+     * would navigate between various views that can cause Map instances to constantly be
+     * created and destroyed.
      *
      * @function prewarm
      * @example
