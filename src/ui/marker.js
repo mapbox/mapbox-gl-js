@@ -101,7 +101,7 @@ export default class Marker extends Evented {
             svg.setAttributeNS(null, 'display', 'block');
             svg.setAttributeNS(null, 'height', '41px');
             svg.setAttributeNS(null, 'width', '27px');
-            svg.setAttributeNS(null, 'viewBox', '0 0 27 41');
+            svg.setAttributeNS(null, 'viewBox', `0 0 27 41`);
 
             const markerLarge = DOM.createNS('http://www.w3.org/2000/svg', 'g');
             markerLarge.setAttributeNS(null, 'stroke', 'none');
@@ -184,7 +184,9 @@ export default class Marker extends Evented {
             page1.appendChild(circleContainer);
 
             svg.appendChild(page1);
-            svg.setAttributeNS(null, 'transform', `scale(${this._scale})`);
+
+            svg.setAttributeNS(null, 'width', `${27 * this._scale}px`);
+            svg.setAttributeNS(null, 'height', `${41 * this._scale}px`);
 
             this._element.appendChild(svg);
 
@@ -397,6 +399,12 @@ export default class Marker extends Evented {
         }
 
         this._pos = this._map.project(this._lngLat)._add(this._offset);
+
+        const svg = this._element.firstChild;
+        if (svg) {
+            svg.setAttributeNS(null, 'width', `${27 * this._scale}px`);
+            svg.setAttributeNS(null, 'height', `${41 * this._scale}px`);
+        }
 
         let rotation = "";
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
