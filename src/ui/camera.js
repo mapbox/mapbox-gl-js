@@ -599,6 +599,8 @@ class Camera extends Evented {
         if (!calculatedOptions) return this;
 
         options = extend(calculatedOptions, options);
+        // Explictly remove the padding field because, calculatedOptions already accounts for padding by setting zoom and center accordingly.
+        delete options.padding;
 
         return options.linear ?
             this.easeTo(options, eventData) :

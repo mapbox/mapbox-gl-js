@@ -1889,6 +1889,21 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('padding does not get propagated to transform.padding', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0});
+            const padding = camera.transform.padding;
+            t.deepEqual(padding, {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0
+            });
+            t.end();
+        });
+
         t.end();
     });
 
