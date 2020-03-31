@@ -1,3 +1,9 @@
+## 1.9.1
+
+### 🐞 Bug fixes
+* Fix a bug in `Map#fitBounds(..)` wherein the `padding` passed to options would get applied twice. Fixes [#9477](https://github.com/mapbox/mapbox-gl-js/issues/9477)
+* Fix rendering bug caused when data-driven `*-pattern` properties reference images added with `Map#addImage(..)`. Fixes [#9479](https://github.com/mapbox/mapbox-gl-js/issues/9479)
+
 ## 1.9.0
 With this release, we're adding [a new changelog policy](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md#changelog-conventions) to our contribution guidelines.
 
