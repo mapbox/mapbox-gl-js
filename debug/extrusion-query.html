@@ -29,13 +29,44 @@ var map = window.map = new mapboxgl.Map({
 
 const r = 255 * 0.65;
 map.on('style.load', function() {
+    map.addSource('3d-buildings', {
+        'type': 'vector',
+        'url': 'mapbox://mapbox.3d-buildings'
+    });
     map.addLayer({
-        'id': '3d-buildings',
+        'id': '3d-buildings-1',
         //'source': 'composite',
-        'source': {
-            'type': 'vector',
-            'url': 'mapbox://mapbox.3d-buildings'
-        },
+        'source': '3d-buildings',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': '#aaa',
+            'fill-extrusion-height': ["get", "height"],
+            'fill-extrusion-opacity': 0.2,
+            'fill-extrusion-visible': ['boolean', [ 'feature-state', 'visible-1'], false]
+        }
+    });
+    map.addLayer({
+        'id': '3d-buildings-2',
+        //'source': 'composite',
+        'source': '3d-buildings',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': '#aaa',
+            'fill-extrusion-height': ["get", "height"],
+            'fill-extrusion-opacity': 0.4,
+            'fill-extrusion-visible': ['boolean', [ 'feature-state', 'visible-2'], false]
+        }
+    });
+    map.addLayer({
+        'id': '3d-buildings-3',
+        //'source': 'composite',
+        'source': '3d-buildings',
         'source-layer': 'building',
         'filter': ['==', 'extrude', 'true'],
         'type': 'fill-extrusion',
@@ -44,36 +75,33 @@ map.on('style.load', function() {
             'fill-extrusion-color': '#aaa',
             'fill-extrusion-height': ["get", "height"],
             'fill-extrusion-opacity': 0.6,
-            'fill-extrusion-visible': ['boolean', [ 'feature-state', 'visible'], false]
+            'fill-extrusion-visible': ['boolean', [ 'feature-state', 'visible-3'], false]
         }
     });
 
 
     let hovered = [];
     window.addEventListener('mousemove', function(e) {
-        const p1 = new mapboxgl.Point(e.clientX - 100, e.clientY + 100);
-        const p2 = new mapboxgl.Point(e.clientX + 100, e.clientY - 100);
-        console.time('query');
-        const features = map.queryRenderedFeatures([p1, p2], {layers: ['3d-buildings']});
-        console.timeEnd('query');
+        for(let i = 1; i <= 3; i++ ){
+            const p1 = new mapboxgl.Point(e.clientX - 100/i, e.clientY + 100/i);
+            const p2 = new mapboxgl.Point(e.clientX + 100/i, e.clientY - 100/i);
+            const features = map.queryRenderedFeatures([p1, p2], {layers: [`3d-buildings-${i}`]});
+            let state = {};
+            state[`visible-${i}`] = false;
+            for (const feature of hovered[i] || []) {
+                map.setFeatureState(feature, state);
+            }
 
-        for (const feature of hovered) {
-            map.setFeatureState(feature, {
-                'visible': false
-            });
-        }
+            const seen = {};
+            hovered[i] = features;
+            state = {};
+            state[`visible-${i}`] = true;
+            for (const feature of hovered[i]) {
+                if (seen[feature.id]) continue;
 
-        const seen = {};
-        hovered = features;
-        let i = 0;
-        for (const feature of hovered) {
-            if (seen[feature.id]) continue;
-
-            seen[feature.id] = true;
-            map.setFeatureState(feature, {
-                'visible': true
-            });
-            i++;
+                seen[feature.id] = true;
+                map.setFeatureState(feature, state);
+            }
         }
     });
 });
