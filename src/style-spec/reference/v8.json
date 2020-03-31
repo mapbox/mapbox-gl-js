@@ -4049,11 +4049,11 @@
       },
       "property-type": "data-driven"
     },
-    "fill-extrusion-occluded": {
+    "fill-extrusion-visible": {
       "type": "boolean",
       "default": true,
       "transition": false,
-      "doc": "Whether the fill-extrusion will be occluded behind other fill extrusions",
+      "doc": "Whether the fill-extrusion will be visible",
       "sdk-support": {
         "basic functionality": {
           "js": "0.27.0",

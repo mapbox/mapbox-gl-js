@@ -41,32 +41,25 @@ map.on('style.load', function() {
         'type': 'fill-extrusion',
         'minzoom': 15,
         'paint': {
-            'fill-extrusion-color': ['to-color',
-                                        [ 'case',
-                                            ['boolean', [ 'feature-state', 'occluded'], true],
-                                            '#aaa',
-                                            '#00f'
-                                        ],
-                                        '#aaa'
-                                    ],
+            'fill-extrusion-color': '#aaa',
             'fill-extrusion-height': ["get", "height"],
             'fill-extrusion-opacity': 0.6,
-            'fill-extrusion-occluded': ['boolean', [ 'feature-state', 'occluded'], true]
+            'fill-extrusion-visible': ['boolean', [ 'feature-state', 'visible'], false]
         }
     });
 
+
     let hovered = [];
     window.addEventListener('mousemove', function(e) {
-        e.point = new mapboxgl.Point(e.clientX, e.clientY);
+        const p1 = new mapboxgl.Point(e.clientX - 100, e.clientY + 100);
+        const p2 = new mapboxgl.Point(e.clientX + 100, e.clientY - 100);
         console.time('query');
-        const features = map.queryRenderedFeatures(e.point, {layers: ['3d-buildings']});
+        const features = map.queryRenderedFeatures([p1, p2], {layers: ['3d-buildings']});
         console.timeEnd('query');
 
         for (const feature of hovered) {
             map.setFeatureState(feature, {
-                'hover-r': r,
-                'hover-g': r,
-                'hover-b': r
+                'visible': false
             });
         }
 
@@ -78,23 +71,9 @@ map.on('style.load', function() {
 
             seen[feature.id] = true;
             map.setFeatureState(feature, {
-                'hover-r': i === 0 ? 255 : r,
-                'hover-g': i === 1 ? 255 : r,
-                'hover-b': i >= 2 ? 255 : r
+                'visible': true
             });
             i++;
-        }
-    });
-
-    window.addEventListener('click', function(e) {
-        const seen = {};
-        for (const feature of hovered) {
-            if (seen[feature.id]) continue;
-
-            seen[feature.id] = true;
-            map.setFeatureState(feature, {
-                'occluded': false
-            });
         }
     });
 });

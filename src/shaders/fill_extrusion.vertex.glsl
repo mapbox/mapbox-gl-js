@@ -4,7 +4,6 @@ uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
-uniform lowp float u_prepass;
 
 attribute vec2 a_pos;
 attribute vec4 a_normal_ed;
@@ -13,7 +12,7 @@ varying vec4 v_color;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
-#pragma mapbox: define lowp float occluded
+#pragma mapbox: define lowp float visible
 
 #pragma mapbox: define highp vec4 color
 
@@ -21,7 +20,7 @@ void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color
-    #pragma mapbox: initialize lowp float occluded
+    #pragma mapbox: initialize lowp float visible
 
     vec3 normal = a_normal_ed.xyz;
 
@@ -29,10 +28,8 @@ void main() {
     height = max(0.0, height);
 
     float t = mod(normal.x, 2.0);
-    bool isPrepass = u_prepass > 0.0;
-    bool isOccluded = occluded > 0.0;
 
-    if(isPrepass ^^ isOccluded){
+    if(visible > 0.0){
         gl_Position = u_matrix * vec4(a_pos, t > 0.0 ? height : base, 1);
     }else{
         gl_Position = vec4(-999.0, -999.0, -999.0, 1.0);

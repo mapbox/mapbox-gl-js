@@ -28,7 +28,7 @@ export type PaintProps = {|
     "fill-extrusion-pattern": CrossFadedDataDrivenProperty<ResolvedImage>,
     "fill-extrusion-height": DataDrivenProperty<number>,
     "fill-extrusion-base": DataDrivenProperty<number>,
-    "fill-extrusion-occluded": DataDrivenProperty<boolean>,
+    "fill-extrusion-visible": DataDrivenProperty<boolean>,
     "fill-extrusion-vertical-gradient": DataConstantProperty<boolean>,
 |};
 
@@ -40,7 +40,7 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-pattern": new CrossFadedDataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-pattern"]),
     "fill-extrusion-height": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-height"]),
     "fill-extrusion-base": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-base"]),
-    "fill-extrusion-occluded": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-occluded"]),
+    "fill-extrusion-visible": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-visible"]),
     "fill-extrusion-vertical-gradient": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-vertical-gradient"]),
 });
 
