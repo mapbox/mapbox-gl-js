@@ -1,6 +1,6 @@
 // @flow
 
-import {ValueType, NumberType, toString} from '../types';
+import {ValueType, NumberType, StringType, array, toString, isValidType, isValidNativeType} from '../types';
 import RuntimeError from '../runtime_error';
 import {typeOf} from '../values';
 
@@ -8,17 +8,6 @@ import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type {Type} from '../types';
-import type {Value} from '../values';
-
-function isSliceableType(type: Type) {
-    return type.kind === 'array' ||
-           type.kind === 'string' ||
-           type.kind === 'value';
-}
-function isAcceptableInputRuntimeValue(input: Array<Value> | string) {
-    return Array.isArray(input) ||
-           typeof input === 'string';
-}
 
 class Slice implements Expression {
     type: Type;
@@ -43,7 +32,8 @@ class Slice implements Expression {
         const beginIndex = context.parse(args[2], 2, NumberType);
 
         if (!input || !beginIndex) return null;
-        if (!isSliceableType(input.type)) {
+
+        if (!isValidType(input.type, [array(ValueType), StringType, ValueType])) {
             return context.error(`Expected first argument to be of type array or string, but found ${toString(input.type)} instead`);
         }
 
@@ -60,7 +50,7 @@ class Slice implements Expression {
         const input = (this.input.evaluate(ctx): any);
         const beginIndex = (this.beginIndex.evaluate(ctx): number);
 
-        if (!isAcceptableInputRuntimeValue(input)) {
+        if (!isValidNativeType(input, ['string', 'array'])) {
             throw new RuntimeError(`Expected first argument to be of type array or string, but found ${toString(typeOf(input))} instead.`);
         }
 

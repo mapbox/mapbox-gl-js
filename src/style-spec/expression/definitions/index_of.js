@@ -1,6 +1,6 @@
 // @flow
 
-import {ValueType, toString, NumberType} from '../types';
+import {BooleanType, StringType, ValueType, NullType, toString, NumberType, isValidType, isValidNativeType} from '../types';
 import RuntimeError from '../runtime_error';
 import {typeOf} from '../values';
 
@@ -8,27 +8,6 @@ import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type {Type} from '../types';
-import type {Value} from '../values';
-
-function isComparableType(type: Type) {
-    return type.kind === 'boolean' ||
-           type.kind === 'string' ||
-           type.kind === 'number' ||
-           type.kind === 'null' ||
-           type.kind === 'value';
-}
-
-function isComparableRuntimeValue(needle: boolean | string | number | null) {
-    return typeof needle === 'boolean' ||
-           typeof needle === 'string' ||
-           typeof needle === 'number' ||
-           needle ===  null;
-}
-
-function isSearchableRuntimeValue(haystack: Array<Value> | string) {
-    return Array.isArray(haystack) ||
-           typeof haystack === 'string';
-}
 
 class IndexOf implements Expression {
     type: Type;
@@ -53,7 +32,7 @@ class IndexOf implements Expression {
         const haystack = context.parse(args[2], 2, ValueType);
 
         if (!needle || !haystack) return null;
-        if (!isComparableType(needle.type)) {
+        if (!isValidType(needle.type, [BooleanType, StringType, NumberType, NullType, ValueType])) {
             return context.error(`Expected first argument to be of type boolean, string, number or null, but found ${toString(needle.type)} instead`);
         }
 
@@ -70,11 +49,11 @@ class IndexOf implements Expression {
         const needle = (this.needle.evaluate(ctx): any);
         const haystack = (this.haystack.evaluate(ctx): any);
 
-        if (!isComparableRuntimeValue(needle)) {
-            throw new RuntimeError(`Expected first argument to be of type boolean, string or number, but found ${toString(typeOf(needle))} instead.`);
+        if (!isValidNativeType(needle, ['boolean', 'string', 'number', 'null'])) {
+            throw new RuntimeError(`Expected first argument to be of type boolean, string, number or null, but found ${toString(typeOf(needle))} instead.`);
         }
 
-        if (!isSearchableRuntimeValue(haystack)) {
+        if (!isValidNativeType(haystack, ['string', 'array'])) {
             throw new RuntimeError(`Expected second argument to be of type array or string, but found ${toString(typeOf(haystack))} instead.`);
         }
 
