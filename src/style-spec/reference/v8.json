@@ -4450,6 +4450,66 @@
       },
       "property-type": "data-driven"
     },
+    "circle-ang-start": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "units": "angle",
+      "doc": "Angle value to start drawing a circle.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "----",
+          "android": "----",
+          "ios": "----",
+          "macos": "----"
+        },
+        "data-driven styling": {
+          "js": "0.18.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "circle-ang-end": {
+      "type": "number",
+      "default": 360,
+      "minimum": 0,
+      "transition": true,
+      "units": "angle",
+      "doc": "Angle value to finish drawing a circle.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "----",
+          "android": "----",
+          "ios": "----",
+          "macos": "----"
+        },
+        "data-driven styling": {
+          "js": "0.18.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "circle-color": {
       "type": "color",
       "default": "#000000",

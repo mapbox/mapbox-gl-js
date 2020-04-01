@@ -294,6 +294,8 @@ export type CircleLayerSpecification = {|
     |},
     "paint"?: {|
         "circle-radius"?: DataDrivenPropertyValueSpecification<number>,
+        "circle-ang-start"?: DataDrivenPropertyValueSpecification<number>,
+        "circle-ang-end"?: DataDrivenPropertyValueSpecification<number>,
         "circle-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "circle-blur"?: DataDrivenPropertyValueSpecification<number>,
         "circle-opacity"?: DataDrivenPropertyValueSpecification<number>,
