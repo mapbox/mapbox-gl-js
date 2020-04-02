@@ -60,6 +60,11 @@ test('CanonicalTileID', (t) => {
             t.end();
         });
 
+        t.test('replaces {bbox-transform}', (t) => {
+            t.equal(new CanonicalTileID(1, 0, 0).url(['bbox={bbox-transform}'], null, bbox => `${bbox}_transformed`), 'bbox=-20037508.342789244,0,0,20037508.342789244_transformed');
+            t.end();
+        });
+
         t.end();
     });
 
