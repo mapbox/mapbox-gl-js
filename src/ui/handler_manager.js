@@ -419,7 +419,7 @@ class HandlerManager {
         const stillMoving = isMoving(this.eventsInProgress);
         if ((wasMoving || nowMoving) && !stillMoving) {
             this._updatingCamera = true;
-            const inertialEase = this.inertia._onMoveEnd();
+            const inertialEase = this.inertia._onMoveEnd(this._map.dragPan._inertiaOptions);
 
             const shouldSnapToNorth = bearing => bearing !== 0 && -this.bearingSnap < bearing && bearing < this.bearingSnap;
 

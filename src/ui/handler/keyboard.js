@@ -106,7 +106,7 @@ class KeyboardHandler {
             cameraAnimation: (map: Map) => {
                 const zoom = map.getZoom();
                 map.easeTo({
-                    duration: 3000,
+                    duration: 300,
                     easeId: 'keyboardHandler',
                     easing: easeOut,
 

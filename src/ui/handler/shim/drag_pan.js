@@ -15,6 +15,7 @@ export default class DragPanHandler {
 
     _mousePan: MousePanHandler;
     _touchPan: TouchPanHandler;
+    _inertiaOptions: InertiaOptions;
 
     /**
      * @private
@@ -43,7 +44,8 @@ export default class DragPanHandler {
      *      deceleration: 2500,
      *   });
      */
-    enable(options: DragPanOptions) {
+    enable(options?: DragPanOptions) {
+        this._inertiaOptions = options;
         this._mousePan.enable(options);
         this._touchPan.enable(options);
     }

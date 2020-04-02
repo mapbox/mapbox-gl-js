@@ -67,7 +67,7 @@ export default class HandlerInertia {
             inertia.shift();
     }
 
-    _onMoveEnd() {
+    _onMoveEnd(panInertiaOptions?: InertiaOptions) {
         this._drainInertiaBuffer();
         if (this._inertiaBuffer.length < 2) {
             return;
@@ -97,7 +97,7 @@ export default class HandlerInertia {
         const easeOptions = {};
 
         if (deltas.pan.mag()) {
-            const result = calculateEasing(deltas.pan.mag(), duration, defaultPanInertiaOptions);
+            const result = calculateEasing(deltas.pan.mag(), duration, extend({}, defaultPanInertiaOptions, panInertiaOptions || {}));
             easeOptions.offset = deltas.pan.mult(result.amount / deltas.pan.mag());
             easeOptions.center = this._map.transform.center;
             extendDuration(easeOptions, result);
