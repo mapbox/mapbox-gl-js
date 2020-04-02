@@ -46,11 +46,14 @@ class MouseHandler {
         this._lastPoint = point;
         this._eventButton = eventButton;
         this._active = true;
+
+        e.preventDefault();
     }
 
     windowMousemove(e: MouseEvent, point: Point) {
         const lastPoint = this._lastPoint;
         if (!lastPoint) return;
+        e.preventDefault();
 
         if (this._notMoved && point.dist(lastPoint) < this._clickTolerance) return;
         this._notMoved = false;
@@ -63,6 +66,7 @@ class MouseHandler {
     windowMouseup(e: MouseEvent) {
         const eventButton = DOM.mouseButton(e);
         if (eventButton !== this._eventButton) return;
+        if (!this._notMoved) DOM.suppressClick();
         this.reset();
     }
 

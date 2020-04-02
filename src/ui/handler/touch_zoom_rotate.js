@@ -1,6 +1,7 @@
 // @flow
 
 import Point from '@mapbox/point-geometry';
+import DOM from '../../util/dom';
 
 class TwoTouchHandler {
 
@@ -38,6 +39,8 @@ class TwoTouchHandler {
     touchmove(e: TouchEvent, points: Array<Point>) {
         if (!this._firstTwoTouches) return;
 
+        e.preventDefault();
+
         const [idA, idB] = this._firstTwoTouches;
         const a = getTouchById(e, points, idA);
         const b = getTouchById(e, points, idB);
@@ -56,6 +59,8 @@ class TwoTouchHandler {
         const a = getTouchById(e, points, idA);
         const b = getTouchById(e, points, idB);
         if (a && b) return;
+
+        if (this._active) DOM.suppressClick();
 
         this.reset();
     }

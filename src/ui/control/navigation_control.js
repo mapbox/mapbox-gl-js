@@ -160,14 +160,15 @@ class MouseRotateWrapper {
         bindAll(['mousedown', 'mousemove', 'mouseup', 'touchstart', 'touchmove', 'touchend', 'reset'], this);
         DOM.addEventListener(element, 'mousedown', this.mousedown);
         DOM.addEventListener(element, 'touchstart', this.touchstart, {passive: false});
-        DOM.addEventListener(window, 'touchmove', this.touchmove);
-        DOM.addEventListener(window, 'touchend', this.touchend);
+        DOM.addEventListener(element, 'touchmove', this.touchmove);
+        DOM.addEventListener(element, 'touchend', this.touchend);
         DOM.addEventListener(element, 'touchcancel', this.reset);
     }
 
     down(e: MouseEvent, point: Point) {
         this.mouseRotate.mousedown(e, point);
         if (this.mousePitch) this.mousePitch.mousedown(e, point);
+        DOM.disableDrag();
     }
 
     move(e: MouseEvent, point: Point) {
@@ -191,12 +192,13 @@ class MouseRotateWrapper {
     }
 
     offTemp() {
+        DOM.enableDrag();
         DOM.removeEventListener(window, 'mousemove', this.mousemove);
         DOM.removeEventListener(window, 'mouseup', this.mouseup);
     }
 
     mousedown(e: MouseEvent) {
-        this.down(extend({}, e, {ctrlKey: true}), DOM.mousePos(this.element, e));
+        this.down(extend({}, e, {ctrlKey: true, preventDefault: () => e.preventDefault()}), DOM.mousePos(this.element, e));
         DOM.addEventListener(window, 'mousemove', this.mousemove);
         DOM.addEventListener(window, 'mouseup', this.mouseup);
     }
@@ -212,12 +214,11 @@ class MouseRotateWrapper {
     }
 
     touchstart(e: TouchEvent) {
-        e.preventDefault();
         if (e.targetTouches.length !== 1) {
             this.reset();
         } else {
             this._startPos = this._lastPos = DOM.touchPos(this.element, e.targetTouches)[0];
-            this.down((({type: 'mousedown', button: 0, ctrlKey: true}: any): MouseEvent), this._startPos);
+            this.down((({type: 'mousedown', button: 0, ctrlKey: true, preventDefault: () => e.preventDefault()}: any): MouseEvent), this._startPos);
         }
     }
 
@@ -226,7 +227,7 @@ class MouseRotateWrapper {
             this.reset();
         } else {
             this._lastPos = DOM.touchPos(this.element, e.targetTouches)[0];
-            this.move((({}: any): MouseEvent), this._lastPos);
+            this.move((({preventDefault: () => e.preventDefault()}: any): MouseEvent), this._lastPos);
         }
     }
 
@@ -242,9 +243,10 @@ class MouseRotateWrapper {
 
     reset() {
         this.mouseRotate.reset();
-        this.mousePitch.reset();
+        if (this.mousePitch) this.mousePitch.reset();
         delete this._startPos;
         delete this._lastPos;
+        this.offTemp();
     }
 }
 

@@ -70,6 +70,7 @@ class KeyboardHandler {
             if (e.shiftKey) {
                 bearingDir = -1;
             } else {
+                e.preventDefault();
                 xDir = -1;
             }
             break;
@@ -78,6 +79,7 @@ class KeyboardHandler {
             if (e.shiftKey) {
                 bearingDir = 1;
             } else {
+                e.preventDefault();
                 xDir = 1;
             }
             break;
@@ -86,6 +88,7 @@ class KeyboardHandler {
             if (e.shiftKey) {
                 pitchDir = 1;
             } else {
+                e.preventDefault();
                 yDir = -1;
             }
             break;
@@ -94,6 +97,7 @@ class KeyboardHandler {
             if (e.shiftKey) {
                 pitchDir = -1;
             } else {
+                e.preventDefault();
                 yDir = 1;
             }
             break;

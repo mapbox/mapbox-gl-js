@@ -239,8 +239,10 @@ class HandlerManager {
 
         const inputEvent = e.type === 'renderFrame' ? undefined : ((e: any): InputEvent);
 
-        // T ODO
-        if (e && e.cancelable && (e instanceof MouseEvent ? e.type === 'mousemove' : true)) ((e: any): MouseEvent).preventDefault();
+        /*
+         * We don't call e.preventDefault() for any events by default.
+         * Handlers are responsible for calling it where necessary.
+         */
 
         const mergedHandlerResult: HandlerResult = {needsRenderFrame: false};
         const eventsInProgress = {};

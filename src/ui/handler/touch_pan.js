@@ -32,6 +32,7 @@ export default class TouchPanHandler {
 
     touchmove(e: TouchEvent, points: Array<Point>) {
         if (!this._active) return;
+        e.preventDefault();
         return this._calculateTransform(e, points);
     }
 
