@@ -44,10 +44,6 @@ export default class HandlerInertia {
     _inertiaBuffer: Array<{ time: number, settings: Object }>;
     _eventsInProgress: Object;
 
-    /**
-     * @private
-     * options.inertiaOptions - linearity, easing, duration, maxSpeed
-     */
     constructor(map: Map) {
         this._map = map;
         this.clear();

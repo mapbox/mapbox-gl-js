@@ -83,10 +83,6 @@ class HandlerManager {
     bearingSnap: number;
     _bearingChanged: boolean;
 
-    /**
-     * @private
-     * options.inertiaOptions - linearity, easing, duration, maxSpeed
-     */
     constructor(map: Map, options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number, bearingSnap: number}) {
         this._map = map;
         this._el = this._map.getCanvasContainer();

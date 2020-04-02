@@ -2,6 +2,10 @@
 
 import type {TouchZoomHandler, TouchRotateHandler} from '../touch_zoom_rotate';
 
+/**
+ * The `TouchZoomRotateHandler` allows the user to zoom and rotate the map by
+ * pinching on a touchscreen.
+ */
 export default class TouchZoomRotateHandler {
 
     _touchZoom: TouchZoomHandler;
