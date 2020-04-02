@@ -31,7 +31,7 @@ export const triggerPluginCompletionEvent = function(error: ?Error) {
     // allow plugin loading to be retried if a NetworkError is encountered
     // the error is a string because it's serialized from the worker so we
     // have to search the string rather than check the error code
-    if (error && error.indexOf('NetworkError') > -1) {
+    if (error && typeof error === 'string' && error.indexOf('NetworkError') > -1) {
         pluginStatus = status.error;
     }
 
