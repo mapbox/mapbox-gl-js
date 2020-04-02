@@ -58,6 +58,7 @@ export default class TapZoomHandler {
             const dist = newSwipePoint.y - this._swipePoint.y;
             this._swipePoint = newSwipePoint;
 
+            e.preventDefault();
             this._active = true;
 
             return {

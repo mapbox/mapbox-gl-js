@@ -43,7 +43,6 @@ class MouseHandler {
 
         this._lastPoint = point;
         this._eventButton = eventButton;
-        this._active = true;
 
         e.preventDefault();
     }
@@ -87,6 +86,11 @@ class MouseHandler {
 }
 
 export class MousePanHandler extends MouseHandler {
+
+    mousedown(e: MouseEvent, point: Point) {
+        super.mousedown(e, point);
+        if (this._lastPoint) this._active = true;
+    }
     _correctButton(e: MouseEvent, button: number) {
         return button === LEFT_BUTTON && !e.ctrlKey;
     }
