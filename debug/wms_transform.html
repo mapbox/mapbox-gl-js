@@ -24,9 +24,9 @@ var fromMapbox = new proj4.Proj('EPSG:3857');
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 16,
-    center: [-74.0447, 40.6892],
-    style: 'mapbox://styles/mapbox/streets-v9',
+    zoom: 4,
+    center: [4.72, 47.91],
+    style: 'mapbox://styles/mapbox/light-v10',
     hash: true
 });
 
@@ -40,13 +40,15 @@ map.on('load', function() {
             var array = bbox.split(',').map(function (coord) {
                 return Number(coord);
             });
-            // reproject from web mercator into any other projection
-            var leftUpper = proj4(fromMapbox, toWGS84, array.slice(0, 2));
-            var rightLower = proj4(fromMapbox, toWGS84, array.slice(2));
+            // transform from web mercator into any other projection
+            // in this example, coordinates need to be switche from lng/lat (mapbox)
+            // to lat/lng as well
+            var leftUpper = proj4(fromMapbox, toWGS84, array.slice(0, 2)).reverse();
+            var rightLower = proj4(fromMapbox, toWGS84, array.slice(2)).reverse();
             // return a bbox string
             return leftUpper.concat(rightLower).join(',');
         },
-        "tiles": ['https://img.nj.gov/imagerywms/Natural2015?bbox={bbox-transform}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:4326&transparent=true&width=256&height=256&layers=Natural2015'
+        "tiles": ['https://services.bgr.de/wms/boden/eusr5000/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image/png&TRANSPARENT=true&LAYERS=5&CRS=EPSG:4326&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-transform}'
         ],
         "tileSize": 256
     });
