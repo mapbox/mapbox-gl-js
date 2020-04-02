@@ -30,7 +30,9 @@
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
 <script>
-var pluginURL = 'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js';
+// badPluginURL allows us to simulate a NetworkError that we can recover from by retrying plugin loading
+var badPluginURL = 'http://localhost:9966/debug/2762.html';
+var goodPluginURL = 'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js';
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 16.5,
@@ -40,13 +42,19 @@ var map = window.map = new mapboxgl.Map({
 });
 
 document.getElementById('loadSync').onclick = function() {
-    mapboxgl.setRTLTextPlugin(pluginURL);
+    mapboxgl.setRTLTextPlugin(goodPluginURL);
 };
 
 document.getElementById('loadAsync').onclick = function() {
-    mapboxgl.setRTLTextPlugin(pluginURL, function(err) {
+    mapboxgl.setRTLTextPlugin(badPluginURL, function(err) {
         if (err) {
-            throw err;
+            mapboxgl.setRTLTextPlugin(goodPluginURL, function (err) {
+                if (err) {
+                    throw err;
+                } else {
+                    console.log('rtl-text-plugin retry loaded successfully');
+                }
+            });
         } else {
             console.log('rtl-text-plugin loaded successfully');
         }

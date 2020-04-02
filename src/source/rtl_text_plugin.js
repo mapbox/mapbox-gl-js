@@ -28,6 +28,11 @@ let pluginStatus = status.unavailable;
 let pluginURL = null;
 
 export const triggerPluginCompletionEvent = function(error: ?Error) {
+    // NetworkError's are not correctly reflected by the plugin status which prevents reloading plugin
+    if (error && typeof error === 'string' && error.indexOf('NetworkError') > -1) {
+        pluginStatus = status.error;
+    }
+
     if (_completionCallback) {
         _completionCallback(error);
     }
