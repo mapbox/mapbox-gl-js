@@ -28,9 +28,7 @@ let pluginStatus = status.unavailable;
 let pluginURL = null;
 
 export const triggerPluginCompletionEvent = function(error: ?Error) {
-    // allow plugin loading to be retried if a NetworkError is encountered
-    // the error is a string because it's serialized from the worker so we
-    // have to search the string rather than check the error code
+    // NetworkError's are not correctly reflected by the plugin status which prevents reloading plugin
     if (error && typeof error === 'string' && error.indexOf('NetworkError') > -1) {
         pluginStatus = status.error;
     }
