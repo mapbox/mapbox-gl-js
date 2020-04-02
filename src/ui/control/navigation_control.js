@@ -174,10 +174,10 @@ class MouseRotateWrapper {
     move(e: MouseEvent, point: Point) {
         const map = this.map;
         const r = this.mouseRotate.windowMousemove(e, point);
-        if (r) map.setBearing(map.getBearing() + r.bearingDelta);
+        if (r && r.bearingDelta) map.setBearing(map.getBearing() + r.bearingDelta);
         if (this.mousePitch) {
             const p = this.mousePitch.windowMousemove(e, point);
-            if (p) map.setPitch(map.getPitch() + p.pitchDelta);
+            if (p && p.pitchDelta) map.setPitch(map.getPitch() + p.pitchDelta);
         }
     }
 

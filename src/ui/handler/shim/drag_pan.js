@@ -3,9 +3,12 @@
 import type {MousePanHandler} from '../mouse';
 import type TouchPanHandler from './../touch_pan';
 
-import type InertiaOptions from '../../handler_inertia';
-
-export type DragPanOptions = InertiaOptions;
+export type DragPanOptions = {
+    linearity?: number;
+    easing?: (t: number) => number;
+    deceleration?: number;
+    maxSpeed?: number;
+};
 
 /**
  * The `DragPanHandler` allows the user to pan the map by clicking and dragging
@@ -15,7 +18,7 @@ export default class DragPanHandler {
 
     _mousePan: MousePanHandler;
     _touchPan: TouchPanHandler;
-    _inertiaOptions: InertiaOptions;
+    _inertiaOptions: DragPanOptions
 
     /**
      * @private
@@ -45,9 +48,9 @@ export default class DragPanHandler {
      *   });
      */
     enable(options?: DragPanOptions) {
-        this._inertiaOptions = options;
-        this._mousePan.enable(options);
-        this._touchPan.enable(options);
+        this._inertiaOptions = options || {};
+        this._mousePan.enable();
+        this._touchPan.enable();
     }
 
     /**

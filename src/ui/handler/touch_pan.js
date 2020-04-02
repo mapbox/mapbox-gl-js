@@ -2,7 +2,6 @@
 
 import Point from '@mapbox/point-geometry';
 import {indexTouches} from './handler_util';
-import type InertiaOptions from '../handler_inertia';
 
 export default class TouchPanHandler {
 
@@ -10,7 +9,6 @@ export default class TouchPanHandler {
     _active: boolean;
     _touches: { [string | number]: Point };
     _minTouches: number;
-    _options: InertiaOptions;
     _clickTolerance: number;
     _sum: Point;
 
@@ -80,9 +78,8 @@ export default class TouchPanHandler {
         };
     }
 
-    enable(options?: InertiaOptions) {
+    enable() {
         this._enabled = true;
-        if (options) this._options = options;
     }
 
     disable() {

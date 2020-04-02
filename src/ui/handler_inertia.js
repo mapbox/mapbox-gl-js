@@ -4,6 +4,7 @@ import browser from '../util/browser';
 import type Map from './map';
 import {bezier, clamp, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
+import type {DragPanOptions} from './handler/shim/drag_pan';
 
 const defaultInertiaOptions = {
     linearity: 0.3,
@@ -67,7 +68,7 @@ export default class HandlerInertia {
             inertia.shift();
     }
 
-    _onMoveEnd(panInertiaOptions?: InertiaOptions) {
+    _onMoveEnd(panInertiaOptions?: DragPanOptions) {
         this._drainInertiaBuffer();
         if (this._inertiaBuffer.length < 2) {
             return;
