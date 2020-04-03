@@ -3,7 +3,7 @@
 import {TapRecognizer} from './tap_recognizer';
 import type Point from '@mapbox/point-geometry';
 
-export default class TapZoomHandler {
+export default class TapDragZoomHandler {
 
     _enabled: boolean;
     _active: boolean;
@@ -78,6 +78,10 @@ export default class TapZoomHandler {
                 this.reset();
             }
         }
+    }
+
+    touchcancel() {
+        this.reset();
     }
 
     enable() {

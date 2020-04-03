@@ -65,6 +65,10 @@ class TwoTouchHandler {
         this.reset();
     }
 
+    touchcancel() {
+        this.reset();
+    }
+
     enable(options: ?{around?: 'center'}) {
         this._enabled = true;
         this._aroundCenter = !!options && options.around === 'center';

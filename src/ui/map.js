@@ -43,7 +43,6 @@ import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
 import type {TouchPitchHandler} from './handler/touch_zoom_rotate';
-import type SwipeZoomHandler from './handler/swipe_zoom';
 import type DragRotateHandler from './handler/shim/drag_rotate';
 import type DragPanHandler, {DragPanOptions} from './handler/shim/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
@@ -352,7 +351,6 @@ class Map extends Camera {
     touchZoomRotate: TouchZoomRotateHandler;
 
     touchPitch: TouchPitchHandler;
-    swipeZoom: SwipeZoomHandler;
 
     constructor(options: MapOptions) {
         PerformanceUtils.mark(PerformanceMarkers.create);

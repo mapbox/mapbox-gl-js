@@ -876,9 +876,18 @@ test('DragPanHander#enable gets called with dragPan map option parameters', (t) 
     const map = createMap(t, null, customParams);
 
     t.ok(enableSpy.calledWith(customParams));
-    t.deepEqual(map.dragPan._mousePan._options, customParams);
-    t.deepEqual(map.dragPan._touchPan._options, customParams);
+    t.deepEqual(map.dragPan._inertiaOptions, customParams);
     t.end();
 });
-/*
-*/
+
+test('DragPanHandler adds css class used for disabling default touch behavior in some browsers', (t) => {
+    const map = createMap(t);
+
+    const className = 'mapboxgl-touch-drag-pan';
+    t.ok(map.getCanvasContainer().classList.contains(className));
+    map.dragPan.disable();
+    t.notOk(map.getCanvasContainer().classList.contains(className));
+    map.dragPan.enable();
+    t.ok(map.getCanvasContainer().classList.contains(className));
+    t.end();
+});

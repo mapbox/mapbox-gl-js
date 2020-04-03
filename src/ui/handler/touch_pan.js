@@ -42,6 +42,10 @@ export default class TouchPanHandler {
         }
     }
 
+    touchcancel() {
+        this.reset();
+    }
+
     _calculateTransform(e: TouchEvent, points: Array<Point>) {
         if (e.targetTouches.length > 0) this._active = true;
 

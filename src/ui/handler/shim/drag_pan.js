@@ -16,6 +16,7 @@ export type DragPanOptions = {
  */
 export default class DragPanHandler {
 
+    _el: HTMLElement;
     _mousePan: MousePanHandler;
     _touchPan: TouchPanHandler;
     _inertiaOptions: DragPanOptions
@@ -23,7 +24,8 @@ export default class DragPanHandler {
     /**
      * @private
     */
-    constructor(mousePan: MousePanHandler, touchPan: TouchPanHandler) {
+    constructor(el: HTMLElement, mousePan: MousePanHandler, touchPan: TouchPanHandler) {
+        this._el = el;
         this._mousePan = mousePan;
         this._touchPan = touchPan;
     }
@@ -51,6 +53,7 @@ export default class DragPanHandler {
         this._inertiaOptions = options || {};
         this._mousePan.enable();
         this._touchPan.enable();
+        this._el.classList.add('mapboxgl-touch-drag-pan');
     }
 
     /**
@@ -62,6 +65,7 @@ export default class DragPanHandler {
     disable() {
         this._mousePan.disable();
         this._touchPan.disable();
+        this._el.classList.remove('mapboxgl-touch-drag-pan');
     }
 
     /**

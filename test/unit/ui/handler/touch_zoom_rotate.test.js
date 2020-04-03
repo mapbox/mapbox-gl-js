@@ -157,3 +157,15 @@ test('TouchZoomRotateHandler starts zoom immediately when rotation disabled', (t
     map.remove();
     t.end();
 });
+
+test('TouchZoomRotateHandler adds css class used for disabling default touch behavior in some browsers', (t) => {
+    const map = createMap(t);
+
+    const className = 'mapboxgl-touch-zoom-rotate';
+    t.ok(map.getCanvasContainer().classList.contains(className));
+    map.touchZoomRotate.disable();
+    t.notOk(map.getCanvasContainer().classList.contains(className));
+    map.touchZoomRotate.enable();
+    t.ok(map.getCanvasContainer().classList.contains(className));
+    t.end();
+});

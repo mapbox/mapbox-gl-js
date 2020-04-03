@@ -14,7 +14,7 @@ import KeyboardHandler from './handler/keyboard';
 import ScrollZoomHandler from './handler/scroll_zoom';
 import DoubleClickZoomHandler from './handler/shim/dblclick_zoom';
 import ClickZoomHandler from './handler/click_zoom';
-import SwipeZoomHandler from './handler/swipe_zoom';
+import TapDragZoomHandler from './handler/tap_drag_zoom';
 import DragPanHandler from './handler/shim/drag_pan';
 import DragRotateHandler from './handler/shim/drag_rotate';
 import TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
@@ -135,6 +135,7 @@ class HandlerManager {
 
     _addDefaultHandlers(options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number }) {
         const map = this._map;
+        const el = map.getCanvasContainer();
         this.add('mapEvent', new MapEventHandler(map, options));
 
         const boxZoom = map.boxZoom = new BoxZoomHandler(map, options);
@@ -146,8 +147,8 @@ class HandlerManager {
         this.add('tapZoom', tapZoom);
         this.add('clickZoom', clickZoom);
 
-        const swipeZoom = map.swipeZoom = new SwipeZoomHandler();
-        this.add('swipeZoom', swipeZoom);
+        const tapDragZoom = new TapDragZoomHandler();
+        this.add('tapDragZoom', tapDragZoom);
 
         const touchPitch = map.touchPitch = new TouchPitchHandler();
         this.add('touchPitch', touchPitch);
@@ -160,13 +161,13 @@ class HandlerManager {
 
         const mousePan = new MousePanHandler(options);
         const touchPan = new TouchPanHandler(options);
-        map.dragPan = new DragPanHandler(mousePan, touchPan);
+        map.dragPan = new DragPanHandler(el, mousePan, touchPan);
         this.add('mousePan', mousePan);
         this.add('touchPan', touchPan, ['touchZoom', 'touchRotate']);
 
         const touchRotate = new TouchRotateHandler();
         const touchZoom = new TouchZoomHandler();
-        map.touchZoomRotate = new TouchZoomRotateHandler(touchZoom, touchRotate);
+        map.touchZoomRotate = new TouchZoomRotateHandler(el, touchZoom, touchRotate, tapDragZoom);
         this.add('touchRotate', touchRotate, ['touchPan', 'touchZoom']);
         this.add('touchZoom', touchZoom, ['touchPan', 'touchRotate']);
 
@@ -178,13 +179,12 @@ class HandlerManager {
 
         this.add('blockableMapEvent', new BlockableMapEventHandler(map));
 
-        for (const name of ['boxZoom', 'doubleClickZoom', 'swipeZoom', 'touchPitch', 'dragRotate', 'dragPan', 'touchZoomRotate', 'scrollZoom', 'keyboard']) {
+        for (const name of ['boxZoom', 'doubleClickZoom', 'tapDragZoom', 'touchPitch', 'dragRotate', 'dragPan', 'touchZoomRotate', 'scrollZoom', 'keyboard']) {
             if (options.interactive && (options: any)[name]) {
                 (map: any)[name].enable((options: any)[name]);
             }
         }
 
-        swipeZoom.enable();
         touchPitch.enable();
     }
 

@@ -1,24 +1,32 @@
 // @flow
 
 import type {TouchZoomHandler, TouchRotateHandler} from '../touch_zoom_rotate';
+import type TapDragZoomHandler from '../tap_drag_zoom';
 
 /**
  * The `TouchZoomRotateHandler` allows the user to zoom and rotate the map by
  * pinching on a touchscreen.
+ *
+ * They can zoom with one finger by double tapping and dragging. On the second tap,
+ * hold the finger down and drag up or down to zoom in or out.
  */
 export default class TouchZoomRotateHandler {
 
+    _el: HTMLElement;
     _touchZoom: TouchZoomHandler;
     _touchRotate: TouchRotateHandler;
+    _tapDragZoom: TapDragZoomHandler;
     _rotationDisabled: boolean;
     _enabled: boolean;
 
     /**
      * @private
     */
-    constructor(touchZoom: TouchZoomHandler, touchRotate: TouchRotateHandler) {
+    constructor(el: HTMLElement, touchZoom: TouchZoomHandler, touchRotate: TouchRotateHandler, tapDragZoom: TapDragZoomHandler) {
+        this._el = el;
         this._touchZoom = touchZoom;
         this._touchRotate = touchRotate;
+        this._tapDragZoom = tapDragZoom;
         this._rotationDisabled = false;
         this._enabled = true;
     }
@@ -37,6 +45,8 @@ export default class TouchZoomRotateHandler {
     enable(options: ?{around?: 'center'}) {
         this._touchZoom.enable(options);
         if (!this._rotationDisabled) this._touchRotate.enable(options);
+        this._tapDragZoom.enable();
+        this._el.classList.add('mapboxgl-touch-zoom-rotate');
     }
 
     /**
@@ -48,6 +58,8 @@ export default class TouchZoomRotateHandler {
     disable() {
         this._touchZoom.disable();
         this._touchRotate.disable();
+        this._tapDragZoom.disable();
+        this._el.classList.remove('mapboxgl-touch-zoom-rotate');
     }
 
     /**
@@ -56,7 +68,9 @@ export default class TouchZoomRotateHandler {
      * @returns {boolean} `true` if the "pinch to rotate and zoom" interaction is enabled.
      */
     isEnabled() {
-        return this._touchZoom.isEnabled() && (this._rotationDisabled || this._touchRotate.isEnabled());
+        return this._touchZoom.isEnabled() &&
+            (this._rotationDisabled || this._touchRotate.isEnabled()) &&
+            this._tapDragZoom.isEnabled();
     }
 
     /**
@@ -65,7 +79,7 @@ export default class TouchZoomRotateHandler {
      * @returns {boolean} //eslint-disable-line
      */
     isActive() {
-        return this._touchZoom.isActive() || this._touchRotate.isActive();
+        return this._touchZoom.isActive() || this._touchRotate.isActive() || this._tapDragZoom.isActive();
     }
 
     /**
