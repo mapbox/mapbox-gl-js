@@ -112,8 +112,15 @@ class HandlerManager {
         this._addListener(this._el, 'mousedown');
         this._addListener(this._el, 'mousemove');
         this._addListener(this._el, 'mouseup');
-        this._addListener(window.document, 'mousemove', undefined, 'windowMousemove');
+
+        // Bind window-level event listeners for move and up/end events. In the absence of
+        // the pointer capture API, which is not supported by all necessary platforms,
+        // window-level event listeners give us the best shot at capturing events that
+        // fall outside the map canvas element. Use `{capture: true}` for the move event
+        // to prevent map move events from being fired during a drag.
+        this._addListener(window.document, 'mousemove', { capture: true }, 'windowMousemove');
         this._addListener(window.document, 'mouseup', undefined, 'windowMouseup');
+
         this._addListener(this._el, 'mouseover');
         this._addListener(this._el, 'mouseout');
         this._addListener(this._el, 'dblclick');
