@@ -223,8 +223,16 @@ export class TouchPitchHandler extends TwoTouchHandler {
     gestureBeginsVertically(vectorA: Point, vectorB: Point, timeStamp: number) {
         if (this._valid !== undefined) return this._valid;
 
-        if (vectorA.mag() === 0 || vectorB.mag() === 0) {
+        const threshold = 2;
+        const movedA = vectorA.mag() >= threshold;
+        const movedB = vectorB.mag() >= threshold;
 
+        // neither finger has moved a meaningful amount, wait
+        if (!movedA && !movedB) return;
+
+        // One finger has moved and the other has not.
+        // If enough time has passed, decide it is not a pitch.
+        if (!movedA || !movedB) {
             if (this._firstMove === undefined) {
                 this._firstMove = timeStamp;
             }
