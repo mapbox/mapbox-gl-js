@@ -43,8 +43,6 @@ class MouseHandler {
 
         this._lastPoint = point;
         this._eventButton = eventButton;
-
-        e.preventDefault();
     }
 
     windowMousemove(e: MouseEvent, point: Point) {
