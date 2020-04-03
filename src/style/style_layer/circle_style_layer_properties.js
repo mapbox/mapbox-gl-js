@@ -29,8 +29,8 @@ const layout: Properties<LayoutProps> = new Properties({
 
 export type PaintProps = {|
     "circle-radius": DataDrivenProperty<number>,
-    "circle-ang-start": DataDrivenProperty<number>,
-    "circle-ang-end": DataDrivenProperty<number>,
+    "circle-start-angle": DataDrivenProperty<number>,
+    "circle-end-angle": DataDrivenProperty<number>,
     "circle-color": DataDrivenProperty<Color>,
     "circle-blur": DataDrivenProperty<number>,
     "circle-opacity": DataDrivenProperty<number>,
@@ -45,8 +45,8 @@ export type PaintProps = {|
 
 const paint: Properties<PaintProps> = new Properties({
     "circle-radius": new DataDrivenProperty(styleSpec["paint_circle"]["circle-radius"]),
-    "circle-ang-start": new DataDrivenProperty(styleSpec["paint_circle"]["circle-ang-start"]),
-    "circle-ang-end": new DataDrivenProperty(styleSpec["paint_circle"]["circle-ang-end"]),
+    "circle-start-angle": new DataDrivenProperty(styleSpec["paint_circle"]["circle-start-angle"]),
+    "circle-end-angle": new DataDrivenProperty(styleSpec["paint_circle"]["circle-end-angle"]),
     "circle-color": new DataDrivenProperty(styleSpec["paint_circle"]["circle-color"]),
     "circle-blur": new DataDrivenProperty(styleSpec["paint_circle"]["circle-blur"]),
     "circle-opacity": new DataDrivenProperty(styleSpec["paint_circle"]["circle-opacity"]),
