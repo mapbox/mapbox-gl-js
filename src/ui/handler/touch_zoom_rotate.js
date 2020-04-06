@@ -96,25 +96,34 @@ function getTouchById(e: TouchEvent, points: Array<Point>, identifier: number) {
 
 /* ZOOM */
 
+const ZOOM_THRESHOLD = 0.1;
+
+function getZoomDelta(distance, lastDistance) {
+    return Math.log(distance / lastDistance) / Math.LN2;
+}
+
 export class TouchZoomHandler extends TwoTouchHandler {
 
     _distance: number;
+    _startDistance: number;
 
     reset() {
         super.reset();
         delete this._distance;
+        delete this._startDistance;
     }
 
     _start(points: [Point, Point]) {
-        this._distance = points[0].dist(points[1]);
+        this._startDistance = this._distance = points[0].dist(points[1]);
     }
 
     _move(points: [Point, Point], pinchAround: Point) {
-        this._active = true;
         const lastDistance = this._distance;
         this._distance = points[0].dist(points[1]);
+        if (!this._active && Math.abs(getZoomDelta(this._distance, this._startDistance)) < ZOOM_THRESHOLD) return;
+        this._active = true;
         return {
-            zoomDelta: Math.log(this._distance / lastDistance) / Math.LN2,
+            zoomDelta: getZoomDelta(this._distance, lastDistance),
             pinchAround
         };
     }
@@ -122,7 +131,7 @@ export class TouchZoomHandler extends TwoTouchHandler {
 
 /* ROTATE */
 
-const THRESHOLD = 20; // pixels along circumference of touch circle
+const ROTATION_THRESHOLD = 25; // pixels along circumference of touch circle
 
 function getBearingDelta(a, b) {
     return a.angleWith(b) * 180 / Math.PI;
@@ -169,7 +178,7 @@ export class TouchRotateHandler extends TwoTouchHandler {
 
         this._minDiameter = Math.min(this._minDiameter, vector.mag());
         const circumference = Math.PI * this._minDiameter;
-        const threshold = THRESHOLD / circumference * 360;
+        const threshold = ROTATION_THRESHOLD / circumference * 360;
 
         const bearingDeltaSinceStart = getBearingDelta(vector, this._startVector);
         return Math.abs(bearingDeltaSinceStart) < threshold;

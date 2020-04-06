@@ -11,8 +11,8 @@ function getCentroid(points: Array<Point>) {
     return sum.div(points.length);
 }
 
-const MAX_TAP_INTERVAL = 300;
-const MAX_TOUCH_TIME = 300;
+export const MAX_TAP_INTERVAL = 500;
+const MAX_TOUCH_TIME = 500;
 const MAX_DIST = 30;
 
 export class SingleTapRecognizer {

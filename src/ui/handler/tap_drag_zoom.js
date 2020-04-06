@@ -1,6 +1,6 @@
 // @flow
 
-import {TapRecognizer} from './tap_recognizer';
+import {TapRecognizer, MAX_TAP_INTERVAL} from './tap_recognizer';
 import type Point from '@mapbox/point-geometry';
 
 export default class TapDragZoomHandler {
@@ -33,7 +33,7 @@ export default class TapDragZoomHandler {
     touchstart(e: TouchEvent, points: Array<Point>) {
         if (this._swipePoint) return;
 
-        if (this._tapTime && e.timeStamp - this._tapTime > 300) {
+        if (this._tapTime && e.timeStamp - this._tapTime > MAX_TAP_INTERVAL) {
             this.reset();
         }
 
