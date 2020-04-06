@@ -5,6 +5,7 @@ import {extend, bindAll} from '../../util/util';
 import DragRotateHandler from '../handler/drag_rotate';
 
 import type Map from '../map';
+import {keyboardBearingStep, keyboardPitchStep} from '../constants';
 
 type Options = {
     showCompass?: boolean,
@@ -107,6 +108,34 @@ class NavigationControl {
             this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass, clickTolerance: map.dragRotate._clickTolerance});
             DOM.addEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
             DOM.addEventListener(this._compass, 'touchstart', this._handler.onMouseDown, {passive: false});
+            DOM.addEventListener(this._compass, 'keydown', (e) => {
+                let bearingDir = 0;
+                let pitchDir = 0;
+
+                switch (e.code) {
+                case 'ArrowLeft':
+                    bearingDir = -1;
+                    break;
+                case 'ArrowRight':
+                    bearingDir = 1;
+                    break;
+                case 'ArrowUp':
+                    pitchDir = -1;
+                    break;
+                case 'ArrowDown':
+                    pitchDir = 1;
+                    break;
+                }
+
+                this._map.easeTo({
+                    duration: 300,
+                    delayEndEvents: 500,
+                    easing: easeOut,
+
+                    bearing: this._map.getBearing() + bearingDir * keyboardBearingStep,
+                    pitch: this._map.getPitch() + pitchDir * keyboardPitchStep
+                }, {originalEvent: e});
+            });
             this._handler.enable();
         }
         return this._container;
@@ -143,6 +172,10 @@ class NavigationControl {
         button.title = str;
         button.setAttribute('aria-label', str);
     }
+}
+
+function easeOut(t) {
+    return t * (2 - t);
 }
 
 export default NavigationControl;
