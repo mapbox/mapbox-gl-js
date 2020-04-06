@@ -1,0 +1,42 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 32,
+      "height": 32
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-start-angle": 45,
+        "circle-end-angle": 315
+      }
+    }
+  ]
+}
