@@ -107,7 +107,8 @@ export class MouseRotateHandler extends MouseHandler {
     }
 
     _move(lastPoint: Point, point: Point) {
-        const bearingDelta = (lastPoint.x - point.x) * -0.8;
+        const degreesPerPixelMoved = 0.8;
+        const bearingDelta = (point.x - lastPoint.x) * degreesPerPixelMoved;
         if (bearingDelta) {
             this._active = true;
             return {bearingDelta};
@@ -127,7 +128,8 @@ export class MousePitchHandler extends MouseHandler {
     }
 
     _move(lastPoint: Point, point: Point) {
-        const pitchDelta = (lastPoint.y - point.y) * 0.5;
+        const degreesPerPixelMoved = -0.5;
+        const pitchDelta = (point.y - lastPoint.y) * degreesPerPixelMoved;
         if (pitchDelta) {
             this._active = true;
             return {pitchDelta};
