@@ -1,0 +1,57 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 1024,
+      "width": 256,
+      "operations": [
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "center": [-0.01, 0.01],
+  "zoom": 15,
+  "pitch": 60,
+  "bearing": -45,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sprite": "local://sprites/emerald",
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/const/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    },
+    "color": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/const/{z}-{x}-{y}.color.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-pattern": "airport_icon"
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "color",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

@@ -56,6 +56,7 @@ class SourceCache extends Evented {
     transform: Transform;
     _isIdRenderable: (id: string, symbolLayer?: boolean) => boolean;
     used: boolean;
+    usedForTerrain: boolean;
     _state: SourceFeatureState;
     _loadedParentTiles: {[_: string]: ?Tile};
 
@@ -284,6 +285,7 @@ class SourceCache extends Evented {
 
         function fillBorder(tile, borderTile) {
             tile.needsHillshadePrepare = true;
+            tile.needsDEMTextureUpload = true;
             let dx = borderTile.tileID.canonical.x - tile.tileID.canonical.x;
             const dy = borderTile.tileID.canonical.y - tile.tileID.canonical.y;
             const dim = Math.pow(2, tile.tileID.canonical.z);
@@ -470,10 +472,17 @@ class SourceCache extends Evented {
      * Removes tiles that are outside the viewport and adds new tiles that
      * are inside the viewport.
      * @private
+     * @param {boolean} updateForTerrain Signals to update tiles even if the
+     * source is not used (this.used) by layers: it is used for terrain.
      */
-    update(transform: Transform) {
+    update(transform: Transform, updateForTerrain?: boolean) {
         this.transform = transform;
         if (!this._sourceLoaded || this._paused) { return; }
+        assert(!(updateForTerrain && !this.usedForTerrain));
+        if (this.usedForTerrain && !updateForTerrain) {
+            // If source is used for both terrain and hillshade, don't update it twice.
+            return;
+        }
 
         this.updateCacheSize(transform);
         this.handleWrapJump(this.transform.center.lng);
@@ -483,7 +492,7 @@ class SourceCache extends Evented {
         this._coveredTiles = {};
 
         let idealTileIDs;
-        if (!this.used) {
+        if (!this.used && !this.usedForTerrain) {
             idealTileIDs = [];
         } else if (this._source.tileID) {
             idealTileIDs = transform.getVisibleUnwrappedCoordinates(this._source.tileID)
@@ -502,6 +511,25 @@ class SourceCache extends Evented {
             }
         }
 
+        if (this.usedForTerrain) {
+            // Append deeper tile cover (all parents withing depth of 3).
+            // These are covered tiles, fetched to avoid holes while zooming out.
+            const deepCover = {};
+            const cover = idealTileIDs.sort((a, b) => b.overscaledZ - a.overscaledZ);
+            for (const tileID of cover) {
+                if (deepCover.hasOwnProperty(tileID.key)) delete deepCover[tileID.key];
+                const limit = Math.max(tileID.overscaledZ - 3, 0);
+                for (let i = tileID.overscaledZ - 1; i > limit; i--) {
+                    const parent = tileID.scaledTo(i);
+                    deepCover[parent.key] = parent;
+                }
+            }
+            for (const key in deepCover) {
+                // Mark as covered to ensure that hillshade doesn't get prepared.
+                this._coveredTiles[key] = true;
+                idealTileIDs.push(deepCover[key]);
+            }
+        }
         // Determine the overzooming/underzooming amounts.
         const zoom = transform.coveringZoomLevel(this._source);
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);

@@ -28,7 +28,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const colorMode = painter.colorModeForRenderPass();
 
-    const [stencilModes, coords] = source instanceof ImageSource ? [{}, tileIDs] :
+    // When rendering to texture, coordinates are already sorted: primary by
+    // proxy id and secondary sort is by Z.
+    const renderingToTexture = painter.terrain && painter.terrain.renderingToTexture;
+
+    const [stencilModes, coords] = source instanceof ImageSource || renderingToTexture ? [{}, tileIDs] :
         painter.stencilConfigForOverlap(tileIDs);
 
     const minTileZ = coords[coords.length - 1].overscaledZ;
@@ -37,12 +41,19 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     for (const coord of coords) {
         // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
         // Use gl.LESS to prevent double drawing in areas where tiles overlap.
-        const depthMode = painter.depthModeForSublayer(coord.overscaledZ - minTileZ,
+        const depthMode = renderingToTexture ? DepthMode.disabled : painter.depthModeForSublayer(coord.overscaledZ - minTileZ,
             layer.paint.get('raster-opacity') === 1 ? DepthMode.ReadWrite : DepthMode.ReadOnly, gl.LESS);
 
         const tile = sourceCache.getTile(coord);
-        const posMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
+        if (renderingToTexture && !(tile && tile.hasData())) continue;
+        painter.prepareDrawTile(coord);
 
+        const posMatrix = (renderingToTexture) ? coord.posMatrix :
+            painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
+
+        const stencilMode = painter.terrain && renderingToTexture ?
+            painter.terrain.stencilModeForRTTOverlap(coord, sourceCache) :
+            stencilModes[coord.overscaledZ];
         tile.registerFadeDuration(layer.paint.get('raster-fade-duration'));
 
         const parentTile = sourceCache.findLoadedParent(coord, 0),
@@ -73,7 +84,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 uniformValues, layer.id, source.boundsBuffer,
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
         } else {
-            program.draw(context, gl.TRIANGLES, depthMode, stencilModes[coord.overscaledZ], colorMode, CullFaceMode.disabled,
+            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, painter.rasterBoundsBuffer,
                 painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
         }

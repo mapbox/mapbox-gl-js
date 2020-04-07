@@ -358,6 +358,26 @@ test('Map', (t) => {
             });
         });
 
+        t.test('returns the style with added terrain', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+
+            map.on('load', () => {
+                const terrain = {source: "terrain-source-id", exaggeration: 2};
+                map.addSource('terrain-source-id', {
+                    "type": "raster-dem",
+                    "tiles": [
+                        "local://tiles/{z}-{x}-{y}.terrain.png"
+                    ]
+                });
+                map.setTerrain(terrain);
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                    terrain, 'sources': map.getStyle().sources
+                }));
+                t.end();
+            });
+        });
+
         t.test('fires an error on checking if non-existant source is loaded', (t) => {
             const style = createStyle();
             const map = createMap(t, {style});

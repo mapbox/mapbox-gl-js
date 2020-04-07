@@ -81,7 +81,7 @@ export const postData = function({url, body}, callback) {
 
 export const getImage = function({url}, callback) {
     if (cache[url]) return cached(cache[url], callback);
-    return request({url, encoding: null}, (error, response, body) => {
+    const req = request({url, encoding: null}, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             new PNG().parse(body, (err, png) => {
                 if (err) return callback(err);
@@ -92,6 +92,8 @@ export const getImage = function({url}, callback) {
             callback(error || {status: response.statusCode});
         }
     });
+    if (!req.cancel) req.cancel = () => {};
+    return req;
 };
 
 browser.getImageData = function({width, height, data}, padding = 0) {
