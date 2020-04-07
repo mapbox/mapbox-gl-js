@@ -70,13 +70,13 @@ test('DoubleClickZoomHandler zooms on double tap if touchstart events are < 300m
 
 });
 
-test('DoubleClickZoomHandler does not zoom on double tap if touchstart events are > 300ms apart', (t) => {
+test('DoubleClickZoomHandler does not zoom on double tap if touchstart events are > 500ms apart', (t) => {
     const map = createMap(t);
 
     const zoom = t.spy();
     map.on('zoom', zoom);
 
-    simulateDoubleTap(map, 300).then(() => {
+    simulateDoubleTap(map, 500).then(() => {
         t.equal(zoom.callCount, 0);
 
         map.remove();
