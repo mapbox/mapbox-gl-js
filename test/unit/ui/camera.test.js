@@ -392,6 +392,9 @@ test('camera', (t) => {
             const camera = createCamera();
             let started;
 
+            // fire once in advance to satisfy assertions that moveend only comes after movestart
+            camera.fire('movestart');
+
             camera
                 .on('movestart', () => { started = true; })
                 .on('moveend', () => {
@@ -456,6 +459,9 @@ test('camera', (t) => {
         t.test('supresses movestart if noMoveStart option is true', (t) => {
             const camera = createCamera();
             let started;
+
+            // fire once in advance to satisfy assertions that moveend only comes after movestart
+            camera.fire('movestart');
 
             camera
                 .on('movestart', () => { started = true; })

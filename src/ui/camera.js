@@ -15,6 +15,8 @@ import LngLat from '../geo/lng_lat';
 import LngLatBounds from '../geo/lng_lat_bounds';
 import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented';
+import assert from 'assert';
+import {Debug} from '../util/debug';
 
 import type Transform from '../geo/transform';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -91,9 +93,10 @@ class Camera extends Evented {
     _easeEndTimeoutID: TimeoutID;
     _easeStart: number;
     _easeOptions: {duration: number, easing: (_: number) => number};
+    _easeId: string | void;
 
     _onEaseFrame: (_: number) => void;
-    _onEaseEnd: () => void;
+    _onEaseEnd: (easeId?: string) => void;
     _easeFrameId: ?TaskID;
 
     +_requestRenderFrame: (() => void) => TaskID;
@@ -107,6 +110,8 @@ class Camera extends Evented {
         this._bearingSnap = options.bearingSnap;
 
         bindAll(['_renderFrameCallback'], this);
+
+        //addAssertions(this);
     }
 
     /**
@@ -708,8 +713,8 @@ class Camera extends Evented {
      * @returns {Map} `this`
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    easeTo(options: CameraOptions & AnimationOptions & {delayEndEvents?: number}, eventData?: Object) {
-        this.stop();
+    easeTo(options: CameraOptions & AnimationOptions & {easeId?: string}, eventData?: Object) {
+        this._stop(false, options.easeId);
 
         options = extend({
             offset: [0, 0],
@@ -747,12 +752,20 @@ class Camera extends Evented {
             aroundPoint = tr.locationPoint(around);
         }
 
-        this._zooming = (zoom !== startZoom);
-        this._rotating = (startBearing !== bearing);
-        this._pitching = (pitch !== startPitch);
+        const currently = {
+            moving: this._moving,
+            zooming: this._zooming,
+            rotating: this._rotating,
+            pitching: this._pitching
+        };
+
+        this._zooming = this._zooming || (zoom !== startZoom);
+        this._rotating = this._rotating || (startBearing !== bearing);
+        this._pitching = this._pitching || (pitch !== startPitch);
         this._padding = !tr.isPaddingEqual(padding);
 
-        this._prepareEase(eventData, options.noMoveStart);
+        this._easeId = options.easeId;
+        this._prepareEase(eventData, options.noMoveStart, currently);
 
         clearTimeout(this._easeEndTimeoutID);
 
@@ -787,30 +800,26 @@ class Camera extends Evented {
 
             this._fireMoveEvents(eventData);
 
-        }, () => {
-            if (options.delayEndEvents) {
-                this._easeEndTimeoutID = setTimeout(() => this._afterEase(eventData), options.delayEndEvents);
-            } else {
-                this._afterEase(eventData);
-            }
+        }, (interruptingEaseId?: string) => {
+            this._afterEase(eventData, interruptingEaseId);
         }, options);
 
         return this;
     }
 
-    _prepareEase(eventData?: Object, noMoveStart: boolean) {
+    _prepareEase(eventData?: Object, noMoveStart: boolean, currently: Object = {}) {
         this._moving = true;
 
-        if (!noMoveStart) {
+        if (!noMoveStart && !currently.moving) {
             this.fire(new Event('movestart', eventData));
         }
-        if (this._zooming) {
+        if (this._zooming && !currently.zooming) {
             this.fire(new Event('zoomstart', eventData));
         }
-        if (this._rotating) {
+        if (this._rotating && !currently.rotating) {
             this.fire(new Event('rotatestart', eventData));
         }
-        if (this._pitching) {
+        if (this._pitching && !currently.pitching) {
             this.fire(new Event('pitchstart', eventData));
         }
     }
@@ -828,7 +837,14 @@ class Camera extends Evented {
         }
     }
 
-    _afterEase(eventData?: Object) {
+    _afterEase(eventData?: Object, easeId?: string) {
+        // if this easing is being stopped to start another easing with
+        // the same id then don't fire any events to avoid extra start/stop events
+        if (this._easeId && easeId && this._easeId === easeId) {
+            return;
+        }
+        delete this._easeId;
+
         const wasZooming = this._zooming;
         const wasRotating = this._rotating;
         const wasPitching = this._pitching;
@@ -1078,6 +1094,10 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     stop(): this {
+        return this._stop();
+    }
+
+    _stop(allowGestures?: boolean, easeId?: string): this {
         if (this._easeFrameId) {
             this._cancelRenderFrame(this._easeFrameId);
             delete this._easeFrameId;
@@ -1090,7 +1110,11 @@ class Camera extends Evented {
             // it unintentionally.
             const onEaseEnd = this._onEaseEnd;
             delete this._onEaseEnd;
-            onEaseEnd.call(this);
+            onEaseEnd.call(this, easeId);
+        }
+        if (!allowGestures) {
+            const handlers = (this: any).handlers;
+            if (handlers) handlers.stop();
         }
         return this;
     }
@@ -1142,5 +1166,40 @@ class Camera extends Evented {
             delta < -180 ? 360 : 0;
     }
 }
+
+// In debug builds, check that camera change events are fired in the correct order.
+// - ___start events needs to be fired before ___ and ___end events
+// - another ___start event can't be fired before a ___end event has been fired for the previous one
+function addAssertions(camera: Camera) { //eslint-disable-line
+    Debug.run(() => {
+        const inProgress = {};
+
+        ['drag', 'zoom', 'rotate', 'pitch', 'move'].forEach(name => {
+            inProgress[name] = false;
+
+            camera.on(`${name}start`, () => {
+                assert(!inProgress[name], `"${name}start" fired twice without a "${name}end"`);
+                inProgress[name] = true;
+                assert(inProgress.move);
+            });
+
+            camera.on(name, () => {
+                assert(inProgress[name]);
+                assert(inProgress.move);
+            });
+
+            camera.on(`${name}end`, () => {
+                assert(inProgress.move);
+                assert(inProgress[name]);
+                inProgress[name] = false;
+            });
+        });
+
+        // Canary used to test whether this function is stripped in prod build
+        canary = 'canary debug run';
+    });
+}
+
+let canary; //eslint-disable-line
 
 export default Camera;

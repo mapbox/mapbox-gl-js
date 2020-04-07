@@ -13,7 +13,7 @@ import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
 import Transform from '../geo/transform';
 import Hash from './hash';
-import bindHandlers from './bind_handlers';
+import HandlerManager from './handler_manager';
 import Camera from './camera';
 import LngLat from '../geo/lng_lat';
 import LngLatBounds from '../geo/lng_lat_bounds';
@@ -41,11 +41,12 @@ import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
-import type DragRotateHandler from './handler/drag_rotate';
-import type DragPanHandler, {DragPanOptions} from './handler/drag_pan';
+import type {TouchPitchHandler} from './handler/touch_zoom_rotate';
+import type DragRotateHandler from './handler/shim/drag_rotate';
+import type DragPanHandler, {DragPanOptions} from './handler/shim/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
-import type DoubleClickZoomHandler from './handler/dblclick_zoom';
-import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
+import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom';
+import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
 import defaultLocale from './default_locale';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
@@ -91,6 +92,7 @@ type MapOptions = {
     keyboard?: boolean,
     doubleClickZoom?: boolean,
     touchZoomRotate?: boolean,
+    touchPitch?: boolean,
     trackResize?: boolean,
     center?: LngLatLike,
     zoom?: number,
@@ -130,9 +132,11 @@ const defaultOptions = {
     keyboard: true,
     doubleClickZoom: true,
     touchZoomRotate: true,
+    touchPitch: true,
 
     bearingSnap: 7,
     clickTolerance: 3,
+    pitchWithRotate: true,
 
     hash: false,
     attributionControl: true,
@@ -215,6 +219,7 @@ const defaultOptions = {
  * @param {boolean} [options.keyboard=true] If `true`, keyboard shortcuts are enabled (see {@link KeyboardHandler}).
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean|Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
+ * @param {boolean|Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler#enable}.
  * @param {boolean} [options.trackResize=true]  If `true`, the map will automatically resize when the browser window resizes.
  * @param {LngLatLike} [options.center=[0, 0]] The inital geographical centerpoint of the map. If `center` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
@@ -262,6 +267,7 @@ const defaultOptions = {
 class Map extends Camera {
     style: Style;
     painter: Painter;
+    handlers: HandlerManager;
 
     _container: HTMLElement;
     _missingCSSCanary: HTMLElement;
@@ -301,6 +307,7 @@ class Map extends Camera {
     _localIdeographFontFamily: string;
     _requestManager: RequestManager;
     _locale: Object;
+    _removed: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -344,6 +351,12 @@ class Map extends Camera {
      * Find more details and examples using `touchZoomRotate` in the {@link TouchZoomRotateHandler} section.
      */
     touchZoomRotate: TouchZoomRotateHandler;
+
+    /**
+     * The map's {@link TouchPitchHandler}, which allows the user to pitch the map with touch gestures.
+     * Find more details and examples using `touchPitch` in the {@link TouchPitchHandler} section.
+     */
+    touchPitch: TouchPitchHandler;
 
     constructor(options: MapOptions) {
         PerformanceUtils.mark(PerformanceMarkers.create);
@@ -425,7 +438,7 @@ class Map extends Camera {
             window.addEventListener('resize', this._onWindowResize, false);
         }
 
-        bindHandlers(this, options);
+        this.handlers = new HandlerManager(this, options);
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         this._hash = options.hash && (new Hash(hashName)).addTo(this);
@@ -564,10 +577,17 @@ class Map extends Camera {
         this.transform.resize(width, height);
         this.painter.resize(width, height);
 
-        this.fire(new Event('movestart', eventData))
-            .fire(new Event('move', eventData))
-            .fire(new Event('resize', eventData))
-            .fire(new Event('moveend', eventData));
+        const fireMoving = !this._moving;
+        if (fireMoving) {
+            this.stop();
+            this.fire(new Event('movestart', eventData))
+                .fire(new Event('move', eventData));
+        }
+
+        this.fire(new Event('resize', eventData));
+
+        if (fireMoving) this.fire(new Event('moveend', eventData));
+
         return this;
     }
 
@@ -833,10 +853,7 @@ class Map extends Camera {
      * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving ||
-            this.dragPan.isActive() ||
-            this.dragRotate.isActive() ||
-            this.scrollZoom.isActive();
+        return this._moving || this.handlers.isActive();
     }
 
     /**
@@ -846,8 +863,7 @@ class Map extends Camera {
      * var isZooming = map.isZooming();
      */
     isZooming(): boolean {
-        return this._zooming ||
-            this.scrollZoom.isZooming();
+        return this._zooming || this.handlers.isZooming();
     }
 
     /**
@@ -857,8 +873,7 @@ class Map extends Camera {
      * map.isRotating();
      */
     isRotating(): boolean {
-        return this._rotating ||
-            this.dragRotate.isActive();
+        return this._rotating || this.handlers.isRotating();
     }
 
     _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
@@ -2146,10 +2161,12 @@ class Map extends Camera {
      * - The map has is moving (or just finished moving)
      * - A transition is in progress
      *
+     * @param {number} paintStartTimeStamp  The time when the animation frame began executing.
+     *
      * @returns {Map} this
      * @private
      */
-    _render() {
+    _render(paintStartTimeStamp: number) {
         let gpuTimer, frameStartTime = 0;
         const extTimerQuery = this.painter.context.extTimerQuery;
         if (this.listens('gpu-timing-frame')) {
@@ -2162,7 +2179,9 @@ class Map extends Camera {
         this.painter.context.setDirty();
         this.painter.setBaseState();
 
-        this._renderTaskQueue.run();
+        this._renderTaskQueue.run(paintStartTimeStamp);
+        // A task queue callback may have fired a user event which may have removed the map
+        if (this._removed) return;
 
         let crossFading = false;
 
@@ -2314,6 +2333,8 @@ class Map extends Camera {
         this._container.classList.remove('mapboxgl-map');
 
         PerformanceUtils.clearMetrics();
+
+        this._removed = true;
         this.fire(new Event('remove'));
     }
 
@@ -2324,10 +2345,10 @@ class Map extends Camera {
      */
     triggerRepaint() {
         if (this.style && !this._frame) {
-            this._frame = browser.frame((paintStartTimestamp: number) => {
-                PerformanceUtils.frame(paintStartTimestamp);
+            this._frame = browser.frame((paintStartTimeStamp: number) => {
+                PerformanceUtils.frame(paintStartTimeStamp);
                 this._frame = null;
-                this._render();
+                this._render(paintStartTimeStamp);
             });
         }
     }

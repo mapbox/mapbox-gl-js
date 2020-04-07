@@ -3,7 +3,7 @@ import assert from 'assert';
 
 export type TaskID = number; // can't mark opaque due to https://github.com/flowtype/flow-remove-types/pull/61
 type Task = {
-    callback: () => void;
+    callback: (timeStamp: number) => void;
     id: TaskID;
     cancelled: boolean;
 };
@@ -21,7 +21,7 @@ class TaskQueue {
         this._currentlyRunning = false;
     }
 
-    add(callback: () => void): TaskID {
+    add(callback: (timeStamp: number) => void): TaskID {
         const id = ++this._id;
         const queue = this._queue;
         queue.push({callback, id, cancelled: false});
@@ -39,7 +39,7 @@ class TaskQueue {
         }
     }
 
-    run() {
+    run(timeStamp: number = 0) {
         assert(!this._currentlyRunning);
         const queue = this._currentlyRunning = this._queue;
 
@@ -49,7 +49,7 @@ class TaskQueue {
 
         for (const task of queue) {
             if (task.cancelled) continue;
-            task.callback();
+            task.callback(timeStamp);
             if (this._cleared) break;
         }
 
