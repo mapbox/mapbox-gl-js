@@ -166,48 +166,48 @@ class HandlerManager {
     _addDefaultHandlers(options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number }) {
         const map = this._map;
         const el = map.getCanvasContainer();
-        this.add('mapEvent', new MapEventHandler(map, options));
+        this._add('mapEvent', new MapEventHandler(map, options));
 
         const boxZoom = map.boxZoom = new BoxZoomHandler(map, options);
-        this.add('boxZoom', boxZoom);
+        this._add('boxZoom', boxZoom);
 
         const tapZoom = new TapZoomHandler();
         const clickZoom = new ClickZoomHandler();
         map.doubleClickZoom = new DoubleClickZoomHandler(clickZoom, tapZoom);
-        this.add('tapZoom', tapZoom);
-        this.add('clickZoom', clickZoom);
+        this._add('tapZoom', tapZoom);
+        this._add('clickZoom', clickZoom);
 
         const tapDragZoom = new TapDragZoomHandler();
-        this.add('tapDragZoom', tapDragZoom);
+        this._add('tapDragZoom', tapDragZoom);
 
         const touchPitch = map.touchPitch = new TouchPitchHandler();
-        this.add('touchPitch', touchPitch);
+        this._add('touchPitch', touchPitch);
 
         const mouseRotate = new MouseRotateHandler(options);
         const mousePitch = new MousePitchHandler(options);
         map.dragRotate = new DragRotateHandler(options, mouseRotate, mousePitch);
-        this.add('mouseRotate', mouseRotate, ['mousePitch']);
-        this.add('mousePitch', mousePitch, ['mouseRotate']);
+        this._add('mouseRotate', mouseRotate, ['mousePitch']);
+        this._add('mousePitch', mousePitch, ['mouseRotate']);
 
         const mousePan = new MousePanHandler(options);
         const touchPan = new TouchPanHandler(options);
         map.dragPan = new DragPanHandler(el, mousePan, touchPan);
-        this.add('mousePan', mousePan);
-        this.add('touchPan', touchPan, ['touchZoom', 'touchRotate']);
+        this._add('mousePan', mousePan);
+        this._add('touchPan', touchPan, ['touchZoom', 'touchRotate']);
 
         const touchRotate = new TouchRotateHandler();
         const touchZoom = new TouchZoomHandler();
         map.touchZoomRotate = new TouchZoomRotateHandler(el, touchZoom, touchRotate, tapDragZoom);
-        this.add('touchRotate', touchRotate, ['touchPan', 'touchZoom']);
-        this.add('touchZoom', touchZoom, ['touchPan', 'touchRotate']);
+        this._add('touchRotate', touchRotate, ['touchPan', 'touchZoom']);
+        this._add('touchZoom', touchZoom, ['touchPan', 'touchRotate']);
 
         const scrollZoom = map.scrollZoom = new ScrollZoomHandler(map, this);
-        this.add('scrollZoom', scrollZoom, ['mousePan']);
+        this._add('scrollZoom', scrollZoom, ['mousePan']);
 
         const keyboard = map.keyboard = new KeyboardHandler();
-        this.add('keyboard', keyboard);
+        this._add('keyboard', keyboard);
 
-        this.add('blockableMapEvent', new BlockableMapEventHandler(map));
+        this._add('blockableMapEvent', new BlockableMapEventHandler(map));
 
         for (const name of ['boxZoom', 'doubleClickZoom', 'tapDragZoom', 'touchPitch', 'dragRotate', 'dragPan', 'touchZoomRotate', 'scrollZoom', 'keyboard']) {
             if (options.interactive && (options: any)[name]) {
@@ -218,10 +218,7 @@ class HandlerManager {
         touchPitch.enable();
     }
 
-    add(handlerName: string, handler: Handler, allowed?: Array<string>) {
-        if (this._handlersById[handlerName]) {
-            throw new Error(`Cannot add ${handlerName}: a handler with that name already exists`);
-        }
+    _add(handlerName: string, handler: Handler, allowed?: Array<string>) {
         this._handlers.push({handlerName, handler, allowed});
         this._handlersById[handlerName] = handler;
     }
