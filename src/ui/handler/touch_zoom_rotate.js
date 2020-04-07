@@ -224,8 +224,10 @@ export class TouchPitchHandler extends TwoTouchHandler {
 
         this._lastPoints = points;
         this._active = true;
+        const yDeltaAverage = (vectorA.y + vectorB.y) / 2;
+        const degreesPerPixelMoved = -0.5;
         return {
-            pitchDelta: ((vectorA.y + vectorB.y) / 2) * -0.5
+            pitchDelta: yDeltaAverage * degreesPerPixelMoved
         };
     }
 
