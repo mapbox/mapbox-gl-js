@@ -12,9 +12,6 @@ class TwoTouchHandler {
     _startVector: Point;
     _aroundCenter: boolean;
 
-    /**
-     * @private
-     */
     constructor() {
         this.reset();
     }
@@ -204,6 +201,13 @@ export class TouchPitchHandler extends TwoTouchHandler {
     _valid: boolean | void;
     _firstMove: number;
     _lastPoints: [Point, Point];
+
+    /**
+     * @private
+     */
+    constructor() {
+        super.constructor();
+    }
 
     reset() {
         super.reset();
