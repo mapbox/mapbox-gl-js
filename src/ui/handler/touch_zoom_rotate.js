@@ -202,13 +202,6 @@ export class TouchPitchHandler extends TwoTouchHandler {
     _firstMove: number;
     _lastPoints: [Point, Point];
 
-    /**
-     * @private
-     */
-    constructor() {
-        super.constructor();
-    }
-
     reset() {
         super.reset();
         this._valid = undefined;
