@@ -6,6 +6,7 @@ const fs = require('fs');
 module.exports = function() {
     return new Promise((resolve, reject) => {
         browserify(require.resolve('../../test/util/tape_config.js'), { standalone: 'tape' })
+            .transform("babelify", {presets: ["@babel/preset-env"], global: true})
             .bundle((err, buff) => {
                 if (err) { throw err; }
 

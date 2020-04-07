@@ -156,7 +156,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
         } else  {
             const tileAnchor = new Point(symbol.anchorX, symbol.anchorY);
             const projectedAnchor = symbolProjection.project(tileAnchor, pitchWithMap ? posMatrix : labelPlaneMatrix);
-            const perspectiveRatio = 0.5 + 0.5 * (transform.cameraToCenterDistance / projectedAnchor.signedDistanceFromCamera);
+            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.cameraToCenterDistance, projectedAnchor.signedDistanceFromCamera);
             let renderTextSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
             if (pitchWithMap) {
                 // Go from size in pixels to equivalent size in tile units
@@ -240,8 +240,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
 
-    let program;
-    let size;
     const variablePlacement = layer.layout.get('text-variable-anchor');
 
     const tileRenderState: Array<SymbolTileRenderState> = [];
@@ -259,10 +257,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
         const transformed = pitchWithMap || tr.pitch !== 0;
 
-        if (!program) {
-            program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration);
-            size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
-        }
+        const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration);
+        const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
 
         let texSize: [number, number];
         let texSizeIcon: [number, number] = [0, 0];

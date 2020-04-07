@@ -1,0 +1,43 @@
+{
+  "expression": ["index-of", ["get", "needle"], ["get", "hay"], ["get", "i"]],
+  "inputs": [
+    [{}, { "properties": { "needle": null, "hay": "helloworld", "i": 0 } }],
+    [{}, { "properties": { "needle": "foo", "hay": "helloworld", "i": 0 } }],
+    [{}, { "properties": { "needle": "low", "hay": "helloworldlow", "i": 4 } }],
+    [{}, { "properties": { "needle": true, "hay": "falsetruetrue", "i": 6 } }],
+    [{}, { "properties": { "needle": false, "hay": "falsetrue", "i": 0 } }],
+    [{}, { "properties": { "needle": 123, "hay": "hello123world", "i": 6 } }],
+    [{}, { "properties": { "needle": "low", "hay": null, "i": 0 } }],
+    [{}, { "properties": { "needle": 7, "hay": [9, 8, 7, 8, 7, 7], "i": 3 } }],
+    [{}, { "properties": { "needle": 9, "hay": [9, 8, 7, 8, 7, 7], "i": 1 } }],
+    [{}, { "properties": { "needle": 8, "hay": [9, 8, 7, 8, 7, 7], "i": 1 } }]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      -1,
+      -1,
+      10,
+      9,
+      0,
+      -1,
+      {
+        "error": "Expected second argument to be of type array or string, but found null instead."
+      },
+      4,
+      -1,
+      1
+    ],
+    "serialized": [
+      "index-of",
+      ["get", "needle"],
+      ["get", "hay"],
+      ["number", ["get", "i"]]
+    ]
+  }
+}

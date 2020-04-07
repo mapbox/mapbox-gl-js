@@ -95,25 +95,31 @@ function getNumericId(value: mixed) {
 }
 
 // custom quicksort that sorts ids, indices and offsets together (by ids)
+// uses Hoare partitioning & manual tail call optimization to avoid worst case scenarios
 function sort(ids, positions, left, right) {
-    if (left >= right) return;
+    while (left < right) {
+        const pivot = ids[(left + right) >> 1];
+        let i = left - 1;
+        let j = right + 1;
 
-    const pivot = ids[(left + right) >> 1];
-    let i = left - 1;
-    let j = right + 1;
+        while (true) {
+            do i++; while (ids[i] < pivot);
+            do j--; while (ids[j] > pivot);
+            if (i >= j) break;
+            swap(ids, i, j);
+            swap(positions, 3 * i, 3 * j);
+            swap(positions, 3 * i + 1, 3 * j + 1);
+            swap(positions, 3 * i + 2, 3 * j + 2);
+        }
 
-    while (true) {
-        do i++; while (ids[i] < pivot);
-        do j--; while (ids[j] > pivot);
-        if (i >= j) break;
-        swap(ids, i, j);
-        swap(positions, 3 * i, 3 * j);
-        swap(positions, 3 * i + 1, 3 * j + 1);
-        swap(positions, 3 * i + 2, 3 * j + 2);
+        if (j - left < right - j) {
+            sort(ids, positions, left, j);
+            left = j + 1;
+        } else {
+            sort(ids, positions, j + 1, right);
+            right = j;
+        }
     }
-
-    sort(ids, positions, left, j);
-    sort(ids, positions, j + 1, right);
 }
 
 function swap(arr, i, j) {

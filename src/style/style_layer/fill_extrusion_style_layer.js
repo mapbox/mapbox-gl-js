@@ -81,34 +81,40 @@ export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, pr
         // Check whether points are coincident and use other points if they are.
         let i = 0;
         const a = projectedFace[i++];
-        let b, c;
+        let b;
         while (!b || a.equals(b)) {
             b = projectedFace[i++];
             if (!b) return Infinity;
         }
-        while (!c || a.equals(c) || b.equals(c)) {
-            c = projectedFace[i++];
-            if (!c) return Infinity;
+
+        // Loop until point `c` is not colinear with points `a` and `b`.
+        for (; i < projectedFace.length; i++) {
+            const c = projectedFace[i];
+
+            const p = projectedQueryGeometry[0];
+
+            const ab = b.sub(a);
+            const ac = c.sub(a);
+            const ap = p.sub(a);
+
+            const dotABAB = dot(ab, ab);
+            const dotABAC = dot(ab, ac);
+            const dotACAC = dot(ac, ac);
+            const dotAPAB = dot(ap, ab);
+            const dotAPAC = dot(ap, ac);
+            const denom = dotABAB * dotACAC - dotABAC * dotABAC;
+
+            const v = (dotACAC * dotAPAB - dotABAC * dotAPAC) / denom;
+            const w = (dotABAB * dotAPAC - dotABAC * dotAPAB) / denom;
+            const u = 1 - v - w;
+
+            // Use the barycentric weighting along with the original triangle z coordinates to get the point of intersection.
+            const distance = a.z * u + b.z * v + c.z * w;
+
+            if (isFinite(distance)) return distance;
         }
 
-        const p = projectedQueryGeometry[0];
-
-        const ab = b.sub(a);
-        const ac = c.sub(a);
-        const ap = p.sub(a);
-
-        const dotABAB = dot(ab, ab);
-        const dotABAC = dot(ab, ac);
-        const dotACAC = dot(ac, ac);
-        const dotAPAB = dot(ap, ab);
-        const dotAPAC = dot(ap, ac);
-        const denom = dotABAB * dotACAC - dotABAC * dotABAC;
-        const v = (dotACAC * dotAPAB - dotABAC * dotAPAC) / denom;
-        const w = (dotABAB * dotAPAC - dotABAC * dotAPAB) / denom;
-        const u = 1 - v - w;
-
-        // Use the barycentric weighting along with the original triangle z coordinates to get the point of intersection.
-        return a.z * u + b.z * v + c.z * w;
+        return Infinity;
 
     } else {
         // The counts as closest is less clear when the query is a box. This
