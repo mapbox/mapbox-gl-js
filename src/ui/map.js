@@ -92,6 +92,7 @@ type MapOptions = {
     keyboard?: boolean,
     doubleClickZoom?: boolean,
     touchZoomRotate?: boolean,
+    touchPitch?: boolean,
     trackResize?: boolean,
     center?: LngLatLike,
     zoom?: number,
@@ -131,6 +132,7 @@ const defaultOptions = {
     keyboard: true,
     doubleClickZoom: true,
     touchZoomRotate: true,
+    touchPitch: true,
 
     bearingSnap: 7,
     clickTolerance: 3,
@@ -217,6 +219,7 @@ const defaultOptions = {
  * @param {boolean} [options.keyboard=true] If `true`, keyboard shortcuts are enabled (see {@link KeyboardHandler}).
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean|Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
+ * @param {boolean|Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler#enable}.
  * @param {boolean} [options.trackResize=true]  If `true`, the map will automatically resize when the browser window resizes.
  * @param {LngLatLike} [options.center=[0, 0]] The inital geographical centerpoint of the map. If `center` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
@@ -349,6 +352,10 @@ class Map extends Camera {
      */
     touchZoomRotate: TouchZoomRotateHandler;
 
+    /**
+     * The map's {@link TouchPitchHandler}, which allows the user to pitch the map with touch gestures.
+     * Find more details and examples using `touchPitch` in the {@link TouchPitchHandler} section.
+     */
     touchPitch: TouchPitchHandler;
 
     constructor(options: MapOptions) {

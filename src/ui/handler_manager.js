@@ -214,8 +214,6 @@ class HandlerManager {
                 (map: any)[name].enable((options: any)[name]);
             }
         }
-
-        touchPitch.enable();
     }
 
     _add(handlerName: string, handler: Handler, allowed?: Array<string>) {
