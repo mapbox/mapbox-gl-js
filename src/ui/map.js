@@ -2161,6 +2161,8 @@ class Map extends Camera {
      * - The map has is moving (or just finished moving)
      * - A transition is in progress
      *
+     * @param {number} paintStartTimeStamp  The time when the animation frame began executing.
+     *
      * @returns {Map} this
      * @private
      */
