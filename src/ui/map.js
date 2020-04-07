@@ -13,7 +13,6 @@ import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
 import Transform from '../geo/transform';
 import Hash from './hash';
-// import bindHandlers from './bind_handlers';
 import HandlerManager from './handler_manager';
 import Camera from './camera';
 import LngLat from '../geo/lng_lat';
@@ -376,7 +375,7 @@ class Map extends Camera {
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
-        // this._interactive = options.interactive;
+        this._interactive = options.interactive;
         this._maxTileCacheSize = options.maxTileCacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
@@ -432,7 +431,6 @@ class Map extends Camera {
             window.addEventListener('resize', this._onWindowResize, false);
         }
 
-        // bindHandlers(this, options);
         this.handlers = new HandlerManager(this, options);
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;

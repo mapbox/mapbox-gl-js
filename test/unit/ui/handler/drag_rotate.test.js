@@ -493,9 +493,6 @@ test('DragRotateHandler requests a new render frame after each mousemove event',
     t.end();
 });
 
-/*
- * TODO
-*/
 test('DragRotateHandler can interleave with another handler', (t) => {
     // https://github.com/mapbox/mapbox-gl-js/issues/6106
     const map = createMap(t);
@@ -540,7 +537,6 @@ test('DragRotateHandler can interleave with another handler', (t) => {
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     // Ignore second rotatestart triggered by inertia
-    // t.equal(rotatestart.callCount, 1);
     t.equal(rotate.callCount, 2);
     t.equal(rotateend.callCount, 1);
 
@@ -630,7 +626,6 @@ test('DragRotateHandler does not end a right-button drag on left-button mouseup'
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     // Ignore second rotatestart triggered by inertia
-    // t.equal(rotatestart.callCount, 1);
     t.equal(rotate.callCount, 2);
     t.equal(rotateend.callCount, 1);
 
@@ -686,7 +681,6 @@ test('DragRotateHandler does not end a control-left-button drag on right-button 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
     map._renderTaskQueue.run();
     // Ignore second rotatestart triggered by inertia
-    // t.equal(rotatestart.callCount, 1);
     t.equal(rotate.callCount, 2);
     t.equal(rotateend.callCount, 1);
 
@@ -723,52 +717,6 @@ test('DragRotateHandler does not begin a drag if preventDefault is called on the
     map.remove();
     t.end();
 });
-
-/*
- * TODO
-['rotatestart', 'rotate'].forEach(event => {
-    test(`DragRotateHandler can be disabled on ${event} (#2419)`, (t) => {
-        const map = createMap(t);
-
-        // Prevent inertial rotation.
-        t.stub(browser, 'now').returns(0);
-
-        map.on(event, () => map.dragRotate.disable());
-
-        const rotatestart = t.spy();
-        const rotate      = t.spy();
-        const rotateend   = t.spy();
-
-        map.on('rotatestart', rotatestart);
-        map.on('rotate',      rotate);
-        map.on('rotateend',   rotateend);
-
-        simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
-        map._renderTaskQueue.run();
-
-        simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
-        map._renderTaskQueue.run();
-
-        t.equal(rotatestart.callCount, 1);
-        t.equal(rotate.callCount, event === 'rotatestart' ? 0 : 1);
-        t.equal(rotateend.callCount, 1);
-        t.equal(map.isMoving(), false);
-        t.equal(map.dragRotate.isEnabled(), false);
-
-        simulate.mouseup(map.getCanvas(), {buttons: 0, button: 2});
-        map._renderTaskQueue.run();
-
-        t.equal(rotatestart.callCount, 1);
-        t.equal(rotate.callCount, event === 'rotatestart' ? 0 : 1);
-        t.equal(rotateend.callCount, 1);
-        t.equal(map.isMoving(), false);
-        t.equal(map.dragRotate.isEnabled(), false);
-
-        map.remove();
-        t.end();
-    });
-});
-*/
 
 test(`DragRotateHandler can be disabled after mousedown (#2419)`, (t) => {
     const map = createMap(t);
