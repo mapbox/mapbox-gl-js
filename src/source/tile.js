@@ -75,6 +75,7 @@ class Tile {
     dem: ?DEMData;
     aborted: ?boolean;
     needsHillshadePrepare: ?boolean;
+    needsDEMTextureUpload: ?boolean;
     request: ?Cancelable;
     texture: any;
     fbo: ?Framebuffer;

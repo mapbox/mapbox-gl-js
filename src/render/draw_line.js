@@ -48,11 +48,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-
         if (image && !tile.patternsLoaded()) continue;
 
         const bucket: ?LineBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
+        painter.prepareDrawTile(coord);
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const prevProgram = painter.context.program.get();
@@ -67,10 +67,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const uniformValues = image ? linePatternUniformValues(painter, tile, layer, crossfade) :
-            dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray, crossfade) :
-            gradient ? lineGradientUniformValues(painter, tile, layer, bucket.lineClipsArray.length) :
-            lineUniformValues(painter, tile, layer);
+        const matrix = painter.terrain ? coord.posMatrix : null;
+        const uniformValues = image ? linePatternUniformValues(painter, tile, layer, crossfade, matrix) :
+            dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray, crossfade, matrix) :
+            gradient ? lineGradientUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length) :
+            lineUniformValues(painter, tile, layer, matrix);
 
         if (image) {
             context.activeTexture.set(gl.TEXTURE0);

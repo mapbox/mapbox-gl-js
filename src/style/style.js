@@ -1002,6 +1002,7 @@ class Style extends Evented {
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
             light: this.stylesheet.light,
+            terrain: this.stylesheet.terrain,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
             bearing: this.stylesheet.bearing,
