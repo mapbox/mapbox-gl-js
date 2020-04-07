@@ -36,6 +36,7 @@ import raster from './draw_raster';
 import background from './draw_background';
 import debug, {drawDebugPadding} from './draw_debug';
 import custom from './draw_custom';
+import {Terrain} from '../terrain/terrain';
 
 const draw = {
     symbol,
@@ -104,6 +105,7 @@ class Painter {
     quadTriangleIndexBuffer: IndexBuffer;
     tileBorderIndexBuffer: IndexBuffer;
     _tileClippingMaskIDs: {[_: string]: number };
+    enableTileClipping: ?boolean;
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -125,6 +127,7 @@ class Painter {
     emptyTexture: Texture;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
+    terrain: ?Terrain;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -141,6 +144,23 @@ class Painter {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this.gpuTimers = {};
+
+        this.enableTileClipping = true;
+    }
+
+    updateTerrain(style: Style) {
+        const enabled = style.stylesheet && style.stylesheet.terrain;
+        if (!enabled) {
+            if (this.terrain) delete this.terrain;
+            for (const id in style.sourceCaches) {
+                style.sourceCaches[id].usedForTerrain = false;
+            }
+            this.enableTileClipping = true;
+            return;
+        }
+        if (!this.terrain) this.terrain = new Terrain(this, style);
+        this.terrain.update(style);
+        this.enableTileClipping = false;
     }
 
     /*
@@ -288,7 +308,8 @@ class Painter {
         return new StencilMode({func: gl.NOTEQUAL, mask: 0xFF}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
-    stencilModeForClipping(tileID: OverscaledTileID): StencilMode {
+    stencilModeForClipping(tileID: OverscaledTileID): $ReadOnly<StencilMode>  {
+        if (!this.enableTileClipping) return StencilMode.disabled; // TO DO check without it.
         const gl = this.context.gl;
         return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
@@ -396,6 +417,13 @@ class Painter {
             }
         }
 
+        if (this.terrain) {
+            this.terrain.updateTileBinding(coordsDescendingSymbol);
+            // All render to texture is done in translucent pass to remove need
+            // for depth buffer allocation per tile.
+            this.opaquePassCutoff = 0;
+        }
+
         // Offscreen pass ===============================================
         // We first do all rendering that requires rendering to a separate
         // framebuffer, and then save those for rendering back to the map
@@ -429,6 +457,7 @@ class Painter {
         for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = sourceCaches[layer.source];
+            if (this.terrain && this.terrain.renderLayer(layer, sourceCache)) continue;
             const coords = coordsAscending[layer.source];
 
             this._renderTileClippingMasks(layer, coords);
@@ -442,6 +471,7 @@ class Painter {
         for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = sourceCaches[layer.source];
+            if (this.terrain && this.terrain.renderLayer(layer, sourceCache)) continue;
 
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
@@ -597,9 +627,12 @@ class Painter {
 
     useProgram(name: string, programConfiguration: ?ProgramConfiguration): Program<any> {
         this.cache = this.cache || {};
-        const key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
+        const terrain = this.terrain && !this.terrain.renderingToTexture; // Enable elevation sampling in vertex shader.
+        const rtt = this.terrain && this.terrain.renderingToTexture;
+        const key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}${this._showOverdrawInspector ? '/overdraw' : ''}
+            ${terrain ? '/terrain' : ''}${rtt ? '/rtt' : ''}`;
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector);
+            this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector, terrain, rtt);
         }
         return this.cache[key];
     }
@@ -647,6 +680,12 @@ class Painter {
         this.emptyTexture.destroy();
         if (this.debugOverlayTexture) {
             this.debugOverlayTexture.destroy();
+        }
+    }
+
+    prepareDrawTile(tileID: OverscaledTileID) {
+        if (this.terrain) {
+            this.terrain.prepareDrawTile(tileID);
         }
     }
 }

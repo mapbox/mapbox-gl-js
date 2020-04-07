@@ -5,6 +5,8 @@ import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration';
 import VertexArrayObject from './vertex_array_object';
 import Context from '../gl/context';
+import {terrainUniforms} from '../terrain/terrain';
+import type {TerrainUniformsType} from '../terrain/terrain';
 
 import type SegmentVector from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -38,13 +40,16 @@ class Program<Us: UniformBindings> {
     fixedUniforms: Us;
     binderUniforms: Array<BinderUniform>;
     failedToCreate: boolean;
+    terrainUniforms: ?TerrainUniformsType;
 
     constructor(context: Context,
             name: string,
             source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>, staticUniforms: Array<string>},
             configuration: ?ProgramConfiguration,
             fixedUniforms: (Context, UniformLocations) => Us,
-            showOverdrawInspector: boolean) {
+            showOverdrawInspector: boolean,
+            terrain: ?boolean,
+            renderingToTexture: ?boolean) {
         const gl = context.gl;
         this.program = gl.createProgram();
 
@@ -64,6 +69,9 @@ class Program<Us: UniformBindings> {
         const defines = configuration ? configuration.defines() : [];
         if (showOverdrawInspector) {
             defines.push('#define OVERDRAW_INSPECTOR;');
+        }
+        if (renderingToTexture) {
+            defines.push('#define RENDER_TO_TEXTURE;');
         }
 
         const fragmentSource = defines.concat(prelude.fragmentSource, source.fragmentSource).join('\n');
@@ -118,6 +126,19 @@ class Program<Us: UniformBindings> {
 
         this.fixedUniforms = fixedUniforms(context, uniformLocations);
         this.binderUniforms = configuration ? configuration.getUniforms(context, uniformLocations) : [];
+        if (terrain) { this.terrainUniforms = terrainUniforms(context, uniformLocations); }
+    }
+
+    setTerrainUniformValues(context: Context, terrainUnformValues: UniformValues<TerrainUniformsType>) {
+        if (!this.terrainUniforms) return;
+        const uniforms: TerrainUniformsType = this.terrainUniforms;
+
+        if (this.failedToCreate) return;
+        context.program.set(this.program);
+
+        for (const name in uniforms) {
+            uniforms[name].set(terrainUnformValues[name]);
+        }
     }
 
     draw(context: Context,

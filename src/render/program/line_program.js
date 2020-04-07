@@ -105,12 +105,13 @@ const lineSDFUniforms = (context: Context, locations: UniformLocations): LineSDF
 const lineUniformValues = (
     painter: Painter,
     tile: Tile,
-    layer: LineStyleLayer
+    layer: LineStyleLayer,
+    matrix: ?Float32Array
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
 
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer),
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
         'u_ratio': 1 / pixelsToTileUnits(tile, 1, transform.zoom),
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_units_to_pixels': [
@@ -124,9 +125,10 @@ const lineGradientUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    imageHeight: number
+    imageHeight: number,
+    matrix: ?Float32Array
 ): UniformValues<LineGradientUniformsType> => {
-    return extend(lineUniformValues(painter, tile, layer), {
+    return extend(lineUniformValues(painter, tile, layer, matrix), {
         'u_image': 0,
         'u_image_height': imageHeight,
     });
@@ -136,12 +138,13 @@ const linePatternUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    crossfade: CrossfadeParameters
+    crossfade: CrossfadeParameters,
+    matrix: ?Float32Array
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
     const tileZoomRatio = calculateTileRatio(tile, transform);
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer),
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
         'u_texsize': tile.imageAtlasTexture.size,
         // camera zoom ratio
         'u_ratio': 1 / pixelsToTileUnits(tile, 1, transform.zoom),
@@ -161,7 +164,8 @@ const lineSDFUniformValues = (
     tile: Tile,
     layer: LineStyleLayer,
     dasharray: CrossFaded<Array<number>>,
-    crossfade: CrossfadeParameters
+    crossfade: CrossfadeParameters,
+    matrix: ?Float32Array
 ): UniformValues<LineSDFUniformsType> => {
     const transform = painter.transform;
     const lineAtlas = painter.lineAtlas;
@@ -175,7 +179,7 @@ const lineSDFUniformValues = (
     const widthA = posA.width * crossfade.fromScale;
     const widthB = posB.width * crossfade.toScale;
 
-    return extend(lineUniformValues(painter, tile, layer), {
+    return extend(lineUniformValues(painter, tile, layer, matrix), {
         'u_patternscale_a': [tileRatio / widthA, -posA.height / 2],
         'u_patternscale_b': [tileRatio / widthB, -posB.height / 2],
         'u_sdfgamma': lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2,
@@ -190,9 +194,9 @@ function calculateTileRatio(tile: Tile, transform: Transform) {
     return 1 / pixelsToTileUnits(tile, 1, transform.tileZoom);
 }
 
-function calculateMatrix(painter, tile, layer) {
+function calculateMatrix(painter, tile, layer, matrix) {
     return painter.translatePosMatrix(
-        tile.tileID.posMatrix,
+        matrix ? matrix : tile.tileID.posMatrix,
         tile,
         layer.paint.get('line-translate'),
         layer.paint.get('line-translate-anchor')

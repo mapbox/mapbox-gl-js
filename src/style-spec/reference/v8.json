@@ -57,6 +57,10 @@
         "intensity": 0.4
       }
     },
+    "terrain": {
+      "type": "terrain",
+      "doc": "The global terrain source."
+    },
     "sources": {
       "required": true,
       "type": "sources",
@@ -3736,6 +3740,12 @@
           "macos": "0.5.0"
         }
       }
+    }
+  },
+  "terrain" : {
+    "source": {
+      "type": "string",
+      "doc": "A property name of global sources object. The source (property value) should be of type raster_dem source."
     }
   },
   "paint": [

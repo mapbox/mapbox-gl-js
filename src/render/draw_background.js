@@ -7,6 +7,7 @@ import {
     backgroundUniformValues,
     backgroundPatternUniformValues
 } from './program/background_program';
+import {OverscaledTileID} from '../source/tile_id';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -14,7 +15,7 @@ import type BackgroundStyleLayer from '../style/style_layer/background_style_lay
 
 export default drawBackground;
 
-function drawBackground(painter: Painter, sourceCache: SourceCache, layer: BackgroundStyleLayer) {
+function drawBackground(painter: Painter, sourceCache: SourceCache, layer: BackgroundStyleLayer, coords: Array<OverscaledTileID>) {
     const color = layer.paint.get('background-color');
     const opacity = layer.paint.get('background-opacity');
 
@@ -36,7 +37,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     const program = painter.useProgram(image ? 'backgroundPattern' : 'background');
 
-    const tileIDs = transform.coveringTiles({tileSize});
+    const tileIDs = coords ? coords : transform.coveringTiles({tileSize});
 
     if (image) {
         context.activeTexture.set(gl.TEXTURE0);
@@ -45,7 +46,9 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     const crossfade = layer.getCrossfadeParameters();
     for (const tileID of tileIDs) {
-        const matrix = painter.transform.calculatePosMatrix(tileID.toUnwrapped());
+        const matrix = coords ? tileID.posMatrix : painter.transform.calculatePosMatrix(tileID.toUnwrapped());
+        painter.prepareDrawTile(tileID);
+
         const uniformValues = image ?
             backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :
             backgroundUniformValues(matrix, opacity, color);

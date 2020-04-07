@@ -32,6 +32,8 @@ function flowType(property) {
                 }
             case 'light':
                 return 'LightSpecification';
+            case 'terrain':
+                return 'TerrainSpecification';
             case 'sources':
                 return '{[_: string]: SourceSpecification}';
             case '*':
@@ -174,6 +176,8 @@ export type DataDrivenPropertyValueSpecification<T> =
 ${flowObjectDeclaration('StyleSpecification', spec.$root)}
 
 ${flowObjectDeclaration('LightSpecification', spec.light)}
+
+${flowObjectDeclaration('TerrainSpecification', spec.terrain)}
 
 ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key])).join('\n\n')}
 

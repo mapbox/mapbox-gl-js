@@ -55,6 +55,7 @@ import type {
     FilterSpecification,
     StyleSpecification,
     LightSpecification,
+    TerrainSpecification,
     SourceSpecification
 } from '../style-spec/types';
 
@@ -2102,6 +2103,22 @@ class Map extends Camera {
 
     // eslint-disable-next-line jsdoc/require-returns
     /**
+     * Sets the terrain.
+     *
+     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#terrain).
+     * If `null` or `undefined` is provided, function removes terrain.
+     * @returns {Map} `this`
+     */
+    setTerrain(terrain: TerrainSpecification) {
+        this._lazyInitEmptyStyle();
+        this.style.stylesheet.terrain = terrain;
+        return this._update(true);
+    }
+
+    /**
+     * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
+     * Features are identified by their `id` attribute, which must be an integer or a string that can be
+     * cast to an integer.
      * Sets the `state` of a feature.
      * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
      * When using this method, the `state` object is merged with any existing key-value pairs in the feature's state.
@@ -2486,6 +2503,7 @@ class Map extends Camera {
         // need for the current transform
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
+            this.painter.updateTerrain(this.style); // Terrain DEM source updates here and skips update in style._updateSources.
             this.style._updateSources(this.transform);
         }
 

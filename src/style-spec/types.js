@@ -66,6 +66,7 @@ export type StyleSpecification = {|
     "bearing"?: number,
     "pitch"?: number,
     "light"?: LightSpecification,
+    "terrain"?: TerrainSpecification,
     "sources": {[_: string]: SourceSpecification},
     "sprite"?: string,
     "glyphs"?: string,
@@ -78,6 +79,10 @@ export type LightSpecification = {|
     "position"?: PropertyValueSpecification<[number, number, number]>,
     "color"?: PropertyValueSpecification<ColorSpecification>,
     "intensity"?: PropertyValueSpecification<number>
+|}
+
+export type TerrainSpecification = {|
+    "source"?: string
 |}
 
 export type VectorSourceSpecification = {
