@@ -96,14 +96,14 @@ class HandlerManager {
     _map: Map;
     _el: HTMLElement;
     _handlers: Array<{ handlerName: string, handler: Handler, allowed: any }>;
-    eventsInProgress: Object;
+    _eventsInProgress: Object;
     _frameId: number;
-    inertia: HandlerInertia;
+    _inertia: HandlerInertia;
+    _bearingSnap: number;
     _handlersById: { [string]: Handler };
     _updatingCamera: boolean;
     _changes: Array<[HandlerResult, Object, any]>;
-    previousActiveHandlers: { [string]: Handler };
-    bearingSnap: number;
+    _previousActiveHandlers: { [string]: Handler };
     _bearingChanged: boolean;
 
     constructor(map: Map, options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number, bearingSnap: number}) {
@@ -113,12 +113,12 @@ class HandlerManager {
         this._handlersById = {};
         this._changes = [];
 
-        this.inertia = new HandlerInertia(map);
-        this.bearingSnap = options.bearingSnap;
-        this.previousActiveHandlers = {};
+        this._inertia = new HandlerInertia(map);
+        this._bearingSnap = options.bearingSnap;
+        this._previousActiveHandlers = {};
 
         // Track whether map is currently moving, to compute start/move/end events
-        this.eventsInProgress = {};
+        this._eventsInProgress = {};
 
         this._addDefaultHandlers(options);
 
@@ -160,7 +160,7 @@ class HandlerManager {
 
     _addListener(element: Element, eventType: string, options: Object, name_?: string) {
         const name = name_ || eventType;
-        DOM.addEventListener(element, eventType, e => this.processInputEvent(e, name), options);
+        DOM.addEventListener(element, eventType, e => this._processInputEvent(e, name), options);
     }
 
     _addDefaultHandlers(options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number }) {
@@ -233,8 +233,8 @@ class HandlerManager {
         for (const {handler} of this._handlers) {
             handler.reset();
         }
-        this.inertia.clear();
-        this.fireEvents({}, {});
+        this._inertia.clear();
+        this._fireEvents({}, {});
         this._changes = [];
     }
 
@@ -246,13 +246,13 @@ class HandlerManager {
     }
 
     isZooming() {
-        return !!this.eventsInProgress.zoom || this._map.scrollZoom.isZooming();
+        return !!this._eventsInProgress.zoom || this._map.scrollZoom.isZooming();
     }
     isRotating() {
-        return !!this.eventsInProgress.rotate;
+        return !!this._eventsInProgress.rotate;
     }
 
-    blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string) {
+    _blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string) {
         for (const name in activeHandlers) {
             if (name === myName) continue;
             if (!allowed || allowed.indexOf(name) < 0) {
@@ -262,7 +262,7 @@ class HandlerManager {
         return false;
     }
 
-    processInputEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
+    _processInputEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
 
         this._updatingCamera = true;
         assert(e.timeStamp !== undefined);
@@ -286,7 +286,7 @@ class HandlerManager {
             if (!handler.isEnabled()) continue;
 
             let data: HandlerResult | void;
-            if (this.blockedByActive(activeHandlers, allowed, handlerName)) {
+            if (this._blockedByActive(activeHandlers, allowed, handlerName)) {
                 handler.reset();
 
             } else {
@@ -294,7 +294,7 @@ class HandlerManager {
                     data = (handler: any)[eventName || e.type](e, points);
                     this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data, handlerName, inputEvent);
                     if (data && data.needsRenderFrame) {
-                        this.triggerRenderFrame();
+                        this._triggerRenderFrame();
                     }
                 }
             }
@@ -305,16 +305,16 @@ class HandlerManager {
         }
 
         const deactivatedHandlers = {};
-        for (const name in this.previousActiveHandlers) {
+        for (const name in this._previousActiveHandlers) {
             if (!activeHandlers[name]) {
                 deactivatedHandlers[name] = inputEvent;
             }
         }
-        this.previousActiveHandlers = activeHandlers;
+        this._previousActiveHandlers = activeHandlers;
 
         if (Object.keys(deactivatedHandlers).length || hasChange(mergedHandlerResult)) {
             this._changes.push([mergedHandlerResult, eventsInProgress, deactivatedHandlers]);
-            this.triggerRenderFrame();
+            this._triggerRenderFrame();
         }
 
         if (Object.keys(activeHandlers).length || hasChange(mergedHandlerResult)) {
@@ -325,8 +325,8 @@ class HandlerManager {
 
         const {cameraAnimation} = mergedHandlerResult;
         if (cameraAnimation) {
-            this.inertia.clear();
-            this.fireEvents({}, {});
+            this._inertia.clear();
+            this._fireEvents({}, {});
             this._changes = [];
             cameraAnimation(this._map);
         }
@@ -355,7 +355,7 @@ class HandlerManager {
 
     }
 
-    applyChanges() {
+    _applyChanges() {
         const combined = {};
         const combinedEventsInProgress = {};
         const combinedDeactivatedHandlers = {};
@@ -374,17 +374,17 @@ class HandlerManager {
             extend(combinedDeactivatedHandlers, deactivatedHandlers);
         }
 
-        this.updateMapTransform(combined, combinedEventsInProgress, combinedDeactivatedHandlers);
+        this._updateMapTransform(combined, combinedEventsInProgress, combinedDeactivatedHandlers);
         this._changes = [];
     }
 
-    updateMapTransform(combinedResult: any, combinedEventsInProgress: Object, deactivatedHandlers: Object) {
+    _updateMapTransform(combinedResult: any, combinedEventsInProgress: Object, deactivatedHandlers: Object) {
 
         const map = this._map;
         const tr = map.transform;
 
         if (!hasChange(combinedResult)) {
-            return this.fireEvents(combinedEventsInProgress, deactivatedHandlers);
+            return this._fireEvents(combinedEventsInProgress, deactivatedHandlers);
         }
 
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, pinchAround} = combinedResult;
@@ -404,14 +404,14 @@ class HandlerManager {
         tr.setLocationAtPoint(loc, around);
 
         this._map._update();
-        if (!combinedResult.noInertia) this.inertia.record(combinedResult);
-        this.fireEvents(combinedEventsInProgress, deactivatedHandlers);
+        if (!combinedResult.noInertia) this._inertia.record(combinedResult);
+        this._fireEvents(combinedEventsInProgress, deactivatedHandlers);
 
     }
 
-    fireEvents(newEventsInProgress: { [string]: Object }, deactivatedHandlers: Object) {
+    _fireEvents(newEventsInProgress: { [string]: Object }, deactivatedHandlers: Object) {
 
-        const wasMoving = isMoving(this.eventsInProgress);
+        const wasMoving = isMoving(this._eventsInProgress);
         const nowMoving = isMoving(newEventsInProgress);
 
         if (!wasMoving && nowMoving) {
@@ -420,8 +420,8 @@ class HandlerManager {
 
         for (const eventName in newEventsInProgress) {
             const {originalEvent} = newEventsInProgress[eventName];
-            const isStart = !this.eventsInProgress[eventName];
-            this.eventsInProgress[eventName] = newEventsInProgress[eventName];
+            const isStart = !this._eventsInProgress[eventName];
+            this._eventsInProgress[eventName] = newEventsInProgress[eventName];
             if (isStart) {
                 this._fireEvent(`${eventName}start`, originalEvent);
             }
@@ -439,21 +439,21 @@ class HandlerManager {
         }
 
         let originalEndEvent;
-        for (const eventName in this.eventsInProgress) {
-            const {handlerName, originalEvent} = this.eventsInProgress[eventName];
+        for (const eventName in this._eventsInProgress) {
+            const {handlerName, originalEvent} = this._eventsInProgress[eventName];
             if (!this._handlersById[handlerName].isActive()) {
-                delete this.eventsInProgress[eventName];
+                delete this._eventsInProgress[eventName];
                 originalEndEvent = deactivatedHandlers[handlerName] || originalEvent;
                 this._fireEvent(`${eventName}end`, originalEndEvent);
             }
         }
 
-        const stillMoving = isMoving(this.eventsInProgress);
+        const stillMoving = isMoving(this._eventsInProgress);
         if ((wasMoving || nowMoving) && !stillMoving) {
             this._updatingCamera = true;
-            const inertialEase = this.inertia._onMoveEnd(this._map.dragPan._inertiaOptions);
+            const inertialEase = this._inertia._onMoveEnd(this._map.dragPan._inertiaOptions);
 
-            const shouldSnapToNorth = bearing => bearing !== 0 && -this.bearingSnap < bearing && bearing < this.bearingSnap;
+            const shouldSnapToNorth = bearing => bearing !== 0 && -this._bearingSnap < bearing && bearing < this._bearingSnap;
 
             if (inertialEase) {
                 if (shouldSnapToNorth(inertialEase.bearing || this._map.getBearing())) {
@@ -476,12 +476,12 @@ class HandlerManager {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 
-    triggerRenderFrame() {
+    _triggerRenderFrame() {
         if (this._frameId === undefined) {
             this._frameId = this._map._requestRenderFrame(timeStamp => {
                 delete this._frameId;
-                this.processInputEvent(new RenderFrameEvent('renderFrame', {timeStamp}));
-                this.applyChanges();
+                this._processInputEvent(new RenderFrameEvent('renderFrame', {timeStamp}));
+                this._applyChanges();
             });
         }
     }

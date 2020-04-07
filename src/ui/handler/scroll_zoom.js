@@ -232,7 +232,7 @@ class ScrollZoomHandler {
         this._aroundPoint = this._map.transform.locationPoint(this._around);
         if (!this._frameId) {
             this._frameId = true;
-            this._handler.triggerRenderFrame();
+            this._handler._triggerRenderFrame();
         }
     }
 
@@ -304,7 +304,7 @@ class ScrollZoomHandler {
             this._active = false;
             this._finishTimeout = setTimeout(() => {
                 this._zooming = false;
-                this._handler.triggerRenderFrame();
+                this._handler._triggerRenderFrame();
                 delete this._targetZoom;
                 delete this._finishTimeout;
             }, 200);
