@@ -37,7 +37,7 @@ import type {PaddingOptions} from '../geo/edge_insets';
  * is "up"; for example, a bearing of 90° orients the map so that east is up.
  * @property {number} pitch The desired pitch, in degrees.
  * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
- * @property {PaddingOptions} padding Dimensions in pixels applied on eachs side of the viewport for shifting the vanishing point.
+ * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
  */
 export type CameraOptions = {
     center?: LngLatLike,
