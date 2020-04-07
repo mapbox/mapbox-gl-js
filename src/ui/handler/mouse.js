@@ -12,7 +12,7 @@ class MouseHandler {
     _active: boolean;
     _lastPoint: Point;
     _eventButton: number;
-    _notMoved: boolean;
+    _moved: boolean;
     _clickTolerance: number;
 
     constructor(options: { clickTolerance: number }) {
@@ -22,7 +22,7 @@ class MouseHandler {
 
     reset() {
         this._active = false;
-        this._notMoved = true;
+        this._moved = false;
         delete this._lastPoint;
         delete this._eventButton;
     }
@@ -50,8 +50,8 @@ class MouseHandler {
         if (!lastPoint) return;
         e.preventDefault();
 
-        if (this._notMoved && point.dist(lastPoint) < this._clickTolerance) return;
-        this._notMoved = false;
+        if (!this._moved && point.dist(lastPoint) < this._clickTolerance) return;
+        this._moved = true;
         this._lastPoint = point;
 
         // implemented by child class
@@ -61,7 +61,7 @@ class MouseHandler {
     windowMouseup(e: MouseEvent) {
         const eventButton = DOM.mouseButton(e);
         if (eventButton !== this._eventButton) return;
-        if (!this._notMoved) DOM.suppressClick();
+        if (this._moved) DOM.suppressClick();
         this.reset();
     }
 
