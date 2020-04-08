@@ -275,7 +275,6 @@ class HandlerManager {
 
     handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
 
-        if (e.type === 'mousemove') console.log(e.buttons);
         if (e.type === 'blur') {
             this.stop();
             return;
