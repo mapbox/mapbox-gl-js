@@ -11,6 +11,30 @@ function createMap(t, options) {
     return new Map(extend({container: DOM.create('div', '', window.document.body)}, options));
 }
 
+test('DragRotateHandler#isActive', (t) => {
+    const map = createMap(t);
+
+    // Prevent inertial rotation.
+    t.stub(browser, 'now').returns(0);
+
+    t.equal(map.dragRotate.isActive(), false);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    map._renderTaskQueue.run();
+    t.equal(map.dragRotate.isActive(), false);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(map.dragRotate.isActive(), true);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._renderTaskQueue.run();
+    t.equal(map.dragRotate.isActive(), false);
+
+    map.remove();
+    t.end();
+});
+
 test('DragRotateHandler fires rotatestart, rotate, and rotateend events at appropriate times in response to a right-click drag', (t) => {
     const map = createMap(t);
 

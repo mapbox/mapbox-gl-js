@@ -62,6 +62,6 @@ export default class DragRotateHandler {
      * @returns {boolean} `true` if the "drag to rotate" interaction is active.
      */
     isActive() {
-        return this._mouseRotate.isEnabled() || this._mousePitch.isEnabled();
+        return this._mouseRotate.isActive() || this._mousePitch.isActive();
     }
 }
