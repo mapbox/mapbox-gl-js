@@ -2319,6 +2319,8 @@ class Map extends Camera {
         }
         this._renderTaskQueue.clear();
         this.painter.destroy();
+        this.handlers.destroy();
+        delete this.handlers;
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
