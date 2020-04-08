@@ -18,7 +18,7 @@ import TapDragZoomHandler from './handler/tap_drag_zoom';
 import DragPanHandler from './handler/shim/drag_pan';
 import DragRotateHandler from './handler/shim/drag_rotate';
 import TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
-import {extend} from '../util/util';
+import {bindAll, extend} from '../util/util';
 import window from '../util/window';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
@@ -105,6 +105,7 @@ class HandlerManager {
     _changes: Array<[HandlerResult, Object, any]>;
     _previousActiveHandlers: { [string]: Handler };
     _bearingChanged: boolean;
+    _listeners: Array<[HTMLElement, string, void | {passive?: boolean, capture?: boolean}]>;
 
     constructor(map: Map, options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number, bearingSnap: number}) {
         this._map = map;
@@ -122,45 +123,56 @@ class HandlerManager {
 
         this._addDefaultHandlers(options);
 
-        // Bind touchstart and touchmove with passive: false because, even though
-        // they only fire a map events and therefore could theoretically be
-        // passive, binding with passive: true causes iOS not to respect
-        // e.preventDefault() in _other_ handlers, even if they are non-passive
-        // (see https://bugs.webkit.org/show_bug.cgi?id=184251)
-        this._addListener(this._el, 'touchstart', {passive: false});
-        this._addListener(this._el, 'touchmove', {passive: false});
-        this._addListener(this._el, 'touchend');
-        this._addListener(this._el, 'touchcancel');
+        bindAll(['handleEvent', 'handleWindowEvent'], this);
 
-        this._addListener(this._el, 'mousedown');
-        this._addListener(this._el, 'mousemove');
-        this._addListener(this._el, 'mouseup');
+        const el = this._el;
 
-        // Bind window-level event listeners for move and up/end events. In the absence of
-        // the pointer capture API, which is not supported by all necessary platforms,
-        // window-level event listeners give us the best shot at capturing events that
-        // fall outside the map canvas element. Use `{capture: true}` for the move event
-        // to prevent map move events from being fired during a drag.
-        this._addListener(window.document, 'mousemove', {capture: true}, 'windowMousemove');
-        this._addListener(window.document, 'mouseup', undefined, 'windowMouseup');
+        this._listeners = [
+            // Bind touchstart and touchmove with passive: false because, even though
+            // they only fire a map events and therefore could theoretically be
+            // passive, binding with passive: true causes iOS not to respect
+            // e.preventDefault() in _other_ handlers, even if they are non-passive
+            // (see https://bugs.webkit.org/show_bug.cgi?id=184251)
+            [el, 'touchstart', {passive: false}],
+            [el, 'touchmove', {passive: false}],
+            [el, 'touchend', undefined],
+            [el, 'touchcancel', undefined],
 
-        this._addListener(this._el, 'mouseover');
-        this._addListener(this._el, 'mouseout');
-        this._addListener(this._el, 'dblclick');
-        this._addListener(this._el, 'click');
+            [el, 'mousedown', undefined],
+            [el, 'mousemove', undefined],
+            [el, 'mouseup', undefined],
 
-        this._addListener(this._el, 'keydown', {capture: false});
-        this._addListener(this._el, 'keyup');
+            // Bind window-level event listeners for move and up/end events. In the absence of
+            // the pointer capture API, which is not supported by all necessary platforms,
+            // window-level event listeners give us the best shot at capturing events that
+            // fall outside the map canvas element. Use `{capture: true}` for the move event
+            // to prevent map move events from being fired during a drag.
+            [window.document, 'mousemove', {capture: true}],
+            [window.document, 'mouseup', undefined],
 
-        this._addListener(this._el, 'wheel', {passive: false});
-        this._addListener(this._el, 'contextmenu');
+            [el, 'mouseover', undefined],
+            [el, 'mouseout', undefined],
+            [el, 'dblclick', undefined],
+            [el, 'click', undefined],
 
-        DOM.addEventListener(window, 'blur', () => this.stop());
+            [el, 'keydown', {capture: false}],
+            [el, 'keyup', undefined],
+
+            [el, 'wheel', {passive: false}],
+            [el, 'contextmenu', undefined],
+
+            [window, 'blur', undefined]
+        ];
+
+        for (const [target, type, listenerOptions] of this._listeners) {
+            DOM.addEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+        }
     }
 
-    _addListener(element: Element, eventType: string, options: Object, name_?: string) {
-        const name = name_ || eventType;
-        DOM.addEventListener(element, eventType, e => this._processInputEvent(e, name), options);
+    destroy() {
+        for (const [target, type, listenerOptions] of this._listeners) {
+            DOM.removeEventListener(target, type, target === window.document ? this.handleWindowEvent : this.handleEvent, listenerOptions);
+        }
     }
 
     _addDefaultHandlers(options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number }) {
@@ -257,7 +269,16 @@ class HandlerManager {
         return false;
     }
 
-    _processInputEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
+    handleWindowEvent(e: InputEvent) {
+        this.handleEvent(e, `${e.type}Window`);
+    }
+
+    handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
+
+        if (e.type === 'blur') {
+            this.stop();
+            return;
+        }
 
         this._updatingCamera = true;
         assert(e.timeStamp !== undefined);
@@ -475,7 +496,7 @@ class HandlerManager {
         if (this._frameId === undefined) {
             this._frameId = this._map._requestRenderFrame(timeStamp => {
                 delete this._frameId;
-                this._processInputEvent(new RenderFrameEvent('renderFrame', {timeStamp}));
+                this.handleEvent(new RenderFrameEvent('renderFrame', {timeStamp}));
                 this._applyChanges();
             });
         }

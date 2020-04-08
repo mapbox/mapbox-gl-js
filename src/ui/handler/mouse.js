@@ -45,7 +45,7 @@ class MouseHandler {
         this._eventButton = eventButton;
     }
 
-    windowMousemove(e: MouseEvent, point: Point) {
+    mousemoveWindow(e: MouseEvent, point: Point) {
         const lastPoint = this._lastPoint;
         if (!lastPoint) return;
         e.preventDefault();
@@ -58,7 +58,7 @@ class MouseHandler {
         return this._move(lastPoint, point);
     }
 
-    windowMouseup(e: MouseEvent) {
+    mouseupWindow(e: MouseEvent) {
         const eventButton = DOM.mouseButton(e);
         if (eventButton !== this._eventButton) return;
         if (this._moved) DOM.suppressClick();

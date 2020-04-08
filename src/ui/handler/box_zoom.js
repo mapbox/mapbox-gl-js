@@ -82,7 +82,7 @@ class BoxZoomHandler {
         this._active = true;
     }
 
-    windowMousemove(e: MouseEvent, point: Point) {
+    mousemoveWindow(e: MouseEvent, point: Point) {
         if (!this._active) return;
 
         const pos = point;
@@ -111,7 +111,7 @@ class BoxZoomHandler {
         this._box.style.height = `${maxY - minY}px`;
     }
 
-    windowMouseup(e: MouseEvent, point: Point) {
+    mouseupWindow(e: MouseEvent, point: Point) {
         if (!this._active) return;
 
         if (e.button !== 0) return;
