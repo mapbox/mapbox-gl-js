@@ -125,7 +125,6 @@ export class TapRecognizer {
             this.lastTap = tap;
 
             if (this.count === this.numTaps) {
-                e.preventDefault();
                 this.reset();
                 return tap;
             }
