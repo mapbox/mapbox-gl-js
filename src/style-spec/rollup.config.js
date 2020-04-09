@@ -32,10 +32,10 @@ const config = [{
                 // Some users reference modules within style-spec package directly, instead of the bundle
                 // This means that files within the style-spec package should NOT import files from the parent mapbox-gl-js tree.
                 // This check will cause the build the fail on CI allowing these issues to be caught.
-                if(importer && !importer.includes('node_modules')){
+                if (importer && !importer.includes('node_modules')) {
                     const resolvedPath = path.join(importer, source);
                     const fromRoot = path.relative(ROOT_DIR, resolvedPath);
-                    if(fromRoot.length > 2 && fromRoot.slice(0, 2) == '..'){
+                    if (fromRoot.length > 2 && fromRoot.slice(0, 2) === '..') {
                         throw new Error(`Module ${importer} imports ${source} from outside the style-spec package root directory.`);
                     }
                 }
