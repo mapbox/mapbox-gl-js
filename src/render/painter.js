@@ -589,6 +589,7 @@ class Painter {
      */
     isPatternMissing(image: ?CrossFaded<ResolvedImage>): boolean {
         if (!image) return false;
+        if (!image.from || !image.to) return true;
         const imagePosA = this.imageManager.getPattern(image.from.toString());
         const imagePosB = this.imageManager.getPattern(image.to.toString());
         return !imagePosA || !imagePosB;
