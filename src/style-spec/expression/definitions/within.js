@@ -40,9 +40,10 @@ function boxWithinBox(bbox1: BBox, bbox2: BBox) {
 }
 
 function getTileCoordinates(p, canonical: CanonicalTileID) {
-    const coord = {x: mercatorXfromLng(p[0]), y: mercatorYfromLat(p[1])};
+    const x = mercatorXfromLng(p[0]);
+    const y = mercatorYfromLat(p[1]);
     const tilesAtZoom = Math.pow(2, canonical.z);
-    return [Math.round(coord.x * tilesAtZoom * EXTENT), Math.round(coord.y * tilesAtZoom * EXTENT)];
+    return [Math.round(x * tilesAtZoom * EXTENT), Math.round(y * tilesAtZoom * EXTENT)];
 }
 
 function onBoundary(p, p1, p2) {
