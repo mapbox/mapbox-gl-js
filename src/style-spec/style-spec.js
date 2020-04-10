@@ -69,7 +69,8 @@ import diff from './diff';
 import ValidationError from './error/validation_error';
 import ParsingError from './error/parsing_error';
 import {StyleExpression, isExpression, createExpression, createPropertyExpression, normalizePropertyExpression, ZoomConstantExpression, ZoomDependentExpression, StylePropertyFunction} from './expression';
-import featureFilter from './feature_filter';
+import featureFilter, {isExpressionFilter} from './feature_filter';
+
 import convertFilter from './feature_filter/convert';
 import Color from './util/color';
 import {createFunction, isFunction} from './function';
@@ -82,6 +83,7 @@ import validateMapboxApiSupported from './validate_mapbox_api_supported';
 const expression = {
     StyleExpression,
     isExpression,
+    isExpressionFilter,
     createExpression,
     createPropertyExpression,
     normalizePropertyExpression,
