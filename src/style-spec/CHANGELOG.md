@@ -1,3 +1,11 @@
+## 13.13.1
+
+### ✨ Features and improvements
+* Expose `expression.isExpressionFilter(..)` from the bundle. ([#9530](https://github.com/mapbox/mapbox-gl-js/pull/9530))
+
+### 🐛 Bug fixes
+* Fix a broken module import where the `style-spec` package was importing files from `mapbox-gl-js`, it's parent repo, causing downstream build systems to break. ([#9522](https://github.com/mapbox/mapbox-gl-js/pull/9522))
+
 ## 13.13.0
 
 ### ✨ Features and improvements
