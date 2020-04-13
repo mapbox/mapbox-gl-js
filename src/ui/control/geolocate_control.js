@@ -412,7 +412,7 @@ class GeolocateControl extends Evented {
     * @example
     * var geolocate = new mapboxgl.GeolocateControl({
     *  positionOptions: {
-    *  enableHighAccuracy: true
+    *    enableHighAccuracy: true
     *  },
     *  
     *  trackUserLocation: true
