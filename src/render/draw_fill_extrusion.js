@@ -18,14 +18,19 @@ import type {OverscaledTileID} from '../source/tile_id';
 export default draw;
 
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
+    const opacity = layer.paint.get('fill-extrusion-opacity');
+    if (opacity.constantOr(1) === 0) {
+        return;
+    }
+
     if (painter.renderPass === 'translucent') {
         const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
-        // if (opacity === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
-        //     const colorMode = painter.colorModeForRenderPass();
-        //     drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
+        if (opacity.constantOr(1) === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
+            const colorMode = painter.colorModeForRenderPass();
+            drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
 
-        // } else {
+        } else {
             // Draw transparent buildings in two passes so that only the closest surface is drawn.
             // First draw all the extrusions into only the depth buffer. No colors are drawn.
             drawExtrusionTiles(painter, source, layer, coords, depthMode,
@@ -38,7 +43,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             drawExtrusionTiles(painter, source, layer, coords, depthMode,
                 painter.stencilModeFor3D(),
                 painter.colorModeForRenderPass());
-        // }
+        }
     }
 }
 
