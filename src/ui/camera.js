@@ -638,8 +638,8 @@ class Camera extends Evented {
      * map.jumpTo({
      *   center: [0, 0],
      *   zoom: 8,
-     *   bearing: 90,
-     *   pitch: 45
+     *   pitch: 45,
+     *   bearing: 90
      *   }
      * });
      * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
