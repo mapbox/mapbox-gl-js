@@ -4,7 +4,6 @@ uniform vec2 u_pixel_coord_lower;
 uniform float u_height_factor;
 uniform vec3 u_scale;
 uniform float u_vertical_gradient;
-uniform lowp float u_opacity;
 
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
@@ -23,6 +22,7 @@ varying vec4 v_lighting;
 #pragma mapbox: define lowp vec4 pattern_to
 #pragma mapbox: define lowp float pixel_ratio_from
 #pragma mapbox: define lowp float pixel_ratio_to
+#pragma mapbox: define lowp float opacity
 
 void main() {
     #pragma mapbox: initialize lowp float base
@@ -31,6 +31,7 @@ void main() {
     #pragma mapbox: initialize mediump vec4 pattern_to
     #pragma mapbox: initialize lowp float pixel_ratio_from
     #pragma mapbox: initialize lowp float pixel_ratio_to
+    #pragma mapbox: initialize lowp float opacity
 
     vec2 pattern_tl_a = pattern_from.xy;
     vec2 pattern_br_a = pattern_from.zw;
@@ -75,5 +76,5 @@ void main() {
     }
 
     v_lighting.rgb += clamp(directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-    v_lighting *= u_opacity;
+    v_lighting *= opacity;
 }

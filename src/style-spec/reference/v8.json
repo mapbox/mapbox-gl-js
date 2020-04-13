@@ -2617,7 +2617,7 @@
           }
         }
       },
-      "index-of": { 
+      "index-of": {
         "doc": "Returns the first index at which a given element can be found in an array, or for a string, the first occurrence of the specified value. If a second argument is provided, then the search is started from that position. Returns -1 if the value is not found.",
         "group": "Lookup",
         "sdk-support": {
@@ -3556,7 +3556,7 @@
           }
         }
       },
-      "slice": { 
+      "slice": {
         "doc": "Returns a portion of a string or an array starting from the provided beginning index. If a second argument is provided, then the return portion will run to, but not include, the end index.",
         "group": "String",
         "sdk-support": {
@@ -3916,7 +3916,7 @@
           "zoom"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "fill-extrusion-color": {
       "type": "color",
