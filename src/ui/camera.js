@@ -631,6 +631,19 @@ class Camera extends Evented {
      * @fires zoomend
      * @fires pitchend
      * @returns {Map} `this`
+     * @example
+     * // jump to null island at current zoom
+     * map.jumpTo({center: [0, 0]});
+     * // jump with zoom, pitch, and bearing set
+     * map.jumpTo({
+     *   center: [0, 0],
+     *   zoom: 8,
+     *   bearing: 90,
+     *   pitch: 45
+     *   }
+     * });
+     * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
+     * @see [Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
     jumpTo(options: CameraOptions, eventData?: Object) {
         this.stop();
