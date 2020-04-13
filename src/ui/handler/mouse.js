@@ -66,7 +66,7 @@ class MouseHandler {
             // the window or iframe:
             // https://github.com/mapbox/mapbox-gl-js/issues/4622
             //
-            // If the button is no longer pressed during this `mousemove` it have have
+            // If the button is no longer pressed during this `mousemove` it may have
             // been released outside of the window or iframe.
             this.reset();
             return;
