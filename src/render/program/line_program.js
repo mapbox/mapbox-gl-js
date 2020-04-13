@@ -159,7 +159,6 @@ const lineSDFUniformValues = (
     matrix: ?Float32Array
 ): UniformValues<LineSDFUniformsType> => {
     const tileZoomRatio = calculateTileRatio(tile, painter.transform);
-
     const atlasHeight = tile.lineAtlasTexture.size[1];
 
     return extend(lineUniformValues(painter, tile, layer, matrix), {
