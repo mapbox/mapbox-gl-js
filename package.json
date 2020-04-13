@@ -160,8 +160,9 @@
   },
   "files": [
     "build/",
-    "dist/",
-    "flow-typed/",
+    "dist/mapbox-gl*",
+    "dist/style-spec/",
+    "flow-typed/*.js",
     "src/",
     ".flowconfig"
   ]
