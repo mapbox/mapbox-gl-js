@@ -925,33 +925,83 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a listener for events of a specified type occurring on features in a specified style layer.
+     * Adds a listener for events of a specified type, optionally limited to features in a specified style layer.
      *
-     * @param {string} type The event type to listen for; one of [`mousedown`](#map.event:mousedown),
-     * [`mouseup`](#map.event:mouseup), [`click`](#map.event:click), [`dblclick`](#map.event:dblclick),
-     * [`mousemove`](#map.event:mousemove), [`mouseenter`](#map.event:mouseenter),
-     * [`mouseleave`](#map.event:mouseleave), [`mouseover`](#map.event:mouseover),
-     * [`mouseout`](#map.event:mouseout), [`contextmenu`](#map.event:contextmenu),
-     * [`touchstart`](#map.event:touchstart), [`touchend`](#map.event:touchend),
-     * or [`touchcancel`](#map.event:touchcancel).
-     * `mouseenter` and `mouseover` events are triggered when the cursor enters the map canvas, except
-     * when you supply a `layerId`, in which case they are triggered when the cursor enters
-     * a visible portion of the specified layer from outside that layer or outside the map canvas.
-     * `mouseleave` and `mouseout` events are triggered when the cursor the map canvas, except when
-     * you supply a `layerId', in which case they are triggered when the cursor leaves a visible portion of the specified layer, or leaves
-     * the map canvas.
-     * @param {string} layerId (optional) The ID of a style layer. Only events whose location is within a visible
-     * feature in this layer will trigger the listener. The event will have a `features` property containing
+     * @param {string} type The event type to listen for. Events compatible with the optional `layerId` parameter are triggered
+     * when the cursor enters a visible portion of the specified layer from outside that layer or outside the map canvas.
+     *
+     * | Event                                                     | Compatible with `layerId` |
+     * |-----------------------------------------------------------|---------------------------|
+     * | [`mousedown`](#map.event:mousedown)                       | yes                       |
+     * | [`mouseup`](#map.event:mouseup)                           | yes                       |
+     * | [`mouseover`](#map.event:mouseover)                       | yes                       |
+     * | [`mouseout`](#map.event:mouseout)                         | yes                       |
+     * | [`mousemove`](#map.event:mousemove)                       | yes                       |
+     * | [`mouseenter`](#map.event:mouseenter)                     | yes                       |
+     * | [`mouseleave`](#map.event:mouseleave)                     | yes                       |
+     * | [`click`](#map.event:click)                               | yes                       |
+     * | [`dblclick`](#map.event:dblclick)                         | yes                       |
+     * | [`contextmenu`](#map.event:contextmenu)                   | yes                       |
+     * | [`touchstart`](#map.event:touchstart)                     | yes                       |
+     * | [`touchend`](#map.event:touchend)                         | yes                       |
+     * | [`touchcancel`](#map.event:touchcancel)                   | yes                       |
+     * | [`wheel`](#map.event:wheel)                               |                           |
+     * | [`resize`](#map.event:resize)                             |                           |
+     * | [`remove`](#map.event:remove)                             |                           |
+     * | [`touchmove`](#map.event:touchmove)                       |                           |
+     * | [`movestart`](#map.event:movestart)                       |                           |
+     * | [`move`](#map.event:move)                                 |                           |
+     * | [`moveend`](#map.event:moveend)                           |                           |
+     * | [`dragstart`](#map.event:dragstart)                       |                           |
+     * | [`drag`](#map.event:drag)                                 |                           |
+     * | [`dragend`](#map.event:dragend)                           |                           |
+     * | [`zoomstart`](#map.event:zoomstart)                       |                           |
+     * | [`zoom`](#map.event:zoom)                                 |                           |
+     * | [`zoomend`](#map.event:zoomend)                           |                           |
+     * | [`rotatestart`](#map.event:rotatestart)                   |                           |
+     * | [`rotate`](#map.event:rotate)                             |                           |
+     * | [`rotateend`](#map.event:rotateend)                       |                           |
+     * | [`pitchstart`](#map.event:pitchstart)                     |                           |
+     * | [`pitch`](#map.event:pitch)                               |                           |
+     * | [`pitchend`](#map.event:pitchend)                         |                           |
+     * | [`boxzoomstart`](#map.event:boxzoomstart)                 |                           |
+     * | [`boxzoomend`](#map.event:boxzoomend)                     |                           |
+     * | [`boxzoomcancel`](#map.event:boxzoomcancel)               |                           |
+     * | [`webglcontextlost`](#map.event:webglcontextlost)         |                           |
+     * | [`webglcontextrestored`](#map.event:webglcontextrestored) |                           |
+     * | [`load`](#map.event:load)                                 |                           |
+     * | [`render`](#map.event:render)                             |                           |
+     * | [`idle`](#map.event:idle)                                 |                           |
+     * | [`error`](#map.event:error)                               |                           |
+     * | [`data`](#map.event:data)                                 |                           |
+     * | [`styledata`](#map.event:styledata)                       |                           |
+     * | [`sourcedata`](#map.event:sourcedata)                     |                           |
+     * | [`dataloading`](#map.event:dataloading)                   |                           |
+     * | [`styledataloading`](#map.event:styledataloading)         |                           |
+     * | [`sourcedataloading`](#map.event:sourcedataloading)       |                           |
+     * | [`styleimagemissing`](#map.event:styleimagemissing)       |                           |
+     *
+     * @param {string} layerId (optional) The ID of a style layer. Event will only be triggered if their location
+     * is within a visible feature in this layer. The event will have a `features` property containing
      * an array of the matching features. If `layerId` is not supplied, the event will not have a `features` property.
+     * Please note that many event types are not compatible with the optional `layerId` parameter.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
      * @example
      * map.on('click', function(e) {
      *   map.flyTo({ center: e.lngLat });
      * });
+     * @example
+     * map.on('click', 'countries', function(e) {
+     *   new mapboxgl.Popup()
+     *     .setLngLat(e.lngLat)
+     *     .setHTML(`Country name: ${e.features[0].properties.name}`)
+     *     .addTo(map);
+     * });
      * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      * @see [Center the map on a clicked symbol](https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see [Create a draggable marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     on(type: MapEvent, layerId: any, listener: any) {
         if (listener === undefined) {
