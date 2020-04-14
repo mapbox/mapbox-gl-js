@@ -3,7 +3,6 @@ uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 uniform float u_vertical_gradient;
-uniform bool u_is_opaque_pass;
 
 attribute vec2 a_pos;
 attribute vec4 a_normal_ed;
@@ -21,7 +20,7 @@ void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float opacity
 
-    bool visible = u_is_opaque_pass ? opacity > 0.999 : ( opacity > 0.001 && opacity <= 0.999);
+    bool visible = opacity > 0.001;
     if(visible) {
         vec3 normal = a_normal_ed.xyz;
 
