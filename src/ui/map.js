@@ -925,33 +925,33 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a listener for events of a specified type.
-     *
-     * @method
-     * @name on
-     * @memberof Map
-     * @instance
-     * @param {string} type The event type to add a listen for.
-     * @param {Function} listener The function to be called when the event is fired.
-     *   The listener function is called with the data object passed to `fire`,
-     *   extended with `target` and `type` properties.
-     * @returns {Map} `this`
-     */
-
-    /**
      * Adds a listener for events of a specified type occurring on features in a specified style layer.
      *
-     * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'click'`, `'dblclick'`,
-     * `'mousemove'`, `'mouseenter'`, `'mouseleave'`, `'mouseover'`, `'mouseout'`, `'contextmenu'`, `'touchstart'`,
-     * `'touchend'`, or `'touchcancel'`. `mouseenter` and `mouseover` events are triggered when the cursor enters
-     * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
-     * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
+     * @param {string} type The event type to listen for; one of [`mousedown`](#map.event:mousedown), 
+     * [`mouseup`](#map.event:mouseup), [`click`](#map.event:click), [`dblclick`](#map.event:dblclick),
+     * [`mousemove`](#map.event:mousemove), [`mouseenter`](#map.event:mouseenter), 
+     * [`mouseleave`](#map.event:mouseleave), [`mouseover`](#map.event:mouseover), 
+     * [`mouseout`](#map.event:mouseout), [`contextmenu`](#map.event:contextmenu), 
+     * [`touchstart`](#map.event:touchstart), [`touchend`](#map.event:touchend), 
+     * or [`touchcancel`](#map.event:touchcancel). 
+     * `mouseenter` and `mouseover` events are triggered when the cursor enters the map canvas, except 
+     * when you supply a `layerId`, in which case they are triggered when the cursor enters
+     * a visible portion of the specified layer from outside that layer or outside the map canvas. 
+     * `mouseleave` and `mouseout` events are triggered when the cursor the map canvas, except when
+     * you supply a `layerId', in which case they are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string} layerId The ID of a style layer. Only events whose location is within a visible
+     * @param {string} layerId (optional) The ID of a style layer. Only events whose location is within a visible
      * feature in this layer will trigger the listener. The event will have a `features` property containing
-     * an array of the matching features.
+     * an array of the matching features. If `layerId` is not supplied, the event will not have a `features` property.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
+     * @example
+     * map.on('click', function(e) {
+     *   map.flyTo({ center: e.lngLat });
+     * });
+     * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Center the map on a clicked symbol](https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
+     * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      */
     on(type: MapEvent, layerId: any, listener: any) {
         if (listener === undefined) {
