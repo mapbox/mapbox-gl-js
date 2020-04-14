@@ -927,16 +927,16 @@ class Map extends Camera {
     /**
      * Adds a listener for events of a specified type occurring on features in a specified style layer.
      *
-     * @param {string} type The event type to listen for; one of [`mousedown`](#map.event:mousedown), 
+     * @param {string} type The event type to listen for; one of [`mousedown`](#map.event:mousedown),
      * [`mouseup`](#map.event:mouseup), [`click`](#map.event:click), [`dblclick`](#map.event:dblclick),
-     * [`mousemove`](#map.event:mousemove), [`mouseenter`](#map.event:mouseenter), 
-     * [`mouseleave`](#map.event:mouseleave), [`mouseover`](#map.event:mouseover), 
-     * [`mouseout`](#map.event:mouseout), [`contextmenu`](#map.event:contextmenu), 
-     * [`touchstart`](#map.event:touchstart), [`touchend`](#map.event:touchend), 
-     * or [`touchcancel`](#map.event:touchcancel). 
-     * `mouseenter` and `mouseover` events are triggered when the cursor enters the map canvas, except 
+     * [`mousemove`](#map.event:mousemove), [`mouseenter`](#map.event:mouseenter),
+     * [`mouseleave`](#map.event:mouseleave), [`mouseover`](#map.event:mouseover),
+     * [`mouseout`](#map.event:mouseout), [`contextmenu`](#map.event:contextmenu),
+     * [`touchstart`](#map.event:touchstart), [`touchend`](#map.event:touchend),
+     * or [`touchcancel`](#map.event:touchcancel).
+     * `mouseenter` and `mouseover` events are triggered when the cursor enters the map canvas, except
      * when you supply a `layerId`, in which case they are triggered when the cursor enters
-     * a visible portion of the specified layer from outside that layer or outside the map canvas. 
+     * a visible portion of the specified layer from outside that layer or outside the map canvas.
      * `mouseleave` and `mouseout` events are triggered when the cursor the map canvas, except when
      * you supply a `layerId', in which case they are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
