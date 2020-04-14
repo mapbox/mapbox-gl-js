@@ -344,6 +344,8 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
+     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
     | 'mouseenter'
 
@@ -357,6 +359,7 @@ export type MapEvent =
      * @instance
      * @property {MapMouseEvent} data
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
     | 'mouseleave'
 
@@ -397,6 +400,7 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapTouchEvent} data
+     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchstart'
 
@@ -407,6 +411,7 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapTouchEvent} data
+     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchend'
 
@@ -417,6 +422,7 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapTouchEvent} data
+     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchmove'
 
@@ -449,6 +455,8 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
+     * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
     | 'move'
 
@@ -462,6 +470,7 @@ export type MapEvent =
      * @property {{originalEvent: DragEvent}} data
      * @see [Play map locations as a slideshow](https://www.mapbox.com/mapbox-gl-js/example/playback-locations/)
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
+     * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
      */
     | 'moveend'
 
@@ -492,6 +501,7 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {{originalEvent: DragEvent}} data
+     * @see [Create a draggable marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
      */
     | 'dragend'
 
@@ -723,6 +733,7 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapDataEvent} data
+     * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
      */
     | 'data'
 
