@@ -33,11 +33,26 @@ import type {PaddingOptions} from '../geo/edge_insets';
  * @typedef {Object} CameraOptions
  * @property {LngLatLike} center The desired center.
  * @property {number} zoom The desired zoom level.
- * @property {number} bearing The desired bearing, in degrees. The bearing is the compass direction that
- * is "up"; for example, a bearing of 90° orients the map so that east is up.
- * @property {number} pitch The desired pitch, in degrees.
+ * @property {number} bearing The desired bearing in degrees. The bearing is the compass direction that
+ * is "up". For example, `bearing: 90` orients the map so that east is up.
+ * @property {number} pitch The desired pitch in degrees. The pitch is the angle towards the horizon
+ * measured in degrees with a range between 0 and 60 degrees. For example, `pitch: 0` results in a two-dimensional map,
+ * as if your line of sight forms a perpendicular angle with the earth's surface.
  * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
+ * @example
+ * // set the map's initial perspective with CameraOptions
+ * var map = new mapboxgl.Map({
+ *   container: 'map',
+ *   style: 'mapbox://styles/mapbox/streets-v11',
+ *   center: [-73.5804, 45.53483],
+ *   pitch: 60,
+ *   bearing: -60,
+ *   zoom: 10
+ * });
+ * @see [Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
+ * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
+ * @see [Fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto/)
  */
 export type CameraOptions = {
     center?: LngLatLike,
