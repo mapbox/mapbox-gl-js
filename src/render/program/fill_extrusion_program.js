@@ -94,7 +94,7 @@ const fillExtrusionUniformValues = (
         'u_lightintensity': light.properties.get('intensity'),
         'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b],
         'u_vertical_gradient': +shouldUseVerticalGradient,
-        'u_is_opaque_pass': isOpaquePass
+        'u_is_opaque_pass': +isOpaquePass
     };
 };
 

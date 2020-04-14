@@ -34,7 +34,8 @@ void main() {
     #pragma mapbox: initialize lowp float pixel_ratio_to
     #pragma mapbox: initialize lowp float opacity
 
-    if(opacity != 0.0 && (u_is_opaque_pass && opacity == 1.0)) {
+    bool visible = u_is_opaque_pass ? opacity > 0.999 : ( opacity > 0.001 && opacity <= 0.999);
+    if(visible) {
         vec2 pattern_tl_a = pattern_from.xy;
         vec2 pattern_br_a = pattern_from.zw;
         vec2 pattern_tl_b = pattern_to.xy;

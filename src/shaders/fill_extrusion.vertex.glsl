@@ -21,7 +21,8 @@ void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float opacity
 
-    if(opacity != 0.0 && (u_is_opaque_pass && opacity == 1.0)) {
+    bool visible = u_is_opaque_pass ? opacity > 0.999 : ( opacity > 0.001 && opacity <= 0.999);
+    if(visible) {
         vec3 normal = a_normal_ed.xyz;
 
         base = max(0.0, base);
