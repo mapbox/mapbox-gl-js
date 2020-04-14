@@ -4,7 +4,6 @@ uniform vec2 u_pixel_coord_lower;
 uniform float u_height_factor;
 uniform vec3 u_scale;
 uniform float u_vertical_gradient;
-uniform bool u_is_opaque_pass;
 
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
@@ -34,7 +33,7 @@ void main() {
     #pragma mapbox: initialize lowp float pixel_ratio_to
     #pragma mapbox: initialize lowp float opacity
 
-    bool visible = u_is_opaque_pass ? opacity > 0.999 : ( opacity > 0.001 && opacity <= 0.999);
+    bool visible = opacity > 0.001;
     if(visible) {
         vec2 pattern_tl_a = pattern_from.xy;
         vec2 pattern_br_a = pattern_from.zw;
