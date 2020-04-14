@@ -25,29 +25,40 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
     if (painter.renderPass === 'translucent') {
         const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+        const colorMode = painter.colorModeForRenderPass();
 
-        if (opacity.constantOr(1) === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
-            const colorMode = painter.colorModeForRenderPass();
-            drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
+        // If all extrusions are opaque we draw them only once.
+        if (opacity.constantOr(false) === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
+            drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, true);
 
         } else {
+            //If we have a mix of opaue and transparent extrusions we draw the opaque ones first so that they can show through transparent ones.
+            if(!opacity.isConstant()){
+                drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, true);
+            }
+
+
             // Draw transparent buildings in two passes so that only the closest surface is drawn.
             // First draw all the extrusions into only the depth buffer. No colors are drawn.
             drawExtrusionTiles(painter, source, layer, coords, depthMode,
                 StencilMode.disabled,
-                ColorMode.disabled);
+                ColorMode.disabled,
+                false
+            );
 
             // Then draw all the extrusions a second type, only coloring fragments if they have the
             // same depth value as the closest fragment in the previous pass. Use the stencil buffer
             // to prevent the second draw in cases where we have coincident polygons.
             drawExtrusionTiles(painter, source, layer, coords, depthMode,
                 painter.stencilModeFor3D(),
-                painter.colorModeForRenderPass());
+                colorMode,
+                false
+            );
         }
     }
 }
 
-function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode) {
+function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMode, colorMode, isOpaquePass) {
     const context = painter.context;
     const gl = context.gl;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
@@ -83,8 +94,8 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
 
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, coord, crossfade, tile) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient);
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, coord, crossfade, tile, isOpaquePass) :
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, isOpaquePass);
 
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
