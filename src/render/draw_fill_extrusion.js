@@ -28,14 +28,13 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         const colorMode = painter.colorModeForRenderPass();
 
         // If all extrusions are opaque we draw them only once.
-        if (opacity.constantOr(false) === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
+        if (opacity.constantOr(0) === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
             drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, true);
         } else {
             //If we have a mix of opaue and transparent extrusions we draw the opaque ones first so that they can show through transparent ones.
-            if(!opacity.isConstant()){
+            if (!opacity.isConstant()) {
                 drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, true);
             }
-
 
             // Draw transparent buildings in two passes so that only the closest surface is drawn.
             // First draw all the extrusions into only the depth buffer. No colors are drawn.
