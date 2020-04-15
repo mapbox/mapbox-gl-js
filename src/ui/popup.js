@@ -112,7 +112,7 @@ export default class Popup extends Evented {
      * @see [Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
      * @see [Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
-     * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
+     * @see [Show polygon information on click](https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/)
      */
     addTo(map: Map) {
         if (this._map) this.remove();
