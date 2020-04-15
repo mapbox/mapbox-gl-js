@@ -988,10 +988,30 @@ class Map extends Camera {
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
      * @example
-     * map.on('click', function(e) {
-     *   map.flyTo({ center: e.lngLat });
+     * // Set an event listener that will fire
+     * // when the map has finished loading
+     * map.on('load', function() {
+     *   // Once the map has finished loading,
+     *   // add a new layer
+     *   map.addLayer({
+     *     id: 'points-of-interest',
+     *     source: {
+     *       type: 'vector',
+     *       url: 'mapbox://mapbox.mapbox-streets-v8'
+     *     },
+     *     'source-layer': 'poi_label',
+     *     type: 'circle',
+     *     paint: {
+     *       // Mapbox Style Specification paint properties
+     *     },
+     *     layout: {
+     *       // Mapbox Style Specification layout properties
+     *     }
+     *   });
      * });
      * @example
+     * // Set an event listener that will fire
+     * // when the map is clicked
      * map.on('click', 'countries', function(e) {
      *   new mapboxgl.Popup()
      *     .setLngLat(e.lngLat)
