@@ -180,27 +180,23 @@
     "line": 925
   },
   {
-    "message": "layers[51].paint.fill-extrusion-opacity: data expressions not supported",
+    "message": "layers[51].paint.line-dasharray: Type array<number> is not interpolatable.",
     "line": 934
   },
   {
-    "message": "layers[52].paint.line-dasharray: Type array<number> is not interpolatable.",
+    "message": "layers[52].paint.heatmap-color: zoom expressions not supported",
     "line": 943
   },
   {
-    "message": "layers[53].paint.heatmap-color: zoom expressions not supported",
-    "line": 952
+    "message": "layers[53].paint.heatmap-color: zoom functions not supported",
+    "line": 951
   },
   {
-    "message": "layers[54].paint.heatmap-color: zoom functions not supported",
-    "line": 960
+    "message": "layers[54].layout.line-join: \"feature-state\" data expressions are not supported with layout properties.",
+    "line": 959
   },
   {
-    "message": "layers[55].layout.line-join: \"feature-state\" data expressions are not supported with layout properties.",
-    "line": 968
-  },
-  {
-    "message": "layers[56].paint.line-width.stops[0][1]: expressions are not allowed in function stops.",
-    "line": 981
+    "message": "layers[55].paint.line-width.stops[0][1]: expressions are not allowed in function stops.",
+    "line": 972
   }
 ]

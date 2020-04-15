@@ -3908,12 +3908,17 @@
           "android": "5.1.0",
           "ios": "3.6.0",
           "macos": "0.5.0"
+        },
+        "data-driven styling": {
+          "js": "1.11.0"
         }
       },
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"

@@ -926,15 +926,6 @@
       }
     },
     {
-      "id": "invalid expression - not a DDS property",
-      "type": "fill-extrusion",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "fill-extrusion-opacity": ["get", "opacity"]
-      }
-    },
-    {
       "id": "invalid expression - line-dasharray must use step interpolation",
       "type": "line",
       "source": "source",
