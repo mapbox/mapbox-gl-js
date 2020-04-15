@@ -51,6 +51,7 @@ export default class Marker extends Evented {
     _anchor: Anchor;
     _offset: Point;
     _element: HTMLElement;
+    _defaultSVG: HTMLElement;
     _popup: ?Popup;
     _lngLat: LngLat;
     _pos: ?Point;
@@ -189,6 +190,7 @@ export default class Marker extends Evented {
             svg.setAttributeNS(null, 'height', `${41 * this._scale}px`);
 
             this._element.appendChild(svg);
+            this._defaultSVG = svg;
 
             // if no element and no offset option given apply an offset for the default marker
             // the -14 as the y value of the default marker offset was determined as follows
@@ -400,8 +402,8 @@ export default class Marker extends Evented {
 
         this._pos = this._map.project(this._lngLat)._add(this._offset);
 
-        const svg = this._element.firstChild;
-        if (svg) {
+        if (this._defaultMarker) {
+            const svg = this._element.firstChild;
             svg.setAttributeNS(null, 'width', `${27 * this._scale}px`);
             svg.setAttributeNS(null, 'height', `${41 * this._scale}px`);
         }
@@ -562,7 +564,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Sets the `scale` property of the marker.
+     * Sets the `scale` property of the default marker.
      * @param {number} [scale=1] The scale of the marker, relative to its default size.
      * @returns {Marker} `this`
      */
@@ -573,7 +575,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns the current `scale` property of the marker.
+     * Returns the current `scale` property of the default marker.
      * @returns {number} The current scale of the marker.
      */
     getScale() {

@@ -36,14 +36,15 @@ test('Marker uses a default marker element with custom scale', (t) => {
     // scale smaller than default
     marker.setScale(0.8);
     // (27 * 0.8) = 21.6, (41 * 0.8) = 32.8
-    t.ok(marker.getElement.firstChild.getAttribute('width').includes(`21.6`));
-    t.ok(marker.getElement.firstChild.getAttribute('height').includes(`32.8`));
+    t.ok(marker.getElement().firstChild.getAttribute('width').includes(`21.6`));
+    t.ok(marker.getElement().firstChild.getAttribute('height').includes(`32.8`));
 
     // scale larger than default
     marker.setScale(2);
     // (27 * 2) = 54, (41 * 2) = 82
     t.ok(marker.getElement().firstChild.getAttribute('width').includes('54'));
     t.ok(marker.getElement().firstChild.getAttribute('height').includes('82'));
+
     t.end();
 });
 
