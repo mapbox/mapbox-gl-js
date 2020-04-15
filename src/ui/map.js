@@ -937,8 +937,8 @@ class Map extends Camera {
      * | [`mouseover`](#map.event:mouseover)                       | yes                       |
      * | [`mouseout`](#map.event:mouseout)                         | yes                       |
      * | [`mousemove`](#map.event:mousemove)                       | yes                       |
-     * | [`mouseenter`](#map.event:mouseenter)                     | yes                       |
-     * | [`mouseleave`](#map.event:mouseleave)                     | yes                       |
+     * | [`mouseenter`](#map.event:mouseenter)                     | yes (required)            |
+     * | [`mouseleave`](#map.event:mouseleave)                     | yes (required)            |
      * | [`click`](#map.event:click)                               | yes                       |
      * | [`dblclick`](#map.event:dblclick)                         | yes                       |
      * | [`contextmenu`](#map.event:contextmenu)                   | yes                       |
