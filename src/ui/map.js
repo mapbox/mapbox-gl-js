@@ -1913,8 +1913,8 @@ class Map extends Camera {
      * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
      * When using this method, the `state` object is merged with any existing key-value pairs in the feature's state.
      * Features are identified by their `feature.id` attribute, which can be any number or string.
-     * 
-     * This method can only be used with sources that have a `feature.id` attribute. The `feature.id` attribute can be defined in three ways: 
+     *
+     * This method can only be used with sources that have a `feature.id` attribute. The `feature.id` attribute can be defined in three ways:
      * - For vector or GeoJSON sources, including an `id` attribute in the original data file.
      * - For vector or GeoJSON sources, using the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option at the time the source is defined.
      * - For GeoJSON sources, using the [`generateId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-generateId) option to auto-assign an `id` based on the feature's index in the source data. If you change feature data using `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
@@ -2007,7 +2007,7 @@ class Map extends Camera {
      * Gets the `state` of a feature.
      * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
      * Features are identified by their `feature.id` attribute, which can be any number or string.
-     * 
+     *
      * _Note: To access the values in a feature's state object for the purposes of styling the feature, use the [`feature-state` expression](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#feature-state)._
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
