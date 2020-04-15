@@ -26,20 +26,6 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-var smallerMarker = new mapboxgl.Marker({scale: 0.8})
-    .setLngLat([-77.018, 38.88])
-    .addTo(map);
-
-console.log(smallerMarker.getElement().firstChild.getAttribute('height').includes('32.8'));
-
-smallerMarker.setScale(2);
-console.log("hello " + smallerMarker.getScale());
-console.log(smallerMarker.getElement().firstChild.getAttribute('width'));
-
-smallerMarker.setScale(0.2);
-console.log("hello " + smallerMarker.getScale());
-console.log(smallerMarker.getElement().firstChild.getAttribute('width'));
-
 </script>
 </body>
 </html>
