@@ -109,6 +109,10 @@ export default class Popup extends Evented {
      *   .setLngLat([0, 0])
      *   .setHTML("<h1>Null Island</h1>")
      *   .addTo(map);
+     * @see [Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
+     * @see [Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
     addTo(map: Map) {
         if (this._map) this.remove();
