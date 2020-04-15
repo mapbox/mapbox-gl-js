@@ -1704,7 +1704,7 @@ class Map extends Camera {
      * Moves a layer to a different z-position.
      *
      * @param {string} id The ID of the layer to move.
-     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before. When viewing the map, the layer you are moving will appear beneath the layer with ID `beforeId`. If `beforeId` is omitted, the layer will be appended to the end of the layers array and appear above all other layers on the map.
+     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before. When viewing the map, the `ID` layer will appear beneath the `beforeId` layer. If `beforeId` is omitted, the layer will be appended to the end of the layers array and appear above all other layers on the map.
      * @returns {Map} `this`
      *
      * @example
