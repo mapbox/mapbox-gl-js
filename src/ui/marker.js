@@ -403,9 +403,8 @@ export default class Marker extends Evented {
         this._pos = this._map.project(this._lngLat)._add(this._offset);
 
         if (this._defaultMarker) {
-            const svg = this._element.firstChild;
-            svg.setAttributeNS(null, 'width', `${27 * this._scale}px`);
-            svg.setAttributeNS(null, 'height', `${41 * this._scale}px`);
+            this._defaultSVG.setAttributeNS(null, 'width', `${27 * this._scale}px`);
+            this._defaultSVG.setAttributeNS(null, 'height', `${41 * this._scale}px`);
         }
 
         let rotation = "";
