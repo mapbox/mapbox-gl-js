@@ -104,6 +104,11 @@ export default class Popup extends Evented {
      *
      * @param {Map} map The Mapbox GL JS map to add the popup to.
      * @returns {Popup} `this`
+     * @example
+     * new mapboxgl.Popup()
+     *   .setLngLat([0, 0])
+     *   .setHTML("<h1>Null Island</h1>")
+     *   .addTo(map);
      */
     addTo(map: Map) {
         if (this._map) this.remove();
