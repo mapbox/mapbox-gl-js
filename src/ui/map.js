@@ -1704,13 +1704,12 @@ class Map extends Camera {
      * Moves a layer to a different z-position.
      *
      * @param {string} id The ID of the layer to move.
-     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
-     *   If this argument is omitted, the layer will be appended to the end of the layers array.
+     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before. The layer you are moving will visually sit beneath the layer with ID `beforeId`. If `beforeId` is omitted, the layer will be appended to the end of the layers array and appear above all other layers on the map.
      * @returns {Map} `this`
      *
      * @example
-     * // Move a layer with ID 'label' before the layer with ID 'waterways'.
-     * map.moveLayer('label', 'waterways');
+     * // Move a layer with ID 'polygon' before the layer with ID 'country-label'. The `polygon` layer will appear beneath the `country-label` layer on the map.
+     * map.moveLayer('polygon', 'country-label');
      */
     moveLayer(id: string, beforeId?: string) {
         this.style.moveLayer(id, beforeId);
