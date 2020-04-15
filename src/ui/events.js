@@ -270,6 +270,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the pointing device is pressed
+     * // within the map.
+     * map.on('mousedown', function() {
+     *   console.log('A mousedown event has occurred.');
+     * });
      * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
@@ -282,6 +291,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the pointing device is released
+     * // within the map.
+     * map.on('mouseup', function() {
+     *   console.log('A mouseup event has occurred.');
+     * });
      * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
@@ -294,6 +312,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the pointing is moved
+     * // within the map.
+     * map.on('mouseover', function() {
+     *   console.log('A mouseover event has occurred.');
+     * });
      * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
@@ -307,6 +334,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the pointing device is moved
+     * // within the map.
+     * map.on('mousemove', function() {
+     *   console.log('A mousemove event has occurred.');
+     * });
      * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Display a popup on over](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
@@ -320,6 +356,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the pointing device is pressed and
+     * // released at the same point within the map.
+     * map.on('click', function(e) {
+     *   console.log('A click event has occurred at ' + e.lngLat);
+     * });
      * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
      * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
@@ -332,6 +377,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the pointing device is pressed and
+     * // released twice at the same point within the map.
+     * map.on('dblclick', function() {
+     *   console.log('A dblclick event has occurred.');
+     * });
      */
     | 'dblclick'
 
@@ -344,6 +398,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the pointing device enters
+     * // a visible portion of the specified layer.
+     * map.on('mouseenter', 'water', function() {
+     *   console.log('A mouseenter event occurred.');
+     * });
      * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
@@ -358,6 +421,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the pointing device leaves
+     * // a visible portion of the specified layer.
+     * map.on('mouseleave', 'water', function() {
+     *   console.log('A mouseleave event occurred.');
+     * });
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
@@ -370,6 +442,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the pointing device leave's
+     * // the map's canvas.
+     * map.on('mouseout', function() {
+     *   console.log('A mouseout event occurred.');
+     * });
      */
     | 'mouseout'
 
@@ -380,6 +461,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the right mouse button is
+     * // pressed within the map.
+     * map.on('contextmenu', function() {
+     *   console.log('A contextmenu event occurred.');
+     * });
      */
     | 'contextmenu'
 
@@ -390,6 +480,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapWheelEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when a wheel event occurs within the map.
+     * map.on('wheel', function() {
+     *   console.log('A wheel event occurred.');
+     * });
      */
     | 'wheel'
 
@@ -400,6 +498,13 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapTouchEvent} data
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when a touchstart event occurs within the map.
+     * map.on('touchstart', function() {
+     *   console.log('A touchstart event occurred.');
+     * });
      * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchstart'
@@ -411,6 +516,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when a touchstart event occurs within the map.
+     * map.on('touchstart', function() {
+     *   console.log('A touchstart event occurred.');
+     * });
      * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchend'
@@ -422,6 +535,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when a touchmove event occurs within the map.
+     * map.on('touchmove', function() {
+     *   console.log('A touchmove event occurred.');
+     * });
      * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'touchmove'
@@ -433,6 +554,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when a touchcancel event occurs within the map.
+     * map.on('touchcancel', function() {
+     *   console.log('A touchcancel event occurred.');
+     * });
      */
     | 'touchcancel'
 
@@ -444,6 +573,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {{originalEvent: DragEvent}} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just before the map begins a transition
+     * // from one view to another.
+     * map.on('movestart', function() {
+     *   console.log('A movestart` event occurred.');
+     * });
      */
     | 'movestart'
 
@@ -455,6 +593,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // repeatedly during an animated transition.
+     * map.on('move', function() {
+     *   console.log('A move event occurred.');
+     * });
      * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
@@ -468,6 +614,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {{originalEvent: DragEvent}} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just after the map completes a transition.
+     * map.on('moveend', function() {
+     *   console.log('A moveend event occurred.');
+     * });
      * @see [Play map locations as a slideshow](https://www.mapbox.com/mapbox-gl-js/example/playback-locations/)
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
@@ -481,6 +635,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {{originalEvent: DragEvent}} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when a "drag to pan" interaction starts.
+     * map.on('dragstart', function() {
+     *   console.log('A dragstart event occurred.');
+     * });
      */
     | 'dragstart'
 
@@ -491,6 +653,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // repeatedly  during a "drag to pan" interaction.
+     * map.on('drag', function() {
+     *   console.log('A drag event occurred.');
+     * });
      */
     | 'drag'
 
@@ -501,6 +671,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {{originalEvent: DragEvent}} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when a "drag to pan" interaction ends.
+     * map.on('dragend', function() {
+     *   console.log('A dragend event occurred.');
+     * });
      * @see [Create a draggable marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
      */
     | 'dragend'
@@ -513,6 +691,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just before a zoom transition starts.
+     * map.on('zoomstart', function() {
+     *   console.log('A zoomstart event occurred.');
+     * });
      */
     | 'zoomstart'
 
@@ -524,6 +710,13 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // repeatedly during a zoom transition.
+     * map.on('zoom', function() {
+     *   console.log('A zoom event occurred.');
+     * });
      * @see [Update a choropleth layer by zoom level](https://www.mapbox.com/mapbox-gl-js/example/updating-choropleth/)
      */
     | 'zoom'
@@ -536,6 +729,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just after a zoom transition finishes.
+     * map.on('zoomend', function() {
+     *   console.log('A zoomend event occurred.');
+     * });
      */
     | 'zoomend'
 
@@ -546,6 +747,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just before a "drag to rotate" interaction starts.
+     * map.on('rotatestart', function() {
+     *   console.log('A rotatestart event occurred.');
+     * });
      */
     | 'rotatestart'
 
@@ -556,6 +765,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // repeatedly during "drag to rotate" interaction.
+     * map.on('rotate', function() {
+     *   console.log('A rotate event occurred.');
+     * });
      */
     | 'rotate'
 
@@ -566,6 +783,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just after a "drag to rotate" interaction ends.
+     * map.on('rotateend', function() {
+     *   console.log('A rotateend event occurred.');
+     * });
      */
     | 'rotateend'
 
@@ -577,17 +802,34 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapEventData} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just before a pitch (tilt) transition starts.
+     * map.on('pitchstart', function() {
+     *   console.log('A pitchstart event occurred.');
+     * });
      */
     | 'pitchstart'
 
     /**
-     * Fired whenever the map's pitch (tilt) changes as
-     * the result of either user interaction or methods such as {@link Map#flyTo}.
+     * Fired repeatedly during the map's pitch (tilt) animation between
+     * one state and another as the result of either user interaction
+     * or methods such as {@link Map#flyTo}.
      *
      * @event pitch
      * @memberof Map
      * @instance
      * @property {MapEventData} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // repeatedly during a pitch (tilt) transition.
+     * map.on('pitch', function() {
+     *   console.log('A pitch event occurred.');
+     * });
      */
     | 'pitch'
 
@@ -599,6 +841,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapEventData} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just after a pitch (tilt) transition ends.
+     * map.on('pitchend', function() {
+     *   console.log('A pitchend event occurred.');
+     * });
      */
     | 'pitchend'
 
@@ -609,6 +859,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapBoxZoomEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just before a "box zoom" interaction starts.
+     * map.on('boxzoomstart', function() {
+     *   console.log('A boxzoomstart event occurred.');
+     * });
      */
     | 'boxzoomstart'
 
@@ -620,6 +878,14 @@ export type MapEvent =
      * @instance
      * @type {Object}
      * @property {MapBoxZoomEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just after a "box zoom" interaction ends.
+     * map.on('boxzoomend', function() {
+     *   console.log('A boxzoomend event occurred.');
+     * });
      */
     | 'boxzoomend'
 
@@ -631,6 +897,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapBoxZoomEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // the user cancels a "box zoom" interaction.
+     * map.on('boxzoomcancel', function() {
+     *   console.log('A boxzoomcancel event occurred.');
+     * });
      */
     | 'boxzoomcancel'
 
@@ -640,6 +914,14 @@ export type MapEvent =
      * @event resize
      * @memberof Map
      * @instance
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // immediately after the map has been resized.
+     * map.on('resize', function() {
+     *   console.log('A resize event occurred.');
+     * });
      */
     | 'resize'
 
@@ -649,6 +931,14 @@ export type MapEvent =
      * @event webglcontextlost
      * @memberof Map
      * @instance
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the WebGL context is lost.
+     * map.on('webglcontextlost', function() {
+     *   console.log('A webglcontextlost event occurred.');
+     * });
      */
     | 'webglcontextlost'
 
@@ -658,6 +948,14 @@ export type MapEvent =
      * @event webglcontextrestored
      * @memberof Map
      * @instance
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the WebGL context is restored.
+     * map.on('webglcontextrestored', function() {
+     *   console.log('A webglcontextrestored event occurred.');
+     * });
      */
     | 'webglcontextrestored'
 
@@ -669,6 +967,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @type {Object}
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the map has finished loading.
+     * map.on('load', function() {
+     *   console.log('A load event occurred.');
+     * });
      * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
      * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
      * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
@@ -686,6 +992,14 @@ export type MapEvent =
      * @event render
      * @memberof Map
      * @instance
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // whenever the map is drawn to the screen.
+     * map.on('render', function() {
+     *   console.log('A render event occurred.');
+     * });
      */
     | 'render'
 
@@ -700,6 +1014,14 @@ export type MapEvent =
      * @event idle
      * @memberof Map
      * @instance
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just before the map enters an "idle" state.
+     * map.on('idle', function() {
+     *   console.log('A idle event occurred.');
+     * });
      */
     | 'idle'
 
@@ -709,6 +1031,14 @@ export type MapEvent =
      * @event remove
      * @memberof Map
      * @instance
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // just after the map is removed.
+     * map.on('remove', function() {
+     *   console.log('A remove event occurred.');
+     * });
      */
     | 'remove'
 
@@ -722,6 +1052,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {{error: {message: string}}} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when an error occurs.
+     * map.on('error', function() {
+     *   console.log('A error event occurred.');
+     * });
      */
     | 'error'
 
@@ -733,6 +1071,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapDataEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when map data loads or changes.
+     * map.on('data', function() {
+     *   console.log('A data event occurred.');
+     * });
      * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
      */
     | 'data'
@@ -745,6 +1091,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapDataEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when the map's style loads or changes.
+     * map.on('styledata', function() {
+     *   console.log('A styledata event occurred.');
+     * });
      */
     | 'styledata'
 
@@ -756,6 +1110,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapDataEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when one of the map's sources loads or changes.
+     * map.on('sourcedata', function() {
+     *   console.log('A sourcedata event occurred.');
+     * });
      */
     | 'sourcedata'
 
@@ -768,6 +1130,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapDataEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // when any map data begins loading
+     * // or changing asynchronously.
+     * map.on('dataloading', function() {
+     *   console.log('A dataloading event occurred.');
+     * });
      */
     | 'dataloading'
 
@@ -780,6 +1151,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapDataEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // map's style begins loading or
+     * // changing asyncronously.
+     * map.on('styledataloading', function() {
+     *   console.log('A styledataloading event occurred.');
+     * });
      */
     | 'styledataloading'
 
@@ -792,6 +1172,15 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapDataEvent} data
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // map's sources begin loading or
+     * // changing asyncronously.
+     * map.on('sourcedataloading', function() {
+     *   console.log('A sourcedataloading event occurred.');
+     * });
      */
     | 'sourcedataloading'
 
@@ -804,7 +1193,14 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {string} id The id of the missing image.
-     *
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener that fires
+     * // an icon or pattern is missing.
+     * map.on('styleimagemissing', function() {
+     *   console.log('A styleimagemissing event occurred.');
+     * });
      * @see [Generate and add a missing icon to the map](https://mapbox.com/mapbox-gl-js/example/add-image-missing-generated/)
      */
     | 'styleimagemissing'
