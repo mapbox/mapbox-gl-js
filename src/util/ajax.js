@@ -35,12 +35,12 @@ if (typeof Object.freeze == 'function') {
 }
 
 /**
- * A `RequestParameters` object to be returned from Map.options.transformRequest callbacks. 
+ * A `RequestParameters` object to be returned from Map.options.transformRequest callbacks.
  * @typedef {Object} RequestParameters
  * @property {string} url The URL to be requested.
  * @property {Object} headers The headers to be sent with the request.
  * @property {string} method Request method `'GET' | 'POST' | 'PUT'`.
- * @property {string} body Request body. 
+ * @property {string} body Request body.
  * @property {string} type Response body type to be returned `'string' | 'json' | 'arrayBuffer'`.
  * @property {string} credentials `'same-origin'|'include'` Use 'include' to send cookies with cross-origin requests.
  * @property {Boolean} collectResourceTiming If true, Resource Timing API information will be collected for these transformed requests and returned in a resourceTiming property of relevant data events.
@@ -55,7 +55,7 @@ if (typeof Object.freeze == 'function') {
  *    }
  *   }
  *  }
- * // Example of `RequestParameters` object returned from the above transformRequest function. 
+ * // Example of `RequestParameters` object returned from the above transformRequest function.
  * {
  *  url: 'https://myHost//assets/sample.geojson'
  *  headers: {'my-custom-header': true}
