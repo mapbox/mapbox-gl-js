@@ -20,6 +20,7 @@ import Color from '../style-spec/util/color';
 import StencilMode from '../gl/stencil_mode';
 import {DepthStencilAttachment} from '../gl/value';
 import drawTerrainRaster from './draw_terrain_raster';
+import {Elevation} from './elevation';
 
 import type Map from '../ui/map';
 import type Tile from '../source/tile';
@@ -31,6 +32,8 @@ import type IndexBuffer from '../gl/index_buffer';
 import type Context from '../gl/context';
 import type DEMData from '../data/dem_data';
 import type {UniformLocations} from '../render/uniform_binding';
+import type Transform from '../geo/transform';
+import type {Callback} from '../types/callback';
 
 export const GRID_DIM = 128;
 
@@ -63,6 +66,13 @@ class ProxySourceCache extends SourceCache {
 
         this.renderedToTile = {};
     }
+
+    // Override as tile shouldn't go through loading state: always loaded to prevent
+    // using stale tiles.
+    _loadTile(tile: Tile, callback: Callback<void>) {
+        tile.state = 'loaded';
+        callback(null);
+    }
 }
 
 /**
@@ -82,7 +92,7 @@ class ProxiedTileID extends OverscaledTileID {
     }
 }
 
-export class Terrain {
+export class Terrain extends Elevation {
     terrainTileForTile: {[string]: Tile};
     painter: Painter;
     sourceCache: SourceCache;
@@ -104,6 +114,7 @@ export class Terrain {
     stencilModeForOverlap: StencilMode;
 
     constructor(painter: Painter, style: Style) {
+        super();
         this.painter = painter;
 
         // Terrain rendering grid is 129x129 cell grid, made by 130x130 points.
@@ -130,7 +141,12 @@ export class Terrain {
         });
     }
 
-    update(style: Style) {
+    /*
+     * Validate terrain and update source cache used for elevation.
+     * Explicitly pass transform to update elevation (Transform.updateElevation)
+     * before using transform for source cache update.
+     */
+    update(style: Style, transform: Transform) {
         const terrainSpec = style.stylesheet.terrain;
         const sourceId = terrainSpec && terrainSpec.source;
         this.valid = false;
@@ -138,9 +154,13 @@ export class Terrain {
         const sourceCaches = style.sourceCaches;
         this.sourceCache = sourceCaches[sourceId];
         if (!this.sourceCache) return console.warn(`Terrain source "${sourceId}" is not defined.`);
+        if (this.sourceCache.getSource().type !== 'raster-dem') {
+            return console.warn(`Terrain cannot use source "${sourceId}" for terrain. Only 'raster-dem' source type is supported.`);
+        }
         const demTileSize = this.sourceCache.getSource().tileSize;
         this.valid = true;
-        const tr = this.painter.transform;
+        const tr = transform;
+        tr.updateElevation();
         this.sourceCache.usedForTerrain = true;
 
         if (this.sourceCache.used) {
@@ -153,6 +173,12 @@ export class Terrain {
             this.sourceCache.update(tr, true);
             tr.zoom = originalZoom;
         }
+    }
+
+    // Implements Elevation::_source.
+    _source(): SourceCache {
+        assert(this.valid);
+        return this.sourceCache;
     }
 
     // For every renderable coordinate in every source cache, assign one proxy

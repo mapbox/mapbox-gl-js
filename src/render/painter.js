@@ -151,15 +151,27 @@ class Painter {
     updateTerrain(style: Style) {
         const enabled = style.stylesheet && style.stylesheet.terrain;
         if (!enabled) {
-            if (this.terrain) delete this.terrain;
+            this.transform.elevation = null;
+            if (this.terrain) {
+                this.terrain.valid = false;
+                // Remove references. this.terrain is used to check if enabled.
+                delete this.terrain;
+            }
             for (const id in style.sourceCaches) {
                 style.sourceCaches[id].usedForTerrain = false;
             }
             this.enableTileClipping = true;
             return;
         }
-        if (!this.terrain) this.terrain = new Terrain(this, style);
-        this.terrain.update(style);
+        if (!this.terrain) {
+            this.terrain = new Terrain(this, style);
+        }
+        const terrain: Terrain = this.terrain;
+        this.transform.elevation = this.terrain;
+        terrain.update(style, this.transform);
+        if (!terrain.valid) {
+            this.transform.elevation = null;
+        }
         this.enableTileClipping = false;
     }
 

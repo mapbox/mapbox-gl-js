@@ -1,7 +1,6 @@
 // @flow
 
 import {vec3, vec4} from 'gl-matrix';
-import assert from 'assert';
 
 class Frustum {
     points: Array<Array<number>>;
@@ -71,7 +70,7 @@ class Aabb {
             qMin[axis] = split[axis] ? this.min[axis] : this.center[axis];
             qMax[axis] = split[axis] ? this.center[axis] : this.max[axis];
         }
-        // Elevation is always constant, hence quadrant.max.z = this.max.z
+        // Temporarily, elevation is constant, hence quadrant.max.z = this.max.z
         qMax[2] = this.max[2];
         return new Aabb(qMin, qMax);
     }
@@ -91,14 +90,16 @@ class Aabb {
     intersects(frustum: Frustum): number {
         // Execute separating axis test between two convex objects to find intersections
         // Each frustum plane together with 3 major axes define the separating axes
-        // Note: test only 4 points as both min and max points have equal elevation
-        assert(this.min[2] === 0 && this.max[2] === 0);
 
         const aabbPoints = [
-            [this.min[0], this.min[1], 0.0, 1],
-            [this.max[0], this.min[1], 0.0, 1],
-            [this.max[0], this.max[1], 0.0, 1],
-            [this.min[0], this.max[1], 0.0, 1]
+            [this.min[0], this.min[1], this.min[2], 1],
+            [this.max[0], this.min[1], this.min[2], 1],
+            [this.max[0], this.max[1], this.min[2], 1],
+            [this.min[0], this.max[1], this.min[2], 1],
+            [this.min[0], this.min[1], this.max[2], 1],
+            [this.max[0], this.min[1], this.max[2], 1],
+            [this.max[0], this.max[1], this.max[2], 1],
+            [this.min[0], this.max[1], this.max[2], 1],
         ];
 
         let fullyInside = true;
