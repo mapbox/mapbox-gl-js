@@ -1326,9 +1326,9 @@ class Map extends Camera {
     }
 
     /**
-     * Returns the map's Mapbox style object, which can be used to recreate the map's style.
+     * Returns the map's Mapbox [style](https://docs.mapbox.com/help/glossary/style/) object, a JSON object which can be used to recreate the map's style.
      *
-     * @returns {Object} The map's style object.
+     * @returns {Object} The map's style JSON object.
      *
      * @example
      * var styleJson = map.getStyle();
