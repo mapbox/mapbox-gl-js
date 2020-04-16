@@ -1,6 +1,32 @@
 import {test} from '../../../util/test';
 import {getIntersectionDistance} from '../../../../src/style/style_layer/fill_extrusion_style_layer';
+import createStyleLayer from '../../../../src/style/create_style_layer';
 import Point from '@mapbox/point-geometry';
+// 'fill-extrusion'
+
+test('no paint property set', (t) => {
+    t.test('queryIntersectsFeature bails out with no paint property set', (t) => {
+        const layer = createStyleLayer({
+            "id": "fill-extrusion",
+            "type": "fill-extrusion"
+        });
+
+        // function bails out with no paint property set
+        t.equal(layer.queryIntersectsFeature(), false);
+        t.end();
+    });
+
+    t.test('queryRadius bails out with no paint property set', (t) => {
+        const layer = createStyleLayer({
+            "id": "fill-extrusion",
+            "type": "fill-extrusion"
+        });
+
+        // function bails out with no paint property set
+        t.equal(layer.queryRadius(), 0);
+        t.end();
+    });
+});
 
 test('getIntersectionDistance', (t) => {
     const queryPoint = [new Point(100, 100)];

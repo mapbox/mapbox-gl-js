@@ -30,7 +30,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     queryRadius(): number {
-        return translateDistance(this.paint.get('fill-extrusion-translate'));
+        if (this.paint) {
+            return translateDistance(this.paint.get('fill-extrusion-translate'));
+        }
+        return 0;
     }
 
     is3D(): boolean {
@@ -46,6 +49,9 @@ class FillExtrusionStyleLayer extends StyleLayer {
                            pixelsToTileUnits: number,
                            pixelPosMatrix: Float32Array): boolean | number {
 
+        if (!this.paint) {
+            return false;
+        }
         const translatedPolygon = translate(queryGeometry,
             this.paint.get('fill-extrusion-translate'),
             this.paint.get('fill-extrusion-translate-anchor'),
