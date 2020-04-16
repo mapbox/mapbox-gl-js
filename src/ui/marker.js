@@ -378,16 +378,22 @@ export default class Marker extends Evented {
      *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
      *  .addTo(map);
      *
-     * var popupContent = marker.getPopup(); // return the popup instance
-     * console.log(popupContent._content);
+     * console.log(marker.getPopup()); // return the popup instance
      */
     getPopup() {
         return this._popup;
     }
 
     /**
-     * Opens or closes the bound popup, depending on the current state
+     * Opens or closes the Popup instance that is bound to the Marker, depending on the current state of the Popup.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *  .addTo(map);
+     *
+     * marker.togglePopup(); // toggle popup open or closed
      */
     togglePopup() {
         const popup = this._popup;
