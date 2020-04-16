@@ -239,7 +239,7 @@ class GeoJSONSource extends Evented implements Source {
      
      *    var clusterId = features[0].properties.cluster_id;
 	 *    var pointCount = features[0].properties.point_count;
-	 *	  var clusterSource = map.getSource('clusters');
+	 *    var clusterSource = map.getSource('clusters');
 
      *  clusterSource.getClusterLeaves(clusterId, pointCount, 0, (error, features) => {
      *    // Print cluster leaves in the console
