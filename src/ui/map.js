@@ -2582,10 +2582,15 @@ function removeNode(node) {
  * `x` and `y` properties representing screen coordinates in pixels.
  *
  * @typedef {Object} Point
+ * @example
+ * var point = Point(-77, 38);
  */
 
 /**
  * A {@link Point} or an array of two numbers representing `x` and `y` screen coordinates in pixels.
  *
  * @typedef {(Point | Array<number>)} PointLike
+ * @example
+ * var p1 = Point(-77, 38); // a PointLike which is a Point
+ * var p2 = [-77, 38]; // a PointLike which is an array of two numbers
  */
