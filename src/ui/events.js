@@ -293,6 +293,10 @@ export type MapEvent =
     /**
      * Fired when a pointing device (usually a mouse) is pressed within the map.
      *
+     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
+     * the cursor is pressed while inside a visible portion of the specifed layer.
+     *
      * @event mousedown
      * @memberof Map
      * @instance
@@ -300,19 +304,28 @@ export type MapEvent =
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when the pointing device is pressed
-     * // within the map.
+     * // Set an event listener
      * map.on('mousedown', function() {
      *   console.log('A mousedown event has occurred.');
      * });
-     * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
-     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener for a specific layer
+     * map.on('mousedown', 'poi-label', function() {
+     *   console.log('A mousedown event has occurred on a visible portion of the poi-label layer.');
+     * });
+     * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'mousedown'
 
     /**
      * Fired when a pointing device (usually a mouse) is released within the map.
+     *
+     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
+     * the cursor is released while inside a visible portion of the specifed layer.
      *
      * @event mouseup
      * @memberof Map
@@ -321,19 +334,30 @@ export type MapEvent =
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when the pointing device is released
-     * // within the map.
+     * // Set an event listener
      * map.on('mouseup', function() {
      *   console.log('A mouseup event has occurred.');
      * });
-     * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
-     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener for a specific layer
+     * map.on('mouseup', 'poi-label', function() {
+     *   console.log('A mouseup event has occurred on a visible portion of the poi-label layer.');
+     * });
+     * @see [Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     | 'mouseup'
 
     /**
      * Fired when a pointing device (usually a mouse) is moved within the map.
+     * As you move the cursor across a web page containing a map,
+     * the event will fire each time it enters the map and any child elements.
+     *
+     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
+     * the cursor is moved inside a visible portion of the specifed layer.
      *
      * @event mouseover
      * @memberof Map
@@ -342,11 +366,16 @@ export type MapEvent =
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when the pointing is moved
-     * // within the map.
+     * // Set an event listener
      * map.on('mouseover', function() {
      *   console.log('A mouseover event has occurred.');
+     * });
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener for a specific layer
+     * map.on('mouseover', 'poi-label', function() {
+     *   console.log('A mouseover event has occurred on a visible portion of the poi-label layer.');
      * });
      * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
@@ -355,7 +384,12 @@ export type MapEvent =
     | 'mouseover'
 
     /**
-     * Fired when a pointing device (usually a mouse) is moved within the map.
+     * Fired when a pointing device (usually a mouse) is moved while the cursor's hotspot is inside the map.
+     * As you move the cursor across the map, the event will fire everytime the cursor changes position within the map.
+     *
+     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
+     * the cursor's hotspot is inside a visible portion of the specifed layer.
      *
      * @event mousemove
      * @memberof Map
@@ -364,11 +398,16 @@ export type MapEvent =
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when the pointing device is moved
-     * // within the map.
+     * // Set an event listener
      * map.on('mousemove', function() {
      *   console.log('A mousemove event has occurred.');
+     * });
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener for a specific layer
+     * map.on('mousemove', 'poi-label', function() {
+     *   console.log('A mousemove event has occurred on a visible portion of the poi-label layer.');
      * });
      * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
@@ -379,6 +418,10 @@ export type MapEvent =
     /**
      * Fired when a pointing device (usually a mouse) is pressed and released at the same point on the map.
      *
+     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
+     * point that is pressed and released contains a visible portion of the specifed layer.
+     *
      * @event click
      * @memberof Map
      * @instance
@@ -386,11 +429,16 @@ export type MapEvent =
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when the pointing device is pressed and
-     * // released at the same point within the map.
+     * // Set an event listener
      * map.on('click', function(e) {
      *   console.log('A click event has occurred at ' + e.lngLat);
+     * });
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener for a specific layer
+     * map.on('click', 'poi-label', function(e) {
+     *   console.log('A click event has occurred on a visible portion of the poi-label layer at ' + e.lngLat);
      * });
      * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
      * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
@@ -398,7 +446,12 @@ export type MapEvent =
     | 'click'
 
     /**
-     * Fired when a pointing device (usually a mouse) is clicked twice at the same point on the map.
+     * Fired when a pointing device (usually a mouse) is pressed and released twice at the same point on
+     * the map in rapid succession.
+     *
+     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only
+     * when the point that is clicked twice contains a visible portion of the specifed layer.
      *
      * @event dblclick
      * @memberof Map
@@ -407,19 +460,26 @@ export type MapEvent =
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when the pointing device is pressed and
-     * // released twice at the same point within the map.
-     * map.on('dblclick', function() {
-     *   console.log('A dblclick event has occurred.');
+     * // Set an event listener
+     * map.on('dblclick', function(e) {
+     *   console.log('A dblclick event has occurred at ' + e.lngLat);
+     * });
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * // Set an event listener for a specific layer
+     * map.on('dblclick', 'poi-label', function(e) {
+     *   console.log('A dblclick event has occurred on a visible portion of the poi-label layer at ' + e.lngLat);
      * });
      */
     | 'dblclick'
 
     /**
      * Fired when a pointing device (usually a mouse) enters a visible portion of a specified layer from
-     * outside that layer or outside the map canvas. This event can only be listened for via the three-argument
-     * version of {@link Map#on}, where the second argument specifies the desired layer.
+     * outside that layer or outside the map canvas.
+     *
+     * **Important:** This event can only be listened for when {@link Map#on} includes three arguements,
+     * where the second argument specifies the desired layer.
      *
      * @event mouseenter
      * @memberof Map
@@ -428,11 +488,9 @@ export type MapEvent =
      * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
-     * // Set an event listener that fires
-     * // when the pointing device enters
-     * // a visible portion of the specified layer.
+     * // Set an event listener
      * map.on('mouseenter', 'water', function() {
-     *   console.log('A mouseenter event occurred.');
+     *   console.log('A mouseenter event occurred on a visible portion of the water layer.');
      * });
      * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
@@ -441,7 +499,9 @@ export type MapEvent =
 
     /**
      * Fired when a pointing device (usually a mouse) leaves a visible portion of a specified layer, or leaves
-     * the map canvas. This event can only be listened for via the three-argument version of {@link Map#on},
+     * the map canvas.
+     *
+     * **Important:** This event can only be listened for when {@link Map#on} includes three arguements,
      * where the second argument specifies the desired layer.
      *
      * @event mouseleave
