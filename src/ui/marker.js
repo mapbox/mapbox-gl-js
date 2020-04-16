@@ -304,7 +304,7 @@ export default class Marker extends Evented {
      * @example
      * var marker = new mapboxgl.Marker()
      *  .setLngLat([0, 0])
-     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>");) // add popup
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>")) // add popup
      *  .addTo(map);
      * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
@@ -370,8 +370,16 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns the Popup instance that is bound to the Marker
+     * Returns the Popup instance that is bound to the Marker.
      * @returns {Popup} popup
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *  .addTo(map);
+     *
+     * var popupContent = marker.getPopup(); // return the popup instance
+     * console.log(popupContent._content);
      */
     getPopup() {
         return this._popup;
