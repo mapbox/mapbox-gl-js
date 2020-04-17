@@ -11,6 +11,7 @@ test('no paint property set', (t) => {
             "type": "fill-extrusion"
         });
 
+        t.notOk(layer.paint);
         // function bails out with no paint property set
         t.equal(layer.queryIntersectsFeature(null, null, null, [], 0, null, 0, null), false);
         t.end();
@@ -21,7 +22,7 @@ test('no paint property set', (t) => {
             "id": "fill-extrusion",
             "type": "fill-extrusion"
         });
-
+        t.notOk(layer.paint);
         // function bails out with no paint property set
         t.equal(layer.queryRadius(), 0);
         t.end();
