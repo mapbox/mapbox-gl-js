@@ -222,7 +222,7 @@ export default class Marker extends Evented {
      * @example
      * var marker = new mapboxgl.Marker()
      *   .setLngLat([30.5, 50.5])
-     *   .addTo(map);
+     *   .addTo(map); // add the marker to the map 
      */
     addTo(map: Map) {
         this.remove();
