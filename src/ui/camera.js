@@ -177,6 +177,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns The map's current zoom level.
+     * @example
+     * map.getZoom();
      */
     getZoom(): number { return this.transform.zoom; }
 
@@ -194,7 +196,7 @@ class Camera extends Evented {
      * @fires zoomend
      * @returns {Map} `this`
      * @example
-     * // zoom the map to 5
+     * // zoom the map to 5 without an animated transition
      * map.setZoom(5);
      */
     setZoom(zoom: number, eventData?: Object) {
@@ -216,6 +218,14 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @returns {Map} `this`
+     * @example
+     * // zoom the map to 5 with an animated transition
+     * map.zoomTo(5);
+     * // zoom the map to 8 with custom animation options
+     * map.zoomTo(8, {
+     *   duration: 2000,
+     *   offset: [100, 50]
+     * });
      */
     zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
@@ -236,6 +246,9 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @returns {Map} `this`
+     * @example
+     * // zoom the map in one level with a custom animation duration
+     * map.zoomIn({duration: 1000});
      */
     zoomIn(options?: AnimationOptions, eventData?: Object) {
         this.zoomTo(this.getZoom() + 1, options, eventData);
@@ -255,6 +268,9 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @returns {Map} `this`
+     * @example
+     * // zoom the map out one level with a custom animation offset
+     * map.zoomOut({offset: [80, 60]});
      */
     zoomOut(options?: AnimationOptions, eventData?: Object) {
         this.zoomTo(this.getZoom() - 1, options, eventData);
