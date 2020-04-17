@@ -14,7 +14,7 @@ test('loadTile', (t) => {
             dim: 256
         }, (err, data) => {
             if (err) t.fail();
-            t.deepEqual(Object.keys(source.loaded), [0]);
+            t.deepEqual(Object.keys(source.loaded), ['0']);
             t.ok(data instanceof DEMData, 'returns DEM data');
 
             t.end();

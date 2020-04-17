@@ -1,4 +1,4 @@
-import {test} from '../../util/test';
+import {test, testWithSetupTeardown} from '../../util/test';
 import RasterTileSource from '../../../src/source/raster_tile_source';
 import window from '../../../src/util/window';
 import {OverscaledTileID} from '../../../src/source/tile_id';
@@ -20,17 +20,19 @@ function createSource(options, transformCallback) {
 }
 
 test('RasterTileSource', (t) => {
-    t.beforeEach((callback) => {
+
+    function setup(t) {
         window.useFakeXMLHttpRequest();
-        callback();
-    });
-
-    t.afterEach((callback) => {
+        t.end();
+    }
+    function teardown(t) {
         window.restore();
-        callback();
-    });
+        t.end();
+    }
 
-    t.test('transforms request for TileJSON URL', (t) => {
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
+
+    wrappedTest('transforms request for TileJSON URL', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,
@@ -50,7 +52,7 @@ test('RasterTileSource', (t) => {
         t.end();
     });
 
-    t.test('respects TileJSON.bounds', (t) => {
+    wrappedTest('respects TileJSON.bounds', (t) => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -67,7 +69,7 @@ test('RasterTileSource', (t) => {
         });
     });
 
-    t.test('does not error on invalid bounds', (t) => {
+    wrappedTest('does not error on invalid bounds', (t) => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -84,7 +86,7 @@ test('RasterTileSource', (t) => {
         });
     });
 
-    t.test('respects TileJSON.bounds when loaded from TileJSON', (t) => {
+    wrappedTest('respects TileJSON.bounds when loaded from TileJSON', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,
@@ -104,7 +106,7 @@ test('RasterTileSource', (t) => {
         window.server.respond();
     });
 
-    t.test('transforms tile urls before requesting', (t) => {
+    wrappedTest('transforms tile urls before requesting', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,
@@ -132,7 +134,7 @@ test('RasterTileSource', (t) => {
         window.server.respond();
     });
 
-    t.test('cancels TileJSON request if removed', (t) => {
+    wrappedTest('cancels TileJSON request if removed', (t) => {
         const source = createSource({url: "/source.json"});
         source.onRemove();
         t.equal(window.server.lastRequest.aborted, true);

@@ -1,4 +1,4 @@
-import {test} from '../../util/test';
+import {test, testWithSetupTeardown} from '../../util/test';
 import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
 import window from '../../../src/util/window';
 import {OverscaledTileID} from '../../../src/source/tile_id';
@@ -20,17 +20,18 @@ function createSource(options, transformCallback) {
 }
 
 test('RasterTileSource', (t) => {
-    t.beforeEach((callback) => {
+    function setup(t) {
         window.useFakeXMLHttpRequest();
-        callback();
-    });
-
-    t.afterEach((callback) => {
+        t.end();
+    }
+    function teardown(t) {
         window.restore();
-        callback();
-    });
+        t.end();
+    }
 
-    t.test('transforms request for TileJSON URL', (t) => {
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
+
+    wrappedTest('transforms request for TileJSON URL', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,
@@ -50,7 +51,7 @@ test('RasterTileSource', (t) => {
         t.end();
     });
 
-    t.test('transforms tile urls before requesting', (t) => {
+    wrappedTest('transforms tile urls before requesting', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,
@@ -79,7 +80,7 @@ test('RasterTileSource', (t) => {
         });
         window.server.respond();
     });
-    t.test('populates neighboringTiles', (t) => {
+    wrappedTest('populates neighboringTiles', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,
@@ -115,7 +116,7 @@ test('RasterTileSource', (t) => {
         window.server.respond();
     });
 
-    t.test('populates neighboringTiles with wrapped tiles', (t) => {
+    wrappedTest('populates neighboringTiles with wrapped tiles', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,

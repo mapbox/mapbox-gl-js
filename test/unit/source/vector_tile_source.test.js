@@ -1,4 +1,4 @@
-import {test} from '../../util/test';
+import {test, testWithSetupTeardown} from '../../util/test';
 import VectorTileSource from '../../../src/source/vector_tile_source';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import window from '../../../src/util/window';
@@ -33,17 +33,18 @@ function createSource(options, transformCallback) {
 }
 
 test('VectorTileSource', (t) => {
-    t.beforeEach((callback) => {
+    function setup(t) {
         window.useFakeXMLHttpRequest();
-        callback();
-    });
-
-    t.afterEach((callback) => {
+        t.end();
+    }
+    function teardown(t) {
         window.restore();
-        callback();
-    });
+        t.end();
+    }
 
-    t.test('can be constructed from TileJSON', (t) => {
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
+
+    wrappedTest('can be constructed from TileJSON', (t) => {
         const source = createSource({
             minzoom: 1,
             maxzoom: 10,
@@ -62,7 +63,7 @@ test('VectorTileSource', (t) => {
         });
     });
 
-    t.test('can be constructed from a TileJSON URL', (t) => {
+    wrappedTest('can be constructed from a TileJSON URL', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
 
         const source = createSource({url: "/source.json"});
@@ -80,7 +81,7 @@ test('VectorTileSource', (t) => {
         window.server.respond();
     });
 
-    t.test('transforms the request for TileJSON URL', (t) => {
+    wrappedTest('transforms the request for TileJSON URL', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
         const transformSpy = t.spy((url) => {
             return {url};
@@ -93,7 +94,7 @@ test('VectorTileSource', (t) => {
         t.end();
     });
 
-    t.test('fires event with metadata property', (t) => {
+    wrappedTest('fires event with metadata property', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
         const source = createSource({url: "/source.json"});
         source.on('data', (e) => {
@@ -102,7 +103,7 @@ test('VectorTileSource', (t) => {
         window.server.respond();
     });
 
-    t.test('fires "dataloading" event', (t) => {
+    wrappedTest('fires "dataloading" event', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
         const evented = new Evented();
         let dataloadingFired = false;
@@ -119,7 +120,7 @@ test('VectorTileSource', (t) => {
         window.server.respond();
     });
 
-    t.test('serialize URL', (t) => {
+    wrappedTest('serialize URL', (t) => {
         const source = createSource({
             url: "http://localhost:2900/source.json"
         });
@@ -130,7 +131,7 @@ test('VectorTileSource', (t) => {
         t.end();
     });
 
-    t.test('serialize TileJSON', (t) => {
+    wrappedTest('serialize TileJSON', (t) => {
         const source = createSource({
             minzoom: 1,
             maxzoom: 10,
@@ -148,7 +149,7 @@ test('VectorTileSource', (t) => {
     });
 
     function testScheme(scheme, expectedURL) {
-        t.test(`scheme "${scheme}"`, (t) => {
+        wrappedTest(`scheme "${scheme}"`, (t) => {
             const source = createSource({
                 minzoom: 1,
                 maxzoom: 10,
@@ -176,7 +177,7 @@ test('VectorTileSource', (t) => {
     testScheme('xyz', 'http://example.com/10/5/5.png');
     testScheme('tms', 'http://example.com/10/5/1018.png');
 
-    t.test('transforms tile urls before requesting', (t) => {
+    wrappedTest('transforms tile urls before requesting', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
 
         const source = createSource({url: "/source.json"});
@@ -200,7 +201,7 @@ test('VectorTileSource', (t) => {
         window.server.respond();
     });
 
-    t.test('canonicalizes tile URLs in inline TileJSON', (t) => {
+    wrappedTest('canonicalizes tile URLs in inline TileJSON', (t) => {
         const source = createSource({
             minzoom: 1,
             maxzoom: 10,
@@ -227,7 +228,7 @@ test('VectorTileSource', (t) => {
 
     });
 
-    t.test('reloads a loading tile properly', (t) => {
+    wrappedTest('reloads a loading tile properly', (t) => {
         const source = createSource({
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
@@ -261,7 +262,7 @@ test('VectorTileSource', (t) => {
         });
     });
 
-    t.test('respects TileJSON.bounds', (t) => {
+    wrappedTest('respects TileJSON.bounds', (t) => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -278,7 +279,7 @@ test('VectorTileSource', (t) => {
         });
     });
 
-    t.test('does not error on invalid bounds', (t) => {
+    wrappedTest('does not error on invalid bounds', (t) => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -295,7 +296,7 @@ test('VectorTileSource', (t) => {
         });
     });
 
-    t.test('respects TileJSON.bounds when loaded from TileJSON', (t) => {
+    wrappedTest('respects TileJSON.bounds when loaded from TileJSON', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,
@@ -315,7 +316,7 @@ test('VectorTileSource', (t) => {
         window.server.respond();
     });
 
-    t.test('respects collectResourceTiming parameter on source', (t) => {
+    wrappedTest('respects collectResourceTiming parameter on source', (t) => {
         const source = createSource({
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             collectResourceTiming: true
@@ -346,7 +347,7 @@ test('VectorTileSource', (t) => {
         });
     });
 
-    t.test('cancels TileJSON request if removed', (t) => {
+    wrappedTest('cancels TileJSON request if removed', (t) => {
         const source = createSource({url: "/source.json"});
         source.onRemove();
         t.equal(window.server.lastRequest.aborted, true);

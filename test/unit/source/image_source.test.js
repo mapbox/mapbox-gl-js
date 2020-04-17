@@ -1,4 +1,4 @@
-import {test} from '../../util/test';
+import {test, testWithSetupTeardown} from '../../util/test';
 import assert from 'assert';
 import ImageSource from '../../../src/source/image_source';
 import {Evented} from '../../../src/util/evented';
@@ -29,11 +29,21 @@ class StubMap extends Evented {
 }
 
 test('ImageSource', (t) => {
+
     window.useFakeXMLHttpRequest();
-    // stub this manually because sinon does not stub non-existent methods
-    assert(!window.URL.createObjectURL);
-    window.URL.createObjectURL = () => 'blob:';
-    t.tearDown(() => delete window.URL.createObjectURL);
+    function setup(t) {
+        // stub this manually because sinon does not stub non-existent methods
+        assert(!window.URL.createObjectURL);
+        window.URL.createObjectURL = () => 'blob:';
+        t.end();
+    }
+    function teardown(t) {
+        delete window.URL.createObjectURL;
+        t.end();
+    }
+
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
+
     // stub Image so we can invoke 'onload'
     // https://github.com/jsdom/jsdom/commit/58a7028d0d5b6aacc5b435daee9fd8f9eacbb14c
     const img = {};
@@ -51,7 +61,7 @@ test('ImageSource', (t) => {
     };
     t.stub(browser, 'getImageData').callsFake(() => new ArrayBuffer(1));
 
-    t.test('constructor', (t) => {
+    wrappedTest('constructor', (t) => {
         const source = createSource({url : '/image.png'});
 
         t.equal(source.minzoom, 0);
@@ -60,17 +70,18 @@ test('ImageSource', (t) => {
         t.end();
     });
 
-    t.test('fires dataloading event', (t) => {
+    wrappedTest('fires dataloading event', (t) => {
         const source = createSource({url : '/image.png'});
         source.on('dataloading', (e) => {
             t.equal(e.dataType, 'source');
             t.end();
         });
         source.onAdd(new StubMap());
-        respond();
+        // TODO
+        //respond();
     });
 
-    t.test('transforms url request', (t) => {
+    wrappedTest('transforms url request', (t) => {
         const source = createSource({url : '/image.png'});
         const map = new StubMap();
         const spy = t.spy(map._requestManager, 'transformRequest');
@@ -82,7 +93,7 @@ test('ImageSource', (t) => {
         t.end();
     });
 
-    t.test('updates url from updateImage', (t) => {
+    wrappedTest('updates url from updateImage', (t) => {
         const source = createSource({url : '/image.png'});
         const map = new StubMap();
         const spy = t.spy(map._requestManager, 'transformRequest');
@@ -99,7 +110,7 @@ test('ImageSource', (t) => {
         t.end();
     });
 
-    t.test('sets coordinates', (t) => {
+    wrappedTest('sets coordinates', (t) => {
         const source = createSource({url : '/image.png'});
         const map = new StubMap();
         source.onAdd(map);
@@ -112,7 +123,7 @@ test('ImageSource', (t) => {
         t.end();
     });
 
-    t.test('sets coordinates via updateImage', (t) => {
+    wrappedTest('sets coordinates via updateImage', (t) => {
         const source = createSource({url : '/image.png'});
         const map = new StubMap();
         source.onAdd(map);
@@ -129,7 +140,7 @@ test('ImageSource', (t) => {
         t.end();
     });
 
-    t.test('fires data event when content is loaded', (t) => {
+    wrappedTest('fires data event when content is loaded', (t) => {
         const source = createSource({url : '/image.png'});
         source.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'content') {
@@ -141,7 +152,7 @@ test('ImageSource', (t) => {
         respond();
     });
 
-    t.test('fires data event when metadata is loaded', (t) => {
+    wrappedTest('fires data event when metadata is loaded', (t) => {
         const source = createSource({url : '/image.png'});
         source.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
@@ -152,7 +163,7 @@ test('ImageSource', (t) => {
         respond();
     });
 
-    t.test('serialize url and coordinates', (t) => {
+    wrappedTest('serialize url and coordinates', (t) => {
         const source = createSource({url: '/image.png'});
 
         const serialized = source.serialize();

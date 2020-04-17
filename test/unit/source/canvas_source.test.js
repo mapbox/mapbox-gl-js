@@ -1,4 +1,4 @@
-import {test} from '../../util/test';
+import {test, testWithSetupTeardown} from '../../util/test';
 import CanvasSource from '../../../src/source/canvas_source';
 import Transform from '../../../src/geo/transform';
 import {Event, Evented} from '../../../src/util/evented';
@@ -37,12 +37,16 @@ class StubMap extends Evented {
 }
 
 test('CanvasSource', (t) => {
-    t.afterEach((callback) => {
+    function setup(t) {
+        t.end();
+    }
+    function teardown(t) {
         window.restore();
-        callback();
-    });
+        t.end();
+    }
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
 
-    t.test('constructor', (t) => {
+    wrappedTest('constructor', (t) => {
         const source = createSource();
 
         t.equal(source.minzoom, 0);
@@ -59,7 +63,7 @@ test('CanvasSource', (t) => {
         source.onAdd(new StubMap());
     });
 
-    t.test('self-validates', (t) => {
+    wrappedTest('self-validates', (t) => {
         const stub = t.stub(console, 'error');
         createSource({coordinates: []});
         t.ok(stub.called, 'should error when `coordinates` array parameter has incorrect number of elements');
@@ -85,7 +89,7 @@ test('CanvasSource', (t) => {
         t.end();
     });
 
-    t.test('can be initialized with HTML element', (t) => {
+    wrappedTest('can be initialized with HTML element', (t) => {
         const el = window.document.createElement('canvas');
         const source = createSource({
             canvas: el
@@ -101,7 +105,7 @@ test('CanvasSource', (t) => {
         source.onAdd(new StubMap());
     });
 
-    t.test('rerenders if animated', (t) => {
+    wrappedTest('rerenders if animated', (t) => {
         const source = createSource();
         const map = new StubMap();
 
@@ -113,7 +117,7 @@ test('CanvasSource', (t) => {
         source.onAdd(map);
     });
 
-    t.test('can be static', (t) => {
+    wrappedTest('can be static', (t) => {
         const source = createSource({
             animate: false
         });
@@ -134,7 +138,7 @@ test('CanvasSource', (t) => {
         source.onAdd(map);
     });
 
-    t.test('onRemove stops animation', (t) => {
+    wrappedTest('onRemove stops animation', (t) => {
         const source = createSource();
         const map = new StubMap();
 
@@ -153,7 +157,7 @@ test('CanvasSource', (t) => {
         t.end();
     });
 
-    t.test('play and pause animation', (t) => {
+    wrappedTest('play and pause animation', (t) => {
         const source = createSource();
         const map = new StubMap();
 
