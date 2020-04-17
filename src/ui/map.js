@@ -1460,14 +1460,22 @@ class Map extends Camera {
     /**
      * Returns the source with the specified ID in the map's style.
      *
+     * This method is often used to update a source using the instance members for the relevant
+     * source type as defined in [Sources](#sources).
+     * For example, setting the `data` for a GeoJSON source or updating the `url` and `coordinates`
+     * of an image source.
+     *
      * @param {string} id The ID of the source to get.
-     * @returns {?Object} The style source with the specified ID, or `undefined`
-     *   if the ID corresponds to no existing sources.
+     * @returns {?Object} The style source with the specified ID or `undefined` if the ID
+     * corresponds to no existing sources.
+     * The shape of the object varies by source type.
+     * A list of options for each source type is available on the Mapbox Style Specification's
+     * [Sources](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) page.
      * @example
      * var sourceObject = map.getSource('points');
-     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
-     * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
-     * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
+     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Animate a point](https://docs.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
+     * @see [Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
      */
     getSource(id: string) {
         return this.style.getSource(id);
