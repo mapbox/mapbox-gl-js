@@ -80,6 +80,9 @@ class ScrollZoomHandler {
     /**
      * Set the zoom rate of a trackpad
      * @param {number} [zoomRate=1/100] The rate used to scale trackpad movement to a zoom value.
+     * @example
+     * // Speed up trackpad zoom
+     * map.scrollZoom.setZoomRate(1/25);
      */
     setZoomRate(zoomRate: number) {
         this._defaultZoomRate = zoomRate;
