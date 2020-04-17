@@ -1,4 +1,4 @@
-import {test} from '../../util/test';
+import {test, testWithSetupTeardown} from '../../util/test';
 import {
     getArrayBuffer,
     getJSON,
@@ -11,17 +11,20 @@ import config from '../../../src/util/config';
 import webpSupported from '../../../src/util/webp_supported';
 
 test('ajax', (t) => {
-    t.beforeEach(callback => {
+
+    function setup(t) {
         window.useFakeXMLHttpRequest();
-        callback();
-    });
+        t.end();
+    }
 
-    t.afterEach(callback => {
+    function teardown(t) {
         window.restore();
-        callback();
-    });
+        t.end();
+    }
 
-    t.test('getArrayBuffer, 404', (t) => {
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
+
+    wrappedTest('getArrayBuffer, 404', (t) => {
         window.server.respondWith(request => {
             request.respond(404);
         });
@@ -32,7 +35,7 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
-    t.test('getJSON', (t) => {
+    wrappedTest('getJSON', (t) => {
         window.server.respondWith(request => {
             request.respond(200, {'Content-Type': 'application/json'}, '{"foo": "bar"}');
         });
@@ -44,7 +47,7 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
-    t.test('getJSON, invalid syntax', (t) => {
+    wrappedTest('getJSON, invalid syntax', (t) => {
         window.server.respondWith(request => {
             request.respond(200, {'Content-Type': 'application/json'}, 'how do i even');
         });
@@ -55,7 +58,7 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
-    t.test('getJSON, 404', (t) => {
+    wrappedTest('getJSON, 404', (t) => {
         window.server.respondWith(request => {
             request.respond(404);
         });
@@ -66,7 +69,7 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
-    t.test('getJSON, 401: non-Mapbox domain', (t) => {
+    wrappedTest('getJSON, 401: non-Mapbox domain', (t) => {
         window.server.respondWith(request => {
             request.respond(401);
         });
@@ -78,7 +81,7 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
-    t.test('getJSON, 401: Mapbox domain', (t) => {
+    wrappedTest('getJSON, 401: Mapbox domain', (t) => {
         window.server.respondWith(request => {
             request.respond(401);
         });
@@ -90,7 +93,7 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
-    t.test('postData, 204(no content): no error', (t) => {
+    wrappedTest('postData, 204(no content): no error', (t) => {
         window.server.respondWith(request => {
             request.respond(204);
         });
@@ -101,7 +104,7 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
-    t.test('getImage respects maxParallelImageRequests', (t) => {
+    wrappedTest('getImage respects maxParallelImageRequests', (t) => {
         window.server.respondWith(request => request.respond(200, {'Content-Type': 'image/png'}, ''));
 
         const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
@@ -130,7 +133,7 @@ test('ajax', (t) => {
         window.server.requests[0].respond();
     });
 
-    t.test('getImage cancelling frees up request for maxParallelImageRequests', (t) => {
+    wrappedTest('getImage cancelling frees up request for maxParallelImageRequests', (t) => {
         resetImageRequestQueue();
 
         window.server.respondWith(request => request.respond(200, {'Content-Type': 'image/png'}, ''));
@@ -153,7 +156,7 @@ test('ajax', (t) => {
         t.end();
     });
 
-    t.test('getImage requests that were once queued are still abortable', (t) => {
+    wrappedTest('getImage requests that were once queued are still abortable', (t) => {
         resetImageRequestQueue();
 
         const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
@@ -186,7 +189,7 @@ test('ajax', (t) => {
         t.end();
     });
 
-    t.test('getImage sends accept/webp when supported', (t) => {
+    wrappedTest('getImage sends accept/webp when supported', (t) => {
         resetImageRequestQueue();
 
         window.server.respondWith((request) => {
