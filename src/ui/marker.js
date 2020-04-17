@@ -270,7 +270,13 @@ export default class Marker extends Evented {
      * the marker on screen.
      *
      * @returns {LngLat} A {@link LngLat} describing the marker's location.
-     */
+    * @example
+    * // Store the marker's longitude and latitude coordinates in a variable
+    * var lngLat = marker.getLngLat();
+    * // Print the marker's longitude and latitude values in the console
+    * console.log('Longitude: ' + lngLat.lng + ', Latitude: ' + lngLat.lat )
+    * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+    */
     getLngLat() {
         return this._lngLat;
     }
