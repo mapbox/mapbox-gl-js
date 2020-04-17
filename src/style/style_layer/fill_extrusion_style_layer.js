@@ -49,7 +49,6 @@ export class FillExtrusionStyleLayer extends StyleLayer {
                            pixelsToTileUnits: number,
                            pixelPosMatrix: Float32Array): boolean | number {
 
-        console.log(`paint is ${this.paint}`);
         if (!this.paint) {
             return false;
         }
