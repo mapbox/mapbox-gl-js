@@ -216,9 +216,13 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Attaches the marker to a map
+     * Attaches a `Marker` to a `Map` object.
      * @param {Map} map The Mapbox GL JS map to add the marker to.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *   .setLngLat([30.5, 50.5])
+     *   .addTo(map);
      */
     addTo(map: Map) {
         this.remove();
