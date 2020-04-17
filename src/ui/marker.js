@@ -297,7 +297,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Binds a Popup to the Marker.
+     * Binds a `Popup` to the `Marker`.
      * @param popup An instance of the `Popup` class. If undefined or null, any popup
      * set on this `Marker` instance is unset.
      * @returns {Marker} `this`
@@ -370,7 +370,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns the Popup instance that is bound to the Marker.
+     * Returns the `Popup` instance that is bound to the `Marker`.
      * @returns {Popup} popup
      * @example
      * var marker = new mapboxgl.Marker()
@@ -385,7 +385,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Opens or closes the Popup instance that is bound to the Marker, depending on the current state of the Popup.
+     * Opens or closes the `Popup` instance that is bound to the `Marker`, depending on the current state of the `Popup`.
      * @returns {Marker} `this`
      * @example
      * var marker = new mapboxgl.Marker()
