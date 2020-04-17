@@ -12,7 +12,7 @@ test('no paint property set', (t) => {
         });
 
         // function bails out with no paint property set
-        t.equal(layer.queryIntersectsFeature(), false);
+        t.equal(layer.queryIntersectsFeature(null, null, null, [], 0, null, 0, null), false);
         t.end();
     });
 
@@ -26,6 +26,7 @@ test('no paint property set', (t) => {
         t.equal(layer.queryRadius(), 0);
         t.end();
     });
+    t.end();
 });
 
 test('getIntersectionDistance', (t) => {

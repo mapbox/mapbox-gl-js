@@ -16,7 +16,7 @@ import type {PaintProps} from './fill_extrusion_style_layer_properties';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
 
-class FillExtrusionStyleLayer extends StyleLayer {
+export class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
@@ -49,6 +49,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
                            pixelsToTileUnits: number,
                            pixelPosMatrix: Float32Array): boolean | number {
 
+        console.log(`paint is ${this.paint}`);
         if (!this.paint) {
             return false;
         }
