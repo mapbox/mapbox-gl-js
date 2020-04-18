@@ -22,18 +22,18 @@ import type LngLat from '../geo/lng_lat';
  * });
  */
 export class MapMouseEvent extends Event {
-  /**
-   * The event type (one of [`mousedown`](#map.event:mousedown),
-   * [`mouseup`](#map.event:mouseup),
-   * [`click`](#map.event:click),
-   * [`dblclick`](#map.event:dblclick),
-   * [`mousemove`](#map.event:mousemove),
-   * [`mouseover`](#map.event:mouseover),
-   * [`mouseover`](#map.event:mouseover),
-   * [`mouseover`](#map.event:mouseover),
-   * [`mouseout`](#map.event:mouseout),
-   * [`contextmenu`](#map.event:contextmenu)).
-   */
+    /**
+     * The event type (one of [`mousedown`](#map.event:mousedown),
+     * [`mouseup`](#map.event:mouseup),
+     * [`click`](#map.event:click),
+     * [`dblclick`](#map.event:dblclick),
+     * [`mousemove`](#map.event:mousemove),
+     * [`mouseover`](#map.event:mouseover),
+     * [`mouseover`](#map.event:mouseover),
+     * [`mouseover`](#map.event:mouseover),
+     * [`mouseout`](#map.event:mouseout),
+     * [`contextmenu`](#map.event:contextmenu)).
+     */
     type: 'mousedown'
         | 'mouseup'
         | 'click'
