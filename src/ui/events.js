@@ -29,8 +29,8 @@ export class MapMouseEvent extends Event {
      * [`dblclick`](#map.event:dblclick),
      * [`mousemove`](#map.event:mousemove),
      * [`mouseover`](#map.event:mouseover),
-     * [`mouseover`](#map.event:mouseover),
-     * [`mouseover`](#map.event:mouseover),
+     * [`mouseenter`](#map.event:mouseenter),
+     * [`mouseleave`](#map.event:mouseleave),
      * [`mouseout`](#map.event:mouseout),
      * [`contextmenu`](#map.event:contextmenu)).
      */
