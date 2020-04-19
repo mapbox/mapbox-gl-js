@@ -1,0 +1,88 @@
+{
+  "expression": ["distance", {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Point",
+        "coordinates": [103.91959190368653, 1.3321439094005239]
+      }
+    }],
+  "inputs": [[{
+        "zoom": 13,
+        "canonicalID": {
+          "z": 13,
+          "x": 6460,
+          "y": 4065
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [103.91959190368653, 1.3218898930028449]
+        }
+      }], [{
+        "zoom": 13,
+        "canonicalID": {
+          "z": 13,
+          "x": 6460,
+          "y": 4065
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [103.92658710479737, 1.3294838757599914]
+        }
+      }], [{
+        "zoom": 13,
+        "canonicalID": {
+          "z": 13,
+          "x": 6460,
+          "y": 4065
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [103.91602993011475, 1.330642277859313]
+        }
+      }], [{
+        "zoom": 13,
+        "canonicalID": {
+          "z": 13,
+          "x": 6460,
+          "y": 4065
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [103.91246795654297, 1.3363484728438336]
+        }
+      }], [{
+        "zoom": 13,
+        "canonicalID": {
+          "z": 13,
+          "x": 6460,
+          "y": 4065
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [103.8917827606201, 1.3479324368661275]
+        }
+      }]],
+  "expected": {
+    "outputs": [1133.83, 832.206, 429.781, 919.082, 3553.3],
+    "serialized": ["distance", {
+        "properties": {},
+        "geometry": {
+          "type": "Point",
+          "coordinates": [103.91959190368653, 1.3321439094005239]
+        },
+        "type": "Feature"
+      }],
+    "compiled": {
+      "type": "number",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "result": "success"
+    }
+  }
+}

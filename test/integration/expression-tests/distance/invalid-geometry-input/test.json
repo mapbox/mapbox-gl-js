@@ -1,0 +1,55 @@
+{
+  "expression": ["distance", {
+      "type": "Unknown",
+      "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]]
+    }],
+  "inputs": [[{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [6, 6]
+        }
+      }], [{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [2, 2]
+        }
+      }], [{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [[3, 3], [4, 1]]
+        }
+      }]],
+  "expected": {
+    "compiled": {
+      "errors": [{
+          "error": "Unknown not yet implemented",
+          "key": ""
+        }, {
+          "key": "",
+          "error": "'distance' expression needs to be an array with format [\"distance\", GeoJSONObj]."
+        }],
+      "result": "error"
+    }
+  }
+}
