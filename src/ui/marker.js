@@ -216,7 +216,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Attaches a `Marker` to a `Map` object.
+     * Attaches the `Marker` to a `Map` object.
      * @param {Map} map The Mapbox GL JS map to add the marker to.
      * @returns {Marker} `this`
      * @example
