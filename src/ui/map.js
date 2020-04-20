@@ -1393,7 +1393,8 @@ class Map extends Camera {
     }
 
     /**
-     * Returns a Boolean indicating whether the source is loaded.
+     * Returns a Boolean indicating whether the source is loaded. Returns `true` if the source with
+     * the given ID in the map's style has no outstanding network requests, otherwise `false`.
      *
      * @param {string} id The ID of the source to be checked.
      * @returns {boolean} A Boolean indicating whether the source is loaded.
