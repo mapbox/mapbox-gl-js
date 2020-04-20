@@ -29,25 +29,29 @@ test('Marker uses a default marker element with custom color', (t) => {
 
 test('Marker uses a default marker element with custom scale', (t) => {
     const map = createMap(t);
-    const marker = new Marker()
+    const defaultMarker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map);
+    // scale smaller than default
+    const smallerMarker = new Marker({scale: 0.8})
+        .setLngLat([0, 0])
+        .addTo(map);
+    // scale larger than default
+    const largerMarker = new Marker({scale: 2})
         .setLngLat([0, 0])
         .addTo(map);
 
     // initial dimensions of svg element
-    t.ok(marker.getElement().firstChild.getAttribute('width').includes('27'));
-    t.ok(marker.getElement().firstChild.getAttribute('height').includes('41'));
+    t.ok(defaultMarker.getElement().firstChild.getAttribute('height').includes('41'));
+    t.ok(defaultMarker.getElement().firstChild.getAttribute('width').includes('27'));
 
-    // scale smaller than default
-    marker.setScale(0.8);
-    // (27 * 0.8) = 21.6, (41 * 0.8) = 32.8
-    t.ok(marker.getElement().firstChild.getAttribute('width').includes(`21.6`));
-    t.ok(marker.getElement().firstChild.getAttribute('height').includes(`32.8`));
+    // (41 * 0.8) = 32.8, (27 * 0.8) = 21.6
+    t.ok(smallerMarker.getElement().firstChild.getAttribute('height').includes(`32.8`));
+    t.ok(smallerMarker.getElement().firstChild.getAttribute('width').includes(`21.6`));
 
-    // scale larger than default
-    marker.setScale(2);
-    // (27 * 2) = 54, (41 * 2) = 82
-    t.ok(marker.getElement().firstChild.getAttribute('width').includes('54'));
-    t.ok(marker.getElement().firstChild.getAttribute('height').includes('82'));
+    // (41 * 2) = 82, (27 * 2) = 54
+    t.ok(largerMarker.getElement().firstChild.getAttribute('height').includes('82'));
+    t.ok(largerMarker.getElement().firstChild.getAttribute('width').includes('54'));
 
     t.end();
 });

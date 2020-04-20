@@ -45,7 +45,7 @@ const spinningMarkers = [];
         var g = Math.round(Math.random() * 255);
         var b = Math.round(Math.random() * 255);
 
-        var sc = Math.random(0, 25);
+        var sc = Math.random() * 2.5 + 0.5;
 
         var marker = new mapboxgl.Marker({
             color: `rgb(${r}, ${g}, ${b})`,

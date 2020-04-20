@@ -51,7 +51,6 @@ export default class Marker extends Evented {
     _anchor: Anchor;
     _offset: Point;
     _element: HTMLElement;
-    _defaultSVG: HTMLElement;
     _popup: ?Popup;
     _lngLat: LngLat;
     _pos: ?Point;
@@ -99,10 +98,12 @@ export default class Marker extends Evented {
 
             // create default map marker SVG
             const svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
+            const defaultHeight = 41;
+            const defaultWidth = 27;
             svg.setAttributeNS(null, 'display', 'block');
-            svg.setAttributeNS(null, 'height', '41px');
-            svg.setAttributeNS(null, 'width', '27px');
-            svg.setAttributeNS(null, 'viewBox', `0 0 27 41`);
+            svg.setAttributeNS(null, 'height', `${defaultHeight}px`);
+            svg.setAttributeNS(null, 'width', `${defaultWidth}px`);
+            svg.setAttributeNS(null, 'viewBox', `0 0 ${defaultWidth} ${defaultHeight}`);
 
             const markerLarge = DOM.createNS('http://www.w3.org/2000/svg', 'g');
             markerLarge.setAttributeNS(null, 'stroke', 'none');
@@ -186,11 +187,10 @@ export default class Marker extends Evented {
 
             svg.appendChild(page1);
 
-            svg.setAttributeNS(null, 'width', `${27 * this._scale}px`);
-            svg.setAttributeNS(null, 'height', `${41 * this._scale}px`);
+            svg.setAttributeNS(null, 'height', `${defaultHeight * this._scale}px`);
+            svg.setAttributeNS(null, 'width', `${defaultWidth * this._scale}px`);
 
             this._element.appendChild(svg);
-            this._defaultSVG = svg;
 
             // if no element and no offset option given apply an offset for the default marker
             // the -14 as the y value of the default marker offset was determined as follows
@@ -402,11 +402,6 @@ export default class Marker extends Evented {
 
         this._pos = this._map.project(this._lngLat)._add(this._offset);
 
-        if (this._defaultMarker) {
-            this._defaultSVG.setAttributeNS(null, 'width', `${27 * this._scale}px`);
-            this._defaultSVG.setAttributeNS(null, 'height', `${41 * this._scale}px`);
-        }
-
         let rotation = "";
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
             rotation = `rotateZ(${this._rotation}deg)`;
@@ -560,25 +555,6 @@ export default class Marker extends Evented {
      */
     isDraggable() {
         return this._draggable;
-    }
-
-    /**
-     * Sets the `scale` property of the default marker.
-     * @param {number} [scale=1] The scale of the marker, relative to its default size.
-     * @returns {Marker} `this`
-     */
-    setScale(scale: number) {
-        this._scale = scale || 1;
-        this._update();
-        return this;
-    }
-
-    /**
-     * Returns the current `scale` property of the default marker.
-     * @returns {number} The current scale of the marker.
-     */
-    getScale() {
-        return this._scale;
     }
 
     /**
