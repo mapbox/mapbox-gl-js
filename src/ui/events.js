@@ -269,6 +269,15 @@ export type MapBoxZoomEvent = {
  * the event is related to loading of a tile.
  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and
  * the event is related to loading of a tile.
+ * @example
+ * // The `sourcedata` event is an example of `MapDataEvent`.
+ * // Set up an event listener on the map.
+ * map.on('sourcedata', function(e) {
+ *    if (e.isSourceLoaded) {
+ *        // Do something when there are no more
+ *        // outstanding network requests
+ *    }
+ * });
  */
 export type MapDataEvent = {
     type: string,
