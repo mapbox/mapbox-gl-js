@@ -156,15 +156,21 @@ class Camera extends Evented {
     }
 
     /**
-     * Pans the map to the specified location, with an animated transition.
+     * Pans the map to the specified location with an animated transition.
      *
      * @memberof Map#
      * @param lnglat The location to pan the map to.
-     * @param options Options object
+     * @param options Options describing the destination and animation of the transition.
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * map.panTo([-74, 38]);
+     * @example
+     * // Change the duration of panTo to 5000 milliseconds.
+     * map.panTo([-74, 38], {duration: 5000});
+     * @see [Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
     panTo(lnglat: LngLatLike, options?: AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
