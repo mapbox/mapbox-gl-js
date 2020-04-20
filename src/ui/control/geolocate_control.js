@@ -410,16 +410,15 @@ class GeolocateControl extends Evented {
     *
     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
     * @example
+    * // Initialize the geolocate control.
     * var geolocate = new mapboxgl.GeolocateControl({
     *  positionOptions: {
     *    enableHighAccuracy: true
     *  },
-    *  
     *  trackUserLocation: true
     * });
-
+    * // Add the control to the map.
     * map.addControl(geolocate);
-
     * map.on('load', function() {
     *   geolocate.trigger();
     * }
