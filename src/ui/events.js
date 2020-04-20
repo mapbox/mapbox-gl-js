@@ -12,10 +12,27 @@ import type LngLat from '../geo/lng_lat';
 /**
  * `MapMouseEvent` is the event type for mouse-related map events.
  * @extends {Object}
+ * @example
+ * // The `click` event is an example of a `MapMouseEvent`.
+ * // Set up an event listener on the map.
+ * map.on('click', function(e) {
+ *   // The event object (`e`) contains information like the
+ *   // coordinates of the point on the map that was clicked.
+ *   console.log('A click event has occurred at ' + e.lngLat);
+ * });
  */
 export class MapMouseEvent extends Event {
     /**
-     * The event type.
+     * The event type (one of [`mousedown`](#map.event:mousedown),
+     * [`mouseup`](#map.event:mouseup),
+     * [`click`](#map.event:click),
+     * [`dblclick`](#map.event:dblclick),
+     * [`mousemove`](#map.event:mousemove),
+     * [`mouseover`](#map.event:mouseover),
+     * [`mouseenter`](#map.event:mouseenter),
+     * [`mouseleave`](#map.event:mouseleave),
+     * [`mouseout`](#map.event:mouseout),
+     * [`contextmenu`](#map.event:contextmenu)).
      */
     type: 'mousedown'
         | 'mouseup'
