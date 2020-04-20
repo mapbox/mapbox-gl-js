@@ -2386,6 +2386,8 @@ class Map extends Camera {
      * @type {boolean}
      * @instance
      * @memberof Map
+     * @example
+     * map.showTileBoundaries = true;
      */
     get showTileBoundaries(): boolean { return !!this._showTileBoundaries; }
     set showTileBoundaries(value: boolean) {
