@@ -163,6 +163,8 @@ const exported = {
      *
      * @function clearStorage
      * @param {Function} callback Called with an error argument if there is an error.
+     * @example
+     * mapboxgl.clearStorage();
      */
     clearStorage(callback?: (err: ?Error) => void) {
         clearTileCache(callback);
