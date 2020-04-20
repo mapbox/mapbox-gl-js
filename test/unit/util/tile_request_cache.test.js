@@ -1,21 +1,23 @@
-import {test} from '../../util/test';
+import {test, testWithSetupTeardown} from '../../util/test';
 import {cacheGet, cachePut, cacheClose} from '../../../src/util/tile_request_cache';
 import window from '../../../src/util/window';
 import sinon from 'sinon';
 
 test('tile_request_cache', (t) => {
-    t.beforeEach(callback => {
+    function setup(t) {
         cacheClose();
         window.caches = sinon.stub();
-        callback();
-    });
+        t.end();
+    }
 
-    t.afterEach(callback => {
+    function teardown(t) {
         window.restore();
-        callback();
-    });
+        t.end();
+    }
 
-    t.test('cachePut, no window.caches', (t) => {
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
+
+    wrappedTest('cachePut, no window.caches', (t) => {
         delete window.caches;
 
         let result;
@@ -29,7 +31,7 @@ test('tile_request_cache', (t) => {
         t.end();
     });
 
-    t.test('cacheGet, no window.caches', (t) => {
+    wrappedTest('cacheGet, no window.caches', (t) => {
         delete window.caches;
 
         cacheGet({url:''}, (result) => {
@@ -39,7 +41,7 @@ test('tile_request_cache', (t) => {
         });
     });
 
-    t.test('cacheGet, cache open error', (t) => {
+    wrappedTest('cacheGet, cache open error', (t) => {
         window.caches.open = sinon.stub().rejects(new Error('The operation is insecure'));
 
         cacheGet({url:''}, (error) => {
@@ -49,7 +51,7 @@ test('tile_request_cache', (t) => {
         });
     });
 
-    t.test('cacheGet, cache match error', (t) => {
+    wrappedTest('cacheGet, cache match error', (t) => {
         const fakeCache = sinon.stub();
         fakeCache.match = sinon.stub().withArgs('someurl').rejects(new Error('ohno'));
         window.caches.open = sinon.stub().resolves(fakeCache);
@@ -61,7 +63,7 @@ test('tile_request_cache', (t) => {
         });
     });
 
-    t.test('cacheGet, happy path', (t) => {
+    wrappedTest('cacheGet, happy path', (t) => {
         const fakeResponse = {
             headers: {get: sinon.stub()},
             clone: sinon.stub(),

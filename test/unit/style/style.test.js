@@ -1,4 +1,4 @@
-import {test} from '../../util/test';
+import {test, testWithSetupTeardown} from '../../util/test';
 import assert from 'assert';
 import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
@@ -57,10 +57,11 @@ class StubMap extends Evented {
 }
 
 test('Style', (t) => {
-    t.afterEach((callback) => {
+    function teardown(t) {
         window.restore();
-        callback();
-    });
+        delete window.URL.createObjectURL;
+        t.end();
+    }
 
     t.test('registers plugin state change listener', (t) => {
         clearRTLTextPlugin();
@@ -80,12 +81,13 @@ test('Style', (t) => {
         t.end();
     });
 
+    t.test('teardown', teardown);
+
     t.test('loads plugin immediately if already registered', (t) => {
         clearRTLTextPlugin();
         window.useFakeXMLHttpRequest();
         window.fakeWorkerPresence();
         window.URL.createObjectURL = () => 'blob:';
-        t.tearDown(() => delete window.URL.createObjectURL);
         window.server.respondWith('/plugin.js', "doesn't matter");
         let firstError = true;
         setRTLTextPlugin("/plugin.js", (error) => {
@@ -102,21 +104,25 @@ test('Style', (t) => {
         new Style(createStyleJSON());
     });
 
+    t.test('teardown', teardown);
+
     t.end();
 });
 
 test('Style#loadURL', (t) => {
-    t.beforeEach((callback) => {
+    function setup(t) {
         window.useFakeXMLHttpRequest();
-        callback();
-    });
+        t.end();
+    }
 
-    t.afterEach((callback) => {
+    function teardown(t) {
         window.restore();
-        callback();
-    });
+        t.end();
+    }
 
-    t.test('fires "dataloading"', (t) => {
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
+
+    wrappedTest('fires "dataloading"', (t) => {
         const style = new Style(new StubMap());
         const spy = t.spy();
 
@@ -129,7 +135,7 @@ test('Style#loadURL', (t) => {
         t.end();
     });
 
-    t.test('transforms style URL before request', (t) => {
+    wrappedTest('transforms style URL before request', (t) => {
         const map = new StubMap();
         const spy = t.spy(map._requestManager, 'transformRequest');
 
@@ -142,7 +148,7 @@ test('Style#loadURL', (t) => {
         t.end();
     });
 
-    t.test('validates the style', (t) => {
+    wrappedTest('validates the style', (t) => {
         const style = new Style(new StubMap());
 
         style.on('error', ({error}) => {
@@ -156,7 +162,7 @@ test('Style#loadURL', (t) => {
         window.server.respond();
     });
 
-    t.test('skips validation for mapbox:// styles', (t) => {
+    wrappedTest('skips validation for mapbox:// styles', (t) => {
         const style = new Style(new StubMap())
             .on('error', () => {
                 t.fail();
@@ -165,13 +171,13 @@ test('Style#loadURL', (t) => {
                 t.end();
             });
 
-        style.loadURL('mapbox://styles/test/test', {accessToken: 'none'});
+        style.loadURL('mapbox://styles/teswrappedTest', {accessToken: 'none'});
 
         window.server.respondWith(JSON.stringify(createStyleJSON({version: 'invalid'})));
         window.server.respond();
     });
 
-    t.test('cancels pending requests if removed', (t) => {
+    wrappedTest('cancels pending requests if removed', (t) => {
         const style = new Style(new StubMap());
         style.loadURL('style.json');
         style._remove();
@@ -183,12 +189,20 @@ test('Style#loadURL', (t) => {
 });
 
 test('Style#loadJSON', (t) => {
-    t.afterEach((callback) => {
-        window.restore();
-        callback();
-    });
 
-    t.test('fires "dataloading" (synchronously)', (t) => {
+    function setup(t) {
+        t.end();
+    }
+
+    function teardown(t) {
+        delete window.URL.createObjectURL;
+        window.restore();
+        t.end();
+    }
+
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
+
+    wrappedTest('fires "dataloading" (synchronously)', (t) => {
         const style = new Style(new StubMap());
         const spy = t.spy();
 
@@ -201,7 +215,7 @@ test('Style#loadJSON', (t) => {
         t.end();
     });
 
-    t.test('fires "data" (asynchronously)', (t) => {
+    wrappedTest('fires "data" (asynchronously)', (t) => {
         const style = new Style(new StubMap());
 
         style.loadJSON(createStyleJSON());
@@ -213,7 +227,7 @@ test('Style#loadJSON', (t) => {
         });
     });
 
-    t.test('fires "data" when the sprite finishes loading', (t) => {
+    wrappedTest('fires "data" when the sprite finishes loading', (t) => {
         window.useFakeXMLHttpRequest();
 
         // Stubbing to bypass Web APIs that supported by jsdom:
@@ -228,7 +242,6 @@ test('Style#loadJSON', (t) => {
         // stub this manually because sinon does not stub non-existent methods
         assert(!window.URL.createObjectURL);
         window.URL.createObjectURL = () => 'blob:';
-        t.tearDown(() => delete window.URL.createObjectURL);
 
         // fake the image request (sinon doesn't allow non-string data for
         // server.respondWith, so we do so manually)
@@ -272,7 +285,7 @@ test('Style#loadJSON', (t) => {
         });
     });
 
-    t.test('validates the style', (t) => {
+    wrappedTest('validates the style', (t) => {
         const style = new Style(new StubMap());
 
         style.on('error', ({error}) => {
@@ -284,7 +297,7 @@ test('Style#loadJSON', (t) => {
         style.loadJSON(createStyleJSON({version: 'invalid'}));
     });
 
-    t.test('creates sources', (t) => {
+    wrappedTest('creates sources', (t) => {
         const style = new Style(new StubMap());
 
         style.on('style.load', () => {
@@ -302,7 +315,7 @@ test('Style#loadJSON', (t) => {
         }));
     });
 
-    t.test('creates layers', (t) => {
+    wrappedTest('creates layers', (t) => {
         const style = new Style(new StubMap());
 
         style.on('style.load', () => {
@@ -326,7 +339,7 @@ test('Style#loadJSON', (t) => {
         });
     });
 
-    t.test('transforms sprite json and image URLs before request', (t) => {
+    wrappedTest('transforms sprite json and image URLs before request', (t) => {
         window.useFakeXMLHttpRequest();
 
         const map = new StubMap();
@@ -347,7 +360,7 @@ test('Style#loadJSON', (t) => {
         }));
     });
 
-    t.test('emits an error on non-existant vector source layer', (t) => {
+    wrappedTest('emits an error on non-existant vector source layer', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             sources: {
@@ -382,7 +395,7 @@ test('Style#loadJSON', (t) => {
         });
     });
 
-    t.test('sets up layer event forwarding', (t) => {
+    wrappedTest('sets up layer event forwarding', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [{
@@ -616,7 +629,7 @@ test('Style#addSource', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const source = createSource();
-        style.once('data', t.end);
+        style.once('data', () => t.end());
         style.on('style.load', () => {
             style.addSource('source-id', source);
             style.update({});
@@ -698,7 +711,7 @@ test('Style#removeSource', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const source = createSource();
-        style.once('data', t.end);
+        style.once('data', () => t.end());
         style.on('style.load', () => {
             style.addSource('source-id', source);
             style.removeSource('source-id');
@@ -1021,7 +1034,7 @@ test('Style#addLayer', (t) => {
         style.loadJSON(createStyleJSON());
         const layer = {id: 'background', type: 'background'};
 
-        style.once('data', t.end);
+        style.once('data', () => t.end());
 
         style.on('style.load', () => {
             style.addLayer(layer);
@@ -1035,7 +1048,7 @@ test('Style#addLayer', (t) => {
         const layer = {id: 'background', type: 'background'};
 
         style.on('error', (e) => {
-            t.match(e.error, /already exists/);
+            t.match(String(e.error), /already exists/);
             t.end();
         });
 
@@ -1100,7 +1113,7 @@ test('Style#addLayer', (t) => {
 
         style.on('style.load', () => {
             style.on('error', (error) => {
-                t.match(error.error, /does not exist on this map/);
+                t.match(String(error.error), /does not exist on this map/);
                 t.end();
             });
             style.addLayer(layer, 'z');
@@ -1150,7 +1163,7 @@ test('Style#removeLayer', (t) => {
         style.loadJSON(createStyleJSON());
         const layer = {id: 'background', type: 'background'};
 
-        style.once('data', t.end);
+        style.once('data', () => t.end());
 
         style.on('style.load', () => {
             style.addLayer(layer);
@@ -1251,7 +1264,7 @@ test('Style#moveLayer', (t) => {
         style.loadJSON(createStyleJSON());
         const layer = {id: 'background', type: 'background'};
 
-        style.once('data', t.end);
+        style.once('data', () => t.end());
 
         style.on('style.load', () => {
             style.addLayer(layer);
@@ -2040,11 +2053,10 @@ test('Style#query*Features', (t) => {
     // These tests only cover filter validation. Most tests for these methods
     // live in the integration tests.
 
-    let style;
-    let onError;
-    let transform;
-
-    t.beforeEach((callback) => {
+    function setup(callback) {
+        let style;
+        let onError;
+        let transform;
         transform = new Transform();
         transform.resize(100, 100);
         style = new Style(new StubMap());
@@ -2064,43 +2076,51 @@ test('Style#query*Features', (t) => {
 
         style.on('error', onError)
             .on('style.load', () => {
-                callback();
+                callback(style, onError, transform);
             });
-    });
+    }
 
     t.test('querySourceFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}, transform), []);
-        t.match(onError.args[0][0].error.message, /querySourceFeatures\.filter/);
-        t.end();
+        setup((style, onError, transform) => {
+            t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}, transform), []);
+            t.match(onError.args[0][0].error.message, /querySourceFeatures\.filter/);
+            t.end();
+        });
     });
 
     t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.queryRenderedFeatures([{x: 0, y: 0}], {filter: 7}, transform), []);
-        t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
-        t.end();
+        setup((style, onError, transform) => {
+            t.deepEqual(style.queryRenderedFeatures([{x: 0, y: 0}], {filter: 7}, transform), []);
+            t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
+            t.end();
+        });
     });
 
     t.test('querySourceFeatures not raise validation errors if validation was disabled', (t) => {
-        let errors = 0;
-        t.stub(style, 'fire').callsFake((event) => {
-            if (event.error) {
-                console.log(event.error.message);
-                errors++;
-            }
+        setup((style, onError, transform) => {
+            let errors = 0;
+            t.stub(style, 'fire').callsFake((event) => {
+                if (event.error) {
+                    console.log(event.error.message);
+                    errors++;
+                }
+            });
+            style.queryRenderedFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
+            t.equals(errors, 0);
+            t.end();
         });
-        style.queryRenderedFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
-        t.equals(errors, 0);
-        t.end();
     });
 
     t.test('querySourceFeatures not raise validation errors if validation was disabled', (t) => {
-        let errors = 0;
-        t.stub(style, 'fire').callsFake((event) => {
-            if (event.error) errors++;
+        setup((style, onError, transform) => {
+            let errors = 0;
+            t.stub(style, 'fire').callsFake((event) => {
+                if (event.error) errors++;
+            });
+            style.querySourceFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
+            t.equals(errors, 0);
+            t.end();
         });
-        style.querySourceFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
-        t.equals(errors, 0);
-        t.end();
     });
 
     t.end();
