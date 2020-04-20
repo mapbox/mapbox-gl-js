@@ -119,6 +119,13 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns The map's geographical centerpoint.
+     * @example
+     * // return a LngLat object such as {lng: 0, lat: 0} at null island
+     * var center = map.getCenter();
+     * // return longitude and latitude values directly
+     * var longitude = map.getCenter().lng;
+     * var latitude = map.getCenter().lat;
+     * @see [Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
 
