@@ -139,6 +139,16 @@ export default class Popup extends Evented {
          * @instance
          * @type {Object}
          * @property {Popup} popup object that was opened
+         *
+         * @example
+         * // Create a popup
+         * var popup = new mapboxgl.Popup();
+         * // Set an event listener that will fire
+         * // any time the popup is opened
+         * popup.on('open', function(){
+         *   console.log('popup was opened');
+         * });
+         *
          */
         this.fire(new Event('open'));
 
@@ -189,6 +199,16 @@ export default class Popup extends Evented {
          * @instance
          * @type {Object}
          * @property {Popup} popup object that was closed
+         *
+         * @example
+         * // Create a popup
+         * var popup = new mapboxgl.Popup();
+         * // Set an event listener that will fire
+         * // any time the popup is closed
+         * popup.on('close', function(){
+         *   console.log('popup was closed');
+         * });
+         *
          */
         this.fire(new Event('close'));
 
