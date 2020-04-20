@@ -280,10 +280,18 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Set the marker's geographical position and move it.
-     * @param {LngLat} lnglat A {@link LngLat} describing where the marker should be located.
-     * @returns {Marker} `this`
-     */
+    * Set the marker's geographical position and move it.
+    * @param {LngLat} lnglat A {@link LngLat} describing where the marker should be located.
+    * @returns {Marker} `this`
+    * @example
+    * // Create a new marker, set the longitude and latitude, and add it to the map
+    * new mapboxgl.Marker()
+    *   .setLngLat([-65.017, -16.457])
+    *   .addTo(map);
+    * @see [Add custom icons with Markers](https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
+    * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+    * @see [Add a marker using a place name](https://docs.mapbox.com/mapbox-gl-js/example/marker-from-geocode/)
+    */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
