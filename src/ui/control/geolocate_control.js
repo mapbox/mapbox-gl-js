@@ -152,6 +152,7 @@ class GeolocateControl extends Evented {
         this._map = (undefined: any);
         numberOfWatches = 0;
         noTimeout = false;
+        if (this._timeoutId) { clearTimeout(this._timeoutId); }
     }
 
     _isOutOfMapMaxBounds(position: Position) {
