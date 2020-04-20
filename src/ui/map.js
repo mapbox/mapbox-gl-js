@@ -1914,23 +1914,42 @@ class Map extends Camera {
 
     // eslint-disable-next-line jsdoc/require-returns
     /**
-     * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
-     * Features are identified by their `id` attribute, which must be an integer or a string that can be
-     * cast to an integer.
+     * Sets the `state` of a feature.
+     * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
+     * When using this method, the `state` object is merged with any existing key-value pairs in the feature's state.
+     * Features are identified by their `feature.id` attribute, which can be any number or string.
+     *
+     * This method can only be used with sources that have a `feature.id` attribute. The `feature.id` attribute can be defined in three ways:
+     * - For vector or GeoJSON sources, including an `id` attribute in the original data file.
+     * - For vector or GeoJSON sources, using the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option at the time the source is defined.
+     * - For GeoJSON sources, using the [`generateId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-generateId) option to auto-assign an `id` based on the feature's index in the source data. If you change feature data using `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
+     *
+     * _Note: You can use the [`feature-state` expression](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#feature-state) to access the values in a feature's state object for the purposes of styling._
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} feature.id Unique id of the feature.
-     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
-     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
-     *  required.*
+     * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      *
-     * This method requires the `feature.id` attribute on data sets. For GeoJSON sources without
-     * feature ids, set the `generateId` option in the `GeoJSONSourceSpecification` to auto-assign them. This
-     * option assigns ids based on a feature's index in the source data. If you change feature data using
-     * `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
+     * @example
+     * // When the mouse moves over the `my-layer` layer, update
+     * // the feature state for the feature under the mouse
+     * map.on('mousemove', 'my-layer', (e) => {
+     *   if (e.features.length > 0) {
+     *     map.setFeatureState({
+     *       source: 'my-source',
+     *       sourceLayer: 'my-source-layer',
+     *       id: e.features[0].id,
+     *     }, {
+     *       hover: true
+     *     });
+     *   }
+     * });
+     *
      * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see Tutorial: [Create interactive hover effects with Mapbox GL JS](https://docs.mapbox.com/help/tutorials/create-interactive-hover-effects-with-mapbox-gl-js/)
      */
     setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
         this.style.setFeatureState(feature, state);
@@ -1939,19 +1958,50 @@ class Map extends Camera {
 
     // eslint-disable-next-line jsdoc/require-returns
     /**
-     * Removes feature state, setting it back to the default behavior. If only
-     * source is specified, removes all states of that source. If
-     * target.id is also specified, removes all keys for that feature's state.
-     * If key is also specified, removes that key from that feature's state.
-     * Features are identified by their `id` attribute, which must be an integer or a string that can be
-     * cast to an integer.
-     * @param {Object} target Identifier of where to set state: can be a source, a feature, or a specific key of feature.
+     * Removes the `state` of a feature, setting it back to the default behavior.
+     * If only a `target.source` is specified, it will remove the state for all features from that source.
+     * If `target.id` is also specified, it will remove all keys for that feature's state.
+     * If `key` is also specified, it removes only that key from that feature's state.
+     * Features are identified by their `feature.id` attribute, which can be any number or string.
+     *
+     * @param {Object} target Identifier of where to remove state. It can be a source, a feature, or a specific key of feature.
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} target.id (optional) Unique id of the feature. Optional if key is not specified.
-     * @param {string} target.source The Id of the vector source or GeoJSON source for the feature.
-     * @param {string} [target.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
-     *  required.*
+     * @param {string} target.source The id of the vector or GeoJSON source for the feature.
+     * @param {string} [target.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {string} key (optional) The key in the feature state to reset.
+     *
+     * @example
+     * // Reset the entire state object for all features
+     * // in the `my-source` source
+     * map.removeFeatureState({
+     *   source: 'my-source'
+     * });
+     *
+     * @example
+     * // When the mouse leaves the `my-layer` layer,
+     * // reset the entire state object for the
+     * // feature under the mouse
+     * map.on('mouseleave', 'my-layer', (e) => {
+     *   map.removeFeatureState({
+     *     source: 'my-source',
+     *     sourceLayer: 'my-source-layer',
+     *     id: e.features[0].id
+     *   });
+     * });
+     *
+     * @example
+     * // When the mouse leaves the `my-layer` layer,
+     * // reset only the `hover` key-value pair in the
+     * // state for the feature under the mouse
+     * map.on('mouseleave', 'my-layer', (e) => {
+     *   map.removeFeatureState({
+     *     source: 'my-source',
+     *     sourceLayer: 'my-source-layer',
+     *     id: e.features[0].id
+     *   }, 'hover');
+     * });
+     *
     */
     removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
         this.style.removeFeatureState(target, key);
@@ -1959,18 +2009,33 @@ class Map extends Camera {
     }
 
     /**
-     * Gets the state of a feature.
-     * Features are identified by their `id` attribute, which must be an integer or a string that can be
-     * cast to an integer.
+     * Gets the `state` of a feature.
+     * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
+     * Features are identified by their `feature.id` attribute, which can be any number or string.
+     *
+     * _Note: To access the values in a feature's state object for the purposes of styling the feature, use the [`feature-state` expression](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#feature-state)._
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} feature.id Unique id of the feature.
-     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
-     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
-     *  required.*
+     * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      *
-     * @returns {Object} The state of the feature.
+     * @returns {Object} The state of the feature: a set of key-value pairs that was assigned to the feature at runtime.
+     *
+     * @example
+     * // When the mouse moves over the `my-layer` layer,
+     * // get the feature state for the feature under the mouse
+     * map.on('mousemove', 'my-layer', (e) => {
+     *   if (e.features.length > 0) {
+     *     map.getFeatureState({
+     *       source: 'my-source',
+     *       sourceLayer: 'my-source-layer'
+     *       id: e.features[0].id
+     *     });
+     *   }
+     * });
+     *
      */
     getFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }): any {
         return this.style.getFeatureState(feature);
