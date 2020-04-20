@@ -2349,6 +2349,10 @@ class Map extends Camera {
      * Trigger the rendering of a single frame. Use this method with custom layers to
      * repaint the map when the layer changes. Calling this multiple times before the
      * next frame is rendered will still result in only a single frame being rendered.
+     * @example
+     * map.triggerRepaint();
+     * @see [Add a 3D model](https://docs.mapbox.com/mapbox-gl-js/example/add-3d-model/)
+     * @see [Add an animated icon to the map](https://docs.mapbox.com/mapbox-gl-js/example/add-image-animated/)
      */
     triggerRepaint() {
         if (this.style && !this._frame) {
