@@ -190,7 +190,7 @@ test('GeolocateControl non-zero bearing', (t) => {
     const click = new window.Event('click');
 
     map.once('moveend', () => {
-        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location');
+        t.deepLooseEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location');
         t.equal(map.getBearing(), 45, 'map bearing retained');
         t.equal(map.getZoom(), 10, 'geolocate fitBounds maxZoom');
         t.end();
@@ -215,7 +215,7 @@ test('GeolocateControl no watching map camera on geolocation', (t) => {
     const click = new window.Event('click');
 
     map.once('moveend', () => {
-        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location');
+        t.deepLooseEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location');
 
         const mapBounds = map.getBounds();
 
@@ -264,11 +264,11 @@ test('GeolocateControl watching map updates recenter on location with dot', (t) 
         if (moveendCount > 0) return;
         moveendCount++;
 
-        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location after 1st update');
+        t.deepLooseEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location after 1st update');
         t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot marker on map');
         t.false(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation does not have stale class');
         map.once('moveend', () => {
-            t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 40, lng: 50}, 'map centered on location after 2nd update');
+            t.deepLooseEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 40, lng: 50}, 'map centered on location after 2nd update');
             geolocate.once('error', () => {
                 t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot  marker on map');
                 t.ok(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation has stale class');
@@ -375,18 +375,20 @@ test('GeolocateControl trackuserlocationstart event', (t) => {
     const click = new window.Event('click');
 
     geolocate.once('trackuserlocationstart', () => {
-        geolocate.once('trackuserlocationend', () => {
-            geolocate.once('trackuserlocationstart', () => {
-                t.end();
+        setTimeout(() => {
+            geolocate.once('trackuserlocationend', () => {
+                geolocate.once('trackuserlocationstart', () => {
+                    t.end();
+                });
+                // click the geolocate control button again which should transition back to active_lock state
+                geolocate._geolocateButton.dispatchEvent(click);
             });
-            // click the geolocate control button again which should transition back to active_lock state
-            geolocate._geolocateButton.dispatchEvent(click);
-        });
 
-        // manually pan the map away from the geolocation position which should trigger the 'trackuserlocationend' event above
-        map.jumpTo({
-            center: [10, 5]
-        });
+            // manually pan the map away from the geolocation position which should trigger the 'trackuserlocationend' event above
+            map.jumpTo({
+                center: [10, 5]
+            });
+        }, 0);
     });
     geolocate._geolocateButton.dispatchEvent(click);
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});

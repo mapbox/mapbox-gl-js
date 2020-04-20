@@ -1,7 +1,9 @@
 
 export function fixedNum(n, precision) {
     if (precision === undefined) precision = 10;
-    return parseFloat(n.toFixed(precision), 10);
+    const fixed = parseFloat(n.toFixed(precision), 10);
+    // the `|| 0` converts -0 to 0
+    return fixed || 0;
 }
 
 export function fixedLngLat(l, precision) {

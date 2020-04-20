@@ -144,8 +144,8 @@ test('primitives', (t) => {
                 [0, 0.707, 0.707, 0]
             ];
 
-            t.deepEqual(frustum.points, expectedFrustumPoints);
-            t.deepEqual(frustum.planes, expectedFrustumPlanes);
+            t.deepLooseEqual(frustum.points, expectedFrustumPoints);
+            t.deepLooseEqual(frustum.planes, expectedFrustumPlanes);
             t.end();
         });
         t.end();

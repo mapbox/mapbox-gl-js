@@ -6,8 +6,14 @@ test('TaskQueue', (t) => {
         const q = new TaskQueue();
         let first = 0;
         let second = 0;
-        q.add(() => t.equal(++first, 1) && t.equal(second, 0));
-        q.add(() => t.equal(first, 1) && t.equal(++second, 1));
+        q.add(() => {
+            t.equal(++first, 1);
+            t.equal(second, 0)
+        });
+        q.add(() => {
+            t.equal(first, 1);
+            t.equal(++second, 1)
+        });
         q.run();
         t.equal(first, 1);
         t.equal(second, 1);

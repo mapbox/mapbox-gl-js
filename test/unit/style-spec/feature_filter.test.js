@@ -90,7 +90,7 @@ test('filter', t => {
         t.end();
     });
 
-    legacyFilterTests(t, createFilter);
+    legacyFilterTests((name, fn) => t.test(name, fn), createFilter);
 
     t.end();
 });
@@ -126,17 +126,20 @@ test('legacy filter detection', t => {
 });
 
 test('convert legacy filters to expressions', t => {
-    t.beforeEach(done => {
-        t.stub(console, 'warn');
-        done();
-    });
 
-    legacyFilterTests(t, (f) => {
+    function wrappedTest(name, fn) {
+        t.test(name, t => {
+            t.stub(console, 'warn');
+            fn(t);
+        });
+    }
+
+    legacyFilterTests(wrappedTest, (f) => {
         const converted = convertFilter(f);
         return createFilter(converted);
     });
 
-    t.test('mimic legacy type mismatch semantics', (t) => {
+    wrappedTest('mimic legacy type mismatch semantics', (t) => {
         const filter = ["any",
             ["all", [">", "y", 0], [">", "y", 0]],
             [">", "x", 0]
@@ -154,7 +157,7 @@ test('convert legacy filters to expressions', t => {
         t.end();
     });
 
-    t.test('flattens nested, single child all expressions', (t) => {
+    wrappedTest('flattens nested, single child all expressions', (t) => {
         const filter = [
             "all",
             [
@@ -193,7 +196,7 @@ test('convert legacy filters to expressions', t => {
         t.end();
     });
 
-    t.test('removes duplicates when outputting match expressions', (t) => {
+    wrappedTest('removes duplicates when outputting match expressions', (t) => {
         const filter = [
             "in",
             "$id",
@@ -220,22 +223,22 @@ test('convert legacy filters to expressions', t => {
     t.end();
 });
 
-function legacyFilterTests(t, createFilterExpr) {
-    t.test('degenerate', (t) => {
+function legacyFilterTests(wrappedTest, createFilterExpr) {
+    wrappedTest('degenerate', (t) => {
         t.equal(createFilterExpr().filter(), true);
         t.equal(createFilterExpr(undefined).filter(), true);
         t.equal(createFilterExpr(null).filter(), true);
         t.end();
     });
 
-    t.test('==, string', (t) => {
+    wrappedTest('==, string', (t) => {
         const f = createFilterExpr(['==', 'foo', 'bar']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 'bar'}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: 'baz'}}), false);
         t.end();
     });
 
-    t.test('==, number', (t) => {
+    wrappedTest('==, number', (t) => {
         const f = createFilterExpr(['==', 'foo', 0]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), false);
@@ -248,7 +251,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('==, null', (t) => {
+    wrappedTest('==, null', (t) => {
         const f = createFilterExpr(['==', 'foo', null]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), false);
@@ -261,14 +264,14 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('==, $type', (t) => {
+    wrappedTest('==, $type', (t) => {
         const f = createFilterExpr(['==', '$type', 'LineString']).filter;
         t.equal(f({zoom: 0}, {type: 1}), false);
         t.equal(f({zoom: 0}, {type: 2}), true);
         t.end();
     });
 
-    t.test('==, $id', (t) => {
+    wrappedTest('==, $id', (t) => {
         const f = createFilterExpr(['==', '$id', 1234]).filter;
 
         t.equal(f({zoom: 0}, {id: 1234}), true);
@@ -278,14 +281,14 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!=, string', (t) => {
+    wrappedTest('!=, string', (t) => {
         const f = createFilterExpr(['!=', 'foo', 'bar']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 'bar'}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 'baz'}}), true);
         t.end();
     });
 
-    t.test('!=, number', (t) => {
+    wrappedTest('!=, number', (t) => {
         const f = createFilterExpr(['!=', 'foo', 0]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), true);
@@ -298,7 +301,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!=, null', (t) => {
+    wrappedTest('!=, null', (t) => {
         const f = createFilterExpr(['!=', 'foo', null]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), true);
@@ -311,14 +314,14 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!=, $type', (t) => {
+    wrappedTest('!=, $type', (t) => {
         const f = createFilterExpr(['!=', '$type', 'LineString']).filter;
         t.equal(f({zoom: 0}, {type: 1}), true);
         t.equal(f({zoom: 0}, {type: 2}), false);
         t.end();
     });
 
-    t.test('<, number', (t) => {
+    wrappedTest('<, number', (t) => {
         const f = createFilterExpr(['<', 'foo', 0]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
@@ -334,7 +337,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('<, string', (t) => {
+    wrappedTest('<, string', (t) => {
         const f = createFilterExpr(['<', 'foo', '0']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: -1}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
@@ -349,7 +352,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('<=, number', (t) => {
+    wrappedTest('<=, number', (t) => {
         const f = createFilterExpr(['<=', 'foo', 0]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
@@ -365,7 +368,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('<=, string', (t) => {
+    wrappedTest('<=, string', (t) => {
         const f = createFilterExpr(['<=', 'foo', '0']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: -1}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
@@ -380,7 +383,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('>, number', (t) => {
+    wrappedTest('>, number', (t) => {
         const f = createFilterExpr(['>', 'foo', 0]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
@@ -396,7 +399,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('>, string', (t) => {
+    wrappedTest('>, string', (t) => {
         const f = createFilterExpr(['>', 'foo', '0']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: -1}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
@@ -411,7 +414,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('>=, number', (t) => {
+    wrappedTest('>=, number', (t) => {
         const f = createFilterExpr(['>=', 'foo', 0]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
@@ -427,7 +430,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('>=, string', (t) => {
+    wrappedTest('>=, string', (t) => {
         const f = createFilterExpr(['>=', 'foo', '0']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: -1}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
@@ -442,13 +445,13 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('in, degenerate', (t) => {
+    wrappedTest('in, degenerate', (t) => {
         const f = createFilterExpr(['in', 'foo']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), false);
         t.end();
     });
 
-    t.test('in, string', (t) => {
+    wrappedTest('in, string', (t) => {
         const f = createFilterExpr(['in', 'foo', '0']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: '0'}}), true);
@@ -460,7 +463,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('in, number', (t) => {
+    wrappedTest('in, number', (t) => {
         const f = createFilterExpr(['in', 'foo', 0]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: '0'}}), false);
@@ -471,7 +474,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('in, null', (t) => {
+    wrappedTest('in, null', (t) => {
         const f = createFilterExpr(['in', 'foo', null]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: '0'}}), false);
@@ -482,7 +485,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('in, multiple', (t) => {
+    wrappedTest('in, multiple', (t) => {
         const f = createFilterExpr(['in', 'foo', 0, 1]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), true);
@@ -490,7 +493,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('in, large_multiple', (t) => {
+    wrappedTest('in, large_multiple', (t) => {
         const values = Array.from({length: 2000}).map(Number.call, Number);
         values.reverse();
         const f = createFilterExpr(['in', 'foo'].concat(values)).filter;
@@ -501,7 +504,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('in, large_multiple, heterogeneous', (t) => {
+    wrappedTest('in, large_multiple, heterogeneous', (t) => {
         const values = Array.from({length: 2000}).map(Number.call, Number);
         values.push('a');
         values.unshift('b');
@@ -515,7 +518,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('in, $type', (t) => {
+    wrappedTest('in, $type', (t) => {
         const f = createFilterExpr(['in', '$type', 'LineString', 'Polygon']).filter;
         t.equal(f({zoom: 0}, {type: 1}), false);
         t.equal(f({zoom: 0}, {type: 2}), true);
@@ -529,13 +532,13 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!in, degenerate', (t) => {
+    wrappedTest('!in, degenerate', (t) => {
         const f = createFilterExpr(['!in', 'foo']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), true);
         t.end();
     });
 
-    t.test('!in, string', (t) => {
+    wrappedTest('!in, string', (t) => {
         const f = createFilterExpr(['!in', 'foo', '0']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: '0'}}), false);
@@ -545,7 +548,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!in, number', (t) => {
+    wrappedTest('!in, number', (t) => {
         const f = createFilterExpr(['!in', 'foo', 0]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: '0'}}), true);
@@ -554,7 +557,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!in, null', (t) => {
+    wrappedTest('!in, null', (t) => {
         const f = createFilterExpr(['!in', 'foo', null]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: '0'}}), true);
@@ -563,7 +566,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!in, multiple', (t) => {
+    wrappedTest('!in, multiple', (t) => {
         const f = createFilterExpr(['!in', 'foo', 0, 1]).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), false);
@@ -571,7 +574,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!in, large_multiple', (t) => {
+    wrappedTest('!in, large_multiple', (t) => {
         const f = createFilterExpr(['!in', 'foo'].concat(Array.from({length: 2000}).map(Number.call, Number))).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), false);
@@ -580,7 +583,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!in, $type', (t) => {
+    wrappedTest('!in, $type', (t) => {
         const f = createFilterExpr(['!in', '$type', 'LineString', 'Polygon']).filter;
         t.equal(f({zoom: 0}, {type: 1}), true);
         t.equal(f({zoom: 0}, {type: 2}), false);
@@ -588,7 +591,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('any', (t) => {
+    wrappedTest('any', (t) => {
         const f1 = createFilterExpr(['any']).filter;
         t.equal(f1({zoom: 0}, {properties: {foo: 1}}), false);
 
@@ -604,7 +607,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('all', (t) => {
+    wrappedTest('all', (t) => {
         const f1 = createFilterExpr(['all']).filter;
         t.equal(f1({zoom: 0}, {properties: {foo: 1}}), true);
 
@@ -620,7 +623,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('none', (t) => {
+    wrappedTest('none', (t) => {
         const f1 = createFilterExpr(['none']).filter;
         t.equal(f1({zoom: 0}, {properties: {foo: 1}}), true);
 
@@ -636,7 +639,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('has', (t) => {
+    wrappedTest('has', (t) => {
         const f = createFilterExpr(['has', 'foo']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), true);
@@ -649,7 +652,7 @@ function legacyFilterTests(t, createFilterExpr) {
         t.end();
     });
 
-    t.test('!has', (t) => {
+    wrappedTest('!has', (t) => {
         const f = createFilterExpr(['!has', 'foo']).filter;
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), false);
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), false);

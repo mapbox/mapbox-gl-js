@@ -18,6 +18,7 @@ test('ajax', (t) => {
     }
 
     function teardown(t) {
+        resetImageRequestQueue();
         window.restore();
         t.end();
     }
@@ -134,8 +135,6 @@ test('ajax', (t) => {
     });
 
     wrappedTest('getImage cancelling frees up request for maxParallelImageRequests', (t) => {
-        resetImageRequestQueue();
-
         window.server.respondWith(request => request.respond(200, {'Content-Type': 'image/png'}, ''));
 
         const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
@@ -157,8 +156,6 @@ test('ajax', (t) => {
     });
 
     wrappedTest('getImage requests that were once queued are still abortable', (t) => {
-        resetImageRequestQueue();
-
         const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
 
         const requests = [];
@@ -190,8 +187,6 @@ test('ajax', (t) => {
     });
 
     wrappedTest('getImage sends accept/webp when supported', (t) => {
-        resetImageRequestQueue();
-
         window.server.respondWith((request) => {
             t.ok(request.requestHeaders.accept.includes('image/webp'), 'accepts header contains image/webp');
             request.respond(200, {'Content-Type': 'image/webp'}, '');

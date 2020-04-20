@@ -150,7 +150,7 @@ test('shapeIcon', (t) => {
     });
 
     t.test('text-anchor: center', (t) => {
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 0, 0 ], 'center'), {
+        t.deepLooseEqual(shaping.shapeIcon(imagePosition, [ 0, 0 ], 'center'), {
             top: -10,
             bottom: 10,
             left: -10,
@@ -158,7 +158,7 @@ test('shapeIcon', (t) => {
             image
         }, 'no offset');
 
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 4, 7 ], 'center'), {
+        t.deepLooseEqual(shaping.shapeIcon(imagePosition, [ 4, 7 ], 'center'), {
             top: -3,
             bottom: 17,
             left: -6,
@@ -169,7 +169,7 @@ test('shapeIcon', (t) => {
     });
 
     t.test('text-anchor: left', (t) => {
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 0, 0 ], 'left'), {
+        t.deepLooseEqual(shaping.shapeIcon(imagePosition, [ 0, 0 ], 'left'), {
             top: -10,
             bottom: 10,
             left: 0,
@@ -177,7 +177,7 @@ test('shapeIcon', (t) => {
             image
         }, 'no offset');
 
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 4, 7 ], 'left'), {
+        t.deepLooseEqual(shaping.shapeIcon(imagePosition, [ 4, 7 ], 'left'), {
             top: -3,
             bottom: 17,
             left: 4,
@@ -188,7 +188,7 @@ test('shapeIcon', (t) => {
     });
 
     t.test('text-anchor: bottom-right', (t) => {
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 0, 0 ], 'bottom-right'), {
+        t.deepLooseEqual(shaping.shapeIcon(imagePosition, [ 0, 0 ], 'bottom-right'), {
             top: -20,
             bottom: 0,
             left: -20,
@@ -196,7 +196,7 @@ test('shapeIcon', (t) => {
             image
         }, 'no offset');
 
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 4, 7 ], 'bottom-right'), {
+        t.deepLooseEqual(shaping.shapeIcon(imagePosition, [ 4, 7 ], 'bottom-right'), {
             top: -13,
             bottom: 7,
             left: -16,

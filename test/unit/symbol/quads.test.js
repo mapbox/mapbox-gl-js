@@ -9,7 +9,7 @@ test('getIconQuads', (t) => {
     });
 
     t.test('point', (t) => {
-        t.deepEqual(getIconQuads({
+        t.deepLooseEqual(getIconQuads({
             top: -5.5,
             right: 7.5,
             bottom: 5.5,
@@ -37,7 +37,7 @@ test('getIconQuads', (t) => {
             }
         }], 'icon-anchor: center');
 
-        t.deepEqual(getIconQuads({
+        t.deepLooseEqual(getIconQuads({
             top: -11,
             right: 15,
             bottom: 11,
@@ -65,7 +65,7 @@ test('getIconQuads', (t) => {
             }
         }], 'icon-anchor: center icon, icon-scale: 2');
 
-        t.deepEqual(getIconQuads({
+        t.deepLooseEqual(getIconQuads({
             top: 0,
             right: 0,
             bottom: 11,
@@ -93,7 +93,7 @@ test('getIconQuads', (t) => {
             }
         }], 'icon-anchor: top-right');
 
-        t.deepEqual(getIconQuads({
+        t.deepLooseEqual(getIconQuads({
             top: -5.5,
             right: 30,
             bottom: 5.5,
@@ -125,7 +125,7 @@ test('getIconQuads', (t) => {
     });
 
     t.test('line', (t) => {
-        t.deepEqual(getIconQuads({
+        t.deepLooseEqual(getIconQuads({
             top: -5.5,
             right: 7.5,
             bottom: 5.5,

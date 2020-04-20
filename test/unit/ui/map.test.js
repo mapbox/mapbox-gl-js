@@ -1,4 +1,4 @@
-import {test} from '../../util/test';
+import {test, testWithSetupTeardown} from '../../util/test';
 import {extend} from '../../../src/util/util';
 import window from '../../../src/util/window';
 import Map from '../../../src/ui/map';
@@ -21,17 +21,19 @@ function createStyleSource() {
 }
 
 test('Map', (t) => {
-    t.beforeEach((callback) => {
+    function setup(t) {
         window.useFakeXMLHttpRequest();
-        callback();
-    });
+        t.end();
+    }
 
-    t.afterEach((callback) => {
+    function teardown(t) {
         window.restore();
-        callback();
-    });
+        t.end();
+    }
 
-    t.test('constructor', (t) => {
+    const wrappedTest = testWithSetupTeardown(t, setup, teardown);
+
+    wrappedTest('constructor', (t) => {
         const map = createMap(t, {interactive: true, style: null});
         t.ok(map.getContainer());
         t.equal(map.getStyle(), undefined);
@@ -50,7 +52,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('bad map-specific token breaks map', (t) => {
+    wrappedTest('bad map-specific token breaks map', (t) => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});
         Object.defineProperty(container, 'offsetHeight', {value: 512});
@@ -59,7 +61,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('initial bounds in constructor options', (t) => {
+    wrappedTest('initial bounds in constructor options', (t) => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});
         Object.defineProperty(container, 'offsetHeight', {value: 512});
@@ -73,7 +75,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('initial bounds options in constructor options', (t) => {
+    wrappedTest('initial bounds options in constructor options', (t) => {
         const bounds = [[-133, 16], [-68, 50]];
 
         const map = (fitBoundsOptions, skipCSSStub) => {
@@ -91,7 +93,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('disables handlers', (t) => {
+    wrappedTest('disables handlers', (t) => {
         t.test('disables all handlers', (t) => {
             const map = createMap(t, {interactive: false});
 
@@ -130,7 +132,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('emits load event after a style is set', (t) => {
+    wrappedTest('emits load event after a style is set', (t) => {
         t.stub(Map.prototype, '_detectMissingCSS');
         const map = new Map({container: window.document.createElement('div')});
 
@@ -146,7 +148,7 @@ test('Map', (t) => {
         function pass() { t.end(); }
     });
 
-    t.test('#setStyle', (t) => {
+    wrappedTest('#setStyle', (t) => {
         t.test('returns self', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             const map = new Map({container: window.document.createElement('div')});
@@ -288,7 +290,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#is_Loaded', (t) => {
+    wrappedTest('#is_Loaded', (t) => {
 
         t.test('Map#isSourceLoaded', (t) => {
             const style = createStyle();
@@ -334,7 +336,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getStyle', (t) => {
+    wrappedTest('#getStyle', (t) => {
         t.test('returns the style', (t) => {
             const style = createStyle();
             const map = createMap(t, {style});
@@ -456,7 +458,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#moveLayer', (t) => {
+    wrappedTest('#moveLayer', (t) => {
         const map = createMap(t, {
             style: extend(createStyle(), {
                 sources: {
@@ -489,7 +491,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('#getLayer', (t) => {
+    wrappedTest('#getLayer', (t) => {
         const layer = {
             id: 'layerId',
             type: 'circle',
@@ -519,7 +521,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('#resize', (t) => {
+    wrappedTest('#resize', (t) => {
         t.test('sets width and height from container clients', (t) => {
             const map = createMap(t),
                 container = map.getContainer();
@@ -596,10 +598,10 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getBounds', (t) => {
+    wrappedTest('#getBounds', (t) => {
         const map = createMap(t, {zoom: 0});
-        t.deepEqual(parseFloat(map.getBounds().getCenter().lng.toFixed(10)), 0, 'getBounds');
-        t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
+        t.deepEqual(fixedNum(map.getBounds().getCenter().lng), 0, 'getBounds');
+        t.deepEqual(fixedNum(map.getBounds().getCenter().lat), 0, 'getBounds');
 
         t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
             [ -70.31249999999976, -57.326521225216965 ],
@@ -637,7 +639,7 @@ test('Map', (t) => {
         }
     });
 
-    t.test('#setMaxBounds', (t) => {
+    wrappedTest('#setMaxBounds', (t) => {
         t.test('constrains map bounds', (t) => {
             const map = createMap(t, {zoom:0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
@@ -687,7 +689,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getMaxBounds', (t) => {
+    wrappedTest('#getMaxBounds', (t) => {
         t.test('returns null when no bounds set', (t) => {
             const map = createMap(t, {zoom:0});
             t.equal(map.getMaxBounds(), null);
@@ -705,7 +707,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getRenderWorldCopies', (t) => {
+    wrappedTest('#getRenderWorldCopies', (t) => {
         t.test('initially false', (t) => {
             const map = createMap(t, {renderWorldCopies: false});
             t.equal(map.getRenderWorldCopies(), false);
@@ -721,7 +723,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#setRenderWorldCopies', (t) => {
+    wrappedTest('#setRenderWorldCopies', (t) => {
         t.test('initially false', (t) => {
             const map = createMap(t, {renderWorldCopies: false});
             map.setRenderWorldCopies(true);
@@ -753,7 +755,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#setMinZoom', (t) => {
+    wrappedTest('#setMinZoom', (t) => {
         const map = createMap(t, {zoom:5});
         map.setMinZoom(3.5);
         map.setZoom(1);
@@ -761,7 +763,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('unset minZoom', (t) => {
+    wrappedTest('unset minZoom', (t) => {
         const map = createMap(t, {minZoom:5});
         map.setMinZoom(null);
         map.setZoom(1);
@@ -769,7 +771,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getMinZoom', (t) => {
+    wrappedTest('#getMinZoom', (t) => {
         const map = createMap(t, {zoom: 0});
         t.equal(map.getMinZoom(), -2, 'returns default value');
         map.setMinZoom(10);
@@ -777,7 +779,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('ignore minZooms over maxZoom', (t) => {
+    wrappedTest('ignore minZooms over maxZoom', (t) => {
         const map = createMap(t, {zoom:2, maxZoom:5});
         t.throws(() => {
             map.setMinZoom(6);
@@ -787,7 +789,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#setMaxZoom', (t) => {
+    wrappedTest('#setMaxZoom', (t) => {
         const map = createMap(t, {zoom:0});
         map.setMaxZoom(3.5);
         map.setZoom(4);
@@ -795,7 +797,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('unset maxZoom', (t) => {
+    wrappedTest('unset maxZoom', (t) => {
         const map = createMap(t, {maxZoom:5});
         map.setMaxZoom(null);
         map.setZoom(6);
@@ -803,7 +805,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getMaxZoom', (t) => {
+    wrappedTest('#getMaxZoom', (t) => {
         const map = createMap(t, {zoom: 0});
         t.equal(map.getMaxZoom(), 22, 'returns default value');
         map.setMaxZoom(10);
@@ -811,7 +813,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('ignore maxZooms over minZoom', (t) => {
+    wrappedTest('ignore maxZooms over minZoom', (t) => {
         const map = createMap(t, {minZoom:5});
         t.throws(() => {
             map.setMaxZoom(4);
@@ -821,21 +823,21 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('throw on maxZoom smaller than minZoom at init', (t) => {
+    wrappedTest('throw on maxZoom smaller than minZoom at init', (t) => {
         t.throws(() => {
             createMap(t, {minZoom:10, maxZoom:5});
         }, new Error(`maxZoom must be greater than or equal to minZoom`));
         t.end();
     });
 
-    t.test('throw on maxZoom smaller than minZoom at init with falsey maxZoom', (t) => {
+    wrappedTest('throw on maxZoom smaller than minZoom at init with falsey maxZoom', (t) => {
         t.throws(() => {
             createMap(t, {minZoom:1, maxZoom:0});
         }, new Error(`maxZoom must be greater than or equal to minZoom`));
         t.end();
     });
 
-    t.test('#setMinPitch', (t) => {
+    wrappedTest('#setMinPitch', (t) => {
         const map = createMap(t, {pitch: 20});
         map.setMinPitch(10);
         map.setPitch(0);
@@ -843,7 +845,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('unset minPitch', (t) => {
+    wrappedTest('unset minPitch', (t) => {
         const map = createMap(t, {minPitch: 20});
         map.setMinPitch(null);
         map.setPitch(0);
@@ -851,7 +853,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getMinPitch', (t) => {
+    wrappedTest('#getMinPitch', (t) => {
         const map = createMap(t, {pitch: 0});
         t.equal(map.getMinPitch(), 0, 'returns default value');
         map.setMinPitch(10);
@@ -859,7 +861,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('ignore minPitchs over maxPitch', (t) => {
+    wrappedTest('ignore minPitchs over maxPitch', (t) => {
         const map = createMap(t, {pitch: 0, maxPitch: 10});
         t.throws(() => {
             map.setMinPitch(20);
@@ -869,7 +871,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#setMaxPitch', (t) => {
+    wrappedTest('#setMaxPitch', (t) => {
         const map = createMap(t, {pitch: 0});
         map.setMaxPitch(10);
         map.setPitch(20);
@@ -877,7 +879,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('unset maxPitch', (t) => {
+    wrappedTest('unset maxPitch', (t) => {
         const map = createMap(t, {maxPitch:10});
         map.setMaxPitch(null);
         map.setPitch(20);
@@ -885,7 +887,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getMaxPitch', (t) => {
+    wrappedTest('#getMaxPitch', (t) => {
         const map = createMap(t, {pitch: 0});
         t.equal(map.getMaxPitch(), 60, 'returns default value');
         map.setMaxPitch(10);
@@ -893,7 +895,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('ignore maxPitchs over minPitch', (t) => {
+    wrappedTest('ignore maxPitchs over minPitch', (t) => {
         const map = createMap(t, {minPitch:10});
         t.throws(() => {
             map.setMaxPitch(0);
@@ -903,35 +905,35 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('throw on maxPitch smaller than minPitch at init', (t) => {
+    wrappedTest('throw on maxPitch smaller than minPitch at init', (t) => {
         t.throws(() => {
             createMap(t, {minPitch: 10, maxPitch: 5});
         }, new Error(`maxPitch must be greater than or equal to minPitch`));
         t.end();
     });
 
-    t.test('throw on maxPitch smaller than minPitch at init with falsey maxPitch', (t) => {
+    wrappedTest('throw on maxPitch smaller than minPitch at init with falsey maxPitch', (t) => {
         t.throws(() => {
             createMap(t, {minPitch: 1, maxPitch: 0});
         }, new Error(`maxPitch must be greater than or equal to minPitch`));
         t.end();
     });
 
-    t.test('throw on maxPitch greater than valid maxPitch at init', (t) => {
+    wrappedTest('throw on maxPitch greater than valid maxPitch at init', (t) => {
         t.throws(() => {
             createMap(t, {maxPitch: 90});
         }, new Error(`maxPitch must be less than or equal to 60`));
         t.end();
     });
 
-    t.test('throw on minPitch less than valid minPitch at init', (t) => {
+    wrappedTest('throw on minPitch less than valid minPitch at init', (t) => {
         t.throws(() => {
             createMap(t, {minPitch: -10});
         }, new Error(`minPitch must be greater than or equal to 0`));
         t.end();
     });
 
-    t.test('#remove', (t) => {
+    wrappedTest('#remove', (t) => {
         const map = createMap(t);
         t.equal(map.getContainer().childNodes.length, 3);
         map.remove();
@@ -939,7 +941,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#remove calls onRemove on added controls', (t) => {
+    wrappedTest('#remove calls onRemove on added controls', (t) => {
         const map = createMap(t);
         const control = {
             onRemove: t.spy(),
@@ -953,7 +955,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#remove calls onRemove on added controls before style is destroyed', (t) => {
+    wrappedTest('#remove calls onRemove on added controls before style is destroyed', (t) => {
         const map = createMap(t);
         let onRemoveCalled = 0;
         let style;
@@ -977,7 +979,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('#addControl', (t) => {
+    wrappedTest('#addControl', (t) => {
         const map = createMap(t);
         const control = {
             onAdd(_) {
@@ -990,7 +992,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#removeControl errors on invalid arguments', (t) => {
+    wrappedTest('#removeControl errors on invalid arguments', (t) => {
         const map = createMap(t);
         const control = {};
         const stub = t.stub(console, 'error');
@@ -1002,7 +1004,7 @@ test('Map', (t) => {
 
     });
 
-    t.test('#removeControl', (t) => {
+    wrappedTest('#removeControl', (t) => {
         const map = createMap(t);
         const control = {
             onAdd() {
@@ -1019,19 +1021,19 @@ test('Map', (t) => {
 
     });
 
-    t.test('#project', (t) => {
+    wrappedTest('#project', (t) => {
         const map = createMap(t);
         t.deepEqual(map.project([0, 0]), {x: 100, y: 100});
         t.end();
     });
 
-    t.test('#unproject', (t) => {
+    wrappedTest('#unproject', (t) => {
         const map = createMap(t);
         t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
         t.end();
     });
 
-    t.test('#listImages', (t) => {
+    wrappedTest('#listImages', (t) => {
         const map = createMap(t);
 
         map.on('load', () => {
@@ -1046,7 +1048,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('#listImages throws an error if called before "load"', (t) => {
+    wrappedTest('#listImages throws an error if called before "load"', (t) => {
         const map = createMap(t);
         t.throws(() => {
             map.listImages();
@@ -1054,7 +1056,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#queryRenderedFeatures', (t) => {
+    wrappedTest('#queryRenderedFeatures', (t) => {
 
         t.test('if no arguments provided', (t) => {
             createMap(t, {}, (err, map) => {
@@ -1142,7 +1144,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#setLayoutProperty', (t) => {
+    wrappedTest('#setLayoutProperty', (t) => {
         t.test('sets property', (t) => {
             const map = createMap(t, {
                 style: {
@@ -1366,7 +1368,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getLayoutProperty', (t) => {
+    wrappedTest('#getLayoutProperty', (t) => {
         t.test('fires an error if layer not found', (t) => {
             const map = createMap(t, {
                 style: {
@@ -1388,7 +1390,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#setPaintProperty', (t) => {
+    wrappedTest('#setPaintProperty', (t) => {
         t.test('sets property', (t) => {
             const map = createMap(t, {
                 style: {
@@ -1445,7 +1447,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#setFeatureState', (t) => {
+    wrappedTest('#setFeatureState', (t) => {
         t.test('sets state', (t) => {
             const map = createMap(t, {
                 style: {
@@ -1576,7 +1578,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#removeFeatureState', (t) => {
+    wrappedTest('#removeFeatureState', (t) => {
 
         t.test('accepts "0" id', (t) => {
             const map = createMap(t, {
@@ -1866,7 +1868,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('error event', (t) => {
+    wrappedTest('error event', (t) => {
         t.test('logs errors to console when it has NO listeners', (t) => {
             const map = createMap(t);
             const stub = t.stub(console, 'error');
@@ -1890,7 +1892,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('render stabilizes', (t) => {
+    wrappedTest('render stabilizes', (t) => {
         const style = createStyle();
         style.sources.mapbox = {
             type: 'vector',
@@ -1918,7 +1920,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('no render after idle event', (t) => {
+    wrappedTest('no render after idle event', (t) => {
         const style = createStyle();
         const map = createMap(t, {style});
         map.on('idle', () => {
@@ -1929,7 +1931,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('no idle event during move', (t) => {
+    wrappedTest('no idle event during move', (t) => {
         const style = createStyle();
         const map = createMap(t, {style, fadeDuration: 0});
         map.once('idle', () => {
@@ -1942,7 +1944,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('#removeLayer restores Map#loaded() to true', (t) => {
+    wrappedTest('#removeLayer restores Map#loaded() to true', (t) => {
         const map = createMap(t, {
             style: extend(createStyle(), {
                 sources: {
@@ -1973,7 +1975,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('stops camera animation on mousedown when interactive', (t) => {
+    wrappedTest('stops camera animation on mousedown when interactive', (t) => {
         const map = createMap(t, {interactive: true});
         map.flyTo({center: [200, 0], duration: 100});
 
@@ -1984,7 +1986,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('continues camera animation on mousedown when non-interactive', (t) => {
+    wrappedTest('continues camera animation on mousedown when non-interactive', (t) => {
         const map = createMap(t, {interactive: false});
         map.flyTo({center: [200, 0], duration: 100});
 
@@ -1995,7 +1997,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('stops camera animation on touchstart when interactive', (t) => {
+    wrappedTest('stops camera animation on touchstart when interactive', (t) => {
         const map = createMap(t, {interactive: true});
         map.flyTo({center: [200, 0], duration: 100});
 
@@ -2006,7 +2008,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('continues camera animation on touchstart when non-interactive', (t) => {
+    wrappedTest('continues camera animation on touchstart when non-interactive', (t) => {
         const map = createMap(t, {interactive: false});
         map.flyTo({center: [200, 0], duration: 100});
 
@@ -2017,7 +2019,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('should not warn when CSS is present', (t) => {
+    wrappedTest('should not warn when CSS is present', (t) => {
         const stub = t.stub(console, 'warn');
 
         const styleSheet = new window.CSSStyleSheet();
@@ -2031,7 +2033,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('should warn when CSS is missing', (t) => {
+    wrappedTest('should warn when CSS is missing', (t) => {
         const stub = t.stub(console, 'warn');
         new Map({container: window.document.createElement('div')});
 
@@ -2040,7 +2042,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('continues camera animation on resize', (t) => {
+    wrappedTest('continues camera animation on resize', (t) => {
         const map = createMap(t),
             container = map.getContainer();
 
@@ -2055,7 +2057,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('map fires `styleimagemissing` for missing icons', (t) => {
+    wrappedTest('map fires `styleimagemissing` for missing icons', (t) => {
         const map = createMap(t);
 
         const id = "missing-image";
@@ -2075,7 +2077,7 @@ test('Map', (t) => {
         });
     });
 
-    t.test('map does not fire `styleimagemissing` for empty icon values', (t) => {
+    wrappedTest('map does not fire `styleimagemissing` for empty icon values', (t) => {
         const map = createMap(t);
 
         map.on('load', () => {

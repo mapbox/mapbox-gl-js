@@ -28,7 +28,10 @@ test('Marker uses a default marker element with custom color', (t) => {
 });
 
 test('Marker uses a default marker element with custom scale', (t) => {
-    const marker = new Marker();
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map);
     // initial dimensions of svg element
     t.ok(marker.getElement().firstChild.getAttribute('width').includes('27'));
     t.ok(marker.getElement().firstChild.getAttribute('height').includes('41'));

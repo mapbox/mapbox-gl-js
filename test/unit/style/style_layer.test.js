@@ -189,7 +189,7 @@ test('StyleLayer#setPaintProperty', (t) => {
 
         layer.setPaintProperty('background-color-transition', null);
 
-        t.deepEqual(layer.getPaintProperty('background-color-transition'), null);
+        t.deepLooseEqual(layer.getPaintProperty('background-color-transition'), null);
         t.end();
     });
 
