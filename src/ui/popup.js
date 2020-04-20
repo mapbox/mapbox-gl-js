@@ -104,6 +104,15 @@ export default class Popup extends Evented {
      *
      * @param {Map} map The Mapbox GL JS map to add the popup to.
      * @returns {Popup} `this`
+     * @example
+     * new mapboxgl.Popup()
+     *   .setLngLat([0, 0])
+     *   .setHTML("<h1>Null Island</h1>")
+     *   .addTo(map);
+     * @see [Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
+     * @see [Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Show polygon information on click](https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/)
      */
     addTo(map: Map) {
         if (this._map) this.remove();
