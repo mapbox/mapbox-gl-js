@@ -1868,6 +1868,7 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @example
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
+     * @see [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
      */
     setLayoutProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
         this.style.setLayoutProperty(layerId, name, value, options);
@@ -1892,6 +1893,9 @@ class Map extends Camera {
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
+     * @example
+     * map.getLayoutProperty('my-layer', 'visibility');
+     * @see [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
      */
     setLight(light: LightSpecification, options: StyleSetterOptions = {}) {
         this._lazyInitEmptyStyle();
