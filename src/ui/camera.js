@@ -86,7 +86,7 @@ export type AnimationOptions = {
 };
 
 /**
- * Options for setting padding on a call to {@link Map#fitBounds}. All properties of this object must be
+ * Options for setting padding on calls to methods such as {@link Map#fitBounds}, {@link Map#fitScreenCoordinates}, and {@link Map#setPadding}. Adjust these options to set the amount of padding in pixels added to the edges of the canvas. This can be set for either all edges or individually. All properties of this object must be
  * non-negative integers.
  *
  * @typedef {Object} PaddingOptions
@@ -94,6 +94,20 @@ export type AnimationOptions = {
  * @property {number} bottom Padding in pixels from the bottom of the map canvas.
  * @property {number} left Padding in pixels from the left of the map canvas.
  * @property {number} right Padding in pixels from the right of the map canvas.
+ *
+ * @example
+ * var bbox = [[-79, 43], [-73, 45]];
+ * map.fitBounds(bbox, {
+ *   padding: {top: 10, bottom:25, left: 15, right: 5}
+ * });
+ *
+ * @example
+ * var bbox = [[-79, 43], [-73, 45]];
+ * map.fitBounds(bbox, {
+ *   padding: 20
+ * });
+ * @see [Fit to the bounds of a LineString](https://docs.mapbox.com/mapbox-gl-js/example/zoomto-linestring/)
+ * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
  */
 
 class Camera extends Evented {
