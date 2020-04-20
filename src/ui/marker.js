@@ -309,10 +309,16 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Binds a Popup to the Marker
-     * @param popup an instance of the `Popup` class. If undefined or null, any popup
-     * set on this `Marker` instance is unset
+     * Binds a `Popup` to the `Marker`.
+     * @param popup An instance of the `Popup` class. If undefined or null, any popup
+     * set on this `Marker` instance is unset.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>")) // add popup
+     *  .addTo(map);
+     * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
     setPopup(popup: ?Popup) {
         if (this._popup) {
@@ -376,16 +382,30 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns the Popup instance that is bound to the Marker
+     * Returns the `Popup` instance that is bound to the `Marker`.
      * @returns {Popup} popup
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *  .addTo(map);
+     *
+     * console.log(marker.getPopup()); // return the popup instance
      */
     getPopup() {
         return this._popup;
     }
 
     /**
-     * Opens or closes the bound popup, depending on the current state
+     * Opens or closes the `Popup` instance that is bound to the `Marker`, depending on the current state of the `Popup`.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *  .addTo(map);
+     *
+     * marker.togglePopup(); // toggle popup open or closed
      */
     togglePopup() {
         const popup = this._popup;
