@@ -43,7 +43,7 @@ if (typeof Object.freeze == 'function') {
  * @property {string} body Request body.
  * @property {string} type Response body type to be returned `'string' | 'json' | 'arrayBuffer'`.
  * @property {string} credentials `'same-origin'|'include'` Use 'include' to send cookies with cross-origin requests.
- * @property {Boolean} collectResourceTiming If true, Resource Timing API information will be collected for these transformed requests and returned in a resourceTiming property of relevant data events.
+ * @property {boolean} collectResourceTiming If true, Resource Timing API information will be collected for these transformed requests and returned in a resourceTiming property of relevant data events.
  * @example
  * // transformRequest used to modify requests that begin with `http://myHost`
  * transformRequest: (url, resourceType)=> {
