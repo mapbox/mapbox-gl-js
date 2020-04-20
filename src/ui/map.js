@@ -1936,19 +1936,35 @@ class Map extends Camera {
     /**
      * Sets the filter for the specified style layer.
      *
+     * Filters control which features a style layer renders from its source.
+     * Any feature for which the filter expression evaluates to true will be
+     * rendered on the map. Those that are false will be hidden.
+     *
+     * Use setFilter to show a subset of your source data.
+     *
+     * To clear the filter, pass `null` or `undefined` as the second parameter.
+     *
      * @param {string} layerId The ID of the layer to which the filter will be applied.
      * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
      *   [filter definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
-     *
      * @returns {Map} `this`
+     *
      * @example
-     * map.setFilter('my-layer', ['==', 'name', 'USA']);
+     * // display only features with the 'name' property 'USA'
+     * map.setFilter('my-layer', ['==', ['get', 'name'], 'USA']);
+     * @example
+     * // display only features with five or more 'available-spots'
+     * map.setFilter('bike-docks', ['>=', ['get', 'available-spots'], 5]);
+     * @example
+     * // remove the filter for the 'bike-docks' style layer
+     * map.setFilter('bike-docks', null);
      *
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
+     * @see [Tutorial: Show changes over time](https://docs.mapbox.com/help/tutorials/show-changes-over-time/)
      */
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this.style.setFilter(layerId, filter, options);
