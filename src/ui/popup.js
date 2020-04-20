@@ -293,6 +293,14 @@ export default class Popup extends Evented {
 
     /**
      * Returns the `Popup`'s HTML element.
+     * @example
+     * // Change the `Popup` element's font size
+     * var popup = new mapboxgl.Popup()
+     *   .setLngLat([-96, 37.8])
+     *   .setHTML("<p>Hello World!</p>")
+     *   .addTo(map);
+     * var popupElem = popup.getElement();
+     * popupElem.style.fontSize = "25px";
      * @returns {HTMLElement} element
      */
     getElement() {
