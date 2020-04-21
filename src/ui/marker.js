@@ -19,6 +19,7 @@ type Options = {
     offset?: PointLike,
     anchor?: Anchor,
     color?: string,
+    scale?: number,
     draggable?: boolean,
     rotation?: number,
     rotationAlignment?: string,
@@ -33,6 +34,7 @@ type Options = {
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
  * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
+ * @param {number} [options.scale=1] The scale to use for the default marker if options.element is not provided. The default scale corresponds to a height of `41px` and a width of `27px`.
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
  * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
  * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
@@ -53,6 +55,7 @@ export default class Marker extends Evented {
     _lngLat: LngLat;
     _pos: ?Point;
     _color: ?string;
+    _scale: number;
     _defaultMarker: boolean;
     _draggable: boolean;
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
@@ -81,6 +84,7 @@ export default class Marker extends Evented {
 
         this._anchor = options && options.anchor || 'center';
         this._color = options && options.color || '#3FB1CE';
+        this._scale = options && options.scale || 1;
         this._draggable = options && options.draggable || false;
         this._state = 'inactive';
         this._rotation = options && options.rotation || 0;
@@ -94,10 +98,12 @@ export default class Marker extends Evented {
 
             // create default map marker SVG
             const svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
+            const defaultHeight = 41;
+            const defaultWidth = 27;
             svg.setAttributeNS(null, 'display', 'block');
-            svg.setAttributeNS(null, 'height', '41px');
-            svg.setAttributeNS(null, 'width', '27px');
-            svg.setAttributeNS(null, 'viewBox', '0 0 27 41');
+            svg.setAttributeNS(null, 'height', `${defaultHeight}px`);
+            svg.setAttributeNS(null, 'width', `${defaultWidth}px`);
+            svg.setAttributeNS(null, 'viewBox', `0 0 ${defaultWidth} ${defaultHeight}`);
 
             const markerLarge = DOM.createNS('http://www.w3.org/2000/svg', 'g');
             markerLarge.setAttributeNS(null, 'stroke', 'none');
@@ -180,6 +186,9 @@ export default class Marker extends Evented {
             page1.appendChild(circleContainer);
 
             svg.appendChild(page1);
+
+            svg.setAttributeNS(null, 'height', `${defaultHeight * this._scale}px`);
+            svg.setAttributeNS(null, 'width', `${defaultWidth * this._scale}px`);
 
             this._element.appendChild(svg);
 
