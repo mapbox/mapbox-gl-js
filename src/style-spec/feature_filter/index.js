@@ -77,15 +77,13 @@ function createFilter(filter: any): FeatureFilter {
         return {filter: () => true, needGeometry: false};
     }
 
-    if (!isExpressionFilter(filter)) {
-        filter = convertFilter(filter);
-    }
+    filter = convertFilter(filter);
 
     const compiled = createExpression(filter, filterSpec);
     if (compiled.result === 'error') {
         throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
-        const needGeometry = Array.isArray(filter) && filter.length !== 0 && filter[0] === 'within';
+        const needGeometry = geometryNeeded(filter);
         return {filter: (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiled.value.evaluate(globalProperties, feature, {}, canonical),
             needGeometry};
     }
@@ -96,7 +94,19 @@ function compare(a, b) {
     return a < b ? -1 : a > b ? 1 : 0;
 }
 
+function geometryNeeded(filter) {
+    if (!Array.isArray(filter)) return false;
+    let needed = false;
+    for (let index = 0; index < filter.length; index++) {
+        const val = filter[index];
+        const op = Array.isArray(val) ? val[0] : val;
+        needed = needed || (op === 'within');
+    }
+    return needed;
+}
+
 function convertFilter(filter: ?Array<any>): mixed {
+    if (isExpressionFilter(filter)) return filter;
     if (!filter) return true;
     const op = filter[0];
     if (filter.length <= 1) return (op !== 'any');

@@ -2443,6 +2443,9 @@
       },
       "!has": {
         "doc": "`[\"!has\", key]` `feature[key]` does not exist"
+      },
+      "within": {
+        "doc": "`[\"within\", object]` feature geometry is within object geometry"
       }
     },
     "doc": "The filter operator."
