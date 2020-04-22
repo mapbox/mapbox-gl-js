@@ -104,8 +104,14 @@ function validateNonExpressionFilter(options) {
             errors.push(new ValidationError(`${key}[1]`, value[1], `string expected, ${type} found`));
         }
         break;
-
+    case 'within':
+        type = getType(value[1]);
+        if (value.length !== 2) {
+            errors.push(new ValidationError(key, value, `filter array for "${value[0]}" operator must have 2 elements`));
+        } else if (type !== 'object') {
+            errors.push(new ValidationError(`${key}[1]`, value[1], `object expected, ${type} found`));
+        }
+        break;
     }
-
     return errors;
 }
