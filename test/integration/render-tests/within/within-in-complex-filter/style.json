@@ -17,7 +17,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "ABC"
+              "number": [5]
             },
             "geometry": {
               "type": "Point",
@@ -30,7 +30,7 @@
           {
             "type": "Feature",
             "properties": {
-              "name": "ABC"
+              "number": [5]
             },
             "geometry": {
               "type": "Point",
@@ -80,7 +80,7 @@
       "id": "circle",
       "type": "circle",
       "source": "points",
-      "filter": ["all",  ["in", "ABC", ["get", "name"]], ["within", {
+      "filter": ["all",  ["in", 5, ["get", "number"]], ["==", ["within", {
                   "type": "Polygon",
                   "coordinates": [
                       [
@@ -91,7 +91,7 @@
                           [0, 0]
                       ]
                     ]
-                  }]
+                  }], true]
                 ],
       "paint": {
         "circle-radius": 5,

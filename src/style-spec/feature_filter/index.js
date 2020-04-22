@@ -77,7 +77,9 @@ function createFilter(filter: any): FeatureFilter {
         return {filter: () => true, needGeometry: false};
     }
 
-    filter = convertFilter(filter);
+    if (!isExpressionFilter(filter)) {
+        filter = convertFilter(filter);
+    }
 
     const compiled = createExpression(filter, filterSpec);
     if (compiled.result === 'error') {
@@ -96,17 +98,14 @@ function compare(a, b) {
 
 function geometryNeeded(filter) {
     if (!Array.isArray(filter)) return false;
-    let needed = false;
-    for (let index = 0; index < filter.length; index++) {
-        const val = filter[index];
-        const op = Array.isArray(val) ? val[0] : val;
-        needed = needed || (op === 'within');
+    if (filter[0] === 'within') return true;
+    for (let index = 1; index < filter.length; index++) {
+        if (geometryNeeded(filter[index])) return true;
     }
-    return needed;
+    return false;
 }
 
 function convertFilter(filter: ?Array<any>): mixed {
-    if (isExpressionFilter(filter)) return filter;
     if (!filter) return true;
     const op = filter[0];
     if (filter.length <= 1) return (op !== 'any');
@@ -124,6 +123,7 @@ function convertFilter(filter: ?Array<any>): mixed {
         op === '!in' ? convertNegation(convertInOp(filter[1], filter.slice(2))) :
         op === 'has' ? convertHasOp(filter[1]) :
         op === '!has' ? convertNegation(convertHasOp(filter[1])) :
+        op === 'within' ? filter :
         true;
     return converted;
 }
