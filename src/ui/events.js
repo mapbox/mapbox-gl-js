@@ -293,7 +293,7 @@ export type MapEvent =
     /**
      * Fired when a pointing device (usually a mouse) is pressed within the map.
      *
-     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * **Note:** This event is compatible with the optional `layerId` parameter.
      * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
      * the cursor is pressed while inside a visible portion of the specifed layer.
      *
@@ -323,7 +323,7 @@ export type MapEvent =
     /**
      * Fired when a pointing device (usually a mouse) is released within the map.
      *
-     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * **Note:** This event is compatible with the optional `layerId` parameter.
      * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
      * the cursor is released while inside a visible portion of the specifed layer.
      *
@@ -355,7 +355,7 @@ export type MapEvent =
      * As you move the cursor across a web page containing a map,
      * the event will fire each time it enters the map and any child elements.
      *
-     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * **Note:** This event is compatible with the optional `layerId` parameter.
      * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
      * the cursor is moved inside a visible portion of the specifed layer.
      *
@@ -387,7 +387,7 @@ export type MapEvent =
      * Fired when a pointing device (usually a mouse) is moved while the cursor's hotspot is inside the map.
      * As you move the cursor across the map, the event will fire everytime the cursor changes position within the map.
      *
-     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * **Note:** This event is compatible with the optional `layerId` parameter.
      * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
      * the cursor's hotspot is inside a visible portion of the specifed layer.
      *
@@ -418,7 +418,7 @@ export type MapEvent =
     /**
      * Fired when a pointing device (usually a mouse) is pressed and released at the same point on the map.
      *
-     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * **Note:** This event is compatible with the optional `layerId` parameter.
      * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
      * point that is pressed and released contains a visible portion of the specifed layer.
      *
@@ -449,7 +449,7 @@ export type MapEvent =
      * Fired when a pointing device (usually a mouse) is pressed and released twice at the same point on
      * the map in rapid succession.
      *
-     * **Note:** This event is compatible with optional the `layerId` parameter.
+     * **Note:** This event is compatible with the optional `layerId` parameter.
      * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only
      * when the point that is clicked twice contains a visible portion of the specifed layer.
      *
