@@ -160,8 +160,7 @@ jobs:
       - deploy:
           name: Run memory metrics when merging to master
           command: |
-              curl --user ${CIRCLE_API_USER_TOKEN}: \
-                https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/tree/master
+              curl -X POST https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/build?circle-token=${CIRCLE_API_USER_TOKEN}
       - store_artifacts:
           path: "dist"
       - store_artifacts:
