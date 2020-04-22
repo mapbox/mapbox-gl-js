@@ -698,7 +698,6 @@ class Camera extends Evented {
      *   zoom: 8,
      *   pitch: 45,
      *   bearing: 90
-     *   }
      * });
      * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
      * @see [Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)

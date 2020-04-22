@@ -421,7 +421,7 @@ class GeolocateControl extends Evented {
     * map.addControl(geolocate);
     * map.on('load', function() {
     *   geolocate.trigger();
-    * }
+    * });
     */
     trigger() {
         if (!this._setup) {
