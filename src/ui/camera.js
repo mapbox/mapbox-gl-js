@@ -36,8 +36,9 @@ import type {PaddingOptions} from '../geo/edge_insets';
  * @property {number} bearing The desired bearing in degrees. The bearing is the compass direction that
  * is "up". For example, `bearing: 90` orients the map so that east is up.
  * @property {number} pitch The desired pitch in degrees. The pitch is the angle towards the horizon
- * measured in degrees with a range between 0 and 60 degrees. For example, `pitch: 0` results in a two-dimensional map,
- * as if your line of sight forms a perpendicular angle with the earth's surface.
+ * measured in degrees with a range between 0 and 60 degrees. For example, pitch: 0 provides the appearance
+ * of looking straight down at the map, while pitch: 60 tilts the user's perspective towards the horizon.
+ * Increasing the pitch value is often used to display 3D objects.
  * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
  * @example
@@ -53,6 +54,7 @@ import type {PaddingOptions} from '../geo/edge_insets';
  * @see [Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
  * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
  * @see [Fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto/)
+ * @see [Display buildings in 3D](https://docs.mapbox.com/mapbox-gl-js/example/3d-buildings/)
  */
 export type CameraOptions = {
     center?: LngLatLike,
@@ -149,7 +151,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns The map's geographical centerpoint.
      * @example
-     * // return a LngLat object such as {lng: 0, lat: 0} 
+     * // return a LngLat object such as {lng: 0, lat: 0}
      * var center = map.getCenter();
      * // access longitude and latitude values directly
      * var {longitude, latitude} = map.getCenter();
