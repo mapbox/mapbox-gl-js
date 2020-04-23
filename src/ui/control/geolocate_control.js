@@ -406,7 +406,7 @@ class GeolocateControl extends Evented {
     }
 
     /**
-    * Programmatically request and move the map to the user's location. 
+    * Programmatically request and move the map to the user's location.
     *
     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
     * @example
