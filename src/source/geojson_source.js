@@ -232,19 +232,19 @@ class GeoJSONSource extends Evented implements Source {
      * @returns {GeoJSONSource} this
      * @example
      * // Retrieve cluster leaves on click
-     *  map.on('click', 'clusters', function(e) {
-     *    var features = map.queryRenderedFeatures(e.point, {
-     *      layers: ['clusters']
-     *    });
+     * map.on('click', 'clusters', function(e) {
+     *   var features = map.queryRenderedFeatures(e.point, {
+     *     layers: ['clusters']
+     *   });
      *
-     *    var clusterId = features[0].properties.cluster_id;
-    *    var pointCount = features[0].properties.point_count;
-    *    var clusterSource = map.getSource('clusters');
+     *   var clusterId = features[0].properties.cluster_id;
+     *   var pointCount = features[0].properties.point_count;
+     *   var clusterSource = map.getSource('clusters');
      *
-     *  clusterSource.getClusterLeaves(clusterId, pointCount, 0, function(error, features) {
-     *    // Print cluster leaves in the console
-     *    console.log('Cluster leaves:', error, features);
-    * })
+     *   clusterSource.getClusterLeaves(clusterId, pointCount, 0, function(error, features) {
+     *     // Print cluster leaves in the console
+     *     console.log('Cluster leaves:', error, features);
+     *   })
      * });
      */
     getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
