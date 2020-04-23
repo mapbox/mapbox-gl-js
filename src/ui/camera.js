@@ -264,7 +264,7 @@ class Camera extends Evented {
      * @example
      * // zoom the map to 5 with an animated transition
      * map.zoomTo(5);
-     * // zoom the map to 8 with custom animation options
+     * // Zoom to the zoom level 8 with an animated transition
      * map.zoomTo(8, {
      *   duration: 2000,
      *   offset: [100, 50]
