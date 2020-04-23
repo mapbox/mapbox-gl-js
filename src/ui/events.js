@@ -240,7 +240,7 @@ export class MapWheelEvent extends Event {
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent?} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`
  * @property {string} type The type of boxzoom event. One of `boxzoomstart`, `boxzoomend` or `boxzoomcancel`
- * @property {Map} target The `map` instance that triggerred the event
+ * @property {Map} target The `Map` instance that triggerred the event
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart'
