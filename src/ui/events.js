@@ -352,7 +352,7 @@ export type MapEvent =
     /**
      * Fired when a pointing device (usually a mouse) is moved within the map.
      * As you move the cursor across a web page containing a map,
-     * the event will fire each time it enters the map and any child elements.
+     * the event will fire each time it enters the map or any child elements.
      *
      * **Note:** This event is compatible with the optional `layerId` parameter.
      * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
