@@ -383,7 +383,7 @@ export type MapEvent =
     | 'mouseover'
 
     /**
-     * Fired when a pointing device (usually a mouse) is moved while the cursor's hotspot is inside the map.
+     * Fired when a pointing device (usually a mouse) is moved while the cursor is inside the map.
      * As you move the cursor across the map, the event will fire every time the cursor changes position within the map.
      *
      * **Note:** This event is compatible with the optional `layerId` parameter.
