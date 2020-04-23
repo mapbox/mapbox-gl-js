@@ -162,7 +162,7 @@ jobs:
           command: |
             if [ -n "${WEB_METRICS_TOKEN}" ]; then
               if [[ $CIRCLE_BRANCH == trigger-memory-metrics ]]; then
-                curl -X POST https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/tree/master?circle-token=${WEB_METRICS_TOKEN}
+                curl -X POST https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/build?circle-token=${WEB_METRICS_TOKEN}
               fi
             fi
       - store_artifacts:
