@@ -403,7 +403,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Opens or closes the `Popup` instance that is bound to the `Marker`, depending on the current state of the `Popup`.
+     * Opens or closes the {@link Popup} instance that is bound to the {@link Marker}, depending on the current state of the {@link Popup}.
      * @returns {Marker} `this`
      * @example
      * var marker = new mapboxgl.Marker()
