@@ -224,7 +224,7 @@ class LngLatBounds {
     *
     * var ll = new mapboxgl.LngLat(-73.9567, 40.7789);
     *
-    * llb.contains(ll); // = true
+    * console.log(llb.contains(ll)); // = true
     */
     contains(lnglat: LngLatLike) {
         const {lng, lat} = LngLat.convert(lnglat);
