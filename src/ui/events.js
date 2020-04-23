@@ -274,8 +274,7 @@ export type MapBoxZoomEvent = {
  * // Set up an event listener on the map.
  * map.on('sourcedata', function(e) {
  *    if (e.isSourceLoaded) {
- *        // Do something when there are no more
- *        // outstanding network requests
+ *        // Do something when the source has finished loading
  *    }
  * });
  */
