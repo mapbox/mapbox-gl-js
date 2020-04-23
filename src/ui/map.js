@@ -981,7 +981,7 @@ class Map extends Camera {
      * | [`sourcedataloading`](#map.event:sourcedataloading)       |                           |
      * | [`styleimagemissing`](#map.event:styleimagemissing)       |                           |
      *
-     * @param {string} layerId (optional) The ID of a style layer. Event will only be triggered if their location
+     * @param {string} layerId (optional) The ID of a style layer. Event will only be triggered if its location
      * is within a visible feature in this layer. The event will have a `features` property containing
      * an array of the matching features. If `layerId` is not supplied, the event will not have a `features` property.
      * Please note that many event types are not compatible with the optional `layerId` parameter.
