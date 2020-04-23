@@ -388,7 +388,7 @@ export type MapEvent =
      *
      * **Note:** This event is compatible with the optional `layerId` parameter.
      * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
-     * the cursor's hotspot is inside a visible portion of the specifed layer.
+     * the cursor is inside a visible portion of the specified layer.
      *
      * @event mousemove
      * @memberof Map
