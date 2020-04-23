@@ -388,7 +388,7 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns the `Popup` instance that is bound to the `Marker`.
+     * Returns the {@link Popup} instance that is bound to the {@link Marker}.
      * @returns {Popup} popup
      * @example
      * var marker = new mapboxgl.Marker()
