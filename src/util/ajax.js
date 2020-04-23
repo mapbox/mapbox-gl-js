@@ -47,7 +47,7 @@ if (typeof Object.freeze == 'function') {
  * @example
  * // use transformRequest to modify requests that begin with `http://myHost`
  * transformRequest: function(url, resourceType) {
- *  if (resourceType === 'Source' && url.startsWith('http://myHost')) {
+ *  if (resourceType === 'Source' && url.indexOf('http://myHost') > -1) {
  *    return {
  *      url: url.replace('http', 'https'),
  *      headers: { 'my-custom-header': true },
