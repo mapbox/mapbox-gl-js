@@ -270,7 +270,7 @@ export type MapBoxZoomEvent = {
  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and
  * the event is related to loading of a tile.
  * @example
- * // The `sourcedata` event is an example of `MapDataEvent`.
+ * // The sourcedata event is an example of MapDataEvent.
  * // Set up an event listener on the map.
  * map.on('sourcedata', function(e) {
  *    if (e.isSourceLoaded) {
@@ -384,7 +384,7 @@ export type MapEvent =
 
     /**
      * Fired when a pointing device (usually a mouse) is moved while the cursor's hotspot is inside the map.
-     * As you move the cursor across the map, the event will fire everytime the cursor changes position within the map.
+     * As you move the cursor across the map, the event will fire every time the cursor changes position within the map.
      *
      * **Note:** This event is compatible with the optional `layerId` parameter.
      * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the

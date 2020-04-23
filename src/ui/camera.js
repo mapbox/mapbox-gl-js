@@ -86,7 +86,7 @@ export type AnimationOptions = {
 };
 
 /**
- * Options for setting padding on calls to methods such as {@link Map#fitBounds}, {@link Map#fitScreenCoordinates}, and {@link Map#setPadding}. Adjust these options to set the amount of padding in pixels added to the edges of the canvas. This can be set for either all edges or individually. All properties of this object must be
+ * Options for setting padding on calls to methods such as {@link Map#fitBounds}, {@link Map#fitScreenCoordinates}, and {@link Map#setPadding}. Adjust these options to set the amount of padding in pixels added to the edges of the canvas. Set a uniform padding on all edges or individual values for each edge. All properties of this object must be
  * non-negative integers.
  *
  * @typedef {Object} PaddingOptions
@@ -151,10 +151,9 @@ class Camera extends Evented {
      * @example
      * // return a LngLat object such as {lng: 0, lat: 0} 
      * var center = map.getCenter();
-     * // return longitude and latitude values directly
-     * var longitude = map.getCenter().lng;
-     * var latitude = map.getCenter().lat;
-     * @see [Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
+     * // access longitude and latitude values directly
+     * var {longitude, latitude} = map.getCenter();
+     * @see Tutorial: [Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
 
@@ -204,7 +203,7 @@ class Camera extends Evented {
      * @example
      * map.panTo([-74, 38]);
      * @example
-     * // Change the duration of panTo to 5000 milliseconds.
+     * // Specify that the panTo animation should last 5000 milliseconds.
      * map.panTo([-74, 38], {duration: 5000});
      * @see [Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
@@ -690,7 +689,7 @@ class Camera extends Evented {
      * @fires pitchend
      * @returns {Map} `this`
      * @example
-     * // jump to null island at current zoom
+     * // jump to coordinates at current zoom
      * map.jumpTo({center: [0, 0]});
      * // jump with zoom, pitch, and bearing options
      * map.jumpTo({

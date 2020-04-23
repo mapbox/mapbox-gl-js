@@ -1011,7 +1011,7 @@ class Map extends Camera {
      * });
      * @example
      * // Set an event listener that will fire
-     * // when the map is clicked
+     * // when a feature on the countries layer of the map is clicked
      * map.on('click', 'countries', function(e) {
      *   new mapboxgl.Popup()
      *     .setLngLat(e.lngLat)
@@ -1972,7 +1972,7 @@ class Map extends Camera {
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
-     * @see [Tutorial: Show changes over time](https://docs.mapbox.com/help/tutorials/show-changes-over-time/)
+     * @see Tutorial: [Show changes over time](https://docs.mapbox.com/help/tutorials/show-changes-over-time/)
      */
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this.style.setFilter(layerId, filter, options);
@@ -2058,7 +2058,7 @@ class Map extends Camera {
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      * @example
-     * map.getLayoutProperty('my-layer', 'visibility');
+     * const layerVisibility = map.getLayoutProperty('my-layer', 'visibility');
      * @see [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
      */
     setLight(light: LightSpecification, options: StyleSetterOptions = {}) {
@@ -2146,7 +2146,7 @@ class Map extends Camera {
      * // When the mouse leaves the `my-layer` layer,
      * // reset the entire state object for the
      * // feature under the mouse
-     * map.on('mouseleave', 'my-layer', (e) => {
+     * map.on('mouseleave', 'my-layer', function(e) {
      *   map.removeFeatureState({
      *     source: 'my-source',
      *     sourceLayer: 'my-source-layer',
@@ -2190,7 +2190,7 @@ class Map extends Camera {
      * @example
      * // When the mouse moves over the `my-layer` layer,
      * // get the feature state for the feature under the mouse
-     * map.on('mousemove', 'my-layer', (e) => {
+     * map.on('mousemove', 'my-layer', function(e) {
      *   if (e.features.length > 0) {
      *     map.getFeatureState({
      *       source: 'my-source',
