@@ -16,7 +16,7 @@ import type LngLat from '../geo/lng_lat';
  * // The `click` event is an example of a `MapMouseEvent`.
  * // Set up an event listener on the map.
  * map.on('click', function(e) {
- *   // The event object (`e`) contains information like the
+ *   // The event object (e) contains information like the
  *   // coordinates of the point on the map that was clicked.
  *   console.log('A click event has occurred at ' + e.lngLat);
  * });
