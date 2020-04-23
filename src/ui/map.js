@@ -2058,7 +2058,7 @@ class Map extends Camera {
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
      * @example
-     * const layerVisibility = map.getLayoutProperty('my-layer', 'visibility');
+     * var layerVisibility = map.getLayoutProperty('my-layer', 'visibility');
      * @see [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
      */
     setLight(light: LightSpecification, options: StyleSetterOptions = {}) {
@@ -2100,7 +2100,7 @@ class Map extends Camera {
      * @example
      * // When the mouse moves over the `my-layer` layer, update
      * // the feature state for the feature under the mouse
-     * map.on('mousemove', 'my-layer', (e) => {
+     * map.on('mousemove', 'my-layer', function(e) {
      *   if (e.features.length > 0) {
      *     map.setFeatureState({
      *       source: 'my-source',
