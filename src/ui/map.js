@@ -2158,7 +2158,7 @@ class Map extends Camera {
      * // When the mouse leaves the `my-layer` layer,
      * // reset only the `hover` key-value pair in the
      * // state for the feature under the mouse
-     * map.on('mouseleave', 'my-layer', (e) => {
+     * map.on('mouseleave', 'my-layer', function(e) {
      *   map.removeFeatureState({
      *     source: 'my-source',
      *     sourceLayer: 'my-source-layer',
