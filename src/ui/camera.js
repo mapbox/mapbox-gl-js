@@ -692,7 +692,7 @@ class Camera extends Evented {
      * @example
      * // jump to null island at current zoom
      * map.jumpTo({center: [0, 0]});
-     * // jump with zoom, pitch, and bearing set
+     * // jump with zoom, pitch, and bearing options
      * map.jumpTo({
      *   center: [0, 0],
      *   zoom: 8,
