@@ -239,7 +239,7 @@ class Camera extends Evented {
      * @fires zoomend
      * @returns {Map} `this`
      * @example
-     * // zoom the map to 5 without an animated transition
+     * // Zoom to the zoom level 5 without an animated transition
      * map.setZoom(5);
      */
     setZoom(zoom: number, eventData?: Object) {
