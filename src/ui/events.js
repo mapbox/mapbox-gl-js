@@ -491,7 +491,7 @@ export type MapEvent =
      * map.on('mouseenter', 'water', function() {
      *   console.log('A mouseenter event occurred on a visible portion of the water layer.');
      * });
-     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
+     * @see [Center the map on a clicked symbol](https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
     | 'mouseenter'
@@ -688,7 +688,7 @@ export type MapEvent =
      *   console.log('A move event occurred.');
      * });
      * @see [Display HTML clusters with custom properties](https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/)
-     * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
+     * @see [Filter features within map view](https://docs.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
     | 'move'
 
