@@ -149,7 +149,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns The map's geographical centerpoint.
      * @example
-     * // return a LngLat object such as {lng: 0, lat: 0} at null island
+     * // return a LngLat object such as {lng: 0, lat: 0} 
      * var center = map.getCenter();
      * // return longitude and latitude values directly
      * var longitude = map.getCenter().lng;
