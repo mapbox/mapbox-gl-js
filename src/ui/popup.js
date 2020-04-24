@@ -104,6 +104,15 @@ export default class Popup extends Evented {
      *
      * @param {Map} map The Mapbox GL JS map to add the popup to.
      * @returns {Popup} `this`
+     * @example
+     * new mapboxgl.Popup()
+     *   .setLngLat([0, 0])
+     *   .setHTML("<h1>Null Island</h1>")
+     *   .addTo(map);
+     * @see [Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
+     * @see [Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Show polygon information on click](https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/)
      */
     addTo(map: Map) {
         if (this._map) this.remove();
@@ -139,6 +148,16 @@ export default class Popup extends Evented {
          * @instance
          * @type {Object}
          * @property {Popup} popup object that was opened
+         *
+         * @example
+         * // Create a popup
+         * var popup = new mapboxgl.Popup();
+         * // Set an event listener that will fire
+         * // any time the popup is opened
+         * popup.on('open', function(){
+         *   console.log('popup was opened');
+         * });
+         *
          */
         this.fire(new Event('open'));
 
@@ -189,6 +208,16 @@ export default class Popup extends Evented {
          * @instance
          * @type {Object}
          * @property {Popup} popup object that was closed
+         *
+         * @example
+         * // Create a popup
+         * var popup = new mapboxgl.Popup();
+         * // Set an event listener that will fire
+         * // any time the popup is closed
+         * popup.on('close', function(){
+         *   console.log('popup was closed');
+         * });
+         *
          */
         this.fire(new Event('close'));
 
@@ -235,8 +264,13 @@ export default class Popup extends Evented {
     }
 
     /**
-     * Tracks the popup anchor to the cursor position, on screens with a pointer device (will be hidden on touchscreens). Replaces the setLngLat behavior.
-     * For most use cases, `closeOnClick` and `closeButton` should also be set to `false` here.
+     * Tracks the popup anchor to the cursor position on screens with a pointer device (it will be hidden on touchscreens). Replaces the `setLngLat` behavior.
+     * For most use cases, set `closeOnClick` and `closeButton` to `false`.
+     * @example
+     * var popup = new mapboxgl.Popup({ closeOnClick: false, closeButton: false })
+     *   .setHTML("<h1>Hello World!</h1>")
+     *   .trackPointer()
+     *   .addTo(map);
      * @returns {Popup} `this`
      */
     trackPointer() {
@@ -259,6 +293,14 @@ export default class Popup extends Evented {
 
     /**
      * Returns the `Popup`'s HTML element.
+     * @example
+     * // Change the `Popup` element's font size
+     * var popup = new mapboxgl.Popup()
+     *   .setLngLat([-96, 37.8])
+     *   .setHTML("<p>Hello World!</p>")
+     *   .addTo(map);
+     * var popupElem = popup.getElement();
+     * popupElem.style.fontSize = "25px";
      * @returns {HTMLElement} element
      */
     getElement() {
@@ -293,6 +335,15 @@ export default class Popup extends Evented {
      *
      * @param html A string representing HTML content for the popup.
      * @returns {Popup} `this`
+     * @example
+     * var popup = new mapboxgl.Popup()
+     *   .setLngLat(e.lngLat)
+     *   .setHTML("<h1>Hello World!</h1>")
+     *   .addTo(map);
+     * @see [Display a popup](https://docs.mapbox.com/mapbox-gl-js/example/popup/)
+     * @see [Display a popup on hover](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Display a popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
     setHTML(html: string) {
         const frag = window.document.createDocumentFragment();
