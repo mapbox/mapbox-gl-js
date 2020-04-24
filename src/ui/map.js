@@ -1948,7 +1948,7 @@ class Map extends Camera {
      * Any feature for which the filter expression evaluates to true will be
      * rendered on the map. Those that are false will be hidden.
      *
-     * Use setFilter to show a subset of your source data.
+     * Use `setFilter` to show a subset of your source data.
      *
      * To clear the filter, pass `null` or `undefined` as the second parameter.
      *
