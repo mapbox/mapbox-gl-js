@@ -6,7 +6,7 @@ import PathInterpolator from './path_interpolator';
 
 import * as intersectionTests from '../util/intersection_tests';
 import Grid from './grid_index';
-import {mat4} from 'gl-matrix';
+import {mat4, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em';
 import assert from 'assert';
 
@@ -18,6 +18,7 @@ import type {
     GlyphOffsetArray,
     SymbolLineVertexArray
 } from '../data/array_types';
+import {OverscaledTileID} from '../source/tile_id';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
@@ -67,7 +68,8 @@ class CollisionIndex {
     }
 
     placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY);
+        assert(!this.transform.elevation || collisionBox.elevation !== undefined);
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY, collisionBox.elevation);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = collisionBox.x1 * tileToViewport + projectedPoint.point.x;
         const tlY = collisionBox.y1 * tileToViewport + projectedPoint.point.y;
@@ -100,16 +102,20 @@ class CollisionIndex {
                           pitchWithMap: boolean,
                           collisionGroupPredicate?: any,
                           circlePixelDiameter: number,
-                          textPixelPadding: number): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
+                          textPixelPadding: number,
+                          tileID: OverscaledTileID): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
         const placedCollisionCircles = [];
+        const elevation = this.transform.elevation;
+        const getElevation = elevation ? (p => elevation.getAtTileOffset(tileID, p.x, p.y)) : (_ => 0);
 
         const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
-        const screenAnchorPoint = projection.project(tileUnitAnchorPoint, posMatrix);
+        const anchorElevation = getElevation(tileUnitAnchorPoint);
+        const screenAnchorPoint = projection.project(tileUnitAnchorPoint, posMatrix, anchorElevation);
         const perspectiveRatio = projection.getPerspectiveRatio(this.transform.cameraToCenterDistance, screenAnchorPoint.signedDistanceFromCamera);
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
 
-        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix).point;
+        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix, anchorElevation).point;
 
         const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
@@ -126,7 +132,9 @@ class CollisionIndex {
             symbol,
             lineVertexArray,
             labelPlaneMatrix,
-            projectionCache);
+            projectionCache,
+            getElevation
+        );
 
         let collisionDetected = false;
         let inGrid = false;
@@ -334,9 +342,14 @@ class CollisionIndex {
         }
     }
 
-    projectAndGetPerspectiveRatio(posMatrix: mat4, x: number, y: number) {
+    projectAndGetPerspectiveRatio(posMatrix: mat4, x: number, y: number, elevation?: number) {
         const p = [x, y, 0, 1];
-        projection.xyTransformMat4(p, p, posMatrix);
+        if (elevation) {
+            p[2] = elevation;
+            vec4.transformMat4(p, p, posMatrix);
+        } else {
+            projection.xyTransformMat4(p, p, posMatrix);
+        }
         const a = new Point(
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
             (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding

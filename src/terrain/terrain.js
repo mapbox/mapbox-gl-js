@@ -19,8 +19,9 @@ import GeoJSONSource from '../source/geojson_source';
 import Color from '../style-spec/util/color';
 import StencilMode from '../gl/stencil_mode';
 import {DepthStencilAttachment} from '../gl/value';
-import drawTerrainRaster from './draw_terrain_raster';
+import {drawTerrainRaster, drawTerrainDepth} from './draw_terrain_raster';
 import {Elevation} from './elevation';
+import Framebuffer from '../gl/framebuffer';
 
 import type Map from '../ui/map';
 import type Tile from '../source/tile';
@@ -99,6 +100,7 @@ export class Terrain extends Elevation {
     gridBuffer: VertexBuffer;
     gridIndexBuffer: IndexBuffer;
     gridSegments: SegmentVector;
+    gridNoSkirtSegments: SegmentVector;
     proxiedCoords: {[string]: Array<ProxiedTileID>};
     hasCoordOverlap: {[string]: boolean};
     proxyCoords: Array<OverscaledTileID>;
@@ -112,6 +114,10 @@ export class Terrain extends Elevation {
     // track when render advances to next proxy tile.
     currentProxy: string;
     stencilModeForOverlap: StencilMode;
+    _exaggeration: number;
+    _depthFBO: Framebuffer;
+    _depthTexture: Texture;
+    _depthDone: boolean;
 
     constructor(painter: Painter, style: Style) {
         super();
@@ -122,11 +128,12 @@ export class Terrain extends Elevation {
         // DEM texture is padded (1, 1, 1, 1) and padding pixels are backfilled
         // by neighboring tile edges. This way we achieve tile stitching as
         // edge vertices from neighboring tiles evaluate to the same 3D point.
-        const [triangleGridArray, triangleGridIndices] = createGrid(GRID_DIM + 1);
+        const [triangleGridArray, triangleGridIndices, skirtIndicesOffset] = createGrid(GRID_DIM + 1);
         const context = painter.context;
         this.gridBuffer = context.createVertexBuffer(triangleGridArray, rasterBoundsAttributes.members);
         this.gridIndexBuffer = context.createIndexBuffer(triangleGridIndices);
         this.gridSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, triangleGridIndices.length);
+        this.gridNoSkirtSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, skirtIndicesOffset);
         this.proxyCoords = [];
         this.proxiedCoords = {};
         this.hasCoordOverlap = {};
@@ -147,8 +154,7 @@ export class Terrain extends Elevation {
      * before using transform for source cache update.
      */
     update(style: Style, transform: Transform) {
-        const terrainSpec = style.stylesheet.terrain;
-        const sourceId = terrainSpec && terrainSpec.source;
+        const sourceId = style.terrain.properties.get('source');
         this.valid = false;
         if (!sourceId) return console.warn(`Terrain source is not defined.`);
         const sourceCaches = style.sourceCaches;
@@ -157,6 +163,7 @@ export class Terrain extends Elevation {
         if (this.sourceCache.getSource().type !== 'raster-dem') {
             return console.warn(`Terrain cannot use source "${sourceId}" for terrain. Only 'raster-dem' source type is supported.`);
         }
+        this._exaggeration = style.terrain.properties.get('exaggeration');
         const demTileSize = this.sourceCache.getSource().tileSize;
         this.valid = true;
         const tr = transform;
@@ -173,12 +180,17 @@ export class Terrain extends Elevation {
             this.sourceCache.update(tr, true);
             tr.zoom = originalZoom;
         }
+        this._depthDone = false;
     }
 
     // Implements Elevation::_source.
-    _source(): SourceCache {
-        assert(this.valid);
-        return this.sourceCache;
+    _source(): ?SourceCache {
+        return this.valid ? this.sourceCache : null;
+    }
+
+    // Implements Elevation::exaggeration.
+    exaggeration(): number {
+        return this._exaggeration;
     }
 
     // For every renderable coordinate in every source cache, assign one proxy
@@ -259,7 +271,9 @@ export class Terrain extends Elevation {
         }
     }
 
-    setupDrawForTile(tile: Tile, program: Program<*>) {
+    // useDepthForOcclusion: Pre-rendered depth to texture (this._depthTexture) is
+    // used to hide (actually moves all object's vertices out of viewport).
+    setupElevationDraw(tile: Tile, program: Program<*>, useDepthForOcclusion: ?boolean) {
         const context = this.painter.context;
         const gl = context.gl;
         context.activeTexture.set(gl.TEXTURE2);
@@ -276,7 +290,9 @@ export class Terrain extends Elevation {
                 'u_dem_unpack': ((demTile.dem: any): DEMData).getUnpackVector(),
                 'u_dem_tl': [tile.tileID.canonical.x * demScaleBy % 1, tile.tileID.canonical.y * demScaleBy % 1],
                 'u_dem_scale': demScaleBy,
-                'u_dem_size': this.sourceCache.getSource().tileSize
+                'u_dem_size': this.sourceCache.getSource().tileSize,
+                'u_exaggeration': this.exaggeration(),
+                'u_depth': 3
             };
         } else {
             // If no elevation data, zero dem_unpack in vertex shader is setting sampled elevation to zero.
@@ -285,17 +301,27 @@ export class Terrain extends Elevation {
                 'u_dem_unpack': [0, 0, 0, 0],
                 'u_dem_tl': [0, 0],
                 'u_dem_scale': 0,
-                'u_dem_size': this.sourceCache.getSource().tileSize
+                'u_dem_size': this.sourceCache.getSource().tileSize,
+                'u_exaggeration': this.exaggeration(),
+                'u_depth': 3
             };
         }
         demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+        if (useDepthForOcclusion) {
+            context.activeTexture.set(gl.TEXTURE3);
+            this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+        }
         program.setTerrainUniformValues(context, uniforms);
     }
 
     // If terrain handles layer rendering (rasterize it), return true.
     renderLayer(layer: StyleLayer, sourceCache: SourceCache): boolean {
         const painter = this.painter;
-        if (painter.renderPass !== 'translucent') return true; // Early leave: all rendering is done in translucent pass.
+        if (painter.renderPass !== 'translucent') {
+            // Depth texture is used only for POI symbols, to skip render of symbols occluded by e.g. hill.
+            if (!this._depthDone && layer.type === 'symbol') this.drawDepth();
+            return true; // Early leave: all rendering is done in translucent pass.
+        }
         if (this._isLayerDrapedOverTerrain(layer)) {
             if (!this.renderingToTexture) {
                 this.renderingToTexture = true;
@@ -336,6 +362,39 @@ export class Terrain extends Elevation {
         if (coords.length > 0) {
             drawTerrainRaster(painter, this, psc, coords);
         }
+    }
+
+    drawDepth() {
+        const painter = this.painter;
+        const context = painter.context;
+        const psc = this.proxySourceCache;
+
+        const width = Math.ceil(painter.width), height = Math.ceil(painter.height);
+        if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
+            this._depthFBO.destroy();
+            delete this._depthFBO;
+            delete this._depthTexture;
+        }
+        if (!this._depthFBO) {
+            const gl = context.gl;
+            const fbo = context.createFramebuffer(width, height, true);
+            context.activeTexture.set(gl.TEXTURE0);
+            const texture = new Texture(context, {width, height, data: null}, gl.RGBA);
+            texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            fbo.colorAttachment.set(texture.texture);
+            const renderbuffer = context.createRenderbuffer(context.gl.DEPTH_COMPONENT16, width, height);
+            fbo.depthAttachment.set(renderbuffer);
+            this._depthFBO = fbo;
+            this._depthTexture = texture;
+        }
+        context.bindFramebuffer.set(this._depthFBO.framebuffer);
+        context.viewport.set([0, 0, width, height]);
+
+        drawTerrainDepth(painter, this, psc, this.proxyCoords);
+        context.bindFramebuffer.set(null);
+        context.viewport.set([0, 0, painter.width, painter.height]);
+
+        this._depthDone = true;
     }
 
     _isLayerDrapedOverTerrain(styleLayer: StyleLayer): boolean {
@@ -503,7 +562,7 @@ export class Terrain extends Elevation {
  * @param {number} count Count of rows and columns
  * @private
  */
-function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray] {
+function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray, number] {
     const boundsArray = new RasterBoundsArray();
     // Around the grid, add one more row/column padding for "skirt".
     const indexArray = new TriangleIndexArray();
@@ -513,6 +572,7 @@ function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray] {
     const step = EXTENT / (count - 1);
     const gridBound = EXTENT + step / 2;
     const bound = gridBound + step;
+
     // Skirt offset of 0x5FFF is chosen randomly to encode boolean value (skirt
     // on/off) with x position (max value EXTENT = 4096) to 16-bit signed integer.
     const skirtOffset = 24575; // 0x5FFF
@@ -524,14 +584,28 @@ function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray] {
             boundsArray.emplaceBack(xi + offset, yi, xi, yi);
         }
     }
-    for (let j = 0; j < size - 1; j++) {
-        for (let i = 0; i < size - 1; i++) {
-            const index = j * size + i;
-            indexArray.emplaceBack(index + 1, index, index + size);
-            indexArray.emplaceBack(index + size, index + size + 1, index + 1);
+
+    // For cases when there's no need to render "skirt", the "inner" grid indices
+    // are followed by skirt indices.
+    const skirtIndicesOffset = (size - 3) * (size - 3) * 2;
+    const quad = (i, j) => {
+        const index = j * size + i;
+        indexArray.emplaceBack(index + 1, index, index + size);
+        indexArray.emplaceBack(index + size, index + size + 1, index + 1);
+    };
+    for (let j = 1; j < size - 2; j++) {
+        for (let i = 1; i < size - 2; i++) {
+            quad(i, j);
         }
     }
-    return [boundsArray, indexArray];
+    // Padding (skirt) indices:
+    [0, size - 2].forEach(j => {
+        for (let i = 0; i < size - 1; i++) {
+            quad(i, j);
+            quad(j, i);
+        }
+    });
+    return [boundsArray, indexArray, skirtIndicesOffset];
 }
 
 export type TerrainUniformsType = {|
@@ -539,7 +613,9 @@ export type TerrainUniformsType = {|
     'u_dem_unpack': Uniform4f,
     'u_dem_tl': Uniform2f,
     'u_dem_scale': Uniform1f,
-    'u_dem_size': Uniform1f
+    'u_dem_size': Uniform1f,
+    "u_exaggeration": Uniform1f,
+    'u_depth': Uniform1i
 |};
 
 export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
@@ -547,6 +623,8 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_dem_unpack': new Uniform4f(context, locations.u_dem_unpack),
     'u_dem_tl': new Uniform2f(context, locations.u_dem_tl),
     'u_dem_scale': new Uniform1f(context, locations.u_dem_scale),
-    'u_dem_size': new Uniform1f(context, locations.u_dem_size)
+    'u_dem_size': new Uniform1f(context, locations.u_dem_size),
+    'u_exaggeration': new Uniform1f(context, locations.u_exaggeration),
+    'u_depth': new Uniform1i(context, locations.u_depth)
 });
 

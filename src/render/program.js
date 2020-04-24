@@ -1,6 +1,6 @@
 // @flow
 
-import {prelude} from '../shaders';
+import {prelude, preludeTerrain} from '../shaders';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration';
 import VertexArrayObject from './vertex_array_object';
@@ -70,12 +70,15 @@ class Program<Us: UniformBindings> {
         if (showOverdrawInspector) {
             defines.push('#define OVERDRAW_INSPECTOR;');
         }
+        if (terrain) {
+            defines.push('#define TERRAIN;');
+        }
         if (renderingToTexture) {
             defines.push('#define RENDER_TO_TEXTURE;');
         }
 
         const fragmentSource = defines.concat(prelude.fragmentSource, source.fragmentSource).join('\n');
-        const vertexSource = defines.concat(prelude.vertexSource, source.vertexSource).join('\n');
+        const vertexSource = defines.concat(prelude.vertexSource, preludeTerrain.vertexSource, source.vertexSource).join('\n');
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         if (gl.isContextLost()) {
             this.failedToCreate = true;

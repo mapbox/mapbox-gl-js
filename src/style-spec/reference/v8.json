@@ -3746,6 +3746,29 @@
     "source": {
       "type": "string",
       "doc": "A property name of global sources object. The source (property value) should be of type raster_dem source."
+    },
+    "exaggeration": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1.0,
+      "minimum": 0,
+      "maximum": 1000,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "Elevation multiplier.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "Not yet supported",
+          "android": "Not yet supported",
+          "ios": "Not yet supported",
+          "macos": "Not yet supported"
+        }
+      }
     }
   },
   "paint": [

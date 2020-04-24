@@ -6,6 +6,7 @@ import validateGlyphsURL from './validate/validate_glyphs_url';
 
 import validateSource from './validate/validate_source';
 import validateLight from './validate/validate_light';
+import validateTerrain from './validate/validate_terrain';
 import validateLayer from './validate/validate_layer';
 import validateFilter from './validate/validate_filter';
 import validatePaintProperty from './validate/validate_paint_property';
@@ -58,6 +59,7 @@ function validateStyleMin(style, styleSpec = latestStyleSpec) {
 
 validateStyleMin.source = wrapCleanErrors(validateSource);
 validateStyleMin.light = wrapCleanErrors(validateLight);
+validateStyleMin.terrain = wrapCleanErrors(validateTerrain);
 validateStyleMin.layer = wrapCleanErrors(validateLayer);
 validateStyleMin.filter = wrapCleanErrors(validateFilter);
 validateStyleMin.paintProperty = wrapCleanErrors(validatePaintProperty);

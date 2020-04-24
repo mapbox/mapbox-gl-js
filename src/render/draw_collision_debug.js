@@ -69,6 +69,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
             circleOffset = circleCount;
         }
         if (!buffers) continue;
+        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
         program.draw(context, gl.LINES,
             DepthMode.disabled, StencilMode.disabled,
             painter.colorModeForRenderPass(),

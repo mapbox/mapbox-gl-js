@@ -82,7 +82,8 @@ export type LightSpecification = {|
 |}
 
 export type TerrainSpecification = {|
-    "source"?: string
+    "source"?: string,
+    "exaggeration"?: PropertyValueSpecification<number>
 |}
 
 export type VectorSourceSpecification = {
