@@ -406,10 +406,23 @@ class GeolocateControl extends Evented {
     }
 
     /**
-     * Trigger a geolocation
-     *
-     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
-     */
+    * Programmatically request and move the map to the user's location.
+    *
+    * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
+    * @example
+    * // Initialize the geolocate control.
+    * var geolocate = new mapboxgl.GeolocateControl({
+    *  positionOptions: {
+    *    enableHighAccuracy: true
+    *  },
+    *  trackUserLocation: true
+    * });
+    * // Add the control to the map.
+    * map.addControl(geolocate);
+    * map.on('load', function() {
+    *   geolocate.trigger();
+    * });
+    */
     trigger() {
         if (!this._setup) {
             warnOnce('Geolocate control triggered before added to a map');
@@ -552,6 +565,21 @@ export default GeolocateControl;
  * @memberof GeolocateControl
  * @instance
  * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
+ * @example
+ * // Initialize the geolocate control.
+ * var geolocate = new mapboxgl.GeolocateControl({
+ *   positionOptions: {
+ *       enableHighAccuracy: true
+ *   },
+ *   trackUserLocation: true
+ * });
+ * // Add the control to the map.
+ * map.addControl(geolocate);
+ * // Set an event listener that fires
+ * // when a geolocate event occurs.
+ * geolocate.on('geolocate', function() {
+ *   console.log('A geolocate event has occurred.')
+ * });
  *
  */
 
@@ -562,6 +590,21 @@ export default GeolocateControl;
  * @memberof GeolocateControl
  * @instance
  * @property {PositionError} data The returned [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
+ * @example
+ * // Initialize the geolocate control.
+ * var geolocate = new mapboxgl.GeolocateControl({
+ *   positionOptions: {
+ *       enableHighAccuracy: true
+ *   },
+ *   trackUserLocation: true
+ * });
+ * // Add the control to the map.
+ * map.addControl(geolocate);
+ * // Set an event listener that fires
+ * // when an error event occurs.
+ * geolocate.on('error', function() {
+ *   console.log('An error event has occurred.')
+ * });
  *
  */
 
@@ -572,6 +615,21 @@ export default GeolocateControl;
  * @memberof GeolocateControl
  * @instance
  * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
+ * @example
+ * // Initialize the geolocate control.
+ * var geolocate = new mapboxgl.GeolocateControl({
+ *   positionOptions: {
+ *       enableHighAccuracy: true
+ *   },
+ *   trackUserLocation: true
+ * });
+ * // Add the control to the map.
+ * map.addControl(geolocate);
+ * // Set an event listener that fires
+ * // when an outofmaxbounds event occurs.
+ * geolocate.on('outofmaxbounds', function() {
+ *   console.log('An outofmaxbounds event has occurred.')
+ * });
  *
  */
 
@@ -581,6 +639,21 @@ export default GeolocateControl;
  * @event trackuserlocationstart
  * @memberof GeolocateControl
  * @instance
+ * @example
+ * // Initialize the geolocate control.
+ * var geolocate = new mapboxgl.GeolocateControl({
+ *   positionOptions: {
+ *       enableHighAccuracy: true
+ *   },
+ *   trackUserLocation: true
+ * });
+ * // Add the control to the map.
+ * map.addControl(geolocate);
+ * // Set an event listener that fires
+ * // when a trackuserlocationstart event occurs.
+ * geolocate.on('trackuserlocationstart', function() {
+ *   console.log('A trackuserlocationstart event has occurred.')
+ * });
  *
  */
 
@@ -590,5 +663,20 @@ export default GeolocateControl;
  * @event trackuserlocationend
  * @memberof GeolocateControl
  * @instance
+ * @example
+ * // Initialize the geolocate control.
+ * var geolocate = new mapboxgl.GeolocateControl({
+ *   positionOptions: {
+ *       enableHighAccuracy: true
+ *   },
+ *   trackUserLocation: true
+ * });
+ * // Add the control to the map.
+ * map.addControl(geolocate);
+ * // Set an event listener that fires
+ * // when a trackuserlocationend event occurs.
+ * geolocate.on('trackuserlocationend', function() {
+ *   console.log('A trackuserlocationend event has occurred.')
+ * });
  *
  */

@@ -33,11 +33,28 @@ import type {PaddingOptions} from '../geo/edge_insets';
  * @typedef {Object} CameraOptions
  * @property {LngLatLike} center The desired center.
  * @property {number} zoom The desired zoom level.
- * @property {number} bearing The desired bearing, in degrees. The bearing is the compass direction that
- * is "up"; for example, a bearing of 90° orients the map so that east is up.
- * @property {number} pitch The desired pitch, in degrees.
+ * @property {number} bearing The desired bearing in degrees. The bearing is the compass direction that
+ * is "up". For example, `bearing: 90` orients the map so that east is up.
+ * @property {number} pitch The desired pitch in degrees. The pitch is the angle towards the horizon
+ * measured in degrees with a range between 0 and 60 degrees. For example, pitch: 0 provides the appearance
+ * of looking straight down at the map, while pitch: 60 tilts the user's perspective towards the horizon.
+ * Increasing the pitch value is often used to display 3D objects.
  * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
+ * @example
+ * // set the map's initial perspective with CameraOptions
+ * var map = new mapboxgl.Map({
+ *   container: 'map',
+ *   style: 'mapbox://styles/mapbox/streets-v11',
+ *   center: [-73.5804, 45.53483],
+ *   pitch: 60,
+ *   bearing: -60,
+ *   zoom: 10
+ * });
+ * @see [Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
+ * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
+ * @see [Fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto/)
+ * @see [Display buildings in 3D](https://docs.mapbox.com/mapbox-gl-js/example/3d-buildings/)
  */
 export type CameraOptions = {
     center?: LngLatLike,
@@ -71,7 +88,7 @@ export type AnimationOptions = {
 };
 
 /**
- * Options for setting padding on a call to {@link Map#fitBounds}. All properties of this object must be
+ * Options for setting padding on calls to methods such as {@link Map#fitBounds}, {@link Map#fitScreenCoordinates}, and {@link Map#setPadding}. Adjust these options to set the amount of padding in pixels added to the edges of the canvas. Set a uniform padding on all edges or individual values for each edge. All properties of this object must be
  * non-negative integers.
  *
  * @typedef {Object} PaddingOptions
@@ -79,6 +96,20 @@ export type AnimationOptions = {
  * @property {number} bottom Padding in pixels from the bottom of the map canvas.
  * @property {number} left Padding in pixels from the left of the map canvas.
  * @property {number} right Padding in pixels from the right of the map canvas.
+ *
+ * @example
+ * var bbox = [[-79, 43], [-73, 45]];
+ * map.fitBounds(bbox, {
+ *   padding: {top: 10, bottom:25, left: 15, right: 5}
+ * });
+ *
+ * @example
+ * var bbox = [[-79, 43], [-73, 45]];
+ * map.fitBounds(bbox, {
+ *   padding: 20
+ * });
+ * @see [Fit to the bounds of a LineString](https://docs.mapbox.com/mapbox-gl-js/example/zoomto-linestring/)
+ * @see [Fit a map to a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/fitbounds/)
  */
 
 class Camera extends Evented {
@@ -119,6 +150,12 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns The map's geographical centerpoint.
+     * @example
+     * // return a LngLat object such as {lng: 0, lat: 0}
+     * var center = map.getCenter();
+     * // access longitude and latitude values directly
+     * var {longitude, latitude} = map.getCenter();
+     * @see Tutorial: [Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
 
@@ -156,15 +193,21 @@ class Camera extends Evented {
     }
 
     /**
-     * Pans the map to the specified location, with an animated transition.
+     * Pans the map to the specified location with an animated transition.
      *
      * @memberof Map#
      * @param lnglat The location to pan the map to.
-     * @param options Options object
+     * @param options Options describing the destination and animation of the transition.
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * map.panTo([-74, 38]);
+     * @example
+     * // Specify that the panTo animation should last 5000 milliseconds.
+     * map.panTo([-74, 38], {duration: 5000});
+     * @see [Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
     panTo(lnglat: LngLatLike, options?: AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
@@ -177,6 +220,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @returns The map's current zoom level.
+     * @example
+     * map.getZoom();
      */
     getZoom(): number { return this.transform.zoom; }
 
@@ -194,7 +239,7 @@ class Camera extends Evented {
      * @fires zoomend
      * @returns {Map} `this`
      * @example
-     * // zoom the map to 5
+     * // Zoom to the zoom level 5 without an animated transition
      * map.setZoom(5);
      */
     setZoom(zoom: number, eventData?: Object) {
@@ -216,6 +261,14 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @returns {Map} `this`
+     * @example
+     * // Zoom to the zoom level 5 without an animated transition
+     * map.zoomTo(5);
+     * // Zoom to the zoom level 8 with an animated transition
+     * map.zoomTo(8, {
+     *   duration: 2000,
+     *   offset: [100, 50]
+     * });
      */
     zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object) {
         return this.easeTo(extend({
@@ -236,6 +289,9 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @returns {Map} `this`
+     * @example
+     * // zoom the map in one level with a custom animation duration
+     * map.zoomIn({duration: 1000});
      */
     zoomIn(options?: AnimationOptions, eventData?: Object) {
         this.zoomTo(this.getZoom() + 1, options, eventData);
@@ -255,6 +311,9 @@ class Camera extends Evented {
      * @fires moveend
      * @fires zoomend
      * @returns {Map} `this`
+     * @example
+     * // zoom the map out one level with a custom animation offset
+     * map.zoomOut({offset: [80, 60]});
      */
     zoomOut(options?: AnimationOptions, eventData?: Object) {
         this.zoomTo(this.getZoom() - 1, options, eventData);
@@ -631,6 +690,18 @@ class Camera extends Evented {
      * @fires zoomend
      * @fires pitchend
      * @returns {Map} `this`
+     * @example
+     * // jump to coordinates at current zoom
+     * map.jumpTo({center: [0, 0]});
+     * // jump with zoom, pitch, and bearing options
+     * map.jumpTo({
+     *   center: [0, 0],
+     *   zoom: 8,
+     *   pitch: 45,
+     *   bearing: 90
+     * });
+     * @see [Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
+     * @see [Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
     jumpTo(options: CameraOptions, eventData?: Object) {
         this.stop();
