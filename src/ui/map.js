@@ -1945,7 +1945,7 @@ class Map extends Camera {
      * Sets the filter for the specified style layer.
      *
      * Filters control which features a style layer renders from its source.
-     * Any feature for which the filter expression evaluates to true will be
+     * Any feature for which the filter expression evaluates to `true` will be
      * rendered on the map. Those that are false will be hidden.
      *
      * Use `setFilter` to show a subset of your source data.
