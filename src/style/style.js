@@ -9,6 +9,7 @@ import loadSprite from './load_sprite';
 import ImageManager from '../render/image_manager';
 import GlyphManager from '../render/glyph_manager';
 import Light from './light';
+import Terrain from './terrain';
 import LineAtlas from '../render/line_atlas';
 import {pick, clone, extend, deepEqual, filterObject, mapObject} from '../util/util';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax';
@@ -60,7 +61,8 @@ import type {
     FilterSpecification,
     StyleSpecification,
     LightSpecification,
-    SourceSpecification
+    SourceSpecification,
+    TerrainSpecification
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator} from './validate_style';
@@ -110,6 +112,7 @@ class Style extends Evented {
     glyphManager: GlyphManager;
     lineAtlas: LineAtlas;
     light: Light;
+    terrain: Terrain;
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
@@ -276,6 +279,7 @@ class Style extends Evented {
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
+        this.terrain = new Terrain(this.stylesheet.terrain);
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
@@ -437,6 +441,7 @@ class Style extends Evented {
         }
 
         this.light.recalculate(parameters);
+        this.terrain.recalculate(parameters);
         this.z = parameters.zoom;
 
         if (changed) {
@@ -1203,6 +1208,35 @@ class Style extends Evented {
 
         this.light.setLight(lightOptions, options);
         this.light.updateTransitions(parameters);
+    }
+
+    // eslint-disable-next-line no-warning-comments
+    // TODO: generic approach for root level property: light, terrain, skybox.
+    // It is not done here to prevent rebasing issues.
+    setTerrain(terrainOptions: TerrainSpecification) {
+        this._checkLoaded();
+
+        const terrain = this.terrain.get();
+        let _update = !terrainOptions; // terrainOptions null deactivates.
+        for (const key in terrainOptions) {
+            if (!deepEqual(terrainOptions[key], terrain[key])) {
+                _update = true;
+                break;
+            }
+        }
+        if (!_update) return;
+
+        const parameters = {
+            now: browser.now(),
+            transition: extend({
+                duration: 300,
+                delay: 0
+            }, this.stylesheet.transition)
+        };
+
+        this.terrain.set(terrainOptions);
+        this.stylesheet.terrain = terrainOptions;
+        this.terrain.updateTransitions(parameters);
     }
 
     _validate(validate: Validator, key: string, value: any, props: any, options: { validate?: boolean } = {}) {

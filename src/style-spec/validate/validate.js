@@ -17,6 +17,7 @@ import validateFilter from './validate_filter';
 import validateLayer from './validate_layer';
 import validateSource from './validate_source';
 import validateLight from './validate_light';
+import validateTerrain from './validate_terrain';
 import validateString from './validate_string';
 import validateFormatted from './validate_formatted';
 import validateImage from './validate_image';
@@ -37,6 +38,7 @@ const VALIDATORS = {
     'object': validateObject,
     'source': validateSource,
     'light': validateLight,
+    'terrain': validateTerrain,
     'string': validateString,
     'formatted': validateFormatted,
     'resolvedImage': validateImage
