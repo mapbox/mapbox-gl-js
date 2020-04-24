@@ -216,9 +216,13 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Attaches the marker to a map
+     * Attaches the `Marker` to a `Map` object.
      * @param {Map} map The Mapbox GL JS map to add the marker to.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *   .setLngLat([30.5, 50.5])
+     *   .addTo(map); // add the marker to the map
      */
     addTo(map: Map) {
         this.remove();
@@ -270,16 +274,30 @@ export default class Marker extends Evented {
      * the marker on screen.
      *
      * @returns {LngLat} A {@link LngLat} describing the marker's location.
-     */
+    * @example
+    * // Store the marker's longitude and latitude coordinates in a variable
+    * var lngLat = marker.getLngLat();
+    * // Print the marker's longitude and latitude values in the console
+    * console.log('Longitude: ' + lngLat.lng + ', Latitude: ' + lngLat.lat )
+    * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+    */
     getLngLat() {
         return this._lngLat;
     }
 
     /**
-     * Set the marker's geographical position and move it.
-     * @param {LngLat} lnglat A {@link LngLat} describing where the marker should be located.
-     * @returns {Marker} `this`
-     */
+    * Set the marker's geographical position and move it.
+    * @param {LngLat} lnglat A {@link LngLat} describing where the marker should be located.
+    * @returns {Marker} `this`
+    * @example
+    * // Create a new marker, set the longitude and latitude, and add it to the map
+    * new mapboxgl.Marker()
+    *   .setLngLat([-65.017, -16.457])
+    *   .addTo(map);
+    * @see [Add custom icons with Markers](https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
+    * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+    * @see [Add a marker using a place name](https://docs.mapbox.com/mapbox-gl-js/example/marker-from-geocode/)
+    */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
@@ -297,10 +315,16 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Binds a Popup to the Marker
-     * @param popup an instance of the `Popup` class. If undefined or null, any popup
-     * set on this `Marker` instance is unset
+     * Binds a {@link Popup} to the {@link Marker}.
+     * @param popup An instance of the {@link Popup} class. If undefined or null, any popup
+     * set on this {@link Marker} instance is unset.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>")) // add popup
+     *  .addTo(map);
+     * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
     setPopup(popup: ?Popup) {
         if (this._popup) {
@@ -364,16 +388,30 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns the Popup instance that is bound to the Marker
+     * Returns the {@link Popup} instance that is bound to the {@link Marker}.
      * @returns {Popup} popup
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *  .addTo(map);
+     *
+     * console.log(marker.getPopup()); // return the popup instance
      */
     getPopup() {
         return this._popup;
     }
 
     /**
-     * Opens or closes the bound popup, depending on the current state
+     * Opens or closes the {@link Popup} instance that is bound to the {@link Marker}, depending on the current state of the {@link Popup}.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *  .addTo(map);
+     *
+     * marker.togglePopup(); // toggle popup open or closed
      */
     togglePopup() {
         const popup = this._popup;
