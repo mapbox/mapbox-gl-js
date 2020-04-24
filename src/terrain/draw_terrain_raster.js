@@ -10,8 +10,13 @@ import {Terrain} from './terrain';
 import type Painter from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
+import StencilMode from '../gl/stencil_mode';
+import ColorMode from '../gl/color_mode';
 
-export default drawTerrainRaster;
+export {
+    drawTerrainRaster,
+    drawTerrainDepth
+};
 
 function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>) {
     const context = painter.context;
@@ -31,9 +36,9 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         cameraScaled.y -= 0.5;
         return cameraScaled.distSqr(aPoint) - cameraScaled.distSqr(bPoint);
     });
+    const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
     for (const coord of coords) {
-        const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
         const tile = sourceCache.getTile(coord);
         const stencilMode = terrain.stencilModeForRTTOverlap(coord, sourceCache);
 
@@ -41,9 +46,25 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
         const uniformValues = terrainRasterUniformValues(coord.posMatrix, painter.transform.zoom);
-        terrain.setupDrawForTile(tile, program);
+        terrain.setupElevationDraw(tile, program);
 
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, "terrain_raster", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridSegments);
+    }
+}
+
+function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>) {
+    const context = painter.context;
+    const gl = context.gl;
+    context.clear({depth: 1});
+    const program = painter.useProgram('terrainDepth');
+    const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
+
+    for (const coord of tileIDs) {
+        const tile = sourceCache.getTile(coord);
+        const uniformValues = terrainRasterUniformValues(coord.posMatrix, painter.transform.zoom);
+        terrain.setupElevationDraw(tile, program);
+        program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
+            uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
     }
 }

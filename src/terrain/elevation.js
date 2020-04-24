@@ -4,6 +4,7 @@ import MercatorCoordinate from '../geo/mercator_coordinate';
 import DEMData from '../data/dem_data';
 import SourceCache from '../source/source_cache';
 import {number as interpolate} from '../style-spec/util/interpolate';
+import EXTENT from '../data/extent';
 
 import {OverscaledTileID} from '../source/tile_id';
 
@@ -21,7 +22,9 @@ export class Elevation {
      * Doesn't invoke network request to fetch the data.
      */
     getAtPoint(point: MercatorCoordinate): number {
-        const cache = this._source();
+        const src = this._source();
+        if (!src) return 0;
+        const cache: SourceCache = src;
         const z = cache.getSource().maxzoom + 1; // lookup uses findLoadedParent, start just a bit out of range.
         const tiles = 1 << z;
         const wrap = Math.floor(point.x);
@@ -36,18 +39,35 @@ export class Elevation {
         const i = Math.floor(x);
         const j = Math.floor(y);
 
-        return interpolate(
+        return this.exaggeration() * interpolate(
             interpolate(dem.get(i, j), dem.get(i, j + 1), y - j),
             interpolate(dem.get(i + 1, j), dem.get(i + 1, j + 1), y - j),
             x - i);
     }
 
-    /**
+    /*
+     * x and y are offset within tile, in 0 .. EXTENT coordinate space.
+     */
+    getAtTileOffset(tileID: OverscaledTileID, x: number, y: number): number {
+        const tilesAtTileZoom = 1 << tileID.canonical.z;
+        return this.getAtPoint(new MercatorCoordinate(
+            tileID.wrap + (tileID.canonical.x + x / EXTENT) / tilesAtTileZoom,
+            (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom));
+    }
+
+    /*
      * Implementation provides SourceCache of raster-dem source type cache, in
      * order to access already loaded cached tiles.
      */
-    _source(): SourceCache {
+    _source(): ?SourceCache {
         throw new Error('Pure virtual method called.');
     }
 
+    /*
+     * A multiplier defined by style as terrain exaggeration. Elevation provided
+     * by getXXXX methods is multiplied by this.
+     */
+    exaggeration(): number {
+        throw new Error('Pure virtual method called.');
+    }
 }

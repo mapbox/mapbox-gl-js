@@ -64,6 +64,7 @@ export type SingleCollisionBox = {
     y2: number;
     anchorPointX: number;
     anchorPointY: number;
+    elevation?: number;
 };
 
 export type CollisionArrays = {

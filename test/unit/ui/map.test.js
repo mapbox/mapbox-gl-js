@@ -907,7 +907,7 @@ test('Map', (t) => {
 
     t.test('#getMaxPitch', (t) => {
         const map = createMap(t, {pitch: 0});
-        t.equal(map.getMaxPitch(), 60, 'returns default value');
+        t.equal(map.getMaxPitch(), 75, 'returns default value');
         map.setMaxPitch(10);
         t.equal(map.getMaxPitch(), 10, 'returns custom value');
         t.end();
@@ -940,7 +940,7 @@ test('Map', (t) => {
     t.test('throw on maxPitch greater than valid maxPitch at init', (t) => {
         t.throws(() => {
             createMap(t, {maxPitch: 90});
-        }, new Error(`maxPitch must be less than or equal to 60`));
+        }, new Error(`maxPitch must be less than or equal to 75`));
         t.end();
     });
 

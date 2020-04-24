@@ -74,7 +74,12 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         if (options.collisionDebug) {
             map.showCollisionBoxes = true;
             if (options.operations) {
-                options.operations.push(["wait"]);
+                // When it is not practical to define all the tiles, to get them loaded,
+                // test can decide to use sleep or time-limited wait instead of wait.
+                // In such cases, don't append wait.
+                const lastOp = options.operations[options.operations.length - 1];
+                if (lastOp[0] !== 'sleep' && !(lastOp[0] === 'wait' && lastOp.length > 1))
+                    options.operations.push(["wait"]);
             } else {
                 options.operations = [["wait"]];
             }

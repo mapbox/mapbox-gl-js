@@ -6,6 +6,8 @@ import {RGBAImage} from '../../../src/util/image';
 import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
 import window from '../../../src/util/window';
 import {OverscaledTileID} from '../../../src/source/tile_id';
+import styleSpec from '../../../src/style-spec/reference/latest';
+import Terrain from '../../../src/style/terrain';
 
 function createStyle() {
     return {
@@ -146,9 +148,60 @@ test('Elevation', (t) => {
                     t.end();
                 });
 
+                t.test('disable terrain', t => {
+                    t.ok(map.painter.terrain);
+                    map.setTerrain(null);
+                    map.once('render', () => {
+                        t.notOk(map.painter.terrain);
+                        t.end();
+                    });
+                });
+
                 t.end();
             });
         });
     });
+    t.end();
+});
+
+const spec = styleSpec.terrain;
+
+test('Terrain style', (t) => {
+
+    test('Terrain defaults', (t) => {
+        const terrain = new Terrain({});
+        terrain.recalculate({zoom: 0, zoomHistory: {}});
+
+        t.deepEqual(terrain.properties.get('source'), spec.source.default);
+        t.deepEqual(terrain.properties.get('exaggeration'), spec.exaggeration.default);
+
+        t.end();
+    });
+
+    test('Exaggeration with stops function', (t) => {
+        const terrain = new Terrain({
+            source: "dem",
+            exaggeration: {
+                stops: [[15, 0.2], [17, 0.8]]
+            }
+        });
+        terrain.recalculate({zoom: 16, zoomHistory: {}});
+
+        t.deepEqual(terrain.properties.get('exaggeration'), 0.5);
+        t.end();
+    });
+
+    t.test('Validate exaggeration', (t) => {
+        const terrain = new Terrain({});
+        const spy = t.spy(terrain, '_validate');
+        t.stub(console, 'error');
+        terrain.set({exaggeration: -1000});
+        terrain.updateTransitions({transition: false}, {});
+        terrain.recalculate({zoom: 16, zoomHistory: {}, now: 10});
+        t.ok(spy.calledOnce);
+        t.ok(console.error.calledOnce);
+        t.end();
+    });
+
     t.end();
 });

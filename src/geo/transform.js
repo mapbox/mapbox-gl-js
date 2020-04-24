@@ -105,6 +105,7 @@ class Transform {
         return clone;
     }
 
+    get elevation(): ?Elevation { return this._elevation; }
     set elevation(elevation: ?Elevation) {
         if (this._elevation === elevation) return;
         this._elevation = elevation;

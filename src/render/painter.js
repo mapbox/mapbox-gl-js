@@ -127,7 +127,7 @@ class Painter {
     emptyTexture: Texture;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
-    terrain: ?Terrain;
+    _terrain: ?Terrain;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -149,13 +149,11 @@ class Painter {
     }
 
     updateTerrain(style: Style) {
-        const enabled = style.stylesheet && style.stylesheet.terrain;
+        const enabled = style.terrain.properties.get('source');
         if (!enabled) {
             this.transform.elevation = null;
-            if (this.terrain) {
-                this.terrain.valid = false;
-                // Remove references. this.terrain is used to check if enabled.
-                delete this.terrain;
+            if (this._terrain) {
+                this._terrain.valid = false;
             }
             for (const id in style.sourceCaches) {
                 style.sourceCaches[id].usedForTerrain = false;
@@ -163,16 +161,20 @@ class Painter {
             this.enableTileClipping = true;
             return;
         }
-        if (!this.terrain) {
-            this.terrain = new Terrain(this, style);
+        if (!this._terrain) {
+            this._terrain = new Terrain(this, style);
         }
-        const terrain: Terrain = this.terrain;
-        this.transform.elevation = this.terrain;
+        const terrain: Terrain = this._terrain;
+        this.transform.elevation = terrain;
         terrain.update(style, this.transform);
         if (!terrain.valid) {
             this.transform.elevation = null;
         }
         this.enableTileClipping = false;
+    }
+
+    get terrain(): ?Terrain {
+        return this._terrain && this._terrain.valid ? this._terrain : null;
     }
 
     /*

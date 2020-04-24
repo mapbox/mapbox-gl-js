@@ -1,0 +1,63 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "width": 500,
+      "height": 500,
+      "allowed": 0.005,
+      "description": "Tiles in front get elevation (TODO use exaggeration later) of >700km (defined by 1-0-0.terrain.512.png). This pushes terrain and symbols over tiles in back.",
+      "operations": [
+        ["sleep", 1500]
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 3,
+  "pitch": 60,
+  "bearing": 90,
+  "terrain": {
+    "source": "dem"
+  },
+  "sources": {
+    "dem": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/const/{z}-{x}-{y}.terrain.512.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 512
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/places.geojson"
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "point",
+        "text-field": "test test test",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

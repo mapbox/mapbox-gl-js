@@ -40,5 +40,6 @@ export const programUniforms = {
     symbolTextAndIcon: symbolTextAndIconUniforms,
     background: backgroundUniforms,
     backgroundPattern: backgroundPatternUniforms,
-    terrainRaster: terrainRasterUniforms
+    terrainRaster: terrainRasterUniforms,
+    terrainDepth: terrainRasterUniforms
 };

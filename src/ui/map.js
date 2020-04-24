@@ -109,7 +109,7 @@ const defaultMaxZoom = 22;
 
 // the default values, but also the valid range
 const defaultMinPitch = 0;
-const defaultMaxPitch = 60;
+const defaultMaxPitch = 75;
 
 const defaultOptions = {
     center: [0, 0],
@@ -1903,7 +1903,7 @@ class Map extends Camera {
      */
     setTerrain(terrain: TerrainSpecification) {
         this._lazyInitEmptyStyle();
-        this.style.stylesheet.terrain = terrain;
+        this.style.setTerrain(terrain);
         return this._update(true);
     }
 
