@@ -62,7 +62,7 @@ export default class TapDragZoomHandler {
             this._active = true;
 
             return {
-                zoomDelta: dist / -128
+                zoomDelta: dist / 128
             };
         }
     }
