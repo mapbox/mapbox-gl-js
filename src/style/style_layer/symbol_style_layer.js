@@ -33,7 +33,7 @@ import type {CanonicalTileID} from '../../source/tile_id';
 import {FormattedType} from '../../style-spec/expression/types';
 import {typeOf} from '../../style-spec/expression/values';
 import Formatted from '../../style-spec/expression/types/formatted';
-import FormatSectionOverride from '../../style-spec/expression/definitions/format_section_override';
+import FormatSectionOverride from '../format_section_override';
 import FormatExpression from '../../style-spec/expression/definitions/format';
 import Literal from '../../style-spec/expression/definitions/literal';
 

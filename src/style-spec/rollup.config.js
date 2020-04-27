@@ -1,3 +1,4 @@
+import path from 'path';
 import replace from 'rollup-plugin-replace';
 import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
@@ -14,6 +15,8 @@ const transforms = {
     modules: esm ? false : undefined
 };
 
+const ROOT_DIR = __dirname;
+
 const config = [{
     input: `${__dirname}/style-spec.js`,
     output: {
@@ -23,6 +26,23 @@ const config = [{
         sourcemap: true
     },
     plugins: [
+        {
+            name: 'dep-checker',
+            resolveId(source, importer) {
+                // Some users reference modules within style-spec package directly, instead of the bundle
+                // This means that files within the style-spec package should NOT import files from the parent mapbox-gl-js tree.
+                // This check will cause the build to fail on CI allowing these issues to be caught.
+                if (importer && !importer.includes('node_modules')) {
+                    const resolvedPath = path.join(importer, source);
+                    const fromRoot = path.relative(ROOT_DIR, resolvedPath);
+                    if (fromRoot.length > 2 && fromRoot.slice(0, 2) === '..') {
+                        throw new Error(`Module ${importer} imports ${source} from outside the style-spec package root directory.`);
+                    }
+                }
+
+                return null;
+            }
+        },
         // https://github.com/zaach/jison/issues/351
         replace({
             include: /\/jsonlint-lines-primitives\/lib\/jsonlint.js/,

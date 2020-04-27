@@ -9,6 +9,7 @@ const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 
 test('production build removes asserts', (t) => {
     t.assert(minBundle.indexOf('canary assert') === -1);
+    t.assert(minBundle.indexOf('canary debug run') === -1);
     t.end();
 });
 

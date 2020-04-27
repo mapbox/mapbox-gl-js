@@ -1,12 +1,12 @@
 // @flow
 
-import {bindAll} from '../../util/util';
-
 import type Map from '../map';
 
-const panStep = 100,
-    bearingStep = 15,
-    pitchStep = 10;
+const defaultOptions = {
+    panStep: 100,
+    bearingStep: 15,
+    pitchStep: 10
+};
 
 /**
  * The `KeyboardHandler` allows the user to zoom, rotate, and pan the map using
@@ -23,56 +23,27 @@ const panStep = 100,
  * - `Shift+⇣`: Decrease the pitch by 10 degrees.
  */
 class KeyboardHandler {
-    _map: Map;
-    _el: HTMLElement;
     _enabled: boolean;
+    _active: boolean;
+    _panStep: number;
+    _bearingStep: number;
+    _pitchStep: number;
 
     /**
-     * @private
-     */
-    constructor(map: Map) {
-        this._map = map;
-        this._el = map.getCanvasContainer();
-
-        bindAll([
-            '_onKeyDown'
-        ], this);
+    * @private
+    */
+    constructor() {
+        const stepOptions = defaultOptions;
+        this._panStep = stepOptions.panStep;
+        this._bearingStep = stepOptions.bearingStep;
+        this._pitchStep = stepOptions.pitchStep;
     }
 
-    /**
-     * Returns a Boolean indicating whether keyboard interaction is enabled.
-     *
-     * @returns {boolean} `true` if keyboard interaction is enabled.
-     */
-    isEnabled() {
-        return !!this._enabled;
+    reset() {
+        this._active = false;
     }
 
-    /**
-     * Enables keyboard interaction.
-     *
-     * @example
-     * map.keyboard.enable();
-     */
-    enable() {
-        if (this.isEnabled()) return;
-        this._el.addEventListener('keydown', this._onKeyDown, false);
-        this._enabled = true;
-    }
-
-    /**
-     * Disables keyboard interaction.
-     *
-     * @example
-     * map.keyboard.disable();
-     */
-    disable() {
-        if (!this.isEnabled()) return;
-        this._el.removeEventListener('keydown', this._onKeyDown);
-        this._enabled = false;
-    }
-
-    _onKeyDown(e: KeyboardEvent) {
+    keydown(e: KeyboardEvent) {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
 
         let zoomDir = 0;
@@ -126,8 +97,8 @@ class KeyboardHandler {
             if (e.shiftKey) {
                 pitchDir = -1;
             } else {
-                yDir = 1;
                 e.preventDefault();
+                yDir = 1;
             }
             break;
 
@@ -135,26 +106,43 @@ class KeyboardHandler {
             return;
         }
 
-        const map = this._map;
-        const zoom = map.getZoom();
+        return {
+            cameraAnimation: (map: Map) => {
+                const zoom = map.getZoom();
+                map.easeTo({
+                    duration: 300,
+                    easeId: 'keyboardHandler',
+                    easing: easeOut,
 
-        const easeOptions = {
-            duration: 300,
-            delayEndEvents: 500,
-            easing: easeOut,
-
-            zoom: zoomDir ? Math.round(zoom) + zoomDir * (e.shiftKey ? 2 : 1) : zoom,
-            bearing: map.getBearing() + bearingDir * bearingStep,
-            pitch: map.getPitch() + pitchDir * pitchStep,
-            offset: [-xDir * panStep, -yDir * panStep],
-            center: map.getCenter()
+                    zoom: zoomDir ? Math.round(zoom) + zoomDir * (e.shiftKey ? 2 : 1) : zoom,
+                    bearing: map.getBearing() + bearingDir * this._bearingStep,
+                    pitch: map.getPitch() + pitchDir * this._pitchStep,
+                    offset: [-xDir * this._panStep, -yDir * this._panStep],
+                    center: map.getCenter()
+                }, {originalEvent: e});
+            }
         };
+    }
 
-        map.easeTo(easeOptions, {originalEvent: e});
+    enable() {
+        this._enabled = true;
+    }
+
+    disable() {
+        this._enabled = false;
+        this.reset();
+    }
+
+    isEnabled() {
+        return this._enabled;
+    }
+
+    isActive() {
+        return this._active;
     }
 }
 
-function easeOut(t) {
+function easeOut(t: number) {
     return t * (2 - t);
 }
 

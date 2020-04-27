@@ -3,7 +3,7 @@ import {createExpression, ZoomConstantExpression} from '../../../src/style-spec/
 import EvaluationContext from '../../../src/style-spec/expression/evaluation_context';
 import properties from '../../../src/style/style_layer/symbol_style_layer_properties';
 import {PossiblyEvaluatedPropertyValue} from '../../../src/style/properties';
-import FormatSectionOverride from '../../../src/style-spec/expression/definitions/format_section_override';
+import FormatSectionOverride from '../../../src/style/format_section_override';
 
 test('evaluate', (t) => {
 

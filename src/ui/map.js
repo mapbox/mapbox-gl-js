@@ -13,7 +13,7 @@ import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
 import Transform from '../geo/transform';
 import Hash from './hash';
-import bindHandlers from './bind_handlers';
+import HandlerManager from './handler_manager';
 import Camera from './camera';
 import LngLat from '../geo/lng_lat';
 import LngLatBounds from '../geo/lng_lat_bounds';
@@ -41,11 +41,12 @@ import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
-import type DragRotateHandler from './handler/drag_rotate';
-import type DragPanHandler, {DragPanOptions} from './handler/drag_pan';
+import type {TouchPitchHandler} from './handler/touch_zoom_rotate';
+import type DragRotateHandler from './handler/shim/drag_rotate';
+import type DragPanHandler, {DragPanOptions} from './handler/shim/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
-import type DoubleClickZoomHandler from './handler/dblclick_zoom';
-import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
+import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom';
+import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
 import defaultLocale from './default_locale';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
@@ -92,6 +93,7 @@ type MapOptions = {
     keyboard?: boolean,
     doubleClickZoom?: boolean,
     touchZoomRotate?: boolean,
+    touchPitch?: boolean,
     trackResize?: boolean,
     center?: LngLatLike,
     zoom?: number,
@@ -131,9 +133,11 @@ const defaultOptions = {
     keyboard: true,
     doubleClickZoom: true,
     touchZoomRotate: true,
+    touchPitch: true,
 
     bearingSnap: 7,
     clickTolerance: 3,
+    pitchWithRotate: true,
 
     hash: false,
     attributionControl: true,
@@ -216,6 +220,7 @@ const defaultOptions = {
  * @param {boolean} [options.keyboard=true] If `true`, keyboard shortcuts are enabled (see {@link KeyboardHandler}).
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean|Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
+ * @param {boolean|Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler#enable}.
  * @param {boolean} [options.trackResize=true]  If `true`, the map will automatically resize when the browser window resizes.
  * @param {LngLatLike} [options.center=[0, 0]] The inital geographical centerpoint of the map. If `center` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
@@ -263,6 +268,7 @@ const defaultOptions = {
 class Map extends Camera {
     style: Style;
     painter: Painter;
+    handlers: HandlerManager;
 
     _container: HTMLElement;
     _missingCSSCanary: HTMLElement;
@@ -302,6 +308,7 @@ class Map extends Camera {
     _localIdeographFontFamily: string;
     _requestManager: RequestManager;
     _locale: Object;
+    _removed: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -345,6 +352,12 @@ class Map extends Camera {
      * Find more details and examples using `touchZoomRotate` in the {@link TouchZoomRotateHandler} section.
      */
     touchZoomRotate: TouchZoomRotateHandler;
+
+    /**
+     * The map's {@link TouchPitchHandler}, which allows the user to pitch the map with touch gestures.
+     * Find more details and examples using `touchPitch` in the {@link TouchPitchHandler} section.
+     */
+    touchPitch: TouchPitchHandler;
 
     constructor(options: MapOptions) {
         PerformanceUtils.mark(PerformanceMarkers.create);
@@ -426,7 +439,7 @@ class Map extends Camera {
             window.addEventListener('resize', this._onWindowResize, false);
         }
 
-        bindHandlers(this, options);
+        this.handlers = new HandlerManager(this, options);
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         this._hash = options.hash && (new Hash(hashName)).addTo(this);
@@ -565,10 +578,17 @@ class Map extends Camera {
         this.transform.resize(width, height);
         this.painter.resize(width, height);
 
-        this.fire(new Event('movestart', eventData))
-            .fire(new Event('move', eventData))
-            .fire(new Event('resize', eventData))
-            .fire(new Event('moveend', eventData));
+        const fireMoving = !this._moving;
+        if (fireMoving) {
+            this.stop();
+            this.fire(new Event('movestart', eventData))
+                .fire(new Event('move', eventData));
+        }
+
+        this.fire(new Event('resize', eventData));
+
+        if (fireMoving) this.fire(new Event('moveend', eventData));
+
         return this;
     }
 
@@ -834,10 +854,7 @@ class Map extends Camera {
      * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving ||
-            this.dragPan.isActive() ||
-            this.dragRotate.isActive() ||
-            this.scrollZoom.isActive();
+        return this._moving || this.handlers.isActive();
     }
 
     /**
@@ -847,8 +864,7 @@ class Map extends Camera {
      * var isZooming = map.isZooming();
      */
     isZooming(): boolean {
-        return this._zooming ||
-            this.scrollZoom.isZooming();
+        return this._zooming || this.handlers.isZooming();
     }
 
     /**
@@ -858,8 +874,7 @@ class Map extends Camera {
      * map.isRotating();
      */
     isRotating(): boolean {
-        return this._rotating ||
-            this.dragRotate.isActive();
+        return this._rotating || this.handlers.isRotating();
     }
 
     _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
@@ -911,33 +926,103 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a listener for events of a specified type.
+     * Adds a listener for events of a specified type, optionally limited to features in a specified style layer.
      *
-     * @method
-     * @name on
-     * @memberof Map
-     * @instance
-     * @param {string} type The event type to add a listen for.
-     * @param {Function} listener The function to be called when the event is fired.
-     *   The listener function is called with the data object passed to `fire`,
-     *   extended with `target` and `type` properties.
-     * @returns {Map} `this`
-     */
-
-    /**
-     * Adds a listener for events of a specified type occurring on features in a specified style layer.
+     * @param {string} type The event type to listen for. Events compatible with the optional `layerId` parameter are triggered
+     * when the cursor enters a visible portion of the specified layer from outside that layer or outside the map canvas.
      *
-     * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'click'`, `'dblclick'`,
-     * `'mousemove'`, `'mouseenter'`, `'mouseleave'`, `'mouseover'`, `'mouseout'`, `'contextmenu'`, `'touchstart'`,
-     * `'touchend'`, or `'touchcancel'`. `mouseenter` and `mouseover` events are triggered when the cursor enters
-     * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
-     * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
-     * the map canvas.
-     * @param {string} layerId The ID of a style layer. Only events whose location is within a visible
-     * feature in this layer will trigger the listener. The event will have a `features` property containing
-     * an array of the matching features.
+     * | Event                                                     | Compatible with `layerId` |
+     * |-----------------------------------------------------------|---------------------------|
+     * | [`mousedown`](#map.event:mousedown)                       | yes                       |
+     * | [`mouseup`](#map.event:mouseup)                           | yes                       |
+     * | [`mouseover`](#map.event:mouseover)                       | yes                       |
+     * | [`mouseout`](#map.event:mouseout)                         | yes                       |
+     * | [`mousemove`](#map.event:mousemove)                       | yes                       |
+     * | [`mouseenter`](#map.event:mouseenter)                     | yes (required)            |
+     * | [`mouseleave`](#map.event:mouseleave)                     | yes (required)            |
+     * | [`click`](#map.event:click)                               | yes                       |
+     * | [`dblclick`](#map.event:dblclick)                         | yes                       |
+     * | [`contextmenu`](#map.event:contextmenu)                   | yes                       |
+     * | [`touchstart`](#map.event:touchstart)                     | yes                       |
+     * | [`touchend`](#map.event:touchend)                         | yes                       |
+     * | [`touchcancel`](#map.event:touchcancel)                   | yes                       |
+     * | [`wheel`](#map.event:wheel)                               |                           |
+     * | [`resize`](#map.event:resize)                             |                           |
+     * | [`remove`](#map.event:remove)                             |                           |
+     * | [`touchmove`](#map.event:touchmove)                       |                           |
+     * | [`movestart`](#map.event:movestart)                       |                           |
+     * | [`move`](#map.event:move)                                 |                           |
+     * | [`moveend`](#map.event:moveend)                           |                           |
+     * | [`dragstart`](#map.event:dragstart)                       |                           |
+     * | [`drag`](#map.event:drag)                                 |                           |
+     * | [`dragend`](#map.event:dragend)                           |                           |
+     * | [`zoomstart`](#map.event:zoomstart)                       |                           |
+     * | [`zoom`](#map.event:zoom)                                 |                           |
+     * | [`zoomend`](#map.event:zoomend)                           |                           |
+     * | [`rotatestart`](#map.event:rotatestart)                   |                           |
+     * | [`rotate`](#map.event:rotate)                             |                           |
+     * | [`rotateend`](#map.event:rotateend)                       |                           |
+     * | [`pitchstart`](#map.event:pitchstart)                     |                           |
+     * | [`pitch`](#map.event:pitch)                               |                           |
+     * | [`pitchend`](#map.event:pitchend)                         |                           |
+     * | [`boxzoomstart`](#map.event:boxzoomstart)                 |                           |
+     * | [`boxzoomend`](#map.event:boxzoomend)                     |                           |
+     * | [`boxzoomcancel`](#map.event:boxzoomcancel)               |                           |
+     * | [`webglcontextlost`](#map.event:webglcontextlost)         |                           |
+     * | [`webglcontextrestored`](#map.event:webglcontextrestored) |                           |
+     * | [`load`](#map.event:load)                                 |                           |
+     * | [`render`](#map.event:render)                             |                           |
+     * | [`idle`](#map.event:idle)                                 |                           |
+     * | [`error`](#map.event:error)                               |                           |
+     * | [`data`](#map.event:data)                                 |                           |
+     * | [`styledata`](#map.event:styledata)                       |                           |
+     * | [`sourcedata`](#map.event:sourcedata)                     |                           |
+     * | [`dataloading`](#map.event:dataloading)                   |                           |
+     * | [`styledataloading`](#map.event:styledataloading)         |                           |
+     * | [`sourcedataloading`](#map.event:sourcedataloading)       |                           |
+     * | [`styleimagemissing`](#map.event:styleimagemissing)       |                           |
+     *
+     * @param {string} layerId (optional) The ID of a style layer. Event will only be triggered if its location
+     * is within a visible feature in this layer. The event will have a `features` property containing
+     * an array of the matching features. If `layerId` is not supplied, the event will not have a `features` property.
+     * Please note that many event types are not compatible with the optional `layerId` parameter.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
+     * @example
+     * // Set an event listener that will fire
+     * // when the map has finished loading
+     * map.on('load', function() {
+     *   // Once the map has finished loading,
+     *   // add a new layer
+     *   map.addLayer({
+     *     id: 'points-of-interest',
+     *     source: {
+     *       type: 'vector',
+     *       url: 'mapbox://mapbox.mapbox-streets-v8'
+     *     },
+     *     'source-layer': 'poi_label',
+     *     type: 'circle',
+     *     paint: {
+     *       // Mapbox Style Specification paint properties
+     *     },
+     *     layout: {
+     *       // Mapbox Style Specification layout properties
+     *     }
+     *   });
+     * });
+     * @example
+     * // Set an event listener that will fire
+     * // when a feature on the countries layer of the map is clicked
+     * map.on('click', 'countries', function(e) {
+     *   new mapboxgl.Popup()
+     *     .setLngLat(e.lngLat)
+     *     .setHTML(`Country name: ${e.features[0].properties.name}`)
+     *     .addTo(map);
+     * });
+     * @see [Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+     * @see [Center the map on a clicked symbol](https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
+     * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see [Create a draggable marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     on(type: MapEvent, layerId: any, listener: any) {
         if (listener === undefined) {
@@ -1312,9 +1397,9 @@ class Map extends Camera {
     }
 
     /**
-     * Returns the map's Mapbox style object, which can be used to recreate the map's style.
+     * Returns the map's Mapbox [style](https://docs.mapbox.com/help/glossary/style/) object, a JSON object which can be used to recreate the map's style.
      *
-     * @returns {Object} The map's style object.
+     * @returns {Object} The map's style JSON object.
      *
      * @example
      * var styleJson = map.getStyle();
@@ -1379,7 +1464,8 @@ class Map extends Camera {
     }
 
     /**
-     * Returns a Boolean indicating whether the source is loaded.
+     * Returns a Boolean indicating whether the source is loaded. Returns `true` if the source with
+     * the given ID in the map's style has no outstanding network requests, otherwise `false`.
      *
      * @param {string} id The ID of the source to be checked.
      * @returns {boolean} A Boolean indicating whether the source is loaded.
@@ -1446,14 +1532,22 @@ class Map extends Camera {
     /**
      * Returns the source with the specified ID in the map's style.
      *
+     * This method is often used to update a source using the instance members for the relevant
+     * source type as defined in [Sources](#sources).
+     * For example, setting the `data` for a GeoJSON source or updating the `url` and `coordinates`
+     * of an image source.
+     *
      * @param {string} id The ID of the source to get.
-     * @returns {?Object} The style source with the specified ID, or `undefined`
-     *   if the ID corresponds to no existing sources.
+     * @returns {?Object} The style source with the specified ID or `undefined` if the ID
+     * corresponds to no existing sources.
+     * The shape of the object varies by source type.
+     * A list of options for each source type is available on the Mapbox Style Specification's
+     * [Sources](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) page.
      * @example
      * var sourceObject = map.getSource('points');
-     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
-     * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
-     * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
+     * @see [Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Animate a point](https://docs.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
+     * @see [Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
      */
     getSource(id: string) {
         return this.style.getSource(id);
@@ -1666,15 +1760,51 @@ class Map extends Camera {
      * A layer defines how data from a specified source will be styled. Read more about layer types
      * and available paint and layout properties in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
      *
-     * @param {Object | CustomLayerInterface} layer The style layer to add, conforming to the Mapbox Style Specification's
-     *   [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
+     * @param {Object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the [`CustomLayerInterface`](https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface) specification.
+     * The Mapbox Style Specification's layer definition is appropriate for most layers.
+     *
+     * @param {string} layer.id A unique idenfier that you define.
+     * @param {string} layer.type The type of layer (for example `fill` or `symbol`).
+     * A list of layer types is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#type).
+     *
+     * (This can also be `custom`. For more information, see [`CustomLayerInterface`](https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface).)
+     * @param {string | Object} [layer.source] The data source for the layer.
+     * Reference a source that has _already been defined_ using the source's unique id.
+     * Reference a _new source_ using a source object (as defined in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/)) directly.
+     * This is **required** for all `layer.type` options _except_ for `custom`.
+     * @param {string} [layer.sourceLayer] (optional) The name of the [source layer](https://docs.mapbox.com/help/glossary/source-layer/) within the specified `layer.source` to use for this style layer.
+     * This is only applicable for vector tile sources and is **required** when `layer.source` is of the type `vector`.
+     * @param {array} [layer.filter] (optional) An expression specifying conditions on source features.
+     * Only features that match the filter are displayed.
+     * The Mapbox Style Specification includes more information on the limitations of the [`filter`](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter) parameter
+     * and a complete list of available [expressions](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/).
+     * If no filter is provided, all features in the source (or source layer for vector tilesets) will be displayed.
+     * @param {Object} [layer.paint] (optional) Paint properties for the layer.
+     * Available paint properties vary by `layer.type`.
+     * A full list of paint properties for each layer type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/).
+     * If no paint properties are specified, default values will be used.
+     * @param {Object} [layer.layout] (optional) Layout properties for the layer.
+     * Available layout properties vary by `layer.type`.
+     * A full list of layout properties for each layer type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/).
+     * If no layout properties are specified, default values will be used.
+     * @param {number} [layer.maxzoom] (optional) The maximum zoom level for the layer.
+     * At zoom levels equal to or greater than the maxzoom, the layer will be hidden.
+     * The value can be any number between `0` and `24` (inclusive).
+     * If no maxzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
+     * @param {number} [layer.minzoom] (optional) The minimum zoom level for the layer.
+     * At zoom levels less than the minzoom, the layer will be hidden.
+     * The value can be any number between `0` and `24` (inclusive).
+     * If no minzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
+     * @param {Object} [layer.metadata] (optional) Arbitrary properties useful to track with the layer, but do not influence rendering.
+     * @param {string} [layer.renderingMode] This is only applicable for layers with the type `custom`.
+     * See [`CustomLayerInterface`](https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface) for more information.
      * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
-     *   If this argument is omitted, the layer will be appended to the end of the layers array.
+     * If this argument is not specified, the layer will be appended to the end of the layers array.
      *
      * @returns {Map} `this`
      *
      * @example
-     * // Add a circle layer with a vector source.
+     * // Add a circle layer with a vector source
      * map.addLayer({
      *   id: 'points-of-interest',
      *   source: {
@@ -1691,9 +1821,44 @@ class Map extends Camera {
      *   }
      * });
      *
-     * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
-     * @see [Add a vector tile source](https://www.mapbox.com/mapbox-gl-js/example/vector-source/)
-     * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
+     * @example
+     * // Define a source before using it to create a new layer
+     * map.addSource('state-data', {
+     *   type: 'geojson',
+     *   data: 'path/to/data.geojson'
+     * });
+     *
+     * map.addLayer({
+     *   id: 'states',
+     *   // References the GeoJSON source defined above
+     *   // and does not require a `source-layer`
+     *   source: 'state-data',
+     *   type: 'symbol',
+     *   layout: {
+     *     // Set the label content to the
+     *     // feature's `name` property
+     *     text-field: ['get', 'name']
+     *   }
+     * });
+     *
+     * @example
+     * // Add a new symbol layer before an existing layer
+     * map.addLayer({
+     *   id: 'states',
+     *   // References a source that's already been defined
+     *   source: 'state-data',
+     *   type: 'symbol',
+     *   layout: {
+     *     // Set the label content to the
+     *     // feature's `name` property
+     *     text-field: ['get', 'name']
+     *   }
+     * // Add the layer before the existing `cities` layer
+     * }, 'cities');
+     *
+     * @see [Create and style clusters](https://docs.mapbox.com/mapbox-gl-js/example/cluster/)
+     * @see [Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
+     * @see [Add a WMS source](https://docs.mapbox.com/mapbox-gl-js/example/wms/)
      */
     addLayer(layer: LayerSpecification | CustomLayerInterface, beforeId?: string) {
         this._lazyInitEmptyStyle();
@@ -1705,13 +1870,12 @@ class Map extends Camera {
      * Moves a layer to a different z-position.
      *
      * @param {string} id The ID of the layer to move.
-     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
-     *   If this argument is omitted, the layer will be appended to the end of the layers array.
+     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before. When viewing the map, the `id` layer will appear beneath the `beforeId` layer. If `beforeId` is omitted, the layer will be appended to the end of the layers array and appear above all other layers on the map.
      * @returns {Map} `this`
      *
      * @example
-     * // Move a layer with ID 'label' before the layer with ID 'waterways'.
-     * map.moveLayer('label', 'waterways');
+     * // Move a layer with ID 'polygon' before the layer with ID 'country-label'. The `polygon` layer will appear beneath the `country-label` layer on the map.
+     * map.moveLayer('polygon', 'country-label');
      */
     moveLayer(id: string, beforeId?: string) {
         this.style.moveLayer(id, beforeId);
@@ -1781,19 +1945,35 @@ class Map extends Camera {
     /**
      * Sets the filter for the specified style layer.
      *
+     * Filters control which features a style layer renders from its source.
+     * Any feature for which the filter expression evaluates to `true` will be
+     * rendered on the map. Those that are false will be hidden.
+     *
+     * Use `setFilter` to show a subset of your source data.
+     *
+     * To clear the filter, pass `null` or `undefined` as the second parameter.
+     *
      * @param {string} layerId The ID of the layer to which the filter will be applied.
      * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
      *   [filter definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
-     *
      * @returns {Map} `this`
+     *
      * @example
-     * map.setFilter('my-layer', ['==', 'name', 'USA']);
+     * // display only features with the 'name' property 'USA'
+     * map.setFilter('my-layer', ['==', ['get', 'name'], 'USA']);
+     * @example
+     * // display only features with five or more 'available-spots'
+     * map.setFilter('bike-docks', ['>=', ['get', 'available-spots'], 5]);
+     * @example
+     * // remove the filter for the 'bike-docks' style layer
+     * map.setFilter('bike-docks', null);
      *
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
+     * @see Tutorial: [Show changes over time](https://docs.mapbox.com/help/tutorials/show-changes-over-time/)
      */
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this.style.setFilter(layerId, filter, options);
@@ -1853,6 +2033,7 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @example
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
+     * @see [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
      */
     setLayoutProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
         this.style.setLayoutProperty(layerId, name, value, options);
@@ -1877,6 +2058,9 @@ class Map extends Camera {
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
      * @returns {Map} `this`
+     * @example
+     * var layerVisibility = map.getLayoutProperty('my-layer', 'visibility');
+     * @see [Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
      */
     setLight(light: LightSpecification, options: StyleSetterOptions = {}) {
         this._lazyInitEmptyStyle();
@@ -1908,23 +2092,42 @@ class Map extends Camera {
     }
 
     /**
-     * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
-     * Features are identified by their `id` attribute, which must be an integer or a string that can be
-     * cast to an integer.
+     * Sets the `state` of a feature.
+     * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
+     * When using this method, the `state` object is merged with any existing key-value pairs in the feature's state.
+     * Features are identified by their `feature.id` attribute, which can be any number or string.
+     *
+     * This method can only be used with sources that have a `feature.id` attribute. The `feature.id` attribute can be defined in three ways:
+     * - For vector or GeoJSON sources, including an `id` attribute in the original data file.
+     * - For vector or GeoJSON sources, using the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option at the time the source is defined.
+     * - For GeoJSON sources, using the [`generateId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-generateId) option to auto-assign an `id` based on the feature's index in the source data. If you change feature data using `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
+     *
+     * _Note: You can use the [`feature-state` expression](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#feature-state) to access the values in a feature's state object for the purposes of styling._
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} feature.id Unique id of the feature.
-     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
-     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
-     *  required.*
+     * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      *
-     * This method requires the `feature.id` attribute on data sets. For GeoJSON sources without
-     * feature ids, set the `generateId` option in the `GeoJSONSourceSpecification` to auto-assign them. This
-     * option assigns ids based on a feature's index in the source data. If you change feature data using
-     * `map.getSource('some id').setData(..)`, you may need to re-apply state taking into account updated `id` values.
+     * @example
+     * // When the mouse moves over the `my-layer` layer, update
+     * // the feature state for the feature under the mouse
+     * map.on('mousemove', 'my-layer', function(e) {
+     *   if (e.features.length > 0) {
+     *     map.setFeatureState({
+     *       source: 'my-source',
+     *       sourceLayer: 'my-source-layer',
+     *       id: e.features[0].id,
+     *     }, {
+     *       hover: true
+     *     });
+     *   }
+     * });
+     *
      * @see [Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see Tutorial: [Create interactive hover effects with Mapbox GL JS](https://docs.mapbox.com/help/tutorials/create-interactive-hover-effects-with-mapbox-gl-js/)
      */
     setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
         this.style.setFeatureState(feature, state);
@@ -1933,19 +2136,50 @@ class Map extends Camera {
 
     // eslint-disable-next-line jsdoc/require-returns
     /**
-     * Removes feature state, setting it back to the default behavior. If only
-     * source is specified, removes all states of that source. If
-     * target.id is also specified, removes all keys for that feature's state.
-     * If key is also specified, removes that key from that feature's state.
-     * Features are identified by their `id` attribute, which must be an integer or a string that can be
-     * cast to an integer.
-     * @param {Object} target Identifier of where to set state: can be a source, a feature, or a specific key of feature.
+     * Removes the `state` of a feature, setting it back to the default behavior.
+     * If only a `target.source` is specified, it will remove the state for all features from that source.
+     * If `target.id` is also specified, it will remove all keys for that feature's state.
+     * If `key` is also specified, it removes only that key from that feature's state.
+     * Features are identified by their `feature.id` attribute, which can be any number or string.
+     *
+     * @param {Object} target Identifier of where to remove state. It can be a source, a feature, or a specific key of feature.
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} target.id (optional) Unique id of the feature. Optional if key is not specified.
-     * @param {string} target.source The Id of the vector source or GeoJSON source for the feature.
-     * @param {string} [target.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
-     *  required.*
+     * @param {string} target.source The id of the vector or GeoJSON source for the feature.
+     * @param {string} [target.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      * @param {string} key (optional) The key in the feature state to reset.
+     *
+     * @example
+     * // Reset the entire state object for all features
+     * // in the `my-source` source
+     * map.removeFeatureState({
+     *   source: 'my-source'
+     * });
+     *
+     * @example
+     * // When the mouse leaves the `my-layer` layer,
+     * // reset the entire state object for the
+     * // feature under the mouse
+     * map.on('mouseleave', 'my-layer', function(e) {
+     *   map.removeFeatureState({
+     *     source: 'my-source',
+     *     sourceLayer: 'my-source-layer',
+     *     id: e.features[0].id
+     *   });
+     * });
+     *
+     * @example
+     * // When the mouse leaves the `my-layer` layer,
+     * // reset only the `hover` key-value pair in the
+     * // state for the feature under the mouse
+     * map.on('mouseleave', 'my-layer', function(e) {
+     *   map.removeFeatureState({
+     *     source: 'my-source',
+     *     sourceLayer: 'my-source-layer',
+     *     id: e.features[0].id
+     *   }, 'hover');
+     * });
+     *
     */
     removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
         this.style.removeFeatureState(target, key);
@@ -1953,18 +2187,33 @@ class Map extends Camera {
     }
 
     /**
-     * Gets the state of a feature.
-     * Features are identified by their `id` attribute, which must be an integer or a string that can be
-     * cast to an integer.
+     * Gets the `state` of a feature.
+     * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
+     * Features are identified by their `feature.id` attribute, which can be any number or string.
+     *
+     * _Note: To access the values in a feature's state object for the purposes of styling the feature, use the [`feature-state` expression](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#feature-state)._
      *
      * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
      * @param {string | number} feature.id Unique id of the feature.
-     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
-     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
-     *  required.*
+     * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
      *
-     * @returns {Object} The state of the feature.
+     * @returns {Object} The state of the feature: a set of key-value pairs that was assigned to the feature at runtime.
+     *
+     * @example
+     * // When the mouse moves over the `my-layer` layer,
+     * // get the feature state for the feature under the mouse
+     * map.on('mousemove', 'my-layer', function(e) {
+     *   if (e.features.length > 0) {
+     *     map.getFeatureState({
+     *       source: 'my-source',
+     *       sourceLayer: 'my-source-layer'
+     *       id: e.features[0].id
+     *     });
+     *   }
+     * });
+     *
      */
     getFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }): any {
         return this.style.getFeatureState(feature);
@@ -2160,10 +2409,12 @@ class Map extends Camera {
      * - The map has is moving (or just finished moving)
      * - A transition is in progress
      *
+     * @param {number} paintStartTimeStamp  The time when the animation frame began executing.
+     *
      * @returns {Map} this
      * @private
      */
-    _render() {
+    _render(paintStartTimeStamp: number) {
         let gpuTimer, frameStartTime = 0;
         const extTimerQuery = this.painter.context.extTimerQuery;
         if (this.listens('gpu-timing-frame')) {
@@ -2176,7 +2427,9 @@ class Map extends Camera {
         this.painter.context.setDirty();
         this.painter.setBaseState();
 
-        this._renderTaskQueue.run();
+        this._renderTaskQueue.run(paintStartTimeStamp);
+        // A task queue callback may have fired a user event which may have removed the map
+        if (this._removed) return;
 
         let crossFading = false;
 
@@ -2315,6 +2568,8 @@ class Map extends Camera {
         }
         this._renderTaskQueue.clear();
         this.painter.destroy();
+        this.handlers.destroy();
+        delete this.handlers;
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
@@ -2329,6 +2584,8 @@ class Map extends Camera {
         this._container.classList.remove('mapboxgl-map');
 
         PerformanceUtils.clearMetrics();
+
+        this._removed = true;
         this.fire(new Event('remove'));
     }
 
@@ -2336,13 +2593,17 @@ class Map extends Camera {
      * Trigger the rendering of a single frame. Use this method with custom layers to
      * repaint the map when the layer changes. Calling this multiple times before the
      * next frame is rendered will still result in only a single frame being rendered.
+     * @example
+     * map.triggerRepaint();
+     * @see [Add a 3D model](https://docs.mapbox.com/mapbox-gl-js/example/add-3d-model/)
+     * @see [Add an animated icon to the map](https://docs.mapbox.com/mapbox-gl-js/example/add-image-animated/)
      */
     triggerRepaint() {
         if (this.style && !this._frame) {
-            this._frame = browser.frame((paintStartTimestamp: number) => {
-                PerformanceUtils.frame(paintStartTimestamp);
+            this._frame = browser.frame((paintStartTimeStamp: number) => {
+                PerformanceUtils.frame(paintStartTimeStamp);
                 this._frame = null;
-                this._render();
+                this._render(paintStartTimeStamp);
             });
         }
     }
@@ -2369,6 +2630,8 @@ class Map extends Camera {
      * @type {boolean}
      * @instance
      * @memberof Map
+     * @example
+     * map.showTileBoundaries = true;
      */
     get showTileBoundaries(): boolean { return !!this._showTileBoundaries; }
     set showTileBoundaries(value: boolean) {
@@ -2574,10 +2837,15 @@ function removeNode(node) {
  * `x` and `y` properties representing screen coordinates in pixels.
  *
  * @typedef {Object} Point
+ * @example
+ * var point = new mapboxgl.Point(-77, 38);
  */
 
 /**
  * A {@link Point} or an array of two numbers representing `x` and `y` screen coordinates in pixels.
  *
  * @typedef {(Point | Array<number>)} PointLike
+ * @example
+ * var p1 = new mapboxgl.Point(-77, 38); // a PointLike which is a Point
+ * var p2 = [-77, 38]; // a PointLike which is an array of two numbers
  */
