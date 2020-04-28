@@ -385,12 +385,13 @@ test('Marker with draggable:true fires dragstart, drag, and dragend events at ap
     marker.on('drag',      drag);
     marker.on('dragend',   dragend);
 
-    simulate.mousedown(el);
+    simulate.mousedown(el, {clientX: 0, clientY: 0});
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(el);
+    t.equal(marker.getClickTolerance(), 3, 'subsequent movement exceeds than clickTolerance');
+    simulate.mousemove(el, {clientX: 3, clientY: 1});
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
@@ -419,12 +420,13 @@ test('Marker with draggable:false does not fire dragstart, drag, and dragend eve
     marker.on('drag',      drag);
     marker.on('dragend',   dragend);
 
-    simulate.mousedown(el);
+    simulate.mousedown(el, {clientX: 0, clientY: 0});
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(el);
+    t.equal(marker.getClickTolerance(), 3, 'subsequent movement exceeds than clickTolerance');
+    simulate.mousemove(el, {clientX: 3, clientY: 1});
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
@@ -453,12 +455,13 @@ test('Marker with draggable:true fires dragstart, drag, and dragend events at ap
     marker.on('drag',      drag);
     marker.on('dragend',   dragend);
 
-    simulate.touchstart(el);
+    simulate.touchstart(el, {touches: [{clientX: 0, clientY: 0}]});
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.touchmove(el);
+    t.equal(marker.getClickTolerance(), 3, 'subsequent movement exceeds than clickTolerance');
+    simulate.touchmove(el, {touches: [{clientX: 3, clientY: 1}]});
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
@@ -487,12 +490,13 @@ test('Marker with draggable:false does not fire dragstart, drag, and dragend eve
     marker.on('drag',      drag);
     marker.on('dragend',   dragend);
 
-    simulate.touchstart(el);
+    simulate.touchstart(el, {clientX: 0, clientY: 0});
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.touchmove(el);
+    t.equal(marker.getClickTolerance(), 3, 'subsequent movement exceeds than clickTolerance');
+    simulate.touchmove(el, {clientX: 3, clientY: 1});
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
