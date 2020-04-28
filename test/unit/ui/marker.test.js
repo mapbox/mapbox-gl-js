@@ -405,6 +405,38 @@ test('Marker with draggable:true fires dragstart, drag, and dragend events at ap
     t.end();
 });
 
+test('Marker with draggable:true does NOT fire drag events if mouse movement is below clickTolerance', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    marker.on('dragstart', dragstart);
+    marker.on('drag',      drag);
+    marker.on('dragend',   dragend);
+
+    simulate.mousedown(el, {clientX: 0, clientY: 0});
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    t.equal(marker.getClickTolerance(), 3, 'subsequent movement is below clickTolerance');
+    simulate.mousemove(el, {clientX: 1, clientY: 1});
+
+    simulate.mouseup(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
 test('Marker with draggable:false does not fire dragstart, drag, and dragend events in response to a mouse-triggered drag', (t) => {
     const map = createMap(t);
     const marker = new Marker({})
@@ -470,6 +502,38 @@ test('Marker with draggable:true fires dragstart, drag, and dragend events at ap
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker with draggable:true does NOT fire drag events if touch movement is below clickTolerance', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    marker.on('dragstart', dragstart);
+    marker.on('drag',      drag);
+    marker.on('dragend',   dragend);
+
+    simulate.touchstart(el, {touches: [{clientX: 0, clientY: 0}]});
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    t.equal(marker.getClickTolerance(), 3, 'subsequent movement is below clickTolerance');
+    simulate.touchmove(el, {touches: [{clientX: 1, clientY: 1}]});
+
+    simulate.touchend(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
 
     map.remove();
     t.end();
