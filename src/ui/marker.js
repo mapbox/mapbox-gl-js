@@ -21,6 +21,7 @@ type Options = {
     color?: string,
     scale?: number,
     draggable?: boolean,
+    clickTolerance?: number,
     rotation?: number,
     rotationAlignment?: string,
     pitchAlignment?: string
@@ -36,6 +37,7 @@ type Options = {
  * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
  * @param {number} [options.scale=1] The scale to use for the default marker if options.element is not provided. The default scale corresponds to a height of `41px` and a width of `27px`.
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
+ * @param {?number} [options.clickTolerance=null] A number specifying the click tolerance in pixels. For draggable markers, movement must exceed this tolerance to be treated as a drag. A `null` value inherits click tolerance from `Map`.
  * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
  * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
  * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewport`.
@@ -58,8 +60,11 @@ export default class Marker extends Evented {
     _scale: number;
     _defaultMarker: boolean;
     _draggable: boolean;
+    _clickTolerance: ?number;
+    _isDragging: boolean;
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
     _positionDelta: ?Point;
+    _pointerdownPos: ?Point;
     _rotation: number;
     _pitchAlignment: string;
     _rotationAlignment: string;
@@ -86,6 +91,8 @@ export default class Marker extends Evented {
         this._color = options && options.color || '#3FB1CE';
         this._scale = options && options.scale || 1;
         this._draggable = options && options.draggable || false;
+        this._clickTolerance = options && options.clickTolerance || null;
+        this._isDragging = false;
         this._state = 'inactive';
         this._rotation = options && options.rotation || 0;
         this._rotationAlignment = options && options.rotationAlignment || 'auto';
@@ -483,7 +490,49 @@ export default class Marker extends Evented {
         return this;
     }
 
+    /**
+     * Returns the marker's click tolerance. If the marker's `clickTolerance`
+     * has not been set, then returns the associated `Map`'s click tolerance. If
+     * there is no associated `Map`, returns 0.
+     * @returns {number} the 's click tolerance.
+     */
+    getClickTolerance() {
+        if (this._clickTolerance !== null && this._clickTolerance !== undefined) {
+            return this._clickTolerance;
+        }
+        if (this._map) {
+            return this._map._clickTolerance;
+        }
+        return null;
+    }
+
+    /**
+     * Set the `Marker`'s click tolerance.
+     * @param {number} value the click tolerance in pixels
+     * @returns {void}
+     */
+    setClickTolerance(value: ?number) {
+        if (value === null || value === undefined) {
+            this._clickTolerance = null; // set to inherit from map.
+        }
+        const numeric = +value;
+        if (!Number.isNaN(numeric)) {
+            this._clickTolerance = numeric;
+        }
+    }
+
+    _hasMovedBeyondClickTolerance(point: Point) {
+        const clickTolerance = this.getClickTolerance();
+        if (clickTolerance === null) return false;
+        return point.distSqr(this._pointerdownPos) >= clickTolerance ** 2;
+    }
+
     _onMove(e: MapMouseEvent | MapTouchEvent) {
+        if (!this._isDragging) {
+            this._isDragging = this._hasMovedBeyondClickTolerance(e.point);
+        }
+        if (!this._isDragging) return;
+
         this._pos = e.point.sub(this._positionDelta);
         this._lngLat = this._map.unproject(this._pos);
         this.setLngLat(this._lngLat);
@@ -524,6 +573,8 @@ export default class Marker extends Evented {
         // revert to normal pointer event handling
         this._element.style.pointerEvents = 'auto';
         this._positionDelta = null;
+        this._pointerdownPos = null;
+        this._isDragging = false;
         this._map.off('mousemove', this._onMove);
         this._map.off('touchmove', this._onMove);
 
@@ -555,6 +606,8 @@ export default class Marker extends Evented {
             // If we don't do this, the marker 'jumps' to the click position
             // creating a jarring UX effect.
             this._positionDelta = e.point.sub(this._pos).add(this._offset);
+
+            this._pointerdownPos = e.point;
 
             this._state = 'pending';
             this._map.on('mousemove', this._onMove);
