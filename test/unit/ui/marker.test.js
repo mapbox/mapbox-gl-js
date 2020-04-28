@@ -7,11 +7,11 @@ import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import simulate from '../../util/simulate_interaction';
 
-function createMap(t) {
+function createMap(t, options = {}) {
     const container = window.document.createElement('div');
     Object.defineProperty(container, 'clientWidth', {value: 512});
     Object.defineProperty(container, 'clientHeight', {value: 512});
-    return globalCreateMap(t, {container});
+    return globalCreateMap(t, {container, ...options});
 }
 
 test('Marker uses a default marker element with an appropriate offset', (t) => {
@@ -326,6 +326,41 @@ test('Popup anchors around default Marker', (t) => {
     marker.setLngLat(map.unproject([mapHeight - markerRight, mapHeight]));
     t.ok(marker.getPopup()._container.classList.contains('mapboxgl-popup-anchor-bottom-right'), 'popup anchors top left of marker');
 
+    t.end();
+});
+
+test('Marker#getClickTolerance gets clickTolerance set via options', (t)  => {
+    const marker = new Marker({clickTolerance: 5});
+    t.equal(marker.getClickTolerance(), 5);
+    t.end();
+});
+
+test('Marker#getClickTolerance gets map clickTolerance if clickTolerance has not been set', (t)  => {
+    const map = createMap(t, {clickTolerance: 4});
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map);
+    t.equal(marker.getClickTolerance(), 4);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker#getClickTolerance uses Marker clickTolerance in favor of Map Click Tolerance if both specified', (t)  => {
+    const map = createMap(t, {clickTolerance: 4});
+    const marker = new Marker({clickTolerance: 5})
+        .setLngLat([0, 0])
+        .addTo(map);
+    t.equal(marker.getClickTolerance(), 5);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker#setClickTolerance sets the click tolerance', (t)  => {
+    const marker = new Marker({clickTolerance: 5});
+    marker.setClickTolerance(10);
+    t.equal(marker.getClickTolerance(), 10);
     t.end();
 });
 
