@@ -8,11 +8,10 @@ import browser from '../../util/browser';
 import window from '../../util/window';
 import {number as interpolate} from '../../style-spec/util/interpolate';
 import LngLat from '../../geo/lng_lat';
-import {Event} from '../../util/evented';
 
 import type Map from '../map';
+import type HandlerManager from '../handler_manager';
 import type Point from '@mapbox/point-geometry';
-import type {TaskID} from '../../util/task_queue';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
@@ -52,7 +51,8 @@ class ScrollZoomHandler {
     _easing: ?((number) => number);
     _prevEase: ?{start: number, duration: number, easing: (_: number) => number};
 
-    _frameId: ?TaskID;
+    _frameId: ?boolean;
+    _handler: HandlerManager;
 
     _defaultZoomRate: number;
     _wheelZoomRate: number;
@@ -60,9 +60,10 @@ class ScrollZoomHandler {
     /**
      * @private
      */
-    constructor(map: Map) {
+    constructor(map: Map, handler: HandlerManager) {
         this._map = map;
         this._el = map.getCanvasContainer();
+        this._handler = handler;
 
         this._delta = 0;
 
@@ -80,15 +81,21 @@ class ScrollZoomHandler {
     /**
      * Set the zoom rate of a trackpad
      * @param {number} [zoomRate=1/100] The rate used to scale trackpad movement to a zoom value.
+     * @example
+     * // Speed up trackpad zoom
+     * map.scrollZoom.setZoomRate(1/25);
      */
     setZoomRate(zoomRate: number) {
         this._defaultZoomRate = zoomRate;
     }
 
     /**
-     * Set the zoom rate of a mouse wheel
-     * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
-     */
+    * Set the zoom rate of a mouse wheel
+    * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
+    * @example
+    * // Slow down zoom of mouse wheel
+    * map.scrollZoom.setWheelZoomRate(1/600);
+    */
     setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
     }
@@ -108,12 +115,13 @@ class ScrollZoomHandler {
     * progress.
     */
     isActive() {
-        return !!this._active;
+        return !!this._active || this._finishTimeout !== undefined;
     }
 
     isZooming() {
         return !!this._zooming;
     }
+
     /**
      * Enables the "scroll to zoom" interaction.
      *
@@ -142,7 +150,7 @@ class ScrollZoomHandler {
         this._enabled = false;
     }
 
-    onWheel(e: WheelEvent) {
+    wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
@@ -189,7 +197,7 @@ class ScrollZoomHandler {
         if (this._type) {
             this._lastWheelEvent = e;
             this._delta -= value;
-            if (!this.isActive()) {
+            if (!this._active) {
                 this._start(e);
             }
         }
@@ -200,7 +208,7 @@ class ScrollZoomHandler {
     _onTimeout(initialEvent: any) {
         this._type = 'wheel';
         this._delta -= this._lastValue;
-        if (!this.isActive()) {
+        if (!this._active) {
             this._start(initialEvent);
         }
     }
@@ -209,19 +217,17 @@ class ScrollZoomHandler {
         if (!this._delta) return;
 
         if (this._frameId) {
-            this._map._cancelRenderFrame(this._frameId);
             this._frameId = null;
         }
 
         this._active = true;
         if (!this.isZooming()) {
             this._zooming = true;
-            this._map.fire(new Event('movestart', {originalEvent: e}));
-            this._map.fire(new Event('zoomstart', {originalEvent: e}));
         }
 
         if (this._finishTimeout) {
             clearTimeout(this._finishTimeout);
+            delete this._finishTimeout;
         }
 
         const pos = DOM.mousePos(this._el, e);
@@ -229,11 +235,17 @@ class ScrollZoomHandler {
         this._around = LngLat.convert(this._aroundCenter ? this._map.getCenter() : this._map.unproject(pos));
         this._aroundPoint = this._map.transform.locationPoint(this._around);
         if (!this._frameId) {
-            this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+            this._frameId = true;
+            this._handler._triggerRenderFrame();
         }
     }
 
+    renderFrame() {
+        return this._onScrollFrame();
+    }
+
     _onScrollFrame() {
+        if (!this._frameId) return;
         this._frameId = null;
 
         if (!this.isActive()) return;
@@ -271,38 +283,44 @@ class ScrollZoomHandler {
         const easing = this._easing;
 
         let finished = false;
+        let zoom;
         if (this._type === 'wheel' && startZoom && easing) {
             assert(easing && typeof startZoom === 'number');
 
             const t = Math.min((browser.now() - this._lastWheelEventTime) / 200, 1);
             const k = easing(t);
-            tr.zoom = interpolate(startZoom, targetZoom, k);
+            zoom = interpolate(startZoom, targetZoom, k);
             if (t < 1) {
                 if (!this._frameId) {
-                    this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+                    this._frameId = true;
                 }
             } else {
                 finished = true;
             }
         } else {
-            tr.zoom = targetZoom;
+            zoom = targetZoom;
             finished = true;
         }
 
-        tr.setLocationAtPoint(this._around, this._aroundPoint);
-
-        this._map.fire(new Event('move', {originalEvent: this._lastWheelEvent}));
-        this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
+        this._active = true;
 
         if (finished) {
             this._active = false;
             this._finishTimeout = setTimeout(() => {
                 this._zooming = false;
-                this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
-                this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
+                this._handler._triggerRenderFrame();
                 delete this._targetZoom;
+                delete this._finishTimeout;
             }, 200);
         }
+
+        return {
+            noInertia: true,
+            needsRenderFrame: !finished,
+            zoomDelta: zoom - tr.zoom,
+            around: this._aroundPoint,
+            originalEvent: this._lastWheelEvent
+        };
     }
 
     _smoothOutEasing(duration: number) {
@@ -327,6 +345,10 @@ class ScrollZoomHandler {
         };
 
         return easing;
+    }
+
+    reset() {
+        this._active = false;
     }
 }
 

@@ -1,6 +1,6 @@
 import {test} from '../../util/test';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
-import FormatSectionOverride from '../../../src/style-spec/expression/definitions/format_section_override';
+import FormatSectionOverride from '../../../src/style/format_section_override';
 import properties from '../../../src/style/style_layer/symbol_style_layer_properties';
 
 function createSymbolLayer(layerProperties) {

@@ -38,7 +38,7 @@ tap.beforeEach(function (done) {
     });
 
     // $FlowFixMe the assignment is intentional
-    console.error = () => this.fail(`console.error called -- please adjust your test (maybe stub console.error?)`);
+    console.error = (msg) => this.fail(`console.error called -- please adjust your test (maybe stub console.error?)\n${msg}`);
     // $FlowFixMe the assignment is intentional
     console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
 

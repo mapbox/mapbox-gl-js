@@ -186,6 +186,8 @@ test('ScrollZoomHandler', (t) => {
 
         clock.tick(200);
 
+        map._renderTaskQueue.run();
+
         t.equal(startCount, 1);
         t.equal(endCount, 1);
 
@@ -229,6 +231,7 @@ test('ScrollZoomHandler', (t) => {
         }
 
         clock.tick(200);
+        map._renderTaskQueue.run();
 
         t.equal(startCount, 1);
         t.equal(endCount, 1);

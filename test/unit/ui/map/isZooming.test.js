@@ -53,7 +53,9 @@ test('Map#isZooming returns true when scroll zooming', (t) => {
     map._renderTaskQueue.run();
 
     now += 400;
-    map._renderTaskQueue.run();
+    setTimeout(() => {
+        map._renderTaskQueue.run();
+    }, 400);
 });
 
 test('Map#isZooming returns true when double-click zooming', (t) => {

@@ -1,7 +1,7 @@
 {
   "name": "@mapbox/mapbox-gl-style-spec",
   "description": "a specification for mapbox gl styles",
-  "version": "13.14.0-dev",
+  "version": "13.15.0-dev",
   "author": "Mapbox",
   "keywords": [
     "mapbox",
@@ -14,7 +14,7 @@
   "scripts": {
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
-    "prepublish": "yarn copy-flow-typed && yarn build",
+    "prepublish": "git clean -fdx && yarn copy-flow-typed && yarn build",
     "postpublish": "rm -r flow-typed dist/index.js"
   },
   "repository": {

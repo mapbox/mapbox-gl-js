@@ -1,6 +1,7 @@
 {
   "query-tests/regressions/mapbox-gl-js#4494": "https://github.com/mapbox/mapbox-gl-js/issues/2716",
   "render-tests/geojson/inline-linestring-fill": "current behavior is arbitrary",
+  "render-tests/line-dasharray/case/square": "https://github.com/mapbox/mapbox-gl-js/issues/9531",
   "render-tests/map-mode/static": "https://github.com/mapbox/mapbox-gl-js/issues/5649",
   "render-tests/map-mode/tile": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/map-mode/tile-avoid-edges": "skip - mapbox-gl-js does not support tile-mode",
@@ -22,5 +23,6 @@
   "render-tests/text-size/zero": "https://github.com/mapbox/mapbox-gl-js/issues/9161",
   "render-tests/text-variable-anchor/left-top-right-bottom-offset-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/tile-mode/streets-v11": "skip - mapbox-gl-js does not support tile-mode",
-  "render-tests/within/paint-line": "https://github.com/mapbox/mapbox-gl-js/issues/7023"
+  "render-tests/within/paint-line": "https://github.com/mapbox/mapbox-gl-js/issues/7023",
+  "render-tests/icon-text-fit/text-variable-anchor-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode"
 }

@@ -2,8 +2,6 @@
 
 import DOM from '../../util/dom';
 
-import {bindAll} from '../../util/util';
-import window from '../../util/window';
 import {Event} from '../../util/evented';
 
 import type Map from '../map';
@@ -27,18 +25,12 @@ class BoxZoomHandler {
      * @private
      */
     constructor(map: Map, options: {
-        clickTolerance?: number
+        clickTolerance: number
     }) {
         this._map = map;
         this._el = map.getCanvasContainer();
         this._container = map.getContainer();
         this._clickTolerance = options.clickTolerance || 1;
-
-        bindAll([
-            '_onMouseMove',
-            '_onMouseUp',
-            '_onKeyDown'
-        ], this);
     }
 
     /**
@@ -81,21 +73,19 @@ class BoxZoomHandler {
         this._enabled = false;
     }
 
-    onMouseDown(e: MouseEvent) {
+    mousedown(e: MouseEvent, point: Point) {
         if (!this.isEnabled()) return;
         if (!(e.shiftKey && e.button === 0)) return;
 
-        window.document.addEventListener('mousemove', this._onMouseMove, false);
-        window.document.addEventListener('keydown', this._onKeyDown, false);
-        window.document.addEventListener('mouseup', this._onMouseUp, false);
-
         DOM.disableDrag();
-        this._startPos = this._lastPos = DOM.mousePos(this._el, e);
+        this._startPos = this._lastPos = point;
         this._active = true;
     }
 
-    _onMouseMove(e: MouseEvent) {
-        const pos = DOM.mousePos(this._el, e);
+    mousemoveWindow(e: MouseEvent, point: Point) {
+        if (!this._active) return;
+
+        const pos = point;
 
         if (this._lastPos.equals(pos) || (!this._box && pos.dist(this._startPos) < this._clickTolerance)) {
             return;
@@ -121,38 +111,39 @@ class BoxZoomHandler {
         this._box.style.height = `${maxY - minY}px`;
     }
 
-    _onMouseUp(e: MouseEvent) {
+    mouseupWindow(e: MouseEvent, point: Point) {
+        if (!this._active) return;
+
         if (e.button !== 0) return;
 
         const p0 = this._startPos,
-            p1 = DOM.mousePos(this._el, e);
+            p1 = point;
 
-        this._finish();
+        this.reset();
 
         DOM.suppressClick();
 
         if (p0.x === p1.x && p0.y === p1.y) {
             this._fireEvent('boxzoomcancel', e);
         } else {
-            this._map
-                .fitScreenCoordinates(p0, p1, this._map.getBearing(), {linear: true})
-                .fire(new Event('boxzoomend', {originalEvent: e}));
+            this._map.fire(new Event('boxzoomend', {originalEvent: e}));
+            return {
+                cameraAnimation: map => map.fitScreenCoordinates(p0, p1, this._map.getBearing(), {linear: true})
+            };
         }
     }
 
-    _onKeyDown(e: KeyboardEvent) {
+    keydown(e: KeyboardEvent) {
+        if (!this._active) return;
+
         if (e.keyCode === 27) {
-            this._finish();
+            this.reset();
             this._fireEvent('boxzoomcancel', e);
         }
     }
 
-    _finish() {
+    reset() {
         this._active = false;
-
-        window.document.removeEventListener('mousemove', this._onMouseMove, false);
-        window.document.removeEventListener('keydown', this._onKeyDown, false);
-        window.document.removeEventListener('mouseup', this._onMouseUp, false);
 
         this._container.classList.remove('mapboxgl-crosshair');
 
