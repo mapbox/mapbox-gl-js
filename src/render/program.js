@@ -88,24 +88,10 @@ class Program<Us: UniformBindings> {
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
         gl.attachShader(this.program, vertexShader);
 
-        // Manually bind layout attributes in the order defined by their
-        // ProgramInterface so that we don't dynamically link an unused
-        // attribute at position 0, which can cause rendering to fail for an
-        // entire layer (see #4607, #4728)
-
-        this.numAttributes = allAttrInfo.length;
-        for (let i = 0; i < this.numAttributes; i++) {
-            gl.bindAttribLocation(this.program, i, allAttrInfo[i]);
-        }
-
-        gl.linkProgram(this.program);
-        assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program): any));
-
-        gl.deleteShader(vertexShader);
-        gl.deleteShader(fragmentShader);
-
         this.attributes = {};
         const uniformLocations = {};
+
+        this.numAttributes = allAttrInfo.length;
 
         for (let i = 0; i < this.numAttributes; i++) {
             if (allAttrInfo[i]) {
@@ -113,6 +99,12 @@ class Program<Us: UniformBindings> {
                 this.attributes[allAttrInfo[i]] = i;
             }
         }
+
+        gl.linkProgram(this.program);
+        assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program): any));
+
+        gl.deleteShader(vertexShader);
+        gl.deleteShader(fragmentShader);
 
         const uniformsArray = Array.from(allUniformsInfo);
         for (let it = 0; it < uniformsArray.length; it++) {

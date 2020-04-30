@@ -502,9 +502,13 @@ export default class ProgramConfiguration {
         const result = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof CrossFadedCompositeBinder || binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder) {
+            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder) {
                 for (let i = 0; i < binder.paintVertexAttributes.length; i++) {
                     result.push(binder.paintVertexAttributes[i].name);
+                }
+            } else if (binder instanceof CrossFadedCompositeBinder) {
+                for (let i = 0; i < patternAttributes.members.length; i++) {
+                    result.push(patternAttributes.members[i].name);
                 }
             }
         }
