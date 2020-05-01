@@ -121,7 +121,7 @@ class VectorTileSource extends Evented implements Source {
         });
     }
 
-    setURL(url: string) {
+    setUrl(url: string) {
         this.setSourceProperty(() => {
             this.url = url;
             this._options.url = url;
