@@ -75,6 +75,8 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
 
     const posMatrix = coord.posMatrix;
     const program = painter.useProgram('debug');
+    const tile = sourceCache.getTileByID(coord.key);
+    if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
     const depthMode = DepthMode.disabled;
     const stencilMode = StencilMode.disabled;
@@ -89,7 +91,7 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
         debugUniformValues(posMatrix, Color.red), id,
         painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
 
-    const tileRawData = sourceCache.getTileByID(coord.key).latestRawTileData;
+    const tileRawData = tile.latestRawTileData;
     const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
     const tileSizeKb = Math.floor(tileByteLength / 1024);
     const tileSize = sourceCache.getTile(coord).tileSize;

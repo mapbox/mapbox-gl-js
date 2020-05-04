@@ -27,8 +27,12 @@ class Frustum {
 
         // Transform frustum corner points from clip space to tile space
         const frustumCoords = clipSpaceCorners
-            .map(v => vec4.transformMat4([], v, invProj))
-            .map(v => vec4.scale([], v, 1.0 / v[3] / worldSize * scale));
+            .map(v => {
+                const s = vec4.transformMat4([], v, invProj);
+                const k = 1.0 / s[3] / worldSize * scale;
+                // Z scale in meters.
+                return vec4.mul(s, s, [k, k, 1.0 / s[3], k]);
+            });
 
         const frustumPlanePointIndices = [
             [0, 1, 2],  // near
@@ -83,6 +87,11 @@ class Aabb {
     distanceY(point: Array<number>): number {
         const pointOnAabb = Math.max(Math.min(this.max[1], point[1]), this.min[1]);
         return pointOnAabb - point[1];
+    }
+
+    distanceZ(point: Array<number>): number {
+        const pointOnAabb = Math.max(Math.min(this.max[2], point[2]), this.min[2]);
+        return pointOnAabb - point[2];
     }
 
     // Performs a frustum-aabb intersection test. Returns 0 if there's no intersection,

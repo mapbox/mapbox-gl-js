@@ -11,6 +11,7 @@ import {vec4, mat4, mat2, vec2, vec3, quat} from 'gl-matrix';
 import {Aabb, Frustum} from '../util/primitives.js';
 import EdgeInsets from './edge_insets';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
+import assert from 'assert';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 import type {Elevation} from '../terrain/elevation';
@@ -422,6 +423,7 @@ class Transform {
      * @param {boolean} options.roundZoom
      * @param {boolean} options.reparseOverscaled
      * @param {boolean} options.renderWorldCopies
+     * @param {boolean} options.useElevationData
      * @returns {Array<OverscaledTileID>} OverscaledTileIDs
      * @private
      */
@@ -432,7 +434,8 @@ class Transform {
             maxzoom?: number,
             roundZoom?: boolean,
             reparseOverscaled?: boolean,
-            renderWorldCopies?: boolean
+            renderWorldCopies?: boolean,
+            useElevationData?: boolean
         }
     ): Array<OverscaledTileID> {
         let z = this.coveringZoomLevel(options);
@@ -442,9 +445,19 @@ class Transform {
         if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
 
         const centerCoord = MercatorCoordinate.fromLngLat(this.center);
-        const numTiles = Math.pow(2, z);
+        const numTiles = 1 << z;
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
         const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
+        const cameraCoord = this.pointCoordinate(this.getCameraPoint());
+        const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
+        const cameraToCenterDistance = this.cameraToCenterDistance / this.worldSize * numTiles;
+        const cameraAltitude = Math.cos(this._pitch) * cameraToCenterDistance / meterToTile;
+        const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude];
+        // Let's consider an example for !roundZoom: e.g. tileZoom 16 is used from zoom 16 all the way to zoom 16.99.
+        // This would mean that the minimal distance to split would be based on distance from camera to center of 16.99 zoom.
+        // The same is already incorporated in logic behind roundZoom for raster (so there is no adjustment needed in following line).
+        // 0.02 added to compensate for precision errors, see "coveringTiles for terrain" test in transform.test.js.
+        const zoomSplitDistance = this.cameraToCenterDistance / options.tileSize * (options.roundZoom ? 1 : 0.502);
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         let minZoom = options.minzoom || 0;
@@ -452,14 +465,14 @@ class Transform {
         if (this.pitch <= 60.0 && this._edgeInsets.top < 0.1 && !this._elevation)
             minZoom = z;
 
-        // There should always be a certain number of maximum zoom level tiles surrounding the center location
-        const radiusOfMaxLvlLodInTiles = 2;
-
+        const maxRange = this.elevation ? this.elevation.exaggeration() * 10000 : 0;
         const newRootTile = (wrap: number): any => {
+            const max = maxRange;
+            const min = -maxRange;
             return {
                 // With elevation, this._elevation (to do) provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
-                aabb: new Aabb([wrap * numTiles, 0, 0], [(wrap + 1) * numTiles, numTiles, this._elevation ? Number.MAX_VALUE : 0]),
+                aabb: new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]),
                 zoom: 0,
                 x: 0,
                 y: 0,
@@ -473,6 +486,52 @@ class Transform {
         const result = [];
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
+
+        const samples: Array<vec3> = [[0, 0, 0], [0, EXTENT - 1, 0], [EXTENT / 2 - 1, EXTENT / 2 - 1, 0], [EXTENT - 1, 0, 0], [EXTENT - 1, EXTENT - 1, 0]];
+        const getAABBFromElevation = (aabb, tileID) => {
+            // Extreme ruggedness > 900m for 1km tile is rare: https://download.osgeo.org/qgis/doc/reference-docs/Terrain_Ruggedness_Index.pdf
+            // We could use e.g. const maxRuggedness = 0.1 / meterToTile as additional buffer.
+            // For now, sampling tile corners and center with no additional buffer: the idea is to
+            // identify cases and amount of maxRuggedness buffer needed in follow up patches.
+            assert(this._elevation); // Checked to silence flow.
+            if (this._elevation && this._elevation.getForTilePoints(tileID, samples)) {
+                aabb.min[2] = aabb.max[2] = samples[0][2];
+                for (let i = 1; i < samples.length; i++) {
+                    const val = samples[i];
+                    aabb.min[2] = Math.min(val[2], aabb.min[2]);
+                    aabb.max[2] = Math.max(val[2], aabb.max[2]);
+                }
+                aabb.min[2] -= this._elevationAtCenter;
+                aabb.max[2] -= this._elevationAtCenter;
+                aabb.center[2] = interpolate(aabb.min[2], aabb.max[2], 0.5);
+            }
+        };
+        const square = a => a * a;
+        const cameraHeightSqr = square(cameraAltitude * meterToTile); // in tile coordinates.
+
+        // Scale distance to split for acute angles.
+        // dzSqr: z component of camera to tile distance, square.
+        // dSqr: 3D distance of camera to tile, square.
+        const distToSplitScale = (dzSqr, dSqr) => {
+            // When the angle between camera to tile ray and tile plane is smaller
+            // than acuteAngleThreshold, scale the distance to split. Scaling is adaptive: smaller
+            // the angle, the scale gets lower value.
+            const acuteAngleThresholdSin = 0.33; // Math.sin(19)
+            const stretchTile = 1.1;
+            // Distances longer than 'dz / acuteAngleThresholdSin' gets scaled
+            // following geometric series sum: every next dz length in distance can be
+            // 'stretchTile times' longer. It is further, the angle is sharper. Total,
+            // adjusted, distance would then be:
+            // = dz / acuteAngleThresholdSin + (dz * stretchTile + dz * stretchTile ^ 2 + ... + dz * stretchTile ^ k),
+            // where k = (d - dz / acuteAngleThresholdSin) / dz = d / dz - 1 / acuteAngleThresholdSin;
+            // = dz / acuteAngleThresholdSin + dz * ((stretchTile ^ (k + 1) - 1) / (stretchTile - 1) - 1)
+            // or put differently, given that k is based on d and dz, tile on distance d could be used on distance scaled by:
+            // 1 / acuteAngleThresholdSin + (stretchTile ^ (k + 1) - 1) / (stretchTile - 1) - 1
+            if (dSqr * square(acuteAngleThresholdSin) < dzSqr) return 1.0; // Early return, no scale.
+            const r = Math.sqrt(dSqr / dzSqr);
+            const k =  r - 1 / acuteAngleThresholdSin;
+            return r / (1 / acuteAngleThresholdSin + (Math.pow(stretchTile, k + 1) - 1) / (stretchTile - 1) - 1);
+        };
 
         if (this._renderWorldCopies) {
             // Render copy of the globe thrice on both sides
@@ -500,21 +559,26 @@ class Transform {
                 fullyVisible = intersectResult === 2;
             }
 
-            const distanceX = it.aabb.distanceX(centerPoint);
-            const distanceY = it.aabb.distanceY(centerPoint);
-            const longestDim = Math.max(Math.abs(distanceX), Math.abs(distanceY));
-
-            // We're using distance based heuristics to determine if a tile should be split into quadrants or not.
-            // radiusOfMaxLvlLodInTiles defines that there's always a certain number of maxLevel tiles next to the map center.
-            // Using the fact that a parent node in quadtree is twice the size of its children (per dimension)
-            // we can define distance thresholds for each relative level:
-            // f(k) = offset + 2 + 4 + 8 + 16 + ... + 2^k. This is the same as "offset+2^(k+1)-2"
-            const distToSplit = radiusOfMaxLvlLodInTiles + (1 << (maxZoom - it.zoom)) - 2;
-
-            // Have we reached the target depth or is the tile too far away to be any split further?
-            if (it.zoom === maxZoom || (longestDim > distToSplit && it.zoom >= minZoom)) {
+            // Have we reached the target depth?
+            if (it.zoom === maxZoom) {
                 result.push({
-                    tileID: new OverscaledTileID(it.zoom === maxZoom ? overscaledZ : it.zoom, it.wrap, it.zoom, x, y),
+                    tileID: it.tileID ? it.tileID : new OverscaledTileID(overscaledZ, it.wrap, it.zoom, x, y),
+                    distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x, centerPoint[1] - 0.5 - y])
+                });
+                continue;
+            }
+
+            const dx = it.aabb.distanceX(cameraPoint);
+            const dy = it.aabb.distanceY(cameraPoint);
+            const dzSqr = options.useElevationData ? square(it.aabb.distanceZ(cameraPoint) * meterToTile) : cameraHeightSqr;
+            const distanceSqr = dx * dx + dy * dy + dzSqr;
+
+            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance;
+            const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
+            // Is the tile too far away to be any split further?
+            if (distanceSqr > distToSplitSqr && it.zoom >= minZoom) {
+                result.push({
+                    tileID: it.tileID ? it.tileID : new OverscaledTileID(it.zoom, it.wrap, it.zoom, x, y),
                     distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x, centerPoint[1] - 0.5 - y])
                 });
                 continue;
@@ -524,11 +588,23 @@ class Transform {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
 
-                stack.push({aabb: it.aabb.quadrant(i), zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible});
+                const aabb = it.aabb.quadrant(i);
+                let tileID = null;
+                if (options.useElevationData && it.zoom > maxZoom - 6) {
+                    // Using elevation data for tiles helps clipping out tiles that are not visible and
+                    // precise distance calculation. This is an optimization - tiles with it.zoom <= maxZoom - 6 are always
+                    // considered slightly closer: aabb.distanceZ() there evaluates to 0 as min/max[3] = -/+ maxRange.
+                    tileID = new OverscaledTileID(it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
+                    getAABBFromElevation(aabb, tileID);
+                }
+                stack.push({aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID});
             }
         }
-
-        return result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
+        const cover = result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
+        // Relax the assertion on terrain, on high zoom we use distance to center of tile
+        // while camera might be closer to selected center of map.
+        assert(!cover.length || options.useElevationData || cover[0].overscaledZ === overscaledZ);
+        return cover;
     }
 
     resize(width: number, height: number) {
@@ -871,7 +947,9 @@ class Transform {
             mat4.translate(m, m, [0, 0, -elevationAtCenter]);
         }
         this.projMatrix = m;
-        this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
+        // For tile cover calculation, use inverted of base (non elevated) matrix
+        // as tile elevations are in tile coordinates and relative to center elevation.
+        this.invProjMatrix = mat4.invert(new Float64Array(16), projMatrixBase);
 
         const view = new Float32Array(16);
         mat4.identity(view);

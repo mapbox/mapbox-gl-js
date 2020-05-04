@@ -3,6 +3,7 @@
 import Point from '@mapbox/point-geometry';
 import SourceCache from '../source/source_cache';
 import {OverscaledTileID} from '../source/tile_id';
+import Tile from '../source/tile';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import {RasterBoundsArray, TriangleIndexArray} from '../data/array_types';
 import SegmentVector from '../data/segment';
@@ -30,7 +31,6 @@ import {clippingMaskUniformValues} from '../render/program/clipping_mask_program
 import {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 
 import type Map from '../ui/map';
-import type Tile from '../source/tile';
 import type Painter from '../render/painter';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
@@ -40,7 +40,6 @@ import type Context from '../gl/context';
 import type DEMData from '../data/dem_data';
 import type {UniformLocations} from '../render/uniform_binding';
 import type Transform from '../geo/transform';
-import type {Callback} from '../types/callback';
 
 export const GRID_DIM = 128;
 
@@ -72,16 +71,34 @@ class ProxySourceCache extends SourceCache {
         this.used = this._sourceLoaded = true;
     }
 
-    // Override as tile shouldn't go through loading state: always loaded to prevent
-    // using stale tiles.
-    _loadTile(tile: Tile, callback: Callback<void>) {
-        tile.state = 'loaded';
-        callback(null);
-    }
+    // Override for transient nature of cover here: don't cache and retain.
+    update(transform: Transform, _?: boolean) {
+        this.transform = transform;
+        const idealTileIDs = transform.coveringTiles({
+            tileSize: this._source.tileSize,
+            minzoom: this._source.minzoom,
+            maxzoom: this._source.maxzoom,
+            roundZoom: this._source.roundZoom,
+            reparseOverscaled: this._source.reparseOverscaled,
+            useElevationData: true
+        });
 
-    _unloadTile(tile: Tile) {
-        tile.state = 'unloaded';
-        // tile.texture is managed by Terrain.pool.
+        const incoming: {[string]: string} = idealTileIDs.reduce((acc, tileID) => {
+            acc[tileID.key] = '';
+            if (!this._tiles[tileID.key]) {
+                const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor());
+                tile.state = 'loaded';
+                this._tiles[tileID.key] = tile;
+            }
+            return acc;
+        }, {});
+
+        for (const id in this._tiles) {
+            if (!(id in incoming)) {
+                this._tiles[id].state = 'unloaded';
+                delete this._tiles[id];
+            }
+        }
     }
 }
 
@@ -138,6 +155,8 @@ export class Terrain extends Elevation {
     poolIndex: number;
     renderedToTile: boolean;
 
+    _findCoveringTileCache: {[string]: {[string]: ?string}};
+
     constructor(painter: Painter, style: Style) {
         super();
         this.painter = painter;
@@ -163,6 +182,7 @@ export class Terrain extends Elevation {
         this._overlapStencilMode = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, 0, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
         this._previousZoom = painter.transform.zoom;
         this.pool = [];
+        this._findCoveringTileCache = {};
 
         style.on('data', (event) => {
             this.styleDirty = this.styleDirty || event.dataType === 'style';
@@ -188,19 +208,32 @@ export class Terrain extends Elevation {
         const demTileSize = this.sourceCache.getSource().tileSize;
         this.valid = true;
         const tr = transform;
-        tr.updateElevation();
-        this.sourceCache.usedForTerrain = true;
 
-        if (this.sourceCache.used) {
-            // Use higher resolution for terrain, the same one that is used for hillshade.
-            this.sourceCache.update(tr, true);
-        } else {
-            // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
-            const originalZoom = tr.zoom;
-            tr.zoom -= tr.scaleZoom(demTileSize / GRID_DIM);
-            this.sourceCache.update(tr, true);
-            tr.zoom = originalZoom;
+        const updateSourceCache = () => {
+            if (this.sourceCache.used) {
+                // Use higher resolution for terrain, the same one that is used for hillshade.
+                this.sourceCache.update(tr, true);
+            } else {
+                // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
+                const originalZoom = tr.zoom;
+                tr.zoom -= tr.scaleZoom(demTileSize / GRID_DIM);
+                this.sourceCache.update(tr, true);
+                tr.zoom = originalZoom;
+            }
+        };
+
+        if (!this.sourceCache.usedForTerrain) {
+            // When toggling terrain on/off load available terrain tiles from cache
+            // before reading elevation at center.
+            this.sourceCache.usedForTerrain = true;
+            updateSourceCache();
         }
+
+        tr.updateElevation();
+        updateSourceCache();
+
+        this._findCoveringTileCache = {};
+        this._findCoveringTileCache[sourceId] = {};
         this._depthDone = false;
     }
 
@@ -641,26 +674,71 @@ export class Terrain extends Elevation {
         return new ProxiedTileID(tile.tileID, proxyTileID.key, matrix);
     }
 
+    // A variant of SourceCache.findLoadedParent that considers only visible
+    // tiles (and doesn't check SourceCache._cache). Another difference is in
+    // caching: "not found" results along the lookup are cached, to speedup the lookup.
     _findTileCoveringTileID(tileID: OverscaledTileID, sourceCache: SourceCache): ?Tile {
-        let sourceTileID;
+        let tile = sourceCache.getTile(tileID);
+        if (tile && tile.hasData()) return tile;
+
+        let lookup = this._findCoveringTileCache[sourceCache.id];
+        if (!lookup) {
+            lookup = this._findCoveringTileCache[sourceCache.id] = {};
+        }
+
+        const key = lookup[tileID.key];
+        if (key !== undefined) return key ? sourceCache.getTileByID(key) : null;
+
+        let sourceTileID = tileID;
+        let z = sourceTileID.overscaledZ;
         const maxzoom = sourceCache.getSource().maxzoom;
+        const minzoom = sourceCache.getSource().minzoom;
+        const path = [];
         if (tileID.canonical.z >= maxzoom) {
             const downscale = tileID.canonical.z - maxzoom;
-            const overscaledZ = sourceCache.getSource().reparseOverscaled ?
-                Math.max(tileID.canonical.z + 2, sourceCache.transform.tileZoom) : maxzoom;
-            sourceTileID = new OverscaledTileID(overscaledZ, tileID.wrap, maxzoom,
-                tileID.canonical.x >> downscale, tileID.canonical.y >> downscale);
-        } else {
-            sourceTileID = tileID;
-        }
-        let tile = sourceCache.getTile(sourceTileID);
-        if (!tile || !tile.hasData()) {
-            tile = sourceCache.findLoadedParent(sourceTileID, 0);
-            while (tile && !sourceCache.getTile(tile.tileID)) {
-                tile = sourceCache.findLoadedParent(tile.tileID, 0);
+            if (sourceCache.getSource().reparseOverscaled) {
+                z = Math.max(tileID.canonical.z + 2, sourceCache.transform.tileZoom);
+                sourceTileID = new OverscaledTileID(z, tileID.wrap, maxzoom,
+                    tileID.canonical.x >> downscale, tileID.canonical.y >> downscale);
+            } else if (downscale !== 0) {
+                z = maxzoom;
+                sourceTileID = new OverscaledTileID(z, tileID.wrap, maxzoom,
+                    tileID.canonical.x >> downscale, tileID.canonical.y >> downscale);
             }
         }
-        return (tile && tile.hasData()) ? tile : null;
+        if (sourceTileID.key !== tileID.key) {
+            path.push(sourceTileID.key);
+            tile = sourceCache.getTile(sourceTileID);
+        }
+
+        const pathToLookup = (key) => {
+            path.forEach(id => { lookup[id] = key; });
+            path.length = 0;
+        };
+
+        for (z = z - 1; z >= minzoom && !(tile && tile.hasData()); z--) {
+            if (tile) {
+                pathToLookup(tile.tileID.key); // Store lookup to parents not loaded (yet).
+            }
+            const id = sourceTileID.calculateScaledKey(z);
+            tile = sourceCache.getTileByID(id);
+            if (tile && tile.hasData()) break;
+            const key = lookup[id];
+            if (key === null) {
+                break; // There's no tile loaded and no point searching further.
+            } else if (key !== undefined) {
+                tile = sourceCache.getTileByID(key);
+                continue;
+            }
+            path.push(id);
+        }
+
+        pathToLookup(tile ? tile.tileID.key : null);
+        return tile && tile.hasData() ? tile : null;
+    }
+
+    findDEMTileFor(tileID: OverscaledTileID): ?Tile {
+        return this._findTileCoveringTileID(tileID, this.sourceCache);
     }
 
     /*
