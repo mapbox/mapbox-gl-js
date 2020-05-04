@@ -2525,7 +2525,7 @@ class Map extends Camera {
             this.fire(new Event('idle'));
         }
 
-        if (!this._fullyLoaded) {
+        if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
             PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
