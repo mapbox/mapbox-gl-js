@@ -8,6 +8,7 @@ import {FreeCameraOptions} from '../../../src/ui/free_camera';
 import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
 import {vec3, quat} from 'gl-matrix';
 import LngLatBounds from '../../../src/geo/lng_lat_bounds';
+import {extend} from '../../../src/util/util';
 
 test('transform', (t) => {
 
@@ -204,6 +205,165 @@ test('transform', (t) => {
             new OverscaledTileID(8, 0, 8, 146, 74),
             new OverscaledTileID(8, 0, 8, 146, 73)
         ]);
+
+        transform.zoom = 2;
+        transform.pitch = 0;
+        transform.bearing = 0;
+        transform.resize(300, 300);
+        t.test('calculates tile coverage at w > 0', (t) => {
+            transform.center = {lng: 630.01, lat: 0.01};
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(2, 2, 2, 1, 1),
+                new OverscaledTileID(2, 2, 2, 1, 2),
+                new OverscaledTileID(2, 2, 2, 0, 1),
+                new OverscaledTileID(2, 2, 2, 0, 2)
+            ]);
+            t.end();
+        });
+
+        t.test('calculates tile coverage at w = -1', (t) => {
+            transform.center = {lng: -360.01, lat: 0.01};
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(2, -1, 2, 1, 1),
+                new OverscaledTileID(2, -1, 2, 1, 2),
+                new OverscaledTileID(2, -1, 2, 2, 1),
+                new OverscaledTileID(2, -1, 2, 2, 2)
+            ]);
+            t.end();
+        });
+
+        t.test('calculates tile coverage across meridian', (t) => {
+            transform.zoom = 1;
+            transform.center = {lng: -180.01, lat: 0.01};
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, 0, 1, 0, 1),
+                new OverscaledTileID(1, -1, 1, 1, 0),
+                new OverscaledTileID(1, -1, 1, 1, 1)
+            ]);
+            t.end();
+        });
+
+        t.test('only includes tiles for a single world, if renderWorldCopies is set to false', (t) => {
+            transform.zoom = 1;
+            transform.center = {lng: -180.01, lat: 0.01};
+            transform.renderWorldCopies = false;
+            t.deepEqual(transform.coveringTiles(options), [
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, 0, 1, 0, 1)
+            ]);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    test('coveringTiles for terrain', (t) => {
+        const options2D = {
+            minzoom: 1,
+            maxzoom: 10,
+            tileSize: 512
+        };
+
+        const options = extend({
+            useElevationData: true
+        }, options2D);
+
+        const transform = new Transform();
+        let centerElevation = 0;
+        let tilesDefaultElevation = 0;
+        const tileElevation = {};
+        const elevation = {
+            getAtPoint(_) {
+                return this.exaggeration() * centerElevation;
+            },
+            getForTilePoints(tileID, points) {
+                for (const p of points) {
+                    const elevation = tileElevation[tileID.key] !== undefined ?
+                        tileElevation[tileID.key] : tilesDefaultElevation;
+                    p[2] = this.exaggeration() * elevation;
+                }
+                return true;
+            },
+            exaggeration() {
+                return 10; // Low tile zoom used, exaggerate elevation to make impact.
+            }
+        };
+        transform.elevation = elevation;
+        transform.resize(200, 200);
+
+        // make slightly off center so that sort order is not subject to precision issues
+        transform.center = {lng: -0.01, lat: 0.01};
+
+        transform.zoom = 0;
+        t.deepEqual(transform.coveringTiles(options), []);
+
+        transform.zoom = 1;
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(1, 0, 1, 0, 0),
+            new OverscaledTileID(1, 0, 1, 1, 0),
+            new OverscaledTileID(1, 0, 1, 0, 1),
+            new OverscaledTileID(1, 0, 1, 1, 1)]);
+
+        transform.zoom = 2.4;
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(2, 0, 2, 1, 1),
+            new OverscaledTileID(2, 0, 2, 2, 1),
+            new OverscaledTileID(2, 0, 2, 1, 2),
+            new OverscaledTileID(2, 0, 2, 2, 2)]);
+
+        transform.zoom = 10;
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(10, 0, 10, 511, 511),
+            new OverscaledTileID(10, 0, 10, 512, 511),
+            new OverscaledTileID(10, 0, 10, 511, 512),
+            new OverscaledTileID(10, 0, 10, 512, 512)]);
+
+        transform.zoom = 11;
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(10, 0, 10, 511, 511),
+            new OverscaledTileID(10, 0, 10, 512, 511),
+            new OverscaledTileID(10, 0, 10, 511, 512),
+            new OverscaledTileID(10, 0, 10, 512, 512)]);
+
+        transform.zoom = 9.1;
+        transform.pitch = 60.0;
+        transform.bearing = 32.0;
+        transform.center = new LngLat(56.90, 48.20);
+        transform.resize(1024, 768);
+        transform.elevation = null;
+        const cover2D = transform.coveringTiles(options2D);
+        // No LOD as there is no elevation data.
+        t.true(cover2D[0].overscaledZ === cover2D[cover2D.length - 1].overscaledZ);
+
+        transform.pitch = 65.0;
+        transform.elevation = elevation;
+        const cover = transform.coveringTiles(options);
+        // First part of the cover should be the same as for 60 degrees no elevation case.
+        t.deepEqual(cover.slice(0, 6), cover2D.slice(0, 6));
+
+        // Even though it is larger pitch, less tiles are expected as LOD kicks in.
+        t.true(cover.length < cover2D.length);
+        t.true(cover[0].overscaledZ > cover[cover.length - 1].overscaledZ);
+
+        // Elevated LOD with elevated center returns the same
+        tilesDefaultElevation = centerElevation = 10000;
+        transform.updateElevation();
+        const cover10k = transform.coveringTiles(options);
+        t.deepEqual(cover, cover10k);
+
+        // Lower tiles on side get clipped.
+        const lowTiles = [
+            new OverscaledTileID(9, 0, 9, 335, 178).key,
+            new OverscaledTileID(9, 0, 9, 337, 178).key
+        ];
+        t.true(cover.filter(t => lowTiles.includes(t.key)).length === lowTiles.length);
+
+        for (const t of lowTiles) {
+            tileElevation[t] = 0;
+        }
+        const coverLowSide = transform.coveringTiles(options);
+        t.true(coverLowSide.filter(t => lowTiles.includes(t.key)).length === 0);
 
         transform.zoom = 2;
         transform.pitch = 0;

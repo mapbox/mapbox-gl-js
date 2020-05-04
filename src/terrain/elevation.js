@@ -5,8 +5,11 @@ import DEMData from '../data/dem_data';
 import SourceCache from '../source/source_cache';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
+import {vec3} from 'gl-matrix';
 
 import {OverscaledTileID} from '../source/tile_id';
+
+import type Tile from '../source/tile';
 
 /**
  * Provides access to elevation data from raster-dem source cache.
@@ -25,12 +28,12 @@ export class Elevation {
         const src = this._source();
         if (!src) return 0;
         const cache: SourceCache = src;
-        const z = cache.getSource().maxzoom + 1; // lookup uses findLoadedParent, start just a bit out of range.
+        const z = cache.getSource().maxzoom;
         const tiles = 1 << z;
         const wrap = Math.floor(point.x);
         const px = point.x - wrap;
         const tileID = new OverscaledTileID(z, wrap, z, Math.floor(px * tiles), Math.floor(point.y * tiles));
-        const demTile = cache.findLoadedParent(tileID, 0);
+        const demTile = this.findDEMTileFor(tileID);
         if (!(demTile && demTile.dem)) { return 0; }
         const dem: DEMData = demTile.dem;
         const tilesAtTileZoom = 1 << demTile.tileID.canonical.z;
@@ -56,6 +59,31 @@ export class Elevation {
     }
 
     /*
+     * Batch fetch for multiple tile points: points holds input and return value:
+     * vec3's items on index 0 and 1 define x and y offset within tile, in [0 .. EXTENT]
+     * range, respectively. vec3 item at index 2 is output value, in meters.
+     * If a DEM tile that covers tileID is loaded, true is returned, otherwise false.
+     * Nearest filter sampling on dem data is done (no interpolation).
+     */
+    getForTilePoints(tileID: OverscaledTileID, points: Array<vec3>): boolean {
+        const demTile = this.findDEMTileFor(tileID);
+        if (!(demTile && demTile.dem)) { return false; }
+        const dem: DEMData = demTile.dem;
+        const demTileID = demTile.tileID;
+        const scale = 1 << tileID.canonical.z - demTileID.canonical.z;
+        const xOffset = (tileID.canonical.x / scale - demTileID.canonical.x) * demTile.tileSize;
+        const yOffset = (tileID.canonical.y / scale - demTileID.canonical.y) * demTile.tileSize;
+        const k = demTile.tileSize / EXTENT / scale;
+
+        points.forEach(p => {
+            const i = Math.floor(p[0] * k + xOffset);
+            const j = Math.floor(p[1] * k + yOffset);
+            p[2] = this.exaggeration() * dem.get(i, j);
+        });
+        return true;
+    }
+
+    /*
      * Implementation provides SourceCache of raster-dem source type cache, in
      * order to access already loaded cached tiles.
      */
@@ -68,6 +96,14 @@ export class Elevation {
      * by getXXXX methods is multiplied by this.
      */
     exaggeration(): number {
+        throw new Error('Pure virtual method called.');
+    }
+
+    /**
+     * Lookup DEM tile that corresponds to (covers) tileID.
+     * @private
+     */
+    findDEMTileFor(_: OverscaledTileID): ?Tile {
         throw new Error('Pure virtual method called.');
     }
 }

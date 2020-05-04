@@ -27,8 +27,12 @@ class Frustum {
 
         // Transform frustum corner points from clip space to tile space
         const frustumCoords = clipSpaceCorners
-            .map(v => vec4.transformMat4([], v, invProj))
-            .map(v => vec4.scale([], v, 1.0 / v[3] / worldSize * scale));
+            .map(v => {
+                const s = vec4.transformMat4([], v, invProj);
+                const k = 1.0 / s[3] / worldSize * scale;
+                // Z scale in meters.
+                return vec4.mul(s, s, [k, k, 1.0 / s[3], k]);
+            });
 
         const frustumPlanePointIndices = [
             [0, 1, 2],  // near

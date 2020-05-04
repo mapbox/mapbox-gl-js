@@ -57,12 +57,14 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
 setType('mock-source-type', MockSourceType);
 
 function createSourceCache(options, used) {
+    const spec = options || {};
+    spec['minzoom'] = spec['minzoom'] || 0;
+    spec['maxzoom'] = spec['maxzoom'] || 14;
+
     const sc = new SourceCache('id', extend({
         tileSize: 512,
-        minzoom: 0,
-        maxzoom: 14,
         type: 'mock-source-type'
-    }, options), /* dispatcher */ {});
+    }, spec), /* dispatcher */ {});
     sc.used = typeof used === 'boolean' ? used : true;
     return sc;
 }
@@ -843,7 +845,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         const getTileSpy = t.spy(sourceCache, 'getTile');
         const idealTile = new OverscaledTileID(1, 0, 1, 1, 1);
         stateCache[idealTile.key] = 'loaded';
-        sourceCache._updateRetainedTiles([idealTile], 1);
+        sourceCache._updateRetainedTiles([idealTile]);
         t.ok(getTileSpy.notCalled);
         t.deepEqual(sourceCache.getIds(), [idealTile.key]);
         t.end();
@@ -876,7 +878,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
             sourceCache._tiles[t.key].state = 'loaded';
         }
 
-        const retained = sourceCache._updateRetainedTiles([idealTile], 3);
+        const retained = sourceCache._updateRetainedTiles([idealTile]);
         t.deepEqual(Object.keys(retained).sort(), [
             // parents are requested because ideal ideal tile is not completely covered by
             // loaded child tiles
@@ -885,6 +887,79 @@ test('SourceCache#_updateRetainedTiles', (t) => {
             new OverscaledTileID(1, 0, 1, 0, 0),
             idealTile
         ].concat(loadedChildren).map(t => t.key).sort());
+
+        t.end();
+    });
+
+    t.test('retains children for LOD cover', (t) => {
+        const sourceCache = createSourceCache({
+            minzoom: 2,
+            maxzoom: 5,
+            loadTile(tile, callback) {
+                tile.state = 'errored';
+                callback();
+            }
+        });
+
+        const idealTiles = [
+            new OverscaledTileID(5, 1, 5, 7, 10),
+            new OverscaledTileID(4, 2, 4, 2, 4),
+            new OverscaledTileID(3, 0, 3, 1, 2)
+        ];
+        for (const t of idealTiles) {
+            sourceCache._tiles[t.key] = new Tile(t);
+            sourceCache._tiles[t.key].state = 'errored';
+        }
+
+        const loadedChildren = [
+            // Children of OverscaledTileID(3, 0, 3, 1, 2)
+            new OverscaledTileID(4, 0, 4, 2, 4),
+            new OverscaledTileID(4, 0, 4, 3, 4),
+            new OverscaledTileID(4, 0, 4, 2, 5),
+            new OverscaledTileID(5, 0, 5, 6, 10),
+            new OverscaledTileID(5, 0, 5, 7, 10),
+            new OverscaledTileID(5, 0, 5, 6, 11),
+            new OverscaledTileID(5, 0, 5, 7, 11),
+
+            // Children of OverscaledTileID(4, 2, 4, 2, 4). Overscale (not canonical.z) over maxzoom.
+            new OverscaledTileID(5, 2, 5, 4, 8),
+            new OverscaledTileID(5, 2, 5, 5, 8),
+            new OverscaledTileID(6, 2, 5, 4, 9),
+            new OverscaledTileID(9, 2, 5, 5, 9), // over maxUnderzooming.
+
+            // Children over maxzoom and parent of new OverscaledTileID(5, 1, 5, 7, 10)
+            new OverscaledTileID(6, 1, 6, 14, 20),
+            new OverscaledTileID(6, 1, 6, 15, 20),
+            new OverscaledTileID(6, 1, 6, 14, 21),
+            new OverscaledTileID(6, 1, 6, 15, 21),
+            new OverscaledTileID(4, 1, 4, 3, 5)
+        ];
+
+        for (const t of loadedChildren) {
+            sourceCache._tiles[t.key] = new Tile(t);
+            sourceCache._tiles[t.key].state = 'loaded';
+        }
+
+        const retained = sourceCache._updateRetainedTiles(idealTiles);
+
+        // Filter out those that are not supposed to be retained:
+        const filteredChildren = loadedChildren.filter(t => {
+            return ![
+                new OverscaledTileID(6, 1, 6, 14, 20),
+                new OverscaledTileID(6, 1, 6, 15, 20),
+                new OverscaledTileID(6, 1, 6, 14, 21),
+                new OverscaledTileID(6, 1, 6, 15, 21),
+                new OverscaledTileID(9, 2, 5, 5, 9)
+            ].map(t => t.key).includes(t.key);
+        });
+
+        t.deepEqual(Object.keys(retained).sort(), [
+            // parents are requested up to minzoom because ideal tiles are not
+            // completely covered by loaded child tiles
+            new OverscaledTileID(2, 0, 2, 0, 1),
+            new OverscaledTileID(2, 2, 2, 0, 1),
+            new OverscaledTileID(3, 2, 3, 1, 2)
+        ].concat(idealTiles).concat(filteredChildren).map(t => t.key).sort());
 
         t.end();
     });
@@ -903,7 +978,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
 
         const idealTiles = [new OverscaledTileID(1, 0, 1, 1, 1), new OverscaledTileID(1, 0, 1, 0, 1)];
         stateCache[idealTiles[0].key] = 'loaded';
-        const retained = sourceCache._updateRetainedTiles(idealTiles, 1);
+        const retained = sourceCache._updateRetainedTiles(idealTiles);
         t.deepEqual(getTileSpy.getCalls().map((c) => { return c.args[0]; }), [
             // when child tiles aren't found, check and request parent tile
             new OverscaledTileID(0, 0, 0, 0, 0)
@@ -942,7 +1017,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         const addTileSpy = t.spy(sourceCache, '_addTile');
         const getTileSpy = t.spy(sourceCache, 'getTile');
 
-        sourceCache._updateRetainedTiles([idealTile], 2);
+        sourceCache._updateRetainedTiles([idealTile]);
         t.deepEqual(getTileSpy.getCalls().map((c) => { return c.args[0]; }), [
             // parents
             new OverscaledTileID(1, 0, 1, 0, 0), // not found
@@ -979,7 +1054,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         const addTileSpy = t.spy(sourceCache, '_addTile');
         const getTileSpy = t.spy(sourceCache, 'getTile');
 
-        const retained = sourceCache._updateRetainedTiles([idealTile], 1);
+        const retained = sourceCache._updateRetainedTiles([idealTile]);
 
         t.deepEqual(getTileSpy.getCalls().map((c) => { return c.args[0]; }), [
             // parents
@@ -998,7 +1073,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
 
         // now make sure we don't retain the parent tile when the ideal tile is loaded
         sourceCache._tiles[idealTile.key].state = 'loaded';
-        const retainedLoaded = sourceCache._updateRetainedTiles([idealTile], 1);
+        const retainedLoaded = sourceCache._updateRetainedTiles([idealTile]);
 
         t.ok(getTileSpy.notCalled);
         t.deepEqual(retainedLoaded, {
@@ -1028,7 +1103,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         });
 
         const getTileSpy = t.spy(sourceCache, 'getTile');
-        const retained = sourceCache._updateRetainedTiles([idealTile], 2);
+        const retained = sourceCache._updateRetainedTiles([idealTile]);
         // parent tile isn't requested because all covering children are loaded
         t.deepEqual(getTileSpy.getCalls(), []);
         t.deepEqual(Object.keys(retained), [idealTile.key].concat(loadedTiles.map(t => t.key)));
@@ -1051,7 +1126,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         });
 
         const getTileSpy = t.spy(sourceCache, 'getTile');
-        let retained = sourceCache._updateRetainedTiles([idealTile], 1);
+        let retained = sourceCache._updateRetainedTiles([idealTile]);
         t.deepEqual(getTileSpy.getCalls().map((c) => { return c.args[0]; }), [
             // parent
             new OverscaledTileID(0, 0, 0, 0, 0)
@@ -1070,7 +1145,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         getTileSpy.restore();
         // remove child tile and check that it only uses parent tile
         delete sourceCache._tiles['022'];
-        retained = sourceCache._updateRetainedTiles([idealTile], 1);
+        retained = sourceCache._updateRetainedTiles([idealTile]);
 
         t.deepEqual(retained, {
             // parent of ideal tile (0, 0, 0) (only partially covered by loaded child
@@ -1099,7 +1174,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         });
 
         const getTileSpy = t.spy(sourceCache, 'getTile');
-        const retained = sourceCache._updateRetainedTiles([idealTile], 2);
+        const retained = sourceCache._updateRetainedTiles([idealTile]);
 
         t.deepEqual(getTileSpy.getCalls().map((c) => { return c.args[0]; }), [], 'doesn\'t request parent tiles bc they are lower than minzoom');
 
@@ -1123,7 +1198,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         const idealTile = new OverscaledTileID(2, 0, 2, 0, 0);
 
         const getTileSpy = t.spy(sourceCache, 'getTile');
-        const retained = sourceCache._updateRetainedTiles([idealTile], 2);
+        const retained = sourceCache._updateRetainedTiles([idealTile]);
 
         t.deepEqual(getTileSpy.getCalls().map((c) => { return c.args[0]; }), [
             // overzoomed child
@@ -1152,7 +1227,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         const idealTiles = [new OverscaledTileID(8, 0, 8, 0, 0), new OverscaledTileID(8, 0, 8, 1, 0)];
 
         const getTileSpy = t.spy(sourceCache, 'getTile');
-        sourceCache._updateRetainedTiles(idealTiles, 8);
+        sourceCache._updateRetainedTiles(idealTiles);
         t.deepEqual(getTileSpy.getCalls().map((c) => { return c.args[0]; }), [
             // parent tile ascent
             new OverscaledTileID(7, 0, 7, 0, 0),
@@ -1173,7 +1248,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
             sourceCache._tiles[t.key].state = 'loaded';
         });
 
-        sourceCache._updateRetainedTiles(idealTiles, 8);
+        sourceCache._updateRetainedTiles(idealTiles);
         t.deepEqual(getTileSpy.getCalls().map((c) => { return c.args[0]; }), [
             // parent tile ascent
             new OverscaledTileID(7, 0, 7, 0, 0),
@@ -1201,7 +1276,7 @@ test('SourceCache#_updateRetainedTiles', (t) => {
         });
 
         const idealTiles = [new OverscaledTileID(8, 0, 7, 0, 0), new OverscaledTileID(8, 0, 7, 1, 0)];
-        const retained = sourceCache._updateRetainedTiles(idealTiles, 8);
+        const retained = sourceCache._updateRetainedTiles(idealTiles);
 
         t.deepEqual(Object.keys(retained), [
             new OverscaledTileID(7, 0, 7, 1, 0).key,
