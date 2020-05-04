@@ -436,6 +436,11 @@ class Map extends Camera {
         if (typeof window !== 'undefined') {
             window.addEventListener('online', this._onWindowOnline, false);
             window.addEventListener('resize', this._onWindowResize, false);
+            if (typeof window.screen.orientation !== 'undefined') {
+                window.screen.orientation.addEventListener('change', this._onWindowResize, false);
+            } else {
+                window.addEventListener('orientationchange', this._onWindowResize, false);
+            }
         }
 
         this.handlers = new HandlerManager(this, options);
