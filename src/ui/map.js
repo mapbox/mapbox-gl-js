@@ -2522,11 +2522,12 @@ class Map extends Camera {
         if (somethingDirty || this._repaint) {
             this.triggerRepaint();
         } else if (!this.isMoving() && this.loaded()) {
-            if (!this._fullyLoaded) {
-                this._fullyLoaded = true;
-                PerformanceUtils.mark(PerformanceMarkers.fullLoad);
-            }
             this.fire(new Event('idle'));
+        }
+
+        if (this._loaded && !this._fullyLoaded && !somethingDirty) {
+            this._fullyLoaded = true;
+            PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
 
         return this;
