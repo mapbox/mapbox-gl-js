@@ -139,7 +139,7 @@ Here is a recommended way to get setup:
 1. Fork this project
 2. Clone your new fork, `git clone git@github.com:GithubUser/mapbox-gl-js.git`
 3. `cd mapbox-gl-js`
-4. Add the Mapbox repository as an upstream repository: `git add remote upstream git@github.com:mapbox/mapbox-gl-js.git`
+4. Add the Mapbox repository as an upstream repository: `git remote add upstream git@github.com:mapbox/mapbox-gl-js.git`
 5. Create a new branch `git checkout -b your-branch` for your contribution
 6. Write code, open a PR from your branch when you're ready
 7. If you need to rebase your fork's PR branch onto master to resolve conflicts: `git fetch upstream`, `git rebase upstream/master` and force push to Github `git push --force origin your-branch`
