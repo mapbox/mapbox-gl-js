@@ -69,27 +69,6 @@ map.on('style.load', function() {
         "maxzoom": 14
     });
 
-    // Replace hillshade fill layers from composite by hillshade using mapbox-dem source.
-    // TO DO: move to painter and use type instead of label.
-    // let hillshade = map.getLayer('hillshade') || map.getLayer('mapbox-terrain-rgb');
-    const hillshadeID = map.style._order.find((id) => map.style.getLayer(id).type === 'hillshade') || 'hillshade';
-    let hillshade = map.getLayer(hillshadeID);
-    let addHillshadeBefore = 'hillshade_highlight_bright';
-    if (hillshade && hillshade.type === 'hillshade') {
-        addHillshadeBefore = map.style._order[map.style._order.indexOf(hillshadeID) + 1];
-        map.removeLayer(hillshadeID);
-        hillshade = null;
-    }
-    if (!hillshade) {
-        map.addLayer({
-            "id": hillshadeID,
-            "source": "mapbox-dem",
-            "type": "hillshade"
-        }, addHillshadeBefore);
-    }
-    ["housenum-label", "hillshade_highlight_bright", "hillshade_highlight_med", "hillshade_shadow_faint",
-        "hillshade_shadow_med", "hillshade_shadow_dark", "hillshade_shadow_extreme"].forEach(layerid => { if (map.getLayer(layerid)) map.removeLayer(layerid); });
-
     map.addSource("satellite", {
         "type": "raster",
         "url": "mapbox://mapbox.satellite",
