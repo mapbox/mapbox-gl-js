@@ -2621,7 +2621,7 @@
         }
       },
       "index-of": {
-        "doc": "Returns the first index at which an item can be found in an array or a substring can be found in a string, or `-1` if the input is not found. If set, the second argument is used as the start index.",
+        "doc": "Returns the first position at which an item can be found in an array or a substring can be found in a string, or `-1` if the input cannot be found. Accepts an optional index from where to begin the search.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
@@ -2630,7 +2630,7 @@
         }
       },
       "slice": {
-        "doc": "Returns an item from an array or a substring from a string defined by the first argument as the start index. If set, the second argument is used as the end index. The return value is inclusive of the start index but not of the end index.",
+        "doc": "Returns an item from an array or a substring from a string from a specified start index, or between a start index and an end index if set. The return value is inclusive of the start index but not of the end index.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
