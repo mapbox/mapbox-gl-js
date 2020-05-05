@@ -2630,7 +2630,7 @@
         }
       },
       "slice": {
-        "doc": "Returns an item from an array or a substring from a string defined by the first argument as the start index and a second argument, if set, as the end index. The expression is inclusive of the start index, but not of the end index.",
+        "doc": "Returns an item from an array or a substring from a string defined by the first argument as the start index. If set, the second argument is used as the end index. The return value is inclusive of the start index but not of the end index.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
@@ -2825,7 +2825,7 @@
         }
       },
       "format": {
-        "doc": "Returns a `formatted` string for use in the `text-field` property. The input may contain a plain `string`, an `image` provided through the [`'image'`](#types-image) expression, or a combination  of the two. Supported styling options:\n- `"text-font"`: Overrides the font stack specified by the root layout property.\n- `"text-color"`: Overrides the color specified by the root paint property.\n- `"font-scale"`: Applies the specified a scaling factor relative to the `text-size` specified by the root layout property.",
+        "doc": "Returns a `formatted` string for use in the `text-field` property. The input may contain a plain `string`, an `image` provided through the [`'image'`](#types-image) expression, or a combination  of the two. Supported styling options:\n- `\"text-font\"`: Overrides the font stack specified by the root layout property.\n- `\"text-color\"`: Overrides the color specified by the root paint property.\n- `\"font-scale\"`: Applies the specified a scaling factor relative to the `text-size` specified by the root layout property.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -3356,7 +3356,7 @@
         }
       },
       "distance": {
-        "doc": "Returns the shortest distance in meters between the evaluated feature and the input geometry. The evaluated feature and input value can be a valid GeoJSON of type `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`. Results at zoom level 12 and below may vary in precision, due to precision loss in conversions between tile coordinates and `[Longitude, Latitude]` at lower zoom levels.",
+        "doc": "Returns the shortest distance in meters between the evaluated feature and the input geometry. The evaluated feature and input value can be a valid GeoJSON of type `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`. Results at zoom level 12 and below may vary in precision due to precision loss in conversions between tile coordinates and `[Longitude, Latitude]` at lower zoom levels.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -3511,7 +3511,7 @@
         }
       },
       "within": {
-        "doc": "Returns `true` if the evaluated feature is fully contained inside a boundary of the input geometry, `false` otherwise. The input value can be a valid GeoJSON of type `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`. Supported features for evaluation:\n- `"Point"`: Returns `false` if a point is on the boundary or falls outside the boundary.\n- `"LineString"`: Returns `false` if any part of a line falls outside the boundary, the line intersects the boundary, or a line's endpoint is on the boundary.",
+        "doc": "Returns `true` if the evaluated feature is fully contained inside a boundary of the input geometry, `false` otherwise. The input value can be a valid GeoJSON of type `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`. Supported features for evaluation:\n- `Point`: Returns `false` if a point is on the boundary or falls outside the boundary.\n- `LineString`: Returns `false` if any part of a line falls outside the boundary, the line intersects the boundary, or a line's endpoint is on the boundary.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
