@@ -10,7 +10,7 @@ import {
     emitValidationErrors
 } from './validate_style';
 import {Evented} from '../util/evented';
-import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluatedPropertyValue} from './properties';
+import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties';
 import {supportsPropertyExpression} from '../style-spec/util/properties';
 
 import type {FeatureState} from '../style-spec/expression';
@@ -90,6 +90,7 @@ class StyleLayer extends Evented {
         }
 
         if (properties.paint) {
+
             this._transitionablePaint = new Transitionable(properties.paint);
 
             for (const property in layer.paint) {
@@ -100,6 +101,13 @@ class StyleLayer extends Evented {
             }
 
             this._transitioningPaint = this._transitionablePaint.untransitioned();
+        }
+
+        if (properties.paint) {
+            // init default paint to cover until recalculate is called
+            // see https://github.com/mapbox/ibm-cognos-collab/issues/154
+            // also flow needs a separate undefined check??
+            this.paint = new PossiblyEvaluated(properties.paint);
         }
     }
 
