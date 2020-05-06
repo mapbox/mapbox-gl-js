@@ -2565,6 +2565,11 @@ class Map extends Camera {
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
+            if (typeof window.screen.orientation === 'object') {
+                window.screen.orientation.removeEventListener('change', this._onWindowResize, false);
+            } else {
+                window.removeEventListener('orientationchange', this._onWindowResize, false);
+            }
             window.removeEventListener('online', this._onWindowOnline, false);
         }
 
