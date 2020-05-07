@@ -54,11 +54,16 @@ import symbolSDFFrag from './symbol_sdf.fragment.glsl';
 import symbolSDFVert from './symbol_sdf.vertex.glsl';
 import symbolTextAndIconFrag from './symbol_text_and_icon.fragment.glsl';
 import symbolTextAndIconVert from './symbol_text_and_icon.vertex.glsl';
+import skyboxFrag from './skybox.fragment.glsl';
+import skyboxGradientFrag from './skybox_gradient.fragment.glsl';
+import skyboxVert from './skybox.vertex.glsl';
 import terrainRasterFrag from './terrain_raster.fragment.glsl';
 import terrainRasterVert from './terrain_raster.vertex.glsl';
 import terrainDepthFrag from './terrain_depth.fragment.glsl';
 import terrainDepthVert from './terrain_depth.vertex.glsl';
 import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
+import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
+import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const background = compile(backgroundFrag, backgroundVert);
@@ -89,6 +94,9 @@ export const symbolTextAndIcon = compile(symbolTextAndIconFrag, symbolTextAndIco
 export const terrainRaster = compile(terrainRasterFrag, terrainRasterVert);
 export const terrainDepth = compile(terrainDepthFrag, terrainDepthVert);
 export const preludeTerrain = compile('', preludeTerrainVert);
+export const skybox = compile(skyboxFrag, skyboxVert);
+export const skyboxGradient = compile(skyboxGradientFrag, skyboxVert);
+export const skyboxCapture = compile(skyboxCaptureFrag, skyboxCaptureVert);
 
 // Expand #pragmas to #ifdefs.
 

@@ -10,6 +10,7 @@ import symbol from './style_layer/symbol_style_layer';
 import background from './style_layer/background_style_layer';
 import raster from './style_layer/raster_style_layer';
 import CustomStyleLayer from './style_layer/custom_style_layer';
+import sky from './style_layer/sky_style_layer';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 
 import type {LayerSpecification} from '../style-spec/types';
@@ -23,7 +24,8 @@ const subclasses = {
     line,
     symbol,
     background,
-    raster
+    raster,
+    sky
 };
 
 export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface) {

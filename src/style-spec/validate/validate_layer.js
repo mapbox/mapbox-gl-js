@@ -52,7 +52,7 @@ export default function validateLayer(options) {
         } else {
             type = unbundle(parent.type);
         }
-    } else if (type !== 'background') {
+    } else if (!(type === 'background' || type === 'sky')) {
         if (!layer.source) {
             errors.push(new ValidationError(key, layer, 'missing required property "source"'));
         } else {

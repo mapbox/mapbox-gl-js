@@ -1132,5 +1132,6 @@ export {
     StructArrayLayout3ui6 as QuadTriangleArray,
     StructArrayLayout3ui6 as TriangleIndexArray,
     StructArrayLayout2ui4 as LineIndexArray,
-    StructArrayLayout1ui2 as LineStripIndexArray
+    StructArrayLayout1ui2 as LineStripIndexArray,
+    StructArrayLayout3f12 as SkyboxVertexArray
 };

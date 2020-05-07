@@ -15,6 +15,8 @@ import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile
 import type {Elevation} from '../terrain/elevation';
 import type {PaddingOptions} from './edge_insets';
 
+const NUM_WORLD_COPIES = 3;
+
 /**
  * A single transform, generally used for a single tile to be
  * scaled, rotated, and zoomed.
@@ -40,6 +42,7 @@ class Transform {
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
+    skyboxMatrix: Float32Array;
     glCoordMatrix: Float32Array;
     labelPlaneMatrix: Float32Array;
     _elevation: ?Elevation;
@@ -384,7 +387,7 @@ class Transform {
 
         if (this._renderWorldCopies) {
             // Render copy of the globe thrice on both sides
-            for (let i = 1; i <= 3; i++) {
+            for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
                 stack.push(newRootTile(-i));
                 stack.push(newRootTile(i));
             }
@@ -761,6 +764,15 @@ class Transform {
         this.projMatrix = m;
         this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
 
+        const view = new Float32Array(16);
+        mat4.identity(view);
+        mat4.scale(view, view, [1, -1, 1]);
+        mat4.rotateX(view, view, this._pitch);
+        mat4.rotateZ(view, view, this.angle);
+
+        const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, nearZ, farZ);
+        this.skyboxMatrix = mat4.multiply(view, projection, view);
+
         // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.
         // We're rounding the (floating point) x/y values to achieve to avoid rendering raster images to fractional
         // coordinates. Additionally, we adjust by half a pixel in either direction in case that viewport dimension
@@ -806,6 +818,37 @@ class Transform {
         const p = [coord.x * this.worldSize, coord.y * this.worldSize, 0, 1];
         const topPoint = vec4.transformMat4(p, p, this.pixelMatrix);
         return topPoint[3] / this.cameraToCenterDistance;
+    }
+
+    isHorizonVisible(): boolean {
+        // Fast check that checks if the top plane of the camera frustum has gone above parallel of the map plane.
+        if (this.pitch + this.fov / 2 > 88) {
+            return true;
+        }
+
+        //Finer grained check which is used at lower zoom levels
+        //Checks the four corners of the frustum to see if they lie in the map's quad.
+        const corners = [
+            new Point(0, 0),
+            new Point(this.width, 0),
+            new Point(this.width, this.height),
+            new Point(0, this.height)
+        ];
+
+        const minX = (this._renderWorldCopies) ? -NUM_WORLD_COPIES : 0;
+        const maxX = (this._renderWorldCopies) ? 1 + NUM_WORLD_COPIES : 1;
+        const minY = 0;
+        const maxY = 1;
+
+        for (const corner of corners) {
+            const coordinate = this.pointCoordinate(corner);
+            if (coordinate.x < minX || coordinate.y < minY ||
+                coordinate.x > maxX || coordinate.y > maxY) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*

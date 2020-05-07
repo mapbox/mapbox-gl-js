@@ -61,9 +61,6 @@ const r = 255 * 0.75;
 let buildingsLayerId = '3d-buildings';
 
 map.on('style.load', function() {
-    document.body.style.background = "radial-gradient(#ffffff, #6dd5ed)";
-    document.body.style['background-repeat'] = 'no-repeat';
-
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
         "url": "mapbox://mapbox.terrain-rgb",
@@ -124,6 +121,24 @@ map.on('style.load', function() {
             }
         }, 'waterway-label');
     }
+
+    map.addLayer({
+        'id': 'sky',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'atmosphere',
+            'sky-sun-direction': [90, 3],
+            'sky-opacity': [
+                'interpolate',
+                ['exponential', 0.1],
+                ['zoom'],
+                5,
+                0,
+                22,
+                1
+            ]
+        }
+    });
     document.getElementById('road-label-checkbox').onclick();
     document.getElementById('satellite-checkbox').onclick();
     document.getElementById('terrain-checkbox').onclick();

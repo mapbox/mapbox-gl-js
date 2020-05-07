@@ -211,6 +211,11 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.globals.lineProgress || 0
     ],
+    'sky-radial-progress': [
+        NumberType,
+        [],
+        (ctx) => ctx.globals.skyRadialProgress || 0
+    ],
     'accumulated': [
         ValueType,
         [],
