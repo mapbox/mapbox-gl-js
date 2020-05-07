@@ -10,6 +10,37 @@ import type {Callback} from '../types/callback';
 // Number.MAX_SAFE_INTEGER not available in IE
 export const MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
 
+const DEG_TO_RAD = Math.PI / 180;
+const RAD_TO_DEG = 180 / Math.PI;
+
+/**
+ * Converts an angle in degrees to radians
+ * copy all properties from the source objects into the destination.
+ * The last source object given overrides properties from previous
+ * source objects.
+ *
+ * @param a angle to convert
+ * @returns the angle in radians
+ * @private
+ */
+export function degToRad(a: number): number {
+    return a * DEG_TO_RAD;
+}
+
+/**
+ * Converts an angle in radians to degrees
+ * copy all properties from the source objects into the destination.
+ * The last source object given overrides properties from previous
+ * source objects.
+ *
+ * @param a angle to convert
+ * @returns the angle in degrees
+ * @private
+ */
+export function radToDeg(a: number): number {
+    return a * RAD_TO_DEG;
+}
+
 /**
  * @module util
  * @private

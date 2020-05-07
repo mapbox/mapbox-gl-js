@@ -2,7 +2,7 @@
 
 import {test} from '../../util/test';
 
-import {easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo} from '../../../src/util/util';
+import {degToRad, radToDeg, easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo} from '../../../src/util/util';
 import Point from '@mapbox/point-geometry';
 
 test('util', (t) => {
@@ -16,6 +16,11 @@ test('util', (t) => {
     t.deepEqual(pick({a:1, b:2, c:3}, ['a', 'c']), {a:1, c:3}, 'pick');
     t.deepEqual(pick({a:1, b:2, c:3}, ['a', 'c', 'd']), {a:1, c:3}, 'pick');
     t.ok(typeof uniqueId() === 'number', 'uniqueId');
+
+    t.equal(degToRad(radToDeg(Math.PI)), Math.PI);
+    t.equal(degToRad(radToDeg(-Math.PI)), -Math.PI);
+    t.equal(radToDeg(degToRad(65)), 65);
+    t.equal(radToDeg(degToRad(-34.2)), -34.2);
 
     t.test('bindAll', (t) => {
         function MyClass() {

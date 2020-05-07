@@ -131,6 +131,7 @@ const fillExtrusionAttributes = require('../src/data/bucket/fill_extrusion_attri
 const lineAttributes = require('../src/data/bucket/line_attributes').default;
 const lineAttributesExt = require('../src/data/bucket/line_attributes_ext').default;
 const patternAttributes = require('../src/data/bucket/pattern_attributes').default;
+const skyboxAttributes = require('../src/render/skybox_attributes').default;
 
 // layout vertex arrays
 const layoutAttributes = {
@@ -199,6 +200,9 @@ createStructArrayType('line_index', createLayout([
 createStructArrayType('line_strip_index', createLayout([
     { type: 'Uint16', name: 'vertices', components: 1 }
 ]));
+
+// skybox vertex array
+createStructArrayType(`skybox_vertex`, skyboxAttributes);
 
 // paint vertex arrays
 

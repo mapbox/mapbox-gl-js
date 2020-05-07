@@ -907,7 +907,7 @@ test('Map', (t) => {
 
     t.test('#getMaxPitch', (t) => {
         const map = createMap(t, {pitch: 0});
-        t.equal(map.getMaxPitch(), 75, 'returns default value');
+        t.equal(map.getMaxPitch(), 85, 'returns default value');
         map.setMaxPitch(10);
         t.equal(map.getMaxPitch(), 10, 'returns custom value');
         t.end();
@@ -940,7 +940,7 @@ test('Map', (t) => {
     t.test('throw on maxPitch greater than valid maxPitch at init', (t) => {
         t.throws(() => {
             createMap(t, {maxPitch: 90});
-        }, new Error(`maxPitch must be less than or equal to 75`));
+        }, new Error(`maxPitch must be less than or equal to 85`));
         t.end();
     });
 
@@ -1250,7 +1250,7 @@ test('Map', (t) => {
             });
         });
 
-        t.test('fires a data event', (t) => {
+        t.test('fires a data event on background layer', (t) => {
             // background layers do not have a source
             const map = createMap(t, {
                 style: {
@@ -1274,6 +1274,33 @@ test('Map', (t) => {
                 });
 
                 map.setLayoutProperty('background', 'visibility', 'visible');
+            });
+        });
+
+        t.test('fires a data event on sky layer', (t) => {
+            // sky layers do not have a source
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {},
+                    "layers": [{
+                        "id": "sky",
+                        "type": "sky",
+                        "layout": {
+                            "visibility": "none"
+                        }
+                    }]
+                }
+            });
+
+            map.once('style.load', () => {
+                map.once('data', (e) => {
+                    if (e.dataType === 'style') {
+                        t.end();
+                    }
+                });
+
+                map.setLayoutProperty('sky', 'visibility', 'visible');
             });
         });
 

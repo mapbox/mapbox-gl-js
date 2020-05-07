@@ -42,6 +42,7 @@ export type GlobalProperties = $ReadOnly<{
     zoom: number,
     heatmapDensity?: number,
     lineProgress?: number,
+    skyRadialProgress?: number,
     isSupportedScript?: (_: string) => boolean,
     accumulated?: Value
 }>;

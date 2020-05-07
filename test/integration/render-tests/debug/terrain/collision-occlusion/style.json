@@ -4,7 +4,7 @@
     "test": {
       "collisionDebug": true,
       "height": 256,
-      "allowed": 0.0002,
+      "allowed": 0.0005,
       "description": "Collision debug and occlusion test for text and icons.",
       "operations": [
         ["sleep", 1000]
@@ -21,7 +21,7 @@
   "terrain": {
     "source": "rgbterrain",
     "exaggeration": 3
-  },    
+  },
   "sources": {
     "mapbox": {
       "type": "vector",
