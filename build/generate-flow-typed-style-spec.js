@@ -101,7 +101,7 @@ function flowLayer(key) {
         return flowObject(spec[`layout_${key}`], '    ', '|');
     };
 
-    if (key === 'background') {
+    if (key === 'background' || key === 'sky') {
         delete layer.source;
         delete layer['source-layer'];
         delete layer.filter;

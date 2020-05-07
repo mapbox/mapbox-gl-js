@@ -607,6 +607,14 @@
               "macos": "0.1.0"
             }
           }
+        },
+        "sky": {
+          "doc": "The background above the horizon when the map is pitched. Layers of this type always appear behind all other layer types.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "2.0.0"
+            }
+          }
         }
       },
       "doc": "Rendering type of this layer.",
@@ -658,7 +666,8 @@
     "layout_symbol",
     "layout_raster",
     "layout_hillshade",
-    "layout_background"
+    "layout_background",
+    "layout_sky"
   ],
   "layout_background": {
     "visibility": {
@@ -679,6 +688,27 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        }
+      },
+      "property-type": "constant"
+    }
+  },
+  "layout_sky": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+          "doc": "The layer is shown."
+        },
+        "none": {
+          "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
         }
       },
       "property-type": "constant"
@@ -3134,6 +3164,15 @@
           }
         }
       },
+      "sky-radial-progress": {
+        "doc": "Gets the distance of a point on the sky from the sun position. Returns 0 at sun position and 1 when the distance reaches `sky-gradient-radius`. Can only be used in the `sky-gradient` property.",
+        "group": "sky",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.0.0"
+          }
+        }
+      },
       "accumulated": {
         "doc": "Gets the value of a cluster property accumulated so far. Can only be used in the `clusterProperties` option of a clustered GeoJSON source.",
         "group": "Feature data",
@@ -3780,7 +3819,8 @@
     "paint_symbol",
     "paint_raster",
     "paint_hillshade",
-    "paint_background"
+    "paint_background",
+    "paint_sky"
   ],
   "paint_fill": {
     "fill-antialias": {
@@ -5885,6 +5925,158 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    }
+  },
+  "paint_sky": {
+    "sky-type": {
+      "type": "enum",
+      "values": {
+        "gradient": {
+          "doc": "Renders the sky with a gradient that can be configured with `sky-gradient-radius` and `sky-gradient`."
+        },
+        "atmosphere": {
+          "doc": "Renders the sky with a simulated atmospheric scattering algorithm, which automatically changes colors based on the `sky-sun-direction` property."
+        }
+      },
+      "default": "atmosphere",
+      "doc": "The type of the sky",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "sky-sun-direction": {
+      "type": "array",
+      "value": "number",
+      "default": [
+        0,
+        0
+      ],
+      "length": 2,
+      "transition": false,
+      "doc": "Position of the sun [azimuthal angle, altitude angle]. The azimuthal angle indicates the position of the sun relative to 0° north, where degrees proceed clockwise. The altitude indicates the height of the sun, where 0° is at the horizon and 90° directly above, at zenith.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "sky-gradient-radius": {
+      "type": "number",
+      "requires": [
+        {
+          "sky-type": "gradient"
+        }
+      ],
+      "default": 180,
+      "minimum": 0,
+      "maximum": 180,
+      "transition": false,
+      "doc": "The radius angle for a gradient. A value of 180 will make the gradient wrap around.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "sky-gradient": {
+      "type": "color",
+      "doc": "Defines a color gradient with which to color the sky. The color values can be interpolated with an expression using `sky-radial-progress`.",
+      "transition": false,
+      "requires": [
+        {
+          "sky-type": "gradient"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        },
+        "data-driven styling": {}
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "sky-radial-progress"
+        ]
+      },
+      "property-type": "color-ramp"
+    },
+    "sky-atmosphere-halo-color": {
+      "type": "color",
+      "default": "white",
+      "doc": "A color applied to the atmosphere sun halo. The alpha channel describes how strongly the sun halo is represented in an atmosphere sky layer.",
+      "transition": false,
+      "requires": [
+        {
+          "sky-type": "atmosphere"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "sky-atmosphere-color": {
+      "type": "color",
+      "default": "white",
+      "doc": "Color coefficients used to determine how color channels scatter throughout the atmosphere. Using white will apply the default coefficients giving a blue color to the atmosphere. Changing a color channel will affect how heavily this particular channel is affected by scattering. The alpha channel describes how strongly the atmosphere color is represented in the sky layer.",
+      "transition": false,
+      "requires": [
+        {
+          "sky-type": "atmosphere"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "sky-opacity": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "The opacity of the entire sky layer.",
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
         }
       },
       "expression": {

@@ -425,6 +425,26 @@ export type BackgroundLayerSpecification = {|
     |}
 |}
 
+export type SkyLayerSpecification = {|
+    "id": string,
+    "type": "sky",
+    "metadata"?: mixed,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "layout"?: {|
+        "visibility"?: "visible" | "none"
+    |},
+    "paint"?: {|
+        "sky-type"?: PropertyValueSpecification<"gradient" | "atmosphere">,
+        "sky-sun-direction"?: PropertyValueSpecification<[number, number]>,
+        "sky-gradient-radius"?: PropertyValueSpecification<number>,
+        "sky-gradient"?: ExpressionSpecification,
+        "sky-atmosphere-halo-color"?: ColorSpecification,
+        "sky-atmosphere-color"?: ColorSpecification,
+        "sky-opacity"?: PropertyValueSpecification<number>
+    |}
+|}
+
 export type LayerSpecification =
     | FillLayerSpecification
     | LineLayerSpecification
@@ -434,5 +454,6 @@ export type LayerSpecification =
     | FillExtrusionLayerSpecification
     | RasterLayerSpecification
     | HillshadeLayerSpecification
-    | BackgroundLayerSpecification;
+    | BackgroundLayerSpecification
+    | SkyLayerSpecification;
 

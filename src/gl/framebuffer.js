@@ -1,8 +1,8 @@
 // @flow
 import {ColorAttachment, DepthAttachment} from './value';
-import assert from 'assert';
 
 import type Context from './context';
+import assert from 'assert';
 
 class Framebuffer {
     context: Context;
