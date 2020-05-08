@@ -695,10 +695,16 @@
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
       "sdk-support": {
         "basic functionality": {
-          "js": "1.2.0"
+          "js": "1.2.0",
+          "android": "9.2.0",
+          "ios": "5.9.0",
+          "macos": "0.16.0"
         },
         "data-driven styling": {
-          "js": "1.2.0"
+          "js": "1.2.0",
+          "android": "9.2.0",
+          "ios": "5.9.0",
+          "macos": "0.16.0"
         }
       },
       "expression": {
@@ -1065,17 +1071,17 @@
       "type": "enum",
       "values": {
         "auto": {
-          "doc": "If `symbol-sort-key` is set, sort based on that. Otherwise sort symbols by their y-position relative to the viewport."
+          "doc": "Sorts symbols by `symbol-sort-key` if set. Otherwise, sorts symbols by their y-position relative to the viewport if `icon-allow-overlap` or `text-allow-overlap` is set to `true` or `icon-ignore-placement` or `text-ignore-placement` is `false`. If none of these options are set, no sorting is applied; symbols are rendered in the same order as the source data."
         },
         "viewport-y": {
-          "doc": "Symbols will be sorted by their y-position relative to the viewport."
+          "doc": "Sorts symbols by their y-position relative to the viewport if `icon-allow-overlap` or `text-allow-overlap` is set to `true` or `icon-ignore-placement` or `text-ignore-placement` is `false`."
         },
         "source": {
-          "doc": "Symbols will be rendered in the same order as the source data with no sorting applied."
+          "doc": "Sorts symbols by `symbol-sort-key` if set. Otherwise, no sorting is applied; symbols are rendered in the same order as the source data."
         }
       },
       "default": "auto",
-      "doc": "Controls the order in which overlapping symbols in the same layer are rendered",
+      "doc": "Controls the order in which symbols in the same layer are rendered.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.49.0",
