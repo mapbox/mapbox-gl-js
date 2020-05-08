@@ -695,10 +695,16 @@
       "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
       "sdk-support": {
         "basic functionality": {
-          "js": "1.2.0"
+          "js": "1.2.0",
+          "android": "9.2.0",
+          "ios": "5.9.0",
+          "macos": "0.16.0"
         },
         "data-driven styling": {
-          "js": "1.2.0"
+          "js": "1.2.0",
+          "android": "9.2.0",
+          "ios": "5.9.0",
+          "macos": "0.16.0"
         }
       },
       "expression": {
