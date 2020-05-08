@@ -364,7 +364,7 @@ class Transform {
             minZoom = z;
 
         // There should always be a certain number of maximum zoom level tiles surrounding the center location
-        const radiusOfMaxLvlLodInTiles = 3;
+        const radiusOfMaxLvlLodInTiles = 2;
 
         const newRootTile = (wrap: number): any => {
             return {

@@ -26,8 +26,9 @@
     <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
     <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
     <label><input id='satellite-checkbox' type='checkbox'> satellite</label><br />
-    <label><input id='buildings-checkbox' type='checkbox' checked> buildings</label><br />
+    <label><input id='buildings-checkbox' type='checkbox'> buildings</label><br />
     <label><input id='road-label-checkbox' type='checkbox'> road-label-*</label><br />
+    <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -142,6 +143,7 @@ map.on('style.load', function() {
     document.getElementById('road-label-checkbox').onclick();
     document.getElementById('satellite-checkbox').onclick();
     document.getElementById('terrain-checkbox').onclick();
+    document.getElementById('buildings-checkbox').onclick();
 });
 
 document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
@@ -176,6 +178,21 @@ document.getElementById('buildings-checkbox').onclick = function() {
 document.getElementById('road-label-checkbox').onclick = function() {
     ["road-label", "road-label-small", "road-label-medium", "road-label-large"]
         .forEach(layer => { if (map.getLayer(layer)) map.setLayoutProperty(layer, 'visibility', this.checked ? 'visible' : 'none'); });
+};
+
+document.getElementById('repaint-checkbox').onclick = function() {
+    map.repaint = !!this.checked;
+    if (this.checked) {
+        this['frameCounter'] = map.painter.frameCounter;
+        this['fpsTimer'] = window.setInterval(() => {
+            document.getElementById('fps').innerHTML = `${(map.painter.frameCounter - this.frameCounter) / 2}`;
+            this.frameCounter = map.painter.frameCounter;
+        }, 2000);
+    } else {
+        window.clearInterval(this.fpsTimer);
+        document.getElementById('fps').innerHTML = `0`;
+    }
+    if (map.painter.terrain) map.painter.terrain.forceDrapeFirst = !!this.checked;
 };
 
 // keyboard shortcut for comparing rendering with Mapbox GL native
