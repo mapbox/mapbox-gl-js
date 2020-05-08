@@ -3,20 +3,21 @@
   "metadata": {
     "test": {
       "collisionDebug": true,
-      "height": 256,
+      "height": 160,
+      "width": 160,
       "allowed": 0.0005,
       "description": "Collision debug and occlusion test for text and icons.",
       "operations": [
-        ["sleep", 1000]
+        ["sleep", 1200]
       ]
     }
   },
   "center": [
-    13.418056,
-    52.499167
+    13.421,
+    52.499168
   ],
   "bearing": 36.8,
-  "pitch": 45,
+  "pitch": 41,
   "zoom": 14,
   "terrain": {
     "source": "rgbterrain",
