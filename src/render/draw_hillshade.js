@@ -27,7 +27,10 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const colorMode = painter.colorModeForRenderPass();
 
-    const [stencilModes, coords] = painter.renderPass === 'translucent' ?
+    // When rendering to texture, coordinates are already sorted: primary by
+    // proxy id and secondary sort is by Z.
+    const renderingToTexture = painter.terrain && painter.terrain.renderingToTexture;
+    const [stencilModes, coords] = painter.renderPass === 'translucent' && !renderingToTexture ?
         painter.stencilConfigForOverlap(tileIDs) : [{}, tileIDs];
 
     for (const coord of coords) {
@@ -35,7 +38,9 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
         if (tile.needsHillshadePrepare && painter.renderPass === 'offscreen') {
             prepareHillshade(painter, tile, layer, depthMode, StencilMode.disabled, colorMode);
         } else if (painter.renderPass === 'translucent') {
-            renderHillshade(painter, coord, tile, layer, depthMode, stencilModes[coord.overscaledZ], colorMode);
+            const stencilMode = renderingToTexture && painter.terrain ?
+                painter.terrain.stencilModeForRTTOverlap(coord) : stencilModes[coord.overscaledZ];
+            renderHillshade(painter, coord, tile, layer, depthMode, stencilMode, colorMode);
         }
     }
 

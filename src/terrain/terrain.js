@@ -1,5 +1,6 @@
 // @flow
 
+import Point from '@mapbox/point-geometry';
 import SourceCache from '../source/source_cache';
 import {OverscaledTileID} from '../source/tile_id';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
@@ -22,6 +23,10 @@ import {DepthStencilAttachment} from '../gl/value';
 import {drawTerrainRaster, drawTerrainDepth} from './draw_terrain_raster';
 import {Elevation} from './elevation';
 import Framebuffer from '../gl/framebuffer';
+import ColorMode from '../gl/color_mode';
+import DepthMode from '../gl/depth_mode';
+import CullFaceMode from '../gl/cull_face_mode';
+import {clippingMaskUniformValues} from '../render/program/clipping_mask_program';
 
 import type Map from '../ui/map';
 import type Tile from '../source/tile';
@@ -38,6 +43,8 @@ import type {Callback} from '../types/callback';
 
 export const GRID_DIM = 128;
 
+const FBO_POOL_SIZE = 5;
+
 // Symbols are draped only for specific cases: see _isLayerDrapedOverTerrain
 const drapedLayers = {'fill': true, 'line': true, 'background': true, "hillshade": true, "raster": true};
 
@@ -52,8 +59,6 @@ const drapedLayers = {'fill': true, 'line': true, 'background': true, "hillshade
  * constructed only for proxy tile content, not for full overscalled vector tile.
  */
 class ProxySourceCache extends SourceCache {
-    renderedToTile: {[string]: boolean};
-
     constructor(map: Map) {
         super('proxy', {
             type: 'geojson',
@@ -64,8 +69,6 @@ class ProxySourceCache extends SourceCache {
         // For that, initialize internal structures used for tile cover update.
         this.map = ((this.getSource(): any): GeoJSONSource).map = map;
         this.used = this._sourceLoaded = true;
-
-        this.renderedToTile = {};
     }
 
     // Override as tile shouldn't go through loading state: always loaded to prevent
@@ -73,6 +76,11 @@ class ProxySourceCache extends SourceCache {
     _loadTile(tile: Tile, callback: Callback<void>) {
         tile.state = 'loaded';
         callback(null);
+    }
+
+    _unloadTile(tile: Tile) {
+        tile.state = 'unloaded';
+        // tile.texture is managed by Terrain.pool.
     }
 }
 
@@ -93,6 +101,8 @@ class ProxiedTileID extends OverscaledTileID {
     }
 }
 
+type OverlapStencilType = false | 'Clip' | 'Mask';
+
 export class Terrain extends Elevation {
     terrainTileForTile: {[string]: Tile};
     painter: Painter;
@@ -102,22 +112,30 @@ export class Terrain extends Elevation {
     gridSegments: SegmentVector;
     gridNoSkirtSegments: SegmentVector;
     proxiedCoords: {[string]: Array<ProxiedTileID>};
-    hasCoordOverlap: {[string]: boolean};
     proxyCoords: Array<OverscaledTileID>;
+    proxyToSource: {[string]: {[string]: Array<ProxiedTileID>}};
     proxySourceCache: ProxySourceCache;
     renderingToTexture: boolean;
     styleDirty: boolean;
     orthoMatrix: mat4;
     valid: boolean;
-    // Order of rendering is such that source tiles draw order has the same proxy
-    // as primary sort and zoom level as secondary. Use currentProxyTileKey to
-    // track when render advances to next proxy tile.
-    currentProxy: string;
-    stencilModeForOverlap: StencilMode;
+
+    drapeFirst: boolean;
+    drapeFirstPending: boolean;
+    forceDrapeFirst: boolean; // debugging purpose.
+
+    _sourceTilesOverlap: {[string]: boolean};
+    _overlapStencilMode: StencilMode;
+    _overlapStencilType: OverlapStencilType;
+
     _exaggeration: number;
     _depthFBO: Framebuffer;
     _depthTexture: Texture;
     _depthDone: boolean;
+    _previousZoom: number;
+    pool: Array<{fb: Framebuffer, tex: Texture, dirty: boolean, ref: number}>;
+    poolIndex: number;
+    renderedToTile: boolean;
 
     constructor(painter: Painter, style: Style) {
         super();
@@ -136,12 +154,14 @@ export class Terrain extends Elevation {
         this.gridNoSkirtSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, skirtIndicesOffset);
         this.proxyCoords = [];
         this.proxiedCoords = {};
-        this.hasCoordOverlap = {};
+        this._sourceTilesOverlap = {};
         this.proxySourceCache = new ProxySourceCache(style.map);
         this.orthoMatrix = mat4.create();
         mat4.ortho(this.orthoMatrix, 0, EXTENT, 0, EXTENT, 0, 1);
         const gl = context.gl;
-        this.stencilModeForOverlap = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, 0, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+        this._overlapStencilMode = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, 0, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+        this._previousZoom = painter.transform.zoom;
+        this.pool = [];
 
         style.on('data', (event) => {
             this.styleDirty = this.styleDirty || event.dataType === 'style';
@@ -207,24 +227,24 @@ export class Terrain extends Elevation {
     updateTileBinding(sourcesCoords: {[string]: Array<OverscaledTileID>}) {
         if (!this.valid) return;
         this.terrainTileForTile = {};
+        this.proxyToSource = {};
         // Update draped tiles coordinates.
         const psc = this.proxySourceCache;
         const tr = this.painter.transform;
         const sourceCaches = this.painter.style.sourceCaches;
         psc.update(tr);
         // when zooming in, no need for handling partially loaded tiles to hide holes.
-        const coords = this.proxyCoords = this.painter.options.zooming ? psc.getVisibleCoordinates(false) :
+        const coords = this.proxyCoords = this.painter.options.zooming && tr.zoom > this._previousZoom ? psc.getVisibleCoordinates(false) :
             psc.getIds().map((id) => {
                 const tileID = psc.getTileByID(id).tileID;
                 tileID.posMatrix = tr.calculatePosMatrix(tileID.toUnwrapped());
                 return tileID;
-            }).reverse();
+            });
+        sortByDistanceToCamera(coords, this.painter);
+        this._previousZoom = tr.zoom;
         coords.forEach((tileID) => {
-            if (psc.renderedToTile[tileID.key]) {
-                psc.renderedToTile[tileID.key] = false;
-            }
+            this.proxyToSource[tileID.key] = {};
         });
-
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[id]);
@@ -241,8 +261,12 @@ export class Terrain extends Elevation {
         this._assignTerrainTiles(coords);
         this._prepareDEMTextures();
 
+        const options = this.painter.options;
+        this.drapeFirst = options.zooming || options.moving || options.rotating || this.forceDrapeFirst;
+        this.drapeFirstPending = this.drapeFirst;
         this.renderingToTexture = false;
         if (this.styleDirty) this.styleDirty = false;
+        this._initFBOPool();
     }
 
     _assignTerrainTiles(coords: Array<OverscaledTileID>) {
@@ -315,52 +339,205 @@ export class Terrain extends Elevation {
     }
 
     // If terrain handles layer rendering (rasterize it), return true.
-    renderLayer(layer: StyleLayer, sourceCache: SourceCache): boolean {
+    renderLayer(layer: StyleLayer, _: SourceCache): boolean {
         const painter = this.painter;
         if (painter.renderPass !== 'translucent') {
             // Depth texture is used only for POI symbols, to skip render of symbols occluded by e.g. hill.
             if (!this._depthDone && layer.type === 'symbol') this.drawDepth();
             return true; // Early leave: all rendering is done in translucent pass.
         }
-        if (this._isLayerDrapedOverTerrain(layer)) {
-            if (!this.renderingToTexture) {
-                this.renderingToTexture = true;
-            }
-            const proxiedCoords = this.proxiedCoords[layer.source] || this.proxiedCoords[this.proxySourceCache.id];
-            const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
-            this.currentProxy = '';
-            painter.renderLayer(painter, sourceCache, layer, coords);
-            if (painter.currentLayer === painter.style._order.length - 1) {
-                if (this.renderingToTexture) {
-                    this.drawCurrentRTT();
-                }
-            }
+        if (this.drapeFirst && this.drapeFirstPending) {
+            this.render();
+            this.drapeFirstPending = false;
             return true;
-        }
-        if (this.renderingToTexture) {
-            // If there's existing RTT ongoing for previous layers, render it to screen.
-            this.drawCurrentRTT();
+        } else if (this._isLayerDrapedOverTerrain(layer)) {
+            if (this.drapeFirst && !this.renderingToTexture) {
+                // It's done. nothing to do for this layer but to advance.
+                return true;
+            }
+            this.render();
+            return true;
         }
         return false;
     }
 
-    // Finish current render to texture pass by rendering it to screen.
-    drawCurrentRTT() {
-        assert(this.renderingToTexture);
-        this.renderingToTexture = false;
+    // For each proxy tile, render all layers until the non-draped layer (and
+    // render the tile to the screen) before advancing to the next proxy tile.
+    // Apart to layer-by-layer rendering used in 2D, here we have proxy-tile-by-proxy-tile
+    // rendering.
+    render() {
+        this.renderingToTexture = true;
         const painter = this.painter;
-        const context = painter.context;
-        const psc = this.proxySourceCache;
+        const context = this.painter.context;
+        const sourceCaches = this.painter.style.sourceCaches;
+        const proxies = this.proxiedCoords[this.proxySourceCache.id];
+        const start = painter.currentLayer;
+        let end = start;
+        const layerIds = painter.style._order;
+
+        let j = 0;
+        for (let i = 0; i < proxies.length; i++) {
+            const proxy = proxies[i];
+
+            // assign fbo and texture to the tile.
+            const tile = this.proxySourceCache.getTileByID(proxy.proxyTileKey);
+            this.poolIndex = i % FBO_POOL_SIZE;
+            const pool = this.pool[this.poolIndex];
+            tile.texture = pool.tex;
+            context.bindFramebuffer.set(pool.fb.framebuffer);
+            this.renderedToTile = false; // reset flag.
+            if (pool.dirty) {
+                // Clear on start.
+                context.clear({color: Color.transparent});
+                pool.dirty = false;
+            }
+
+            let currentStencilSource; // There is no need to setup stencil for the same source for consecutive layers.
+            for (painter.currentLayer = start; painter.currentLayer < layerIds.length; painter.currentLayer++) {
+                const layer = painter.style._layers[layerIds[painter.currentLayer]];
+                if (layer.isHidden(painter.transform.zoom)) continue;
+
+                if (this.drapeFirst && !this._isLayerDrapedOverTerrain(layer)) continue;
+                if (painter.currentLayer > end) {
+                    if (!this._isLayerDrapedOverTerrain(layer)) break;
+                    end++;
+                }
+                const sourceCache = sourceCaches[layer.source];
+                const proxiedCoords = sourceCache ? this.proxyToSource[proxy.key][sourceCache.id] : [proxy];
+                if (!proxiedCoords) continue; // when tile is not loaded yet for the source cache.
+                const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
+                context.viewport.set([0, 0, pool.fb.width, pool.fb.height]);
+                if (currentStencilSource !== layer.source) {
+                    this._setupStencil(proxiedCoords, layer);
+                    currentStencilSource = layer.source;
+                }
+                painter.renderLayer(painter, sourceCache, layer, coords);
+            }
+            pool.dirty = this.renderedToTile;
+
+            if ((i + 1) % FBO_POOL_SIZE === 0 || i === proxies.length - 1) {
+                // End of pool or tiles to render: render prepared to screen.
+                const coords = [];
+                const psc = this.proxySourceCache;
+                for (; j <= i; j++) {
+                    if (this.pool[j % FBO_POOL_SIZE].dirty) {
+                        const proxy = proxies[j];
+                        const tile = psc.getTileByID(proxy.proxyTileKey);
+                        coords.push(tile.tileID);
+                    }
+                }
+
+                if (coords.length > 0) {
+                    context.bindFramebuffer.set(null);
+                    context.viewport.set([0, 0, painter.width, painter.height]);
+                    this.renderingToTexture = false;
+                    drawTerrainRaster(painter, this, psc, coords);
+                    this.renderingToTexture = true;
+                }
+            }
+        }
+        this.renderingToTexture = false;
         context.bindFramebuffer.set(null);
         context.viewport.set([0, 0, painter.width, painter.height]);
-        // Render to screen only tiles that were rendered to.
-        const coords = this.proxyCoords.filter(coord => {
-            const renderedToTile = psc.renderedToTile[coord.key];
-            if (renderedToTile) { psc.renderedToTile[coord.key] = false; }
-            return renderedToTile;
-        });
-        if (coords.length > 0) {
-            drawTerrainRaster(painter, this, psc, coords);
+        painter.currentLayer = this.drapeFirst ? -1 : end;
+        assert(!this.drapeFirst || (start === 0 && painter.currentLayer === -1));
+    }
+
+    _initFBOPool() {
+        const painter = this.painter;
+        const context = painter.context;
+        const gl = context.gl;
+        while (this.pool.length < Math.min(FBO_POOL_SIZE, this.proxyCoords.length)) {
+            const tileSize = this.proxySourceCache.getSource().tileSize * 2; // *2 is to avoid upscaling bitmap on zoom.
+            context.activeTexture.set(gl.TEXTURE0);
+            const tex = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
+            tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            const fb = context.createFramebuffer(tileSize, tileSize, false);
+            fb.colorAttachment.set(tex.texture);
+            this.pool.push({fb, tex, dirty: false, ref: 1});
+        }
+    }
+
+    _setupStencil(proxiedCoords: Array<ProxiedTileID>, layer: StyleLayer) {
+        if (!this._sourceTilesOverlap[layer.source]) {
+            if (this._overlapStencilType) this._overlapStencilType = false;
+            return;
+        }
+        const context = this.painter.context;
+        const gl = context.gl;
+
+        // If needed, setup stencilling. Don't bother to remove when there is no
+        // more need: in such case, if there is no overlap, stencilling is disabled.
+        if (proxiedCoords.length <= 1) { this._overlapStencilType = false; return; }
+
+        const pool = this.pool[this.poolIndex];
+        const fbo = pool.fb;
+        let stencilRange;
+        if (layer.isTileClipped()) {
+            stencilRange = proxiedCoords.length;
+            this._overlapStencilMode.test = {func: gl.EQUAL, mask: 0xFF};
+            this._overlapStencilType = 'Clip';
+        } else if (proxiedCoords[0].overscaledZ > proxiedCoords[proxiedCoords.length - 1].overscaledZ) {
+            stencilRange = 1;
+            this._overlapStencilMode.test = {func: gl.GREATER, mask: 0xFF};
+            this._overlapStencilType = 'Mask';
+        } else {
+            this._overlapStencilType = false;
+            return;
+        }
+        if (!fbo.depthAttachment) {
+            const renderbuffer = context.createRenderbuffer(context.gl.DEPTH_STENCIL, fbo.width, fbo.height);
+            fbo.depthAttachment = new DepthStencilAttachment(context, fbo.framebuffer);
+            fbo.depthAttachment.set(renderbuffer);
+            context.clear({stencil: 0});
+        }
+        if (pool.ref + stencilRange > 256) {
+            context.clear({stencil: 0});
+            pool.ref = 0;
+        }
+        pool.ref += stencilRange;
+        this._overlapStencilMode.ref = pool.ref;
+        if (layer.isTileClipped()) {
+            this._renderTileClippingMasks(proxiedCoords, this._overlapStencilMode.ref);
+        }
+    }
+
+    stencilModeForRTTOverlap(id: OverscaledTileID) {
+        if (!this.renderingToTexture || !this._overlapStencilType) {
+            return StencilMode.disabled;
+        }
+        // All source tiles contributing to the same proxy are processed in sequence, in zoom descending order.
+        // For raster / hillshade overlap masking, ref is based on zoom dif.
+        // For vector layer clipping, every tile gets dedicated stencil ref.
+        if (this._overlapStencilType === 'Clip') {
+            // In immediate 2D mode, we render rects to mark clipping area and handle behavior on tile borders.
+            // Here, there is no need for now for this:
+            // 1. overlap is handled by proxy render to texture tiles (there is no overlap there)
+            // 2. here we handle only brief zoom out semi-transparent color intensity flickering
+            //    and that is avoided fine by stenciling primitives as part of drawing (instead of additional tile quad step).
+            this._overlapStencilMode.ref = this.painter._tileClippingMaskIDs[id.key];
+        } // else this._overlapStencilMode.ref is set to a single value used per proxy tile, in _setupStencil.
+        return this._overlapStencilMode;
+    }
+
+    _renderTileClippingMasks(proxiedCoords: Array<ProxiedTileID>, ref: number) {
+        const painter = this.painter;
+        const context = this.painter.context;
+        const gl = context.gl;
+        painter._tileClippingMaskIDs = {};
+        context.setColorMode(ColorMode.disabled);
+        context.setDepthMode(DepthMode.disabled);
+
+        const program = painter.useProgram('clippingMask');
+
+        for (const tileID of proxiedCoords) {
+            const id = painter._tileClippingMaskIDs[tileID.key] = --ref;
+            program.draw(context, gl.TRIANGLES, DepthMode.disabled,
+                // Tests will always pass, and ref value will be written to stencil buffer.
+                new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
+                ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.posMatrix),
+                '$clipping', painter.tileExtentBuffer,
+                painter.quadTriangleIndexBuffer, painter.tileExtentSegments);
         }
     }
 
@@ -409,7 +586,9 @@ export class Terrain extends Elevation {
             const proxyTileID = proxys[i];
             const proxied = this._findTileCoveringTileID(proxyTileID, sourceCache);
             if (proxied) {
-                coords.push(this._createProxiedId(proxyTileID, proxied));
+                const id = this._createProxiedId(proxyTileID, proxied);
+                coords.push(id);
+                this.proxyToSource[proxyTileID.key][sourceCache.id] = [id];
             }
         }
         let hasOverlap = false;
@@ -419,19 +598,20 @@ export class Terrain extends Elevation {
             const proxy = this._findTileCoveringTileID(tile.tileID, this.proxySourceCache);
             // Don't add the tile if already added in loop above.
             if (proxy && proxy.tileID.canonical.z !== tile.tileID.canonical.z) {
-                coords.push(this._createProxiedId(proxy.tileID, tile));
+                const array = this.proxyToSource[proxy.tileID.key][sourceCache.id];
+                const id = this._createProxiedId(proxy.tileID, tile);
+                if (!array) {
+                    this.proxyToSource[proxy.tileID.key][sourceCache.id] = [id];
+                } else {
+                    // The last element is parent added in loop above. This way we get
+                    // a list in Z descending order which is needed for stencil masking.
+                    array.splice(array.length - 1, 0, id);
+                }
+                coords.push(id);
                 hasOverlap = true;
             }
         }
-        hasOverlap = hasOverlap && !sourceCache.getSource().reparseOverscaled;
-        this.hasCoordOverlap[sourceCache.id] = hasOverlap;
-        if (hasOverlap) {
-            coords.sort((a, b) => {
-                return a.proxyTileKey === b.proxyTileKey ?
-                    b.overscaledZ - a.overscaledZ :
-                    a.proxyTileKey < b.proxyTileKey ? -1 : 1;
-            });
-        }
+        this._sourceTilesOverlap[sourceCache.id] = hasOverlap;
     }
 
     _createProxiedId(proxyTileID: OverscaledTileID, tile: Tile): ProxiedTileID {
@@ -478,71 +658,28 @@ export class Terrain extends Elevation {
         return (tile && tile.hasData()) ? tile : null;
     }
 
-    _getCurrentLayer(): StyleLayer {
-        return this.painter.style.getLayer(this.painter.style._order[this.painter.currentLayer]);
-    }
-
     /*
-     * Prepare texture and framebuffer for render to texture and bind it for
-     * ortho rendering.
-     * This method is called within Terrain.renderLayer: there we upcast proxiedCoords
-     * to Array<OverscaledTileID> and here we downcast individual tileIds back
-     * to ProxiedTileID.
+     * Bookkeeping if something gets rendered to the tile.
      */
-    prepareDrawTile(tileID: OverscaledTileID) {
-        if (!this.renderingToTexture) return;
-        const proxied = ((tileID: any): ProxiedTileID);
-        const key = proxied.proxyTileKey;
-        const tile = this.proxySourceCache.getTileByID(key);
-
-        const context = this.painter.context;
-        const gl = context.gl;
-        const tileSize = tile.tileSize * 2; // *2 is to avoid upscaling bitmap on zoom.
-
-        if (!tile.fbo) {
-            context.activeTexture.set(gl.TEXTURE0);
-            const texture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
-            texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-
-            const fbo = context.createFramebuffer(tileSize, tileSize, false);
-            fbo.colorAttachment.set(texture.texture);
-            tile.fbo = fbo;
-            tile.texture = texture;
-        }
-        const fbo = tile.fbo;
-        context.bindFramebuffer.set(fbo.framebuffer);
-        context.viewport.set([0, 0, tileSize, tileSize]);
-
-        // If needed, setup stencilling. Don't bother to remove when there is no
-        // more need: in such case, if there is no overlap, stencilling is disabled.
-        if (tileID.overscaledZ > tile.tileID.overscaledZ && this.hasCoordOverlap[this._getCurrentLayer().source]) {
-            // Overlap is when source tile (the one that gets rendered to proxy) is of higher zoom.
-            if (!fbo.depthAttachment) {
-                const renderbuffer = context.createRenderbuffer(context.gl.DEPTH_STENCIL, tileSize, tileSize);
-                fbo.depthAttachment = new DepthStencilAttachment(context, fbo.framebuffer);
-                fbo.depthAttachment.set(renderbuffer);
-            }
-            if (key !== this.currentProxy) {
-                context.clear({stencil: 0});
-            }
-            this.currentProxy = key;
-        }
-
-        if (!this.proxySourceCache.renderedToTile[key]) {
-            this.proxySourceCache.renderedToTile[key] = true;
-            // Clear on start as previous layers (or pass) have rendered to the same tile.
-            context.clear({color: Color.transparent});
+    prepareDrawTile(_: OverscaledTileID) {
+        if (!this.renderedToTile) {
+            this.renderedToTile = true;
         }
     }
+}
 
-    stencilModeForRTTOverlap(coord: OverscaledTileID, sourceCache: SourceCache) {
-        if (!this.hasCoordOverlap[sourceCache.id]) return StencilMode.disabled;
-        const proxiedTileID = ((coord: any): ProxiedTileID);
-        // All source tiles contributing to the same proxy are processed in sequence.
-        if (proxiedTileID.proxyTileKey !== this.currentProxy) return StencilMode.disabled;
-        this.stencilModeForOverlap.ref = coord.overscaledZ;
-        return this.stencilModeForOverlap;
-    }
+function sortByDistanceToCamera(tileIDs, painter) {
+    const cameraCoordinate = painter.transform.pointCoordinate(painter.transform.getCameraPoint());
+    const cameraPoint = new Point(cameraCoordinate.x, cameraCoordinate.y);
+    tileIDs.sort((a, b) => {
+        if (b.overscaledZ - a.overscaledZ) return b.overscaledZ - a.overscaledZ;
+        const aPoint = new Point(a.canonical.x + (1 << a.canonical.z) * a.wrap, a.canonical.y);
+        const bPoint = new Point(b.canonical.x + (1 << b.canonical.z) * b.wrap, b.canonical.y);
+        const cameraScaled = cameraPoint.mult(1 << a.canonical.z);
+        cameraScaled.x -= 0.5;
+        cameraScaled.y -= 0.5;
+        return cameraScaled.distSqr(aPoint) - cameraScaled.distSqr(bPoint);
+    });
 }
 
 /**

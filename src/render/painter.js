@@ -107,7 +107,6 @@ class Painter {
     quadTriangleIndexBuffer: IndexBuffer;
     tileBorderIndexBuffer: IndexBuffer;
     _tileClippingMaskIDs: {[_: string]: number };
-    enableTileClipping: ?boolean;
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -147,13 +146,11 @@ class Painter {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this.gpuTimers = {};
-
-        this.enableTileClipping = true;
         this.frameCounter = 0;
     }
 
     updateTerrain(style: Style) {
-        const enabled = style.terrain.properties.get('source');
+        const enabled = style.terrain && style.terrain.properties.get('source');
         if (!enabled) {
             this.transform.elevation = null;
             if (this._terrain) {
@@ -162,7 +159,6 @@ class Painter {
             for (const id in style.sourceCaches) {
                 style.sourceCaches[id].usedForTerrain = false;
             }
-            this.enableTileClipping = true;
             return;
         }
         if (!this._terrain) {
@@ -174,7 +170,6 @@ class Painter {
         if (!terrain.valid) {
             this.transform.elevation = null;
         }
-        this.enableTileClipping = false;
     }
 
     get terrain(): ?Terrain {
@@ -327,7 +322,7 @@ class Painter {
     }
 
     stencilModeForClipping(tileID: OverscaledTileID): $ReadOnly<StencilMode>  {
-        if (!this.enableTileClipping) return StencilMode.disabled; // TO DO check without it.
+        if (this.terrain) return this.terrain.stencilModeForRTTOverlap(tileID);
         const gl = this.context.gl;
         return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
