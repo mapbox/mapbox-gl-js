@@ -1081,7 +1081,7 @@
         }
       },
       "default": "auto",
-      "doc": "Controls the order in which symbols in the same layer are rendered.",
+      "doc": "Determines whether overlapping symbols in the same layer are rendered in the order that they appear in the data source or by their y-position relative to the viewport. To control the order and prioritization of symbols otherwise, use `symbol-sort-key`.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.49.0",
