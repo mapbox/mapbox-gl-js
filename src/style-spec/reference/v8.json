@@ -1071,17 +1071,17 @@
       "type": "enum",
       "values": {
         "auto": {
-          "doc": "If `symbol-sort-key` is set, sort based on that. Otherwise sort symbols by their y-position relative to the viewport."
+          "doc": "Sorts symbols by `symbol-sort-key` if set. Otherwise, sorts symbols by their y-position relative to the viewport if `icon-allow-overlap` or `text-allow-overlap` is set to `true` or `icon-ignore-placement` or `text-ignore-placement` is `false`."
         },
         "viewport-y": {
-          "doc": "Symbols will be sorted by their y-position relative to the viewport."
+          "doc": "Sorts symbols by their y-position relative to the viewport if `icon-allow-overlap` or `text-allow-overlap` is set to `true` or `icon-ignore-placement` or `text-ignore-placement` is `false`."
         },
         "source": {
-          "doc": "Symbols will be rendered in the same order as the source data with no sorting applied."
+          "doc": "Sorts symbols by `symbol-sort-key` if set. Otherwise, no sorting is applied; symbols are rendered in the same order as the source data."
         }
       },
       "default": "auto",
-      "doc": "Controls the order in which overlapping symbols in the same layer are rendered",
+      "doc": "Determines whether overlapping symbols in the same layer are rendered in the order that they appear in the data source or by their y-position relative to the viewport. To control the order and prioritization of symbols otherwise, use `symbol-sort-key`.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.49.0",
@@ -2626,8 +2626,17 @@
           }
         }
       },
-      "index-of": { 
-        "doc": "Returns the first index at which a given element can be found in an array, or for a string, the first occurrence of the specified value. If a second argument is provided, then the search is started from that position. Returns -1 if the value is not found.",
+      "index-of": {
+        "doc": "Returns the first position at which an item can be found in an array or a substring can be found in a string, or `-1` if the input cannot be found. Accepts an optional index from where to begin the search.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.10.0"
+          }
+        }
+      },
+      "slice": {
+        "doc": "Returns an item from an array or a substring from a string from a specified start index, or between a start index and an end index if set. The return value is inclusive of the start index but not of the end index.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
@@ -2648,7 +2657,7 @@
         }
       },
       "match": {
-        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must be either:\n * a single literal value; or\n * an array of literal values, whose values must be all strings or all numbers (e.g. `[100, 101]` or `[\"c\", \"b\"]`). The input matches if any of the values in the array matches, similar to the `\"in\"` operator.\n\nEach label must be unique. If the input type does not match the type of the labels, the result will be the fallback value.",
+        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must be either:\n - a single literal value; or\n - an array of literal values, whose values must be all strings or all numbers (e.g. `[100, 101]` or `[\"c\", \"b\"]`). The input matches if any of the values in the array matches, similar to the `\"in\"` operator.\nEach label must be unique. If the input type does not match the type of the labels, the result will be the fallback value.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2684,7 +2693,7 @@
         }
       },
       "interpolate": {
-        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. The output type must be `number`, `array<number>`, or `color`.\n\nInterpolation types:\n- `[\"linear\"]`: interpolates linearly between the pair of stops just less than and just greater than the input.\n- `[\"exponential\", base]`: interpolates exponentially between the stops just less than and just greater than the input. `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y1, x2, y2]`: interpolates using the cubic bezier curve defined by the given control points.",
+        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. The output type must be `number`, `array<number>`, or `color`.\n\nInterpolation types:\n- `[\"linear\"]`: Interpolates linearly between the pair of stops just less than and just greater than the input.\n- `[\"exponential\", base]`: Interpolates exponentially between the stops just less than and just greater than the input. `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y1, x2, y2]`: Interpolates using the cubic bezier curve defined by the given control points.",
         "group": "Ramps, scales, curves",
         "sdk-support": {
           "basic functionality": {
@@ -2822,7 +2831,7 @@
         }
       },
       "format": {
-        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. For a `text-field` entries of a string type, following option object's properties are supported: If set, the `text-font` value overrides the font specified by the root layout properties. If set, the `font-scale` value specifies a scaling factor relative to the `text-size` specified in the root layout properties. If set, the `text-color` value overrides the color specified by the root paint properties for this layer.",
+        "doc": "Returns a `formatted` string for displaying mixed-format text in the `text-field` property. The input may contain a string literal or expression, including an [`'image'`](#types-image) expression. Strings may be followed by a style override object that supports the following properties:\n- `\"text-font\"`: Overrides the font stack specified by the root layout property.\n- `\"text-color\"`: Overrides the color specified by the root paint property.\n- `\"font-scale\"`: Applies a scaling factor on `text-size` as specified by the root layout property.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -2851,6 +2860,7 @@
           },
           "image": {
             "js": "1.6.0",
+            "android": "8.6.0",
             "ios": "5.7.0",
             "macos": "0.15.0"
           }
@@ -3019,7 +3029,7 @@
         }
       },
       "geometry-type": {
-        "doc": "Gets the feature's geometry type: Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon.",
+        "doc": "Gets the feature's geometry type: `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -3351,6 +3361,17 @@
           }
         }
       },
+      "distance": {
+        "doc": "Returns the shortest distance in meters between the evaluated feature and the input geometry. The input value can be a valid GeoJSON of type `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`. Distance values returned may vary in precision due to loss in precision from encoding geometries, particularly below zoom level 13.",
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "android": "9.2.0",
+            "ios": "5.9.0",
+            "macos": "0.16.0"
+          }
+        }
+      },
       "==": {
         "doc": "Returns `true` if the input values are equal, `false` otherwise. The comparison is strictly typed: values of different runtime types are always considered unequal. Cases where the types are known to be different at parse time are considered invalid and will produce a parse error. Accepts an optional `collator` argument to control locale-dependent string comparisons.",
         "group": "Decision",
@@ -3496,7 +3517,7 @@
         }
       },
       "within": {
-        "doc": "Returns `true` if the feature being evaluated is inside the pre-defined geometry boundary, `false` otherwise. The expression has one argument which must be a valid GeoJSON Polygon/Multi-Polygon object. The expression only evaluates on `Point` or `LineString` feature. For `Point` feature, The expression will return false if any point of the feature is on the boundary or outside the boundary. For `LineString` feature, the expression will return false if the line is fully outside the boundary, or the line is partially intersecting the boundary, which means either part of the line is outside of the boundary, or end point of the line lies on the boundary.",
+        "doc": "Returns `true` if the evaluated feature is fully contained inside a boundary of the input geometry, `false` otherwise. The input value can be a valid GeoJSON of type `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`. Supported features for evaluation:\n- `Point`: Returns `false` if a point is on the boundary or falls outside the boundary.\n- `LineString`: Returns `false` if any part of a line falls outside the boundary, the line intersects the boundary, or a line's endpoint is on the boundary.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -3562,15 +3583,6 @@
             "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
-          }
-        }
-      },
-      "slice": { 
-        "doc": "Returns a portion of a string or an array starting from the provided beginning index. If a second argument is provided, then the return portion will run to, but not include, the end index.",
-        "group": "String",
-        "sdk-support": {
-          "basic functionality": {
-            "js": "1.10.0"
           }
         }
       }
