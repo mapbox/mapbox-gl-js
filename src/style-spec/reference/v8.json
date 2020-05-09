@@ -1271,9 +1271,10 @@
         }
       },
       "stretchable icons": {
-      "js": "1.6.0",
-      "ios": "5.8.0",
-      "macos": "0.15.0"
+        "js": "1.6.0",
+        "android": "9.2.0",
+        "ios": "5.8.0",
+        "macos": "0.15.0"
         }
       },
       "expression": {
