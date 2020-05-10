@@ -38,15 +38,14 @@ import type {ImagePosition} from '../../render/image_atlas';
 
 const FACTOR = Math.pow(2, 13);
 
-function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
+function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     vertexArray.emplaceBack(
-        // a_pos
-        x,
-        y,
-        // a_normal_ed: 3-component normal and 1-component edgedistance
-        Math.floor(nx * FACTOR) * 2 + t,
-        ny * FACTOR * 2,
-        nz * FACTOR * 2,
+        // a_pos_normal_ed:
+        // Encode top and side/up normal using the least significant bits
+        (x << 1) + top,
+        (y << 1) + normalUp,
+        // dxdy is signed, encode quadrant info using the least significant bit
+        (Math.floor(nxRatio * FACTOR) << 1) + nySign,
         // edgedistance (used for wrapping patterns around extrusion sides)
         Math.round(e)
     );
@@ -186,17 +185,21 @@ class FillExtrusionBucket implements Bucket {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                             }
 
-                            const perp = p1.sub(p2)._perp()._unit();
+                            const d = p1.sub(p2)._perp();
+                            // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
+                            // This information is sufficient to reconstruct normal vector in vertex shader.
+                            const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
+                            const nySign = d.y > 0 ? 1 : 0;
                             const dist = p2.dist(p1);
                             if (edgeDistance + dist > 32768) edgeDistance = 0;
 
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 1, edgeDistance);
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
 
                             edgeDistance += dist;
 
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 1, edgeDistance);
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance);
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance);
 
                             const bottomRight = segment.vertexLength;
 
