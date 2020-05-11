@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 512
+    }
+  },
+  "sources": {},
+  "zoom": 14,
+  "pitch": 72,
+  "bearing": 60,
+  "layers": [
+    {
+      "id": "blue-fill",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-sun-direction": [0, 0],
+        "sky-gradient": [
+          "interpolate",
+          ["linear"],
+          ["sky-radial-progress"],
+          0,
+          "green",
+          1,
+          "green"
+        ]
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    }
+  ]
+}

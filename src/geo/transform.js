@@ -4,10 +4,10 @@ import LngLat from './lng_lat';
 import LngLatBounds from './lng_lat_bounds';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from './mercator_coordinate';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp} from '../util/util';
+import {wrap, clamp, radToDeg} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
-import {vec4, mat4, mat2, vec2} from 'gl-matrix';
+import {vec4, mat4, mat2, vec2, vec3} from 'gl-matrix';
 import {Aabb, Frustum} from '../util/primitives.js';
 import EdgeInsets from './edge_insets';
 
@@ -16,6 +16,8 @@ import type {Elevation} from '../terrain/elevation';
 import type {PaddingOptions} from './edge_insets';
 
 const NUM_WORLD_COPIES = 3;
+
+type RayIntersectionResult = { p0: vec4, p1: vec4, t: number };
 
 /**
  * A single transform, generally used for a single tile to be
@@ -523,32 +525,57 @@ class Transform {
         return coord.toLngLat();
     }
 
-    pointCoordinate(p: Point) {
+    /**
+     * Casts a ray from a point on screen and returns the Ray,
+     * and the extent along it, at which it intersects the map plane.
+     *
+     * @param {Point} p viewport pixel co-ordinates
+     * @returns {{ p0: vec4, p1: vec4, t: number }} p0,p1 are two points on the ray
+     * t is the fractional extent along the ray at which the ray intersects the map plane
+     * @private
+     */
+    pointRayIntersection(p: Point): RayIntersectionResult {
         const targetZ = 0;
         // since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
         // line with z=0
 
-        const coord0 = [p.x, p.y, 0, 1];
-        const coord1 = [p.x, p.y, 1, 1];
+        const p0 = [p.x, p.y, 0, 1];
+        const p1 = [p.x, p.y, 1, 1];
 
-        vec4.transformMat4(coord0, coord0, this.pixelMatrixInverse);
-        vec4.transformMat4(coord1, coord1, this.pixelMatrixInverse);
+        vec4.transformMat4(p0, p0, this.pixelMatrixInverse);
+        vec4.transformMat4(p1, p1, this.pixelMatrixInverse);
 
-        const w0 = coord0[3];
-        const w1 = coord1[3];
-        const x0 = coord0[0] / w0;
-        const x1 = coord1[0] / w1;
-        const y0 = coord0[1] / w0;
-        const y1 = coord1[1] / w1;
-        const z0 = coord0[2] / w0;
-        const z1 = coord1[2] / w1;
+        const w0 = p0[3];
+        const w1 = p1[3];
+        vec4.scale(p0, p0, 1 / w0);
+        vec4.scale(p1, p1, 1 / w1);
+
+        const z0 = p0[2];
+        const z1 = p1[2];
 
         const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
+        return {p0, p1, t};
+    }
+
+    /**
+     *  Helper method to convert the ray intersectsection with the map plane to MercatorCoordinate
+     *
+     * @param {RayIntersectionResult} rayIntersection
+     * @returns {MercatorCoordinate}
+     * @private
+     */
+    rayIntersectionCoordinate(rayIntersection: RayIntersectionResult): MercatorCoordinate {
+        const {p0, p1, t} = rayIntersection;
+
         return new MercatorCoordinate(
-            interpolate(x0, x1, t) / this.worldSize,
-            interpolate(y0, y1, t) / this.worldSize);
+            interpolate(p0[0], p1[0], t) / this.worldSize,
+            interpolate(p0[1], p1[1], t) / this.worldSize);
+    }
+
+    pointCoordinate(p: Point) {
+        return this.rayIntersectionCoordinate(this.pointRayIntersection(p));
     }
 
     /**
@@ -820,14 +847,8 @@ class Transform {
         return topPoint[3] / this.cameraToCenterDistance;
     }
 
+    //Checks the four corners of the frustum to see if they lie in the map's quad.
     isHorizonVisible(): boolean {
-        // Fast check that checks if the top plane of the camera frustum has gone above parallel of the map plane.
-        if (this.pitch + this.fov / 2 > 88) {
-            return true;
-        }
-
-        //Finer grained check which is used at lower zoom levels
-        //Checks the four corners of the frustum to see if they lie in the map's quad.
         const corners = [
             new Point(0, 0),
             new Point(this.width, 0),
@@ -840,8 +861,23 @@ class Transform {
         const minY = 0;
         const maxY = 1;
 
+        // we consider the horizon as visible if the angle between
+        // a frustum ray and the horizon plane is smaller than this threshold.
+        const horizonAngleEpsilon = 2;
+
         for (const corner of corners) {
-            const coordinate = this.pointCoordinate(corner);
+            const rayIntersection = this.pointRayIntersection(corner);
+
+            const rayVec = vec3.subtract([], rayIntersection.p0, rayIntersection.p1);
+            vec3.normalize(rayVec, rayVec);
+
+            // 0 when ray is parallel to ground plane, and +ve when below
+            const angleBelowHorizon = radToDeg(Math.asin(rayVec[2]));
+            if (angleBelowHorizon < horizonAngleEpsilon || rayIntersection.t < 0) {
+                return true;
+            }
+
+            const coordinate = this.rayIntersectionCoordinate(rayIntersection);
             if (coordinate.x < minX || coordinate.y < minY ||
                 coordinate.x > maxX || coordinate.y > maxY) {
                 return true;
