@@ -353,5 +353,70 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('isHorizonVisible', (t) => {
+
+        t.test('high pitch', (t) => {
+            const transform = new Transform();
+            transform.maxPitch = 85;
+            transform.resize(300, 300);
+            transform.zoom = 10;
+            transform.center = {lng: 0, lat: 0};
+            transform.pitch = 0;
+
+            t.false(transform.isHorizonVisible());
+            transform.pitch = 85;
+            t.true(transform.isHorizonVisible());
+
+            t.end();
+        });
+
+        t.test('with large top padding', (t) => {
+            const transform = new Transform();
+            transform.resize(200, 200);
+            transform.zoom = 10;
+            transform.center = {lng: 0, lat: 0};
+            transform.pitch = 60;
+
+            t.false(transform.isHorizonVisible());
+            transform.padding = {top: 180};
+            t.true(transform.isHorizonVisible());
+
+            t.end();
+        });
+
+        t.test('lower zoom level, rotated map making background visible', (t) => {
+            const transform = new Transform();
+            transform.resize(1300, 1300);
+            transform.zoom = 3;
+            transform.center = {lng: 0, lat: 0};
+            transform.pitch = 0;
+
+            t.false(transform.isHorizonVisible());
+            transform.zoom = 0;
+            transform.bearing = 45;
+            t.true(transform.isHorizonVisible());
+
+            t.end();
+        });
+
+        t.test('accounts for renderWorldCopies', (t) => {
+            const transform = new Transform();
+            transform.resize(1300, 1300);
+            transform.zoom = 2;
+            transform.center = {lng: -135, lat: 0};
+            transform.pitch = 0;
+            transform.bearing = -45;
+            transform.renderWorldCopies = true;
+
+            t.false(transform.isHorizonVisible());
+            transform.renderWorldCopies = false;
+            t.true(transform.isHorizonVisible());
+
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.end();
 });
