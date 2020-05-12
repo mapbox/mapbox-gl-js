@@ -605,9 +605,9 @@ test(`Map#on click fires subsequent click event if there is no corresponding mou
 test("Map#isMoving() returns false in mousedown/mouseup/click with no movement", (t) => {
     const map = createMap(t, {interactive: true, clickTolerance: 4});
     let mousedown, mouseup, click;
-    map.on('mousedown', () => mousedown = map.isMoving());
-    map.on('mouseup', () => mouseup = map.isMoving());
-    map.on('click', () => click = map.isMoving());
+    map.on('mousedown', () => { mousedown = map.isMoving(); });
+    map.on('mouseup', () => { mouseup = map.isMoving(); });
+    map.on('click', () => { click = map.isMoving(); });
 
     const canvas = map.getCanvas();
     const MouseEvent = window(canvas).MouseEvent;
