@@ -17,7 +17,8 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
     overscaling: number,
     collisionBoxArray: CollisionBoxArray,
     sourceLayerIndex: number,
-    sourceID: string
+    sourceID: string,
+    enableTerrain: boolean
 }
 
 export type PopulateParameters = {

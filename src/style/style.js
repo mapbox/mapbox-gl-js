@@ -255,6 +255,8 @@ class Style extends Evented {
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
         }
+        this.terrain = new Terrain(this.stylesheet.terrain);
+        this.dispatcher.broadcast('enableTerrain', !!this.stylesheet.terrain && !!this.stylesheet.terrain.source);
 
         if (json.sprite) {
             this._loadSprite(json.sprite);
@@ -279,7 +281,6 @@ class Style extends Evented {
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
-        this.terrain = new Terrain(this.stylesheet.terrain);
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
@@ -1229,14 +1230,26 @@ class Style extends Evented {
         const parameters = {
             now: browser.now(),
             transition: extend({
-                duration: 300,
-                delay: 0
+                duration: 0
             }, this.stylesheet.transition)
         };
 
         this.terrain.set(terrainOptions);
+        const hadTerrainSupport = !!this.stylesheet.terrain && !!this.stylesheet.terrain.source;
         this.stylesheet.terrain = terrainOptions;
         this.terrain.updateTransitions(parameters);
+
+        // Update fill extrusions layers to compute flat roofs.
+        const terrainSupport = !!terrainOptions && !!terrainOptions.source;
+        if (terrainSupport === hadTerrainSupport) return;
+
+        this.dispatcher.broadcast('enableTerrain', terrainSupport);
+        for (const layerId in this._layers) {
+            const layer = this._layers[layerId];
+            if (layer.type === 'fill-extrusion') {
+                this._updateLayer(layer);
+            }
+        }
     }
 
     _validate(validate: Validator, key: string, value: any, props: any, options: { validate?: boolean } = {}) {

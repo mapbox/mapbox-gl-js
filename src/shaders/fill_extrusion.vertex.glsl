@@ -6,6 +6,7 @@ uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 
 attribute vec4 a_pos_normal_ed;
+attribute vec2 a_centroid_pos;
 
 varying vec4 v_color;
 
@@ -34,7 +35,16 @@ void main() {
 
     float t = top_up_ny.x;
 
+#ifdef TERRAIN
+    bool flat_roof = a_centroid_pos.x != 0.0;
+    float ele = elevation(pos_nx.xy);
+    float c_ele = flat_roof ? flatElevation(a_centroid_pos, height) : ele;
+    // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
+    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    gl_Position = u_matrix * vec4(pos_nx.xy, h, 1);
+#else
     gl_Position = u_matrix * vec4(pos_nx.xy, t > 0.0 ? height : base, 1);
+#endif
 
     // Relative luminance (how dark/bright is the surface color?)
     float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
