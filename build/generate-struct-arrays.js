@@ -127,11 +127,11 @@ createStructArrayType('raster_bounds', rasterBoundsAttributes);
 
 const circleAttributes = require('../src/data/bucket/circle_attributes').default;
 const fillAttributes = require('../src/data/bucket/fill_attributes').default;
-const fillExtrusionAttributes = require('../src/data/bucket/fill_extrusion_attributes').default;
 const lineAttributes = require('../src/data/bucket/line_attributes').default;
 const lineAttributesExt = require('../src/data/bucket/line_attributes_ext').default;
 const patternAttributes = require('../src/data/bucket/pattern_attributes').default;
 const skyboxAttributes = require('../src/render/skybox_attributes').default;
+const {fillExtrusionAttributes, centroidAttributes} = require('../src/data/bucket/fill_extrusion_attributes');
 
 // layout vertex arrays
 const layoutAttributes = {
@@ -226,6 +226,9 @@ createStructArrayLayoutType(createLayout([{
     type: 'Float32',
     components: 4
 }], 4));
+
+// Fill extrusion specific array
+createStructArrayType(`fill_extrusion_centroid`, centroidAttributes);
 
 const layouts = Object.keys(layoutCache).map(k => layoutCache[k]);
 

@@ -27,6 +27,7 @@ import ColorMode from '../gl/color_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {clippingMaskUniformValues} from '../render/program/clipping_mask_program';
+import {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 
 import type Map from '../ui/map';
 import type Tile from '../source/tile';
@@ -297,43 +298,47 @@ export class Terrain extends Elevation {
 
     // useDepthForOcclusion: Pre-rendered depth to texture (this._depthTexture) is
     // used to hide (actually moves all object's vertices out of viewport).
-    setupElevationDraw(tile: Tile, program: Program<*>, useDepthForOcclusion: ?boolean) {
+    // useMeterToDem: u_meter_to_dem uniform is not used for all terrain programs,
+    // optimization to avoid unnecessary computation and upload.
+    setupElevationDraw(tile: Tile, program: Program<*>,
+        options?: {
+            useDepthForOcclusion?: boolean,
+            useMeterToDem?: boolean
+        }) {
         const context = this.painter.context;
         const gl = context.gl;
         context.activeTexture.set(gl.TEXTURE2);
         let demTexture = this.painter.emptyTexture;
         const cl = tile.tileID.canonical;
-        let uniforms;
+        const uniforms = {
+            'u_dem': 2,
+            'u_dem_unpack': [0, 0, 0, 0],
+            'u_dem_tl': [0, 0],
+            'u_dem_scale': 0,
+            'u_dem_size': this.sourceCache.getSource().tileSize,
+            'u_exaggeration': this.exaggeration(),
+            'u_depth': 3,
+            'u_meter_to_dem': 0
+        };
+
         const demTile: Tile = this.terrainTileForTile[tile.tileID.key];
         if (demTile && demTile.demTexture) {
             demTexture = ((demTile.demTexture: any): Texture);
             const demScaleBy = Math.pow(2, demTile.tileID.canonical.z - cl.z);
             assert(demTile.dem);
-            uniforms = {
-                'u_dem': 2,
-                'u_dem_unpack': ((demTile.dem: any): DEMData).getUnpackVector(),
-                'u_dem_tl': [tile.tileID.canonical.x * demScaleBy % 1, tile.tileID.canonical.y * demScaleBy % 1],
-                'u_dem_scale': demScaleBy,
-                'u_dem_size': this.sourceCache.getSource().tileSize,
-                'u_exaggeration': this.exaggeration(),
-                'u_depth': 3
-            };
-        } else {
-            // If no elevation data, zero dem_unpack in vertex shader is setting sampled elevation to zero.
-            uniforms = {
-                'u_dem': 2,
-                'u_dem_unpack': [0, 0, 0, 0],
-                'u_dem_tl': [0, 0],
-                'u_dem_scale': 0,
-                'u_dem_size': this.sourceCache.getSource().tileSize,
-                'u_exaggeration': this.exaggeration(),
-                'u_depth': 3
-            };
+            uniforms['u_dem_unpack'] = ((demTile.dem: any): DEMData).getUnpackVector();
+            uniforms['u_dem_tl'][0] = tile.tileID.canonical.x * demScaleBy % 1;
+            uniforms['u_dem_tl'][1] = tile.tileID.canonical.y * demScaleBy % 1;
+            uniforms['u_dem_scale'] = demScaleBy;
         }
         demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
-        if (useDepthForOcclusion) {
+        if (options && options.useDepthForOcclusion) {
             context.activeTexture.set(gl.TEXTURE3);
             this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+        }
+        if (options && options.useMeterToDem && demTile) {
+            const meterToDEM = (1 << demTile.tileID.canonical.z) * mercatorZfromAltitude(1, this.painter.transform.center.lat) * this.sourceCache.getSource().tileSize;
+            uniforms['u_meter_to_dem'] = meterToDEM;
         }
         program.setTerrainUniformValues(context, uniforms);
     }
@@ -752,7 +757,8 @@ export type TerrainUniformsType = {|
     'u_dem_scale': Uniform1f,
     'u_dem_size': Uniform1f,
     "u_exaggeration": Uniform1f,
-    'u_depth': Uniform1i
+    'u_depth': Uniform1i,
+    'u_meter_to_dem': Uniform1f
 |};
 
 export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
@@ -762,6 +768,7 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_dem_scale': new Uniform1f(context, locations.u_dem_scale),
     'u_dem_size': new Uniform1f(context, locations.u_dem_size),
     'u_exaggeration': new Uniform1f(context, locations.u_exaggeration),
-    'u_depth': new Uniform1i(context, locations.u_depth)
+    'u_depth': new Uniform1i(context, locations.u_depth),
+    'u_meter_to_dem': new Uniform1f(context, locations.u_meter_to_dem)
 });
 

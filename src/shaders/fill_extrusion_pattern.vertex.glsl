@@ -11,6 +11,7 @@ uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 
 attribute vec4 a_pos_normal_ed;
+attribute vec2 a_centroid_pos;
 
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
@@ -60,7 +61,16 @@ void main() {
     float t = top_up_ny.x;
     float z = t > 0.0 ? height : base;
 
+#ifdef TERRAIN
+    bool flat_roof = a_centroid_pos.x != 0.0;
+    float ele = elevation(pos_nx.xy);
+    float c_ele = flat_roof ? flatElevation(a_centroid_pos, height) : ele;
+    // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
+    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    gl_Position = u_matrix * vec4(pos_nx.xy, h, 1);
+#else
     gl_Position = u_matrix * vec4(pos_nx.xy, z, 1);
+#endif
 
     vec2 pos = normal.z == 1.0
         ? pos_nx.xy // extrusion top

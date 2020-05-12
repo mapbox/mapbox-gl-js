@@ -1,8 +1,8 @@
 // @flow
 
-import {FillExtrusionLayoutArray} from '../array_types';
+import {FillExtrusionLayoutArray, FillExtrusionCentroidArray} from '../array_types';
 
-import {members as layoutAttributes} from './fill_extrusion_attributes';
+import {members as layoutAttributes, centroidAttributes} from './fill_extrusion_attributes';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray} from '../index_array_type';
@@ -18,6 +18,7 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
+import Point from '@mapbox/point-geometry';
 
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {
@@ -32,7 +33,6 @@ import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
-import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state';
 import type {ImagePosition} from '../../render/image_atlas';
 
@@ -51,10 +51,56 @@ function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     );
 }
 
+class Centroid {
+    acc: Point;
+    invalid: ?boolean; // If building cuts tile borders, flat roofs are not done using this approach.
+    min: Point;
+    max: Point;
+
+    constructor() {
+        this.acc = new Point(0, 0);
+        this.min = new Point(EXTENT, EXTENT);
+        this.max = new Point(-EXTENT, -EXTENT);
+    }
+
+    append(p: Point, prev: Point) {
+        this.acc._add(p);
+        const min = this.min, max = this.max;
+        if (p.x < min.x) {
+            if (p.x < 0) { return (this.invalid = true); }
+            min.x = p.x;
+        } else if (p.x > max.x) {
+            if (p.x > EXTENT) { return (this.invalid = true); }
+            max.x = p.x;
+        }
+        if (p.y < min.y) {
+            if (p.y < 0) { return (this.invalid = true); }
+            min.y = p.y;
+        } else if (p.y > max.y) {
+            if (p.y > EXTENT) { return (this.invalid = true); }
+            max.y = p.y;
+        }
+        if (((p.x === 0 || p.x === EXTENT) && p.x === prev.x) || ((p.y === 0 || p.y === EXTENT) && p.y === prev.y)) {
+            // Custom defined geojson buildings are cut on borders. Don't use centroid
+            // flat roof technique.
+            return (this.invalid = true);
+        }
+    }
+
+    value(count: number): Point {
+        return this.acc.div(count)._round();
+    }
+
+    span(): Point {
+        return this.max.sub(this.min);
+    }
+}
+
 class FillExtrusionBucket implements Bucket {
     index: number;
     zoom: number;
     overscaling: number;
+    enableTerrain: boolean;
     layers: Array<FillExtrusionStyleLayer>;
     layerIds: Array<string>;
     stateDependentLayers: Array<FillExtrusionStyleLayer>;
@@ -62,6 +108,9 @@ class FillExtrusionBucket implements Bucket {
 
     layoutVertexArray: FillExtrusionLayoutArray;
     layoutVertexBuffer: VertexBuffer;
+
+    centroidVertexArray: FillExtrusionCentroidArray;
+    centroidVertexBuffer: VertexBuffer;
 
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
@@ -81,11 +130,12 @@ class FillExtrusionBucket implements Bucket {
         this.hasPattern = false;
 
         this.layoutVertexArray = new FillExtrusionLayoutArray();
+        this.centroidVertexArray = new FillExtrusionCentroidArray();
         this.indexArray = new TriangleIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
         this.segments = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
-
+        this.enableTerrain = options.enableTerrain;
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
@@ -141,6 +191,10 @@ class FillExtrusionBucket implements Bucket {
     upload(context: Context) {
         if (!this.uploaded) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
+            if (this.centroidVertexArray.length > 0) {
+                this.centroidVertexBuffer = context.createVertexBuffer(this.centroidVertexArray, centroidAttributes.members);
+                assert(this.centroidVertexArray.length === this.layoutVertexArray.length);
+            }
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
         }
         this.programConfigurations.upload(context);
@@ -150,27 +204,44 @@ class FillExtrusionBucket implements Bucket {
     destroy() {
         if (!this.layoutVertexBuffer) return;
         this.layoutVertexBuffer.destroy();
+        if (this.centroidVertexBuffer) this.centroidVertexBuffer.destroy();
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();
         this.segments.destroy();
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
+        const appendRepeatedCentroids = (count, x, y, x1, y1) => {
+            for (let i = 0; i < count; i++) {
+                this.centroidVertexArray.emplaceBack(x, y);
+                if (x1 != null && y1 != null) this.centroidVertexArray.emplaceBack(x1, y1);
+            }
+        };
+        const flatRoof = this.enableTerrain && feature.properties && feature.properties.hasOwnProperty('type') &&
+            feature.properties.hasOwnProperty('height') && vectorTileFeatureTypes[feature.type] === 'Polygon';
+
+        const centroid = new Centroid();
+        const polyCount = [];
+
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
-            for (const ring of polygon) {
-                numVertices += ring.length;
-            }
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
-            for (const ring of polygon) {
+            const isRingOutside = {};
+            const polyInfo = {edges: 0, top: 0};
+            polyCount.push(polyInfo);
+
+            for (let i = 0; i < polygon.length; i++) {
+                const ring = polygon[i];
                 if (ring.length === 0) {
                     continue;
                 }
 
                 if (isEntirelyOutside(ring)) {
+                    isRingOutside[i] = true;
                     continue;
                 }
+                numVertices += ring.length;
 
                 let edgeDistance = 0;
 
@@ -181,6 +252,7 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
+                            if (flatRoof) centroid.append(p1, p2);
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                             }
@@ -213,6 +285,7 @@ class FillExtrusionBucket implements Bucket {
 
                             segment.vertexLength += 4;
                             segment.primitiveLength += 2;
+                            polyInfo.edges++;
                         }
                     }
                 }
@@ -231,10 +304,14 @@ class FillExtrusionBucket implements Bucket {
             const holeIndices = [];
             const triangleIndex = segment.vertexLength;
 
-            for (const ring of polygon) {
+            for (let i = 0; i < polygon.length; i++) {
+                const ring = polygon[i];
                 if (ring.length === 0) {
                     continue;
                 }
+
+                if (isRingOutside.hasOwnProperty(i) && isRingOutside[i])
+                    continue; // isEntirelyOutside
 
                 if (ring !== polygon[0]) {
                     holeIndices.push(flattened.length / 2);
@@ -247,6 +324,7 @@ class FillExtrusionBucket implements Bucket {
 
                     flattened.push(p.x);
                     flattened.push(p.y);
+                    polyInfo.top++;
                 }
             }
 
@@ -263,6 +341,25 @@ class FillExtrusionBucket implements Bucket {
 
             segment.primitiveLength += indices.length / 3;
             segment.vertexLength += numVertices;
+        }
+
+        if (flatRoof) {
+            const count = polyCount.reduce((acc, p) => acc + p.edges, 0);
+            if (count > 0) {
+                // When building is split between tiles, don't use flat roofs.
+                let x = 0, y = 0;
+                if (!centroid.invalid) {
+                    const toMeter = tileToMeter(canonical);
+                    const span = centroid.span()._mult(toMeter);
+                    const c = centroid.value(count);
+                    x = (Math.max(c.x, 1) << 3) + Math.min(7, Math.round(span.x / 10));
+                    y = (Math.max(c.y, 1) << 3) + Math.min(7, Math.round(span.y / 10));
+                }
+                for (const polyInfo of polyCount) {
+                    appendRepeatedCentroids(polyInfo.edges * 2, 0, 0, x, y);
+                    appendRepeatedCentroids(polyInfo.top, x, y);
+                }
+            }
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
@@ -283,4 +380,12 @@ function isEntirelyOutside(ring) {
         ring.every(p => p.x > EXTENT) ||
         ring.every(p => p.y < 0) ||
         ring.every(p => p.y > EXTENT);
+}
+
+function tileToMeter(canonical: CanonicalTileID) {
+    const circumferenceAtEquator = 40075017;
+    const mercatorY = canonical.y / (1 << canonical.z);
+    const exp = Math.exp(Math.PI * (1 - 2 * mercatorY));
+    // simplify cos(2 * atan(e) - PI/2) from mercator_coordinate.js, remove trigonometrics.
+    return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
 }
