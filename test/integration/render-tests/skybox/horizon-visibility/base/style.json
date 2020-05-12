@@ -2,8 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "width": 512
+      "height": 128,
+      "width": 128
     }
   },
   "sources": {},
@@ -17,15 +17,7 @@
       "paint": {
         "sky-type": "gradient",
         "sky-sun-direction": [0, 0],
-        "sky-gradient": [
-          "interpolate",
-          ["linear"],
-          ["sky-radial-progress"],
-          0,
-          "green",
-          1,
-          "green"
-        ]
+        "sky-gradient": "green"
       }
     },
     {
