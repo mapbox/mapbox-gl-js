@@ -24,26 +24,28 @@ class TwoTouchHandler {
     _start(points: [Point, Point]) {} //eslint-disable-line
     _move(points: [Point, Point], pinchAround: Point, e: TouchEvent) { return {}; } //eslint-disable-line
 
-    touchstart(e: TouchEvent, points: Array<Point>) {
-        if (this._firstTwoTouches || e.targetTouches.length < 2) return;
+    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+        //console.log(e.target, e.targetTouches.length ? e.targetTouches[0].target : null);
+        //log('touchstart', points, e.target.innerHTML, e.targetTouches.length ? e.targetTouches[0].target.innerHTML: undefined);
+        if (this._firstTwoTouches || mapTouches.length < 2) return;
 
         this._firstTwoTouches = [
-            e.targetTouches[0].identifier,
-            e.targetTouches[1].identifier
+            mapTouches[0].identifier,
+            mapTouches[1].identifier
         ];
 
         // implemented by child classes
         this._start([points[0], points[1]]);
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>) {
+    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._firstTwoTouches) return;
 
         e.preventDefault();
 
         const [idA, idB] = this._firstTwoTouches;
-        const a = getTouchById(e, points, idA);
-        const b = getTouchById(e, points, idB);
+        const a = getTouchById(mapTouches, points, idA);
+        const b = getTouchById(mapTouches, points, idB);
         if (!a || !b) return;
         const pinchAround = this._aroundCenter ? null : a.add(b).div(2);
 
@@ -52,12 +54,12 @@ class TwoTouchHandler {
 
     }
 
-    touchend(e: TouchEvent, points: Array<Point>) {
+    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._firstTwoTouches) return;
 
         const [idA, idB] = this._firstTwoTouches;
-        const a = getTouchById(e, points, idA);
-        const b = getTouchById(e, points, idB);
+        const a = getTouchById(mapTouches, points, idA);
+        const b = getTouchById(mapTouches, points, idB);
         if (a && b) return;
 
         if (this._active) DOM.suppressClick();
@@ -88,9 +90,9 @@ class TwoTouchHandler {
     }
 }
 
-function getTouchById(e: TouchEvent, points: Array<Point>, identifier: number) {
-    for (let i = 0; i < e.targetTouches.length; i++) {
-        if (e.targetTouches[i].identifier === identifier) return points[i];
+function getTouchById(mapTouches: Array<Touch>, points: Array<Point>, identifier: number) {
+    for (let i = 0; i < mapTouches.length; i++) {
+        if (mapTouches[i].identifier === identifier) return points[i];
     }
 }
 
