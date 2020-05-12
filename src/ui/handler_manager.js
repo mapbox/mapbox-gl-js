@@ -259,6 +259,10 @@ class HandlerManager {
         return !!this._eventsInProgress.rotate;
     }
 
+    isMoving() {
+        return Boolean(isMoving(this._eventsInProgress)) || this.isZooming();
+    }
+
     _blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string) {
         for (const name in activeHandlers) {
             if (name === myName) continue;
@@ -430,17 +434,23 @@ class HandlerManager {
         const wasMoving = isMoving(this._eventsInProgress);
         const nowMoving = isMoving(newEventsInProgress);
 
+        const startEvents = {};
+
+        for (const eventName in newEventsInProgress) {
+            const {originalEvent} = newEventsInProgress[eventName];
+            if (!this._eventsInProgress[eventName]) {
+                startEvents[`${eventName}start`] = originalEvent;
+            }
+            this._eventsInProgress[eventName] = newEventsInProgress[eventName];
+        }
+
+        // fire start events only after this._eventsInProgress has been updated
         if (!wasMoving && nowMoving) {
             this._fireEvent('movestart', nowMoving.originalEvent);
         }
 
-        for (const eventName in newEventsInProgress) {
-            const {originalEvent} = newEventsInProgress[eventName];
-            const isStart = !this._eventsInProgress[eventName];
-            this._eventsInProgress[eventName] = newEventsInProgress[eventName];
-            if (isStart) {
-                this._fireEvent(`${eventName}start`, originalEvent);
-            }
+        for (const name in startEvents) {
+            this._fireEvent(name, startEvents[name]);
         }
 
         if (newEventsInProgress.rotate) this._bearingChanged = true;
@@ -454,14 +464,20 @@ class HandlerManager {
             this._fireEvent(eventName, originalEvent);
         }
 
+        const endEvents = {};
+
         let originalEndEvent;
         for (const eventName in this._eventsInProgress) {
             const {handlerName, originalEvent} = this._eventsInProgress[eventName];
             if (!this._handlersById[handlerName].isActive()) {
                 delete this._eventsInProgress[eventName];
                 originalEndEvent = deactivatedHandlers[handlerName] || originalEvent;
-                this._fireEvent(`${eventName}end`, originalEndEvent);
+                endEvents[`${eventName}end`] = originalEndEvent;
             }
+        }
+
+        for (const name in endEvents) {
+            this._fireEvent(name, endEvents[name]);
         }
 
         const stillMoving = isMoving(this._eventsInProgress);
