@@ -256,6 +256,18 @@ class Transform {
         return this._edgeInsets.getCenter(this.width, this.height);
     }
 
+
+    /**
+     * Returns the vertical half-fov, accounting for padding, in radians.
+     *
+     * @readonly
+     * @type {number}
+     * @private
+     */
+    get fovAboveCenter(): number {
+        return this._fov * (0.5 + this.centerOffset.y / this.height);
+    }
+
     /**
      * Returns if the padding params match
      *
@@ -741,7 +753,8 @@ class Transform {
         // 1 Z unit is equivalent to 1 horizontal px at the center of the map
         // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
         const groundAngle = Math.PI / 2 + this._pitch;
-        const fovAboveCenter = this._fov * (0.5 + offset.y / this.height);
+        const fovAboveCenter = this.fovAboveCenter;
+
         const elevationInScreenCoordinates = elevationAtCenter * pixelsPerMeter;
         const cameraToCenterAt0LevelDistance = this.cameraToCenterDistance + elevationInScreenCoordinates / Math.cos(this._pitch);
         const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * cameraToCenterAt0LevelDistance / Math.sin(clamp(Math.PI - groundAngle - fovAboveCenter, 0.01, Math.PI - 0.01));
@@ -849,6 +862,13 @@ class Transform {
 
     //Checks the four corners of the frustum to see if they lie in the map's quad.
     isHorizonVisible(): boolean {
+        // we consider the horizon as visible if the angle between
+        // a the top plane of the frustum and the map plane is smaller than this threshold.
+        const horizonAngleEpsilon = 2;
+        if (this.pitch + radToDeg(this.fovAboveCenter) > (90 - horizonAngleEpsilon)) {
+            return true;
+        }
+
         const corners = [
             new Point(0, 0),
             new Point(this.width, 0),
@@ -861,19 +881,9 @@ class Transform {
         const minY = 0;
         const maxY = 1;
 
-        // we consider the horizon as visible if the angle between
-        // a frustum ray and the horizon plane is smaller than this threshold.
-        const horizonAngleEpsilon = 2;
-
         for (const corner of corners) {
             const rayIntersection = this.pointRayIntersection(corner);
-
-            const rayVec = vec3.subtract([], rayIntersection.p0, rayIntersection.p1);
-            vec3.normalize(rayVec, rayVec);
-
-            // 0 when ray is parallel to ground plane, and +ve when below
-            const angleBelowHorizon = radToDeg(Math.asin(rayVec[2]));
-            if (angleBelowHorizon < horizonAngleEpsilon || rayIntersection.t < 0) {
+            if (rayIntersection.t < 0) {
                 return true;
             }
 
