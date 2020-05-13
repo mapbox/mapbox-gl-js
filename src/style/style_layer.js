@@ -199,10 +199,10 @@ class StyleLayer extends Evented {
         }
 
         if (this._unevaluatedLayout) {
-            (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, availableImages);
+            (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages);
         }
 
-        (this: any).paint = this._transitioningPaint.possiblyEvaluate(parameters, availableImages);
+        (this: any).paint = this._transitioningPaint.possiblyEvaluate(parameters, undefined, availableImages);
     }
 
     serialize() {
