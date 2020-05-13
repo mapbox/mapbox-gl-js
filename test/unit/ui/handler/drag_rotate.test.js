@@ -277,6 +277,7 @@ test('DragRotateHandler ensures that map.isMoving() returns true during drag', (
     t.ok(map.isMoving());
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._renderTaskQueue.run();
     t.ok(!map.isMoving());
 
     map.remove();
