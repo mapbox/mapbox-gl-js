@@ -11,6 +11,7 @@ function createMap(t) {
 
 test('MapEvent handler fires touch events with correct values', (t) => {
     const map = createMap(t);
+    const target = map.getCanvas();
 
     const touchstart = t.spy();
     const touchmove = t.spy();
@@ -20,9 +21,9 @@ test('MapEvent handler fires touch events with correct values', (t) => {
     map.on('touchmove', touchmove);
     map.on('touchend', touchend);
 
-    const touchesStart = [{identifier: 1, clientX: 0, clientY: 50}];
-    const touchesMove = [{identifier: 1, clientX: 0, clientY: 60}];
-    const touchesEnd = [{identifier: 1, clientX: 0, clientY: 60}];
+    const touchesStart = [{target, identifier: 1, clientX: 0, clientY: 50}];
+    const touchesMove = [{target, identifier: 1, clientX: 0, clientY: 60}];
+    const touchesEnd = [{target, identifier: 1, clientX: 0, clientY: 60}];
 
     simulate.touchstart(map.getCanvas(), {touches: touchesStart, targetTouches: touchesStart});
     t.equal(touchstart.callCount, 1);

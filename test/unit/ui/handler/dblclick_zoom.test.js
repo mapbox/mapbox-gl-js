@@ -12,10 +12,10 @@ function createMap(t) {
 function simulateDoubleTap(map, delay = 100) {
     const canvas = map.getCanvas();
     return new Promise(resolve => {
-        simulate.touchstart(canvas, {targetTouches: [{clientX: 0, clientY: 0}]});
+        simulate.touchstart(canvas, {touches: [{target: canvas, clientX: 0, clientY: 0}]});
         simulate.touchend(canvas);
         setTimeout(() => {
-            simulate.touchstart(canvas, {targetTouches: [{clientX: 0, clientY: 0}]});
+            simulate.touchstart(canvas, {touches: [{target: canvas, clientX: 0, clientY: 0}]});
             simulate.touchend(canvas);
             map._renderTaskQueue.run();
             resolve();
@@ -122,7 +122,7 @@ test('DoubleClickZoomHandler zooms on the second touchend event of a double tap'
     map.on('zoomstart', zoom);
 
     const canvas = map.getCanvas();
-    const touchOptions = {targetTouches: [{clientX: 0.5, clientY: 0.5}]};
+    const touchOptions = {touches: [{target: canvas, clientX: 0.5, clientY: 0.5}]};
 
     simulate.touchstart(canvas, touchOptions);
     simulate.touchend(canvas);
