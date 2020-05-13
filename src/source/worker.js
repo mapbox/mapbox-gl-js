@@ -77,6 +77,12 @@ export default class Worker {
 
     setImages(mapId: string, images: Array<string>, callback: WorkerTileCallback) {
         this.availableImages[mapId] = images;
+        for (const workerSource in this.workerSources[mapId]) {
+            const ws = this.workerSources[mapId][workerSource];
+            for (const source in ws) {
+                ws[source].availableImages = images;
+            }
+        }
         callback();
     }
 
