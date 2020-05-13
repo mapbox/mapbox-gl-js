@@ -68,6 +68,10 @@ export class MapEventHandler {
         return this._firePreventable(new MapTouchEvent(e.type, this._map, e));
     }
 
+    touchmove(e: TouchEvent) {
+        this._map.fire(new MapTouchEvent(e.type, this._map, e));
+    }
+
     touchend(e: TouchEvent) {
         this._map.fire(new MapTouchEvent(e.type, this._map, e));
     }
@@ -112,11 +116,6 @@ export class BlockableMapEventHandler {
     mousemove(e: MouseEvent) {
         // mousemove map events should not be fired when interaction handlers (pan, rotate, etc) are active
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
-    }
-
-    touchmove(e: TouchEvent) {
-        // touchmove map events should not be fired when interaction handlers (pan, rotate, etc) are active
-        this._map.fire(new MapTouchEvent(e.type, this._map, e));
     }
 
     mousedown() {
