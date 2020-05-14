@@ -30,7 +30,7 @@ export default class TapDragZoomHandler {
         this._tap.reset();
     }
 
-    touchstart(e: TouchEvent, points: Array<Point>) {
+    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (this._swipePoint) return;
 
         if (this._tapTime && e.timeStamp - this._tapTime > MAX_TAP_INTERVAL) {
@@ -38,19 +38,19 @@ export default class TapDragZoomHandler {
         }
 
         if (!this._tapTime) {
-            this._tap.touchstart(e, points);
-        } else if (e.targetTouches.length > 0) {
+            this._tap.touchstart(e, points, mapTouches);
+        } else if (mapTouches.length > 0) {
             this._swipePoint = points[0];
-            this._swipeTouch = e.targetTouches[0].identifier;
+            this._swipeTouch = mapTouches[0].identifier;
         }
 
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>) {
+    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._tapTime) {
-            this._tap.touchmove(e, points);
+            this._tap.touchmove(e, points, mapTouches);
         } else if (this._swipePoint) {
-            if (e.targetTouches[0].identifier !== this._swipeTouch) {
+            if (mapTouches[0].identifier !== this._swipeTouch) {
                 return;
             }
 
@@ -67,14 +67,14 @@ export default class TapDragZoomHandler {
         }
     }
 
-    touchend(e: TouchEvent) {
+    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._tapTime) {
-            const point = this._tap.touchend(e);
+            const point = this._tap.touchend(e, points, mapTouches);
             if (point) {
                 this._tapTime = e.timeStamp;
             }
         } else if (this._swipePoint) {
-            if (e.targetTouches.length === 0) {
+            if (mapTouches.length === 0) {
                 this.reset();
             }
         }

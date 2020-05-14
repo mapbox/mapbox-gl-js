@@ -49,10 +49,10 @@ export interface Handler {
 
     // Handlers can optionally implement these methods.
     // They are called with dom events whenever those dom evens are received.
-    +touchstart?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
-    +touchmove?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
-    +touchend?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
-    +touchcancel?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
+    +touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    +touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    +touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    +touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
     +mousedown?: (e: MouseEvent, point: Point) => HandlerResult | void;
     +mousemove?: (e: MouseEvent, point: Point) => HandlerResult | void;
     +mouseup?: (e: MouseEvent, point: Point) => HandlerResult | void;
@@ -277,6 +277,17 @@ class HandlerManager {
         this.handleEvent(e, `${e.type}Window`);
     }
 
+    _getMapTouches(touches: TouchList) {
+        const mapTouches = [];
+        for (const t of touches) {
+            const target = ((t.target: any): Node);
+            if (this._el.contains(target)) {
+                mapTouches.push(t);
+            }
+        }
+        return ((mapTouches: any): TouchList);
+    }
+
     handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
 
         if (e.type === 'blur') {
@@ -298,9 +309,8 @@ class HandlerManager {
         const eventsInProgress = {};
         const activeHandlers = {};
 
-        const points = e ? (e.targetTouches ?
-            DOM.touchPos(this._el, ((e: any): TouchEvent).targetTouches) :
-            DOM.mousePos(this._el, ((e: any): MouseEvent))) : null;
+        const mapTouches = e.touches ? this._getMapTouches(((e: any): TouchEvent).touches) : undefined;
+        const points = mapTouches ? DOM.touchPos(this._el, mapTouches) : DOM.mousePos(this._el, ((e: any): MouseEvent));
 
         for (const {handlerName, handler, allowed} of this._handlers) {
             if (!handler.isEnabled()) continue;
@@ -311,7 +321,7 @@ class HandlerManager {
 
             } else {
                 if ((handler: any)[eventName || e.type]) {
-                    data = (handler: any)[eventName || e.type](e, points);
+                    data = (handler: any)[eventName || e.type](e, points, mapTouches);
                     this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data, handlerName, inputEvent);
                     if (data && data.needsRenderFrame) {
                         this._triggerRenderFrame();
