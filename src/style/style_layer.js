@@ -90,7 +90,6 @@ class StyleLayer extends Evented {
         }
 
         if (properties.paint) {
-
             this._transitionablePaint = new Transitionable(properties.paint);
 
             for (const property in layer.paint) {
@@ -101,6 +100,7 @@ class StyleLayer extends Evented {
             }
 
             this._transitioningPaint = this._transitionablePaint.untransitioned();
+            //$FlowFixMe
             this.paint = new PossiblyEvaluated(properties.paint);
         }
     }
