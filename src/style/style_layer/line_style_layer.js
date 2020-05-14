@@ -8,11 +8,12 @@ import {RGBAImage} from '../../util/image';
 import {polygonIntersectsBufferedMultiLine} from '../../util/intersection_tests';
 import {getMaximumPaintValue, translateDistance, translate} from '../query_utils';
 import properties from './line_style_layer_properties';
-import {extend} from '../../util/util';
+import {extend, clamp, nextPowerOfTwo} from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
 import renderColorRamp from '../../util/color_ramp';
 import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties';
 
+import Step from '../../style-spec/expression/definitions/step';
 import type {FeatureState} from '../../style-spec/expression';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
@@ -48,6 +49,7 @@ class LineStyleLayer extends StyleLayer {
 
     gradient: ?RGBAImage;
     gradientTexture: ?Texture;
+    stepInterpolant: boolean;
 
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
@@ -59,14 +61,19 @@ class LineStyleLayer extends StyleLayer {
 
     _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'line-gradient') {
-            this._updateGradient();
+            const expression = this._transitionablePaint._values['line-gradient'].value.expression;
+            this.stepInterpolant = expression._styleExpression.expression instanceof Step;
+            this.gradientTexture = null;
         }
     }
 
-    _updateGradient() {
+    renderGradientFromExpression(geometryTileCoverageAtMaxZoom: number, maxTextureSize: number) {
         const expression = this._transitionablePaint._values['line-gradient'].value.expression;
-        this.gradient = renderColorRamp(expression, 'lineProgress');
-        this.gradientTexture = null;
+        // Logical pixel tile size is 512px, and 1024px right before current zoom + 1
+        const maxTilePixelSize = 1024;
+        const maxTextureCoverage = geometryTileCoverageAtMaxZoom * maxTilePixelSize;
+        const textureResolution = nextPowerOfTwo(clamp(maxTextureCoverage, 256, maxTextureSize));
+        this.gradient = renderColorRamp(expression, 'lineProgress', this.stepInterpolant ? textureResolution : 256);
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {

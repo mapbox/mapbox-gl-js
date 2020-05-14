@@ -73,6 +73,7 @@ const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DIST
 class LineBucket implements Bucket {
     distance: number;
     totalDistance: number;
+    totalLineLength: number;
     scaledDistance: number;
     clipStart: number;
     clipEnd: number;
@@ -243,6 +244,8 @@ class LineBucket implements Bucket {
             }
             this.updateScaledDistance();
         }
+
+        this.totalLineLength = this.totalDistance / (this.clipEnd - this.clipStart);
 
         const isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
 

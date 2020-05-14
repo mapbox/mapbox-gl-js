@@ -15,6 +15,7 @@ import type SourceCache from '../source/source_cache';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
+import EXTENT from '../data/extent';
 
 export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
@@ -42,15 +43,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const gl = context.gl;
 
     let firstTile = true;
-
-    if (gradient) {
-        context.activeTexture.set(gl.TEXTURE0);
-
-        let gradientTexture = layer.gradientTexture;
-        if (!layer.gradient) return;
-        if (!gradientTexture) gradientTexture = layer.gradientTexture = new Texture(context, layer.gradient, gl.RGBA);
-        gradientTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-    }
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -85,6 +77,19 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         } else if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
             context.activeTexture.set(gl.TEXTURE0);
             painter.lineAtlas.bind(context);
+        } else if (gradient) {
+            let gradientTexture = layer.gradientTexture;
+            if (!gradientTexture) {
+                const sourceMaxZoom = sourceCache.getSource().maxzoom;
+                const lineLength = bucket.totalLineLength / EXTENT;
+                // Maximum possible texture coverage heuristic, bound by hardware max texture size
+                const lineTileCoverageAtMaxZoom = Math.ceil((1 << (sourceMaxZoom - coord.canonical.z)) * lineLength);
+
+                layer.renderGradientFromExpression(lineTileCoverageAtMaxZoom, context.maxTextureSize);
+                gradientTexture = layer.gradientTexture = new Texture(context, layer.gradient, gl.RGBA);
+            }
+            context.activeTexture.set(gl.TEXTURE0);
+            gradientTexture.bind(layer.stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
 
         program.draw(context, gl.TRIANGLES, depthMode,

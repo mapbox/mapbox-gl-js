@@ -210,6 +210,22 @@ export function uuid(): string {
 }
 
 /**
+ * Return whether a given value is a power of two
+ * @private
+ */
+export function isPowerOfTwo(value: number): boolean {
+    return Math.log2(value) % 1 === 0;
+}
+
+/**
+ * Return the next power of two, or the input value if already a power of two
+ * @private
+ */
+export function nextPowerOfTwo(value: number): number {
+    return Math.pow(2, Math.ceil(Math.log2(value)));
+}
+
+/**
  * Validate a string to match UUID(v4) of the
  * form: xxxxxxxx-xxxx-4xxx-[89ab]xxx-xxxxxxxxxxxx
  * @param str string to validate.

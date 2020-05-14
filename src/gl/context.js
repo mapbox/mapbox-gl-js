@@ -27,6 +27,7 @@ class Context {
     gl: WebGLRenderingContext;
     extVertexArrayObject: any;
     currentNumAttributes: ?number;
+    maxTextureSize: number;
 
     clearColor: ClearColor;
     clearDepth: ClearDepth;
@@ -118,6 +119,7 @@ class Context {
         }
 
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
+        this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     }
 
     setDefault() {

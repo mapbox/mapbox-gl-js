@@ -1,6 +1,8 @@
 // @flow
 
 import {RGBAImage} from './image';
+import {isPowerOfTwo} from './util';
+import assert from 'assert';
 
 import type {StylePropertyExpression} from '../style-spec/expression/index';
 
@@ -10,11 +12,13 @@ import type {StylePropertyExpression} from '../style-spec/expression/index';
  *
  * @private
  */
-export default function renderColorRamp(expression: StylePropertyExpression, colorRampEvaluationParameter: string): RGBAImage {
-    const colorRampData = new Uint8Array(256 * 4);
+export default function renderColorRamp(expression: StylePropertyExpression, colorRampEvaluationParameter: string, textureResolution?: number): RGBAImage {
+    const resolution = textureResolution || 256;
+    assert(isPowerOfTwo(resolution));
+    const colorRampData = new Uint8Array(resolution * 4);
     const evaluationGlobals = {};
-    for (let i = 0, j = 0; i < 256; i++, j += 4) {
-        evaluationGlobals[colorRampEvaluationParameter] = i / 255;
+    for (let i = 0, j = 0; i < resolution; i++, j += 4) {
+        evaluationGlobals[colorRampEvaluationParameter] = i / (resolution - 1);
         const pxColor = expression.evaluate((evaluationGlobals: any));
         // the colors are being unpremultiplied because Color uses
         // premultiplied values, and the Texture class expects unpremultiplied ones
@@ -23,6 +27,5 @@ export default function renderColorRamp(expression: StylePropertyExpression, col
         colorRampData[j + 2] = Math.floor(pxColor.b * 255 / pxColor.a);
         colorRampData[j + 3] = Math.floor(pxColor.a * 255);
     }
-
-    return new RGBAImage({width: 256, height: 1}, colorRampData);
+    return new RGBAImage({width: resolution, height: 1}, colorRampData);
 }
