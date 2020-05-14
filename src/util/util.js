@@ -222,6 +222,7 @@ export function isPowerOfTwo(value: number): boolean {
  * @private
  */
 export function nextPowerOfTwo(value: number): number {
+    if (value <= 1) return 1;
     return Math.pow(2, Math.ceil(Math.log2(value)));
 }
 

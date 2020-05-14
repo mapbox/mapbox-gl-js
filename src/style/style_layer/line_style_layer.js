@@ -14,7 +14,7 @@ import renderColorRamp from '../../util/color_ramp';
 import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties';
 
 import Step from '../../style-spec/expression/definitions/step';
-import type {FeatureState} from '../../style-spec/expression';
+import type {FeatureState, ZoomConstantExpression} from '../../style-spec/expression';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
 import type Transform from '../../geo/transform';
@@ -61,7 +61,7 @@ class LineStyleLayer extends StyleLayer {
 
     _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'line-gradient') {
-            const expression = this._transitionablePaint._values['line-gradient'].value.expression;
+            const expression: ZoomConstantExpression<'source'> = ((this._transitionablePaint._values['line-gradient'].value.expression): any);
             this.stepInterpolant = expression._styleExpression.expression instanceof Step;
             this.gradientTexture = null;
         }

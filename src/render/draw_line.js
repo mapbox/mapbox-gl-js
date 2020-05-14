@@ -81,7 +81,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             let gradientTexture = layer.gradientTexture;
             if (!gradientTexture) {
                 const sourceMaxZoom = sourceCache.getSource().maxzoom;
-                const lineLength = bucket.totalLineLength / EXTENT;
+                const lineLength = bucket.maxLineLength / EXTENT;
                 // Maximum possible texture coverage heuristic, bound by hardware max texture size
                 const lineTileCoverageAtMaxZoom = Math.ceil((1 << (sourceMaxZoom - coord.canonical.z)) * lineLength);
 
