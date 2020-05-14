@@ -101,12 +101,6 @@ class StyleLayer extends Evented {
             }
 
             this._transitioningPaint = this._transitionablePaint.untransitioned();
-        }
-
-        if (properties.paint) {
-            // init default paint to cover until recalculate is called
-            // see https://github.com/mapbox/ibm-cognos-collab/issues/154
-            // also flow needs a separate undefined check??
             this.paint = new PossiblyEvaluated(properties.paint);
         }
     }
