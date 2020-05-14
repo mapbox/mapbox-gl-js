@@ -56,6 +56,18 @@ DOM.setTransform = function(el: HTMLElement, value: string) {
     el.style[transformProp] = value;
 };
 
+const transformPropOrigin = testProp(['transformOrigin', 'WebkitTransformOrigin']);
+
+DOM.setTransformOrigin = function(el: HTMLElement, value: string) {
+    // https://github.com/facebook/flow/issues/7754
+    // $FlowFixMe
+    el.style[transformPropOrigin] = value;
+};
+
+DOM.getAllStyle = function(el: HTMLElement) {
+    return window.getComputedStyle(el);
+};
+
 // Feature detection for {passive: false} support in add/removeEventListener.
 let passiveSupported = false;
 

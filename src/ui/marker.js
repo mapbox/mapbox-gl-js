@@ -199,7 +199,7 @@ export default class Marker extends Evented {
             // the y value of the center of the shadow ellipse relative to the svg top left is "shadow transform translate-y (29.0) + ellipse cy (5.80029008)"
             // offset to the svg center "height (41 / 2)" gives (29.0 + 5.80029008) - (41 / 2) and rounded for an integer pixel offset gives 14
             // negative is used to move the marker up from the center so the tip is at the Marker lngLat
-            this._offset = Point.convert(options && options.offset || [0, -14]);
+            this._offset = Point.convert(options && options.offset || [0, -14 * this._scale]);
         } else {
             this._element = options.element;
             this._offset = Point.convert(options && options.offset || [0, 0]);
@@ -441,9 +441,11 @@ export default class Marker extends Evented {
         this._pos = this._map.project(this._lngLat)._add(this._offset);
 
         let rotation = "";
+        let offset = [0, 0];
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
             rotation = `rotateZ(${this._rotation}deg)`;
         } else if (this._rotationAlignment === "map") {
+            offset = this._offset;
             rotation = `rotateZ(${this._rotation - this._map.getBearing()}deg)`;
         }
 
@@ -451,6 +453,7 @@ export default class Marker extends Evented {
         if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
             pitch = "rotateX(0deg)";
         } else if (this._pitchAlignment === "map") {
+            offset = this._offset;
             pitch = `rotateX(${this._map.getPitch()}deg)`;
         }
 
@@ -461,6 +464,9 @@ export default class Marker extends Evented {
             this._pos = this._pos.round();
         }
 
+        const TransformOriginX = 50 + (offset['x'] / parseFloat(DOM.getAllStyle(this._element)['width'])) * 100;
+        const TransformOriginY = 50 - (offset['y'] / parseFloat(DOM.getAllStyle(this._element)['height'])) * 100;
+        DOM.setTransformOrigin(this._element, `${TransformOriginX}% ${TransformOriginY}%`);
         DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
     }
 
