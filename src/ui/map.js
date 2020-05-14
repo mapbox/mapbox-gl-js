@@ -853,7 +853,7 @@ class Map extends Camera {
      * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving || this.handlers.isActive();
+        return this._moving || this.handlers.isMoving();
     }
 
     /**
