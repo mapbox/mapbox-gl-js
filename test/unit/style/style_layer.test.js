@@ -403,5 +403,12 @@ test('StyleLayer#serialize', (t) => {
         t.end();
     });
 
+    t.test('layer.paint is never undefined', (t) => {
+        const layer = createStyleLayer({type: 'fill'});
+        // paint is never undefined
+        t.ok(layer.paint);
+        t.end();
+    });
+
     t.end();
 });
