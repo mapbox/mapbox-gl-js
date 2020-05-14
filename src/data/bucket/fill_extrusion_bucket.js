@@ -252,7 +252,7 @@ class FillExtrusionBucket implements Bucket {
                 if (x1 != null && y1 != null) this.centroidVertexArray.emplaceBack(x1, y1);
             }
         };
-        const flatRoof = feature.properties.hasOwnProperty('type') && feature.properties.hasOwnProperty('height') &&
+        const flatRoof = feature.properties && feature.properties.hasOwnProperty('type') && feature.properties.hasOwnProperty('height') &&
             vectorTileFeatureTypes[feature.type] === 'Polygon';
         const centroid = new ClampedCentroid();
 
