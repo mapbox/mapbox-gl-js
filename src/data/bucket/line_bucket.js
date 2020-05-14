@@ -1,8 +1,9 @@
 // @flow
 
-import {LineLayoutArray} from '../array_types';
+import {LineLayoutArray, LineExtLayoutArray} from '../array_types';
 
 import {members as layoutAttributes} from './line_attributes';
+import {members as layoutAttributesExt} from './line_attributes_ext';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray} from '../index_array_type';
@@ -25,7 +26,9 @@ import type {
 import type LineStyleLayer from '../../style/style_layer/line_style_layer';
 import type Point from '@mapbox/point-geometry';
 import type {Segment} from '../segment';
+import {RGBAImage} from '../../util/image';
 import type Context from '../../gl/context';
+import type Texture from '../../render/texture';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type {FeatureStates} from '../../source/source_state';
@@ -67,15 +70,20 @@ const LINE_DISTANCE_SCALE = 1 / 2;
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
+type LineClips = {
+    start: number;
+    end: number;
+}
+
 /**
  * @private
  */
 class LineBucket implements Bucket {
     distance: number;
     totalDistance: number;
+    maxLineLength: number;
     scaledDistance: number;
-    clipStart: number;
-    clipEnd: number;
+    lineClips: ?LineClips;
 
     e1: number;
     e2: number;
@@ -88,9 +96,15 @@ class LineBucket implements Bucket {
     stateDependentLayers: Array<any>;
     stateDependentLayerIds: Array<string>;
     patternFeatures: Array<BucketFeature>;
+    lineClipsArray: Array<LineClips>;
 
     layoutVertexArray: LineLayoutArray;
     layoutVertexBuffer: VertexBuffer;
+    layoutVertexArray2: LineExtLayoutArray;
+    layoutVertexBuffer2: VertexBuffer;
+    gradientTexture: Texture;
+    gradient: ?RGBAImage;
+    gradientVersion: number;
 
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
@@ -108,11 +122,14 @@ class LineBucket implements Bucket {
         this.index = options.index;
         this.hasPattern = false;
         this.patternFeatures = [];
+        this.lineClipsArray = [];
 
         this.layoutVertexArray = new LineLayoutArray();
+        this.layoutVertexArray2 = new LineExtLayoutArray();
         this.indexArray = new TriangleIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
         this.segments = new SegmentVector();
+        this.maxLineLength = 0;
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
     }
@@ -196,6 +213,9 @@ class LineBucket implements Bucket {
 
     upload(context: Context) {
         if (!this.uploaded) {
+            if (this.layoutVertexArray2.length !== 0) {
+                this.layoutVertexBuffer2 = context.createVertexBuffer(this.layoutVertexArray2, layoutAttributesExt);
+            }
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
         }
@@ -211,12 +231,21 @@ class LineBucket implements Bucket {
         this.segments.destroy();
     }
 
+    lineFeatureClips(feature: BucketFeature): ?LineClips {
+        if (!!feature.properties && feature.properties.hasOwnProperty('mapbox_clip_start') && feature.properties.hasOwnProperty('mapbox_clip_end')) {
+            const start = +feature.properties['mapbox_clip_start'];
+            const end = +feature.properties['mapbox_clip_end'];
+            return {start, end};
+        }
+    }
+
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
         const layout = this.layers[0].layout;
         const join = layout.get('line-join').evaluate(feature, {});
         const cap = layout.get('line-cap');
         const miterLimit = layout.get('line-miter-limit');
         const roundLimit = layout.get('line-round-limit');
+        this.lineClips = this.lineFeatureClips(feature);
 
         for (const line of geometry) {
             this.addLine(line, feature, join, cap, miterLimit, roundLimit);
@@ -230,18 +259,14 @@ class LineBucket implements Bucket {
         this.scaledDistance = 0;
         this.totalDistance = 0;
 
-        if (!!feature.properties &&
-            feature.properties.hasOwnProperty('mapbox_clip_start') &&
-            feature.properties.hasOwnProperty('mapbox_clip_end')) {
-
-            this.clipStart = +feature.properties['mapbox_clip_start'];
-            this.clipEnd = +feature.properties['mapbox_clip_end'];
-
+        if (this.lineClips) {
+            this.lineClipsArray.push(this.lineClips);
             // Calculate the total distance, in tile units, of this tiled line feature
             for (let i = 0; i < vertices.length - 1; i++) {
                 this.totalDistance += vertices[i].dist(vertices[i + 1]);
             }
             this.updateScaledDistance();
+            this.maxLineLength = Math.max(this.maxLineLength, this.totalDistance);
         }
 
         const isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
@@ -505,7 +530,7 @@ class LineBucket implements Bucket {
 
     addHalfVertex({x, y}: Point, extrudeX: number, extrudeY: number, round: boolean, up: boolean, dir: number, segment: Segment) {
         // scale down so that we can store longer distances while sacrificing precision.
-        const linesofar = this.scaledDistance * LINE_DISTANCE_SCALE;
+        const linesofarScaled = (this.totalDistance > 0 ? this.scaledDistance * (MAX_LINE_DISTANCE - 1) : this.scaledDistance) * LINE_DISTANCE_SCALE;
 
         this.layoutVertexArray.emplaceBack(
             // a_pos_normal
@@ -517,11 +542,19 @@ class LineBucket implements Bucket {
             Math.round(EXTRUDE_SCALE * extrudeX) + 128,
             Math.round(EXTRUDE_SCALE * extrudeY) + 128,
             // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
-            // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
-            // room for the direction value). The upper 8 bits of `linesofar` are placed in
+            // Combine it with the lower 6 bits of `linesofarScaled` (shifted by 2 bits to make
+            // room for the direction value). The upper 8 bits of `linesofarScaled` are placed in
             // the `w` component.
-            ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | ((linesofar & 0x3F) << 2),
-            linesofar >> 6);
+            ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | ((linesofarScaled & 0x3F) << 2),
+            linesofarScaled >> 6);
+
+        // Constructs a second vertex buffer with higher precision line progress
+        if (this.lineClips) {
+            this.layoutVertexArray2.emplaceBack(
+                this.scaledDistance - this.lineClips.start,
+                this.lineClips.end - this.lineClips.start,
+                this.lineClipsArray.length);
+        }
 
         const e = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
@@ -540,8 +573,8 @@ class LineBucket implements Bucket {
         // as the total distance (in tile units) of this tiled feature, and the distance
         // (in tile units) of the current vertex, we can determine the relative distance
         // of this vertex along the full linestring feature and scale it to [0, 2^15)
-        this.scaledDistance = this.totalDistance > 0 ?
-            (this.clipStart + (this.clipEnd - this.clipStart) * this.distance / this.totalDistance)  * (MAX_LINE_DISTANCE - 1) :
+        this.scaledDistance = this.lineClips ?
+            this.lineClips.start + (this.lineClips.end - this.lineClips.start) * this.distance / this.totalDistance :
             this.distance;
     }
 
