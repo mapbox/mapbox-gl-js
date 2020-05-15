@@ -1,0 +1,14 @@
+{
+  "expression": ["literal", false],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [false],
+    "serialized": false
+  }
+}
