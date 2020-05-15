@@ -1759,14 +1759,14 @@ class Map extends Camera {
      * A layer defines how data from a specified source will be styled. Read more about layer types
      * and available paint and layout properties in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
      *
-     * @param {Object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the [`CustomLayerInterface`](https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface) specification.
+     * @param {Object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the {@link CustomLayerInterface} specification.
      * The Mapbox Style Specification's layer definition is appropriate for most layers.
      *
      * @param {string} layer.id A unique idenfier that you define.
      * @param {string} layer.type The type of layer (for example `fill` or `symbol`).
      * A list of layer types is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#type).
      *
-     * (This can also be `custom`. For more information, see [`CustomLayerInterface`](https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface).)
+     * (This can also be `custom`. For more information, see {@link CustomLayerInterface}.)
      * @param {string | Object} [layer.source] The data source for the layer.
      * Reference a source that has _already been defined_ using the source's unique id.
      * Reference a _new source_ using a source object (as defined in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/)) directly.
@@ -1796,7 +1796,7 @@ class Map extends Camera {
      * If no minzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
      * @param {Object} [layer.metadata] (optional) Arbitrary properties useful to track with the layer, but do not influence rendering.
      * @param {string} [layer.renderingMode] This is only applicable for layers with the type `custom`.
-     * See [`CustomLayerInterface`](https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface) for more information.
+     * See {@link CustomLayerInterface} for more information.
      * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
      * If this argument is not specified, the layer will be appended to the end of the layers array.
      *
