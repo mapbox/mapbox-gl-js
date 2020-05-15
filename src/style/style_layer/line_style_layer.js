@@ -73,7 +73,7 @@ class LineStyleLayer extends StyleLayer {
         const maxTilePixelSize = 1024;
         const maxTextureCoverage = geometryTileCoverageAtMaxZoom * maxTilePixelSize;
         const textureResolution = nextPowerOfTwo(clamp(maxTextureCoverage, 256, maxTextureSize));
-        this.gradient = renderColorRamp(expression, 'lineProgress', this.stepInterpolant ? textureResolution : 256);
+        this.gradient = renderColorRamp(expression, 'lineProgress', this.stepInterpolant ? textureResolution : 256, this.gradient || undefined);
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
