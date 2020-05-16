@@ -71,6 +71,7 @@ export type WorkerDEMTileCallback = (err: ?Error, result: ?DEMData) => void;
  * @param layerIndex
  */
 export interface WorkerSource {
+    availableImages: Array<string>,
     // Disabled due to https://github.com/facebook/flow/issues/5208
     // constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
 

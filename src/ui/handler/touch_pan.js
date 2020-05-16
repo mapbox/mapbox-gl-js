@@ -24,20 +24,20 @@ export default class TouchPanHandler {
         this._sum = new Point(0, 0);
     }
 
-    touchstart(e: TouchEvent, points: Array<Point>) {
-        return this._calculateTransform(e, points);
+    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+        return this._calculateTransform(e, points, mapTouches);
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>) {
+    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._active) return;
         e.preventDefault();
-        return this._calculateTransform(e, points);
+        return this._calculateTransform(e, points, mapTouches);
     }
 
-    touchend(e: TouchEvent, points: Array<Point>) {
-        this._calculateTransform(e, points);
+    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+        this._calculateTransform(e, points, mapTouches);
 
-        if (this._active && e.targetTouches.length < this._minTouches) {
+        if (this._active && mapTouches.length < this._minTouches) {
             this.reset();
         }
     }
@@ -46,10 +46,10 @@ export default class TouchPanHandler {
         this.reset();
     }
 
-    _calculateTransform(e: TouchEvent, points: Array<Point>) {
-        if (e.targetTouches.length > 0) this._active = true;
+    _calculateTransform(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+        if (mapTouches.length > 0) this._active = true;
 
-        const touches = indexTouches(e.targetTouches, points);
+        const touches = indexTouches(mapTouches, points);
 
         const touchPointSum = new Point(0, 0);
         const touchDeltaSum = new Point(0, 0);
