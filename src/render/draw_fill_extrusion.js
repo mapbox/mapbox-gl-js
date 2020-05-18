@@ -63,7 +63,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
 
-        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
+        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, {useDemToMeter: true});
 
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);

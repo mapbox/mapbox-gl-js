@@ -6,6 +6,7 @@ uniform vec2 u_dem_tl;
 uniform float u_dem_scale;
 uniform float u_dem_size;
 uniform float u_exaggeration;
+uniform float u_dem_to_meter;
 
 uniform sampler2D u_depth;
 
@@ -54,24 +55,29 @@ bool hideIfOccluded(vec4 frag) {
     return false;
 }
 
-float roofElevation(vec2 apos) {
-    vec2 uvTex = apos / 8192.0;
+float flatElevation(vec2 apos, float height) {
+    vec2 uvTex = apos / 8191.0;
     float size = u_dem_size + 2.0;
     float dd = 1.0 / size;
 
-    vec2 pos = u_dem_size * (uvTex * u_dem_scale + u_dem_tl) + 1.0;
-    vec2 f = fract(pos);
-    pos = (pos - f + 0.5) * dd;
+    vec2 pos = u_dem_size * (uvTex * u_dem_scale + u_dem_tl) + 0.5;
+    pos = pos * dd;
 
-    vec4 dem = vec4(texture2D(u_dem, pos).xyz * 255.0, -1.0);
-    float c = dot(dem, u_dem_unpack);
-
-    vec4 demt = vec4(texture2D(u_dem, pos + vec2(-dd, 0.0)).xyz * 255.0, -1.0);
-    float t = dot(demt, u_dem_unpack);
+    vec4 demtl = vec4(texture2D(u_dem, pos).xyz * 255.0, -1.0);
+    float tl = dot(demtl, u_dem_unpack);
+    vec4 demtr = vec4(texture2D(u_dem, pos + vec2(0.0, dd)).xyz * 255.0, -1.0);
+    float tr = dot(demtr, u_dem_unpack);
+    vec4 dembl = vec4(texture2D(u_dem, pos + vec2(dd, 0.0)).xyz * 255.0, -1.0);
+    float bl = dot(dembl, u_dem_unpack);
     vec4 dembr = vec4(texture2D(u_dem, pos + vec2(dd, dd)).xyz * 255.0, -1.0);
     float br = dot(dembr, u_dem_unpack);
 
-    return u_exaggeration * max(max(c, t), br);
+    vec4 s = vec4(tl, tr, bl, br);
+    float average = dot(s, vec4(1.0)) * 0.25;
+    float slope = min(0.25, dot(abs(s - vec4(average)), vec4(1.0)) * 0.25);
+    float fix = slope * u_dem_to_meter * 8.0;
+    float base = min(min(tl, tr), min(bl, br)) + fix;
+    return u_exaggeration * base;
 }
 
 #else

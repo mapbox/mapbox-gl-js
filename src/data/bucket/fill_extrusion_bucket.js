@@ -18,6 +18,8 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Point from '@mapbox/point-geometry';
+import {number as interpolate} from '../../style-spec/util/interpolate';
+import {clamp} from '../../util/util';
 
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {
@@ -34,7 +36,6 @@ import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type {FeatureStates} from '../../source/source_state';
 import type {ImagePosition} from '../../render/image_atlas';
-import {number as interpolate} from '../../style-spec/util/interpolate';
 
 const FACTOR = Math.pow(2, 13);
 
@@ -57,21 +58,24 @@ class ClampedCentroid {
     minIntersection: [number, number];
     maxIntersection: [number, number];
 
-    init(x: number, y: number) {
-        this.acc = [x, y];
+    constructor() {
+        this.acc = [0, 0];
         this.clamp = [undefined, undefined];
-        if (x < 0) {
-            this.clamp[0] = 0;
-        } else if (x > EXTENT) {
-            this.clamp[0] = EXTENT;
-        }
-        if (y < 0) {
-            this.clamp[1] = 0;
-        } else if (y > EXTENT) {
-            this.clamp[1] = EXTENT;
-        }
         this.minIntersection = [2 * EXTENT, 2 * EXTENT];
         this.maxIntersection = [-2 * EXTENT, -2 * EXTENT];
+    }
+
+    startRing(p: Point) {
+        if (p.x < 0) {
+            this.clamp[0] = 0;
+        } else if (p.x > EXTENT) {
+            this.clamp[0] = EXTENT;
+        }
+        if (p.y < 0) {
+            this.clamp[1] = 0;
+        } else if (p.y > EXTENT) {
+            this.clamp[1] = EXTENT;
+        }
     }
 
     _appendComponent(i: 0 | 1, p: Point, prev: Point) {
@@ -101,7 +105,7 @@ class ClampedCentroid {
         }
     }
 
-    append(p: Point, prev: Point) {
+    appendEdge(p: Point, prev: Point) {
         this._appendComponent(0, p, prev);
         this._appendComponent(1, p, prev);
     }
@@ -119,11 +123,11 @@ class ClampedCentroid {
     }
 
     x(count: number): number {
-        return this._value(0, count);
+        return clamp(this._value(0, count), 1, EXTENT - 1);
     }
 
     y(count: number): number {
-        return this._value(1, count);
+        return clamp(this._value(1, count), 1, EXTENT - 1);
     }
 }
 
@@ -228,8 +232,10 @@ class FillExtrusionBucket implements Bucket {
     upload(context: Context) {
         if (!this.uploaded) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-            this.centroidVertexBuffer = context.createVertexBuffer(this.centroidVertexArray, centroidAttributes.members);
-            assert(this.centroidVertexArray.length === this.layoutVertexArray.length);
+            if (this.centroidVertexArray.length > 0) {
+                this.centroidVertexBuffer = context.createVertexBuffer(this.centroidVertexArray, centroidAttributes.members);
+                assert(this.centroidVertexArray.length === this.layoutVertexArray.length);
+            }
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
         }
         this.programConfigurations.upload(context);
@@ -239,7 +245,7 @@ class FillExtrusionBucket implements Bucket {
     destroy() {
         if (!this.layoutVertexBuffer) return;
         this.layoutVertexBuffer.destroy();
-        this.centroidVertexBuffer.destroy();
+        if (this.centroidVertexBuffer) this.centroidVertexBuffer.destroy();
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();
         this.segments.destroy();
@@ -254,13 +260,18 @@ class FillExtrusionBucket implements Bucket {
         };
         const flatRoof = feature.properties && feature.properties.hasOwnProperty('type') && feature.properties.hasOwnProperty('height') &&
             vectorTileFeatureTypes[feature.type] === 'Polygon';
+
         const centroid = new ClampedCentroid();
+        const polyCount = [];
 
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
-            const ringInfo = {};
+            const isRingOutside = {};
+            const polyInfo = {edges: 0, top: 0};
+            polyCount.push(polyInfo);
+
             for (let i = 0; i < polygon.length; i++) {
                 const ring = polygon[i];
                 if (ring.length === 0) {
@@ -268,23 +279,22 @@ class FillExtrusionBucket implements Bucket {
                 }
 
                 if (isEntirelyOutside(ring)) {
-                    ringInfo[i] = null;
+                    isRingOutside[i] = true;
                     continue;
                 }
                 numVertices += ring.length;
 
                 let edgeDistance = 0;
-                if (flatRoof) centroid.init(ring[0].x, ring[0].y);
-                let ringEdges = 0;
+                if (flatRoof) centroid.startRing(ring[0]);
 
                 for (let p = 0; p < ring.length; p++) {
                     const p1 = ring[p];
 
                     if (p >= 1) {
                         const p2 = ring[p - 1];
-                        if (flatRoof) centroid.append(p1, p2);
 
                         if (!isBoundaryEdge(p1, p2)) {
+                            if (flatRoof) centroid.appendEdge(p1, p2);
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                             }
@@ -317,17 +327,9 @@ class FillExtrusionBucket implements Bucket {
 
                             segment.vertexLength += 4;
                             segment.primitiveLength += 2;
-                            ringEdges++;
+                            polyInfo.edges++;
                         }
                     }
-                }
-                if (ringEdges > 0) {
-                    // Out of bounds -32768 means "no centroid" sampling, used when there is no flat roof and also for base
-                    // level elevation sampling. On lower level (base), don't sample centroid but the vertex elevation.
-                    const x = flatRoof ? centroid.x(ring.length) : -32768;
-                    const y = flatRoof ? centroid.y(ring.length) : -32768;
-                    appendRepeatedCentroids(ringEdges * 2, -32768, -32768, x, y);
-                    if (flatRoof) ringInfo[i] = {x, y};
                 }
             }
 
@@ -350,7 +352,7 @@ class FillExtrusionBucket implements Bucket {
                     continue;
                 }
 
-                if (ringInfo.hasOwnProperty(i) && ringInfo[i] === null)
+                if (isRingOutside.hasOwnProperty(i) && isRingOutside[i])
                     continue; // isEntirelyOutside
 
                 if (ring !== polygon[0]) {
@@ -364,11 +366,8 @@ class FillExtrusionBucket implements Bucket {
 
                     flattened.push(p.x);
                     flattened.push(p.y);
+                    polyInfo.top++;
                 }
-
-                const x = ringInfo.hasOwnProperty(i) ? ringInfo[i].x : -32768;
-                const y = ringInfo.hasOwnProperty(i) ? ringInfo[i].y : -32768;
-                appendRepeatedCentroids(ring.length, x, y);
             }
 
             const indices = earcut(flattened, holeIndices);
@@ -384,6 +383,18 @@ class FillExtrusionBucket implements Bucket {
 
             segment.primitiveLength += indices.length / 3;
             segment.vertexLength += numVertices;
+        }
+
+        if (flatRoof) {
+            const count = polyCount.reduce((acc, p) => acc + p.edges, 0);
+            if (count > 0) {
+                const x = centroid.x(count);
+                const y = centroid.y(count);
+                for (const polyInfo of polyCount) {
+                    appendRepeatedCentroids(polyInfo.edges * 2, 0, 0, x, y);
+                    appendRepeatedCentroids(polyInfo.top, x, y);
+                }
+            }
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
