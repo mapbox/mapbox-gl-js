@@ -80,6 +80,7 @@ function packColor(color: Color): [number, number] {
 
 interface AttributeBinder {
     populatePaintArray(length: number, feature: Feature, imagePositions: {[_: string]: ImagePosition}, canonical?: CanonicalTileID, formattedSection?: FormattedSection): void;
+    updateExpression(expression: SourceExpression):void;
     updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState, imagePositions: {[_: string]: ImagePosition}): void;
     upload(Context): void;
     destroy(): void;
@@ -180,6 +181,11 @@ class SourceExpressionBinder implements AttributeBinder {
         this._setPaintValue(start, newLength, value);
     }
 
+    updateExpression(expression: SourceExpression) {
+        if (expression)
+            this.expression = expression;
+    }
+
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
         const value = this.expression.evaluate({zoom: 0}, feature, featureState);
         this._setPaintValue(start, end, value);
@@ -250,6 +256,11 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, min, max);
+    }
+
+    updateExpression(expression: CompositeExpression) {
+        if (expression)
+            this.expression = expression;
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
@@ -329,6 +340,11 @@ class CrossFadedCompositeBinder implements AttributeBinder {
         this.zoomInPaintVertexArray.resize(length);
         this.zoomOutPaintVertexArray.resize(length);
         this._setPaintValues(start, length, feature.patterns && feature.patterns[this.layerId], imagePositions);
+    }
+
+    updateExpression(expression: CompositeExpression) {
+        if (expression)
+            this.expression = expression;
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, imagePositions: {[_: string]: ImagePosition}) {
@@ -478,11 +494,9 @@ export default class ProgramConfiguration {
                          binder instanceof CrossFadedCompositeBinder) && (binder: any).expression.isStateDependent === true) {
                         //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                         const value = layer.paint.get(property);
-                        if (value.value && value.value.evaluate && typeof (value.value.evaluate) === 'function') {
-                            (binder: any).expression = value.value;
-                            (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, feature, featureStates[id], imagePositions);
-                            dirty = true;
-                        }
+                        (binder: any).updateExpression(value.value);
+                        (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, feature, featureStates[id], imagePositions);
+                        dirty = true;
                     }
                 }
             }
