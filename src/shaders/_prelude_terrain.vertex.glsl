@@ -6,7 +6,7 @@ uniform vec2 u_dem_tl;
 uniform float u_dem_scale;
 uniform float u_dem_size;
 uniform float u_exaggeration;
-uniform float u_dem_to_meter;
+uniform float u_meter_to_dem;
 
 uniform sampler2D u_depth;
 
@@ -55,7 +55,9 @@ bool hideIfOccluded(vec4 frag) {
     return false;
 }
 
-float flatElevation(vec2 apos, float height) {
+float flatElevation(vec2 pack, float height) {
+    vec2 apos = floor(pack / 8.0);
+    vec2 span = 10.0 * (pack - apos * 8.0);
     vec2 uvTex = apos / 8191.0;
     float size = u_dem_size + 2.0;
     float dd = 1.0 / size;
@@ -65,18 +67,18 @@ float flatElevation(vec2 apos, float height) {
 
     vec4 demtl = vec4(texture2D(u_dem, pos).xyz * 255.0, -1.0);
     float tl = dot(demtl, u_dem_unpack);
-    vec4 demtr = vec4(texture2D(u_dem, pos + vec2(0.0, dd)).xyz * 255.0, -1.0);
+    vec4 demtr = vec4(texture2D(u_dem, pos + vec2(dd, 0.0)).xyz * 255.0, -1.0);
     float tr = dot(demtr, u_dem_unpack);
-    vec4 dembl = vec4(texture2D(u_dem, pos + vec2(dd, 0.0)).xyz * 255.0, -1.0);
+    vec4 dembl = vec4(texture2D(u_dem, pos + vec2(0.0, dd)).xyz * 255.0, -1.0);
     float bl = dot(dembl, u_dem_unpack);
     vec4 dembr = vec4(texture2D(u_dem, pos + vec2(dd, dd)).xyz * 255.0, -1.0);
     float br = dot(dembr, u_dem_unpack);
 
     vec4 s = vec4(tl, tr, bl, br);
-    float average = dot(s, vec4(1.0)) * 0.25;
-    float slope = min(0.25, dot(abs(s - vec4(average)), vec4(1.0)) * 0.25);
-    float fix = slope * u_dem_to_meter * 8.0;
-    float base = min(min(tl, tr), min(bl, br)) + fix;
+    vec4 diff = abs(s.xzxy - s.ywzw);
+    vec2 slope = min(vec2(0.25), 0.5 * (diff.xz + diff.yw) * u_meter_to_dem);
+    vec2 fix = slope * span;
+    float base = min(min(tl, tr), min(bl, br)) + max(fix.x, fix.y);
     return u_exaggeration * base;
 }
 

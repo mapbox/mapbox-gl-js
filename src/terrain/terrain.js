@@ -197,7 +197,7 @@ export class Terrain extends Elevation {
         } else {
             // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
             const originalZoom = tr.zoom;
-            tr.zoom -= (tr.scaleZoom(demTileSize / GRID_DIM) + 1);
+            tr.zoom -= tr.scaleZoom(demTileSize / GRID_DIM);
             this.sourceCache.update(tr, true);
             tr.zoom = originalZoom;
         }
@@ -298,12 +298,12 @@ export class Terrain extends Elevation {
 
     // useDepthForOcclusion: Pre-rendered depth to texture (this._depthTexture) is
     // used to hide (actually moves all object's vertices out of viewport).
-    // useDemToMeter: u_dem_to_meter uniform is not used for all terrain programs,
+    // useMeterToDem: u_meter_to_dem uniform is not used for all terrain programs,
     // optimization to avoid unnecessary computation and upload.
     setupElevationDraw(tile: Tile, program: Program<*>,
         options?: {
             useDepthForOcclusion?: boolean,
-            useDemToMeter?: boolean
+            useMeterToDem?: boolean
         }) {
         const context = this.painter.context;
         const gl = context.gl;
@@ -318,7 +318,7 @@ export class Terrain extends Elevation {
             'u_dem_size': this.sourceCache.getSource().tileSize,
             'u_exaggeration': this.exaggeration(),
             'u_depth': 3,
-            'u_dem_to_meter': 0
+            'u_meter_to_dem': 0
         };
 
         const demTile: Tile = this.terrainTileForTile[tile.tileID.key];
@@ -336,9 +336,9 @@ export class Terrain extends Elevation {
             context.activeTexture.set(gl.TEXTURE3);
             this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
         }
-        if (options && options.useDemToMeter && demTile) {
+        if (options && options.useMeterToDem && demTile) {
             const meterToDEM = (1 << demTile.tileID.canonical.z) * mercatorZfromAltitude(1, this.painter.transform.center.lat) * this.sourceCache.getSource().tileSize;
-            uniforms['u_dem_to_meter'] = 1 / meterToDEM;
+            uniforms['u_meter_to_dem'] = meterToDEM;
         }
         program.setTerrainUniformValues(context, uniforms);
     }
@@ -758,7 +758,7 @@ export type TerrainUniformsType = {|
     'u_dem_size': Uniform1f,
     "u_exaggeration": Uniform1f,
     'u_depth': Uniform1i,
-    'u_dem_to_meter': Uniform1f
+    'u_meter_to_dem': Uniform1f
 |};
 
 export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
@@ -769,6 +769,6 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_dem_size': new Uniform1f(context, locations.u_dem_size),
     'u_exaggeration': new Uniform1f(context, locations.u_exaggeration),
     'u_depth': new Uniform1i(context, locations.u_depth),
-    'u_dem_to_meter': new Uniform1f(context, locations.u_dem_to_meter)
+    'u_meter_to_dem': new Uniform1f(context, locations.u_meter_to_dem)
 });
 

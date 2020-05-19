@@ -40,7 +40,8 @@ void main() {
     float ele = elevation(a_pos);
     float c_ele = flat_roof ? flatElevation(a_centroid_pos, height) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
-    gl_Position = u_matrix * vec4(pos_nx.xy, max(c_ele + (t > 0.0 ? height : base), ele + base + 0.5 * height * float(flat_roof)), 1);
+    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    gl_Position = u_matrix * vec4(pos_nx.xy, h, 1);
 #else
     gl_Position = u_matrix * vec4(pos_nx.xy, t > 0.0 ? height : base, 1);
 #endif

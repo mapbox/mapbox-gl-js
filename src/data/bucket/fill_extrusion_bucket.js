@@ -57,24 +57,35 @@ class ClampedCentroid {
     clamp: [?number, ?number];
     minIntersection: [number, number];
     maxIntersection: [number, number];
+    min: [number, number];
+    max: [number, number];
 
     constructor() {
         this.acc = [0, 0];
         this.clamp = [undefined, undefined];
         this.minIntersection = [2 * EXTENT, 2 * EXTENT];
         this.maxIntersection = [-2 * EXTENT, -2 * EXTENT];
+        this.min = [2 * EXTENT, 2 * EXTENT];
+        this.max = [-2 * EXTENT, -2 * EXTENT];
     }
 
     startRing(p: Point) {
-        if (p.x < 0) {
-            this.clamp[0] = 0;
-        } else if (p.x > EXTENT) {
-            this.clamp[0] = EXTENT;
+        const min = this.min, max = this.max, clamp = this.clamp;
+        if (p.x < min[0]) {
+            if (p.x < 0) { clamp[0] = 0; }
+            min[0] = p.x;
         }
-        if (p.y < 0) {
-            this.clamp[1] = 0;
-        } else if (p.y > EXTENT) {
-            this.clamp[1] = EXTENT;
+        if (p.x > max[0]) {
+            if (p.x > EXTENT) { clamp[0] = EXTENT; }
+            max[0] = p.x;
+        }
+        if (p.y < min[1]) {
+            if (p.y < 0) { clamp[1] = 0; }
+            min[1] = p.y;
+        }
+        if (p.y > max[1]) {
+            if (p.y > EXTENT) { clamp[1] = EXTENT; }
+            max[1] = p.y;
         }
     }
 
@@ -83,19 +94,22 @@ class ClampedCentroid {
         const b = i === 0 ? 'y' : 'x';
         const v = p[a];
         const w = p[b];
-        if (this.clamp[i] === undefined) {
+        const min = this.min, max = this.max, clamp = this.clamp;
+        if (clamp[i] === undefined) {
             this.acc[i] += v;
-            if (v < 0) {
-                this.clamp[i] = 0;
-            } else if (v > EXTENT) {
-                this.clamp[i] = EXTENT;
+            if (v < min[i]) {
+                if (v < 0) { clamp[i] = 0; }
+                min[i] = v;
+            } else if (v > max[i]) {
+                if (v > EXTENT) { clamp[i] = EXTENT; }
+                max[i] = v;
             }
         }
         let intersection;
         const prevv = prev[a];
-        if (this.clamp[i] !== undefined && (prevv < 0) !== (v < 0)) {
+        if (clamp[i] !== undefined && (prevv < 0) !== (v < 0)) {
             intersection = interpolate(prev[b], w, (0 - prevv) / (v - prevv));
-        } else if (this.clamp[i] !== undefined && (prevv > EXTENT) !== (v > EXTENT)) {
+        } else if (clamp[i] !== undefined && (prevv > EXTENT) !== (v > EXTENT)) {
             intersection = interpolate(prev[b], w, (EXTENT - prevv) / (v - prevv));
         }
         if (intersection) {
@@ -110,7 +124,7 @@ class ClampedCentroid {
         this._appendComponent(1, p, prev);
     }
 
-    _value(i: number, count: number): number {
+    value(i: 0 | 1, count: number): number {
         if (this.clamp[i] != null) { return this.clamp[i]; }
         const v = Math.floor(this.acc[i] / count);
         const j = 1 - i;
@@ -122,12 +136,13 @@ class ClampedCentroid {
         return v;
     }
 
-    x(count: number): number {
-        return clamp(this._value(0, count), 1, EXTENT - 1);
-    }
-
-    y(count: number): number {
-        return clamp(this._value(1, count), 1, EXTENT - 1);
+    span(i: 0 | 1): number {
+        const j: 0 | 1 = i === 0 ? 1 : 0;
+        if (this.clamp[j] !== undefined) {
+            if (this.clamp[i] !== undefined) return 0;
+            return (this.maxIntersection[i] - this.minIntersection[i]);
+        }
+        return this.clamp[i] === undefined ? this.max[i] - this.min[i] : 0;
     }
 }
 
@@ -388,8 +403,17 @@ class FillExtrusionBucket implements Bucket {
         if (flatRoof) {
             const count = polyCount.reduce((acc, p) => acc + p.edges, 0);
             if (count > 0) {
-                const x = centroid.x(count);
-                const y = centroid.y(count);
+                const toMeter = tileToMeter(canonical);
+                let xSpan = toMeter * centroid.span(0);
+                let ySpan = toMeter * centroid.span(1);
+                // When building is split between tiles, we don't cross reference building
+                // on both sides to reconcile size but use heuristics based on tile edge
+                // intersection length. Encode 10 meters multiplier in 3 bits.
+                if (xSpan === 0) { xSpan = ySpan === 0 ? 20 : ySpan * 2.0; }
+                if (ySpan === 0) { ySpan = xSpan === 0 ? 20 : xSpan * 2.0; }
+                const x = (clamp(centroid.value(0, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.ceil(xSpan / 10));
+                const y = (clamp(centroid.value(1, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.ceil(ySpan / 10));
+
                 for (const polyInfo of polyCount) {
                     appendRepeatedCentroids(polyInfo.edges * 2, 0, 0, x, y);
                     appendRepeatedCentroids(polyInfo.top, x, y);
@@ -415,4 +439,12 @@ function isEntirelyOutside(ring) {
         ring.every(p => p.x > EXTENT) ||
         ring.every(p => p.y < 0) ||
         ring.every(p => p.y > EXTENT);
+}
+
+function tileToMeter(canonical: CanonicalTileID) {
+    const circumferenceAtEquator = 40075017;
+    const mercatorY = canonical.y / (1 << canonical.z);
+    const exp = Math.exp(Math.PI * (1 - 2 * mercatorY));
+    // simplify cos(2 * atan(e) - PI/2) from mercator_coordinate.js, remove trigonometrics.
+    return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
 }
