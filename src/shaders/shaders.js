@@ -65,6 +65,8 @@ import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 
+export let preludeTerrain = {};
+preludeTerrain = compile('', preludeTerrainVert, true);
 export const prelude = compile(preludeFrag, preludeVert);
 export const background = compile(backgroundFrag, backgroundVert);
 export const backgroundPattern = compile(backgroundPatternFrag, backgroundPatternVert);
@@ -93,20 +95,22 @@ export const symbolSDF = compile(symbolSDFFrag, symbolSDFVert);
 export const symbolTextAndIcon = compile(symbolTextAndIconFrag, symbolTextAndIconVert);
 export const terrainRaster = compile(terrainRasterFrag, terrainRasterVert);
 export const terrainDepth = compile(terrainDepthFrag, terrainDepthVert);
-export const preludeTerrain = compile('', preludeTerrainVert);
 export const skybox = compile(skyboxFrag, skyboxVert);
 export const skyboxGradient = compile(skyboxGradientFrag, skyboxVert);
 export const skyboxCapture = compile(skyboxCaptureFrag, skyboxCaptureVert);
 
 // Expand #pragmas to #ifdefs.
 
-function compile(fragmentSource, vertexSource) {
+function compile(fragmentSource, vertexSource, isPreludeTerrainShader) {
     const re = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
 
-    const staticAttributes = vertexSource.match(/attribute ([\w]+) ([\w]+)/g);
-    const fragmentUniforms = fragmentSource.match(/uniform ([\w]+) ([\w]+)([\s]*)([\w]*)/g);
-    const vertexUniforms = vertexSource.match(/uniform ([\w]+) ([\w]+)([\s]*)([\w]*)/g);
-    const staticUniforms = vertexUniforms ? vertexUniforms.concat(fragmentUniforms) : fragmentUniforms;
+    const staticAttributes = vertexSource.match(/attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g);
+    const fragmentUniforms = fragmentSource.match(/uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g);
+    const vertexUniforms = vertexSource.match(/uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g);
+    let staticUniforms = vertexUniforms ? vertexUniforms.concat(fragmentUniforms) : fragmentUniforms;
+    if (!isPreludeTerrainShader) {
+        staticUniforms = preludeTerrain.staticUniforms.concat(staticUniforms);
+    }
 
     const fragmentPragmas = {};
 
