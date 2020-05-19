@@ -796,6 +796,7 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
      * // Set an event listener that fires
