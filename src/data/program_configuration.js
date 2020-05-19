@@ -26,6 +26,7 @@ import type {StructArray, StructArrayMember} from '../util/struct_array';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {ImagePosition} from '../render/image_atlas';
 import type {
+    Expression,
     Feature,
     FeatureState,
     GlobalProperties,
@@ -477,9 +478,11 @@ export default class ProgramConfiguration {
                          binder instanceof CrossFadedCompositeBinder) && (binder: any).expression.isStateDependent === true) {
                         //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                         const value = layer.paint.get(property);
-                        (binder: any).expression = value.value;
-                        (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, feature, featureStates[id], imagePositions);
-                        dirty = true;
+                        if (value.value && value.value.evaluate && typeof (value.value.evaluate) === 'function') {
+                            (binder: any).expression = value.value;
+                            (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, feature, featureStates[id], imagePositions);
+                            dirty = true;
+                        }
                     }
                 }
             }
