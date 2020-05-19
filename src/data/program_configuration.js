@@ -26,7 +26,6 @@ import type {StructArray, StructArrayMember} from '../util/struct_array';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {ImagePosition} from '../render/image_atlas';
 import type {
-    Expression,
     Feature,
     FeatureState,
     GlobalProperties,
@@ -182,7 +181,7 @@ class SourceExpressionBinder implements AttributeBinder {
     }
 
     updateExpression(expression: SourceExpression) {
-        if (expression)
+        if (expression && typeof expression.evaluate === 'function')
             this.expression = expression;
     }
 
