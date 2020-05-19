@@ -411,8 +411,8 @@ class FillExtrusionBucket implements Bucket {
                 // intersection length. Encode 10 meters multiplier in 3 bits.
                 if (xSpan === 0) { xSpan = ySpan === 0 ? 20 : ySpan * 2.0; }
                 if (ySpan === 0) { ySpan = xSpan === 0 ? 20 : xSpan * 2.0; }
-                const x = (clamp(centroid.value(0, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.ceil(xSpan / 10));
-                const y = (clamp(centroid.value(1, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.ceil(ySpan / 10));
+                const x = (clamp(centroid.value(0, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.round(xSpan / 10));
+                const y = (clamp(centroid.value(1, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.round(ySpan / 10));
 
                 for (const polyInfo of polyCount) {
                     appendRepeatedCentroids(polyInfo.edges * 2, 0, 0, x, y);

@@ -58,6 +58,7 @@ bool hideIfOccluded(vec4 frag) {
 float flatElevation(vec2 pack, float height) {
     vec2 apos = floor(pack / 8.0);
     vec2 span = 10.0 * (pack - apos * 8.0);
+
     vec2 uvTex = apos / 8191.0;
     float size = u_dem_size + 2.0;
     float dd = 1.0 / size;
@@ -65,20 +66,25 @@ float flatElevation(vec2 pack, float height) {
     vec2 pos = u_dem_size * (uvTex * u_dem_scale + u_dem_tl) + 0.5;
     pos = pos * dd;
 
-    vec4 demtl = vec4(texture2D(u_dem, pos).xyz * 255.0, -1.0);
+    vec2 bounds = vec2(5.0 * dd, 1.0 - 5.0 * dd);
+    // Get wider sample, if there is space, to get better slope estimate.
+    vec2 wider = vec2(pos.x > bounds.r && pos.x < bounds.g, pos.y > bounds.r && pos.y < bounds.g);
+    vec2 w = 5.0 * dd * wider;
+    vec4 demtl = vec4(texture2D(u_dem, pos - w).xyz * 255.0, -1.0);
     float tl = dot(demtl, u_dem_unpack);
-    vec4 demtr = vec4(texture2D(u_dem, pos + vec2(dd, 0.0)).xyz * 255.0, -1.0);
+    vec4 demtr = vec4(texture2D(u_dem, pos + vec2(dd, 0.0) + vec2(w.x, -w.y)).xyz * 255.0, -1.0);
     float tr = dot(demtr, u_dem_unpack);
-    vec4 dembl = vec4(texture2D(u_dem, pos + vec2(0.0, dd)).xyz * 255.0, -1.0);
+    vec4 dembl = vec4(texture2D(u_dem, pos + vec2(0.0, dd) + vec2(-w.x, w.y)).xyz * 255.0, -1.0);
     float bl = dot(dembl, u_dem_unpack);
-    vec4 dembr = vec4(texture2D(u_dem, pos + vec2(dd, dd)).xyz * 255.0, -1.0);
+    vec4 dembr = vec4(texture2D(u_dem, pos + vec2(dd, dd) + w).xyz * 255.0, -1.0);
     float br = dot(dembr, u_dem_unpack);
 
     vec4 s = vec4(tl, tr, bl, br);
     vec4 diff = abs(s.xzxy - s.ywzw);
-    vec2 slope = min(vec2(0.25), 0.5 * (diff.xz + diff.yw) * u_meter_to_dem);
+    vec2 slope = min(vec2(0.25), 0.5 * (diff.xz + diff.yw) * (wider / 11.0 + vec2(1.0) - wider) * u_meter_to_dem);
     vec2 fix = slope * span;
-    float base = min(min(tl, tr), min(bl, br)) + max(fix.x, fix.y);
+    float average = dot(s, vec4(1.0)) * 0.25;
+    float base = average + max(fix.x, fix.y);
     return u_exaggeration * base;
 }
 
