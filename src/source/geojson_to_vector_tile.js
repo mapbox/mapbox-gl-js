@@ -7,7 +7,7 @@ const geojsonvt = require('geojson-vt');
 const GeoJSONWrapper = require('./geojson_wrapper');
 const supercluster = require('supercluster');
 const UnwrappedTileID = require('../source/tile_id');
-const getSuperclusterOptions = require('../source/geojson_worker_source');
+const { getSuperclusterOptions } = require('../util/superclusterUtil');
 const util = require('../util/util');
 
 module.exports = function(data: any, options: VectorSourceSpecification, tileSize: number, zoom: number, tileID: UnwrappedTileID) {

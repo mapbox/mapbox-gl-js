@@ -2,7 +2,7 @@
 
 import geojsonToVectorTile from './geojson_to_vector_tile';
 import vtpbf from 'vt-pbf';
-import rewind  from 'geojson-rewind';
+import rewind from '@mapbox/geojson-rewind';
 import MercatorCoordinate from '../geo/mercator_coordinate';
 
 import { getJSON, getArrayBuffer } from '../util/ajax';
@@ -25,7 +25,6 @@ import type {PerformanceResourceTiming} from '../types/performance_resource_timi
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {Callback} from '../types/callback';
-import type CanonicalTileID from './tile_id';
 
 export type LoadVectorTileResult = {
     vectorTile: VectorTile;
