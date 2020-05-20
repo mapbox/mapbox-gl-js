@@ -32,6 +32,12 @@ or
 yarn run test-query-node
 ```
 
+To run only the expression tests:
+
+```
+yarn run test-expressions
+```
+
 ### Running specific tests
 
 To run a subset of tests or an individual test, you can pass a specific subdirectory to the `test-render` script. For example, to run all the tests for a given property, e.g. `circle-radius`:
