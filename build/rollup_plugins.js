@@ -90,7 +90,7 @@ function jsonParse() {
             if (id.slice(-5) !== '.json') return null;
 
             return {
-                code: `export default JSON.parse(${JSON.stringify(code)});`,
+                code: `export default JSON.parse('${code}');`,
                 map: {mappings: ''}
             };
         }
