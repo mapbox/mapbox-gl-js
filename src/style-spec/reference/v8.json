@@ -184,7 +184,7 @@
     "volatile": {
       "type": "boolean",
       "default": false,
-      "doc": "Setting this flag to true indicates that the source tiles shall not be stored in the local cache." 
+      "doc": "A setting to determine whether a source's tiles are cached locally."
     },
     "*": {
       "type": "*",
@@ -259,7 +259,7 @@
     "volatile": {
       "type": "boolean",
       "default": false,
-      "doc": "Setting this flag to true indicates that the source tiles shall not be stored in the local cache." 
+      "doc": "A setting to determine whether a source's tiles are cached locally."
     },
     "*": {
       "type": "*",
@@ -334,7 +334,7 @@
     "volatile": {
       "type": "boolean",
       "default": false,
-      "doc": "Setting this flag to true indicates that the source tiles shall not be stored in the local cache." 
+      "doc": "A setting to determine whether a source's tiles are cached locally."
     },
     "*": {
       "type": "*",
