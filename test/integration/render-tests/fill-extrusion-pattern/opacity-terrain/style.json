@@ -1,0 +1,106 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 0.02
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/11-378-804.terrain.png"
+      ],
+      "maxzoom": 11,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "buffer": 0,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.0004,
+                    0
+                  ],
+                  [
+                    -0.0002,
+                    0.0002
+                  ],
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    -0.0002,
+                    -0.0002
+                  ],
+                  [
+                    -0.0004,
+                    0
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0,
+                    -0.0002
+                  ],
+                  [
+                    0,
+                    0.0002
+                  ],
+                  [
+                    0.0003,
+                    0.0002
+                  ],
+                  [
+                    0.0003,
+                    -0.0002
+                  ],
+                  [
+                    0,
+                    -0.0002
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "pitch": 60,
+  "zoom": 18,
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-pattern": "generic_icon",
+        "fill-extrusion-opacity": 0.5,
+        "fill-extrusion-height": 10
+      }
+    }
+  ]
+}

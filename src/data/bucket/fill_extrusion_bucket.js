@@ -72,19 +72,19 @@ class ClampedCentroid {
     startRing(p: Point) {
         const min = this.min, max = this.max, clamp = this.clamp;
         if (p.x < min[0]) {
-            if (p.x < 0) { clamp[0] = 0; }
+            if (p.x <= 0) { clamp[0] = 0; }
             min[0] = p.x;
         }
         if (p.x > max[0]) {
-            if (p.x > EXTENT) { clamp[0] = EXTENT; }
+            if (p.x >= EXTENT) { clamp[0] = EXTENT; }
             max[0] = p.x;
         }
         if (p.y < min[1]) {
-            if (p.y < 0) { clamp[1] = 0; }
+            if (p.y <= 0) { clamp[1] = 0; }
             min[1] = p.y;
         }
         if (p.y > max[1]) {
-            if (p.y > EXTENT) { clamp[1] = EXTENT; }
+            if (p.y >= EXTENT) { clamp[1] = EXTENT; }
             max[1] = p.y;
         }
     }
@@ -98,18 +98,18 @@ class ClampedCentroid {
         if (clamp[i] === undefined) {
             this.acc[i] += v;
             if (v < min[i]) {
-                if (v < 0) { clamp[i] = 0; }
+                if (v <= 0) { clamp[i] = 0; }
                 min[i] = v;
             } else if (v > max[i]) {
-                if (v > EXTENT) { clamp[i] = EXTENT; }
+                if (v >= EXTENT) { clamp[i] = EXTENT; }
                 max[i] = v;
             }
         }
         let intersection;
         const prevv = prev[a];
-        if (clamp[i] !== undefined && (prevv < 0) !== (v < 0)) {
+        if (clamp[i] !== undefined && (prevv <= 0) !== (v <= 0)) {
             intersection = interpolate(prev[b], w, (0 - prevv) / (v - prevv));
-        } else if (clamp[i] !== undefined && (prevv > EXTENT) !== (v > EXTENT)) {
+        } else if (clamp[i] !== undefined && (prevv >= EXTENT) !== (v >= EXTENT)) {
             intersection = interpolate(prev[b], w, (EXTENT - prevv) / (v - prevv));
         }
         if (intersection) {
@@ -434,11 +434,13 @@ function isBoundaryEdge(p1, p2) {
         (p1.y === p2.y && (p1.y < 0 || p1.y > EXTENT));
 }
 
+// If points are out or on tile border, don't render as it is rendered in
+// tile across the boundary.
 function isEntirelyOutside(ring) {
-    return ring.every(p => p.x < 0) ||
-        ring.every(p => p.x > EXTENT) ||
-        ring.every(p => p.y < 0) ||
-        ring.every(p => p.y > EXTENT);
+    return ring.every(p => p.x <= 0) ||
+        ring.every(p => p.x >= EXTENT) ||
+        ring.every(p => p.y <= 0) ||
+        ring.every(p => p.y >= EXTENT);
 }
 
 function tileToMeter(canonical: CanonicalTileID) {
