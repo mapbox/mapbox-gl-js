@@ -1,11 +1,7 @@
 {
   "name": "@socrata/mapbox-gl",
   "description": "A WebGL interactive maps library",
-<<<<<<< HEAD
-  "version": "0.0.10",
-=======
   "version": "0.54.1",
->>>>>>> v0.54.1
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",

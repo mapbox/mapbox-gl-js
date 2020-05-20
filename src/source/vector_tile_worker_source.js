@@ -1,14 +1,10 @@
 // @flow
 
-<<<<<<< HEAD
 import geojsonToVectorTile from './geojson_to_vector_tile';
 import vtpbf from 'vt-pbf';
 import rewind  from 'geojson-rewind';
 
 import { getJSON, getArrayBuffer } from '../util/ajax';
-=======
-import { getArrayBuffer } from '../util/ajax';
->>>>>>> v0.54.1
 
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
@@ -54,7 +50,6 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  */
 
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-<<<<<<< HEAD
     const options = params.options || {};
     if (options.geojsonTile === true) {
         return loadGeojsonTile(params, callback);
@@ -69,7 +64,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
 */
 function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const options = params.options || {};
-    const request = getJSON(params.request, (err, data) => {
+    const request = getJSON(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
         if (err || !data) {
             return callback(err);
         } else if (typeof data !== 'object') {
@@ -90,8 +85,8 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
                 callback(null, {
                     vectorTile: geojsonWrappedVectorTile,
                     rawData: pbf.buffer,
-                    cacheControl: 'max-age=90000',
-                    expires: undefined,
+                    cacheControl,
+                    expires,
                     geojsonIndex: geojsonIndex
                 });
             } catch (err) {
@@ -110,10 +105,7 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
  * Calls a tile endpoint that responds in pbf format, converts them vt vector tile.
 */
 function defaultLoadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const request = getArrayBuffer(params.request, (err, response) => {
-=======
     const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
->>>>>>> v0.54.1
         if (err) {
             callback(err);
         } else if (data) {

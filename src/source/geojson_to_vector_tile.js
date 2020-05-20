@@ -1,37 +1,30 @@
 // @flow
 
+// We convert a geojson data to vector tile. All the stuff here are based on
+// `geojson_worker_source.js` and `geojson_source.js`;
 const EXTENT = require('../data/extent');
 const geojsonvt = require('geojson-vt');
 const GeoJSONWrapper = require('./geojson_wrapper');
 const supercluster = require('supercluster');
-const superclusterUtil = require('../util/superclusterUtil');
 const UnwrappedTileID = require('../source/tile_id');
+const getSuperclusterOptions = require('../source/geojson_worker_source');
 const util = require('../util/util');
 
 module.exports = function(data: any, options: VectorSourceSpecification, tileSize: number, zoom: number, tileID: UnwrappedTileID) {
     const scale = EXTENT / tileSize;
-    const aggregateByKeys = superclusterUtil.sanitizedAggregateByKeys(options);
-    let index;
-
-    if (data && data.features && data.features.forEach && options.aggregateBy) {
-        data.features.forEach((datum) => {
-            if (datum && datum.properties) {
-                aggregateByKeys.forEach((aggregateBy) => {
-                    const value =  Number(datum.properties[aggregateBy]);
-                    datum.properties[aggregateBy] = value;
-                    datum.properties[`${aggregateBy}_abbrev`] = superclusterUtil.abbreviate(value);
-                });
-            }
-        });
-    }
+    let index = null;
+    let geoJSONTile;
 
     if (options.cluster) {
         index = getSuperCluterIndex(data, options, tileID.canonical.z, scale);
+        geoJSONTile = index.getTile(zoom, tileID.canonical.x, tileID.canonical.y);
     } else {
-        index = getGeojsonVTIndex(data, options, tileID.canonical.z, scale);
+        geoJSONTile = {
+          features: data
+        };
     }
 
-    const geoJSONTile = index.getTile(zoom, tileID.canonical.x, tileID.canonical.y);
+
     const geojsonWrappedVectorTile = new GeoJSONWrapper(geoJSONTile ? geoJSONTile.features : []);
 
     return {
@@ -41,24 +34,19 @@ module.exports = function(data: any, options: VectorSourceSpecification, tileSiz
 };
 
 function getSuperCluterIndex(data: any, options: VectorSourceSpecification, zoom: number, scale: number) {
-    const superclusterOptions = util.extend({
-        // TO-DO: Work based on current zoom level.
-        minZoom: zoom - 3,
-        maxZoom: zoom + 3,
-        extent: EXTENT,
-        radius: (options.clusterRadius || 50) * scale
-    }, superclusterUtil.getMapReduceParams(options));
-
+    // Since on zoom a new tile gets loaded, we do not need super cluster to index the data of the
+    // given tile(x,y,z) for all zoom levels.
+    // We index them for a couple of zoom levels, so that while zooming before data for new tile loads,
+    // old tile of old zoom level shows on the map for the new zoom level.
+    const superclusterOptions = getSuperclusterOptions({
+        superclusterOptions: {
+            minZoom: zoom - 3,
+            maxZoom: zoom + 3,
+            extent: EXTENT,
+            radius: (options.clusterRadius || 50) * scale,
+            log: false
+        },
+        clusterProperties: options.clusterProperties
+    });
     return supercluster(superclusterOptions).load(data.features);
-}
-
-function getGeojsonVTIndex(data: any, options: VectorSourceSpecification, zoom: number, scale: number) {
-    const geojsonVtOptions = {
-        buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
-        tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
-        extent: EXTENT,
-        // TO-DO: Work based on current zoom level.
-        maxZoom: zoom
-    };
-    return geojsonvt(data, geojsonVtOptions);
-}
+};

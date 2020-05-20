@@ -34,7 +34,7 @@
   var GROUP_BY_ALIAS = '__group_by__';
 
   var tileUrl = 'https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$query=' +
-        'select count(*),' +
+        'select count(*) as soql_count,' +
         'snap_to_grid(point,{snap_precision}),sum(supervisor_district) as '+ AGGREGATE_BY_ALIAS + ',' +
         "CASE(category in ('Street and Sidewalk Cleaning','Graffiti Private Property'," +
         "'Graffiti Public Property','SFHA Requests','Abandoned Vehicle'),category||''," +
@@ -46,12 +46,17 @@
 
   map.showTileBoundaries = true;
   map.on('load', function () {
+    var clusterProperties = {
+      {"soql_count": ["+", ["get", "soql_count"]],
+    };
+    clusterProperties[AGGREGATE_BY_ALIAS] = ["+", ["get", AGGREGATE_BY_ALIAS]];
     map.addSource('vectorDataSource', {
         "type": "vector",
         "cluster": true,
         "clusterRadius": 80,
-        "aggregateBy": ['count', AGGREGATE_BY_ALIAS],
-        "groupBy": GROUP_BY_ALIAS,
+        "clusterProperties": clusterProperties,
+        // "aggregateBy": ['count', AGGREGATE_BY_ALIAS],
+        // "groupBy": GROUP_BY_ALIAS,
         "tiles": [ tileUrl ],
         // -----------------------------  //
         // Required to work with fork     //

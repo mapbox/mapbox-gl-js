@@ -84,7 +84,10 @@ export type VectorSourceSpecification = {
     "scheme"?: "xyz" | "tms",
     "minzoom"?: number,
     "maxzoom"?: number,
-    "attribution"?: string
+    "attribution"?: string,
+    "cluster"?: boolean,
+    "clusterRadius"?: number,
+    "clusterProperties"?: mixed
 }
 
 export type RasterSourceSpecification = {

@@ -136,7 +136,6 @@ class GeoJSONSource extends Evented implements Source {
                 maxZoom: options.clusterMaxZoom !== undefined ?
                     Math.min(options.clusterMaxZoom, this.maxzoom - 1) :
                     (this.maxzoom - 1),
-                aggregateBy: options.aggregateBy,
                 extent: EXTENT,
                 radius: (options.clusterRadius || 50) * scale,
                 log: false

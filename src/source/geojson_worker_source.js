@@ -111,7 +111,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         }
     }
 
-    /*
+    /**
      * Fetches (if appropriate), parses, and index geojson data into tiles. This
      * preparatory method must be called before {@link GeoJSONWorkerSource#loadTile}
      * can correctly serve up tiles.
@@ -171,18 +171,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             } else {
                 rewind(data, true);
 
-                const superclusterOptions = params.superclusterOptions;
-                if (superclusterOptions.aggregateBy) {
-                    superclusterOptions.map = function(props) {
-                        return {sum: Number(props[superclusterOptions.aggregateBy]) || 1};
-                    };
-                    superclusterOptions.reduce = function (accumulated, props) {
-                        accumulated.sum += props.sum;
-                    };
-                    superclusterOptions.initial = function () {
-                        return {sum: 0};
-                    };
-                }
                 try {
                     this._geoJSONIndex = params.cluster ?
                         new Supercluster(getSuperclusterOptions(params)).load(data.features) :
