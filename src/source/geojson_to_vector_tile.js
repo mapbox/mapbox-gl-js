@@ -2,28 +2,28 @@
 
 // We convert a geojson data to vector tile. All the stuff here are based on
 // `geojson_worker_source.js` and `geojson_source.js`;
-const EXTENT = require('../data/extent');
-const geojsonvt = require('geojson-vt');
-const GeoJSONWrapper = require('./geojson_wrapper');
-const supercluster = require('supercluster');
-const UnwrappedTileID = require('../source/tile_id');
-const { getSuperclusterOptions } = require('../util/superclusterUtil');
-const util = require('../util/util');
+import Supercluster from 'supercluster';
+import geojsonvt from 'geojson-vt';
+import EXTENT from '../data/extent';
+import GeoJSONWrapper from './geojson_wrapper';
+import { getSuperclusterOptions } from '../util/superclusterUtil';
 
-module.exports = function(data: any, options: VectorSourceSpecification, tileSize: number, zoom: number, tileID: UnwrappedTileID) {
+import type {VectorSourceSpecification} from '../style-spec/types';
+import type {UnwrappedTileID} from '../source/tile_id';
+
+export default function(data: any, options: VectorSourceSpecification, tileSize: number, zoom: number, tileID: UnwrappedTileID) {
     const scale = EXTENT / tileSize;
     let index = null;
     let geoJSONTile;
 
     if (options.cluster) {
-        index = getSuperCluterIndex(data, options, tileID.canonical.z, scale);
+        index = getSuperClusterIndex(data, options, tileID.canonical.z, scale);
         geoJSONTile = index.getTile(zoom, tileID.canonical.x, tileID.canonical.y);
     } else {
         geoJSONTile = {
           features: data
         };
     }
-
 
     const geojsonWrappedVectorTile = new GeoJSONWrapper(geoJSONTile ? geoJSONTile.features : []);
 
@@ -33,7 +33,7 @@ module.exports = function(data: any, options: VectorSourceSpecification, tileSiz
     };
 };
 
-function getSuperCluterIndex(data: any, options: VectorSourceSpecification, zoom: number, scale: number) {
+function getSuperClusterIndex(data: any, options: VectorSourceSpecification, zoom: number, scale: number) {
     // Since on zoom a new tile gets loaded, we do not need super cluster to index the data of the
     // given tile(x,y,z) for all zoom levels.
     // We index them for a couple of zoom levels, so that while zooming before data for new tile loads,
@@ -48,5 +48,5 @@ function getSuperCluterIndex(data: any, options: VectorSourceSpecification, zoom
         },
         clusterProperties: options.clusterProperties
     });
-    return supercluster(superclusterOptions).load(data.features);
+    return Supercluster(superclusterOptions).load(data.features);
 };
