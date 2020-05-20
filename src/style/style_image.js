@@ -25,7 +25,7 @@ export type StyleImageInterface = {
     width: number,
     height: number,
     data: Uint8Array | Uint8ClampedArray,
-    render?: () => void,
+    render?: () => boolean,
     onAdd?: (map: Map, id: string) => void,
     onRemove?: () => void
 };

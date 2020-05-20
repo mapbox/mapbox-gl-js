@@ -6,6 +6,17 @@ import type Point from '@mapbox/point-geometry';
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
 
+// the values for each button in MouseEvent.buttons
+const BUTTONS_FLAGS = {
+    [LEFT_BUTTON]: 1,
+    [RIGHT_BUTTON]: 2
+};
+
+function buttonStillPressed(e: MouseEvent, button: number) {
+    const flag = BUTTONS_FLAGS[button];
+    return e.buttons === undefined || (e.buttons & flag) !== flag;
+}
+
 class MouseHandler {
 
     _enabled: boolean;
@@ -50,6 +61,17 @@ class MouseHandler {
         if (!lastPoint) return;
         e.preventDefault();
 
+        if (buttonStillPressed(e, this._eventButton)) {
+            // Some browsers don't fire a `mouseup` when the mouseup occurs outside
+            // the window or iframe:
+            // https://github.com/mapbox/mapbox-gl-js/issues/4622
+            //
+            // If the button is no longer pressed during this `mousemove` it may have
+            // been released outside of the window or iframe.
+            this.reset();
+            return;
+        }
+
         if (!this._moved && point.dist(lastPoint) < this._clickTolerance) return;
         this._moved = true;
         this._lastPoint = point;
@@ -59,6 +81,7 @@ class MouseHandler {
     }
 
     mouseupWindow(e: MouseEvent) {
+        if (!this._lastPoint) return;
         const eventButton = DOM.mouseButton(e);
         if (eventButton !== this._eventButton) return;
         if (this._moved) DOM.suppressClick();

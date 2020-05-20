@@ -21,6 +21,16 @@ export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>
     | $PropertyType<WebGLRenderingContext, 'LINE_STRIP'>;
 
+function getTokenizedAttributesAndUniforms (array: Array<string>): Array<string> {
+    const result = [];
+
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] === null) continue;
+        const token = array[i].split(' ');
+        result.push(token.pop());
+    }
+    return result;
+}
 class Program<Us: UniformBindings> {
     program: WebGLProgram;
     attributes: {[_: string]: number};
@@ -30,12 +40,26 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
 
     constructor(context: Context,
-                source: {fragmentSource: string, vertexSource: string},
-                configuration: ?ProgramConfiguration,
-                fixedUniforms: (Context, UniformLocations) => Us,
-                showOverdrawInspector: boolean) {
+            name: string,
+            source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>, staticUniforms: Array<string>},
+            configuration: ?ProgramConfiguration,
+            fixedUniforms: (Context, UniformLocations) => Us,
+            showOverdrawInspector: boolean) {
         const gl = context.gl;
         this.program = gl.createProgram();
+
+        const staticAttrInfo = getTokenizedAttributesAndUniforms(source.staticAttributes);
+        const dynamicAttrInfo = configuration ? configuration.getBinderAttributes() : [];
+        const allAttrInfo = staticAttrInfo.concat(dynamicAttrInfo);
+
+        const staticUniformsInfo = source.staticUniforms ? getTokenizedAttributesAndUniforms(source.staticUniforms) : [];
+        const dynamicUniformsInfo = configuration ? configuration.getBinderUniforms() : [];
+        // remove duplicate uniforms
+        const uniformList = staticUniformsInfo.concat(dynamicUniformsInfo);
+        const allUniformsInfo = [];
+        for (const uniform of uniformList) {
+            if (allUniformsInfo.indexOf(uniform) < 0) allUniformsInfo.push(uniform);
+        }
 
         const defines = configuration ? configuration.defines() : [];
         if (showOverdrawInspector) {
@@ -64,13 +88,16 @@ class Program<Us: UniformBindings> {
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
         gl.attachShader(this.program, vertexShader);
 
-        // Manually bind layout attributes in the order defined by their
-        // ProgramInterface so that we don't dynamically link an unused
-        // attribute at position 0, which can cause rendering to fail for an
-        // entire layer (see #4607, #4728)
-        const layoutAttributes = configuration ? configuration.layoutAttributes : [];
-        for (let i = 0; i < layoutAttributes.length; i++) {
-            gl.bindAttribLocation(this.program, i, layoutAttributes[i].name);
+        this.attributes = {};
+        const uniformLocations = {};
+
+        this.numAttributes = allAttrInfo.length;
+
+        for (let i = 0; i < this.numAttributes; i++) {
+            if (allAttrInfo[i]) {
+                gl.bindAttribLocation(this.program, i, allAttrInfo[i]);
+                this.attributes[allAttrInfo[i]] = i;
+            }
         }
 
         gl.linkProgram(this.program);
@@ -79,23 +106,14 @@ class Program<Us: UniformBindings> {
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);
 
-        this.numAttributes = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
-
-        this.attributes = {};
-        const uniformLocations = {};
-
-        for (let i = 0; i < this.numAttributes; i++) {
-            const attribute = gl.getActiveAttrib(this.program, i);
-            if (attribute) {
-                this.attributes[attribute.name] = gl.getAttribLocation(this.program, attribute.name);
-            }
-        }
-
-        const numUniforms = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
-        for (let i = 0; i < numUniforms; i++) {
-            const uniform = gl.getActiveUniform(this.program, i);
-            if (uniform) {
-                uniformLocations[uniform.name] = gl.getUniformLocation(this.program, uniform.name);
+        const uniformsArray = Array.from(allUniformsInfo);
+        for (let it = 0; it < uniformsArray.length; it++) {
+            const uniform = uniformsArray[it];
+            if (uniform && !uniformLocations[uniform]) {
+                const uniformLocation = gl.getUniformLocation(this.program, uniform);
+                if (uniformLocation) {
+                    uniformLocations[uniform] = uniformLocation;
+                }
             }
         }
 

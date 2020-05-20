@@ -216,6 +216,15 @@ class LngLatBounds {
     *
     * @param {LngLatLike} lnglat geographic point to check against.
     * @returns {boolean} True if the point is within the bounding box.
+    * @example
+    * var llb = new mapboxgl.LngLatBounds(
+    *   new mapboxgl.LngLat(-73.9876, 40.7661),
+    *   new mapboxgl.LngLat(-73.9397, 40.8002)
+    * );
+    *
+    * var ll = new mapboxgl.LngLat(-73.9567, 40.7789);
+    *
+    * console.log(llb.contains(ll)); // = true
     */
     contains(lnglat: LngLatLike) {
         const {lng, lat} = LngLat.convert(lnglat);

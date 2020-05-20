@@ -1999,7 +1999,7 @@ test('Map', (t) => {
         const map = createMap(t, {interactive: true});
         map.flyTo({center: [200, 0], duration: 100});
 
-        simulate.touchstart(map.getCanvasContainer(), {targetTouches: [{clientX: 0, clientY: 0}]});
+        simulate.touchstart(map.getCanvasContainer(), {touches: [{target: map.getCanvas(), clientX: 0, clientY: 0}]});
         t.equal(map.isEasing(), false);
 
         map.remove();

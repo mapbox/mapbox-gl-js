@@ -405,7 +405,7 @@ class Tile {
 
             bucket.update(sourceLayerStates, sourceLayer, this.imageAtlas && this.imageAtlas.patternPositions || {});
             const layer = painter && painter.style && painter.style.getLayer(id);
-            if (layer && layer.paint) {
+            if (layer) {
                 this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket));
             }
         }

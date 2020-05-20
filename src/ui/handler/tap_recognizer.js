@@ -35,9 +35,9 @@ export class SingleTapRecognizer {
         this.aborted = false;
     }
 
-    touchstart(e: TouchEvent, points: Array<Point>) {
+    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
 
-        if (this.centroid || e.targetTouches.length > this.numTouches) {
+        if (this.centroid || mapTouches.length > this.numTouches) {
             this.aborted = true;
         }
         if (this.aborted) {
@@ -48,16 +48,16 @@ export class SingleTapRecognizer {
             this.startTime = e.timeStamp;
         }
 
-        if (e.targetTouches.length === this.numTouches) {
+        if (mapTouches.length === this.numTouches) {
             this.centroid = getCentroid(points);
-            this.touches = indexTouches(e.targetTouches, points);
+            this.touches = indexTouches(mapTouches, points);
         }
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>) {
+    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (this.aborted || !this.centroid) return;
 
-        const newTouches = indexTouches(e.targetTouches, points);
+        const newTouches = indexTouches(mapTouches, points);
         for (const id in this.touches) {
             const prevPos = this.touches[id];
             const pos = newTouches[id];
@@ -67,12 +67,12 @@ export class SingleTapRecognizer {
         }
     }
 
-    touchend(e: TouchEvent) {
+    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this.centroid || e.timeStamp - this.startTime > MAX_TOUCH_TIME) {
             this.aborted = true;
         }
 
-        if (e.targetTouches.length === 0) {
+        if (mapTouches.length === 0) {
             const centroid = !this.aborted && this.centroid;
             this.reset();
             if (centroid) return centroid;
@@ -102,16 +102,16 @@ export class TapRecognizer {
         this.singleTap.reset();
     }
 
-    touchstart(e: TouchEvent, points: Array<Point>) {
-        this.singleTap.touchstart(e, points);
+    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+        this.singleTap.touchstart(e, points, mapTouches);
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>) {
-        this.singleTap.touchmove(e, points);
+    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+        this.singleTap.touchmove(e, points, mapTouches);
     }
 
-    touchend(e: TouchEvent) {
-        const tap = this.singleTap.touchend(e);
+    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+        const tap = this.singleTap.touchend(e, points, mapTouches);
         if (tap) {
             const soonEnough = e.timeStamp - this.lastTime < MAX_TAP_INTERVAL;
             const closeEnough = !this.lastTap || this.lastTap.dist(tap) < MAX_DIST;

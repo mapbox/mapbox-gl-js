@@ -42,7 +42,7 @@ export default class DragPanHandler {
      * @example
      *   map.dragPan.enable();
      * @example
-     *   map.dragpan.enable({
+     *   map.dragPan.enable({
      *      linearity: 0.3,
      *      easing: bezier(0, 0, 0.3, 1),
      *      maxSpeed: 1400,

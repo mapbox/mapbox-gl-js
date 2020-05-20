@@ -10,6 +10,9 @@ function createMap(t) {
     return new Map({container: DOM.create('div', '', window.document.body)});
 }
 
+// MouseEvent.buttons
+const buttons = 1;
+
 test('Map#isMoving returns false by default', (t) => {
     const map = createMap(t);
     t.equal(map.isMoving(), false);
@@ -36,11 +39,17 @@ test('Map#isMoving returns true during a camera zoom animation', (t) => {
 test('Map#isMoving returns true when drag panning', (t) => {
     const map = createMap(t);
 
+    map.on('movestart', () => {
+        t.equal(map.isMoving(), true);
+    });
     map.on('dragstart', () => {
         t.equal(map.isMoving(), true);
     });
 
     map.on('dragend', () => {
+        t.equal(map.isMoving(), false);
+    });
+    map.on('moveend', () => {
         t.equal(map.isMoving(), false);
         map.remove();
         t.end();
@@ -49,7 +58,7 @@ test('Map#isMoving returns true when drag panning', (t) => {
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
 
-    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
     simulate.mouseup(map.getCanvas());
@@ -62,11 +71,17 @@ test('Map#isMoving returns true when drag rotating', (t) => {
     // Prevent inertial rotation.
     t.stub(browser, 'now').returns(0);
 
+    map.on('movestart', () => {
+        t.equal(map.isMoving(), true);
+    });
     map.on('rotatestart', () => {
         t.equal(map.isMoving(), true);
     });
 
     map.on('rotateend', () => {
+        t.equal(map.isMoving(), false);
+    });
+    map.on('moveend', () => {
         t.equal(map.isMoving(), false);
         map.remove();
         t.end();
@@ -139,7 +154,7 @@ test('Map#isMoving returns true when drag panning and scroll zooming interleave'
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
 
-    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
     const browserNow = t.stub(browser, 'now');
