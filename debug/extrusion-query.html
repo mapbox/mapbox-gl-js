@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 16.9,
+    center: [-73.989816, 40.76263],
+    pitch: 60,
+    style: 'mapbox://styles/mapbox/streets-v10',
+    hash: true
+});
+
+const r = 255 * 0.65;
+map.on('style.load', function() {
+    map.addLayer({
+        'id': '3d-buildings',
+        //'source': 'composite',
+        'source': {
+            'type': 'vector',
+            'url': 'mapbox://mapbox.3d-buildings'
+        },
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+            'fill-extrusion-height': ["get", "height"],
+            'fill-extrusion-opacity': 0.6
+
+        }
+    });
+
+    let hovered = [];
+    window.addEventListener('mousemove', function(e) {
+        e.point = new mapboxgl.Point(e.clientX, e.clientY);
+        console.time('query');
+        const features = map.queryRenderedFeatures(e.point, { layers: ['3d-buildings'] });
+        console.timeEnd('query');
+
+        for (const feature of hovered) {
+            map.setFeatureState(feature, {
+                'hover-r': r,
+                'hover-g': r,
+                'hover-b': r
+            });
+        }
+
+        const seen = {};
+        hovered = features;
+        let i = 0;
+        for (const feature of hovered) {
+            if (seen[feature.id]) continue;
+
+            seen[feature.id] = true;
+            map.setFeatureState(feature, {
+                'hover-r': i === 0 ? 255 : r,
+                'hover-g': i === 1 ? 255 : r,
+                'hover-b': i >= 2 ? 255 : r
+            });
+            i++;
+        }
+    });
+});
+
+</script>
+</body>
+</html>

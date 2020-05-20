@@ -1,11 +1,88 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
-import Axis from './lib/axis';
-import { summaryStatistics, regression, kde, probabilitiesOfSuperiority } from './lib/statistics';
+import { kde, probabilitiesOfSuperiority, summaryStatistics, regression } from './lib/statistics';
 
 const versionColor = d3.scaleOrdinal(['#1b9e77', '#7570b3', '#d95f02']);
 const formatSample = d3.format(".3r");
+
+function identity(x) {
+    return x;
+}
+function translateX(x) {
+    return `translate(${x + 0.5},0)`;
+}
+function translateY(y) {
+    return `translate(0,${y + 0.5})`;
+}
+function number(scale) {
+    return function(d) {
+        return +scale(d);
+    };
+}
+function center(scale) {
+    let offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
+    if (scale.round()) offset = Math.round(offset);
+    return function(d) {
+        return +scale(d) + offset;
+    };
+}
+
+class Axis extends React.Component {
+    render() {
+        const scale = this.props.scale;
+        const orient = this.props.orientation || 'left';
+        const tickArguments = this.props.ticks ? [].concat(this.props.ticks) : [];
+        const tickValues = this.props.tickValues || null;
+        const tickFormat = this.props.tickFormat || null;
+        const tickSizeInner = this.props.tickSize || this.props.tickSizeInner || 6;
+        const tickSizeOuter = this.props.tickSize || this.props.tickSizeOuter || 6;
+        const tickPadding = this.props.tickPadding || 3;
+
+        const k = orient === 'top' || orient === 'left' ? -1 : 1;
+        const x = orient === 'left' || orient === 'right' ? 'x' : 'y';
+        const transform = orient === 'top' || orient === 'bottom' ? translateX : translateY;
+
+        const values = tickValues == null ? (scale.ticks ? scale.ticks(...tickArguments) : scale.domain()) : tickValues;
+        const format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat(...tickArguments) : identity) : tickFormat;
+        const spacing = Math.max(tickSizeInner, 0) + tickPadding;
+        const range = scale.range();
+        const range0 = +range[0] + 0.5;
+        const range1 = +range[range.length - 1] + 0.5;
+        const position = (scale.bandwidth ? center : number)(scale.copy());
+
+        return (
+            <g
+                fill='none'
+                fontSize={10}
+                fontFamily='sans-serif'
+                textAnchor={orient === 'right' ? 'start' : orient === 'left' ? 'end' : 'middle'}
+                transform={this.props.transform}>
+                <path
+                    className='domain'
+                    stroke='#000'
+                    d={orient === 'left' || orient === 'right' ?
+                        `M${k * tickSizeOuter},${range0}H0.5V${range1}H${k * tickSizeOuter}` :
+                        `M${range0},${k * tickSizeOuter}V0.5H${range1}V${k * tickSizeOuter}`} />
+                {values.map((d, i) =>
+                    <g
+                        key={i}
+                        className='tick'
+                        transform={transform(position(d))}>
+                        <line
+                            stroke='#000'
+                            {...{[`${x}2`]: k * tickSizeInner}}/>
+                        <text
+                            fill='#000'
+                            dy={orient === 'top' ? '0em' : orient === 'bottom' ? '0.71em' : '0.32em'}
+                            {...{[x]: k * spacing}}>{format(d)}</text>
+                    </g>
+                )}
+                {this.props.children}
+            </g>
+        );
+    }
+}
 
 class StatisticsPlot extends React.Component {
     constructor(props) {
@@ -333,6 +410,11 @@ class BenchmarkRow extends React.Component {
                     <tbody>
                         <tr><th><h2 className="col4"><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></h2></th>
                             {this.props.versions.map(version => <th style={{color: versionColor(version.name)}} key={version.name}>{version.name}</th>)}</tr>
+                        {this.props.location && <tr>
+                            <th><p style={{color: '#1287A8'}}>{this.props.location.description}</p></th>
+                            <th><p style={{color: '#1287A8'}}>Zoom Level: {this.props.location.zoom}</p></th>
+                            <th><p style={{color: '#1287A8'}}>Lat: {this.props.location.center[1]} Lng: {this.props.location.center[0]}</p></th>
+                        </tr>}
                         {this.renderStatistic('(20% trimmed) Mean',
                             (version) => <p>
                                 {formatSample(version.summary.trimmedMean)} ms
@@ -372,104 +454,74 @@ class BenchmarkRow extends React.Component {
 }
 
 class BenchmarksTable extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {sharing: false};
-        this.share = this.share.bind(this);
-    }
-
     render() {
         return (
             <div style={{width: 960, margin: '2em auto'}}>
-                {this.state.sharing && <span className='loading'></span>}
                 <h1 className="space-bottom1">Mapbox GL JS Benchmarks – {
                     this.props.finished ?
-                        <span>Finished <button className='button fr icon share' onClick={this.share}>Share</button></span> :
+                        <span>Finished</span> :
                         <span>Running</span>}</h1>
-                {this.props.benchmarks.map(benchmark => <BenchmarkRow key={benchmark.name} {...benchmark}/>)}
+                {this.props.benchmarks.map((benchmark, i) => {
+                    return <BenchmarkRow key={`${benchmark.name}-${i}`} {...benchmark}/>;
+                })}
             </div>
         );
     }
-
-    share() {
-        document.querySelectorAll('script').forEach(e => e.remove());
-        const share = document.querySelector('.share');
-        share.style.display = 'none';
-
-        const body = JSON.stringify({
-            "public": true,
-            "files": {
-                "index.html": {
-                    "content": document.body.parentElement.outerHTML
-                }
-            }
-        });
-        this.setState({sharing: true});
-
-        fetch('https://api.github.com/gists', { method: 'POST', body })
-            .then(response => response.json())
-            .then(json => { window.location = `https://bl.ocks.org/anonymous/raw/${json.id}/`; });
-    }
 }
 
-const versions = window.mapboxglVersions;
-const benchmarks = [];
-const filter = window.location.hash.substr(1);
+function updateUI(benchmarks, finished) {
+    finished = !!finished;
 
-let finished = false;
-let promise = Promise.resolve();
-
-for (const name in window.mapboxglBenchmarks) {
-    if (filter && name !== filter)
-        continue;
-
-    const benchmark = { name, versions: [] };
-    benchmarks.push(benchmark);
-
-    for (const ver in window.mapboxglBenchmarks[name]) {
-        const version = {
-            name: ver,
-            status: 'waiting',
-            logs: [],
-            samples: [],
-            summary: {}
-        };
-
-        benchmark.versions.push(version);
-
-        promise = promise.then(() => {
-            version.status = 'running';
-            update();
-
-            return window.mapboxglBenchmarks[name][ver].run()
-                .then(measurements => {
-                    // scale measurements down by iteration count, so that
-                    // they represent (average) time for a single iteration
-                    const samples = measurements.map(({time, iterations}) => time / iterations);
-                    version.status = 'ended';
-                    version.samples = samples;
-                    version.summary = summaryStatistics(samples);
-                    version.regression = regression(measurements);
-                    update();
-                })
-                .catch(error => {
-                    version.status = 'errored';
-                    version.error = error;
-                    update();
-                });
-        });
-    }
-}
-
-promise = promise.then(() => {
-    finished = true;
-    update();
-});
-
-function update() {
     ReactDOM.render(
-        <BenchmarksTable versions={versions} benchmarks={benchmarks} finished={finished}/>,
+        <BenchmarksTable benchmarks={benchmarks} finished={finished}/>,
         document.getElementById('benchmarks')
     );
 }
 
+export function run(benchmarks) {
+    const filter = window.location.hash.substr(1);
+    if (filter) benchmarks = benchmarks.filter(({name}) => name === filter);
+
+    for (const benchmark of benchmarks) {
+        for (const version of benchmark.versions) {
+            version.status = 'waiting';
+            version.logs = [];
+            version.samples = [];
+            version.summary = {};
+        }
+    }
+
+    updateUI(benchmarks);
+
+    let promise = Promise.resolve();
+
+    benchmarks.forEach(bench => {
+        bench.versions.forEach(version => {
+            promise = promise.then(() => {
+                version.status = 'running';
+                updateUI(benchmarks);
+
+                return version.bench.run()
+                    .then(measurements => {
+                        // scale measurements down by iteration count, so that
+                        // they represent (average) time for a single iteration
+                        const samples = measurements.map(({time, iterations}) => time / iterations);
+                        version.status = 'ended';
+                        version.samples = samples;
+                        version.summary = summaryStatistics(samples);
+                        version.regression = regression(measurements);
+                        updateUI(benchmarks);
+                    })
+                    .catch(error => {
+                        version.status = 'errored';
+                        version.error = error;
+                        updateUI(benchmarks);
+                    });
+            });
+        });
+    });
+
+    promise = promise.then(() => {
+        updateUI(benchmarks, true);
+    });
+}

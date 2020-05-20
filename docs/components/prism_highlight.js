@@ -13,7 +13,7 @@ export default function prismHighlight(code, language) {
     if (dedentSize) {
         code = code.replace(new RegExp(`^ {0,${dedentSize}}`, 'mg'), '');
     }
-    return <pre><code className={`language-${language}`} dangerouslySetInnerHTML={highlight(code.trim(), language)}/></pre>;
+    return <pre className={`language-${language}`}><code className={`language-${language}`} dangerouslySetInnerHTML={highlight(code.trim(), language)}/></pre>;
 }
 
 export function highlightMarkup(code) {
@@ -29,5 +29,5 @@ export function highlightJSON(code) {
 }
 
 export function highlightShell(code) {
-    return <pre><code className={`language-shell`}/>{code}</pre>;
+    return <pre className={`language-shell`}><code className={`language-shell`}/>{code}</pre>;
 }

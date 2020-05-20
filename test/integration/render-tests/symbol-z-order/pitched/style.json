@@ -1,0 +1,77 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "height": 128,
+            "width": 128
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 0,
+    "pitch": 45,
+    "sources": {
+        "icon-source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                7,
+                                7
+                            ]
+                        },
+                        "properties": {
+                            "icon": "building"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                14,
+                                14
+                            ]
+                        },
+                        "properties": {
+                            "icon": "restaurant"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                0
+                            ]
+                        },
+                        "properties": {
+                            "icon": "school"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "sprite": "local://sprites/sprite",
+    "layers": [
+        {
+            "id": "icons",
+            "type": "symbol",
+            "source": "icon-source",
+            "layout": {
+                "icon-image": "{icon}-12",
+                "icon-allow-overlap": true,
+                "symbol-z-order": "source"
+            }
+        }
+    ]
+}

@@ -4,7 +4,6 @@ import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
-import EvaluationParameters from '../../../src/style/evaluation_parameters';
 import { extend } from '../../../src/util/util';
 import { Event, Evented } from '../../../src/util/evented';
 import window from '../../../src/util/window';
@@ -52,6 +51,10 @@ class StubMap extends Evented {
 
     _transformRequest(url) {
         return { url };
+    }
+
+    _getMapId() {
+        return 1;
     }
 }
 
@@ -900,7 +903,7 @@ test('Style#addLayer', (t) => {
                     "coordinates": [ 0, 0]
                 }
             };
-            const layer = {id: 'inline-source-layer', type: 'circle', source: source };
+            const layer = {id: 'inline-source-layer', type: 'circle', source };
             style.addLayer(layer);
             t.deepEqual(layer.source, source);
             t.end();
@@ -1090,7 +1093,7 @@ test('Style#addLayer', (t) => {
         const layer = {id: 'c', type: 'background'};
 
         style.on('style.load', () => {
-            style.on('error', (error)=>{
+            style.on('error', (error) => {
                 t.match(error.error, /does not exist on this map/);
                 t.end();
             });
@@ -1387,6 +1390,39 @@ test('Style#setPaintProperty', (t) => {
         });
     });
 
+    t.test('respects validate option', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background"
+                }
+            ]
+        });
+
+        style.on('style.load', () => {
+            const backgroundLayer = style.getLayer('background');
+            t.stub(console, 'error');
+            const validate = t.spy(backgroundLayer, '_validate');
+
+            style.setPaintProperty('background', 'background-color', 'notacolor', {validate: false});
+            t.deepEqual(validate.args[0][4], {validate: false});
+            t.ok(console.error.notCalled);
+
+            t.ok(style._changed);
+            style.update({});
+
+            style.setPaintProperty('background', 'background-color', 'alsonotacolor');
+            t.ok(console.error.calledOnce, 'validates input by default');
+            t.deepEqual(validate.args[1][4], {});
+
+            t.end();
+        });
+    });
+
     t.end();
 });
 
@@ -1456,6 +1492,47 @@ test('Style#setLayoutProperty', (t) => {
             value.stops[0][0] = 1;
             style.setLayoutProperty('line', 'line-cap', value);
             t.ok(style._changed);
+
+            t.end();
+        });
+    });
+
+    t.test('respects validate option', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [
+                {
+                    "id": "line",
+                    "type": "line",
+                    "source": "geojson"
+                }
+            ]
+        });
+
+        style.on('style.load', () => {
+            const lineLayer = style.getLayer('line');
+            t.stub(console, 'error');
+            const validate = t.spy(lineLayer, '_validate');
+
+            style.setLayoutProperty('line', 'line-cap', 'invalidcap', {validate: false});
+            t.deepEqual(validate.args[0][4], {validate: false});
+            t.ok(console.error.notCalled);
+            t.ok(style._changed);
+            style.update({});
+
+            style.setLayoutProperty('line', 'line-cap', 'differentinvalidcap');
+            t.ok(console.error.calledOnce, 'validates input by default');
+            t.deepEqual(validate.args[1][4], {});
 
             t.end();
         });
@@ -1611,6 +1688,35 @@ test('Style#setFilter', (t) => {
         });
     });
 
+    t.test('validates filter by default', (t) => {
+        const style = createStyle();
+        t.stub(console, 'error');
+        style.on('style.load', () => {
+            style.setFilter('symbol', 'notafilter');
+            t.deepEqual(style.getFilter('symbol'), ['==', 'id', 0]);
+            t.ok(console.error.calledOnce);
+            style.update({}); // trigger dispatcher broadcast
+            t.end();
+        });
+    });
+
+    t.test('respects validate option', (t) => {
+        const style = createStyle();
+
+        style.on('style.load', () => {
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'updateLayers');
+                t.deepEqual(value.layers[0].id, 'symbol');
+                t.deepEqual(value.layers[0].filter, 'notafilter');
+                t.end();
+            };
+
+            style.setFilter('symbol', 'notafilter', {validate: false});
+            t.deepEqual(style.getFilter('symbol'), 'notafilter');
+            style.update({}); // trigger dispatcher broadcast
+        });
+    });
+
     t.end();
 });
 
@@ -1672,7 +1778,7 @@ test('Style#queryRenderedFeatures', (t) => {
     const transform = new Transform();
     transform.resize(512, 512);
 
-    function queryMapboxFeatures(layers, getFeatureState, queryGeom, scale, params) {
+    function queryMapboxFeatures(layers, getFeatureState, queryGeom, cameraQueryGeom, scale, params) {
         const features = {
             'land': [{
                 type: 'Feature',
@@ -1778,7 +1884,7 @@ test('Style#queryRenderedFeatures', (t) => {
         style.sourceCaches.mapbox.transform = transform;
         style.sourceCaches.other.transform = transform;
 
-        style.update(new EvaluationParameters(0));
+        style.update(0);
         style._updateSources(transform);
 
         t.test('returns feature type', (t) => {
@@ -1945,7 +2051,7 @@ test('Style#query*Features', (t) => {
 });
 
 test('Style#addSourceType', (t) => {
-    const _types = { 'existing': function () {} };
+    const _types = { 'existing' () {} };
 
     t.stub(Style, 'getSourceType').callsFake(name => _types[name]);
     t.stub(Style, 'setSourceType').callsFake((name, create) => {

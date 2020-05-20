@@ -10,10 +10,12 @@ description: >-
   'Hangul Syllables' Unicode ranges. In these ranges, font settings from the
   map's style will be ignored in favor of the locally available font. Keywords
   in the fontstack defined in the map's style (light/regular/medium/bold) will
-  be translated into a CSS 'font-weight'. When using this setting, keep in mind
-  that the fonts you select may not be available on all users' devices. It is
-  best to specify at least one broadly available fallback font class such as
-  'sans-serif'.
+  be translated into a CSS 'font-weight'.
+
+  This setting is enabled by default to use the system 'sans-serif' font. When
+  overriding this setting, keep in mind that the fonts you select may not be available
+  on all users' devices. It is best to specify at least one broadly available
+  fallback font class such as 'sans-serif'.
 tags:
   - internationalization
 pathname: /mapbox-gl-js/example/local-ideographs/

@@ -39,10 +39,10 @@ test('Actor', (t) => {
         const worker = new WebWorker();
 
         new Actor(worker, {
-            test: function () { t.end(); }
+            test () { t.end(); }
         }, 'map-1');
         new Actor(worker, {
-            test: function () {
+            test () {
                 t.fail();
                 t.end();
             }
@@ -53,10 +53,10 @@ test('Actor', (t) => {
 
     t.test('#remove unbinds event listener', (t) => {
         const actor = new Actor({
-            addEventListener: function (type, callback, useCapture) {
+            addEventListener (type, callback, useCapture) {
                 this._addEventListenerArgs = [type, callback, useCapture];
             },
-            removeEventListener: function (type, callback, useCapture) {
+            removeEventListener (type, callback, useCapture) {
                 t.same([type, callback, useCapture], this._addEventListenerArgs, 'listener removed');
                 t.end();
             }

@@ -18,7 +18,7 @@ import type {
 } from '../data/array_types';
 import { WritingMode } from '../symbol/shaping';
 
-export { updateLineLabels, getLabelPlaneMatrix, getGlCoordMatrix, project, placeFirstAndLastGlyph, xyTransformMat4 };
+export { updateLineLabels, hideGlyphs, getLabelPlaneMatrix, getGlCoordMatrix, project, placeFirstAndLastGlyph, xyTransformMat4 };
 
 /*
  * # Overview of coordinate spaces
@@ -73,17 +73,14 @@ function getLabelPlaneMatrix(posMatrix: mat4,
                              rotateWithMap: boolean,
                              transform: Transform,
                              pixelsToTileUnits: number) {
-    const m = mat4.identity(new Float32Array(16));
+    const m = mat4.create();
     if (pitchWithMap) {
-        mat4.identity(m);
         mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
         if (!rotateWithMap) {
             mat4.rotateZ(m, m, transform.angle);
         }
     } else {
-        mat4.scale(m, m, [transform.width / 2, -transform.height / 2, 1]);
-        mat4.translate(m, m, [1, -1, 0]);
-        mat4.multiply(m, m, posMatrix);
+        mat4.multiply(m, transform.labelPlaneMatrix, posMatrix);
     }
     return m;
 }
@@ -96,19 +93,16 @@ function getGlCoordMatrix(posMatrix: mat4,
                           rotateWithMap: boolean,
                           transform: Transform,
                           pixelsToTileUnits: number) {
-    const m = mat4.identity(new Float32Array(16));
     if (pitchWithMap) {
-        mat4.multiply(m, m, posMatrix);
+        const m = mat4.clone(posMatrix);
         mat4.scale(m, m, [pixelsToTileUnits, pixelsToTileUnits, 1]);
         if (!rotateWithMap) {
             mat4.rotateZ(m, m, -transform.angle);
         }
+        return m;
     } else {
-        mat4.scale(m, m, [1, -1, 1]);
-        mat4.translate(m, m, [-1, -1, 0]);
-        mat4.scale(m, m, [2 / transform.width, 2 / transform.height, 1]);
+        return transform.glCoordMatrix;
     }
-    return m;
 }
 
 function project(point: Point, matrix: mat4) {
@@ -261,8 +255,8 @@ function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRat
 
 function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio) {
     const fontScale = fontSize / 24;
-    const lineOffsetX = symbol.lineOffsetX * fontSize;
-    const lineOffsetY = symbol.lineOffsetY * fontSize;
+    const lineOffsetX = symbol.lineOffsetX * fontScale;
+    const lineOffsetY = symbol.lineOffsetY * fontScale;
 
     let placedGlyphs;
     if (symbol.numGlyphs > 1) {

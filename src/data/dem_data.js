@@ -1,7 +1,7 @@
 // @flow
 import { RGBAImage } from '../util/image';
 
-import { warnOnce, clamp } from '../util/util';
+import { warnOnce } from '../util/util';
 import { register } from '../util/web_worker_transfer';
 
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
@@ -17,7 +17,6 @@ import { register } from '../util/web_worker_transfer';
 export default class DEMData {
     uid: string;
     data: Int32Array;
-    border: number;
     stride: number;
     dim: number;
 
@@ -28,8 +27,7 @@ export default class DEMData {
             `"${encoding}" is not a valid encoding type. Valid types include "mapbox" and "terrarium".`
         );
         const dim = this.dim = data.height;
-        this.border = Math.max(Math.ceil(data.height / 2), 1);
-        this.stride = this.dim + 2 * this.border;
+        this.stride = this.dim + 2;
         this.data = new Int32Array(this.stride * this.stride);
 
         const pixels = data.data;
@@ -71,8 +69,8 @@ export default class DEMData {
     }
 
     _idx(x: number, y: number) {
-        if (x < -this.border || x >= this.dim + this.border ||  y < -this.border || y >= this.dim + this.border) throw new RangeError('out of range source coordinates for DEM data');
-        return (y + this.border) * this.stride + (x + this.border);
+        if (x < -1 || x >= this.dim + 1 ||  y < -1 || y >= this.dim + 1) throw new RangeError('out of range source coordinates for DEM data');
+        return (y + 1) * this.stride + (x + 1);
     }
 
     _unpackMapbox(r: number, g: number, b: number) {
@@ -88,39 +86,34 @@ export default class DEMData {
     }
 
     getPixels() {
-        return new RGBAImage({width: this.dim + 2 * this.border, height: this.dim + 2 * this.border}, new Uint8Array(this.data.buffer));
+        return new RGBAImage({width: this.stride, height: this.stride}, new Uint8Array(this.data.buffer));
     }
 
     backfillBorder(borderTile: DEMData, dx: number, dy: number) {
         if (this.dim !== borderTile.dim) throw new Error('dem dimension mismatch');
 
-        let _xMin = dx * this.dim,
-            _xMax = dx * this.dim + this.dim,
-            _yMin = dy * this.dim,
-            _yMax = dy * this.dim + this.dim;
+        let xMin = dx * this.dim,
+            xMax = dx * this.dim + this.dim,
+            yMin = dy * this.dim,
+            yMax = dy * this.dim + this.dim;
 
         switch (dx) {
         case -1:
-            _xMin = _xMax - 1;
+            xMin = xMax - 1;
             break;
         case 1:
-            _xMax = _xMin + 1;
+            xMax = xMin + 1;
             break;
         }
 
         switch (dy) {
         case -1:
-            _yMin = _yMax - 1;
+            yMin = yMax - 1;
             break;
         case 1:
-            _yMax = _yMin + 1;
+            yMax = yMin + 1;
             break;
         }
-
-        const xMin = clamp(_xMin, -this.border, this.dim + this.border);
-        const xMax = clamp(_xMax, -this.border, this.dim + this.border);
-        const yMin = clamp(_yMin, -this.border, this.dim + this.border);
-        const yMax = clamp(_yMax, -this.border, this.dim + this.border);
 
         const ox = -dx * this.dim;
         const oy = -dy * this.dim;

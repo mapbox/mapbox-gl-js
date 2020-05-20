@@ -6,10 +6,11 @@ import {
 } from '../util/script_detection';
 import verticalizePunctuation from '../util/verticalize_punctuation';
 import { plugin as rtlTextPlugin } from '../source/rtl_text_plugin';
+import ONE_EM from './one_em';
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {ImagePosition} from '../render/image_atlas';
-import {Formatted} from '../style-spec/expression/definitions/formatted';
+import Formatted from '../style-spec/expression/types/formatted';
 
 const WritingMode = {
     horizontal: 1,
@@ -17,7 +18,7 @@ const WritingMode = {
     horizontalOnly: 3
 };
 
-export { shapeText, shapeIcon, WritingMode };
+export { shapeText, shapeIcon, getAnchorAlignment, WritingMode };
 
 // The position of a glyph relative to the text's anchor point.
 export type PositionedGlyph = {
@@ -36,11 +37,13 @@ export type Shaping = {
     bottom: number,
     left: number,
     right: number,
-    writingMode: 1 | 2
+    writingMode: 1 | 2,
+    lineCount: number,
+    text: string
 };
 
-type SymbolAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-type TextJustify = 'left' | 'center' | 'right';
+export type SymbolAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type TextJustify = 'left' | 'center' | 'right';
 
 class TaggedString {
     text: string;
@@ -53,25 +56,17 @@ class TaggedString {
         this.sections = [];
     }
 
-    static fromFeature(text: string | Formatted, defaultFontStack: string) {
+    static fromFeature(text: Formatted, defaultFontStack: string) {
         const result = new TaggedString();
-        if (text instanceof Formatted) {
-            for (let i = 0; i < text.sections.length; i++) {
-                const section = text.sections[i];
-                result.sections.push({
-                    scale: section.scale || 1,
-                    fontStack: section.fontStack || defaultFontStack
-                });
-                result.text += section.text;
-                for (let j = 0; j < section.text.length; j++) {
-                    result.sectionIndex.push(i);
-                }
-            }
-        } else {
-            result.text = text;
-            result.sections.push({ scale: 1, fontStack: defaultFontStack });
-            for (let i = 0; i < text.length; i++) {
-                result.sectionIndex.push(0);
+        for (let i = 0; i < text.sections.length; i++) {
+            const section = text.sections[i];
+            result.sections.push({
+                scale: section.scale || 1,
+                fontStack: section.fontStack || defaultFontStack
+            });
+            result.text += section.text;
+            for (let j = 0; j < section.text.length; j++) {
+                result.sectionIndex.push(i);
             }
         }
         return result;
@@ -142,7 +137,7 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
     return lines;
 }
 
-function shapeText(text: string | Formatted,
+function shapeText(text: Formatted,
                    glyphs: {[string]: {[number]: ?StyleGlyph}},
                    defaultFontStack: string,
                    maxWidth: number,
@@ -151,24 +146,12 @@ function shapeText(text: string | Formatted,
                    textJustify: TextJustify,
                    spacing: number,
                    translate: [number, number],
-                   verticalHeight: number,
                    writingMode: 1 | 2): Shaping | false {
     const logicalInput = TaggedString.fromFeature(text, defaultFontStack);
 
     if (writingMode === WritingMode.vertical) {
         logicalInput.verticalizePunctuation();
     }
-
-    const positionedGlyphs = [];
-    const shaping = {
-        positionedGlyphs,
-        text: logicalInput,
-        top: translate[1],
-        bottom: translate[1],
-        left: translate[0],
-        right: translate[0],
-        writingMode
-    };
 
     let lines: Array<TaggedString>;
 
@@ -207,14 +190,26 @@ function shapeText(text: string | Formatted,
         lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
     }
 
-    shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, verticalHeight);
+    const positionedGlyphs = [];
+    const shaping = {
+        positionedGlyphs,
+        text: logicalInput.toString(),
+        top: translate[1],
+        bottom: translate[1],
+        left: translate[0],
+        right: translate[0],
+        writingMode,
+        lineCount: lines.length
+    };
 
-    if (!positionedGlyphs.length)
-        return false;
+    shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, textJustify, writingMode, spacing);
+    if (!positionedGlyphs.length) return false;
 
-    shaping.text = shaping.text.toString();
     return shaping;
 }
+
+// using computed properties due to https://github.com/facebook/flow/issues/380
+/* eslint no-useless-computed-key: 0 */
 
 const whitespace: {[number]: boolean} = {
     [0x09]: true, // tab
@@ -435,8 +430,7 @@ function shapeLines(shaping: Shaping,
                     textAnchor: SymbolAnchor,
                     textJustify: TextJustify,
                     writingMode: 1 | 2,
-                    spacing: number,
-                    verticalHeight: number) {
+                    spacing: number) {
     // the y offset *should* be part of the font metadata
     const yOffset = -17;
 
@@ -478,7 +472,7 @@ function shapeLines(shaping: Shaping,
                 x += glyph.metrics.advance * section.scale + spacing;
             } else {
                 positionedGlyphs.push({glyph: codePoint, x, y: baselineOffset, vertical: true, scale: section.scale, fontStack: section.fontStack});
-                x += verticalHeight * section.scale + spacing;
+                x += ONE_EM * section.scale + spacing;
             }
         }
 

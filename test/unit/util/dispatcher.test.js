@@ -9,10 +9,10 @@ test('Dispatcher', (t) => {
 
         const releaseCalled = [];
         const workerPool = {
-            acquire: function () {
+            acquire () {
                 return workers;
             },
-            release: function (id) {
+            release (id) {
                 releaseCalled.push(id);
             }
         };

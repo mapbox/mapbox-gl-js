@@ -12,9 +12,9 @@ test('hash', (t) => {
 
     function createMap(t) {
         const container = window.document.createElement('div');
-        Object.defineProperty(container, 'offsetWidth', {value: 512});
-        Object.defineProperty(container, 'offsetHeight', {value: 512});
-        return globalCreateMap(t, {container: container});
+        Object.defineProperty(container, 'clientWidth', {value: 512});
+        Object.defineProperty(container, 'clientHeight', {value: 512});
+        return globalCreateMap(t, {container});
     }
 
 
@@ -151,8 +151,8 @@ test('hash', (t) => {
 
     t.test('map#remove', (t) => {
         const container = window.document.createElement('div');
-        Object.defineProperty(container, 'offsetWidth', {value: 512});
-        Object.defineProperty(container, 'offsetHeight', {value: 512});
+        Object.defineProperty(container, 'clientWidth', {value: 512});
+        Object.defineProperty(container, 'clientHeight', {value: 512});
 
         const map = createMap(t, { hash: true });
 

@@ -39,10 +39,10 @@ export default function validateObject(options) {
             key: (key ? `${key}.` : key) + objectKey,
             value: object[objectKey],
             valueSpec: elementSpec,
-            style: style,
-            styleSpec: styleSpec,
-            object: object,
-            objectKey: objectKey
+            style,
+            styleSpec,
+            object,
+            objectKey
         }, object));
     }
 

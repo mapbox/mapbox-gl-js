@@ -6,6 +6,9 @@ import { performSymbolLayout } from '../symbol/symbol_layout';
 import { CollisionBoxArray } from '../data/array_types';
 import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
+import LineBucket from '../data/bucket/line_bucket';
+import FillBucket from '../data/bucket/fill_bucket';
+import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
 import { warnOnce, mapObject, values } from '../util/util';
 import assert from 'assert';
 import ImageAtlas from '../render/image_atlas';
@@ -34,6 +37,7 @@ class WorkerTile {
     overscaling: number;
     showCollisionBoxes: boolean;
     collectResourceTiming: boolean;
+    returnDependencies: boolean;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -53,6 +57,7 @@ class WorkerTile {
         this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.collectResourceTiming = !!params.collectResourceTiming;
+        this.returnDependencies = !!params.returnDependencies;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
@@ -68,8 +73,9 @@ class WorkerTile {
         const buckets: {[string]: Bucket} = {};
 
         const options = {
-            featureIndex: featureIndex,
+            featureIndex,
             iconDependencies: {},
+            patternDependencies: {},
             glyphDependencies: {}
         };
 
@@ -109,7 +115,7 @@ class WorkerTile {
                     pixelRatio: this.pixelRatio,
                     overscaling: this.overscaling,
                     collisionBoxArray: this.collisionBoxArray,
-                    sourceLayerIndex: sourceLayerIndex,
+                    sourceLayerIndex,
                     sourceID: this.source
                 });
 
@@ -120,7 +126,8 @@ class WorkerTile {
 
         let error: ?Error;
         let glyphMap: ?{[string]: {[number]: ?StyleGlyph}};
-        let imageMap: ?{[string]: StyleImage};
+        let iconMap: ?{[string]: StyleImage};
+        let patternMap: ?{[string]: StyleImage};
 
         const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
         if (Object.keys(stacks).length) {
@@ -140,39 +147,62 @@ class WorkerTile {
             actor.send('getImages', {icons}, (err, result) => {
                 if (!error) {
                     error = err;
-                    imageMap = result;
+                    iconMap = result;
                     maybePrepare.call(this);
                 }
             });
         } else {
-            imageMap = {};
+            iconMap = {};
         }
+
+        const patterns = Object.keys(options.patternDependencies);
+        if (patterns.length) {
+            actor.send('getImages', {icons: patterns}, (err, result) => {
+                if (!error) {
+                    error = err;
+                    patternMap = result;
+                    maybePrepare.call(this);
+                }
+            });
+        } else {
+            patternMap = {};
+        }
+
 
         maybePrepare.call(this);
 
         function maybePrepare() {
             if (error) {
                 return callback(error);
-            } else if (glyphMap && imageMap) {
+            } else if (glyphMap && iconMap && patternMap) {
                 const glyphAtlas = new GlyphAtlas(glyphMap);
-                const imageAtlas = new ImageAtlas(imageMap);
+                const imageAtlas = new ImageAtlas(iconMap, patternMap);
 
                 for (const key in buckets) {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
                         recalculateLayers(bucket.layers, this.zoom);
-                        performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, imageMap, imageAtlas.positions, this.showCollisionBoxes);
+                        performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, iconMap, imageAtlas.iconPositions, this.showCollisionBoxes);
+                    } else if (bucket.hasPattern &&
+                        (bucket instanceof LineBucket ||
+                         bucket instanceof FillBucket ||
+                         bucket instanceof FillExtrusionBucket)) {
+                        recalculateLayers(bucket.layers, this.zoom);
+                        bucket.addFeatures(options, imageAtlas.patternPositions);
                     }
                 }
 
                 this.status = 'done';
-
                 callback(null, {
                     buckets: values(buckets).filter(b => !b.isEmpty()),
                     featureIndex,
                     collisionBoxArray: this.collisionBoxArray,
                     glyphAtlasImage: glyphAtlas.image,
-                    iconAtlasImage: imageAtlas.image
+                    imageAtlas,
+                    // Only used for benchmarking:
+                    glyphMap: this.returnDependencies ? glyphMap : null,
+                    iconMap: this.returnDependencies ? iconMap : null,
+                    glyphPositions: this.returnDependencies ? glyphAtlas.positions : null
                 });
             }
         }

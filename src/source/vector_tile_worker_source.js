@@ -1,10 +1,14 @@
 // @flow
 
+<<<<<<< HEAD
 import geojsonToVectorTile from './geojson_to_vector_tile';
 import vtpbf from 'vt-pbf';
 import rewind  from 'geojson-rewind';
 
 import { getJSON, getArrayBuffer } from '../util/ajax';
+=======
+import { getArrayBuffer } from '../util/ajax';
+>>>>>>> v0.54.1
 
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
@@ -50,6 +54,7 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  */
 
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
+<<<<<<< HEAD
     const options = params.options || {};
     if (options.geojsonTile === true) {
         return loadGeojsonTile(params, callback);
@@ -106,14 +111,17 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
 */
 function defaultLoadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const request = getArrayBuffer(params.request, (err, response) => {
+=======
+    const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
+>>>>>>> v0.54.1
         if (err) {
             callback(err);
-        } else if (response) {
+        } else if (data) {
             callback(null, {
-                vectorTile: new vt.VectorTile(new Protobuf(response.data)),
-                rawData: response.data,
-                cacheControl: response.cacheControl,
-                expires: response.expires
+                vectorTile: new vt.VectorTile(new Protobuf(data)),
+                rawData: data,
+                cacheControl,
+                expires
             });
         }
     });
@@ -172,6 +180,8 @@ class VectorTileWorkerSource implements WorkerSource {
             delete this.loading[uid];
 
             if (err || !response) {
+                workerTile.status = 'done';
+                this.loaded[uid] = workerTile;
                 return callback(err);
             }
 
@@ -226,7 +236,12 @@ class VectorTileWorkerSource implements WorkerSource {
             if (workerTile.status === 'parsing') {
                 workerTile.reloadCallback = done;
             } else if (workerTile.status === 'done') {
-                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done);
+                // if there was no vector tile data on the initial load, don't try and re-parse tile
+                if (workerTile.vectorTile) {
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done);
+                } else {
+                    done();
+                }
             }
         }
     }

@@ -56,7 +56,13 @@
 .mapboxgl-ctrl-bottom-left  { bottom: 0; left: 0; }
 .mapboxgl-ctrl-bottom-right { right: 0; bottom: 0; }
 
-.mapboxgl-ctrl { clear: both; pointer-events: auto; }
+.mapboxgl-ctrl {
+    clear: both;
+    pointer-events: auto;
+
+    /* workaround for a Safari bug https://github.com/mapbox/mapbox-gl-js/issues/8185 */
+    transform: translate(0, 0);
+}
 .mapboxgl-ctrl-top-left .mapboxgl-ctrl     { margin: 10px 0 0 10px; float: left; }
 .mapboxgl-ctrl-top-right .mapboxgl-ctrl    { margin: 10px 10px 0 0; float: right; }
 .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl  { margin: 0 0 10px 10px; float: left; }
@@ -64,11 +70,14 @@
 
 .mapboxgl-ctrl-group {
     border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.mapboxgl-ctrl-group:not(:empty) {
     -moz-box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
     -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
     box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    background: #fff;
 }
 
 .mapboxgl-ctrl-group > button {
@@ -106,6 +115,11 @@
 
 .mapboxgl-ctrl-icon {
     padding: 5px;
+}
+
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-icon-disabled {
+    opacity: 0.25;
+    border-color: #373737;
 }
 
 .mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out {
@@ -214,33 +228,64 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
 @media screen {
     .mapboxgl-ctrl-attrib.mapboxgl-compact {
-        padding-top: 2px;
-        padding-bottom: 2px;
-        margin: 0 10px 10px;
+        min-height: 20px;
+        padding: 0;
+        margin: 10px;
         position: relative;
-        padding-right: 24px;
         background-color: #fff;
         border-radius: 3px 12px 12px 3px;
-        visibility: hidden;
     }
 
     .mapboxgl-ctrl-attrib.mapboxgl-compact:hover {
+        padding: 2px 24px 2px 4px;
         visibility: visible;
+        margin-top: 6px;
+    }
+
+    .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact:hover,
+    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact:hover {
+        padding: 2px 4px 2px 24px;
+        border-radius: 12px 3px 3px 12px;
+    }
+
+    .mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-inner {
+        display: none;
+    }
+
+    .mapboxgl-ctrl-attrib.mapboxgl-compact:hover .mapboxgl-ctrl-attrib-inner {
+        display: block;
     }
 
     .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
         content: '';
         cursor: pointer;
         position: absolute;
-        bottom: 0;
-        right: 0;
         background-image: svg-load('svg/mapboxgl-ctrl-attrib.svg');
         background-color: rgba(255, 255, 255, 0.5);
         width: 24px;
         height: 24px;
         box-sizing: border-box;
-        visibility: visible;
         border-radius: 12px;
+    }
+
+    .mapboxgl-ctrl-bottom-right > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        bottom: 0;
+        right: 0;
+    }
+
+    .mapboxgl-ctrl-top-right > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        top: 0;
+        right: 0;
+    }
+
+    .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        top: 0;
+        left: 0;
+    }
+
+    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        bottom: 0;
+        left: 0;
     }
 }
 

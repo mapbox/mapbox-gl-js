@@ -49,7 +49,7 @@ class Let implements Expression {
             bindings.push([name, value]);
         }
 
-        const result = context.parse(args[args.length - 1], args.length - 1, undefined, bindings);
+        const result = context.parse(args[args.length - 1], args.length - 1, context.expectedType, bindings);
         if (!result) return null;
 
         return new Let(bindings, result);

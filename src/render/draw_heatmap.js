@@ -1,13 +1,15 @@
 // @flow
 
-import { mat4 } from 'gl-matrix';
-
 import Texture from './texture';
-import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import Color from '../style-spec/util/color';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
+import CullFaceMode from '../gl/cull_face_mode';
+import {
+    heatmapUniformValues,
+    heatmapTextureUniformValues
+} from './program/heatmap_program';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -26,20 +28,17 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const context = painter.context;
         const gl = context.gl;
 
-        context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
-
+        const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
         // Allow kernels to be drawn across boundaries, so that
         // large kernels are not clipped to tiles
-        context.setStencilMode(StencilMode.disabled);
+        const stencilMode = StencilMode.disabled;
+        // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
+        const colorMode = new ColorMode([gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
 
         bindFramebuffer(context, painter, layer);
 
         context.clear({ color: Color.transparent });
 
-        // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
-        context.setColorMode(new ColorMode([gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]));
-
-        let first = true;
         for (let i = 0; i < coords.length; i++) {
             const coord = coords[i];
 
@@ -52,27 +51,15 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const bucket: ?HeatmapBucket = (tile.getBucket(layer): any);
             if (!bucket) continue;
 
-            const prevProgram = painter.context.program.get();
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const program = painter.useProgram('heatmap', programConfiguration);
             const {zoom} = painter.transform;
-            if (first || program.program !== prevProgram) {
-                programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom});
-                first = false;
-            }
 
-            gl.uniform1f(program.uniforms.u_extrude_scale, pixelsToTileUnits(tile, 1, zoom));
-
-            gl.uniform1f(program.uniforms.u_intensity, layer.paint.get('heatmap-intensity'));
-            gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
-
-            program.draw(
-                context,
-                gl.TRIANGLES,
-                layer.id,
-                bucket.layoutVertexBuffer,
-                bucket.indexBuffer,
-                bucket.segments,
+            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                heatmapUniformValues(coord.posMatrix,
+                    tile, zoom, layer.paint.get('heatmap-intensity')),
+                layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
+                bucket.segments, layer.paint, painter.transform.zoom,
                 programConfiguration);
         }
 
@@ -131,7 +118,6 @@ function renderTextureToMap(painter, layer) {
     const context = painter.context;
     const gl = context.gl;
 
-
     // Here we bind two different textures from which we'll sample in drawing
     // heatmaps: the kernel texture, prepared in the offscreen pass, and a
     // color ramp texture.
@@ -147,23 +133,9 @@ function renderTextureToMap(painter, layer) {
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    context.setDepthMode(DepthMode.disabled);
-    context.setStencilMode(StencilMode.disabled);
-
-    const program = painter.useProgram('heatmapTexture');
-
-    const opacity = layer.paint.get('heatmap-opacity');
-    gl.uniform1f(program.uniforms.u_opacity, opacity);
-    gl.uniform1i(program.uniforms.u_image, 0);
-    gl.uniform1i(program.uniforms.u_color_ramp, 1);
-
-    const matrix = mat4.create();
-    mat4.ortho(matrix, 0, painter.width, painter.height, 0, 0, 1);
-    gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
-
-    gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-
-    painter.viewportVAO.bind(painter.context, program, painter.viewportBuffer, []);
-
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    painter.useProgram('heatmapTexture').draw(context, gl.TRIANGLES,
+        DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
+        heatmapTextureUniformValues(painter, layer, 0, 1),
+        layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
+        painter.viewportSegments, layer.paint, painter.transform.zoom);
 }

@@ -5,45 +5,6 @@ import harness from './harness';
 import pixelmatch from 'pixelmatch';
 import * as glob from 'glob';
 
-function compare(actualPath, expectedPaths, diffPath, callback) {
-
-    const actualImg = fs.createReadStream(actualPath).pipe(new PNG()).on('parsed', doneReading);
-
-    const expectedImgs = [];
-    for (const path of expectedPaths) {
-        expectedImgs.push(fs.createReadStream(path).pipe(new PNG()).on('parsed', doneReading));
-    }
-
-    let read = 0;
-
-    function doneReading() {
-        if (++read < expectedPaths.length + 1) return;
-
-        // if we have multiple expected images, we'll compare against each one and pick the one with
-        // the least amount of difference; this is useful for covering features that render differently
-        // depending on platform, i.e. heatmaps use half-float textures for improved rendering where supported
-
-        let minNumPixels = Infinity;
-        let minDiff, minIndex;
-
-        for (let i = 0; i < expectedImgs.length; i++) {
-            const diff = new PNG({width: actualImg.width, height: actualImg.height});
-            const numPixels = pixelmatch(actualImg.data, expectedImgs[i].data,
-                diff.data, actualImg.width, actualImg.height, {threshold: 0.13});
-
-            if (numPixels < minNumPixels) {
-                minNumPixels = numPixels;
-                minDiff = diff;
-                minIndex = i;
-            }
-        }
-
-        minDiff.pack().pipe(fs.createWriteStream(diffPath)).on('finish', () => {
-            callback(null, minNumPixels / (minDiff.width * minDiff.height), expectedPaths[minIndex]);
-        });
-    }
-}
-
 /**
  * Run the render test suite, compute differences to expected values (making exceptions based on
  * implementation vagaries), print results to standard output, write test artifacts to the
@@ -127,18 +88,17 @@ export function run(implementation, ignores, render) {
             try {
                 stats = fs.statSync(dir, fs.R_OK | fs.W_OK);
                 if (!stats.isDirectory()) throw new Error();
-            }            catch (e) {
+            } catch (e) {
                 fs.mkdirSync(dir);
             }
 
-            const expected = path.join(dir, 'expected.png');
-            const actual   = path.join(dir, 'actual.png');
-            const diff     = path.join(dir, 'diff.png');
+            const expectedPath = path.join(dir, 'expected.png');
+            const actualPath = path.join(dir, 'actual.png');
+            const diffPath = path.join(dir, 'diff.png');
 
-            const png = new PNG({
-                width: Math.floor(params.width * params.pixelRatio),
-                height: Math.floor(params.height * params.pixelRatio)
-            });
+            const width = Math.floor(params.width * params.pixelRatio);
+            const height = Math.floor(params.height * params.pixelRatio);
+            const actualImg = new PNG({width, height});
 
             // PNG data must be unassociated (not premultiplied)
             for (let i = 0; i < data.length; i++) {
@@ -149,8 +109,7 @@ export function run(implementation, ignores, render) {
                     data[i * 4 + 2] /= a;
                 }
             }
-
-            png.data = data;
+            actualImg.data = data;
 
             // there may be multiple expected images, covering different platforms
             const expectedPaths = glob.sync(path.join(dir, 'expected*.png'));
@@ -160,27 +119,46 @@ export function run(implementation, ignores, render) {
             }
 
             if (process.env.UPDATE) {
-                png.pack()
-                    .pipe(fs.createWriteStream(expected))
-                    .on('finish', done);
+                fs.writeFileSync(expectedPath, PNG.sync.write(actualImg));
+
             } else {
-                png.pack()
-                    .pipe(fs.createWriteStream(actual))
-                    .on('finish', () => {
-                        compare(actual, expectedPaths, diff, (err, difference, expected) => {
-                            if (err) return done(err);
+                // if we have multiple expected images, we'll compare against each one and pick the one with
+                // the least amount of difference; this is useful for covering features that render differently
+                // depending on platform, i.e. heatmaps use half-float textures for improved rendering where supported
+                let minDiff = Infinity;
+                let minDiffImg, minExpectedBuf;
 
-                            params.difference = difference;
-                            params.ok = difference <= params.allowed;
+                for (const path of expectedPaths) {
+                    const expectedBuf = fs.readFileSync(path);
+                    const expectedImg = PNG.sync.read(expectedBuf);
+                    const diffImg = new PNG({width, height});
 
-                            params.actual = fs.readFileSync(actual).toString('base64');
-                            params.expected = fs.readFileSync(expected).toString('base64');
-                            params.diff = fs.readFileSync(diff).toString('base64');
+                    const diff = pixelmatch(
+                        actualImg.data, expectedImg.data, diffImg.data,
+                        width, height, {threshold: 0.13}) / (width * height);
 
-                            done();
-                        });
-                    });
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        minDiffImg = diffImg;
+                        minExpectedBuf = expectedBuf;
+                    }
+                }
+
+                const diffBuf = PNG.sync.write(minDiffImg, {filterType: 4});
+                const actualBuf = PNG.sync.write(actualImg, {filterType: 4});
+
+                fs.writeFileSync(diffPath, diffBuf);
+                fs.writeFileSync(actualPath, actualBuf);
+
+                params.difference = minDiff;
+                params.ok = minDiff <= params.allowed;
+
+                params.actual = actualBuf.toString('base64');
+                params.expected = minExpectedBuf.toString('base64');
+                params.diff = diffBuf.toString('base64');
             }
+
+            done();
         });
     });
 }

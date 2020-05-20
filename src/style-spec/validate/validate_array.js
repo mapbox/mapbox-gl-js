@@ -24,7 +24,8 @@ export default function validateArray(options) {
     }
 
     let arrayElementSpec = {
-        "type": arraySpec.value
+        "type": arraySpec.value,
+        "values": arraySpec.values
     };
 
     if (styleSpec.$version < 7) {
@@ -38,12 +39,12 @@ export default function validateArray(options) {
     let errors = [];
     for (let i = 0; i < array.length; i++) {
         errors = errors.concat(validateArrayElement({
-            array: array,
+            array,
             arrayIndex: i,
             value: array[i],
             valueSpec: arrayElementSpec,
-            style: style,
-            styleSpec: styleSpec,
+            style,
+            styleSpec,
             key: `${key}[${i}]`
         }));
     }

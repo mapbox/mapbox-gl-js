@@ -43,4 +43,5 @@ export default class WorkerPool {
     }
 }
 
-WorkerPool.workerCount = Math.max(Math.floor(browser.hardwareConcurrency / 2), 1);
+const availableLogicalProcessors = Math.floor(browser.hardwareConcurrency / 2);
+WorkerPool.workerCount = Math.max(Math.min(availableLogicalProcessors, 6), 1);

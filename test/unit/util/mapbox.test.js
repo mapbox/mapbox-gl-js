@@ -1,10 +1,26 @@
 import { test } from 'mapbox-gl-js-test';
 import * as mapbox from '../../../src/util/mapbox';
 import config from '../../../src/util/config';
-import browser from '../../../src/util/browser';
+import webpSupported from '../../../src/util/webp_supported';
 import window from '../../../src/util/window';
 import { uuid } from '../../../src/util/util';
 import { version } from '../../../package.json';
+
+const mapboxTileURLs = [
+    'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf',
+    'https://b.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf'
+];
+
+const nonMapboxTileURLs = [
+    'https://a.example.com/tiles/{z}/{x}/{y}.mvt',
+    'https://b.example.com/tiles/{z}/{x}/{y}.mvt'
+];
+
+function withFixedDate(t, now, fn) {
+    const dateNow = t.stub(Date, 'now').callsFake(() => now);
+    fn();
+    dateNow.restore();
+}
 
 test("mapbox", (t) => {
     const mapboxSource = 'mapbox://user.map';
@@ -12,7 +28,21 @@ test("mapbox", (t) => {
 
     t.beforeEach((callback) => {
         config.ACCESS_TOKEN = 'key';
+        config.REQUIRE_ACCESS_TOKEN = true;
+        config.API_URL = 'https://api.mapbox.com';
         callback();
+    });
+
+    t.test('.isMapboxHTTPURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPURL('http://mapbox.com'));
+        t.ok(mapbox.isMapboxHTTPURL('https://mapbox.com'));
+        t.ok(mapbox.isMapboxHTTPURL('https://mapbox.com/'));
+        t.ok(mapbox.isMapboxHTTPURL('https://mapbox.com?'));
+        t.ok(mapbox.isMapboxHTTPURL('https://api.mapbox.com/tiles'));
+        t.ok(mapbox.isMapboxHTTPURL('https://api.mapbox.cn/tiles'));
+        t.ok(mapbox.isMapboxHTTPURL('http://a.tiles.mapbox.cn/tiles'));
+        t.notOk(mapbox.isMapboxHTTPURL('http://example.com/mapbox.com'));
+        t.end();
     });
 
     t.test('.normalizeStyleURL', (t) => {
@@ -35,13 +65,11 @@ test("mapbox", (t) => {
         });
 
         t.test('handles custom API_URLs with paths', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://test.example.com/api.mapbox.com';
             t.equal(
                 mapbox.normalizeStyleURL('mapbox://styles/foo/bar'),
                 'https://test.example.com/api.mapbox.com/styles/v1/foo/bar?access_token=key'
             );
-            config.API_URL = previousUrl;
             t.end();
         });
 
@@ -89,13 +117,11 @@ test("mapbox", (t) => {
         });
 
         t.test('handles custom API_URLs with paths', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://test.example.com/api.mapbox.com';
             t.equal(
                 mapbox.normalizeSourceURL('mapbox://one.a'),
                 'https://test.example.com/api.mapbox.com/v4/one.a.json?secure&access_token=key'
             );
-            config.API_URL = previousUrl;
             t.end();
         });
 
@@ -119,13 +145,11 @@ test("mapbox", (t) => {
         });
 
         t.test('handles custom API_URLs with paths', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://test.example.com/api.mapbox.com';
             t.equal(
                 mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'),
                 'https://test.example.com/api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key'
             );
-            config.API_URL = previousUrl;
             t.end();
         });
 
@@ -187,54 +211,117 @@ test("mapbox", (t) => {
         });
 
         t.test('handles custom API_URLs with paths', (t) => {
-            const previousUrl = config.API_URL;
             config.API_URL = 'https://test.example.com/api.mapbox.com';
             t.equal(
                 mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json'),
                 'https://test.example.com/api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?access_token=key'
             );
-            config.API_URL = previousUrl;
             t.end();
         });
 
         t.end();
     });
 
+    t.test('canonicalize raster tileset', (t) => {
+        const tileset = {tiles: ["http://a.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=key"]};
+        mapbox.canonicalizeTileset(tileset, "mapbox://mapbox.satellite");
+        t.deepEquals(mapbox.canonicalizeTileset(tileset, "mapbox://mapbox.satellite"), ["mapbox://tiles/mapbox.satellite/{z}/{x}/{y}.png"]);
+        t.end();
+    });
+
+    t.test('canonicalize vector tileset', (t) => {
+        const tileset = {tiles: ["http://a.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.vector.pbf?access_token=key"]};
+        t.deepEquals(mapbox.canonicalizeTileset(tileset, "mapbox://mapbox.streets"), ["mapbox://tiles/mapbox.streets/{z}/{x}/{y}.vector.pbf"]);
+        t.end();
+    });
+
+    t.test('.canonicalizeTileURL', (t) => {
+        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://b.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("https://api.mapbox.cn/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b,c.d/{z}/{x}/{y}.vector.pbf?access_token=key"),
+            "mapbox://tiles/a.b,c.d/{z}/{x}/{y}.vector.pbf");
+        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?access_token=key&custom=parameter"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter");
+        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter");
+        t.equals(mapbox.canonicalizeTileURL("http://a.tiles.mapbox.com/v4/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&access_token=key&second=param"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.vector.pbf?custom=parameter&second=param");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.jpg");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.jpg70");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.jpg");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.jpg70?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.jpg70");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.png");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.png");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.png");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.png?access_token=key"),
+            "mapbox://tiles/a.b/{z}/{x}/{y}.png");
+
+        // We don't ever expect to see these inputs, but be safe anyway.
+        t.equals(mapbox.canonicalizeTileURL("http://path"), "http://path");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/"), "http://api.mapbox.com/v4/");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}."), "http://api.mapbox.com/v4/a.b/{z}/{x}/{y}.");
+        t.equals(mapbox.canonicalizeTileURL("http://api.mapbox.com/v4/a.b/{z}/{x}/{y}/."), "http://api.mapbox.com/v4/a.b/{z}/{x}/{y}/.");
+        t.end();
+    });
+
     t.test('.normalizeTileURL', (t) => {
-        browser.supportsWebp = false;
+        webpSupported.supported = false;
 
         t.test('does nothing on 1x devices', (t) => {
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile.png');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile.png32');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile.jpg70');
+            config.API_URL = 'http://path.png';
+            config.REQUIRE_ACCESS_TOKEN = false;
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource),   'http://path.png/v4/tile.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/v4/tile.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/v4/tile.jpg70');
             t.end();
         });
 
         t.test('inserts @2x on 2x devices', (t) => {
             window.devicePixelRatio = 2;
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile@2x.png');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile@2x.png32');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile@2x.jpg70');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/tile@2x.png?access_token=foo');
+            config.API_URL = 'http://path.png';
+            config.REQUIRE_ACCESS_TOKEN = false;
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/v4/tile@2x.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/v4/tile@2x.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/v4/tile@2x.jpg70');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/v4/tile@2x.png?access_token=foo');
             window.devicePixelRatio = 1;
             t.end();
         });
 
         t.test('inserts @2x when tileSize == 512', (t) => {
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource, 512), 'http://path.png/tile@2x.png');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource, 512), 'http://path.png/tile@2x.png32');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource, 512), 'http://path.png/tile@2x.jpg70');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource, 512), 'http://path.png/tile@2x.png?access_token=foo');
+            config.API_URL = 'http://path.png';
+            config.REQUIRE_ACCESS_TOKEN = false;
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource, 512), 'http://path.png/v4/tile@2x.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource, 512), 'http://path.png/v4/tile@2x.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource, 512), 'http://path.png/v4/tile@2x.jpg70');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource, 512), 'http://path.png/v4/tile@2x.png?access_token=foo');
             t.end();
         });
 
         t.test('replaces img extension with webp on supporting devices', (t) => {
-            browser.supportsWebp = true;
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile.webp');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile.webp');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile.webp');
-            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/tile.webp?access_token=foo');
-            browser.supportsWebp = false;
+            webpSupported.supported = true;
+            config.API_URL = 'http://path.png';
+            config.REQUIRE_ACCESS_TOKEN = false;
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/v4/tile.webp');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/v4/tile.webp');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/v4/tile.webp');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/v4/tile.webp?access_token=foo');
+            webpSupported.supported = false;
             t.end();
         });
 
@@ -248,23 +335,12 @@ test("mapbox", (t) => {
             t.end();
         });
 
-        t.test('replace temp access tokens with the latest token', (t) => {
-            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=key');
-            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?foo=bar&access_token=tk.abc.123', mapboxSource), 'http://example.com/tile.png?foo=bar&access_token=key');
-            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123&foo=bar', 'mapbox://user.map'), 'http://example.com/tile.png?access_token=key&foo=bar');
-            t.end();
-        });
-
         t.test('does not modify the access token for non-mapbox sources', (t) => {
+            config.API_URL = 'http://example.com';
             t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123', nonMapboxSource), 'http://example.com/tile.png?access_token=tk.abc.123');
             t.end();
         });
 
-        t.test('does not modify the access token for non temp tokens', (t) => {
-            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=pk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=pk.abc.123');
-            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tkk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=tkk.abc.123');
-            t.end();
-        });
 
         t.test('throw error on falsy url input', (t) => {
             t.throws(() => {
@@ -273,8 +349,23 @@ test("mapbox", (t) => {
             t.end();
         });
 
-        browser.supportsWebp = true;
+        t.test('matches gl-native normalization', (t) => {
+            config.API_URL = 'https://api.mapbox.com/';
+            t.equal(mapbox.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf", mapboxSource), "https://api.mapbox.com/v4/a.b/0/0/0.pbf?access_token=key");
+            t.equal(mapbox.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf?style=mapbox://styles/mapbox/streets-v9@0", mapboxSource), "https://api.mapbox.com/v4/a.b/0/0/0.pbf?style=mapbox://styles/mapbox/streets-v9@0&access_token=key");
+            t.equal(mapbox.normalizeTileURL("mapbox://tiles/a.b/0/0/0.pbf?", mapboxSource), "https://api.mapbox.com/v4/a.b/0/0/0.pbf?access_token=key");
+            t.equal(mapbox.normalizeTileURL("mapbox://tiles/a.b/0/0/0.png", mapboxSource), "https://api.mapbox.com/v4/a.b/0/0/0.png?access_token=key");
+            t.equal(mapbox.normalizeTileURL("mapbox://tiles/a.b/0/0/0@2x.png", mapboxSource), "https://api.mapbox.com/v4/a.b/0/0/0@2x.png?access_token=key");
+            t.equal(mapbox.normalizeTileURL("mapbox://tiles/a.b,c.d/0/0/0.pbf", mapboxSource), "https://api.mapbox.com/v4/a.b,c.d/0/0/0.pbf?access_token=key");
 
+            config.API_URL = 'https://api.example.com/';
+            t.equal(mapbox.normalizeTileURL("mapbox://tiles/a.b/0/0/0.png", mapboxSource), "https://api.example.com/v4/a.b/0/0/0.png?access_token=key");
+            t.equal(mapbox.normalizeTileURL("http://path", nonMapboxSource), "http://path");
+
+            t.end();
+        });
+
+        webpSupported.supported = true;
         t.end();
     });
 
@@ -300,16 +391,42 @@ test("mapbox", (t) => {
         t.test('does not POST when mapboxgl.ACCESS_TOKEN is not set', (t) => {
             config.ACCESS_TOKEN = null;
 
-            event.postTurnstileEvent([' a.tiles.mapxbox.com']);
+            event.postTurnstileEvent(mapboxTileURLs);
 
             t.equal(window.server.requests.length, 0);
             t.end();
         });
 
         t.test('does not POST when url does not point to mapbox.com', (t) => {
-            event.postTurnstileEvent(['a.tiles.boxmap.com']);
+            event.postTurnstileEvent(nonMapboxTileURLs);
 
             t.equal(window.server.requests.length, 0);
+            t.end();
+        });
+
+        t.test('POSTs cn event when API_URL change to cn endpoint', (t) => {
+            config.API_URL = 'https://api.mapbox.cn';
+
+            event.postTurnstileEvent(mapboxTileURLs);
+
+            const req = window.server.requests[0];
+            req.respond(200);
+
+            t.true(req.url.indexOf('https://events.mapbox.cn') > -1);
+            t.end();
+        });
+
+        t.test('POSTs no event when API_URL unavailable', (t) => {
+            config.API_URL = null;
+            event.postTurnstileEvent(mapboxTileURLs);
+            t.equal(window.server.requests.length, 0, 'no events posted');
+            t.end();
+        });
+
+        t.test('POSTs no event when API_URL non-standard', (t) => {
+            config.API_URL = 'https://api.example.com';
+            event.postTurnstileEvent(mapboxTileURLs);
+            t.equal(window.server.requests.length, 0, 'no events posted');
             t.end();
         });
 
@@ -319,13 +436,13 @@ test("mapbox", (t) => {
                 prevLocalStorage = window.localStorage;
                 window.localStorage = {
                     data: {},
-                    setItem: function (id, val) {
+                    setItem (id, val) {
                         this.data[id] = String(val);
                     },
-                    getItem: function (id) {
+                    getItem (id) {
                         return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
                     },
-                    removeItem: function (id) {
+                    removeItem (id) {
                         if (this.hasOwnProperty(id)) delete this[id];
                     }
                 };
@@ -339,31 +456,26 @@ test("mapbox", (t) => {
 
             t.test('does not POST event when previously stored data is on the same day', (t) => {
                 const now = +Date.now();
-
-                window.localStorage.setItem(`mapbox.turnstileEventData:${config.ACCESS_TOKEN}`, JSON.stringify({
-                    anonId: uuid(),
-                    lastSuccess: now
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, uuid());
+                window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
+                    lastSuccess: now,
+                    tokenU: 'key'
                 }));
 
-                t.stub(browser, 'now').callsFake(() => now + 5); // A bit later
-
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
-
+                // Post 5 seconds later
+                withFixedDate(t, now + 5, () => event.postTurnstileEvent(mapboxTileURLs));
                 t.false(window.server.requests.length);
                 t.end();
             });
 
             t.test('POSTs event when previously stored anonId is not a valid uuid', (t) => {
                 const now = +Date.now();
-
-                window.localStorage.setItem(`mapbox.turnstileEventData:${config.ACCESS_TOKEN}`, JSON.stringify({
-                    anonId: 'anonymous',
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, 'anonymous');
+                window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
                     lastSuccess: now
                 }));
 
-                t.stub(browser, 'now').callsFake(() => now + ms25Hours); // next day
-
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                withFixedDate(t, now + ms25Hours, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -376,14 +488,12 @@ test("mapbox", (t) => {
             t.test('POSTs event when previously stored timestamp is more than 24 hours in the future', (t) => {
                 const now = +Date.now();
 
-                window.localStorage.setItem(`mapbox.turnstileEventData:${config.ACCESS_TOKEN}`, JSON.stringify({
-                    anonId: uuid(),
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, uuid());
+                window.localStorage.setItem(`mapbox.eventData:${config.ACCESS_TOKEN}`, JSON.stringify({
                     lastSuccess: now + ms25Hours // 24-hours later
                 }));
 
-                t.stub(browser, 'now').callsFake(() => now); // Past relative ot lastSuccess
-
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -395,13 +505,12 @@ test("mapbox", (t) => {
 
             t.test('does not POST appuserTurnstile event second time within same calendar day', (t) => {
                 let now = +Date.now();
-                t.stub(browser, 'now').callsFake(() => now);
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 //Post second event
                 const firstEvent = now;
                 now += (60 * 1000); // A bit later
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -416,13 +525,12 @@ test("mapbox", (t) => {
 
             t.test('does not POST appuserTurnstile event second time when clock goes backwards less than a day', (t) => {
                 let now = +Date.now();
-                t.stub(browser, 'now').callsFake(() => now);
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 //Post second event
                 const firstEvent = now;
                 now -= (60 * 1000); // A bit earlier
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -438,7 +546,7 @@ test("mapbox", (t) => {
             t.test('POSTs appuserTurnstile event when access token changes', (t) => {
                 config.ACCESS_TOKEN = 'pk.new.*';
 
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                event.postTurnstileEvent(mapboxTileURLs);
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -453,7 +561,7 @@ test("mapbox", (t) => {
 
         t.test('when LocalStorage is not available', (t) => {
             t.test('POSTs appuserTurnstile event', (t) => {
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                event.postTurnstileEvent(mapboxTileURLs);
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -471,12 +579,11 @@ test("mapbox", (t) => {
             t.test('does not POST appuserTurnstile event second time within same calendar day', (t) => {
                 let now = +Date.now();
                 const firstEvent = now;
-                t.stub(browser, 'now').callsFake(() => now);
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 //Post second event
                 now += (60 * 1000); // A bit later
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -492,12 +599,11 @@ test("mapbox", (t) => {
             t.test('does not POST appuserTurnstile event second time when clock goes backwards less than a day', (t) => {
                 let now = +Date.now();
                 const firstEvent = now;
-                t.stub(browser, 'now').callsFake(() => now);
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                event.postTurnstileEvent(mapboxTileURLs);
 
                 //Post second event
                 now -= (60 * 1000); // A bit earlier
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                withFixedDate(t, now, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -513,7 +619,7 @@ test("mapbox", (t) => {
             t.test('POSTs appuserTurnstile event when access token changes', (t) => {
                 config.ACCESS_TOKEN = 'pk.new.*';
 
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                event.postTurnstileEvent(mapboxTileURLs);
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -529,14 +635,11 @@ test("mapbox", (t) => {
             });
 
             t.test('POSTs appUserTurnstile event on next calendar day', (t) => {
-                let now = +Date.now();
-                t.stub(browser, 'now').callsFake(() => now);
-
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
-
-                now += ms25Hours; // Add a day
-                const tomorrow = now;
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                const now = +Date.now();
+                event.postTurnstileEvent(mapboxTileURLs);
+                // Add a day
+                const tomorrow = now + ms25Hours;
+                withFixedDate(t, tomorrow, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 let req = window.server.requests[0];
                 req.respond(200);
@@ -556,18 +659,16 @@ test("mapbox", (t) => {
 
             t.test('Queues and POSTs appuserTurnstile events when triggerred in quick succession', (t) => {
                 let now = Date.now();
-                t.stub(browser, 'now').callsFake(() => now);
 
                 const today = now;
-                event.postTurnstileEvent(['a.tiles.mapbox.com']);
+                event.postTurnstileEvent(mapboxTileURLs);
 
                 const laterToday = now + 1;
-                now = laterToday;
-                event.postTurnstileEvent(['b.tiles.mapbox.com']);
+                withFixedDate(t, laterToday, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const tomorrow = laterToday + ms25Hours; // Add a day
                 now = tomorrow;
-                event.postTurnstileEvent(['c.tiles.mapbox.com']);
+                withFixedDate(t, tomorrow, () => event.postTurnstileEvent(mapboxTileURLs));
 
                 const reqToday = window.server.requests[0];
                 reqToday.respond(200);
@@ -578,6 +679,283 @@ test("mapbox", (t) => {
                 reqTomorrow.respond(200);
                 reqBody = JSON.parse(reqTomorrow.requestBody)[0];
                 t.equal(reqBody.created, new Date(tomorrow).toISOString());
+
+                t.end();
+            });
+
+            t.end();
+        });
+
+        t.end();
+    });
+    t.test('MapLoadEvent', (t) => {
+        let event;
+        let turnstileEvent;
+        t.beforeEach((callback) => {
+            window.useFakeXMLHttpRequest();
+            event = new mapbox.MapLoadEvent();
+            turnstileEvent = new mapbox.TurnstileEvent();
+            callback();
+        });
+
+        t.afterEach((callback) => {
+            window.restore();
+            callback();
+        });
+
+        t.test('mapbox.postMapLoadEvent', (t) => {
+            t.ok(mapbox.postMapLoadEvent);
+            t.end();
+        });
+
+        t.test('does not POST when mapboxgl.ACCESS_TOKEN is not set', (t) => {
+            config.ACCESS_TOKEN = null;
+
+            event.postMapLoadEvent(mapboxTileURLs, 1);
+            t.equal(window.server.requests.length, 0);
+            t.end();
+        });
+
+        t.test('does not POST when url does not point to mapbox.com', (t) => {
+            event.postMapLoadEvent(nonMapboxTileURLs, 1);
+
+            t.equal(window.server.requests.length, 0);
+            t.end();
+        });
+
+        t.test('POSTs cn event when API_URL changes to cn endpoint', (t) => {
+            config.API_URL = 'https://api.mapbox.cn';
+
+            event.postMapLoadEvent(mapboxTileURLs, 1);
+
+            const req = window.server.requests[0];
+            req.respond(200);
+
+            t.true(req.url.indexOf('https://events.mapbox.cn') > -1);
+            t.end();
+        });
+
+        t.test('POSTs no event when API_URL unavailable', (t) => {
+            config.API_URL = null;
+            event.postMapLoadEvent(mapboxTileURLs, 1);
+            t.equal(window.server.requests.length, 0, 'no events posted');
+            t.end();
+        });
+
+        t.test('POSTs no event when API_URL is non-standard', (t) => {
+            config.API_URL = "https://api.example.com";
+            event.postMapLoadEvent(mapboxTileURLs, 1);
+            t.equal(window.server.requests.length, 0, 'no events posted');
+            t.end();
+        });
+
+        t.test('with LocalStorage available', (t) => {
+            let prevLocalStorage;
+            t.beforeEach((callback) => {
+                prevLocalStorage = window.localStorage;
+                window.localStorage = {
+                    data: {},
+                    setItem (id, val) {
+                        this.data[id] = String(val);
+                    },
+                    getItem (id) {
+                        return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
+                    },
+                    removeItem (id) {
+                        if (this.hasOwnProperty(id)) delete this[id];
+                    }
+                };
+                callback();
+            });
+
+            t.afterEach((callback) => {
+                window.localStorage = prevLocalStorage;
+                callback();
+            });
+
+            t.test('generates new uuid when previously stored anonId is not a valid uuid', (t) => {
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, JSON.stringify({
+                    anonId: 'anonymous'
+                }));
+
+                event.postMapLoadEvent(mapboxTileURLs, 1);
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.notEqual(reqBody.userId, 'anonymous');
+                t.end();
+            });
+
+            t.test('does not POST map.load event second time within same calendar day', (t) => {
+                let now = +Date.now();
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1));
+
+                //Post second event
+                const firstEvent = now;
+                now += (60 * 1000); // A bit later
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1));
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                t.equal(window.server.requests.length, 1);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+
+                t.end();
+            });
+
+            t.test('does not POST map.load event second time when clock goes backwards less than a day', (t) => {
+                let now = +Date.now();
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1));
+
+                //Post second event
+                const firstEvent = now;
+                now -= (60 * 1000); // A bit earlier
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1));
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                t.equal(window.server.requests.length, 1);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
+
+                t.end();
+            });
+
+            t.test('POSTs map.load event when access token changes', (t) => {
+                config.ACCESS_TOKEN = 'pk.new.*';
+
+                event.postMapLoadEvent(mapboxTileURLs, 1);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                t.equal(req.url, `${config.EVENTS_URL}?access_token=pk.new.*`);
+
+                t.end();
+            });
+
+            t.test('uses the same uuid as TurnstileEvent', (t) => {
+                const anonId = uuid();
+                window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, anonId);
+                turnstileEvent.postTurnstileEvent(mapboxTileURLs);
+                event.postMapLoadEvent(mapboxTileURLs, 1);
+
+
+                const turnstileReq = window.server.requests[0];
+                turnstileReq.respond(200);
+                const mapLoadReq = window.server.requests[1];
+                mapLoadReq.respond(200);
+                const turnstileBody = JSON.parse(turnstileReq.requestBody)[0];
+                const loadBody = JSON.parse(mapLoadReq.requestBody)[0];
+
+                t.equal(turnstileBody.userId, loadBody.userId);
+                t.equal(turnstileBody.userId, anonId);
+                const turnstileEventData = JSON.parse(window.localStorage.getItem(`mapbox.eventData:${config.ACCESS_TOKEN}`));
+                t.ok(turnstileEventData.lastSuccess);
+                t.end();
+            });
+
+            t.end();
+        });
+
+        t.test('when LocalStorage is not available', (t) => {
+            t.test('POSTs map.load event', (t) => {
+                event.postMapLoadEvent(mapboxTileURLs, 1);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(req.url, `${config.EVENTS_URL}?access_token=key`);
+                t.equal(req.method, 'POST');
+                t.equal(reqBody.event, 'map.load');
+                t.equal(reqBody.sdkVersion, version);
+                t.ok(reqBody.userId);
+
+                t.end();
+            });
+
+            t.test('does not POST map.load multiple times for the same map instance', (t) => {
+                const now = Date.now();
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1));
+                withFixedDate(t, now + 5, () => event.postMapLoadEvent(mapboxTileURLs, 1));
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                t.equal(window.server.requests.length, 1);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(reqBody.created, new Date(now).toISOString());
+
+                t.end();
+            });
+
+            t.test('POSTs map.load event when access token changes', (t) => {
+                config.ACCESS_TOKEN = 'pk.new.*';
+
+                event.postMapLoadEvent(mapboxTileURLs, 1);
+
+                const req = window.server.requests[0];
+                req.respond(200);
+
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(req.url, `${config.EVENTS_URL}?access_token=pk.new.*`);
+                t.equal(req.method, 'POST');
+                t.equal(reqBody.event, 'map.load');
+                t.equal(reqBody.sdkVersion, version);
+                t.ok(reqBody.userId);
+
+                t.end();
+            });
+
+            t.test('POSTs distinct map.load for multiple maps', (t) => {
+                event.postMapLoadEvent(mapboxTileURLs, 1);
+                const now = +Date.now();
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 2));
+
+                let req = window.server.requests[0];
+                req.respond(200);
+
+                req = window.server.requests[1];
+                req.respond(200);
+                const reqBody = JSON.parse(req.requestBody)[0];
+                t.equal(req.url, `${config.EVENTS_URL}?access_token=key`);
+                t.equal(req.method, 'POST');
+                t.equal(reqBody.event, 'map.load');
+                t.equal(reqBody.sdkVersion, version);
+                t.ok(reqBody.userId);
+                t.equal(reqBody.created, new Date(now).toISOString());
+
+                t.end();
+            });
+
+            t.test('Queues and POSTs map.load events when triggerred in quick succession by different maps', (t) => {
+                const now = Date.now();
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1));
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 2));
+                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 3));
+
+                const reqOne = window.server.requests[0];
+                reqOne.respond(200);
+                let reqBody = JSON.parse(reqOne.requestBody)[0];
+                t.equal(reqBody.created, new Date(now).toISOString());
+
+                const reqTwo = window.server.requests[1];
+                reqTwo.respond(200);
+                reqBody = JSON.parse(reqTwo.requestBody)[0];
+                t.equal(reqBody.created, new Date(now).toISOString());
+
+                const reqThree = window.server.requests[2];
+                reqThree.respond(200);
+                reqBody = JSON.parse(reqThree.requestBody)[0];
+                t.equal(reqBody.created, new Date(now).toISOString());
 
                 t.end();
             });

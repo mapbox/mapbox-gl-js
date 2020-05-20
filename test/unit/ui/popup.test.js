@@ -12,9 +12,9 @@ const containerHeight = 512;
 function createMap(t, options) {
     options = options || {};
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'offsetWidth', {value: options.width || containerWidth});
-    Object.defineProperty(container, 'offsetHeight', {value: options.height || containerHeight});
-    return globalCreateMap(t, { container: container });
+    Object.defineProperty(container, 'clientWidth', {value: options.width || containerWidth});
+    Object.defineProperty(container, 'clientHeight', {value: options.height || containerHeight});
+    return globalCreateMap(t, { container });
 }
 
 test('Popup#addTo adds a .mapboxgl-popup element', (t) => {
@@ -131,6 +131,43 @@ test('Popup content can be set via setHTML', (t) => {
         .setHTML("<span>Test</span>");
 
     t.equal(map.getContainer().querySelector('.mapboxgl-popup-content').innerHTML, "<span>Test</span>");
+    t.end();
+});
+
+test('Popup width maximum defaults to 240px', (t) => {
+    const map = createMap(t);
+
+    const popup = new Popup({closeButton: false})
+        .setLngLat([0, 0])
+        .addTo(map)
+        .setHTML("<span>Test</span>");
+
+    t.equal(popup.getMaxWidth(), "240px");
+    t.end();
+});
+
+test('Popup width maximum can be set via using maxWidth option', (t) => {
+    const map = createMap(t);
+
+    const popup = new Popup({closeButton: false, maxWidth: "5px"})
+        .setLngLat([0, 0])
+        .addTo(map)
+        .setHTML("<span>Test</span>");
+
+    t.equal(popup.getMaxWidth(), "5px");
+    t.end();
+});
+
+test('Popup width maximum can be set via maxWidth', (t) => {
+    const map = createMap(t);
+
+    const popup = new Popup({closeButton: false})
+        .setLngLat([0, 0])
+        .setHTML("<span>Test</span>")
+        .setMaxWidth("5px")
+        .addTo(map);
+
+    t.equal(popup.getMaxWidth(), "5px");
     t.end();
 });
 
@@ -335,7 +372,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
         const map = createMap(t);
         t.stub(map, 'project').returns(new Point(0, 0));
 
-        const popup = new Popup({anchor: anchor, offset: 10})
+        const popup = new Popup({anchor, offset: 10})
             .setLngLat([0, 0])
             .setText('Test')
             .addTo(map);
@@ -457,5 +494,18 @@ test('Popup adds classes from className option', (t) => {
     const popupContainer = map.getContainer().querySelector('.mapboxgl-popup');
     t.ok(popupContainer.classList.contains('some'));
     t.ok(popupContainer.classList.contains('classes'));
+    t.end();
+});
+
+test('Popup closes on Map#remove', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText("Test")
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    map.remove();
+
+    t.ok(!popup.isOpen());
     t.end();
 });

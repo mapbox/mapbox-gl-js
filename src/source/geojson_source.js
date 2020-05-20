@@ -140,7 +140,8 @@ class GeoJSONSource extends Evented implements Source {
                 extent: EXTENT,
                 radius: (options.clusterRadius || 50) * scale,
                 log: false
-            }
+            },
+            clusterProperties: options.clusterProperties
         }, options.workerOptions);
     }
 

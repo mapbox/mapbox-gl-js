@@ -1,6 +1,9 @@
 toc:
   - Map
   - accessToken
+  - baseApiUrl
+  - workerCount
+  - maxParallelImageRequests
   - supported
   - version
   - setRTLTextPlugin
@@ -8,6 +11,8 @@ toc:
   - CameraOptions
   - PaddingOptions
   - RequestParameters
+  - StyleImageInterface
+  - CustomLayerInterface
   - name: Geography & Geometry
     description: |
       `LngLat` and `LngLatBounds` represent points and rectanges in geographic
@@ -18,6 +23,7 @@ toc:
   - LngLatBoundsLike
   - Point
   - PointLike
+  - MercatorCoordinate
   - name: User Interface
     description: |
       Controls, markers, and popups add new user interface elements to the map.

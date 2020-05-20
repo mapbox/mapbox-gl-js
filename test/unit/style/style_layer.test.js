@@ -315,6 +315,33 @@ test('StyleLayer#serialize', (t) => {
         t.end();
     });
 
+    t.test('serializes "visibility" of "visible"', (t) => {
+        const layer = createStyleLayer(createSymbolLayer());
+        layer.setLayoutProperty('visibility', 'visible');
+
+        t.equal(layer.serialize().layout['visibility'], 'visible');
+
+        t.end();
+    });
+
+    t.test('serializes "visibility" of "none"', (t) => {
+        const layer = createStyleLayer(createSymbolLayer());
+        layer.setLayoutProperty('visibility', 'none');
+
+        t.equal(layer.serialize().layout['visibility'], 'none');
+
+        t.end();
+    });
+
+    t.test('serializes "visibility" of undefined', (t) => {
+        const layer = createStyleLayer(createSymbolLayer());
+        layer.setLayoutProperty('visibility', undefined);
+
+        t.equal(layer.serialize().layout['visibility'], undefined);
+
+        t.end();
+    });
+
     t.end();
 });
 

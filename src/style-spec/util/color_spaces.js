@@ -95,7 +95,7 @@ function rgbToHcl(rgbColor: Color): HCLColor {
     return {
         h: h < 0 ? h + 360 : h,
         c: Math.sqrt(a * a + b * b),
-        l: l,
+        l,
         alpha: rgbColor.a
     };
 }
@@ -105,7 +105,7 @@ function hclToRgb(hclColor: HCLColor): Color {
         c = hclColor.c,
         l = hclColor.l;
     return labToRgb({
-        l: l,
+        l,
         a: Math.cos(h) * c,
         b: Math.sin(h) * c,
         alpha: hclColor.alpha

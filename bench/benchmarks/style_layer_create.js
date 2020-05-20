@@ -1,13 +1,22 @@
+// @flow
 
+import type {StyleSpecification} from '../../src/style-spec/types';
 import Benchmark from '../lib/benchmark';
-import accessToken from '../lib/access_token';
 import createStyleLayer from '../../src/style/create_style_layer';
 import deref from '../../src/style-spec/deref';
+import fetchStyle from '../lib/fetch_style';
 
 export default class StyleLayerCreate extends Benchmark {
-    setup() {
-        return fetch(`https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`)
-            .then(response => response.json())
+    style: string | StyleSpecification;
+    layers: Array<Object>;
+
+    constructor(style: string | StyleSpecification) {
+        super();
+        this.style = style;
+    }
+
+    setup(): Promise<void> {
+        return fetchStyle(this.style)
             .then(json => { this.layers = deref(json.layers); });
     }
 

@@ -1,0 +1,55 @@
+{
+  "expression": {
+    "type": "exponential",
+    "property": "p",
+    "stops": [
+      [{"zoom": 0, "value": 0}, 0],
+      [{"zoom": 0, "value": 1}, 1],
+      [{"zoom": 1, "value": 0}, 2],
+      [{"zoom": 1, "value": 1}, 3]
+    ],
+    "default": -1
+  },
+  "propertySpec": {
+    "type": "number",
+    "property-type": "data-driven",
+    "expression": {"interpolated": true, "parameters": ["zoom", "feature"]}
+  },
+  "inputs": [
+    [{"zoom": 0.5}, {"properties": {}}],
+    [{"zoom": 0.5}, {"properties": {"p": -1}}],
+    [{"zoom": 0.5}, {"properties": {"p": 0}}],
+    [{"zoom": 0.5}, {"properties": {"p": 0.5}}],
+    [{"zoom": 0.5}, {"properties": {"p": 1}}],
+    [{"zoom": 0.5}, {"properties": {"p": 2}}],
+    [{"zoom": 0.5}, {"properties": {"p": "0"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": false,
+      "type": "number"
+    },
+    "outputs": [-1, 1, 1, 1.5, 2, 2, -1],
+    "serialized": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      0,
+      [
+        "case",
+        ["==", ["typeof", ["get", "p"]], "number"],
+        ["interpolate", ["linear"], ["number", ["get", "p"]], 0, 0, 1, 1],
+        -1
+      ],
+      1,
+      [
+        "case",
+        ["==", ["typeof", ["get", "p"]], "number"],
+        ["interpolate", ["linear"], ["number", ["get", "p"]], 0, 2, 1, 3],
+        -1
+      ]
+    ]
+  }
+}

@@ -170,13 +170,13 @@ function diffLayerPropertyChanges(before, after, commands, layerId, klass, comma
     for (prop in before) {
         if (!before.hasOwnProperty(prop)) continue;
         if (!isEqual(before[prop], after[prop])) {
-            commands.push({ command: command, args: [layerId, prop, after[prop], klass] });
+            commands.push({ command, args: [layerId, prop, after[prop], klass] });
         }
     }
     for (prop in after) {
         if (!after.hasOwnProperty(prop) || before.hasOwnProperty(prop)) continue;
         if (!isEqual(before[prop], after[prop])) {
-            commands.push({ command: command, args: [layerId, prop, after[prop], klass] });
+            commands.push({ command, args: [layerId, prop, after[prop], klass] });
         }
     }
 }

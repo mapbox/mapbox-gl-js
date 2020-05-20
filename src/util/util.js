@@ -2,7 +2,6 @@
 
 import UnitBezier from '@mapbox/unitbezier';
 
-import Coordinate from '../geo/coordinate';
 import Point from '@mapbox/point-geometry';
 import window from './window';
 
@@ -199,12 +198,13 @@ export function uniqueId(): number {
 
 /**
  * Return a random UUID (v4). Taken from: https://gist.github.com/jed/982883
+ * @private
  */
 export function uuid(): string {
     function b(a) {
         return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) :
         //$FlowFixMe: Flow doesn't like the implied array literal conversion here
-        ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
+            ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
     }
     return b();
 }
@@ -213,6 +213,7 @@ export function uuid(): string {
  * Validate a string to match UUID(v4) of the
  * form: xxxxxxxx-xxxx-4xxx-[89ab]xxx-xxxxxxxxxxxx
  * @param str string to validate.
+ * @private
  */
 export function validateUuid(str: ?string): boolean {
     return str ? /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str) : false;
@@ -244,33 +245,6 @@ export function bindAll(fns: Array<string>, context: Object): void {
         if (!context[fn]) { return; }
         context[fn] = context[fn].bind(context);
     });
-}
-
-/**
- * Given a list of coordinates, get their center as a coordinate.
- *
- * @returns centerpoint
- * @private
- */
-export function getCoordinatesCenter(coords: Array<Coordinate>): Coordinate {
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-
-    for (let i = 0; i < coords.length; i++) {
-        minX = Math.min(minX, coords[i].column);
-        minY = Math.min(minY, coords[i].row);
-        maxX = Math.max(maxX, coords[i].column);
-        maxY = Math.max(maxY, coords[i].row);
-    }
-
-    const dx = maxX - minX;
-    const dy = maxY - minY;
-    const dMax = Math.max(dx, dy);
-    const zoom = Math.max(0, Math.floor(-Math.log(dMax) / Math.LN2));
-    return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
-        .zoomTo(zoom);
 }
 
 /**
@@ -472,4 +446,24 @@ export function storageAvailable(type: string): boolean {
     } catch (e) {
         return false;
     }
+}
+
+// The following methods are from https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
+//Unicode compliant base64 encoder for strings
+export function b64EncodeUnicode(str: string) {
+    return window.btoa(
+        encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+            (match, p1) => {
+                return String.fromCharCode(Number('0x' + p1)); //eslint-disable-line
+            }
+        )
+    );
+}
+
+
+// Unicode compliant decoder for base64-encoded strings
+export function b64DecodeUnicode(str: string) {
+    return decodeURIComponent(window.atob(str).split('').map((c) => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); //eslint-disable-line
+    }).join(''));
 }

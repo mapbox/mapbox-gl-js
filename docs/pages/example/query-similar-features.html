@@ -19,7 +19,7 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: 'mapbox://styles/mapbox/streets-v11',
     center: [-98, 38.88],
     minZoom: 2,
     zoom: 3
@@ -49,7 +49,7 @@ map.on('load', function() {
             "fill-outline-color": "rgba(0,0,0,0.1)",
             "fill-color": "rgba(0,0,0,0.1)"
         }
-    }, 'place-city-sm'); // Place polygon under these labels.
+    }, 'settlement-label'); // Place polygon under these labels.
 
     map.addLayer({
         "id": "counties-highlighted",
@@ -62,7 +62,7 @@ map.on('load', function() {
             "fill-opacity": 0.75
         },
         "filter": ["in", "COUNTY", ""]
-    }, 'place-city-sm'); // Place polygon under these labels.
+    }, 'settlement-label'); // Place polygon under these labels.
 
     map.on('mousemove', 'counties', function(e) {
         // Change the cursor style as a UI indicator.

@@ -5,7 +5,7 @@ import Point from '@mapbox/point-geometry';
 import StyleLayer from '../style_layer';
 import LineBucket from '../../data/bucket/line_bucket';
 import { RGBAImage } from '../../util/image';
-import { multiPolygonIntersectsBufferedMultiLine } from '../../util/intersection_tests';
+import { polygonIntersectsBufferedMultiLine } from '../../util/intersection_tests';
 import { getMaximumPaintValue, translateDistance, translate } from '../query_utils';
 import properties from './line_style_layer_properties';
 import { extend } from '../../util/util';
@@ -19,6 +19,7 @@ import type {LayoutProps, PaintProps} from './line_style_layer_properties';
 import type Transform from '../../geo/transform';
 import type Texture from '../../render/texture';
 import type {LayerSpecification} from '../../style-spec/types';
+
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: true;
@@ -89,7 +90,7 @@ class LineStyleLayer extends StyleLayer {
         return width / 2 + Math.abs(offset) + translateDistance(this.paint.get('line-translate'));
     }
 
-    queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
+    queryIntersectsFeature(queryGeometry: Array<Point>,
                            feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
@@ -107,7 +108,11 @@ class LineStyleLayer extends StyleLayer {
         if (lineOffset) {
             geometry = offsetLine(geometry, lineOffset * pixelsToTileUnits);
         }
-        return multiPolygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);
+        return polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);
+    }
+
+    isTileClipped() {
+        return true;
     }
 }
 

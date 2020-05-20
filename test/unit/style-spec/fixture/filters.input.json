@@ -150,6 +150,13 @@
       "source": "source",
       "source-layer": "source-layer",
       "filter": ["all", [">=", "Constructi", 1930], [">=", ["zoom"], 10]]
+    },
+    {
+      "id": "filter expressions with feature-state",
+      "type": "line",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": ["<=" , ["feature-state", "height"], 10]
     }
   ]
 }

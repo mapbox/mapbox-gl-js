@@ -11,6 +11,8 @@ export type ErrorTypeT = { kind: 'error' };
 export type CollatorTypeT = { kind: 'collator' };
 export type FormattedTypeT = { kind: 'formatted' };
 
+export type EvaluationKind = 'constant' | 'source' | 'camera' | 'composite';
+
 export type Type =
     NullTypeT |
     NumberTypeT |
@@ -82,7 +84,7 @@ export function checkSubtype(expected: Type, t: Type): ?string {
         return null;
     } else if (expected.kind === 'array') {
         if (t.kind === 'array' &&
-            !checkSubtype(expected.itemType, t.itemType) &&
+            ((t.N === 0 && t.itemType.kind === 'value') || !checkSubtype(expected.itemType, t.itemType)) &&
             (typeof expected.N !== 'number' || expected.N === t.N)) {
             return null;
         }

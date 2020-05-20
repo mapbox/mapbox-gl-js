@@ -17,11 +17,9 @@
     "outputs": [
       "one",
       "two",
-      {
-        "error": "Expected value to be of type string, but found number instead."
-      },
-      {"error": "Expected value to be of type string, but found null instead."}
+      "5",
+      ""
     ],
-    "serialized": ["string", ["coalesce", ["get", "a"], ["get", "b"]]]
+    "serialized": ["to-string", ["coalesce", ["get", "a"], ["get", "b"]]]
   }
 }

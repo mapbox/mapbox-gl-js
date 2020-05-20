@@ -4,7 +4,7 @@ import { pick } from '../util/util';
 
 import { getJSON, ResourceType } from '../util/ajax';
 import browser from '../util/browser';
-import { normalizeSourceURL as normalizeURL } from '../util/mapbox';
+import { normalizeSourceURL as normalizeURL, canonicalizeTileset } from '../util/mapbox';
 
 import type {RequestTransformFunction} from '../ui/map';
 import type {Callback} from '../types/callback';
@@ -12,7 +12,7 @@ import type {TileJSON} from '../types/tilejson';
 import type {Cancelable} from '../types/cancelable';
 
 export default function(options: any, requestTransformFn: RequestTransformFunction, callback: Callback<TileJSON>): Cancelable {
-    const loaded = function(err, tileJSON: any) {
+    const loaded = function(err: ?Error, tileJSON: ?Object) {
         if (err) {
             return callback(err);
         } else if (tileJSON) {
@@ -26,6 +26,10 @@ export default function(options: any, requestTransformFn: RequestTransformFuncti
                 result.vectorLayerIds = result.vectorLayers.map((layer) => { return layer.id; });
             }
 
+            // only canonicalize tile tileset if source is declared using a tilejson url
+            if (options.url) {
+                result.tiles = canonicalizeTileset(result, options.url);
+            }
             callback(null, result);
         }
     };

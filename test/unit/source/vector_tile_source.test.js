@@ -5,9 +5,10 @@ import window from '../../../src/util/window';
 import { Evented } from '../../../src/util/evented';
 
 function createSource(options, transformCallback) {
-    const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
+    const source = new VectorTileSource('id', options, { send() {} }, options.eventedParent);
     source.onAdd({
         transform: { showCollisionBoxes: false },
+        _getMapId: () => 1,
         _transformRequest: transformCallback ? transformCallback : (url) => { return { url }; }
     });
 
@@ -83,7 +84,7 @@ test('VectorTileSource', (t) => {
     t.test('fires event with metadata property', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
         const source = createSource({ url: "/source.json" });
-        source.on('data', (e)=>{
+        source.on('data', (e) => {
             if (e.sourceDataType === 'content') t.end();
         });
         window.server.respond();
@@ -141,7 +142,7 @@ test('VectorTileSource', (t) => {
                 maxzoom: 10,
                 attribution: "Mapbox",
                 tiles: ["http://example.com/{z}/{x}/{y}.png"],
-                scheme: scheme
+                scheme
             });
 
             source.dispatcher.send = function(type, params) {
@@ -171,8 +172,8 @@ test('VectorTileSource', (t) => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData: function () {},
-                    setExpiryData: function() {}
+                    loadVectorData () {},
+                    setExpiryData() {}
                 };
                 source.loadTile(tile, () => {});
                 t.ok(transformSpy.calledOnce);
@@ -201,11 +202,11 @@ test('VectorTileSource', (t) => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData: function () {
+                    loadVectorData () {
                         this.state = 'loaded';
                         events.push('tileLoaded');
                     },
-                    setExpiryData: function() {}
+                    setExpiryData() {}
                 };
                 source.loadTile(tile, () => {});
                 t.equal(tile.state, 'loading');
@@ -217,7 +218,7 @@ test('VectorTileSource', (t) => {
         });
     });
 
-    t.test('respects TileJSON.bounds', (t)=>{
+    t.test('respects TileJSON.bounds', (t) => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -225,7 +226,7 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             bounds: [-47, -7, -45, -5]
         });
-        source.on('data', (e)=>{
+        source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
                 t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
@@ -234,7 +235,7 @@ test('VectorTileSource', (t) => {
         });
     });
 
-    t.test('does not error on invalid bounds', (t)=>{
+    t.test('does not error on invalid bounds', (t) => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -243,7 +244,7 @@ test('VectorTileSource', (t) => {
             bounds: [-47, -7, -45, 91]
         });
 
-        source.on('data', (e)=>{
+        source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 t.deepEqual(source.tileBounds.bounds, {_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}}, 'converts invalid bounds to closest valid bounds');
                 t.end();
@@ -251,7 +252,7 @@ test('VectorTileSource', (t) => {
         });
     });
 
-    t.test('respects TileJSON.bounds when loaded from TileJSON', (t)=>{
+    t.test('respects TileJSON.bounds when loaded from TileJSON', (t) => {
         window.server.respondWith('/source.json', JSON.stringify({
             minzoom: 0,
             maxzoom: 22,
@@ -288,8 +289,8 @@ test('VectorTileSource', (t) => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData: function () {},
-                    setExpiryData: function() {}
+                    loadVectorData () {},
+                    setExpiryData() {}
                 };
                 source.loadTile(tile, () => {});
             }

@@ -46,16 +46,25 @@ class NavigationControl {
         this._container.addEventListener('contextmenu', (e) => e.preventDefault());
 
         if (this.options.showZoom) {
-            this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom In', () => this._map.zoomIn());
-            this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom Out', () => this._map.zoomOut());
+            bindAll([
+                '_updateZoomButtons'
+            ], this);
+            this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom in', () => this._map.zoomIn());
+            this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom out', () => this._map.zoomOut());
         }
         if (this.options.showCompass) {
             bindAll([
                 '_rotateCompassArrow'
             ], this);
-            this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset North', () => this._map.resetNorth());
+            this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset bearing to north', () => this._map.resetNorth());
             this._compassArrow = DOM.create('span', 'mapboxgl-ctrl-compass-arrow', this._compass);
         }
+    }
+
+    _updateZoomButtons() {
+        const zoom = this._map.getZoom();
+        this._zoomInButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMaxZoom());
+        this._zoomOutButton.classList.toggle('mapboxgl-ctrl-icon-disabled', zoom === this._map.getMinZoom());
     }
 
     _rotateCompassArrow() {
@@ -65,6 +74,10 @@ class NavigationControl {
 
     onAdd(map: Map) {
         this._map = map;
+        if (this.options.showZoom) {
+            this._map.on('zoom', this._updateZoomButtons);
+            this._updateZoomButtons();
+        }
         if (this.options.showCompass) {
             this._map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
@@ -77,6 +90,9 @@ class NavigationControl {
 
     onRemove() {
         DOM.remove(this._container);
+        if (this.options.showZoom) {
+            this._map.off('zoom', this._updateZoomButtons);
+        }
         if (this.options.showCompass) {
             this._map.off('rotate', this._rotateCompassArrow);
             DOM.removeEventListener(this._compass, 'mousedown', this._handler.onMouseDown);
@@ -90,6 +106,7 @@ class NavigationControl {
     _createButton(className: string, ariaLabel: string, fn: () => mixed) {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';
+        a.title = ariaLabel;
         a.setAttribute('aria-label', ariaLabel);
         a.addEventListener('click', fn);
         return a;

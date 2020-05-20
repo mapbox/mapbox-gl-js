@@ -5,6 +5,7 @@ import extend from '../util/extend';
 import getType from '../util/get_type';
 import * as interpolate from '../util/interpolate';
 import Interpolate from '../expression/definitions/interpolate';
+import Formatted from '../expression/types/formatted';
 import { supportsInterpolation } from '../util/properties';
 
 export function isFunction(value) {
@@ -75,7 +76,7 @@ export function createFunction(parameters, propertySpec) {
             const zoom = stop[0].zoom;
             if (featureFunctions[zoom] === undefined) {
                 featureFunctions[zoom] = {
-                    zoom: zoom,
+                    zoom,
                     type: parameters.type,
                     property: parameters.property,
                     default: parameters.default,
@@ -194,6 +195,8 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 function evaluateIdentityFunction(parameters, propertySpec, input) {
     if (propertySpec.type === 'color') {
         input = Color.parse(input);
+    } else if (propertySpec.type === 'formatted') {
+        input = Formatted.fromString(input.toString());
     } else if (getType(input) !== propertySpec.type && (propertySpec.type !== 'enum' || !propertySpec.values[input])) {
         input = undefined;
     }

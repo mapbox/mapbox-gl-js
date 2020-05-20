@@ -19,6 +19,11 @@ type BlendFuncConstant =
 
 export type BlendFuncType = [BlendFuncConstant, BlendFuncConstant];
 
+export type BlendEquationType =
+    | $PropertyType<WebGLRenderingContext, 'FUNC_ADD'>
+    | $PropertyType<WebGLRenderingContext, 'FUNC_SUBTRACT'>
+    | $PropertyType<WebGLRenderingContext, 'FUNC_REVERSE_SUBTRACT'>;
+
 export type ColorMaskType = [boolean, boolean, boolean, boolean];
 
 export type CompareFuncType =
@@ -68,3 +73,12 @@ export type StencilTest =
     | { func: $PropertyType<WebGLRenderingContext, 'NOTEQUAL'>, mask: number }
     | { func: $PropertyType<WebGLRenderingContext, 'GEQUAL'>, mask: number }
     | { func: $PropertyType<WebGLRenderingContext, 'ALWAYS'>, mask: 0 };
+
+export type CullFaceModeType =
+    | $PropertyType<WebGLRenderingContext, 'FRONT'>
+    | $PropertyType<WebGLRenderingContext, 'BACK'>
+    | $PropertyType<WebGLRenderingContext, 'FRONT_AND_BACK'>
+
+export type FrontFaceType =
+    | $PropertyType<WebGLRenderingContext, 'CW'>
+    | $PropertyType<WebGLRenderingContext, 'CCW'>

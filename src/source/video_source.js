@@ -4,7 +4,7 @@ import { getVideo, ResourceType } from '../util/ajax';
 
 import ImageSource from './image_source';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import VertexArrayObject from '../render/vertex_array_object';
+import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
 import { ErrorEvent } from '../util/evented';
 
@@ -79,7 +79,7 @@ class VideoSource extends ImageSource {
                 // Start repainting when video starts playing. hasTransition() will then return
                 // true to trigger additional frames as long as the videos continues playing.
                 this.video.addEventListener('playing', () => {
-                    this.map._rerender();
+                    this.map.triggerRepaint();
                 });
 
                 if (this.map) {
@@ -136,8 +136,8 @@ class VideoSource extends ImageSource {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
         }
 
-        if (!this.boundsVAO) {
-            this.boundsVAO = new VertexArrayObject();
+        if (!this.boundsSegments) {
+            this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
         }
 
         if (!this.texture) {

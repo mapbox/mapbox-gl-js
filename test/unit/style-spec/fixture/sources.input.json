@@ -40,6 +40,15 @@
       "coordinates": [
         [1, 2], [3, 4], [5, 6], [7, 8]
       ]
+    },
+    "cluster-properties": {
+      "type": "geojson",
+      "data": "/test/integration/data/places.geojson",
+      "cluster": true,
+      "clusterProperties": {
+        "zoom": ["+", ["zoom"]],
+        "state": ["+", ["feature-state", "foo"]]
+      }
     }
   },
   "layers": []

@@ -30,6 +30,64 @@ t('migrates to latest version from version 7', (t) => {
     t.end();
 });
 
+t('converts token strings to expressions', (t) => {
+    const migrated = migrate({
+        version: 8,
+        layers: [{
+            id: '1',
+            type: 'symbol',
+            layout: {'text-field': 'a{x}', 'icon-image': '{y}'}
+        }]
+    }, spec.latest.$version);
+    t.deepEqual(migrated.layers[0].layout['text-field'], ['concat', 'a', ['get', 'x']]);
+    t.deepEqual(migrated.layers[0].layout['icon-image'], ['to-string', ['get', 'y']]);
+    t.end();
+});
+
+t('converts stop functions to expressions', (t) => {
+    const migrated = migrate({
+        version: 8,
+        layers: [{
+            id: '1',
+            type: 'background',
+            paint: {
+                'background-opacity': {
+                    base: 1.0,
+                    stops: [[0, 1], [10, 0.72]]
+                }
+            }
+        }, {
+            id: '2',
+            type: 'background',
+            paint: {
+                'background-opacity': {
+                    base: 1.0,
+                    stops: [[0, [1, 2]], [10, [0.72, 0.98]]]
+                }
+            }
+        }]
+    }, spec.latest.$version);
+    t.deepEqual(migrated.layers[0].paint['background-opacity'], [
+        'interpolate',
+        ['exponential', 1],
+        ['zoom'],
+        0,
+        1,
+        10,
+        0.72
+    ]);
+    t.deepEqual(migrated.layers[1].paint['background-opacity'], [
+        'interpolate',
+        ['exponential', 1],
+        ['zoom'],
+        0,
+        ['literal', [1, 2]],
+        10,
+        ['literal', [0.72, 0.98]]
+    ]);
+    t.end();
+});
+
 glob.sync(`${__dirname}/fixture/v7-migrate/*.input.json`).forEach((file) => {
     t(path.basename(file), (t) => {
         const outputfile = file.replace('.input', '.output');

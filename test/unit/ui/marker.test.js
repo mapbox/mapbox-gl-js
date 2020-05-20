@@ -9,9 +9,9 @@ import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
 function createMap(t) {
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'offsetWidth', {value: 512});
-    Object.defineProperty(container, 'offsetHeight', {value: 512});
-    return globalCreateMap(t, {container: container});
+    Object.defineProperty(container, 'clientWidth', {value: 512});
+    Object.defineProperty(container, 'clientHeight', {value: 512});
+    return globalCreateMap(t, {container});
 }
 
 test('Marker uses a default marker element with an appropriate offset', (t) => {
@@ -193,7 +193,7 @@ test('Popup anchors around default Marker', (t) => {
     // open the popup
     marker.togglePopup();
 
-    const mapHeight = map.getContainer().offsetHeight;
+    const mapHeight = map.getContainer().clientHeight;
     const markerTop = -marker.getPopup().options.offset.bottom[1]; // vertical distance from tip of marker to the top in pixels
     const markerRight = -marker.getPopup().options.offset.right[0]; // horizontal distance from the tip of the marker to the right in pixels
 
@@ -206,7 +206,7 @@ test('Popup anchors around default Marker', (t) => {
 
     // move marker to the top forcing the popup to below
     marker.setLngLat(map.unproject([mapHeight / 2, markerTop]));
-    t.ok(marker.getPopup()._container.classList.contains('mapboxgl-popup-anchor-top'), 'popup anchors bolow marker');
+    t.ok(marker.getPopup()._container.classList.contains('mapboxgl-popup-anchor-top'), 'popup anchors below marker');
 
     // move marker to the right forcing the popup to the left
     marker.setLngLat(map.unproject([mapHeight - markerRight, mapHeight / 2]));
@@ -449,5 +449,19 @@ test('Marker with draggable:false does not move to new position in response to a
     t.equal(startPos.y, endPos.y);
 
     map.remove();
+    t.end();
+});
+
+test('Marker with draggable:true does not error if removed on mousedown', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+    simulate.mousedown(el);
+    simulate.mousemove(el, {clientX: 10, clientY: 10});
+
+    marker.remove();
+    t.ok(map.fire('mouseup'));
     t.end();
 });

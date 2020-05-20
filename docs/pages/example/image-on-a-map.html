@@ -6,11 +6,11 @@ var mapStyle = {
     "sources": {
         "mapbox": {
             "type": "vector",
-            "url": "mapbox://mapbox.mapbox-streets-v6"
+            "url": "mapbox://mapbox.mapbox-streets-v8"
         },
         "overlay": {
             "type": "image",
-            "url": "https://www.mapbox.com/mapbox-gl-js/assets/radar.gif",
+            "url": "https://docs.mapbox.com/mapbox-gl-js/assets/radar.gif",
             "coordinates": [
                 [-80.425, 46.437],
                 [-71.516, 46.437],
@@ -19,7 +19,7 @@ var mapStyle = {
             ]
         }
     },
-    "sprite": "mapbox://sprites/mapbox/dark-v9",
+    "sprite": "mapbox://sprites/mapbox/dark-v10",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     "layers": [
         {
@@ -73,7 +73,7 @@ var mapStyle = {
         {
             "id": "states",
             "source": "mapbox",
-            "source-layer": "state_label",
+            "source-layer": "place_label",
             "type": "symbol",
             "layout": {
                 "text-transform": "uppercase",
@@ -89,7 +89,7 @@ var mapStyle = {
                     6, 14
                 ]
             },
-            "filter": [">=", "area", 80000],
+            "filter": ["==", ["get", "class"], "state"],
             "paint": {
                 "text-color": "#969696",
                 "text-halo-width": 2,

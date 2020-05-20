@@ -17,6 +17,8 @@ const cancel = window.cancelAnimationFrame ||
     window.webkitCancelAnimationFrame ||
     window.msCancelAnimationFrame;
 
+let linkEl;
+
 /**
  * @private
  */
@@ -45,22 +47,13 @@ const exported = {
     },
 
     resolveURL(path: string) {
-        const a = window.document.createElement('a');
-        a.href = path;
-        return a.href;
+        if (!linkEl) linkEl = window.document.createElement('a');
+        linkEl.href = path;
+        return linkEl.href;
     },
 
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
-    get devicePixelRatio() { return window.devicePixelRatio; },
-    supportsWebp: false
+    get devicePixelRatio() { return window.devicePixelRatio; }
 };
 
 export default exported;
-
-if (window.document) {
-    const webpImgTest = window.document.createElement('img');
-    webpImgTest.onload = function() {
-        exported.supportsWebp = true;
-    };
-    webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';
-}
