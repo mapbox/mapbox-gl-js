@@ -177,18 +177,25 @@
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
-    "aggregateBy": {
-      "type": "*",
-      "doc": "along with point_count will be an aggregate of this property in all the features in the cluster."
-    },
-    "groupBy": {
-      "type": "string",
-      "doc": "each aggregate along with count will have a breakdown based on the features value for the groupBy property."
-    },
     "geojsonTile": {
       "type": "boolean",
       "default": false,
       "doc": "if true, each tile's response(expected to be a valid geojson and not in pbf) will be converted to vector tiles."
+    },
+    "cluster": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If the data is a collection of point features, setting this to true clusters the points by radius into groups. Cluster groups become new `Point` features in the source with additional properties:\n * `cluster` Is `true` if the point is a cluster \n * `cluster_id` A unqiue id for the cluster to be used in conjunction with the [cluster inspection methods](https://www.mapbox.com/mapbox-gl-js/api/#geojsonsource#getclusterexpansionzoom)\n * `point_count` Number of original points grouped into this cluster\n * `point_count_abbreviated` An abbreviated point count"
+    },
+    "clusterRadius": {
+      "type": "number",
+      "default": 50,
+      "minimum": 0,
+      "doc": "Radius of each cluster if clustering is enabled. A value of 512 indicates a radius equal to the width of a tile."
+    },
+    "clusterProperties": {
+      "type": "*",
+      "doc": "An object defining custom properties on the generated clusters if clustering is enabled, aggregating values from clustered points. Has the form `{\"property_name\": [operator, map_expression]}`. `operator` is any expression function that accepts at least 2 operands (e.g. `\"+\"` or `\"max\"`) — it accumulates the property value from clusters/points the cluster contains; `map_expression` produces the value of a single point.\n\nExample: `{\"sum\": [\"+\", [\"get\", \"scalerank\"]]}`.\n\nFor more advanced use cases, in place of `operator`, you can use a custom reduce expression that references a special `[\"accumulated\"]` value, e.g.:\n`{\"sum\": [[\"+\", [\"accumulated\"], [\"get\", \"sum\"]], [\"get\", \"scalerank\"]]}`"
     },
     "*": {
       "type": "*",
@@ -386,20 +393,9 @@
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
     },
-<<<<<<< HEAD
-    "aggregateBy": {
-      "type": "string",
-      "doc": "point_count will be an aggregate of this property in all the features in the cluster."
-    },
-    "geojsonTile": {
-      "type": "boolean",
-      "default": false,
-      "doc": "if true, each tile's response(expected to be a valid geojson and not in pbf) will be converted to vector tiles."
-=======
     "clusterProperties": {
       "type": "*",
       "doc": "An object defining custom properties on the generated clusters if clustering is enabled, aggregating values from clustered points. Has the form `{\"property_name\": [operator, map_expression]}`. `operator` is any expression function that accepts at least 2 operands (e.g. `\"+\"` or `\"max\"`) — it accumulates the property value from clusters/points the cluster contains; `map_expression` produces the value of a single point.\n\nExample: `{\"sum\": [\"+\", [\"get\", \"scalerank\"]]}`.\n\nFor more advanced use cases, in place of `operator`, you can use a custom reduce expression that references a special `[\"accumulated\"]` value, e.g.:\n`{\"sum\": [[\"+\", [\"accumulated\"], [\"get\", \"sum\"]], [\"get\", \"scalerank\"]]}`"
->>>>>>> v0.54.1
     },
     "lineMetrics": {
       "type": "boolean",

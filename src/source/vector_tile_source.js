@@ -8,7 +8,7 @@ import { normalizeTileURL as normalizeURL, postTurnstileEvent, postMapLoadEvent 
 import TileBounds from './tile_bounds';
 import { ResourceType } from '../util/ajax';
 import browser from '../util/browser';
-import Coordinate from '../geo/coordinate';
+import MercatorCoordinate from '../geo/mercator_coordinate';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -154,7 +154,7 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    getClusterLeaves(coordinate: Coordinate, clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
+    getClusterLeaves(coordinate: MercatorCoordinate, clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
         this.dispatcher.broadcast(`${this.type}.getClusterLeaves`, {
             clusterId,
             limit,

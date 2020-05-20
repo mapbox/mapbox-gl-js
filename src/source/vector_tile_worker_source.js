@@ -3,6 +3,7 @@
 import geojsonToVectorTile from './geojson_to_vector_tile';
 import vtpbf from 'vt-pbf';
 import rewind  from 'geojson-rewind';
+import MercatorCoordinate from '../geo/mercator_coordinate';
 
 import { getJSON, getArrayBuffer } from '../util/ajax';
 
@@ -238,7 +239,7 @@ class VectorTileWorkerSource implements WorkerSource {
         }
     }
 
-    getClusterLeaves(params: {clusterId: number, limit: number, offset: number, coordinate: Coordinate}, callback: Callback<Array<GeoJSONFeature>>) {
+    getClusterLeaves(params: {clusterId: number, limit: number, offset: number, coordinate: MercatorCoordinate}, callback: Callback<Array<GeoJSONFeature>>) {
         const workerTiles = values(this.loaded);
 
         const workerTile = workerTiles.filter((wt) => {

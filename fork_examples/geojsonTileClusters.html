@@ -6,7 +6,7 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='./scripts/mapConstants.js'></script>
     <script src='./scripts/soqlTileUrlSubstitute.js'></script>
-    <script src='../dist/mapbox-gl.js'></script>
+    <script src='../dist/mapbox-gl-dev.js'></script>
     <link href='../src/css/mapbox-gl.css' rel='stylesheet' />
     <style>
         body { margin:0; padding:0; }
@@ -47,7 +47,7 @@
   map.showTileBoundaries = true;
   map.on('load', function () {
     var clusterProperties = {
-      {"soql_count": ["+", ["get", "soql_count"]],
+      "soql_count": ["+", ["get", "soql_count"]],
     };
     clusterProperties[AGGREGATE_BY_ALIAS] = ["+", ["get", AGGREGATE_BY_ALIAS]];
     map.addSource('vectorDataSource', {
@@ -119,20 +119,14 @@
       });
 
       if (clickedOnFeatures.length > 0) {
-        var coordinate = map.transform.locationCoordinate(event.lngLat);
-        coordinate.row = Math.floor(coordinate.row);
-        coordinate.column = Math.floor(coordinate.column);
-        coordinate.zoom = Math.floor(coordinate.zoom);
-
-        var tileID = {
-          x: Math.floor(tileCoordinate.column),
-          y: Math.floor(tileCoordinate.row),
-          z: Math.floor(tileCoordinate.zoom)
-        }
+        var mercatorCoordinate = map.transform.locationCoordinate(event.lngLat);
+        mercatorCoordinate.x = Math.floor(mercatorCoordinate.x);
+        mercatorCoordinate.y = Math.floor(mercatorCoordinate.y);
+        mercatorCoordinate.z = Math.floor(mercatorCoordinate.z);
         var clusterId = clickedOnFeatures[0].properties.cluster_id;
 
         map.getSource('vectorDataSource').getClusterLeaves(
-          coordinate,
+          mercatorCoordinate,
           clusterId,
           1000,
           0,
