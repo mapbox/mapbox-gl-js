@@ -3,6 +3,7 @@ import flowRemoveTypes from '@mapbox/flow-remove-types';
 import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
+import json from 'rollup-plugin-json';
 import unassert from 'rollup-plugin-unassert';
 import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
@@ -20,7 +21,7 @@ export const plugins = (minified, production) => [
     replace({
         '__SDK_VERSION__': JSON.stringify(version)
     }),
-    jsonParse(),
+    json(),
     production ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'Debug.*']
