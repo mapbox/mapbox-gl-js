@@ -1,6 +1,6 @@
 // @flow
 
-import {version} from '../../package.json';
+import config from '../util/config.js';
 import {extend, bindAll, warnOnce, uniqueId} from '../util/util';
 import browser from '../util/browser';
 import window from '../util/window';
@@ -2479,7 +2479,7 @@ class Map extends Camera {
      * @var {string} version
      */
 
-    get version(): string { return version; }
+    get version(): string { return config.SDK_VERSION; }
 }
 
 export default Map;

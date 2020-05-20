@@ -4,11 +4,12 @@ import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
-import json from 'rollup-plugin-json';
+import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import {createFilter} from 'rollup-pluginutils';
 import strip from '@rollup/plugin-strip';
+import {version} from '../package.json';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
@@ -16,7 +17,10 @@ import strip from '@rollup/plugin-strip';
 export const plugins = (minified, production) => [
     flow(),
     minifyStyleSpec(),
-    json(),
+    replace({
+        '__SDK_VERSION__': JSON.stringify(version)
+    }),
+    jsonParse(),
     production ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'Debug.*']
@@ -73,6 +77,20 @@ function glsl(include, minify) {
 
             return {
                 code: `export default ${JSON.stringify(code)};`,
+                map: {mappings: ''}
+            };
+        }
+    };
+}
+
+function jsonParse() {
+    return {
+        name: 'json-parse',
+        transform(code, id) {
+            if (id.slice(-5) !== '.json') return null;
+
+            return {
+                code: `export default JSON.parse(${JSON.stringify(code)});`,
                 map: {mappings: ''}
             };
         }

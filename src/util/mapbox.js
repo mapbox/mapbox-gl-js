@@ -19,7 +19,6 @@ import browser from './browser';
 import window from './window';
 import webpSupported from './webp_supported';
 import {createSkuToken, SKU_ID} from './sku_token';
-import {version as sdkVersion} from '../../package.json';
 import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util';
 import {postData, ResourceType} from './ajax';
 
@@ -341,7 +340,7 @@ class TelemetryEvent {
             event: this.type,
             created: new Date(timestamp).toISOString(),
             sdkIdentifier: 'mapbox-gl-js',
-            sdkVersion,
+            sdkVersion: config.SDK_VERSION,
             skuId: SKU_ID,
             userId: this.anonId
         };
