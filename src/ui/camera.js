@@ -645,7 +645,7 @@ class Camera extends Evented {
      * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
-     * @see [Used by BoxZoomHandler](https://www.mapbox.com/mapbox-gl-js/api/#boxzoomhandler)
+     * @see Used by {@link BoxZoomHandler}
      */
     fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: AnimationOptions & CameraOptions, eventData?: Object) {
         return this._fitInternal(
