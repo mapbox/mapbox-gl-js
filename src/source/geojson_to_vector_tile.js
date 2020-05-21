@@ -6,7 +6,7 @@ import Supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
 import EXTENT from '../data/extent';
 import GeoJSONWrapper from './geojson_wrapper';
-import { getSuperclusterOptions } from '../util/superclusterUtil';
+import { getSuperclusterOptions } from './superclusterOptions';
 
 import type {VectorSourceSpecification} from '../style-spec/types';
 import type {UnwrappedTileID} from '../source/tile_id';
@@ -26,7 +26,6 @@ export default function(data: any, options: VectorSourceSpecification, tileSize:
     }
 
     const geojsonWrappedVectorTile = new GeoJSONWrapper(geoJSONTile ? geoJSONTile.features : []);
-
     return {
       geojsonWrappedVectorTile,
       geojsonIndex: index
@@ -48,5 +47,5 @@ function getSuperClusterIndex(data: any, options: VectorSourceSpecification, zoo
         },
         clusterProperties: options.clusterProperties
     });
-    return Supercluster(superclusterOptions).load(data.features);
+    return new Supercluster(superclusterOptions).load(data.features);
 };

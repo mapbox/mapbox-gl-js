@@ -10,8 +10,7 @@ import Supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
 import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
-import { createExpression } from '../style-spec/expression';
-import { getSuperclusterOptions } from '../util/superclusterUtil';
+import { getSuperclusterOptions } from './superclusterOptions';
 
 import type {
     WorkerTileParameters,
@@ -296,6 +295,10 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 }
 
-// getSuperclusterOptions has been moved to `superclusterUtil` avoid circular dependency.
+// getSuperclusterOptions has been moved to `superclusterUtil`. Reason to avoid circular dependency.
+// Dependency chain:
+//    geojson_worker_source -> vector_tile_worker_source
+//    vector_tile_worker_source -> geojson_to_vector_tile -> geojson_worker_source.{getSuperclusterOptions}
+
 
 export default GeoJSONWorkerSource;

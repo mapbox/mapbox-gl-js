@@ -47,9 +47,9 @@
   map.showTileBoundaries = true;
   map.on('load', function () {
     var clusterProperties = {
-      "soql_count": ["+", ["get", "soql_count"]],
+      "soql_count": ["+", ["to-number", ["get", "soql_count"]]],
     };
-    clusterProperties[AGGREGATE_BY_ALIAS] = ["+", ["get", AGGREGATE_BY_ALIAS]];
+    clusterProperties[AGGREGATE_BY_ALIAS] = ["to-number", ["+", ["get", AGGREGATE_BY_ALIAS]]];
     map.addSource('vectorDataSource', {
         "type": "vector",
         "cluster": true,
@@ -86,7 +86,7 @@
       'source-layer': '_geojsonTileLayer',
       'filter': ['all', ['has', 'point_count']],
       layout: {
-          "text-field": "{count_abbrev} | {" + AGGREGATE_BY_ALIAS + "_abbrev}",
+          "text-field": "{soql_count} | {" + AGGREGATE_BY_ALIAS + "}",
           "text-size": 12
       }
     });
@@ -98,7 +98,7 @@
       'source-layer': '_geojsonTileLayer',
       'filter': ['all', ['!has', 'point_count']],
       layout: {
-          "text-field": "{count} | {" + AGGREGATE_BY_ALIAS + "}",
+          "text-field": "{soql_count} | {" + AGGREGATE_BY_ALIAS + "}",
           "text-size": 12
       }
     });
