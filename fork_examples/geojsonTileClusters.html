@@ -144,10 +144,9 @@
           y: Math.floor(mercatorCoordinate.y * totalTilesForZoom),
           z: zoom,
         };
-        console.log(canonicalTileId);
         var clusterId = clickedOnFeatures[0].properties.cluster_id;
 
-        map.getSource('vectorDataSource').getClusterLeaves(
+        map.getSource('vectorDataSource').getLeaves(
           canonicalTileId,
           clusterId,
           1000,

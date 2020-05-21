@@ -153,8 +153,8 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    getClusterLeaves(canonicalTileID: CanonicalTileID, clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
-        this.dispatcher.broadcast(`${this.type}.getClusterLeaves`, {
+    getLeaves(canonicalTileID: CanonicalTileID, clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
+        this.dispatcher.broadcast(`${this.type}.getLeaves`, {
             clusterId,
             limit,
             offset,

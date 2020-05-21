@@ -80,17 +80,23 @@ function geojsonToVectorTile(data: any, params: WorkerTileParameter) {
             },
             clusterProperties: options.clusterProperties
         });
+
         index = new Supercluster(superclusterOptions).load(data.features);
         geoJSONTile = index.getTile(zoom, tileID.canonical.x, tileID.canonical.y);
     } else {
-        geoJSONTile = {
-          features: data
+        const geojsonVtOptions = {
+            extent: EXTENT,
+            indexMaxZoom: 0, // Do not pre generate tiles for zoom levels, only generate on the fly
+            maxZoom: (options.maxzoom || 22)
         };
+
+        index = geojsonvt(data, geojsonVtOptions);
+        geoJSONTile = index.getTile(zoom, tileID.canonical.x, tileID.canonical.y);
     }
 
     const geojsonWrappedVectorTile = new GeoJSONWrapper(geoJSONTile ? geoJSONTile.features : []);
     return {
-      geojsonWrappedVectorTile,
-      geojsonIndex: index
+        geojsonWrappedVectorTile,
+        geojsonIndex: index
     };
 };

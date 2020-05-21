@@ -6,7 +6,7 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='./scripts/mapConstants.js'></script>
     <script src='./scripts/soqlTileUrlSubstitute.js'></script>
-    <script src='../dist/mapbox-gl.js'></script>
+    <script src='../dist/mapbox-gl-dev.js'></script>
     <link href='../src/css/mapbox-gl.css' rel='stylesheet' />
     <style>
         body { margin:0; padding:0; }
@@ -23,7 +23,7 @@
       container: 'map',
       style: 'mapbox://styles/mapbox/light-v9',
       zoom: 11,
-      center: [-74.0060,40.7128],
+      center: [-87.93381886, 42.00596691],
       // -----------------------------  //
       // Required to work with fork     //
       "transformRequest": substituteSoqlParams
@@ -32,7 +32,7 @@
 
   var simplifiedGeom = 'simplify_preserve_topology(snap_to_grid(the_geom,{snap_precision}),{simplify_precision})';
 
-  var tileUrl = 'https://data.cityofnewyork.us/resource/4vr5-tahr.geojson?$query=' +
+  var tileUrl = 'https://dataspace.demo.socrata.com/resource/snuk-a5kv.geojson?$query=' +
       'select ' + simplifiedGeom + ' ' +
       'where  {{\'the_geom\' column condition}}' +
       'group by ' + simplifiedGeom + ' ' +

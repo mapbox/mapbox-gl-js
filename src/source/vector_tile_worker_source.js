@@ -45,10 +45,11 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const options = params.options || {};
+    let request;
     if (options.geojsonTile === true) {
-        const request = loadGeojsonTileAsVectorTile(params, callback);
+        request = loadGeojsonTileAsVectorTile(params, callback);
     } else {
-        const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
+        request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
             if (err) {
                 callback(err);
             } else if (data) {
@@ -182,7 +183,7 @@ class VectorTileWorkerSource implements WorkerSource {
         }
     }
 
-    getClusterLeaves(params: {clusterId: number, limit: number, offset: number, canonicalTileID: CanonicalTileID}, callback: Callback<Array<GeoJSONFeature>>) {
+    getLeaves(params: {clusterId: number, limit: number, offset: number, canonicalTileID: CanonicalTileID}, callback: Callback<Array<GeoJSONFeature>>) {
         const workerTiles = values(this.loaded);
 
         const workerTile = workerTiles.filter((wt) => {
