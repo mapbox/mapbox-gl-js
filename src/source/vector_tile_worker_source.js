@@ -238,7 +238,7 @@ class VectorTileWorkerSource implements WorkerSource {
         }
     }
 
-    getClusterLeaves(params: {clusterId: number, limit: number, offset: number, coordinate: MercatorCoordinate}, callback: Callback<Array<GeoJSONFeature>>) {
+    getClusterLeaves(params: {clusterId: number, limit: number, offset: number, canonicalTileID: CanonicalTileID}, callback: Callback<Array<GeoJSONFeature>>) {
         const workerTiles = values(this.loaded);
 
         const workerTile = workerTiles.filter((wt) => {
@@ -248,9 +248,9 @@ class VectorTileWorkerSource implements WorkerSource {
             // So using workerTile's canonical x|y|z to find the workerTile involved in rendering
             // the coordinate.
             return wt.tileID && wt.tileID.canonical &&
-                wt.tileID.canonical.x === params.coordinate.column &&
-                wt.tileID.canonical.y === params.coordinate.row &&
-                wt.tileID.canonical.z === params.coordinate.zoom;
+                wt.tileID.canonical.x === params.canonicalTileID.x &&
+                wt.tileID.canonical.y === params.canonicalTileID.y &&
+                wt.tileID.canonical.z === params.canonicalTileID.z;
         })[0];
 
         if (!workerTile) {

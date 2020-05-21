@@ -84,21 +84,38 @@
       type: "symbol",
       'source': 'vectorDataSource',
       'source-layer': '_geojsonTileLayer',
-      'filter': ['all', ['has', 'point_count']],
       layout: {
-          "text-field": "{soql_count} | {" + AGGREGATE_BY_ALIAS + "}",
-          "text-size": 12
-      }
-    });
-
-    map.addLayer({
-      id: "cluster-singles",
-      type: "symbol",
-      'source': 'vectorDataSource',
-      'source-layer': '_geojsonTileLayer',
-      'filter': ['all', ['!has', 'point_count']],
-      layout: {
-          "text-field": "{soql_count} | {" + AGGREGATE_BY_ALIAS + "}",
+          "text-field": [
+              'let',
+              'i',
+              [
+                "case",
+                ['has', 'point_count'],
+                ['get', 'soql_count'],
+                ['to-number', ['get', 'soql_count']]
+              ],
+              [
+                "case",
+                // Condition 1
+                ['>=', ['var','i'], 10 * 1000],
+                // Value 1:
+                [
+                  'concat',
+                  ['round', ['/', ['var', 'i'], 1000]],
+                  'k'
+                ],
+                // Condition:
+                ['>=', ['var', 'i'], 1000],
+                // value:
+                [
+                  'concat',
+                  ['/', ['round', ['/', ['var', 'i'], 100]], 10],
+                  'k'
+                ],
+                // Default
+                [ 'concat', ['var', 'i'], '']
+              ]
+          ],
           "text-size": 12
       }
     });
@@ -120,13 +137,18 @@
 
       if (clickedOnFeatures.length > 0) {
         var mercatorCoordinate = map.transform.locationCoordinate(event.lngLat);
-        mercatorCoordinate.x = Math.floor(mercatorCoordinate.x);
-        mercatorCoordinate.y = Math.floor(mercatorCoordinate.y);
-        mercatorCoordinate.z = Math.floor(mercatorCoordinate.z);
+        var zoom = Math.floor(map.getZoom());
+        var totalTilesForZoom = Math.pow(2, zoom);
+        var canonicalTileId = {
+          x: Math.floor(mercatorCoordinate.x * totalTilesForZoom),
+          y: Math.floor(mercatorCoordinate.y * totalTilesForZoom),
+          z: zoom,
+        };
+        console.log(canonicalTileId);
         var clusterId = clickedOnFeatures[0].properties.cluster_id;
 
         map.getSource('vectorDataSource').getClusterLeaves(
-          mercatorCoordinate,
+          canonicalTileId,
           clusterId,
           1000,
           0,

@@ -39,8 +39,8 @@ function getSuperClusterIndex(data: any, options: VectorSourceSpecification, zoo
     // old tile of old zoom level shows on the map for the new zoom level.
     const superclusterOptions = getSuperclusterOptions({
         superclusterOptions: {
-            minZoom: zoom - 3,
-            maxZoom: zoom + 3,
+            minZoom: zoom,
+            maxZoom: zoom,
             extent: EXTENT,
             radius: (options.clusterRadius || 50) * scale,
             log: false
