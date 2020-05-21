@@ -93,6 +93,8 @@ function createStructArrayLayoutType({members, size, alignment}) {
 
     const key = `${members.map(m => `${m.components}${typeAbbreviations[m.type]}`).join('')}${size}`;
     const className = `StructArrayLayout${key}`;
+    // Layout alignment to 4 bytes boundaries can be an issue on some set of graphics cards. Particularly AMD.
+    if (size % 4 !== 0) { console.warn(`Warning: The layout ${className} is not aligned to 4-bytes boundaries.`); }
     if (!layoutCache[key]) {
         layoutCache[key] = {
             className,

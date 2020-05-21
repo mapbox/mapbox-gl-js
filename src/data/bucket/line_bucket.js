@@ -111,7 +111,7 @@ class LineBucket implements Bucket {
 
         this.layoutVertexArray = new LineLayoutArray();
         this.indexArray = new TriangleIndexArray();
-        this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
+        this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
         this.segments = new SegmentVector();
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);

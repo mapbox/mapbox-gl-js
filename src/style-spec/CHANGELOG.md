@@ -1,3 +1,8 @@
+## 13.14.0
+
+### ✨ Features and improvements
+* Add `index-of` and `slice` expressions to search arrays and strings for the first occurrence of a specified value and return a section of the original array or string ([#9450](https://github.com/mapbox/mapbox-gl-js/pull/9450)) (h/t [lbutler](https://github.com/lbutler))
+
 ## 13.13.1
 
 ### ✨ Features and improvements

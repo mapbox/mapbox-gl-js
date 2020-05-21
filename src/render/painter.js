@@ -662,7 +662,7 @@ class Painter {
         const key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}${this._showOverdrawInspector ? '/overdraw' : ''}
             ${terrain ? '/terrain' : ''}${rtt ? '/rtt' : ''}`;
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector, terrain, rtt);
+            this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector, terrain, rtt);
         }
         return this.cache[key];
     }

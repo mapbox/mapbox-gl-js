@@ -317,10 +317,10 @@ export class Transitioning<Props: Object> {
         this._values = (Object.create(properties.defaultTransitioningPropertyValues): any);
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters, availableImages?: Array<string>): PossiblyEvaluated<Props> {
+    possiblyEvaluate(parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): PossiblyEvaluated<Props> {
         const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
         for (const property of Object.keys(this._values)) {
-            result._values[property] = this._values[property].possiblyEvaluate(parameters, availableImages);
+            result._values[property] = this._values[property].possiblyEvaluate(parameters, canonical, availableImages);
         }
         return result;
     }
@@ -385,10 +385,10 @@ export class Layout<Props: Object> {
         return result;
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters, availableImages?: Array<string>): PossiblyEvaluated<Props> {
+    possiblyEvaluate(parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): PossiblyEvaluated<Props> {
         const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
         for (const property of Object.keys(this._values)) {
-            result._values[property] = this._values[property].possiblyEvaluate(parameters, availableImages);
+            result._values[property] = this._values[property].possiblyEvaluate(parameters, canonical, availableImages);
         }
         return result;
     }

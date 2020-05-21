@@ -1,3 +1,33 @@
+## 1.10.0
+
+### ✨ Features
+* Add `mapboxgl.prewarm()` and `mapboxgl.clearPrewarmedResources()` methods to allow developers to optimize load times for their maps ([#9391](https://github.com/mapbox/mapbox-gl-js/pull/9391))
+* Add `index-of` and `slice` expressions to search arrays and strings for the first occurrence of a specified value and return a section of the original array or string ([#9450](https://github.com/mapbox/mapbox-gl-js/pull/9450)) (h/t [lbutler](https://github.com/lbutler))
+* Correctly set RTL text plugin status if the plugin URL could not be loaded. This allows developers to add retry logic on network errors when loading the plugin ([#9489](https://github.com/mapbox/mapbox-gl-js/pull/9489))
+
+### 🍏 Gestures
+This release significantly refactors and improves gesture handling on desktop and mobile. Three new touch gestures have been added: `two-finger swipe` to adjust pitch, `two-finger double tap` to zoom out, and `tap then drag` to adjust zoom with one finger ([#9365](https://github.com/mapbox/mapbox-gl-js/pull/9365)). In addition, this release brings the following changes and bug fixes:
+
+- It's now possible to interact with multiple maps on the same page at the same time ([#9365](https://github.com/mapbox/mapbox-gl-js/pull/9365))
+- Fix map jump when releasing one finger after pinch zoom ([#9136](https://github.com/mapbox/mapbox-gl-js/issues/9136))
+- Stop mousedown and touchstart from interrupting `easeTo` animations when interaction handlers are disabled ([#8725](https://github.com/mapbox/mapbox-gl-js/issues/8725))
+- Stop mouse wheel from interrupting animations when `map.scrollZoom` is disabled ([#9230](https://github.com/mapbox/mapbox-gl-js/issues/9230))
+- A camera change can no longer be prevented by disabling the interaction handler within the camera change event. Selectively prevent camera changes by listening to the `mousedown` or `touchstart` map event and calling [.preventDefault()](https://docs.mapbox.com/mapbox-gl-js/api/#mapmouseevent#preventdefault) ([#9365](https://github.com/mapbox/mapbox-gl-js/pull/9365))
+- Undocumented properties on the camera change events fired by the doubleClickZoom handler have been removed ([#9365](https://github.com/mapbox/mapbox-gl-js/pull/9365))
+
+### 🐞 Improvements and bug fixes
+* Line labels now have improved collision detection, with greater precision in placement, reduced memory footprint, better placement under pitched camera orientations ([#9219](https://github.com/mapbox/mapbox-gl-js/pull/9219))
+* Fix `GlyphManager` continually re-requesting missing glyph ranges ([#8027](https://github.com/mapbox/mapbox-gl-js/issues/8027), fixed by [#9375](https://github.com/mapbox/mapbox-gl-js/pull/9375)) (h/t [oterral](https://github.com/oterral))
+* Avoid throwing errors when calling certain popup methods before the popup element is created ([#9433](https://github.com/mapbox/mapbox-gl-js/pull/9433))
+* Fix a bug where fill-extrusion features with colinear points were not returned by `map.queryRenderedFeatures(...)` ([#9454](https://github.com/mapbox/mapbox-gl-js/pull/9454))
+* Fix a bug where using feature state on a large input could cause a stack overflow error ([#9463](https://github.com/mapbox/mapbox-gl-js/pull/9463))
+* Fix exception when using `background-pattern` with data driven expressions ([#9518](https://github.com/mapbox/mapbox-gl-js/issues/9518), fixed by [#9520](https://github.com/mapbox/mapbox-gl-js/pull/9520))
+* Fix a bug where UI popups were potentially leaking event listeners ([#9498](https://github.com/mapbox/mapbox-gl-js/pull/9498)) (h/t [mbell697](https://github.com/mbell697))
+* Fix a bug where the `within` expression would return inconsistent values for points on tile boundaries ([#9411](https://github.com/mapbox/mapbox-gl-js/issues/9411), [#9428](https://github.com/mapbox/mapbox-gl-js/pull/9428))
+* Fix a bug where the `within` expression would incorrectly evaluate geometries that cross the antimeridian ([#9440](https://github.com/mapbox/mapbox-gl-js/pull/9440))
+* Fix possible undefined exception on paint variable of style layer ([#9437](https://github.com/mapbox/mapbox-gl-js/pull/9437)) (h/t [mannnick24](https://github.com/mannnick24))
+* Upgrade minimist to ^1.2.5 to get fix for security issue [CVE-2020-7598](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-7598) upstream ([#9425](https://github.com/mapbox/mapbox-gl-js/issues/9431), fixed by [#9425](https://github.com/mapbox/mapbox-gl-js/pull/9425)) (h/t [watson](https://github.com/watson))
+
 ## 1.9.1
 
 ### 🐞 Bug fixes
