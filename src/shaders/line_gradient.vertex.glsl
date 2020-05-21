@@ -12,6 +12,7 @@
 
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
+attribute float a_line_progress;
 
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
@@ -43,7 +44,7 @@ void main() {
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
 
-    v_lineprogress = (floor(a_data.z / 4.0) + a_data.w * 64.0) * 2.0 / MAX_LINE_DISTANCE;
+    v_lineprogress = a_line_progress != 0.0 ? a_line_progress : (floor(a_data.z / 4.0) + a_data.w * 64.0) * 2.0 / MAX_LINE_DISTANCE;
 
     vec2 pos = floor(a_pos_normal * 0.5);
 
