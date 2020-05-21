@@ -77,7 +77,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         } else if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
             context.activeTexture.set(gl.TEXTURE0);
             painter.lineAtlas.bind(context);
-        } else if (gradient) {
+        } else if (gradient && firstTile) {
             let gradientTexture = layer.gradientTexture;
             if (!gradientTexture) {
                 const sourceMaxZoom = sourceCache.getSource().maxzoom;
