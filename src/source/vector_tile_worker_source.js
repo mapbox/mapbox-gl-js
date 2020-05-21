@@ -1,11 +1,6 @@
 // @flow
-
-import geojsonToVectorTile from './geojson_to_vector_tile';
-import vtpbf from 'vt-pbf';
-import rewind from '@mapbox/geojson-rewind';
-import MercatorCoordinate from '../geo/mercator_coordinate';
-
-import { getJSON, getArrayBuffer } from '../util/ajax';
+import { loadGeojsonTileAsVectorTile } from './geojson_to_vector_tile';
+import { getArrayBuffer } from '../util/ajax';
 
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
@@ -48,75 +43,24 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
 /**
  * @private
  */
-
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const options = params.options || {};
     if (options.geojsonTile === true) {
-        return loadGeojsonTile(params, callback);
+        const request = loadGeojsonTileAsVectorTile(params, callback);
     } else {
-        return defaultLoadVectorTile(params, callback);
-    }
-}
-
-/**
- * Calls a tile endpoint that responds with geojson, clusters if required(options)
- * and converts the features into vt vector tile.
-*/
-function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const options = params.options || {};
-    const request = getJSON(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
-        if (err || !data) {
-            return callback(err);
-        } else if (typeof data !== 'object') {
-            return callback(new Error("Input data is not a valid GeoJSON object."));
-        } else {
-            rewind(data, true);
-
-            try {
-                const { geojsonWrappedVectorTile, geojsonIndex } = geojsonToVectorTile(
-                  data, options, params.tileSize, params.zoom, params.tileID
-                );
-
-                let pbf = vtpbf(geojsonWrappedVectorTile);
-                if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
-                    // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
-                    pbf = new Uint8Array(pbf);
-                }
+        const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
+            if (err) {
+                callback(err);
+            } else if (data) {
                 callback(null, {
-                    vectorTile: geojsonWrappedVectorTile,
-                    rawData: pbf.buffer,
+                    vectorTile: new vt.VectorTile(new Protobuf(data)),
+                    rawData: data,
                     cacheControl,
-                    expires,
-                    geojsonIndex: geojsonIndex
+                    expires
                 });
-            } catch (err) {
-                return callback(err);
             }
-        }
-    });
-
-    return () => {
-        request.cancel();
-        callback();
-    };
-}
-
-/**
- * Calls a tile endpoint that responds in pbf format, converts them vt vector tile.
-*/
-function defaultLoadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
-        if (err) {
-            callback(err);
-        } else if (data) {
-            callback(null, {
-                vectorTile: new vt.VectorTile(new Protobuf(data)),
-                rawData: data,
-                cacheControl,
-                expires
-            });
-        }
-    });
+        });
+    }
     return () => {
         request.cancel();
         callback();
