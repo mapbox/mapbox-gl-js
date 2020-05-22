@@ -455,10 +455,9 @@ class Transform {
         const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude];
         // Let's consider an example for !roundZoom: e.g. tileZoom 16 is used from zoom 16 all the way to zoom 16.99.
         // This would mean that the minimal distance to split would be based on distance from camera to center of 16.99 zoom.
-        // We use slightly longer split distance (0.55 would e.g. translate to zoom 16.8625) to get continuous
-        // number of tiles returned when zooming. The same is already incorporated in logic behind roundZoom
-        // for raster (so there is no adjustment needed in following line).
-        const zoomSplitDistance = this.cameraToCenterDistance / options.tileSize * (options.roundZoom ? 1 : 0.55);
+        // The same is already incorporated in logic behind roundZoom for raster (so there is no adjustment needed in following line).
+        // 0.02 added to compensate for precision errors, see "coveringTiles for terrain" test in transform.test.js.
+        const zoomSplitDistance = this.cameraToCenterDistance / options.tileSize * (options.roundZoom ? 1 : 0.502);
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         let minZoom = options.minzoom || 0;
@@ -507,6 +506,8 @@ class Transform {
                 aabb.center[2] = interpolate(aabb.min[2], aabb.max[2], 0.5);
             }
         };
+        const square = a => a * a;
+        const cameraHeightSqr = square(cameraAltitude * meterToTile); // in tile coordinates.
 
         if (this._renderWorldCopies) {
             // Render copy of the globe thrice on both sides
@@ -545,17 +546,26 @@ class Transform {
 
             const dx = it.aabb.distanceX(cameraPoint);
             const dy = it.aabb.distanceY(cameraPoint);
-            const zOffset = (cameraPoint[2] - it.aabb.center[2]) * meterToTile;
-            const zSqr = zOffset * zOffset;
-            const distanceSqr = dx * dx + dy * dy + zSqr;
+            const dzSqr = options.useElevationData ? square((cameraPoint[2] - it.aabb.center[2]) * meterToTile) : cameraHeightSqr;
+            const distanceSqr = dx * dx + dy * dy + dzSqr;
 
             const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance;
-            const distToSplitSqr = distanceSqr < 9 * zSqr && it.zoom >= maxZoom - 2 ? distToSplit * distToSplit :
-                // Steeper zoom cutoff the more the angle is obtuse.
-                Math.max(0.75 - 0.025 * distanceSqr / zSqr, 0.2) * distToSplit * distToSplit;
+
+            // Model camera to tile obtuse angle conditions:
+            const sineSqr = distanceSqr / Math.max(dzSqr, cameraHeightSqr); // reciprocal of sine.
+            // 1/3 is sine of 19.5 degrees. Apart from adjustment below, using lower zoom
+            // tiles when incident angle camera to tile is < 19.5, another consequence is that for pitch
+            // above 70.5 we don't try to keep center of map having nominal zoom level as the angle is obtuse.
+            const distSqrAdjust = sineSqr < 9 && it.zoom >= maxZoom - 2 ? distToSplit * distToSplit :
+                // Steeper zoom cutoff the more the angle is obtuse. Interpretation would be like this:
+                // if camera is one tile over ground, tile that is more than three tiles away could be
+                // of 1.1 x smaller resolution, the next one could be 1.1 of that tile and so on and, given the
+                // obtuse angles we would get similar presentation with much lower number of tiles needed.
+                // The scale also means less reloading of distant tiles when traversing map.
+                square(distToSplit / (1 + Math.pow(1.1, Math.sqrt(sineSqr) - 3) / 3));
 
             // Is the tile too far away to be any split further?
-            if (distanceSqr > distToSplitSqr && it.zoom >= minZoom) {
+            if (distanceSqr > distSqrAdjust && it.zoom >= minZoom) {
                 result.push({
                     tileID: it.tileID ? it.tileID : new OverscaledTileID(it.zoom, it.wrap, it.zoom, x, y),
                     distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x, centerPoint[1] - 0.5 - y])
