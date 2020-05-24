@@ -18,7 +18,6 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Point from '@mapbox/point-geometry';
-import {number as interpolate} from '../../style-spec/util/interpolate';
 import {clamp} from '../../util/util';
 
 import type {CanonicalTileID} from '../../source/tile_id';
@@ -52,97 +51,46 @@ function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     );
 }
 
-class ClampedCentroid {
+class Centroid {
     acc: [number, number];
-    clamp: [?number, ?number];
-    minIntersection: [number, number];
-    maxIntersection: [number, number];
+    invalid: ?boolean; // If building cuts tile borders, flat roofs are not done using this approach.
     min: [number, number];
     max: [number, number];
 
     constructor() {
         this.acc = [0, 0];
-        this.clamp = [undefined, undefined];
-        this.minIntersection = [2 * EXTENT, 2 * EXTENT];
-        this.maxIntersection = [-2 * EXTENT, -2 * EXTENT];
         this.min = [2 * EXTENT, 2 * EXTENT];
         this.max = [-2 * EXTENT, -2 * EXTENT];
     }
 
-    startRing(p: Point) {
-        const min = this.min, max = this.max, clamp = this.clamp;
-        if (p.x < min[0]) {
-            if (p.x <= 0) { clamp[0] = 0; }
-            min[0] = p.x;
-        }
-        if (p.x > max[0]) {
-            if (p.x >= EXTENT) { clamp[0] = EXTENT; }
-            max[0] = p.x;
-        }
-        if (p.y < min[1]) {
-            if (p.y <= 0) { clamp[1] = 0; }
-            min[1] = p.y;
-        }
-        if (p.y > max[1]) {
-            if (p.y >= EXTENT) { clamp[1] = EXTENT; }
-            max[1] = p.y;
-        }
-    }
-
     _appendComponent(i: 0 | 1, p: Point, prev: Point) {
         const a = i === 0 ? 'x' : 'y';
-        const b = i === 0 ? 'y' : 'x';
         const v = p[a];
-        const w = p[b];
-        const min = this.min, max = this.max, clamp = this.clamp;
-        if (clamp[i] === undefined) {
-            this.acc[i] += v;
-            if (v < min[i]) {
-                if (v <= 0) { clamp[i] = 0; }
-                min[i] = v;
-            } else if (v > max[i]) {
-                if (v >= EXTENT) { clamp[i] = EXTENT; }
-                max[i] = v;
-            }
+        const min = this.min, max = this.max;
+        this.acc[i] += v;
+        if (v < min[i]) {
+            if (v < 0) { return (this.invalid = true); }
+            min[i] = v;
+        } else if (v > max[i]) {
+            if (v > EXTENT) { return (this.invalid = true); }
+            max[i] = v;
         }
-        let intersection;
-        const prevv = prev[a];
-        if (clamp[i] !== undefined && (prevv <= 0) !== (v <= 0)) {
-            intersection = interpolate(prev[b], w, (0 - prevv) / (v - prevv));
-        } else if (clamp[i] !== undefined && (prevv >= EXTENT) !== (v >= EXTENT)) {
-            intersection = interpolate(prev[b], w, (EXTENT - prevv) / (v - prevv));
-        }
-        if (intersection) {
-            const j: 0 | 1 = i === 0 ? 1 : 0;
-            this.minIntersection[j] = Math.min(intersection, this.minIntersection[j]);
-            this.maxIntersection[j] = Math.max(intersection, this.maxIntersection[j]);
+        if ((v === 0 || v === EXTENT) && v === prev[a]) {
+            return (this.invalid = true); // Geojson buildings are often cut on border.
         }
     }
 
-    appendEdge(p: Point, prev: Point) {
+    append(p: Point, prev: Point) {
         this._appendComponent(0, p, prev);
         this._appendComponent(1, p, prev);
     }
 
     value(i: 0 | 1, count: number): number {
-        if (this.clamp[i] != null) { return this.clamp[i]; }
-        const v = Math.floor(this.acc[i] / count);
-        const j = 1 - i;
-        if (this.clamp[j] !== undefined) {
-            assert(this.minIntersection[i] < 2 * EXTENT);
-            assert(this.maxIntersection[i] > -2 * EXTENT);
-            return (this.minIntersection[i] + this.maxIntersection[i]) / 2;
-        }
-        return v;
+        return this.invalid ? 0 : Math.floor(this.acc[i] / count);
     }
 
     span(i: 0 | 1): number {
-        const j: 0 | 1 = i === 0 ? 1 : 0;
-        if (this.clamp[j] !== undefined) {
-            if (this.clamp[i] !== undefined) return 0;
-            return (this.maxIntersection[i] - this.minIntersection[i]);
-        }
-        return this.clamp[i] === undefined ? this.max[i] - this.min[i] : 0;
+        return this.invalid ? 0 : this.max[i] - this.min[i];
     }
 }
 
@@ -276,7 +224,7 @@ class FillExtrusionBucket implements Bucket {
         const flatRoof = feature.properties && feature.properties.hasOwnProperty('type') && feature.properties.hasOwnProperty('height') &&
             vectorTileFeatureTypes[feature.type] === 'Polygon';
 
-        const centroid = new ClampedCentroid();
+        const centroid = new Centroid();
         const polyCount = [];
 
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
@@ -300,7 +248,6 @@ class FillExtrusionBucket implements Bucket {
                 numVertices += ring.length;
 
                 let edgeDistance = 0;
-                if (flatRoof) centroid.startRing(ring[0]);
 
                 for (let p = 0; p < ring.length; p++) {
                     const p1 = ring[p];
@@ -309,7 +256,7 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
-                            if (flatRoof) centroid.appendEdge(p1, p2);
+                            if (flatRoof) centroid.append(p1, p2);
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                             }
@@ -403,17 +350,15 @@ class FillExtrusionBucket implements Bucket {
         if (flatRoof) {
             const count = polyCount.reduce((acc, p) => acc + p.edges, 0);
             if (count > 0) {
-                const toMeter = tileToMeter(canonical);
-                let xSpan = toMeter * centroid.span(0);
-                let ySpan = toMeter * centroid.span(1);
-                // When building is split between tiles, we don't cross reference building
-                // on both sides to reconcile size but use heuristics based on tile edge
-                // intersection length. Encode 10 meters multiplier in 3 bits.
-                if (xSpan === 0) { xSpan = ySpan === 0 ? 20 : ySpan * 2.0; }
-                if (ySpan === 0) { ySpan = xSpan === 0 ? 20 : xSpan * 2.0; }
-                const x = (clamp(centroid.value(0, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.round(xSpan / 10));
-                const y = (clamp(centroid.value(1, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.round(ySpan / 10));
-
+                // When building is split between tiles, don't use flat roofs.
+                let x = 0, y = 0;
+                if (!centroid.invalid) {
+                    const toMeter = tileToMeter(canonical);
+                    const xSpan = toMeter * centroid.span(0);
+                    const ySpan = toMeter * centroid.span(1);
+                    x = (clamp(centroid.value(0, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.round(xSpan / 10));
+                    y = (clamp(centroid.value(1, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.round(ySpan / 10));
+                }
                 for (const polyInfo of polyCount) {
                     appendRepeatedCentroids(polyInfo.edges * 2, 0, 0, x, y);
                     appendRepeatedCentroids(polyInfo.top, x, y);
@@ -434,13 +379,11 @@ function isBoundaryEdge(p1, p2) {
         (p1.y === p2.y && (p1.y < 0 || p1.y > EXTENT));
 }
 
-// If points are out or on tile border, don't render as it is rendered in
-// tile across the boundary.
 function isEntirelyOutside(ring) {
-    return ring.every(p => p.x <= 0) ||
-        ring.every(p => p.x >= EXTENT) ||
-        ring.every(p => p.y <= 0) ||
-        ring.every(p => p.y >= EXTENT);
+    return ring.every(p => p.x < 0) ||
+        ring.every(p => p.x > EXTENT) ||
+        ring.every(p => p.y < 0) ||
+        ring.every(p => p.y > EXTENT);
 }
 
 function tileToMeter(canonical: CanonicalTileID) {

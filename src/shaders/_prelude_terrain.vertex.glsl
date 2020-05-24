@@ -70,8 +70,6 @@ float flatElevation(vec2 pack, float height) {
     vec2 apos = floor(pack / 8.0);
     vec2 span = 10.0 * (pack - apos * 8.0);
 
-    apos.x = apos.x == 8191.0 ? 8192.0 : apos.x; 
-    apos.y = apos.y == 8191.0 ? 8192.0 : apos.y; 
     vec2 uvTex = apos / 8192.0;
     float size = u_dem_size + 2.0;
     float dd = 1.0 / size;
