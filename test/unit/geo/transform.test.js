@@ -3,7 +3,11 @@ import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';
 import {OverscaledTileID, CanonicalTileID} from '../../../src/source/tile_id';
-import {fixedLngLat, fixedCoord} from '../../util/fixed';
+import {fixedNum, fixedLngLat, fixedCoord, fixedPoint, fixedVec3, fixedVec4} from '../../util/fixed';
+import {FreeCameraOptions} from '../../../src/ui/free_camera';
+import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
+import {vec3, quat} from 'gl-matrix';
+import LngLatBounds from '../../../src/geo/lng_lat_bounds';
 
 test('transform', (t) => {
 
@@ -37,7 +41,7 @@ test('transform', (t) => {
         t.equal(transform.height, 500);
         t.deepEqual(fixedLngLat(transform.pointLocation(new Point(250, 250))), {lng: 0, lat: 0});
         t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), {x: 0.5, y: 0.5, z: 0});
-        t.deepEqual(transform.locationPoint(new LngLat(0, 0)), {x: 250, y: 250});
+        t.deepEqual(fixedPoint(transform.locationPoint(new LngLat(0, 0))), {x: 250, y: 250});
         t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), {x: 0.5, y: 0.5, z: 0});
         t.end();
     });
@@ -411,6 +415,239 @@ test('transform', (t) => {
             t.false(transform.isHorizonVisible());
             transform.renderWorldCopies = false;
             t.true(transform.isHorizonVisible());
+
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('freeCamera', (t) => {
+        const rotatedFrame = (quaternion) => {
+            return {
+                up: vec3.transformQuat([], [0, -1, 0], quaternion),
+                forward: vec3.transformQuat([], [0, 0, -1], quaternion),
+                right: vec3.transformQuat([], [1, 0, 0], quaternion)
+            };
+        };
+
+        t.test('invalid height', (t) => {
+            const transform = new Transform();
+            const options = new FreeCameraOptions();
+
+            options.orientation = [1, 1, 1, 1];
+            options.position = new MercatorCoordinate(0.1, 0.2, 0.3);
+            transform.setFreeCameraOptions(options);
+
+            const updatedOrientation = transform.getFreeCameraOptions().orientation;
+            const updatedPosition = transform.getFreeCameraOptions().position;
+
+            // Expect default state as height is invalid
+            t.deepEqual(updatedOrientation, [0, 0, 0, 1]);
+            t.deepEqual(updatedPosition, new MercatorCoordinate(0, 0, 0));
+            t.end();
+        });
+
+        t.test('invalid z', (t) => {
+            const transform = new Transform();
+            transform.resize(100, 100);
+            const options = new FreeCameraOptions();
+
+            // Invalid z-value (<= 0.0 || > 1) should be clamped to respect both min & max zoom values
+            options.position = new MercatorCoordinate(0.1, 0.1, 0.0);
+            transform.setFreeCameraOptions(options);
+            t.equal(transform.zoom, transform.maxZoom);
+            t.true(transform.getFreeCameraOptions().position.z > 0.0);
+
+            options.position = new MercatorCoordinate(0.5, 0.2, 123.456);
+            transform.setFreeCameraOptions(options);
+            t.equal(transform.zoom, transform.minZoom);
+            t.true(transform.getFreeCameraOptions().position.z <= 1.0);
+
+            t.end();
+        });
+
+        t.test('orientation', (t) => {
+            const transform = new Transform();
+            transform.resize(100, 100);
+            const options = new FreeCameraOptions();
+
+            // Default orientation
+            options.orientation = [0, 0, 0, 1];
+            transform.setFreeCameraOptions(options);
+            t.equal(transform.bearing, 0);
+            t.equal(transform.pitch, 0);
+            t.deepEqual(transform.center, new LngLat(0, 0));
+
+            // 60 pitch
+            options.orientation = [0, 0, 0, 1];
+            quat.rotateX(options.orientation, options.orientation, -60.0 * Math.PI / 180.0);
+            transform.setFreeCameraOptions(options);
+            t.equal(transform.bearing, 0.0);
+            t.equal(transform.pitch, 60.0);
+            t.deepEqual(fixedPoint(transform.point, 5), new Point(256, 50));
+
+            // 56 bearing
+            options.orientation = [0, 0, 0, 1];
+            quat.rotateZ(options.orientation, options.orientation, 56.0 * Math.PI / 180.0);
+            transform.setFreeCameraOptions(options);
+            t.equal(fixedNum(transform.bearing), 56.0);
+            t.equal(fixedNum(transform.pitch), 0.0);
+            t.deepEqual(fixedPoint(transform.point, 5), new Point(512, 359.80761));
+
+            // 30 pitch and -179 bearing
+            options.orientation = [0, 0, 0, 1];
+            quat.rotateZ(options.orientation, options.orientation, -179.0 * Math.PI / 180.0);
+            quat.rotateX(options.orientation, options.orientation, -30.0 * Math.PI / 180.0);
+            transform.setFreeCameraOptions(options);
+            t.equal(fixedNum(transform.bearing), -179.0);
+            t.equal(fixedNum(transform.pitch), 30.0);
+            t.deepEqual(fixedPoint(transform.point, 5), new Point(442.09608, 386.59111));
+
+            t.end();
+        });
+
+        t.test('invalid orientation', (t) => {
+            const transform = new Transform();
+            transform.resize(100, 100);
+            const options = new FreeCameraOptions();
+
+            // Zero length quaternion
+            options.orientation = [0, 0, 0, 0];
+            transform.setFreeCameraOptions(options);
+            t.deepEqual(transform.getFreeCameraOptions().orientation, [0, 0, 0, 1]);
+
+            // up vector is on the xy-plane. Right vector can't be computed
+            options.orientation = [0, 0, 0, 1];
+            quat.rotateY(options.orientation, options.orientation, Math.PI * 0.5);
+            transform.setFreeCameraOptions(options);
+            t.deepEqual(transform.getFreeCameraOptions().orientation, [0, 0, 0, 1]);
+
+            // Camera is upside down
+            options.orientation = [0, 0, 0, 1];
+            quat.rotateX(options.orientation, options.orientation, Math.PI * 0.75);
+            transform.setFreeCameraOptions(options);
+            t.deepEqual(transform.getFreeCameraOptions().orientation, [0, 0, 0, 1]);
+
+            t.end();
+        });
+
+        t.test('clamp pitch', (t) => {
+            const transform = new Transform();
+            transform.resize(100, 100);
+            const options = new FreeCameraOptions();
+            let frame = null;
+
+            options.orientation = [0, 0, 0, 1];
+            quat.rotateX(options.orientation, options.orientation, -85.0 * Math.PI / 180.0);
+            transform.setFreeCameraOptions(options);
+            t.equal(transform.pitch, transform.maxPitch);
+            frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
+
+            t.deepEqual(fixedVec3(frame.right, 5), [1, 0, 0]);
+            t.deepEqual(fixedVec3(frame.up, 5), [0, -0.5, 0.86603]);
+            t.deepEqual(fixedVec3(frame.forward, 5), [0, -0.86603, -0.5]);
+
+            t.end();
+        });
+
+        t.test('clamp to bounds', (t) => {
+            const transform = new Transform();
+            transform.resize(100, 100);
+            transform.setMaxBounds(new LngLatBounds(new LngLat(-180, -transform.maxValidLatitude), new LngLat(180, transform.maxValidLatitude)));
+            transform.zoom = 8.56;
+            const options = new FreeCameraOptions();
+
+            // Place the camera to an arbitrary position looking away from the map
+            options.position = new MercatorCoordinate(-100.0, -10000.0, 1000.0);
+            options.orientation = quat.rotateX([], [0, 0, 0, 1], -45.0 * Math.PI / 180.0);
+            transform.setFreeCameraOptions(options);
+
+            t.deepEqual(fixedPoint(transform.point, 5), new Point(50, 50));
+            t.equal(fixedNum(transform.bearing), 0.0);
+            t.equal(fixedNum(transform.pitch), 45.0);
+
+            t.end();
+        });
+
+        t.test('invalid state', (t) => {
+            const transform = new Transform();
+
+            t.equal(transform.pitch, 0);
+            t.equal(transform.bearing, 0);
+            t.deepEqual(transform.point, new Point(256, 256));
+
+            t.deepEqual(transform.getFreeCameraOptions().position, new MercatorCoordinate(0, 0, 0));
+            t.deepEqual(transform.getFreeCameraOptions().orientation, [0, 0, 0, 1]);
+
+            t.end();
+        });
+
+        t.test('orientation roll', (t) => {
+            const transform = new Transform();
+            transform.resize(100, 100);
+            let options = new FreeCameraOptions();
+
+            const orientationWithoutRoll = quat.rotateX([], [0, 0, 0, 1], -Math.PI / 4);
+            const orientationWithRoll = quat.rotateZ([], orientationWithoutRoll, Math.PI / 4);
+
+            options.orientation = orientationWithRoll;
+            transform.setFreeCameraOptions(options);
+            options = transform.getFreeCameraOptions();
+
+            t.deepEqual(fixedVec4(options.orientation, 5), fixedVec4(orientationWithoutRoll, 5));
+            t.equal(fixedNum(transform.pitch), 45.0);
+            t.equal(fixedNum(transform.bearing), 0.0);
+            t.deepEqual(fixedPoint(transform.point), new Point(256, 106));
+
+            t.end();
+        });
+
+        t.test('state synchronization', (t) => {
+            const transform = new Transform();
+            transform.resize(100, 100);
+            let frame = null;
+
+            transform.pitch = 0.0;
+            transform.bearing = 0.0;
+            frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
+            t.deepEqual(transform.getFreeCameraOptions().position, new MercatorCoordinate(0.5, 0.5, 0.29296875));
+            t.deepEqual(frame.right, [1, 0, 0]);
+            t.deepEqual(frame.up, [0, -1, 0]);
+            t.deepEqual(frame.forward, [0, 0, -1]);
+
+            transform.center = new LngLat(24.9384, 60.1699);
+            t.deepEqual(fixedCoord(transform.getFreeCameraOptions().position, 5), new MercatorCoordinate(0.56927, 0.28945, 0.29297));
+
+            transform.center = new LngLat(20, -20);
+            transform.pitch = 20;
+            transform.bearing = 77;
+            t.deepEqual(fixedCoord(transform.getFreeCameraOptions().position, 5), new MercatorCoordinate(0.45792, 0.57926, 0.27530));
+
+            transform.pitch = 0;
+            transform.bearing = 90;
+            frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
+            t.deepEqual(fixedVec3(frame.right), [0, 1, 0]);
+            t.deepEqual(fixedVec3(frame.up), [1, 0, 0]);
+            t.deepEqual(fixedVec3(frame.forward), [0, 0, -1]);
+
+            // Invalid pitch
+            transform.bearing = 0;
+            transform.pitch = -10;
+            frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
+            t.deepEqual(fixedCoord(transform.getFreeCameraOptions().position, 5), new MercatorCoordinate(0.55556, 0.55672, 0.29297));
+            t.deepEqual(frame.right, [1, 0, 0]);
+            t.deepEqual(frame.up, [0, -1, 0]);
+            t.deepEqual(frame.forward, [0, 0, -1]);
+
+            transform.bearing = 0;
+            transform.pitch = 85;
+            transform.center = new LngLat(0, -80);
+            frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
+            t.deepEqual(fixedCoord(transform.getFreeCameraOptions().position, 5), new MercatorCoordinate(0.5, 1.14146, 0.14648));
+            t.deepEqual(fixedVec3(frame.right, 5), [1, 0, 0]);
+            t.deepEqual(fixedVec3(frame.up, 5), [0, -0.5, 0.86603]);
+            t.deepEqual(fixedVec3(frame.forward, 5), [0, -0.86603, -0.5]);
 
             t.end();
         });

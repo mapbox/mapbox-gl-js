@@ -18,6 +18,7 @@ import {Event, Evented} from '../util/evented';
 import assert from 'assert';
 import {Debug} from '../util/debug';
 
+import type {FreeCameraOptions} from './free_camera';
 import type Transform from '../geo/transform';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
@@ -763,6 +764,78 @@ class Camera extends Evented {
 
     /**
      * Changes any combination of `center`, `zoom`, `bearing`, `pitch`, and `padding` with an animated transition
+     * Returns position and orientation of the camera entity.
+     *
+     * @memberof Map#
+     * @returns {FreeCameraOptions} The camera state
+     */
+    getFreeCameraOptions(): FreeCameraOptions {
+        return this.transform.getFreeCameraOptions();
+    }
+
+    /**
+     * FreeCameraOptions provides more direct access to the underlying camera entity.
+     * For backwards compatibility the state set using this API must be representable with
+     * `CameraOptions` as well. Parameters are clamped into a valid range or discarded as invalid
+     * if the conversion to the pitch and bearing presentation is ambiguous. For example orientation
+     * can be invalid if it leads to the camera being upside down or the quaternion has zero length.
+     *
+     * @memberof Map#
+     * @param {FreeCameraOptions} options FreeCameraOptions object
+     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @fires movestart
+     * @fires zoomstart
+     * @fires pitchstart
+     * @fires rotate
+     * @fires move
+     * @fires zoom
+     * @fires pitch
+     * @fires moveend
+     * @fires zoomend
+     * @fires pitchend
+     * @returns {Map} `this`
+     */
+    setFreeCameraOptions(options: FreeCameraOptions, eventData?: Object) {
+        this.stop();
+
+        const tr = this.transform;
+        const prevZoom = tr.zoom;
+        const prevPitch = tr.pitch;
+        const prevBearing = tr.bearing;
+
+        tr.setFreeCameraOptions(options);
+
+        const zoomChanged = prevZoom !== tr.zoom;
+        const pitchChanged = prevPitch !== tr.pitch;
+        const bearingChanged = prevBearing !== tr.bearing;
+
+        this.fire(new Event('movestart', eventData))
+            .fire(new Event('move', eventData));
+
+        if (zoomChanged) {
+            this.fire(new Event('zoomstart', eventData))
+                .fire(new Event('zoom', eventData))
+                .fire(new Event('zoomend', eventData));
+        }
+
+        if (bearingChanged) {
+            this.fire(new Event('rotatestart', eventData))
+                .fire(new Event('rotate', eventData))
+                .fire(new Event('rotateend', eventData));
+        }
+
+        if (pitchChanged) {
+            this.fire(new Event('pitchstart', eventData))
+                .fire(new Event('pitch', eventData))
+                .fire(new Event('pitchend', eventData));
+        }
+
+        this.fire(new Event('moveend', eventData));
+        return this;
+    }
+
+    /**
+     * Changes any combination of center, zoom, bearing, pitch, and padding with an animated transition
      * between old and new values. The map will retain its current values for any
      * details not specified in `options`.
      *
