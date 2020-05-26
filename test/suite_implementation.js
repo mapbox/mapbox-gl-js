@@ -8,6 +8,8 @@ import rtlText from '@mapbox/mapbox-gl-rtl-text';
 import fs from 'fs';
 import path from 'path';
 import customLayerImplementations from './integration/custom_layer_implementations';
+import MercatorCoordinate from '../src/geo/mercator_coordinate';
+import LngLat from '../src/geo/lng_lat';
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
@@ -180,6 +182,19 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             applyOperations(map, operations.slice(1), callback);
         } else if (operation[0] === 'pauseSource') {
             map.style.sourceCaches[operation[1]].pause();
+            applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'setCameraPosition') {
+            const options = map.getFreeCameraOptions();
+            const location = operation[1];  // lng, lat, altitude
+            options.position = MercatorCoordinate.fromLngLat(new LngLat(location[0], location[1]), location[2]);
+            map.setFreeCameraOptions(options);
+            applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'lookAtPoint') {
+            const options = map.getFreeCameraOptions();
+            const location = operation[1];
+            const upVector = operation[2];
+            options.lookAtPoint(new LngLat(location[0], location[1]), upVector);
+            map.setFreeCameraOptions(options);
             applyOperations(map, operations.slice(1), callback);
         } else {
             if (typeof map[operation[0]] === 'function') {

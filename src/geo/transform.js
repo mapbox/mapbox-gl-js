@@ -7,9 +7,10 @@ import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
-import {vec4, mat4, mat2, vec2} from 'gl-matrix';
+import {vec4, mat4, mat2, vec2, vec3, quat} from 'gl-matrix';
 import {Aabb, Frustum} from '../util/primitives.js';
 import EdgeInsets from './edge_insets';
+import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
 
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 import type {Elevation} from '../terrain/elevation';
@@ -63,6 +64,7 @@ class Transform {
     _constraining: boolean;
     _posMatrixCache: {[_: string]: Float32Array};
     _alignedPosMatrixCache: {[_: string]: Float32Array};
+    _camera: FreeCamera;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
@@ -88,6 +90,7 @@ class Transform {
         this._edgeInsets = new EdgeInsets();
         this._posMatrixCache = {};
         this._alignedPosMatrixCache = {};
+        this._camera = new FreeCamera();
         this._elevationAtCenter = 0;
     }
 
@@ -106,6 +109,7 @@ class Transform {
         clone._pitch = this._pitch;
         clone._unmodified = this._unmodified;
         clone._edgeInsets = this._edgeInsets.clone();
+        clone._camera = this._camera.clone();
         clone._calcMatrices();
         return clone;
     }
@@ -242,6 +246,78 @@ class Transform {
         //Update edge-insets inplace
         this._edgeInsets.interpolate(this._edgeInsets, padding, 1);
         this._calcMatrices();
+    }
+
+    setFreeCameraOptions(options: FreeCameraOptions) {
+        if (!this.height)
+            return;
+
+        if (!options.position && !options.orientation)
+            return;
+
+        // Camera state must be up-to-date before accessing its getters
+        this._updateCameraState();
+
+        let changed = false;
+        if (options.orientation && !quat.exactEquals(options.orientation, this._camera.orientation)) {
+            changed = this._setCameraOrientation(options.orientation);
+        }
+
+        if (options.position) {
+            const newPosition = [options.position.x, options.position.y, options.position.z];
+            if (!vec3.exactEquals(newPosition, this._camera.position)) {
+                this._setCameraPosition(newPosition);
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            this._updateStateFromCamera();
+            this._calcMatrices();
+        }
+    }
+
+    getFreeCameraOptions(): FreeCameraOptions {
+        this._updateCameraState();
+        const pos = this._camera.position;
+        const options = new FreeCameraOptions();
+        options.position = new MercatorCoordinate(pos[0], pos[1], pos[2]);
+        options.orientation = this._camera.orientation;
+
+        return options;
+    }
+
+    _setCameraOrientation(orientation: quat): boolean {
+        // zero-length quaternions are not valid
+        if (!quat.length(orientation))
+            return false;
+
+        quat.normalize(orientation, orientation);
+
+        // The new orientation must be sanitized by making sure it can be represented
+        // with a pitch and bearing. Roll-component must be removed and the camera can't be upside down
+        const forward = vec3.transformQuat([], [0, 0, -1], orientation);
+        const up = vec3.transformQuat([], [0, -1, 0], orientation);
+
+        if (up[2] < 0.0)
+            return false;
+
+        const updatedOrientation = orientationFromFrame(forward, up);
+        if (!updatedOrientation)
+            return false;
+
+        this._camera.orientation = updatedOrientation;
+        return true;
+    }
+
+    _setCameraPosition(position: vec3) {
+        // Altitude must be clamped to respect min and max zoom
+        const minWorldSize = this.zoomScale(this.minZoom) * this.tileSize;
+        const maxWorldSize = this.zoomScale(this.maxZoom) * this.tileSize;
+        const distToCenter = this.cameraToCenterDistance;
+
+        position[2] = clamp(position[2], distToCenter / maxWorldSize, distToCenter / minWorldSize);
+        this._camera.position = position;
     }
 
     /**
@@ -774,26 +850,20 @@ class Transform {
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         const nearZ = this.height / 50;
 
-        // matrix for conversion from location to GL coordinates (-1 .. 1)
-        let m = new Float64Array(16);
-        mat4.perspective(m, this._fov, this.width / this.height, nearZ, farZ);
+        this._updateCameraState();
 
-        //Apply center of perspective offset
-        m[8] = -offset.x * 2 / this.width;
-        m[9] = offset.y * 2 / this.height;
+        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
+        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
 
-        mat4.scale(m, m, [1, -1, 1]);
-        mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
-        mat4.rotateX(m, m, this._pitch);
-        mat4.rotateZ(m, m, this.angle);
-        mat4.translate(m, m, [-x, -y, 0]);
+        // Apply center of perspective offset
+        cameraToClip[8] = -offset.x * 2 / this.width;
+        cameraToClip[9] = offset.y * 2 / this.height;
+
+        let m = mat4.mul([], cameraToClip, worldToCamera);
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
         // ([0, 0] nw, [1, 1] se) to GL coordinates.
-        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize]);
-
-        // scale vertically to meters per pixel (inverse of ground resolution):
-        mat4.scale(m, m, [1, 1, pixelsPerMeter, 1]);
+        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter]);
 
         let projMatrixBase = m;
         if (elevationAtCenter) {
@@ -847,6 +917,40 @@ class Transform {
 
         this._posMatrixCache = {};
         this._alignedPosMatrixCache = {};
+    }
+
+    _updateCameraState() {
+        if (!this.height) return;
+
+        // Set camera orientation and move it to a proper distance from the map
+        this._camera.setPitchBearing(this._pitch, this.angle);
+
+        const dir = this._camera.forward();
+        const distance = this.cameraToCenterDistance;
+        const center = this.point;
+
+        this._camera.position = [
+            (center.x - dir[0] * distance) / this.worldSize,
+            (center.y - dir[1] * distance) / this.worldSize,
+            (-dir[2] * distance) / this.worldSize
+        ];
+    }
+
+    _updateStateFromCamera() {
+        const position = this._camera.position;
+        const dir = this._camera.forward();
+        const {pitch, bearing} = this._camera.getPitchBearing();
+
+        // Compute zoom level from the camera altitude
+        const zoom = Math.log2(this.cameraToCenterDistance / (position[2] / Math.cos(pitch) * this.tileSize));
+        vec3.scaleAndAdd(position, position, dir, -position[2] / dir[2]);
+
+        // The internal representation of bearing (`angle`) has an opposite direction of the public one.
+        // The new bearing value has to be negated as it's set through the public function
+        this.pitch = radToDeg(pitch);
+        this.bearing = radToDeg(-bearing);
+        this.zoom = zoom;
+        this.center = new MercatorCoordinate(position[0], position[1], position[2]).toLngLat();
     }
 
     maxPitchScaleFactor() {
