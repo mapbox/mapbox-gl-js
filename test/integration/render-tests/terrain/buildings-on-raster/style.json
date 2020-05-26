@@ -112,7 +112,7 @@
       "source": "geojson",
       "paint": {
         "fill-extrusion-opacity": 0.5,
-        "fill-extrusion-height": 30,
+        "fill-extrusion-height": 20,
         "fill-extrusion-color": "red"
       }
     }

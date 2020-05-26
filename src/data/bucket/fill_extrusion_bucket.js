@@ -18,7 +18,6 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Point from '@mapbox/point-geometry';
-import {clamp} from '../../util/util';
 
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {
@@ -52,45 +51,47 @@ function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
 }
 
 class Centroid {
-    acc: [number, number];
+    acc: Point;
     invalid: ?boolean; // If building cuts tile borders, flat roofs are not done using this approach.
-    min: [number, number];
-    max: [number, number];
+    min: Point;
+    max: Point;
 
     constructor() {
-        this.acc = [0, 0];
-        this.min = [2 * EXTENT, 2 * EXTENT];
-        this.max = [-2 * EXTENT, -2 * EXTENT];
-    }
-
-    _appendComponent(i: 0 | 1, p: Point, prev: Point) {
-        const a = i === 0 ? 'x' : 'y';
-        const v = p[a];
-        const min = this.min, max = this.max;
-        this.acc[i] += v;
-        if (v < min[i]) {
-            if (v < 0) { return (this.invalid = true); }
-            min[i] = v;
-        } else if (v > max[i]) {
-            if (v > EXTENT) { return (this.invalid = true); }
-            max[i] = v;
-        }
-        if ((v === 0 || v === EXTENT) && v === prev[a]) {
-            return (this.invalid = true); // Geojson buildings are often cut on border.
-        }
+        this.acc = new Point(0, 0);
+        this.min = new Point(EXTENT, EXTENT);
+        this.max = new Point(-EXTENT, -EXTENT);
     }
 
     append(p: Point, prev: Point) {
-        this._appendComponent(0, p, prev);
-        this._appendComponent(1, p, prev);
+        this.acc._add(p);
+        const min = this.min, max = this.max;
+        if (p.x < min.x) {
+            if (p.x < 0) { return (this.invalid = true); }
+            min.x = p.x;
+        } else if (p.x > max.x) {
+            if (p.x > EXTENT) { return (this.invalid = true); }
+            max.x = p.x;
+        }
+        if (p.y < min.y) {
+            if (p.y < 0) { return (this.invalid = true); }
+            min.y = p.y;
+        } else if (p.y > max.y) {
+            if (p.y > EXTENT) { return (this.invalid = true); }
+            max.y = p.y;
+        }
+        if (((p.x === 0 || p.x === EXTENT) && p.x === prev.x) || ((p.y === 0 || p.y === EXTENT) && p.y === prev.y)) {
+            // Custom defined geojson buildings are cut on borders. Don't use centroid
+            // flat roof technique.
+            return (this.invalid = true);
+        }
     }
 
-    value(i: 0 | 1, count: number): number {
-        return this.invalid ? 0 : Math.floor(this.acc[i] / count);
+    value(count: number): Point {
+        return this.acc.div(count)._round();
     }
 
-    span(i: 0 | 1): number {
-        return this.invalid ? 0 : this.max[i] - this.min[i];
+    span(): Point {
+        return this.max.sub(this.min);
     }
 }
 
@@ -98,6 +99,7 @@ class FillExtrusionBucket implements Bucket {
     index: number;
     zoom: number;
     overscaling: number;
+    enableTerrain: boolean;
     layers: Array<FillExtrusionStyleLayer>;
     layerIds: Array<string>;
     stateDependentLayers: Array<FillExtrusionStyleLayer>;
@@ -132,7 +134,7 @@ class FillExtrusionBucket implements Bucket {
         this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
         this.segments = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
-
+        this.enableTerrain = options.enableTerrain;
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
@@ -221,8 +223,8 @@ class FillExtrusionBucket implements Bucket {
                 if (x1 != null && y1 != null) this.centroidVertexArray.emplaceBack(x1, y1);
             }
         };
-        const flatRoof = feature.properties && feature.properties.hasOwnProperty('type') && feature.properties.hasOwnProperty('height') &&
-            vectorTileFeatureTypes[feature.type] === 'Polygon';
+        const flatRoof = this.enableTerrain && feature.properties && feature.properties.hasOwnProperty('type') &&
+            feature.properties.hasOwnProperty('height') && vectorTileFeatureTypes[feature.type] === 'Polygon';
 
         const centroid = new Centroid();
         const polyCount = [];
@@ -354,10 +356,10 @@ class FillExtrusionBucket implements Bucket {
                 let x = 0, y = 0;
                 if (!centroid.invalid) {
                     const toMeter = tileToMeter(canonical);
-                    const xSpan = toMeter * centroid.span(0);
-                    const ySpan = toMeter * centroid.span(1);
-                    x = (clamp(centroid.value(0, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.round(xSpan / 10));
-                    y = (clamp(centroid.value(1, count), 1, EXTENT - 1) << 3) + Math.min(7, Math.round(ySpan / 10));
+                    const span = centroid.span()._mult(toMeter);
+                    const c = centroid.value(count);
+                    x = (Math.max(c.x, 1) << 3) + Math.min(7, Math.round(span.x / 10));
+                    y = (Math.max(c.y, 1) << 3) + Math.min(7, Math.round(span.y / 10));
                 }
                 for (const polyInfo of polyCount) {
                     appendRepeatedCentroids(polyInfo.edges * 2, 0, 0, x, y);

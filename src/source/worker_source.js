@@ -30,7 +30,8 @@ export type WorkerTileParameters = TileParameters & {
     pixelRatio: number,
     showCollisionBoxes: boolean,
     collectResourceTiming?: boolean,
-    returnDependencies?: boolean
+    returnDependencies?: boolean,
+    enableTerrain?: boolean
 };
 
 export type WorkerDEMTileParameters = TileParameters & {

@@ -40,6 +40,7 @@ class WorkerTile {
     showCollisionBoxes: boolean;
     collectResourceTiming: boolean;
     returnDependencies: boolean;
+    enableTerrain: boolean;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -61,6 +62,7 @@ class WorkerTile {
         this.collectResourceTiming = !!params.collectResourceTiming;
         this.returnDependencies = !!params.returnDependencies;
         this.promoteId = params.promoteId;
+        this.enableTerrain = !!params.enableTerrain;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
@@ -121,7 +123,8 @@ class WorkerTile {
                     overscaling: this.overscaling,
                     collisionBoxArray: this.collisionBoxArray,
                     sourceLayerIndex,
-                    sourceID: this.source
+                    sourceID: this.source,
+                    enableTerrain: this.enableTerrain
                 });
 
                 bucket.populate(features, options, this.tileID.canonical);

@@ -9,6 +9,7 @@ import GeoJSONWorkerSource from './geojson_worker_source';
 import assert from 'assert';
 import {plugin as globalRTLTextPlugin} from './rtl_text_plugin';
 import {enforceCacheSizeLimit} from '../util/tile_request_cache';
+import {extend} from '../util/util';
 
 import type {
     WorkerSource,
@@ -36,6 +37,7 @@ export default class Worker {
     workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
     demWorkerSources: {[_: string]: {[_: string]: RasterDEMTileWorkerSource } };
     referrer: ?string;
+    terrain: ?boolean;
 
     constructor(self: WorkerGlobalScopeInterface) {
         this.self = self;
@@ -86,6 +88,11 @@ export default class Worker {
         callback();
     }
 
+    enableTerrain(mapId: string, enable: boolean, callback: WorkerTileCallback) {
+        this.terrain = enable;
+        callback();
+    }
+
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
         this.getLayerIndex(mapId).replace(layers);
         callback();
@@ -98,7 +105,8 @@ export default class Worker {
 
     loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type, params.source).loadTile(params, callback);
+        const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
+        this.getWorkerSource(mapId, params.type, params.source).loadTile(p, callback);
     }
 
     loadDEMTile(mapId: string, params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
@@ -107,7 +115,8 @@ export default class Worker {
 
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type, params.source).reloadTile(params, callback);
+        const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
+        this.getWorkerSource(mapId, params.type, params.source).reloadTile(p, callback);
     }
 
     abortTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {

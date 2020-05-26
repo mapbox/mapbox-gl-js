@@ -74,7 +74,7 @@ float flatElevation(vec2 pack, float height) {
     float size = u_dem_size + 2.0;
     float dd = 1.0 / size;
 
-    vec2 pos = u_dem_size * (uvTex * u_dem_scale + u_dem_tl) + 0.5;
+    vec2 pos = u_dem_size * (uvTex * u_dem_scale + u_dem_tl) + 1.0;
     vec2 f = fract(pos);
     pos = (pos - f + 0.5) * dd;
 
