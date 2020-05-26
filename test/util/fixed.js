@@ -20,3 +20,30 @@ export function fixedCoord(coord, precision) {
         z: fixedNum(coord.z, precision)
     };
 }
+
+export function fixedPoint(point, precision) {
+    if (precision === undefined) precision = 10;
+    return {
+        x: fixedNum(point.x, precision),
+        y: fixedNum(point.y, precision)
+    };
+}
+
+export function fixedVec3(vec, precision) {
+    if (precision === undefined) precision = 10;
+    return [
+        fixedNum(vec[0], precision),
+        fixedNum(vec[1], precision),
+        fixedNum(vec[2], precision)
+    ];
+}
+
+export function fixedVec4(vec, precision) {
+    if (precision === undefined) precision = 10;
+    return [
+        fixedNum(vec[0], precision),
+        fixedNum(vec[1], precision),
+        fixedNum(vec[2], precision),
+        fixedNum(vec[3], precision)
+    ];
+}

@@ -26,6 +26,7 @@ import WorkerPool from './util/worker_pool';
 import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
 import {PerformanceUtils} from './util/performance';
+import {FreeCameraOptions} from './ui/free_camera';
 
 const exported = {
     version,
@@ -45,6 +46,7 @@ const exported = {
     LngLatBounds,
     Point,
     MercatorCoordinate,
+    FreeCameraOptions,
     Evented,
     config,
     /**
