@@ -1,10 +1,10 @@
 // @flow
 
-import { isExpressionFilter } from './index';
+import {isExpressionFilter} from './index';
 
-import type { FilterSpecification } from '../types';
+import type {FilterSpecification} from '../types';
 
-type ExpectedTypes = {[string]: 'string' | 'number' | 'boolean'};
+type ExpectedTypes = {[_: string]: 'string' | 'number' | 'boolean'};
 
 /**
  * Convert the given legacy filter to (the JSON representation of) an
@@ -187,7 +187,9 @@ function convertInOp(property: string, values: Array<any>, negate = false) {
     }
 
     if (uniformTypes && (type === 'string' || type === 'number')) {
-        return ['match', get, values, !negate, negate];
+        // Match expressions must have unique values.
+        const uniqueValues = values.sort().filter((v, i) => i === 0 || values[i - 1] !== v);
+        return ['match', get, uniqueValues, !negate, negate];
     }
 
     return [ negate ? 'all' : 'any' ].concat(

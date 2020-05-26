@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import Anchor from '../../../src/symbol/anchor';
 
 test('Anchor', (t) => {

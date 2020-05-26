@@ -3,23 +3,25 @@
 import StyleLayer from './style_layer';
 import createStyleLayer from './create_style_layer';
 
-import { values } from '../util/util';
+import {values} from '../util/util';
 import featureFilter from '../style-spec/feature_filter';
 import groupByLayout from '../style-spec/group_by_layout';
 
 import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 import type {LayerSpecification} from '../style-spec/types';
 
-export type LayerConfigs = { [string]: LayerSpecification };
+export type LayerConfigs = {[_: string]: LayerSpecification };
 export type Family<Layer: TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
     familiesBySource: { [source: string]: { [sourceLayer: string]: Array<Family<*>> } };
+    keyCache: { [source: string]: string };
 
     _layerConfigs: LayerConfigs;
-    _layers: { [string]: StyleLayer };
+    _layers: {[_: string]: StyleLayer };
 
     constructor(layerConfigs: ?Array<LayerSpecification>) {
+        this.keyCache = {};
         if (layerConfigs) {
             this.replace(layerConfigs);
         }
@@ -37,15 +39,18 @@ class StyleLayerIndex {
 
             const layer = this._layers[layerConfig.id] = createStyleLayer(layerConfig);
             layer._featureFilter = featureFilter(layer.filter);
+            if (this.keyCache[layerConfig.id])
+                delete this.keyCache[layerConfig.id];
         }
         for (const id of removedIds) {
+            delete this.keyCache[id];
             delete this._layerConfigs[id];
             delete this._layers[id];
         }
 
         this.familiesBySource = {};
 
-        const groups = groupByLayout(values(this._layerConfigs));
+        const groups = groupByLayout(values(this._layerConfigs), this.keyCache);
 
         for (const layerConfigs of groups) {
             const layers = layerConfigs.map((layerConfig) => this._layers[layerConfig.id]);

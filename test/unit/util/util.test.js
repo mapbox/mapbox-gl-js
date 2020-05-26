@@ -1,8 +1,8 @@
 // @flow
 
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 
-import { easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid } from '../../../src/util/util';
+import {easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid} from '../../../src/util/util';
 import Point from '@mapbox/point-geometry';
 
 test('util', (t) => {

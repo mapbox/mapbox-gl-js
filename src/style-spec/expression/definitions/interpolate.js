@@ -3,16 +3,15 @@
 import UnitBezier from '@mapbox/unitbezier';
 
 import * as interpolate from '../../util/interpolate';
-import { toString, NumberType, ColorType } from '../types';
-import { findStopLessThanOrEqualTo } from '../stops';
-import { hcl, lab } from '../../util/color_spaces';
+import {toString, NumberType, ColorType} from '../types';
+import {findStopLessThanOrEqualTo} from '../stops';
+import {hcl, lab} from '../../util/color_spaces';
 
-import type { Stops } from '../stops';
-import type { Expression } from '../expression';
+import type {Stops} from '../stops';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Value } from '../values';
-import type { Type } from '../types';
+import type {Type} from '../types';
 
 export type InterpolationType =
     { name: 'linear' } |
@@ -56,7 +55,7 @@ class Interpolate implements Expression {
         return t;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
         let [operator, interpolation, input, ...rest] = args;
 
         if (!Array.isArray(interpolation) || interpolation.length === 0) {
@@ -64,7 +63,7 @@ class Interpolate implements Expression {
         }
 
         if (interpolation[0] === 'linear') {
-            interpolation = { name: 'linear' };
+            interpolation = {name: 'linear'};
         } else if (interpolation[0] === 'exponential') {
             const base = interpolation[1];
             if (typeof base !== 'number')
@@ -180,15 +179,15 @@ class Interpolate implements Expression {
         }
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
         for (const expression of this.outputs) {
             fn(expression);
         }
     }
 
-    possibleOutputs(): Array<Value | void> {
-        return [].concat(...this.outputs.map((output) => output.possibleOutputs()));
+    outputDefined(): boolean {
+        return this.outputs.every(out => out.outputDefined());
     }
 
     serialize(): Array<mixed> {

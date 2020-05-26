@@ -1,3 +1,86 @@
+## 13.13.1
+
+### ✨ Features and improvements
+* Expose `expression.isExpressionFilter(..)` from the bundle. ([#9530](https://github.com/mapbox/mapbox-gl-js/pull/9530))
+
+### 🐛 Bug fixes
+* Fix a broken module import where the `style-spec` package was importing files from `mapbox-gl-js`, it's parent repo, causing downstream build systems to break. ([#9522](https://github.com/mapbox/mapbox-gl-js/pull/9522))
+
+## 13.13.0
+
+### ✨ Features and improvements
+* Add `within` expression for testing whether an evaluated feature lies within a given GeoJSON object ([#9352](https://github.com/mapbox/mapbox-gl-js/pull/9352)). For example:<br>
+`"icon-opacity": ["case", ["==", ["within", "some-polygon"], true], 1,
+["==", ["within", "some-polygon"], false], 0]`
+* Improve scaling of patterns used in `line-pattern` on all device resolutions and pixel ratios ([#9266](https://github.com/mapbox/mapbox-gl-js/pull/9266))
+
+### 🐛 Bug fixes
+* Allow needle argument to `in` expression to be false ([#9295](https://github.com/mapbox/mapbox-gl-js/pull/9295))
+* Fix a bug where `icon-image` expression that evaluates to an empty string (`''`) produced a warning ([#9380](https://github.com/mapbox/mapbox-gl-js/pull/9380))
+* Prevent exception resulting from `line-dash-array` of empty length ([#9385](https://github.com/mapbox/mapbox-gl-js/pull/9385))
+
+## 13.12.0
+
+* Update `image` expression SDK support table ([#9228](https://github.com/mapbox/mapbox-gl-js/pull/9228))
+* Fix `promoteId` for line layers ([#9210](https://github.com/mapbox/mapbox-gl-js/pull/9210), [#9212](https://github.com/mapbox/mapbox-gl-js/pull/9212))
+
+## 13.11.0
+
+### ✨ Features and improvements
+* Add `promoteId` option to use a feature property as ID for feature state ([#8987](https://github.com/mapbox/mapbox-gl-js/pull/8987))
+* Update `symbol-avoid-edges` documentation regarding global collision detection ([#9157](https://github.com/mapbox/mapbox-gl-js/pull/9157))
+* Remove reference to `in` function which has been replaced by the `in` expression ([#9102](https://github.com/mapbox/mapbox-gl-js/pull/9102))
+
+### 🐛 Bug fixes
+* Fix bug where `symbol-sort-key` was not used for collisions that crossed tile boundaries ([#9054](https://github.com/mapbox/mapbox-gl-js/pull/9054))
+
+## 13.10.2
+
+### 🐛 Bug fixes
+* Fix style validation error messages not being displayed ([#9073](https://github.com/mapbox/mapbox-gl-js/pull/9073))
+
+## 13.10.0
+
+### ✨ Features and improvements
+* Add ability to insert images into text labels using an `image` expression within a `format` expression: `"text-field": ["format", "Some text", ["image", "my-image"], "some more text"]` ([#8904](https://github.com/mapbox/mapbox-gl-js/pull/8904))
+* Add `in` expression. It can check if a value is in an array (`["in", value, array]`) or a substring is in a string (`["in", substring, string]`) ([#8876](https://github.com/mapbox/mapbox-gl-js/pull/8876))
+* Add support for stretchable images (aka nine-part or nine-patch images). Stretchable images can be used with `icon-text-fit` to draw resized images with unstretched corners and borders. ([#8997](https://github.com/mapbox/mapbox-gl-js/pull/8997))
+* Add an es modules build of for mapbox-gl-style-spec in dist/ ([#8247](https://github.com/mapbox/mapbox-gl-js/pull/8247)) (h/t [ahocevar](https://github.com/ahocevar))
+
+## 13.9.1
+
+### ✨ Improvement
+* Rename `Image` type to `ResolvedImage`, to better represent the result of an `image` expression evaluation. ([#8901](https://github.com/mapbox/mapbox-gl-js/pull/8901))
+
+## 13.9.0
+
+* Add `image` expression operator to determine image availability ([#8684](https://github.com/mapbox/mapbox-gl-js/pull/8684))
+* Add a style-spec function to validate that styles are compatible with the Mapbox API ([#8663](https://github.com/mapbox/mapbox-gl-js/pull/8663))
+
+## 13.8.0
+
+- Introduce `text-writing-mode` symbol layer property to allow placing point labels vertically. [#8399](https://github.com/mapbox/mapbox-gl-js/pull/8399)
+- Allow `text-color` to be used in formatted expressions to be able to draw different parts of a label in different colors. [#8068](https://github.com/mapbox/mapbox-gl-js/pull/8068)
+- Improve conversion of legacy filters with duplicate values. [#8542](https://github.com/mapbox/mapbox-gl-js/pull/8542)
+
+## 13.7.2
+
+### 🐛 Bug fixes
+* Fix SDK support spec section for variable label placement ([#8384](https://github.com/mapbox/mapbox-gl-js/pull/8384)) (h/t [@pozdnyakov](https://github.com/pozdnyakov))
+
+### ✨ Features and improvements
+* Add SDK support spec section for text-radial-offset  ([#8401](https://github.com/mapbox/mapbox-gl-js/pull/8401))
+* Add `*-sort-key` layout property for circle, fill, line ([#8467](https://github.com/mapbox/mapbox-gl-js/pull/8467))
+* Expose convertFilter API in the style specification ([#8493](https://github.com/mapbox/mapbox-gl-js/pull/8493))
+
+## 13.7.1
+
+### 🐛 Bug fixes
+* Fix format expression options validation ([#8339](https://github.com/mapbox/mapbox-gl-js/pull/8339))
+* Fix SDK support information for style properties added in v13.7.0: ([#8384](https://github.com/mapbox/mapbox-gl-js/pull/8384))
+    * Add missing SDK support section for `text-radial-offset` property
+    * Assign SDK versions for `text-variable-anchor` and `text-justify: auto`
+
 ## 13.7.0
 
 ### ✨ Features and improvements

@@ -2,7 +2,7 @@
 
 import RuntimeError from './runtime_error';
 
-import type { Expression } from './expression';
+import type {Expression} from './expression';
 
 export type Stops = Array<[number, Expression]>;
 
@@ -11,19 +11,22 @@ export type Stops = Array<[number, Expression]>;
  * @private
  */
 export function findStopLessThanOrEqualTo(stops: Array<number>, input: number) {
-    const n = stops.length;
+    const lastIndex = stops.length - 1;
     let lowerIndex = 0;
-    let upperIndex = n - 1;
+    let upperIndex = lastIndex;
     let currentIndex = 0;
-    let currentValue, upperValue;
+    let currentValue, nextValue;
 
     while (lowerIndex <= upperIndex) {
         currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
         currentValue = stops[currentIndex];
-        upperValue = stops[currentIndex + 1];
-        if (input === currentValue || input > currentValue && input < upperValue) { // Search complete
-            return currentIndex;
-        } else if (currentValue < input) {
+        nextValue = stops[currentIndex + 1];
+
+        if (currentValue <= input) {
+            if (currentIndex === lastIndex || input < nextValue) { // Search complete
+                return currentIndex;
+            }
+
             lowerIndex = currentIndex + 1;
         } else if (currentValue > input) {
             upperIndex = currentIndex - 1;
@@ -32,5 +35,5 @@ export function findStopLessThanOrEqualTo(stops: Array<number>, input: number) {
         }
     }
 
-    return Math.max(currentIndex - 1, 0);
+    return 0;
 }

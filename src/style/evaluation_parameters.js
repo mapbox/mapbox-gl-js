@@ -54,8 +54,8 @@ class EvaluationParameters {
         const t = this.crossFadingFactor();
 
         return z > this.zoomHistory.lastIntegerZoom ?
-            { fromScale: 2, toScale: 1, t: fraction + (1 - fraction) * t } :
-            { fromScale: 0.5, toScale: 1, t: 1 - (1 - t) * fraction };
+            {fromScale: 2, toScale: 1, t: fraction + (1 - fraction) * t} :
+            {fromScale: 0.5, toScale: 1, t: 1 - (1 - t) * fraction};
     }
 }
 

@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import * as interpolate from '../../../src/style-spec/util/interpolate';
 import Color from '../../../src/style-spec/util/color';
 

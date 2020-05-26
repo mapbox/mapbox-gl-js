@@ -7,7 +7,8 @@ import VectorTileWorkerSource from './vector_tile_worker_source';
 import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source';
 import GeoJSONWorkerSource from './geojson_worker_source';
 import assert from 'assert';
-import { plugin as globalRTLTextPlugin } from './rtl_text_plugin';
+import {plugin as globalRTLTextPlugin} from './rtl_text_plugin';
+import {enforceCacheSizeLimit} from '../util/tile_request_cache';
 
 import type {
     WorkerSource,
@@ -21,6 +22,7 @@ import type {
 import type {WorkerGlobalScopeInterface} from '../util/web_worker';
 import type {Callback} from '../types/callback';
 import type {LayerSpecification} from '../style-spec/types';
+import type {PluginState} from './rtl_text_plugin';
 
 /**
  * @private
@@ -28,10 +30,11 @@ import type {LayerSpecification} from '../style-spec/types';
 export default class Worker {
     self: WorkerGlobalScopeInterface;
     actor: Actor;
-    layerIndexes: { [string]: StyleLayerIndex };
-    workerSourceTypes: { [string]: Class<WorkerSource> };
-    workerSources: { [string]: { [string]: { [string]: WorkerSource } } };
-    demWorkerSources: { [string]: { [string]: RasterDEMTileWorkerSource } };
+    layerIndexes: {[_: string]: StyleLayerIndex };
+    availableImages: {[_: string]: Array<string> };
+    workerSourceTypes: {[_: string]: Class<WorkerSource> };
+    workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
+    demWorkerSources: {[_: string]: {[_: string]: RasterDEMTileWorkerSource } };
     referrer: ?string;
 
     constructor(self: WorkerGlobalScopeInterface) {
@@ -39,6 +42,7 @@ export default class Worker {
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
+        this.availableImages = {};
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
@@ -56,8 +60,9 @@ export default class Worker {
             this.workerSourceTypes[name] = WorkerSource;
         };
 
+        // This is invoked by the RTL text plugin when the download via the `importScripts` call has finished, and the code has been parsed.
         this.self.registerRTLTextPlugin = (rtlTextPlugin: {applyArabicShaping: Function, processBidirectionalText: Function, processStyledBidirectionalText?: Function}) => {
-            if (globalRTLTextPlugin.isLoaded()) {
+            if (globalRTLTextPlugin.isParsed()) {
                 throw new Error('RTL text plugin already registered.');
             }
             globalRTLTextPlugin['applyArabicShaping'] = rtlTextPlugin.applyArabicShaping;
@@ -68,6 +73,17 @@ export default class Worker {
 
     setReferrer(mapID: string, referrer: string) {
         this.referrer = referrer;
+    }
+
+    setImages(mapId: string, images: Array<string>, callback: WorkerTileCallback) {
+        this.availableImages[mapId] = images;
+        for (const workerSource in this.workerSources[mapId]) {
+            const ws = this.workerSources[mapId][workerSource];
+            for (const source in ws) {
+                ws[source].availableImages = images;
+            }
+        }
+        callback();
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
@@ -143,17 +159,33 @@ export default class Worker {
         }
     }
 
-    loadRTLTextPlugin(map: string, pluginURL: string, callback: Callback<void>) {
+    syncRTLPluginState(map: string, state: PluginState, callback: Callback<boolean>) {
         try {
-            if (!globalRTLTextPlugin.isLoaded()) {
+            globalRTLTextPlugin.setState(state);
+            const pluginURL = globalRTLTextPlugin.getPluginURL();
+            if (
+                globalRTLTextPlugin.isLoaded() &&
+                !globalRTLTextPlugin.isParsed() &&
+                pluginURL != null // Not possible when `isLoaded` is true, but keeps flow happy
+            ) {
                 this.self.importScripts(pluginURL);
-                callback(globalRTLTextPlugin.isLoaded() ?
-                    null :
-                    new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`));
+                const complete = globalRTLTextPlugin.isParsed();
+                const error = complete ? undefined : new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`);
+                callback(error, complete);
             }
         } catch (e) {
             callback(e.toString());
         }
+    }
+
+    getAvailableImages(mapId: string) {
+        let availableImages = this.availableImages[mapId];
+
+        if (!availableImages) {
+            availableImages = [];
+        }
+
+        return availableImages;
     }
 
     getLayerIndex(mapId: string) {
@@ -178,8 +210,7 @@ export default class Worker {
                     this.actor.send(type, data, callback, mapId);
                 }
             };
-
-            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId));
+            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId), this.getAvailableImages(mapId));
         }
 
         return this.workerSources[mapId][type][source];
@@ -194,6 +225,10 @@ export default class Worker {
         }
 
         return this.demWorkerSources[mapId][source];
+    }
+
+    enforceCacheSizeLimit(mapId: string, limit: number) {
+        enforceCacheSizeLimit(limit);
     }
 }
 

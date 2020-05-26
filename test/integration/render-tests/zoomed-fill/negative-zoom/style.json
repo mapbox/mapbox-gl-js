@@ -1,0 +1,42 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.0002,
+      "width": 256,
+      "height": 256
+    }
+  },
+  "center": [
+      0,
+      0
+  ],
+  "zoom": -1,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "black"
+      }
+    }
+  ]
+}

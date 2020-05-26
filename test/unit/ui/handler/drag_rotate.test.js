@@ -1,15 +1,39 @@
-import { test } from 'mapbox-gl-js-test';
-import { extend } from '../../../../src/util/util';
+import {test} from '../../../util/test';
+import {extend} from '../../../../src/util/util';
 import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
-import simulate from 'mapbox-gl-js-test/simulate_interaction';
+import simulate from '../../../util/simulate_interaction';
 import browser from '../../../../src/util/browser';
 
 function createMap(t, options) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map(extend({ container: DOM.create('div', '', window.document.body) }, options));
+    return new Map(extend({container: DOM.create('div', '', window.document.body)}, options));
 }
+
+test('DragRotateHandler#isActive', (t) => {
+    const map = createMap(t);
+
+    // Prevent inertial rotation.
+    t.stub(browser, 'now').returns(0);
+
+    t.equal(map.dragRotate.isActive(), false);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    map._renderTaskQueue.run();
+    t.equal(map.dragRotate.isActive(), false);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(map.dragRotate.isActive(), true);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._renderTaskQueue.run();
+    t.equal(map.dragRotate.isActive(), false);
+
+    map.remove();
+    t.end();
+});
 
 test('DragRotateHandler fires rotatestart, rotate, and rotateend events at appropriate times in response to a right-click drag', (t) => {
     const map = createMap(t);
@@ -62,6 +86,7 @@ test('DragRotateHandler stops firing events after mouseup', (t) => {
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._renderTaskQueue.run();
     t.equal(spy.callCount, 3);
 
     spy.resetHistory();
@@ -124,13 +149,41 @@ test('DragRotateHandler pitches in response to a right-click drag by default', (
     map.on('pitchend',   pitchend);
 
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
-    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: -10});
     map._renderTaskQueue.run();
     t.equal(pitchstart.callCount, 1);
     t.equal(pitch.callCount, 1);
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._renderTaskQueue.run();
     t.equal(pitchend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
+
+test('DragRotateHandler doesn\'t fire pitch event when rotating only', (t) => {
+    const map = createMap(t);
+
+    // Prevent inertial rotation.
+    t.stub(browser, 'now').returns(0);
+
+    const pitchstart = t.spy();
+    const pitch      = t.spy();
+    const pitchend   = t.spy();
+
+    map.on('pitchstart', pitchstart);
+    map.on('pitch',      pitch);
+    map.on('pitchend',   pitchend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 0, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(pitchstart.callCount, 0);
+    t.equal(pitch.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    t.equal(pitchend.callCount, 0);
 
     map.remove();
     t.end();
@@ -151,12 +204,13 @@ test('DragRotateHandler pitches in response to a control-left-click drag', (t) =
     map.on('pitchend',   pitchend);
 
     simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
-    simulate.mousemove(map.getCanvas(), {buttons: 1,            ctrlKey: true, clientX: 10, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {buttons: 1,            ctrlKey: true, clientX: 10, clientY: -10});
     map._renderTaskQueue.run();
     t.equal(pitchstart.callCount, 1);
     t.equal(pitch.callCount, 1);
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
+    map._renderTaskQueue.run();
     t.equal(pitchend.callCount, 1);
 
     map.remove();
@@ -219,9 +273,11 @@ test('DragRotateHandler ensures that map.isMoving() returns true during drag', (
 
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
     t.ok(map.isMoving());
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._renderTaskQueue.run();
     t.ok(!map.isMoving());
 
     map.remove();
@@ -250,7 +306,39 @@ test('DragRotateHandler fires move events', (t) => {
     t.equal(move.callCount, 1);
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._renderTaskQueue.run();
     t.equal(moveend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
+
+test('DragRotateHandler doesn\'t fire rotate event when pitching only', (t) => {
+    // The bearingSnap option here ensures that the moveend event is sent synchronously.
+    const map = createMap(t, {bearingSnap: 0});
+
+    // Prevent inertial rotation.
+    t.stub(browser, 'now').returns(0);
+
+    const rotatestart = t.spy();
+    const rotate      = t.spy();
+    const pitch       = t.spy();
+    const rotateend   = t.spy();
+
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',    rotate);
+    map.on('pitch',     pitch);
+    map.on('rotateend', rotateend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 0, clientY: 0});
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 0, clientY: -10});
+    map._renderTaskQueue.run();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(pitch.callCount, 1);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    t.equal(rotateend.callCount, 0);
 
     map.remove();
     t.end();
@@ -285,9 +373,10 @@ test('DragRotateHandler includes originalEvent property in triggered events', (t
     map.on('moveend',   moveend);
 
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
-    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: -10});
     map._renderTaskQueue.run();
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._renderTaskQueue.run();
 
     t.ok(rotatestart.firstCall.args[0].originalEvent.type, 'mousemove');
     t.ok(pitchstart.firstCall.args[0].originalEvent.type, 'mousemove');
@@ -326,6 +415,7 @@ test('DragRotateHandler responds to events on the canvas container (#1301)', (t)
     t.equal(rotate.callCount, 1);
 
     simulate.mouseup(map.getCanvasContainer(),   {buttons: 0, button: 2});
+    map._renderTaskQueue.run();
     t.equal(rotateend.callCount, 1);
 
     map.remove();
@@ -342,7 +432,7 @@ test('DragRotateHandler prevents mousemove events from firing during a drag (#15
     map.on('mousemove', mousemove);
 
     simulate.mousedown(map.getCanvasContainer(), {buttons: 2, button: 2});
-    simulate.mousemove(map.getCanvasContainer(), {buttons: 2, clientX: 10, clientY: 10});
+    simulate.mousemove(map.getCanvasContainer(), {buttons: 2, clientX: 100, clientY: 100});
     map._renderTaskQueue.run();
     simulate.mouseup(map.getCanvasContainer(),   {buttons: 0, button: 2});
 
@@ -373,6 +463,7 @@ test('DragRotateHandler ends a control-left-click drag on mouseup even when the 
     t.equal(rotate.callCount, 1);
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: false});
+    map._renderTaskQueue.run();
     t.equal(rotateend.callCount, 1);
 
     map.remove();
@@ -471,7 +562,7 @@ test('DragRotateHandler can interleave with another handler', (t) => {
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
-    t.equal(rotatestart.callCount, 1);
+    // Ignore second rotatestart triggered by inertia
     t.equal(rotate.callCount, 2);
     t.equal(rotateend.callCount, 1);
 
@@ -560,7 +651,7 @@ test('DragRotateHandler does not end a right-button drag on left-button mouseup'
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
-    t.equal(rotatestart.callCount, 1);
+    // Ignore second rotatestart triggered by inertia
     t.equal(rotate.callCount, 2);
     t.equal(rotateend.callCount, 1);
 
@@ -615,7 +706,7 @@ test('DragRotateHandler does not end a control-left-button drag on right-button 
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
     map._renderTaskQueue.run();
-    t.equal(rotatestart.callCount, 1);
+    // Ignore second rotatestart triggered by inertia
     t.equal(rotate.callCount, 2);
     t.equal(rotateend.callCount, 1);
 
@@ -651,49 +742,6 @@ test('DragRotateHandler does not begin a drag if preventDefault is called on the
 
     map.remove();
     t.end();
-});
-
-['rotatestart', 'rotate'].forEach(event => {
-    test(`DragRotateHandler can be disabled on ${event} (#2419)`, (t) => {
-        const map = createMap(t);
-
-        // Prevent inertial rotation.
-        t.stub(browser, 'now').returns(0);
-
-        map.on(event, () => map.dragRotate.disable());
-
-        const rotatestart = t.spy();
-        const rotate      = t.spy();
-        const rotateend   = t.spy();
-
-        map.on('rotatestart', rotatestart);
-        map.on('rotate',      rotate);
-        map.on('rotateend',   rotateend);
-
-        simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
-        map._renderTaskQueue.run();
-
-        simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
-        map._renderTaskQueue.run();
-
-        t.equal(rotatestart.callCount, 1);
-        t.equal(rotate.callCount, event === 'rotatestart' ? 0 : 1);
-        t.equal(rotateend.callCount, 1);
-        t.equal(map.isMoving(), false);
-        t.equal(map.dragRotate.isEnabled(), false);
-
-        simulate.mouseup(map.getCanvas(), {buttons: 0, button: 2});
-        map._renderTaskQueue.run();
-
-        t.equal(rotatestart.callCount, 1);
-        t.equal(rotate.callCount, event === 'rotatestart' ? 0 : 1);
-        t.equal(rotateend.callCount, 1);
-        t.equal(map.isMoving(), false);
-        t.equal(map.dragRotate.isEnabled(), false);
-
-        map.remove();
-        t.end();
-    });
 });
 
 test(`DragRotateHandler can be disabled after mousedown (#2419)`, (t) => {
@@ -765,6 +813,66 @@ test('DragRotateHandler does not begin rotation on spurious mousemove events', (
     t.equal(rotatestart.callCount, 0);
     t.equal(rotate.callCount, 0);
     t.equal(rotateend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragRotateHandler does not begin a mouse drag if moved less than click tolerance', (t) => {
+    const map = createMap(t, {clickTolerance: 4});
+
+    // Prevent inertial rotation.
+    t.stub(browser, 'now').returns(0);
+
+    const rotatestart = t.spy();
+    const rotate      = t.spy();
+    const rotateend   = t.spy();
+    const pitchstart  = t.spy();
+    const pitch       = t.spy();
+    const pitchend    = t.spy();
+
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+    map.on('pitchstart',  pitchstart);
+    map.on('pitch',       pitch);
+    map.on('pitchend',    pitchend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+    t.equal(pitchstart.callCount, 0);
+    t.equal(pitch.callCount, 0);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 13, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+    t.equal(pitchstart.callCount, 0);
+    t.equal(pitch.callCount, 0);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 13});
+    map._renderTaskQueue.run();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+    t.equal(pitchstart.callCount, 0);
+    t.equal(pitch.callCount, 0);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 14, clientY: 10 - 4});
+    map._renderTaskQueue.run();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+    t.equal(pitchstart.callCount, 1);
+    t.equal(pitch.callCount, 1);
+    t.equal(pitchend.callCount, 0);
 
     map.remove();
     t.end();

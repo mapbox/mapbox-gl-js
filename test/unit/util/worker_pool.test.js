@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import WorkerPool from '../../../src/util/worker_pool';
 
 test('WorkerPool', (t) => {

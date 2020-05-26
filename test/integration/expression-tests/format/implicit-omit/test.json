@@ -20,8 +20,10 @@
         "sections": [
           {
             "text": "",
+            "image": null,
             "scale": null,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           }
         ]
       },
@@ -29,8 +31,10 @@
         "sections": [
           {
             "text": "0",
+            "image": null,
             "scale": null,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           }
         ]
       },
@@ -38,8 +42,10 @@
         "sections": [
           {
             "text": "a",
+            "image": null,
             "scale": null,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           }
         ]
       }

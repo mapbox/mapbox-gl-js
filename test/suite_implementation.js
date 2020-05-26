@@ -66,6 +66,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
 
     if (options.debug) map.showTileBoundaries = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
+    if (options.showPadding) map.showPadding = true;
 
     const gl = map.painter.context.gl;
 
@@ -170,10 +171,15 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         } else if (operation[0] === 'setStyle') {
             // Disable local ideograph generation (enabled by default) for
             // consistent local ideograph rendering using fixtures in all runs of the test suite.
-            map.setStyle(operation[1], { localIdeographFontFamily: false });
+            map.setStyle(operation[1], {localIdeographFontFamily: false});
+            applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'pauseSource') {
+            map.style.sourceCaches[operation[1]].pause();
             applyOperations(map, operations.slice(1), callback);
         } else {
-            map[operation[0]](...operation.slice(1));
+            if (typeof map[operation[0]] === 'function') {
+                map[operation[0]](...operation.slice(1));
+            }
             applyOperations(map, operations.slice(1), callback);
         }
     }

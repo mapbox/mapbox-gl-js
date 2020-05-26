@@ -16,6 +16,10 @@
           "b"
         ]
       ]
+    },
+    "d",
+    {
+      "text-color": "rgb(0, 255, 0)"
     }
   ],
   "inputs": [
@@ -36,18 +40,31 @@
         "sections": [
           {
             "text": "a",
+            "image": null,
             "scale": null,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           },
           {
             "text": "b",
+            "image": null,
             "scale": 2,
-            "fontStack": null
+            "fontStack": null,
+            "textColor": null
           },
           {
             "text": "c",
+            "image": null,
             "scale": null,
-            "fontStack": "a,b"
+            "fontStack": "a,b",
+            "textColor": null
+          },
+          {
+            "text": "d",
+            "image": null,
+            "scale": null,
+            "fontStack": null,
+            "textColor": {"r":0,"g":1,"b":0,"a":1}
           }
         ]
       }
@@ -69,6 +86,10 @@
             "b"
           ]
         ]
+      },
+      "d",
+      {
+        "text-color": ["rgba", 0, 255, 0, 1]
       }
     ]
   }

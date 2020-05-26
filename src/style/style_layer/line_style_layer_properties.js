@@ -17,11 +17,14 @@ import type Color from '../../style-spec/util/color';
 
 import type Formatted from '../../style-spec/expression/types/formatted';
 
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+
 export type LayoutProps = {|
     "line-cap": DataConstantProperty<"butt" | "round" | "square">,
     "line-join": DataDrivenProperty<"bevel" | "round" | "miter">,
     "line-miter-limit": DataConstantProperty<number>,
     "line-round-limit": DataConstantProperty<number>,
+    "line-sort-key": DataDrivenProperty<number>,
 |};
 
 const layout: Properties<LayoutProps> = new Properties({
@@ -29,6 +32,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "line-join": new DataDrivenProperty(styleSpec["layout_line"]["line-join"]),
     "line-miter-limit": new DataConstantProperty(styleSpec["layout_line"]["line-miter-limit"]),
     "line-round-limit": new DataConstantProperty(styleSpec["layout_line"]["line-round-limit"]),
+    "line-sort-key": new DataDrivenProperty(styleSpec["layout_line"]["line-sort-key"]),
 });
 
 export type PaintProps = {|
@@ -41,7 +45,7 @@ export type PaintProps = {|
     "line-offset": DataDrivenProperty<number>,
     "line-blur": DataDrivenProperty<number>,
     "line-dasharray": CrossFadedProperty<Array<number>>,
-    "line-pattern": CrossFadedDataDrivenProperty<string>,
+    "line-pattern": CrossFadedDataDrivenProperty<ResolvedImage>,
     "line-gradient": ColorRampProperty,
 |};
 

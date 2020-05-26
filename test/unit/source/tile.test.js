@@ -1,23 +1,22 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
+import {createSymbolBucket} from '../../util/create_symbol_layer';
 import Tile from '../../../src/source/tile';
 import GeoJSONWrapper from '../../../src/source/geojson_wrapper';
-import { OverscaledTileID } from '../../../src/source/tile_id';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 import fs from 'fs';
 import path from 'path';
 import vtpbf from 'vt-pbf';
 import FeatureIndex from '../../../src/data/feature_index';
-import { CollisionBoxArray } from '../../../src/data/array_types';
-import { extend } from '../../../src/util/util';
-import Context from '../../../src/gl/context';
-import { serialize, deserialize } from '../../../src/util/web_worker_transfer';
+import {CollisionBoxArray} from '../../../src/data/array_types';
+import {extend} from '../../../src/util/util';
+import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
 test('querySourceFeatures', (t) => {
     const features = [{
         type: 1,
         geometry: [0, 0],
-        tags: { oneway: true }
+        tags: {oneway: true}
     }];
-
 
     t.test('geojson tile', (t) => {
         const tile = new Tile(new OverscaledTileID(3, 0, 2, 1, 2));
@@ -30,7 +29,7 @@ test('querySourceFeatures', (t) => {
         const geojsonWrapper = new GeoJSONWrapper(features);
         geojsonWrapper.name = '_geojsonTileLayer';
         tile.loadVectorData(
-            createVectorData({rawTileData: vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }})}),
+            createVectorData({rawTileData: vtpbf({layers: {'_geojsonTileLayer': geojsonWrapper}})}),
             createPainter()
         );
 
@@ -43,10 +42,10 @@ test('querySourceFeatures', (t) => {
         t.equal(result.length, 1);
         t.deepEqual(result[0].properties, features[0].tags);
         result = [];
-        tile.querySourceFeatures(result, { filter: ['==', 'oneway', true]});
+        tile.querySourceFeatures(result, {filter: ['==', 'oneway', true]});
         t.equal(result.length, 1);
         result = [];
-        tile.querySourceFeatures(result, { filter: ['!=', 'oneway', true]});
+        tile.querySourceFeatures(result, {filter: ['!=', 'oneway', true]});
         t.equal(result.length, 0);
         t.end();
     });
@@ -61,7 +60,7 @@ test('querySourceFeatures', (t) => {
 
         const geojsonWrapper = new GeoJSONWrapper([]);
         geojsonWrapper.name = '_geojsonTileLayer';
-        tile.rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+        tile.rawTileData = vtpbf({layers: {'_geojsonTileLayer': geojsonWrapper}});
         result = [];
         t.doesNotThrow(() => { tile.querySourceFeatures(result); });
         t.equal(result.length, 0);
@@ -82,18 +81,18 @@ test('querySourceFeatures', (t) => {
         );
 
         result = [];
-        tile.querySourceFeatures(result, { 'sourceLayer': 'does-not-exist'});
+        tile.querySourceFeatures(result, {'sourceLayer': 'does-not-exist'});
         t.equal(result.length, 0);
 
         result = [];
-        tile.querySourceFeatures(result, { 'sourceLayer': 'road' });
+        tile.querySourceFeatures(result, {'sourceLayer': 'road'});
         t.equal(result.length, 3);
 
         result = [];
-        tile.querySourceFeatures(result, { 'sourceLayer': 'road', filter: ['==', 'class', 'main'] });
+        tile.querySourceFeatures(result, {'sourceLayer': 'road', filter: ['==', 'class', 'main']});
         t.equal(result.length, 1);
         result = [];
-        tile.querySourceFeatures(result, { 'sourceLayer': 'road', filter: ['!=', 'class', 'main'] });
+        tile.querySourceFeatures(result, {'sourceLayer': 'road', filter: ['!=', 'class', 'main']});
         t.equal(result.length, 2);
 
         t.end();
@@ -125,53 +124,13 @@ test('querySourceFeatures', (t) => {
         );
 
         const features = [];
-        tile.querySourceFeatures(features, { 'sourceLayer': 'road' });
+        tile.querySourceFeatures(features, {'sourceLayer': 'road'});
         t.equal(features.length, 3);
 
         t.end();
     });
 
     t.end();
-});
-
-test('Tile#setMask', (t) => {
-
-    t.test('simple mask', (t) => {
-        const tile = new Tile(0, 0, 0);
-        const context = new Context(require('gl')(10, 10));
-        const a = new OverscaledTileID(1, 0, 1, 0, 0);
-        const b = new OverscaledTileID(1, 0, 1, 1, 1);
-        const mask = {};
-        mask[a.id] = a;
-        mask[b.id] = b;
-        tile.setMask(mask, context);
-        t.deepEqual(tile.mask, mask);
-        t.end();
-    });
-
-    t.test('complex mask', (t) => {
-        const tile = new Tile(0, 0, 0);
-        const context = new Context(require('gl')(10, 10));
-        const a = new OverscaledTileID(1, 0, 1, 0, 1);
-        const b = new OverscaledTileID(1, 0, 1, 1, 0);
-        const c = new OverscaledTileID(2, 0, 2, 2, 3);
-        const d = new OverscaledTileID(2, 0, 2, 3, 2);
-        const e = new OverscaledTileID(3, 0, 3, 6, 7);
-        const f = new OverscaledTileID(3, 0, 3, 7, 6);
-        const mask = {};
-        mask[a.id] = a;
-        mask[b.id] = b;
-        mask[c.id] = c;
-        mask[d.id] = d;
-        mask[e.id] = e;
-        mask[f.id] = f;
-        tile.setMask(mask, context);
-        t.deepEqual(tile.mask, mask);
-        t.end();
-
-    });
-    t.end();
-
 });
 
 test('Tile#isLessThan', (t) => {
@@ -305,6 +264,29 @@ test('expiring tiles', (t) => {
     t.end();
 });
 
+test('rtl text detection', (t) => {
+    t.test('Tile#hasRTLText is true when a tile loads a symbol bucket with rtl text', (t) => {
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        // Create a stub symbol bucket
+        const symbolBucket = createSymbolBucket('test', 'Test', 'test', new CollisionBoxArray());
+        // symbolBucket has not been populated yet so we force override the value in the stub
+        symbolBucket.hasRTLText = true;
+        tile.loadVectorData(
+            createVectorData({rawTileData: createRawTileData(), buckets: [symbolBucket]}),
+            createPainter({
+                getLayer() {
+                    return symbolBucket.layers[0];
+                }
+            })
+        );
+
+        t.ok(tile.hasRTLText);
+        t.end();
+    });
+
+    t.end();
+});
+
 function createRawTileData() {
     return fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
 }
@@ -318,6 +300,6 @@ function createVectorData(options) {
     }, options);
 }
 
-function createPainter() {
-    return { style: {} };
+function createPainter(styleStub = {}) {
+    return {style: styleStub};
 }

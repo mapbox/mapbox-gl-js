@@ -1,0 +1,111 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "width": 64,
+        "height": 64
+      }
+    },
+    "zoom": 2,
+    "center": [3.05, 3.25],
+    "sources": {
+      "points": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  1.9775390625,
+                  2.3284603685731593
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  2.021484375,
+                  7.798078531355303
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "polygon": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [0, 0],
+                      [0, 5],
+                      [5, 5],
+                      [5, 0],
+                      [0, 0]
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+      {
+        "id": "border",
+        "type": "fill",
+        "source": "polygon",
+        "paint": {
+            "fill-color": "black",
+            "fill-opacity":  0.5
+        }
+      },
+      {
+        "id": "symbol",
+        "type": "symbol",
+        "source": "points",
+        "layout": {
+            "icon-image": "",
+            "text-field": ["case", ["within", {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                      [0, 0],
+                      [0, 5],
+                      [5, 5],
+                      [5, 0],
+                      [0, 0]
+                    ]
+                  ]
+                }], "In", "Out"],
+            "text-font": [
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+            ],
+            "text-size": 10
+          },
+          "paint" : {
+            "text-color": "red"
+          }
+        
+        } 
+    ]
+  }
+  

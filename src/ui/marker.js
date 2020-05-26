@@ -5,9 +5,9 @@ import window from '../util/window';
 import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap';
-import { bindAll, extend } from '../util/util';
-import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
-import { Event, Evented } from '../util/evented';
+import {bindAll, extend} from '../util/util';
+import {type Anchor, anchorTranslate, applyAnchorClass} from './anchor';
+import {Event, Evented} from '../util/evented';
 import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
@@ -19,7 +19,10 @@ type Options = {
     offset?: PointLike,
     anchor?: Anchor,
     color?: string,
-    draggable?: boolean
+    draggable?: boolean,
+    rotation?: number,
+    rotationAlignment?: string,
+    pitchAlignment?: string
 };
 
 /**
@@ -31,6 +34,9 @@ type Options = {
  * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
+ * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
+ * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
+ * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewport`.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -51,6 +57,10 @@ export default class Marker extends Evented {
     _draggable: boolean;
     _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
     _positionDelta: ?number;
+    _rotation: number;
+    _pitchAlignment: string;
+    _rotationAlignment: string;
+    _originalTabIndex: ?string; // original tabindex of _element
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -65,17 +75,22 @@ export default class Marker extends Evented {
             '_onMove',
             '_onUp',
             '_addDragHandler',
-            '_onMapClick'
+            '_onMapClick',
+            '_onKeyPress'
         ], this);
 
         this._anchor = options && options.anchor || 'center';
         this._color = options && options.color || '#3FB1CE';
         this._draggable = options && options.draggable || false;
         this._state = 'inactive';
+        this._rotation = options && options.rotation || 0;
+        this._rotationAlignment = options && options.rotationAlignment || 'auto';
+        this._pitchAlignment = options && options.pitchAlignment && options.pitchAlignment !== 'auto' ?  options.pitchAlignment : this._rotationAlignment;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
             this._element = DOM.create('div');
+            this._element.setAttribute('aria-label', 'Map marker');
 
             // create default map marker SVG
             const svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
@@ -185,15 +200,29 @@ export default class Marker extends Evented {
         this._element.addEventListener('dragstart', (e: DragEvent) => {
             e.preventDefault();
         });
+        this._element.addEventListener('mousedown', (e: MouseEvent) => {
+            // prevent focusing on click
+            e.preventDefault();
+        });
+        this._element.addEventListener('focus', () => {
+            // revert the default scrolling action of the container
+            const el = this._map.getContainer();
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+        });
         applyAnchorClass(this._element, this._anchor, 'marker');
 
         this._popup = null;
     }
 
     /**
-     * Attaches the marker to a map
-     * @param {Map} map
+     * Attaches the `Marker` to a `Map` object.
+     * @param {Map} map The Mapbox GL JS map to add the marker to.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *   .setLngLat([30.5, 50.5])
+     *   .addTo(map); // add the marker to the map
      */
     addTo(map: Map) {
         this.remove();
@@ -228,6 +257,8 @@ export default class Marker extends Evented {
             this._map.off('touchstart', this._addDragHandler);
             this._map.off('mouseup', this._onUp);
             this._map.off('touchend', this._onUp);
+            this._map.off('mousemove', this._onMove);
+            this._map.off('touchmove', this._onMove);
             delete this._map;
         }
         DOM.remove(this._element);
@@ -242,16 +273,31 @@ export default class Marker extends Evented {
      * set by `setLngLat` because `Marker` wraps the anchor longitude across copies of the world to keep
      * the marker on screen.
      *
-     * @returns {LngLat}
-     */
+     * @returns {LngLat} A {@link LngLat} describing the marker's location.
+    * @example
+    * // Store the marker's longitude and latitude coordinates in a variable
+    * var lngLat = marker.getLngLat();
+    * // Print the marker's longitude and latitude values in the console
+    * console.log('Longitude: ' + lngLat.lng + ', Latitude: ' + lngLat.lat )
+    * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+    */
     getLngLat() {
         return this._lngLat;
     }
 
     /**
-     * Set the marker's geographical position and move it.
-     * @returns {Marker} `this`
-     */
+    * Set the marker's geographical position and move it.
+    * @param {LngLat} lnglat A {@link LngLat} describing where the marker should be located.
+    * @returns {Marker} `this`
+    * @example
+    * // Create a new marker, set the longitude and latitude, and add it to the map
+    * new mapboxgl.Marker()
+    *   .setLngLat([-65.017, -16.457])
+    *   .addTo(map);
+    * @see [Add custom icons with Markers](https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
+    * @see [Create a draggable Marker](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
+    * @see [Add a marker using a place name](https://docs.mapbox.com/mapbox-gl-js/example/marker-from-geocode/)
+    */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
@@ -269,15 +315,26 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Binds a Popup to the Marker
-     * @param popup an instance of the `Popup` class. If undefined or null, any popup
-     * set on this `Marker` instance is unset
+     * Binds a {@link Popup} to the {@link Marker}.
+     * @param popup An instance of the {@link Popup} class. If undefined or null, any popup
+     * set on this {@link Marker} instance is unset.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>")) // add popup
+     *  .addTo(map);
+     * @see [Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
     setPopup(popup: ?Popup) {
         if (this._popup) {
             this._popup.remove();
             this._popup = null;
+            this._element.removeEventListener('keypress', this._onKeyPress);
+
+            if (!this._originalTabIndex) {
+                this._element.removeAttribute('tabindex');
+            }
         }
 
         if (popup) {
@@ -298,9 +355,27 @@ export default class Marker extends Evented {
             }
             this._popup = popup;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
+
+            this._originalTabIndex = this._element.getAttribute('tabindex');
+            if (!this._originalTabIndex) {
+                this._element.setAttribute('tabindex', '0');
+            }
+            this._element.addEventListener('keypress', this._onKeyPress);
         }
 
         return this;
+    }
+
+    _onKeyPress(e: KeyboardEvent) {
+        const code = e.code;
+        const legacyCode = e.charCode || e.keyCode;
+
+        if (
+            (code === 'Space') || (code === 'Enter') ||
+            (legacyCode === 32) || (legacyCode === 13) // space or enter
+        ) {
+            this.togglePopup();
+        }
     }
 
     _onMapClick(e: MapMouseEvent) {
@@ -313,16 +388,30 @@ export default class Marker extends Evented {
     }
 
     /**
-     * Returns the Popup instance that is bound to the Marker
+     * Returns the {@link Popup} instance that is bound to the {@link Marker}.
      * @returns {Popup} popup
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *  .addTo(map);
+     *
+     * console.log(marker.getPopup()); // return the popup instance
      */
     getPopup() {
         return this._popup;
     }
 
     /**
-     * Opens or closes the bound popup, depending on the current state
+     * Opens or closes the {@link Popup} instance that is bound to the {@link Marker}, depending on the current state of the {@link Popup}.
      * @returns {Marker} `this`
+     * @example
+     * var marker = new mapboxgl.Marker()
+     *  .setLngLat([0, 0])
+     *  .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+     *  .addTo(map);
+     *
+     * marker.togglePopup(); // toggle popup open or closed
      */
     togglePopup() {
         const popup = this._popup;
@@ -342,6 +431,20 @@ export default class Marker extends Evented {
 
         this._pos = this._map.project(this._lngLat)._add(this._offset);
 
+        let rotation = "";
+        if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
+            rotation = `rotateZ(${this._rotation}deg)`;
+        } else if (this._rotationAlignment === "map") {
+            rotation = `rotateZ(${this._rotation - this._map.getBearing()}deg)`;
+        }
+
+        let pitch = "";
+        if (this._pitchAlignment === "viewport" || this._pitchAlignment === "auto") {
+            pitch = "rotateX(0deg)";
+        } else if (this._pitchAlignment === "map") {
+            pitch = `rotateX(${this._map.getPitch()}deg)`;
+        }
+
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
@@ -349,12 +452,12 @@ export default class Marker extends Evented {
             this._pos = this._pos.round();
         }
 
-        DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px)`);
+        DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
     }
 
     /**
      * Get the marker's offset.
-     * @returns {Point}
+     * @returns {Point} The marker's screen coordinates in pixels.
      */
     getOffset() {
         return this._offset;
@@ -477,9 +580,66 @@ export default class Marker extends Evented {
 
     /**
      * Returns true if the marker can be dragged
-     * @returns {boolean}
+     * @returns {boolean} True if the marker is draggable.
      */
     isDraggable() {
         return this._draggable;
+    }
+
+    /**
+     * Sets the `rotation` property of the marker.
+     * @param {number} [rotation=0] The rotation angle of the marker (clockwise, in degrees), relative to its respective {@link Marker#rotationAlignment} setting.
+     * @returns {Marker} `this`
+     */
+    setRotation(rotation: number) {
+        this._rotation = rotation || 0;
+        this._update();
+        return this;
+    }
+
+    /**
+     * Returns the current rotation angle of the marker (in degrees).
+     * @returns {number} The current rotation angle of the marker.
+     */
+    getRotation() {
+        return this._rotation;
+    }
+
+    /**
+     * Sets the `rotationAlignment` property of the marker.
+     * @param {string} [alignment='auto'] Sets the `rotationAlignment` property of the marker.
+     * @returns {Marker} `this`
+     */
+    setRotationAlignment(alignment: string) {
+        this._rotationAlignment = alignment || 'auto';
+        this._update();
+        return this;
+    }
+
+    /**
+     * Returns the current `rotationAlignment` property of the marker.
+     * @returns {string} The current rotational alignment of the marker.
+     */
+    getRotationAlignment() {
+        return this._rotationAlignment;
+    }
+
+    /**
+     * Sets the `pitchAlignment` property of the marker.
+     * @param {string} [alignment] Sets the `pitchAlignment` property of the marker. If alignment is 'auto', it will automatically match `rotationAlignment`.
+     * @returns {Marker} `this`
+     */
+    setPitchAlignment(alignment: string) {
+        this._pitchAlignment = alignment && alignment !== 'auto' ? alignment : this._rotationAlignment;
+        this._update();
+        return this;
+    }
+
+    /**
+     * Returns the current `pitchAlignment` property of the marker.
+     * @returns {string} The current pitch alignment of the marker in degrees.
+     */
+    getPitchAlignment() {
+        return this._pitchAlignment;
     }
 }

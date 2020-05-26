@@ -1,12 +1,12 @@
 // @flow
 
 import assert from 'assert';
-import { isValue, typeOf, Color } from '../values';
+import {isValue, typeOf, Color} from '../values';
 import Formatted from '../types/formatted';
 
-import type { Type } from '../types';
-import type { Value }  from '../values';
-import type { Expression } from '../expression';
+import type {Type} from '../types';
+import type {Value}  from '../values';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 
 class Literal implements Expression {
@@ -18,7 +18,7 @@ class Literal implements Expression {
         this.value = value;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
         if (args.length !== 2)
             return context.error(`'literal' expression requires exactly one argument, but found ${args.length - 1} instead.`);
 
@@ -49,8 +49,8 @@ class Literal implements Expression {
 
     eachChild() {}
 
-    possibleOutputs() {
-        return [this.value];
+    outputDefined() {
+        return true;
     }
 
     serialize(): Array<mixed> {

@@ -2,6 +2,9 @@ import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
 import {plugins} from '../build/rollup_plugins';
+import buble from 'rollup-plugin-buble';
+import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
 
 let styles = ['mapbox://styles/mapbox/streets-v10'];
 
@@ -52,9 +55,14 @@ const viewConfig = {
         file: 'bench/benchmarks_view_generated.js',
         format: 'umd',
         indent: false,
-        sourcemap: true
+        sourcemap: false
     },
-    plugins: allPlugins
+    plugins: [
+        buble({transforms: {dangerousForOf: true}, objectAssign: true}),
+        resolve({browser: true, preferBuiltins: false}),
+        commonjs(),
+        replace(replaceConfig)
+    ]
 };
 
 export default splitConfig('versions').concat(splitConfig('styles')).concat(viewConfig);

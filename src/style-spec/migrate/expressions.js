@@ -4,11 +4,11 @@ import {
     eachLayer,
     eachProperty
 } from '../visit';
-import { isExpression } from '../expression';
+import {isExpression} from '../expression';
 import convertFunction, {convertTokenString} from '../function/convert';
 import convertFilter from '../feature_filter/convert';
 
-import type { StyleSpecification } from '../types';
+import type {StyleSpecification} from '../types';
 
 /**
  * Migrate the given style object in place to use expressions. Specifically,

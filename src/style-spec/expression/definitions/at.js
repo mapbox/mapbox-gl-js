@@ -1,14 +1,14 @@
 // @flow
 
-import { array, ValueType, NumberType } from '../types';
+import {array, ValueType, NumberType} from '../types';
 
 import RuntimeError from '../runtime_error';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Type, ArrayType } from '../types';
-import type { Value } from '../values';
+import type {Type, ArrayType} from '../types';
+import type {Value} from '../values';
 
 class At implements Expression {
     type: Type;
@@ -21,7 +21,7 @@ class At implements Expression {
         this.input = input;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
         if (args.length !== 3)
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
 
@@ -53,13 +53,13 @@ class At implements Expression {
         return array[index];
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.index);
         fn(this.input);
     }
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

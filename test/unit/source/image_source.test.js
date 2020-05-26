@@ -1,9 +1,9 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import assert from 'assert';
 import ImageSource from '../../../src/source/image_source';
-import { Evented } from '../../../src/util/evented';
+import {Evented} from '../../../src/util/evented';
 import Transform from '../../../src/geo/transform';
-import { extend } from '../../../src/util/util';
+import {extend} from '../../../src/util/util';
 import browser from '../../../src/util/browser';
 import window from '../../../src/util/window';
 
@@ -12,7 +12,7 @@ function createSource(options) {
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]]
     }, options);
 
-    const source = new ImageSource('id', options, { send() {} }, options.eventedParent);
+    const source = new ImageSource('id', options, {send() {}}, options.eventedParent);
     return source;
 }
 
@@ -20,10 +20,11 @@ class StubMap extends Evented {
     constructor() {
         super();
         this.transform = new Transform();
-    }
-
-    _transformRequest(url) {
-        return { url };
+        this._requestManager = {
+            transformRequest: (url) => {
+                return {url};
+            }
+        };
     }
 }
 
@@ -51,7 +52,7 @@ test('ImageSource', (t) => {
     t.stub(browser, 'getImageData').callsFake(() => new ArrayBuffer(1));
 
     t.test('constructor', (t) => {
-        const source = createSource({ url : '/image.png' });
+        const source = createSource({url : '/image.png'});
 
         t.equal(source.minzoom, 0);
         t.equal(source.maxzoom, 22);
@@ -60,7 +61,7 @@ test('ImageSource', (t) => {
     });
 
     t.test('fires dataloading event', (t) => {
-        const source = createSource({ url : '/image.png' });
+        const source = createSource({url : '/image.png'});
         source.on('dataloading', (e) => {
             t.equal(e.dataType, 'source');
             t.end();
@@ -70,9 +71,9 @@ test('ImageSource', (t) => {
     });
 
     t.test('transforms url request', (t) => {
-        const source = createSource({ url : '/image.png' });
+        const source = createSource({url : '/image.png'});
         const map = new StubMap();
-        const spy = t.spy(map, '_transformRequest');
+        const spy = t.spy(map._requestManager, 'transformRequest');
         source.onAdd(map);
         respond();
         t.ok(spy.calledOnce);
@@ -82,15 +83,15 @@ test('ImageSource', (t) => {
     });
 
     t.test('updates url from updateImage', (t) => {
-        const source = createSource({ url : '/image.png' });
+        const source = createSource({url : '/image.png'});
         const map = new StubMap();
-        const spy = t.spy(map, '_transformRequest');
+        const spy = t.spy(map._requestManager, 'transformRequest');
         source.onAdd(map);
         respond();
         t.ok(spy.calledOnce);
         t.equal(spy.getCall(0).args[0], '/image.png');
         t.equal(spy.getCall(0).args[1], 'Image');
-        source.updateImage({ url: '/image2.png' });
+        source.updateImage({url: '/image2.png'});
         respond();
         t.ok(spy.calledTwice);
         t.equal(spy.getCall(1).args[0], '/image2.png');
@@ -99,7 +100,7 @@ test('ImageSource', (t) => {
     });
 
     t.test('sets coordinates', (t) => {
-        const source = createSource({ url : '/image.png' });
+        const source = createSource({url : '/image.png'});
         const map = new StubMap();
         source.onAdd(map);
         respond();
@@ -112,7 +113,7 @@ test('ImageSource', (t) => {
     });
 
     t.test('sets coordinates via updateImage', (t) => {
-        const source = createSource({ url : '/image.png' });
+        const source = createSource({url : '/image.png'});
         const map = new StubMap();
         source.onAdd(map);
         respond();
@@ -129,7 +130,7 @@ test('ImageSource', (t) => {
     });
 
     t.test('fires data event when content is loaded', (t) => {
-        const source = createSource({ url : '/image.png' });
+        const source = createSource({url : '/image.png'});
         source.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'content') {
                 t.ok(typeof source.tileID == 'object');
@@ -141,7 +142,7 @@ test('ImageSource', (t) => {
     });
 
     t.test('fires data event when metadata is loaded', (t) => {
-        const source = createSource({ url : '/image.png' });
+        const source = createSource({url : '/image.png'});
         source.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 t.end();
@@ -152,7 +153,7 @@ test('ImageSource', (t) => {
     });
 
     t.test('serialize url and coordinates', (t) => {
-        const source = createSource({ url: '/image.png' });
+        const source = createSource({url: '/image.png'});
 
         const serialized = source.serialize();
         t.equal(serialized.type, 'image');

@@ -17,6 +17,12 @@ import type Color from '../../style-spec/util/color';
 
 import type Formatted from '../../style-spec/expression/types/formatted';
 
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+
+import {
+    ColorType
+} from '../../style-spec/expression/types';
+
 export type LayoutProps = {|
     "symbol-placement": DataConstantProperty<"point" | "line" | "line-center">,
     "symbol-spacing": DataConstantProperty<number>,
@@ -30,7 +36,7 @@ export type LayoutProps = {|
     "icon-size": DataDrivenProperty<number>,
     "icon-text-fit": DataConstantProperty<"none" | "width" | "height" | "both">,
     "icon-text-fit-padding": DataConstantProperty<[number, number, number, number]>,
-    "icon-image": DataDrivenProperty<string>,
+    "icon-image": DataDrivenProperty<ResolvedImage>,
     "icon-rotate": DataDrivenProperty<number>,
     "icon-padding": DataConstantProperty<number>,
     "icon-keep-upright": DataConstantProperty<boolean>,
@@ -50,6 +56,7 @@ export type LayoutProps = {|
     "text-variable-anchor": DataConstantProperty<Array<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">>,
     "text-anchor": DataDrivenProperty<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">,
     "text-max-angle": DataConstantProperty<number>,
+    "text-writing-mode": DataConstantProperty<Array<"horizontal" | "vertical">>,
     "text-rotate": DataDrivenProperty<number>,
     "text-padding": DataConstantProperty<number>,
     "text-keep-upright": DataConstantProperty<boolean>,
@@ -93,6 +100,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "text-variable-anchor": new DataConstantProperty(styleSpec["layout_symbol"]["text-variable-anchor"]),
     "text-anchor": new DataDrivenProperty(styleSpec["layout_symbol"]["text-anchor"]),
     "text-max-angle": new DataConstantProperty(styleSpec["layout_symbol"]["text-max-angle"]),
+    "text-writing-mode": new DataConstantProperty(styleSpec["layout_symbol"]["text-writing-mode"]),
     "text-rotate": new DataDrivenProperty(styleSpec["layout_symbol"]["text-rotate"]),
     "text-padding": new DataConstantProperty(styleSpec["layout_symbol"]["text-padding"]),
     "text-keep-upright": new DataConstantProperty(styleSpec["layout_symbol"]["text-keep-upright"]),
@@ -129,7 +137,7 @@ const paint: Properties<PaintProps> = new Properties({
     "icon-translate": new DataConstantProperty(styleSpec["paint_symbol"]["icon-translate"]),
     "icon-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["icon-translate-anchor"]),
     "text-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["text-opacity"]),
-    "text-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-color"]),
+    "text-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-color"], { runtimeType: ColorType, getOverride: (o) => o.textColor, hasOverride: (o) => !!o.textColor }),
     "text-halo-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-color"]),
     "text-halo-width": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-width"]),
     "text-halo-blur": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-blur"]),

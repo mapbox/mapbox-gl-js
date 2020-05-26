@@ -4,8 +4,8 @@ import Benchmark from '../lib/benchmark';
 
 import spec from '../../src/style-spec/reference/latest';
 import convertFunction from '../../src/style-spec/function/convert';
-import { isFunction, createFunction } from '../../src/style-spec/function';
-import { createPropertyExpression } from '../../src/style-spec/expression';
+import {isFunction, createFunction} from '../../src/style-spec/function';
+import {createPropertyExpression} from '../../src/style-spec/expression';
 import fetchStyle from '../lib/fetch_style';
 
 import type {StyleSpecification} from '../../src/style-spec/types';
@@ -83,14 +83,6 @@ export class FunctionEvaluate extends ExpressionBenchmark {
     bench() {
         for (const {compiledFunction} of this.data) {
             compiledFunction.evaluate({zoom: 0});
-        }
-    }
-}
-
-export class FunctionConvert extends ExpressionBenchmark {
-    bench() {
-        for (const {rawValue, propertySpec} of this.data) {
-            convertFunction(rawValue, propertySpec);
         }
     }
 }

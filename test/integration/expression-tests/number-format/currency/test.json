@@ -8,8 +8,8 @@
     }
   ],
   "inputs": [
-    [{}, {"properties": {"locale": "ja-JP", "currency": "JPY"}}],
-    [{}, {"properties": {"locale": "de-DE", "currency": "EUR"}}]
+    [{}, {"properties": {"locale": "en-US", "currency": "JPY"}}],
+    [{}, {"properties": {"locale": "en-US", "currency": "EUR"}}]
   ],
   "expected": {
     "compiled": {
@@ -18,7 +18,7 @@
       "isZoomConstant": true,
       "type": "string"
     },
-    "outputs": ["JP¥ 123,457", "€ 123,456.79"],
+    "outputs": ["¥123,457", "€123,456.79"],
     "serialized": [
       "number-format",
       123456.789,

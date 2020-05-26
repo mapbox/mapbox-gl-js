@@ -1,7 +1,5 @@
 // @flow
 
-import browser from '../util/browser';
-
 import {prelude} from '../shaders';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration';
@@ -25,21 +23,21 @@ export type DrawMode =
 
 class Program<Us: UniformBindings> {
     program: WebGLProgram;
-    attributes: {[string]: number};
+    attributes: {[_: string]: number};
     numAttributes: number;
     fixedUniforms: Us;
     binderUniforms: Array<BinderUniform>;
+    failedToCreate: boolean;
 
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
-                configuration: ProgramConfiguration,
+                configuration: ?ProgramConfiguration,
                 fixedUniforms: (Context, UniformLocations) => Us,
                 showOverdrawInspector: boolean) {
         const gl = context.gl;
         this.program = gl.createProgram();
 
-        const defines = configuration.defines().concat(
-            `#define DEVICE_PIXEL_RATIO ${browser.devicePixelRatio.toFixed(1)}`);
+        const defines = configuration ? configuration.defines() : [];
         if (showOverdrawInspector) {
             defines.push('#define OVERDRAW_INSPECTOR;');
         }
@@ -47,12 +45,20 @@ class Program<Us: UniformBindings> {
         const fragmentSource = defines.concat(prelude.fragmentSource, source.fragmentSource).join('\n');
         const vertexSource = defines.concat(prelude.vertexSource, source.vertexSource).join('\n');
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        if (gl.isContextLost()) {
+            this.failedToCreate = true;
+            return;
+        }
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
         assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
         gl.attachShader(this.program, fragmentShader);
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        if (gl.isContextLost()) {
+            this.failedToCreate = true;
+            return;
+        }
         gl.shaderSource(vertexShader, vertexSource);
         gl.compileShader(vertexShader);
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
@@ -62,13 +68,16 @@ class Program<Us: UniformBindings> {
         // ProgramInterface so that we don't dynamically link an unused
         // attribute at position 0, which can cause rendering to fail for an
         // entire layer (see #4607, #4728)
-        const layoutAttributes = configuration.layoutAttributes || [];
+        const layoutAttributes = configuration ? configuration.layoutAttributes : [];
         for (let i = 0; i < layoutAttributes.length; i++) {
             gl.bindAttribLocation(this.program, i, layoutAttributes[i].name);
         }
 
         gl.linkProgram(this.program);
         assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program): any));
+
+        gl.deleteShader(vertexShader);
+        gl.deleteShader(fragmentShader);
 
         this.numAttributes = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
 
@@ -91,7 +100,7 @@ class Program<Us: UniformBindings> {
         }
 
         this.fixedUniforms = fixedUniforms(context, uniformLocations);
-        this.binderUniforms = configuration.getUniforms(context, uniformLocations);
+        this.binderUniforms = configuration ? configuration.getUniforms(context, uniformLocations) : [];
     }
 
     draw(context: Context,
@@ -112,6 +121,8 @@ class Program<Us: UniformBindings> {
          dynamicLayoutBuffer2: ?VertexBuffer) {
 
         const gl = context.gl;
+
+        if (this.failedToCreate) return;
 
         context.program.set(this.program);
         context.setDepthMode(depthMode);

@@ -1,0 +1,25 @@
+{
+  "expression": ["slice", ["get", "val"], ["get", "i1"], ["get", "i2"]],
+  "inputs": [
+    [{}, { "properties": { "val": "0123456789", "i1": 1, "i2": 8 } }],
+    [{}, { "properties": { "val": "0123456789", "i1": 4, "i2": -2 } }],
+    [{}, { "properties": { "val": "0123456789", "i1": -3, "i2": -1 } }],
+    [{}, { "properties": { "val": "0123456789", "i1": 0, "i2": -1 } }],
+    [{}, { "properties": { "val": "0123456789", "i1": 0, "i2": 99 } }]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "value"
+    },
+    "outputs": ["1234567", "4567", "78", "012345678", "0123456789"],
+    "serialized": [
+      "slice",
+      ["get", "val"],
+      ["number", ["get", "i1"]],
+      ["number", ["get", "i2"]]
+    ]
+  }
+}

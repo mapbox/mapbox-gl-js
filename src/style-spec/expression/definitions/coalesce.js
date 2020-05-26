@@ -2,13 +2,13 @@
 
 import assert from 'assert';
 
-import { checkSubtype, ValueType } from '../types';
+import {checkSubtype, ValueType} from '../types';
+import ResolvedImage from '../types/resolved_image';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Value } from '../values';
-import type { Type } from '../types';
+import type {Type} from '../types';
 
 class Coalesce implements Expression {
     type: Type;
@@ -19,7 +19,7 @@ class Coalesce implements Expression {
         this.args = args;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
         if (args.length < 2) {
             return context.error("Expectected at least one argument.");
         }
@@ -53,19 +53,34 @@ class Coalesce implements Expression {
 
     evaluate(ctx: EvaluationContext) {
         let result = null;
+        let argCount = 0;
+        let requestedImageName;
         for (const arg of this.args) {
+            argCount++;
             result = arg.evaluate(ctx);
+            // we need to keep track of the first requested image in a coalesce statement
+            // if coalesce can't find a valid image, we return the first image name so styleimagemissing can fire
+            if (result && result instanceof ResolvedImage && !result.available) {
+                if (!requestedImageName) {
+                    requestedImageName = result.name;
+                }
+                result = null;
+                if (argCount === this.args.length) {
+                    result = requestedImageName;
+                }
+            }
+
             if (result !== null) break;
         }
         return result;
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         this.args.forEach(fn);
     }
 
-    possibleOutputs(): Array<Value | void> {
-        return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
+    outputDefined(): boolean {
+        return this.args.every(arg => arg.outputDefined());
     }
 
     serialize() {

@@ -1,6 +1,6 @@
 // @flow
 
-import { OverscaledTileID } from './tile_id';
+import {OverscaledTileID} from './tile_id';
 import type Tile from './tile';
 
 /**
@@ -12,8 +12,8 @@ import type Tile from './tile';
  */
 class TileCache {
     max: number;
-    data: {[key: number | string]: Array<{ value: Tile, timeout: ?TimeoutID}>};
-    order: Array<number>;
+    data: {[key: string]: Array<{ value: Tile, timeout: ?TimeoutID}>};
+    order: Array<string>;
     onRemove: (element: Tile) => void;
     /**
      * @param {number} max number of permitted values
@@ -110,7 +110,7 @@ class TileCache {
     /*
      * Get and remove the value with the specified key.
      */
-    _getAndRemoveByKey(key: number): ?Tile {
+    _getAndRemoveByKey(key: string): ?Tile {
         const data = this.data[key].shift();
         if (data.timeout) clearTimeout(data.timeout);
 
@@ -120,6 +120,14 @@ class TileCache {
         this.order.splice(this.order.indexOf(key), 1);
 
         return data.value;
+    }
+
+    /*
+     * Get the value with the specified (wrapped tile) key.
+     */
+    getByKey(key: string): ?Tile {
+        const data = this.data[key];
+        return data ? data[0].value : null;
     }
 
     /**
@@ -178,6 +186,26 @@ class TileCache {
         }
 
         return this;
+    }
+
+    /**
+     * Remove entries that do not pass a filter function. Used for removing
+     * stale tiles from the cache.
+     *
+     * @param {function} filterFn Determines whether the tile is filtered. If the supplied function returns false, the tile will be filtered out.
+     */
+    filter(filterFn: (tile: Tile) => boolean) {
+        const removed = [];
+        for (const key in this.data) {
+            for (const entry of this.data[key]) {
+                if (!filterFn(entry.value)) {
+                    removed.push(entry);
+                }
+            }
+        }
+        for (const r of removed) {
+            this.remove(r.value.tileID, r);
+        }
     }
 }
 

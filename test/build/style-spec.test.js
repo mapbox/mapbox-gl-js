@@ -1,7 +1,6 @@
 
 /* eslint-disable import/no-commonjs */
 
-const test = require('mapbox-gl-js-test').test;
 const fs = require('fs');
 const path = require('path');
 const isBuiltin = require('is-builtin-module');
@@ -9,6 +8,7 @@ const isBuiltin = require('is-builtin-module');
 const Linter = require('eslint').Linter;
 const rollup = require('rollup');
 
+import {test} from '../util/test';
 import rollupConfig from '../../src/style-spec/rollup.config';
 
 // some paths

@@ -4,7 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -14,11 +14,10 @@
 <body>
 <div id='map'></div>
 
-<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/94/three.min.js"></script>
-<script src='/debug/access_token_generated.js'></script>
+<script src='../debug/access_token_generated.js'></script>
 <script>
-
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
@@ -46,7 +45,7 @@ class ThreeJSCube {
         this.scene = new THREE.Scene();
 
         var geometry = new THREE.BoxGeometry(1, 1, 1);
-        var material = new THREE.MeshPhongMaterial({ color: 0xeeeeff });
+        var material = new THREE.MeshPhongMaterial({color: 0xeeeeff});
         this.cube = new THREE.Mesh(geometry, material);
         this.scene.add(this.cube);
 

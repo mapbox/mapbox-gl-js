@@ -41,7 +41,7 @@ class LngLatBounds {
     /**
      * Set the northeast corner of the bounding box
      *
-     * @param {LngLatLike} ne
+     * @param {LngLatLike} ne a {@link LngLatLike} object describing the northeast corner of the bounding box.
      * @returns {LngLatBounds} `this`
      */
     setNorthEast(ne: LngLatLike) {
@@ -52,7 +52,7 @@ class LngLatBounds {
     /**
      * Set the southwest corner of the bounding box
      *
-     * @param {LngLatLike} sw
+     * @param {LngLatLike} sw a {@link LngLatLike} object describing the southwest corner of the bounding box.
      * @returns {LngLatBounds} `this`
      */
     setSouthWest(sw: LngLatLike) {
@@ -61,12 +61,12 @@ class LngLatBounds {
     }
 
     /**
-     * Extend the bounds to include a given LngLat or LngLatBounds.
+     * Extend the bounds to include a given LngLatLike or LngLatBoundsLike.
      *
-     * @param {LngLat|LngLatBounds} obj object to extend to
+     * @param {LngLatLike|LngLatBoundsLike} obj object to extend to
      * @returns {LngLatBounds} `this`
      */
-    extend(obj: LngLat | LngLatBounds) {
+    extend(obj: LngLatLike | LngLatBoundsLike) {
         const sw = this._sw,
             ne = this._ne;
         let sw2, ne2;
@@ -83,10 +83,12 @@ class LngLatBounds {
 
         } else {
             if (Array.isArray(obj)) {
-                if (obj.every(Array.isArray)) {
-                    return this.extend(LngLatBounds.convert(obj));
+                if (obj.length === 4 || obj.every(Array.isArray)) {
+                    const lngLatBoundsObj = ((obj: any): LngLatBoundsLike);
+                    return this.extend(LngLatBounds.convert(lngLatBoundsObj));
                 } else {
-                    return this.extend(LngLat.convert(obj));
+                    const lngLatObj = ((obj: any): LngLatLike);
+                    return this.extend(LngLat.convert(lngLatObj));
                 }
             }
             return this;
@@ -207,6 +209,33 @@ class LngLatBounds {
      */
     isEmpty() {
         return !(this._sw && this._ne);
+    }
+
+    /**
+    * Check if the point is within the bounding box.
+    *
+    * @param {LngLatLike} lnglat geographic point to check against.
+    * @returns {boolean} True if the point is within the bounding box.
+    * @example
+    * var llb = new mapboxgl.LngLatBounds(
+    *   new mapboxgl.LngLat(-73.9876, 40.7661),
+    *   new mapboxgl.LngLat(-73.9397, 40.8002)
+    * );
+    *
+    * var ll = new mapboxgl.LngLat(-73.9567, 40.7789);
+    *
+    * console.log(llb.contains(ll)); // = true
+    */
+    contains(lnglat: LngLatLike) {
+        const {lng, lat} = LngLat.convert(lnglat);
+
+        const containsLatitude = this._sw.lat <= lat && lat <= this._ne.lat;
+        let containsLongitude = this._sw.lng <= lng && lng <= this._ne.lng;
+        if (this._sw.lng > this._ne.lng) { // wrapped coordinates
+            containsLongitude = this._sw.lng >= lng && lng >= this._ne.lng;
+        }
+
+        return containsLatitude && containsLongitude;
     }
 
     /**

@@ -1,8 +1,8 @@
 // @flow
 
 import CompoundExpression from './compound_expression';
-
-import type { Expression } from './expression.js';
+import Within from './definitions/within';
+import type {Expression} from './expression.js';
 
 function isFeatureConstant(e: Expression) {
     if (e instanceof CompoundExpression) {
@@ -21,6 +21,10 @@ function isFeatureConstant(e: Expression) {
         } else if (/^filter-/.test(e.name)) {
             return false;
         }
+    }
+
+    if (e instanceof Within) {
+        return false;
     }
 
     let result = true;
@@ -52,4 +56,4 @@ function isGlobalPropertyConstant(e: Expression, properties: Array<string>) {
     return result;
 }
 
-export { isFeatureConstant, isGlobalPropertyConstant, isStateConstant };
+export {isFeatureConstant, isGlobalPropertyConstant, isStateConstant};

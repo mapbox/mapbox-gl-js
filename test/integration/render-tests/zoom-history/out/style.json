@@ -4,7 +4,7 @@
     "test": {
       "width": 256,
       "height": 256,
-      "diff": 0.00025,
+      "allowed": 0.00025,
       "operations": [
         [
           "wait"

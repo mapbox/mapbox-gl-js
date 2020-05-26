@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import {
     getArrayBuffer,
     getJSON,
@@ -8,6 +8,7 @@ import {
 } from '../../../src/util/ajax';
 import window from '../../../src/util/window';
 import config from '../../../src/util/config';
+import webpSupported from '../../../src/util/webp_supported';
 
 test('ajax', (t) => {
     t.beforeEach(callback => {
@@ -24,7 +25,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(404);
         });
-        getArrayBuffer({ url:'' }, (error) => {
+        getArrayBuffer({url:''}, (error) => {
             t.equal(error.status, 404);
             t.end();
         });
@@ -35,7 +36,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(200, {'Content-Type': 'application/json'}, '{"foo": "bar"}');
         });
-        getJSON({ url:'' }, (error, body) => {
+        getJSON({url:''}, (error, body) => {
             t.error(error);
             t.deepEqual(body, {foo: 'bar'});
             t.end();
@@ -47,7 +48,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(200, {'Content-Type': 'application/json'}, 'how do i even');
         });
-        getJSON({ url:'' }, (error) => {
+        getJSON({url:''}, (error) => {
             t.ok(error);
             t.end();
         });
@@ -58,7 +59,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(404);
         });
-        getJSON({ url:'' }, (error) => {
+        getJSON({url:''}, (error) => {
             t.equal(error.status, 404);
             t.end();
         });
@@ -69,7 +70,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(401);
         });
-        getJSON({ url:'' }, (error) => {
+        getJSON({url:''}, (error) => {
             t.equal(error.status, 401);
             t.equal(error.message, "Unauthorized");
             t.end();
@@ -81,7 +82,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(401);
         });
-        getJSON({ url:'api.mapbox.com' }, (error) => {
+        getJSON({url:'api.mapbox.com'}, (error) => {
             t.equal(error.status, 401);
             t.equal(error.message, "Unauthorized: you may have provided an invalid Mapbox access token. See https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes");
             t.end();
@@ -93,7 +94,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(204);
         });
-        postData({ url:'api.mapbox.com' }, (error) => {
+        postData({url:'api.mapbox.com'}, (error) => {
             t.equal(error, null);
             t.end();
         });
@@ -166,7 +167,7 @@ test('ajax', (t) => {
         t.equals(window.server.requests.length, maxRequests);
 
         const queuedURL = 'this-is-the-queued-request';
-        const queued = getImage({ url: queuedURL }, () => t.fail());
+        const queued = getImage({url: queuedURL}, () => t.fail());
 
         // the new requests is queued because the limit is reached
         t.equals(window.server.requests.length, maxRequests);
@@ -183,6 +184,29 @@ test('ajax', (t) => {
         t.equals(queuedRequest.aborted, true);
 
         t.end();
+    });
+
+    t.test('getImage sends accept/webp when supported', (t) => {
+        resetImageRequestQueue();
+
+        window.server.respondWith((request) => {
+            t.ok(request.requestHeaders.accept.includes('image/webp'), 'accepts header contains image/webp');
+            request.respond(200, {'Content-Type': 'image/webp'}, '');
+        });
+
+        // mock webp support
+        webpSupported.supported = true;
+
+        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
+        window.Image = class {
+            set src(src) {
+                setTimeout(() => this.onload());
+            }
+        };
+
+        getImage({url: ''}, () => { t.end(); });
+
+        window.server.respond();
     });
 
     t.end();

@@ -37,7 +37,7 @@ import * as glob from 'glob';
  * @returns {undefined} terminates the process when testing is complete
  */
 export function run(implementation, ignores, render) {
-    const options = { ignores, tests:[], shuffle:false, recycleMap:false, seed:makeHash() };
+    const options = {ignores, tests:[], shuffle:false, recycleMap:false, seed:makeHash()};
 
     // https://stackoverflow.com/a/1349426/229714
     function makeHash() {
@@ -135,7 +135,7 @@ export function run(implementation, ignores, render) {
 
                     const diff = pixelmatch(
                         actualImg.data, expectedImg.data, diffImg.data,
-                        width, height, {threshold: 0.13}) / (width * height);
+                        width, height, {threshold: 0.1285}) / (width * height);
 
                     if (diff < minDiff) {
                         minDiff = diff;

@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { createExpression } from '../style-spec/expression';
+import {createExpression} from '../style-spec/expression';
 
 export function getSuperclusterOptions({superclusterOptions, clusterProperties}) {
     if (!clusterProperties || !superclusterOptions) return superclusterOptions;
@@ -39,5 +39,6 @@ export function getSuperclusterOptions({superclusterOptions, clusterProperties})
             accumulated[key] = reduceExpressions[key].evaluate(globals, feature);
         }
     };
+
     return superclusterOptions;
 }

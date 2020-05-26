@@ -1,4 +1,4 @@
-[<img width="400" alt="Mapbox" src="docs/pages/assets/logo.png">](https://www.mapbox.com/)
+[<img width="400" alt="Mapbox" src="https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/assets/logo.png">](https://www.mapbox.com/)
 
 ## Fork Versions:
 
@@ -12,6 +12,7 @@ Fork Version | Mapbox version | Notes
 0.0.6        | 0.42.2         | Added support for finding features contributing to a cluster, so that we can spiderfy.
 0.0.10       | 0.48.0         | Merged version 0.48.0 (latest version while working on this merge). Along with extra features/bug fixes, they implemented support for getChildren/getLeaves in geojson source. We got of our implementation of the same from geojsonSource/geojsonWorkerSource but mimiced mapbox's implementation in vectorTileSource/VectorTileWorkerSource. (We worked on unifinished branches/changes in between, so some version numbers have been skipped.) In this version, the getLeaves method parameters have changed for geojsonSource and vectorTileSource.
 0.0.11       | 0.54.1         | Merged version 0.51.1 (latest version while working on this merge). We got rid of custom aggregation/groupBy that we had for clustering and reused `clusterProperties` introduced in the recent versions. (`clusterProperties` will work for vector sources `geojsonTile` is `true` and `cluster` is `true`). Change `getClusterLeaves` to `getLeaves` in vector source, to match the function name in the geojson source implemented by mapbox team.
+0.0.12       | 1.10.1         | Merged version 1.10.1 |
 
 ## Fork Modifications:
  * **Get Pins in Cluster**: ~~Expose getLeaves in superCluster via an interface, so that we can get the pins in a cluster and spiderfy them. Same has been added for vectortile source with geojson endpoints and clustering.~~ (It has been implemented by mapbox and has been merged in fork version 0.0.10. But in vector tile source, we have implemented a simillar version of mapbox's getLeaves but for vector tile sources.)
@@ -59,7 +60,7 @@ native SDKs. For code and issues specific to the native SDKs, see the
 - [Open source styles](https://github.com/mapbox/mapbox-gl-styles)
 - [Contributor documentation](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md)
 
-[<img width="981" alt="Mapbox GL gallery" src="docs/pages/assets/gallery.png">](https://www.mapbox.com/gallery/)
+[<img width="981" alt="Mapbox GL gallery" src="https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/assets/gallery.png">](https://www.mapbox.com/gallery/)
 
 ## License
 

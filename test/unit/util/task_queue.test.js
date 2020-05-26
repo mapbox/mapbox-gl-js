@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import TaskQueue from '../../../src/util/task_queue';
 
 test('TaskQueue', (t) => {
@@ -50,7 +50,6 @@ test('TaskQueue', (t) => {
         t.equal(no.callCount, 0);
         t.end();
     });
-
 
     t.test('Allows each instance of a multiply-queued callback to be cancelled independently', (t) => {
         const q = new TaskQueue();

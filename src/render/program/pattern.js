@@ -5,10 +5,9 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
-    Uniform4f
+    Uniform3f
 } from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
-import browser from '../../util/browser';
 
 import type Painter from '../painter';
 import type {OverscaledTileID} from '../../source/tile_id';
@@ -16,6 +15,7 @@ import type {CrossFaded} from '../../style/properties';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters';
 import type {UniformValues} from '../uniform_binding';
 import type Tile from '../../source/tile';
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
 
 type BackgroundPatternUniformsType = {|
     'u_image': Uniform1i,
@@ -38,7 +38,7 @@ export type PatternUniformsType = {|
     // pattern uniforms:
     'u_image': Uniform1i,
     'u_texsize': Uniform2f,
-    'u_scale': Uniform4f,
+    'u_scale': Uniform3f,
     'u_fade': Uniform1f,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f
@@ -59,8 +59,7 @@ function patternUniformValues(crossfade: CrossfadeParameters, painter: Painter,
     return {
         'u_image': 0,
         'u_texsize': tile.imageAtlasTexture.size,
-        // this assumes all images in the icon atlas texture have the same pixel ratio
-        'u_scale': [browser.devicePixelRatio, tileRatio, crossfade.fromScale, crossfade.toScale],
+        'u_scale': [tileRatio, crossfade.fromScale, crossfade.toScale],
         'u_fade': crossfade.t,
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],
@@ -68,11 +67,11 @@ function patternUniformValues(crossfade: CrossfadeParameters, painter: Painter,
     };
 }
 
-function bgPatternUniformValues(image: CrossFaded<string>, crossfade: CrossfadeParameters, painter: Painter,
+function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, crossfade: CrossfadeParameters, painter: Painter,
         tile: {tileID: OverscaledTileID, tileSize: number}
 ): UniformValues<BackgroundPatternUniformsType> {
-    const imagePosA = painter.imageManager.getPattern(image.from);
-    const imagePosB = painter.imageManager.getPattern(image.to);
+    const imagePosA = painter.imageManager.getPattern(image.from.toString());
+    const imagePosB = painter.imageManager.getPattern(image.to.toString());
     assert(imagePosA && imagePosB);
     const {width, height} = painter.imageManager.getPixelSize();
 
@@ -100,4 +99,4 @@ function bgPatternUniformValues(image: CrossFaded<string>, crossfade: CrossfadeP
         'u_pixel_coord_lower': [pixelX & 0xFFFF, pixelY & 0xFFFF]
     };
 }
-export { bgPatternUniformValues, patternUniformValues };
+export {bgPatternUniformValues, patternUniformValues};

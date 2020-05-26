@@ -1,8 +1,6 @@
 /rollup/build/
-/docs/components/api.json
 /dist/
-/docs/pages/dist/
-/docs/img/dist/
+*.es.js
 *.js.map
 node_modules
 package-lock.json
@@ -17,6 +15,9 @@ test/integration/**/index*.html
 test/integration/**/actual.png
 test/integration/**/actual.json
 test/integration/**/diff.png
+test/integration/**/test-results.xml
+test/integration/dist/**/*.js
+test/integration/dist/**/*.json
 .eslintcache
 src/style-spec/dist/index.js
 _batfish_site
@@ -25,3 +26,4 @@ _site
 yarn-error.log
 yarn-debug.log
 npm-debug.log
+.idea

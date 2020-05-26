@@ -27,7 +27,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const image = layer.paint.get('background-pattern');
     if (painter.isPatternMissing(image)) return;
 
-    const pass = (!image && color.a === 1 && opacity === 1) ? 'opaque' : 'translucent';
+    const pass = (!image && color.a === 1 && opacity === 1 && painter.opaquePassEnabledForLayer()) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
 
     const stencilMode = StencilMode.disabled;
@@ -46,7 +46,6 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const crossfade = layer.getCrossfadeParameters();
     for (const tileID of tileIDs) {
         const matrix = painter.transform.calculatePosMatrix(tileID.toUnwrapped());
-
         const uniformValues = image ?
             backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :
             backgroundUniformValues(matrix, opacity, color);

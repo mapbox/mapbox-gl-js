@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../util/test';
 import mapboxgl from '../../src';
 
 test('mapboxgl', (t) => {

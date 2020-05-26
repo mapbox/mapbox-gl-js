@@ -53,6 +53,8 @@ export default class PaintStates extends Benchmark {
                     style
                 }).then(map => {
                     this.map = map;
+                }).catch(error => {
+                    console.error(error);
                 });
             });
     }
@@ -62,7 +64,7 @@ export default class PaintStates extends Benchmark {
         this.map._sourcesDirty = true;
         this.map._render();
         for (let i = 0; i < this.numFeatures; i += 50) {
-            this.map.setFeatureState({ source: 'land', id: i }, { bench: true });
+            this.map.setFeatureState({source: 'land', id: i}, {bench: true});
         }
         this.map._render();
     }

@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@0.1.16
 
 workflows:
   version: 2
@@ -26,6 +28,14 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - collect-stats:
+          requires:
+            - build
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: master
       - test-flow:
           requires:
             - prepare
@@ -51,6 +61,12 @@ workflows:
             tags:
               only: /.*/
       - test-expressions:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - test-browser:
           requires:
             - prepare
           filters:
@@ -89,7 +105,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: mbgl/80dbb7f452:linux
+    - image: circleci/node:10.16-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -99,11 +115,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v2-yarn-{{ checksum "yarn.lock" }}
-            - v2-yarn
+            - v3-yarn-{{ checksum "yarn.lock" }}
       - run: yarn
       - save_cache:
-          key: v2-yarn-{{ checksum "yarn.lock" }}
+          key: v3-yarn-{{ checksum "yarn.lock" }}
           paths:
             - '~/.yarn'
             - 'node_modules'
@@ -119,13 +134,13 @@ jobs:
           at: .
       - restore_cache:
           keys:
-            - v1-lint-{{ .Branch }}
-            - v1-lint
+            - v2-lint-{{ .Branch }}
+            - v2-lint
       - run: yarn run lint
       - run: yarn run lint-docs
       - run: yarn run lint-css
       - save_cache:
-          key: v1-lint-{{ .Branch }}-{{ .Revision }}
+          key: v2-lint-{{ .Branch }}-{{ .Revision }}
           paths:
             - '.eslintcache'
 
@@ -135,11 +150,17 @@ jobs:
       - attach_workspace:
           at: .
       - run: yarn run build-prod-min
+      - run: yarn run build-prod
+      - run: yarn run build-csp
       - run: yarn run build-dev
       - run: yarn run build-css
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
       - run: yarn run test-build
+      - store_artifacts:
+          path: "dist"
+      - store_artifacts:
+          path: "test/release"
       - persist_to_workspace:
           root: .
           paths:
@@ -150,7 +171,24 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: node build/check-bundle-size.js "dist/mapbox-gl.js" "GL JS - Minified"
+      - run:
+          name: Check bundle size
+          command: |
+            node build/check-bundle-size.js "dist/mapbox-gl.js" "JS"
+            node build/check-bundle-size.js "dist/mapbox-gl.css" "CSS"
+
+  collect-stats:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Collect performance stats
+          command: node bench/gl-stats.js
+      - aws-cli/install
+      - run:
+          name: Upload performance stats
+          command: aws s3 cp data.json.gz s3://mapbox-loading-dock/raw/gl_js.perf_metrics_staging/ci/`git show -s --date=short --format=%cd-%h HEAD`.json.gz
 
   test-flow:
     <<: *defaults
@@ -164,14 +202,14 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-unit
+      - run: yarn run test-unit
 
   test-render:
     <<: *defaults
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-render
+      - run: yarn run test-render
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
@@ -180,9 +218,31 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-query
+      - run: yarn run test-query
+      - store_test_results:
+          path: test/integration/query-tests
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
+
+  test-browser:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: yarn run build-dev
+      - run: yarn run build-token
+      - run:
+          name: Test Chrome
+          environment:
+            SELENIUM_BROWSER: chrome
+            TAP_COLORS: 1
+          command: yarn run test-browser
+      - run:
+          name: Test Firefox
+          environment:
+            SELENIUM_BROWSER: firefox
+            TAP_COLORS: 1
+          command: yarn run test-browser
 
   test-expressions:
     <<: *defaults
@@ -199,6 +259,7 @@ jobs:
       - run:
           name: Build
           command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
+      - aws-cli/install
       - run:
           name: Upload benchmark
           command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js
@@ -211,18 +272,22 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - aws-cli/install
       - run:
           name: Deploy release
           command: |
             function upload {
                 aws s3 cp --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js/$CIRCLE_TAG/$1
-
-                AWS_ACCESS_KEY_ID=$AWSCN_ACCESS_KEY_ID \
-                AWS_SECRET_ACCESS_KEY=$AWSCN_SECRET_ACCESS_KEY \
-                aws s3 cp --region cn-north-1 --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js-cn-north-1/$CIRCLE_TAG/$1
             }
 
             upload mapbox-gl.js     application/javascript
             upload mapbox-gl.js.map application/octet-stream
             upload mapbox-gl-dev.js application/javascript
             upload mapbox-gl.css    text/css
+
+            upload mapbox-gl-unminified.js     application/javascript
+            upload mapbox-gl-unminified.js.map application/octet-stream
+            upload mapbox-gl-csp.js            application/javascript
+            upload mapbox-gl-csp.js.map        application/octet-stream
+            upload mapbox-gl-csp-worker.js     application/javascript
+            upload mapbox-gl-csp-worker.js.map application/octet-stream

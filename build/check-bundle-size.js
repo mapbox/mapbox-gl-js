@@ -54,7 +54,7 @@ function getMergeBase() {
         return github.pullRequests.get({
             owner: 'mapbox',
             repo: 'mapbox-gl-js',
-            number
+            pull_number: number
         }).then(({data}) => {
             const base = data.base.ref;
             const head = process.env['CIRCLE_SHA1'];
@@ -88,34 +88,39 @@ function getPriorSize(mergeBase) {
         ref: mergeBase
     }).then(({data}) => {
         const run = data.check_runs.find(run => run.name === name);
-        if (!run) {
-            console.log('No matching check found.');
-            return Promise.resolve(null);
+        if (run) {
+            const match = run.output.summary.match(/`[^`]+` is (\d+) bytes \([^\)]+\) uncompressed, (\d+) bytes \([^\)]+\) gzipped\./);
+            if (match) {
+                const prior = { size: +match[1], gzipSize: +match[2] };
+                console.log(`Prior size was ${prettyBytes(prior.size)}, gzipped ${prior.gzipSize}.`);
+                return prior;
+            }
         }
-        const prior = +run.output.summary.match(/`.*` is (\d+) bytes/)[1];
-        console.log(`Prior size was ${prettyBytes(prior)}.`);
-        return prior;
+        console.log('No matching check found.');
+        return Promise.resolve(null);
     });
+}
+
+function formatSize(size, priorSize) {
+    if (priorSize) {
+        const change = size - priorSize;
+        const percent = (change / priorSize) * 100;
+        return `${change >= 0 ? '+' : ''}${prettyBytes(change)} ${percent.toFixed(3)}% (${prettyBytes(size)})`;
+    } else {
+        return prettyBytes(size);
+    }
 }
 
 github.apps.createInstallationToken({installation_id: SIZE_CHECK_APP_INSTALLATION_ID})
     .then(({data}) => {
         github.authenticate({type: 'token', token: data.token});
         getMergeBase().then(getPriorSize).then(prior => {
-            const title = (() => {
-                if (prior) {
-                    const change = size - prior;
-                    const percent = (change / prior) * 100;
-                    return `${change >= 0 ? '+' : ''}${prettyBytes(change)} ${percent.toFixed(3)}% (${prettyBytes(size)})`;
-                } else {
-                    return prettyBytes(size);
-                }
-            })();
+            const title = `${formatSize(size, prior ? prior.size : null)}, gzipped ${formatSize(gzipSize, prior ? prior.gzipSize : null)}`;
 
             const megabit = Math.pow(2, 12);
             const downloadTime3G = (gzipSize / (3 * megabit)).toFixed(0);
             const downloadTime4G = (gzipSize / (10 * megabit)).toFixed(0);
-            const summary = `\`${file}\` is ${size} bytes (${prettyBytes(size)}) uncompressed, ${gzipSize} (${prettyBytes(gzipSize)}) gzipped.
+            const summary = `\`${file}\` is ${size} bytes (${prettyBytes(size)}) uncompressed, ${gzipSize} bytes (${prettyBytes(gzipSize)}) gzipped.
 That's **${downloadTime3G} seconds** over slow 3G (3 Mbps), **${downloadTime4G} seconds** over fast 4G (10 Mbps).`;
 
             console.log(`Posting check result:\n${title}\n${summary}`);
@@ -123,7 +128,7 @@ That's **${downloadTime3G} seconds** over slow 3G (3 Mbps), **${downloadTime4G} 
             return github.checks.create({
                 owner: 'mapbox',
                 repo: 'mapbox-gl-js',
-                name: `Size - ${label}`,
+                name,
                 head_branch: process.env['CIRCLE_BRANCH'],
                 head_sha: process.env['CIRCLE_SHA1'],
                 status: 'completed',

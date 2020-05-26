@@ -2,13 +2,13 @@
 
 import potpack from 'potpack';
 
-import { Event, Evented } from '../util/evented';
-import { RGBAImage } from '../util/image';
-import { ImagePosition } from './image_atlas';
+import {Event, ErrorEvent, Evented} from '../util/evented';
+import {RGBAImage} from '../util/image';
+import {ImagePosition} from './image_atlas';
 import Texture from './texture';
 import assert from 'assert';
 import {renderStyleImage} from '../style/style_image';
-import { warnOnce } from '../util/util';
+import {warnOnce} from '../util/util';
 
 import type {StyleImage} from '../style/style_image';
 import type Context from '../gl/context';
@@ -38,13 +38,13 @@ const padding = 1;
     to refactor this.
 */
 class ImageManager extends Evented {
-    images: {[string]: StyleImage};
-    updatedImages: {[string]: boolean};
-    callbackDispatchedThisFrame: {[string]: boolean};
+    images: {[_: string]: StyleImage};
+    updatedImages: {[_: string]: boolean};
+    callbackDispatchedThisFrame: {[_: string]: boolean};
     loaded: boolean;
-    requestors: Array<{ids: Array<string>, callback: Callback<{[string]: StyleImage}>}>;
+    requestors: Array<{ids: Array<string>, callback: Callback<{[_: string]: StyleImage}>}>;
 
-    patterns: {[string]: Pattern};
+    patterns: {[_: string]: Pattern};
     atlasImage: RGBAImage;
     atlasTexture: ?Texture;
     dirty: boolean;
@@ -87,7 +87,48 @@ class ImageManager extends Evented {
 
     addImage(id: string, image: StyleImage) {
         assert(!this.images[id]);
-        this.images[id] = image;
+        if (this._validate(id, image)) {
+            this.images[id] = image;
+        }
+    }
+
+    _validate(id: string, image: StyleImage) {
+        let valid = true;
+        if (!this._validateStretch(image.stretchX, image.data && image.data.width)) {
+            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchX" value`)));
+            valid = false;
+        }
+        if (!this._validateStretch(image.stretchY, image.data && image.data.height)) {
+            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchY" value`)));
+            valid = false;
+        }
+        if (!this._validateContent(image.content, image)) {
+            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "content" value`)));
+            valid = false;
+        }
+        return valid;
+    }
+
+    _validateStretch(stretch: ?Array<[number, number]> | void, size: number) {
+        if (!stretch) return true;
+        let last = 0;
+        for (const part of stretch) {
+            if (part[0] < last || part[1] < part[0] || size < part[1]) return false;
+            last = part[1];
+        }
+        return true;
+    }
+
+    _validateContent(content: ?[number, number, number, number] | void, image: StyleImage) {
+        if (!content) return true;
+        if (content.length !== 4) return false;
+        if (content[0] < 0 || image.data.width < content[0]) return false;
+        if (content[1] < 0 || image.data.height < content[1]) return false;
+        if (content[2] < 0 || image.data.width < content[2]) return false;
+        if (content[3] < 0 || image.data.height < content[3]) return false;
+        if (content[2] < content[0]) return false;
+        if (content[3] < content[1]) return false;
+        return true;
     }
 
     updateImage(id: string, image: StyleImage) {
@@ -115,9 +156,9 @@ class ImageManager extends Evented {
         return Object.keys(this.images);
     }
 
-    getImages(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
+    getImages(ids: Array<string>, callback: Callback<{[_: string]: StyleImage}>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
-        // (i.e. if they've been addeded via runtime styling), then notify the requestor immediately.
+        // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
         // dependencies are still unavailable, we'll just assume they are permanently missing.
         let hasAllDependencies = true;
@@ -135,12 +176,12 @@ class ImageManager extends Evented {
         }
     }
 
-    _notify(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
+    _notify(ids: Array<string>, callback: Callback<{[_: string]: StyleImage}>) {
         const response = {};
 
         for (const id of ids) {
             if (!this.images[id]) {
-                this.fire(new Event('styleimagemissing', { id }));
+                this.fire(new Event('styleimagemissing', {id}));
             }
             const image = this.images[id];
             if (image) {
@@ -150,6 +191,9 @@ class ImageManager extends Evented {
                     pixelRatio: image.pixelRatio,
                     sdf: image.sdf,
                     version: image.version,
+                    stretchX: image.stretchX,
+                    stretchY: image.stretchY,
+                    content: image.content,
                     hasRenderCallback: Boolean(image.userImage && image.userImage.render)
                 };
             } else {
@@ -225,13 +269,13 @@ class ImageManager extends Evented {
             const w = src.width;
             const h = src.height;
 
-            RGBAImage.copy(src, dst, { x: 0, y: 0 }, { x, y }, { width: w, height: h });
+            RGBAImage.copy(src, dst, {x: 0, y: 0}, {x, y}, {width: w, height: h});
 
             // Add 1 pixel wrapped padding on each side of the image.
-            RGBAImage.copy(src, dst, { x: 0, y: h - 1 }, { x, y: y - 1 }, { width: w, height: 1 }); // T
-            RGBAImage.copy(src, dst, { x: 0, y:     0 }, { x, y: y + h }, { width: w, height: 1 }); // B
-            RGBAImage.copy(src, dst, { x: w - 1, y: 0 }, { x: x - 1, y }, { width: 1, height: h }); // L
-            RGBAImage.copy(src, dst, { x: 0,     y: 0 }, { x: x + w, y }, { width: 1, height: h }); // R
+            RGBAImage.copy(src, dst, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}); // T
+            RGBAImage.copy(src, dst, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}); // B
+            RGBAImage.copy(src, dst, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}); // L
+            RGBAImage.copy(src, dst, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}); // R
         }
 
         this.dirty = true;

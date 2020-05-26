@@ -1,7 +1,7 @@
 // @flow
 
-import type { Type } from '../types';
-import type { Expression } from '../expression';
+import type {Type} from '../types';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext  from '../evaluation_context';
 
@@ -16,7 +16,7 @@ class Var implements Expression {
         this.boundExpression = boundExpression;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
         if (args.length !== 2 || typeof args[1] !== 'string')
             return context.error(`'var' expression requires exactly one string literal argument.`);
 
@@ -34,8 +34,8 @@ class Var implements Expression {
 
     eachChild() {}
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

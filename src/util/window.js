@@ -1,4 +1,4 @@
-// @flow
+// @flow strict
 
 // This file is intended for use in the GL-JS test suite
 // It implements a JSDOM window object for use in Node environments
@@ -10,11 +10,10 @@ import jsdom from 'jsdom';
 
 import gl from 'gl';
 import sinon from 'sinon';
-import { extend } from './util';
 
 import type {Window} from '../types/window';
 
-const { window: _window } = new jsdom.JSDOM('', {
+const {window: _window} = new jsdom.JSDOM('', {
     virtualConsole: new jsdom.VirtualConsole().sendTo(console)
 });
 
@@ -28,12 +27,12 @@ function restore(): Window {
     if (previousWindow.close) previousWindow.close();
     for (const key in previousWindow) {
         if (previousWindow.hasOwnProperty(key)) {
-            delete (previousWindow: any)[key];
+            delete previousWindow[key];
         }
     }
 
     // Create new window and inject into exported object
-    const { window } = new jsdom.JSDOM('', {
+    const {window} = new jsdom.JSDOM('', {
         // Send jsdom console output to the node console object.
         virtualConsole: new jsdom.VirtualConsole().sendTo(console)
     });
@@ -77,12 +76,27 @@ function restore(): Window {
 
     window.URL.revokeObjectURL = function () {};
 
+    window.fakeWorkerPresence = function() {
+        global.WorkerGlobalScope = function() {};
+        global.self = new global.WorkerGlobalScope();
+    };
+    window.clearFakeWorkerPresence = function() {
+        global.WorkerGlobalScope = undefined;
+        global.self = undefined;
+    };
+
     window.restore = restore;
+
+    window.performance.getEntriesByName = function() {};
+    window.performance.mark = function() {};
+    window.performance.measure = function() {};
+    window.performance.clearMarks = function() {};
+    window.performance.clearMeasures = function() {};
 
     window.ImageData = window.ImageData || function() { return false; };
     window.ImageBitmap = window.ImageBitmap || function() { return false; };
     window.WebGLFramebuffer = window.WebGLFramebuffer || Object;
-    extend(_window, window);
+    Object.assign(_window, window); // eslint-disable-line no-restricted-properties
 
     return window;
 }

@@ -30,6 +30,9 @@ export default class Paint extends Benchmark {
         }))
             .then(maps => {
                 this.maps = maps;
+            })
+            .catch(error => {
+                console.error(error);
             });
     }
 
@@ -37,7 +40,7 @@ export default class Paint extends Benchmark {
         for (const map of this.maps) {
             map._styleDirty = true;
             map._sourcesDirty = true;
-            map._render();
+            map._render(Date.now());
         }
     }
 

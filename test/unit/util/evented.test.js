@@ -1,5 +1,5 @@
-import { test } from 'mapbox-gl-js-test';
-import { Event, Evented } from '../../../src/util/evented';
+import {test} from '../../util/test';
+import {Event, Evented} from '../../../src/util/evented';
 
 test('Evented', (t) => {
 
@@ -211,7 +211,6 @@ test('Evented', (t) => {
             t.ok(eventedSink.listens('a'));
             t.end();
         });
-
 
         t.test('eventedParent data function is evaluated on every fire', (t) => {
             const eventedSource = new Evented();

@@ -1,6 +1,6 @@
 // @flow
 
-import { warnOnce } from '../util/util';
+import {warnOnce, clamp} from '../util/util';
 
 import EXTENT from './extent';
 
@@ -17,7 +17,7 @@ function createBounds(bits) {
     };
 }
 
-const bounds = createBounds(16);
+const bounds = createBounds(15);
 
 /**
  * Loads a geometry from a VectorTileFeature and scales it to the common extent
@@ -39,6 +39,8 @@ export default function loadGeometry(feature: VectorTileFeature): Array<Array<Po
 
             if (point.x < bounds.min || point.x > bounds.max || point.y < bounds.min || point.y > bounds.max) {
                 warnOnce('Geometry exceeds allowed extent, reduce your vector tile buffer size');
+                point.x = clamp(point.x, bounds.min, bounds.max);
+                point.y = clamp(point.y, bounds.min, bounds.max);
             }
         }
     }

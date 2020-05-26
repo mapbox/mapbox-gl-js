@@ -66,13 +66,13 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePatternPaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers(crossfade);
         }
-
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
-            const posTo = tile.imageAtlas.patternPositions[constantPattern.to];
-            const posFrom = tile.imageAtlas.patternPositions[constantPattern.from];
+            const atlas = tile.imageAtlas;
+            const posTo = atlas.patternPositions[constantPattern.to.toString()];
+            const posFrom = atlas.patternPositions[constantPattern.from.toString()];
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
@@ -86,7 +86,6 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         const uniformValues = image ?
             fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord, crossfade, tile) :
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity);
-
 
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,

@@ -22,6 +22,17 @@ import type Color from '../../style-spec/util/color';
 
 import type Formatted from '../../style-spec/expression/types/formatted';
 
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+<%
+const overridables = paintProperties.filter(p => p.overridable)
+if (overridables.length) { -%>
+
+import {
+    <%= overridables.reduce((imports, prop) => { imports.push(runtimeType(prop)); return imports; }, []).join(',\n\t'); -%>
+
+} from '../../style-spec/expression/types';
+<% } -%>
+
 <% if (layoutProperties.length) { -%>
 export type LayoutProps = {|
 <% for (const property of layoutProperties) { -%>

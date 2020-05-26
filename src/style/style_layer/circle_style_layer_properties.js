@@ -17,6 +17,15 @@ import type Color from '../../style-spec/util/color';
 
 import type Formatted from '../../style-spec/expression/types/formatted';
 
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+
+export type LayoutProps = {|
+    "circle-sort-key": DataDrivenProperty<number>,
+|};
+
+const layout: Properties<LayoutProps> = new Properties({
+    "circle-sort-key": new DataDrivenProperty(styleSpec["layout_circle"]["circle-sort-key"]),
+});
 
 export type PaintProps = {|
     "circle-radius": DataDrivenProperty<number>,
@@ -49,6 +58,6 @@ const paint: Properties<PaintProps> = new Properties({
 // Note: without adding the explicit type annotation, Flow infers weaker types
 // for these objects from their use in the constructor to StyleLayer, as
 // {layout?: Properties<...>, paint: Properties<...>}
-export default ({ paint }: $Exact<{
-  paint: Properties<PaintProps>
+export default ({ paint, layout }: $Exact<{
+  paint: Properties<PaintProps>, layout: Properties<LayoutProps>
 }>);

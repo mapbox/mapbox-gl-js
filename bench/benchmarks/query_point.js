@@ -41,6 +41,9 @@ export default class QueryPoint extends Benchmark {
         }))
             .then(maps => {
                 this.maps = maps;
+            })
+            .catch(error => {
+                console.error(error);
             });
     }
 

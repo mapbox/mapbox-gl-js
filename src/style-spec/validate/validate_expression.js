@@ -2,9 +2,9 @@
 
 import ValidationError from '../error/validation_error';
 
-import { createExpression, createPropertyExpression } from '../expression';
-import { deepUnbundle } from '../util/unbundle_jsonlint';
-import { isStateConstant, isGlobalPropertyConstant, isFeatureConstant } from '../expression/is_constant';
+import {createExpression, createPropertyExpression} from '../expression';
+import {deepUnbundle} from '../util/unbundle_jsonlint';
+import {isStateConstant, isGlobalPropertyConstant, isFeatureConstant} from '../expression/is_constant';
 
 export default function validateExpression(options: any): Array<ValidationError> {
     const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec);
@@ -17,7 +17,7 @@ export default function validateExpression(options: any): Array<ValidationError>
     const expressionObj = (expression.value: any).expression || (expression.value: any)._styleExpression.expression;
 
     if (options.expressionContext === 'property' && (options.propertyKey === 'text-font') &&
-        expressionObj.possibleOutputs().indexOf(undefined) !== -1) {
+        !expressionObj.outputDefined()) {
         return [new ValidationError(options.key, options.value, `Invalid data expression for "${options.propertyKey}". Output values must be contained as literals within the expression.`)];
     }
 

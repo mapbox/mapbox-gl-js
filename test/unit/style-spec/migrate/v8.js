@@ -1,7 +1,7 @@
-import { test as t } from 'mapbox-gl-js-test';
+import {test} from '../../../util/test';
 import migrate from '../../../../src/style-spec/migrate/v8';
 
-t('split text-font', (t) => {
+test('split text-font', (t) => {
     const input = {
         "version": 7,
         "sources": {
@@ -48,7 +48,7 @@ t('split text-font', (t) => {
     t.end();
 });
 
-t('rename symbol-min-distance', (t) => {
+test('rename symbol-min-distance', (t) => {
     const input = {
         "version": 7,
         "sources": {
@@ -93,7 +93,7 @@ t('rename symbol-min-distance', (t) => {
     t.end();
 });
 
-t('renames urls', (t) => {
+test('renames urls', (t) => {
     const input = {
         "version": 7,
         "sources": {
@@ -120,8 +120,7 @@ t('renames urls', (t) => {
     t.end();
 });
 
-
-t('not migrate interpolated functions', (t) => {
+test('not migrate interpolated functions', (t) => {
     const input = {
         "version": 7,
         "sources": {
@@ -170,7 +169,7 @@ t('not migrate interpolated functions', (t) => {
     t.end();
 });
 
-t('not migrate piecewise-constant functions', (t) => {
+test('not migrate piecewise-constant functions', (t) => {
     const input = {
         "version": 7,
         "sources": {
@@ -217,7 +216,7 @@ t('not migrate piecewise-constant functions', (t) => {
     t.end();
 });
 
-t('inline constants', (t) => {
+test('inline constants', (t) => {
     const input = {
         "version": 7,
         "constants": {
@@ -261,7 +260,7 @@ t('inline constants', (t) => {
     t.end();
 });
 
-t('migrate and inline fontstack constants', (t) => {
+test('migrate and inline fontstack constants', (t) => {
     const input = {
         "version": 7,
         "constants": {
@@ -305,7 +304,7 @@ t('migrate and inline fontstack constants', (t) => {
     t.end();
 });
 
-t('update fontstack function', (t) => {
+test('update fontstack function', (t) => {
     const input = {
         "version": 7,
         "sources": {
@@ -364,7 +363,7 @@ t('update fontstack function', (t) => {
     t.end();
 });
 
-t('inline and migrate fontstack constant function', (t) => {
+test('inline and migrate fontstack constant function', (t) => {
     const input = {
         "version": 7,
         "constants": {
@@ -426,7 +425,7 @@ t('inline and migrate fontstack constant function', (t) => {
     t.end();
 });
 
-t('update fontstack function constant', (t) => {
+test('update fontstack function constant', (t) => {
     const input = {
         "version": 7,
         "constants": {
@@ -483,7 +482,7 @@ t('update fontstack function constant', (t) => {
     t.end();
 });
 
-t('migrate UNversioned fontstack urls', (t) => {
+test('migrate UNversioned fontstack urls', (t) => {
     const input = {
         "version": 7,
         "glyphs": "mapbox://fontstack/{fontstack}/{range}.pbf",
@@ -500,7 +499,7 @@ t('migrate UNversioned fontstack urls', (t) => {
     t.end();
 });
 
-t('migrate versioned fontstack urls', (t) => {
+test('migrate versioned fontstack urls', (t) => {
     const input = {
         "version": 7,
         "glyphs": "mapbox://fonts/v1/boxmap/{fontstack}/{range}.pbf",

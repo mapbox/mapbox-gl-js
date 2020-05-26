@@ -2,7 +2,7 @@
 
 import DOM from '../../util/dom';
 
-import { bindAll, warnOnce } from '../../util/util';
+import {bindAll, warnOnce} from '../../util/util';
 import window from '../../util/window';
 
 import type Map from '../map';
@@ -29,7 +29,6 @@ class FullscreenControl {
     _fullscreen: boolean;
     _fullscreenchange: string;
     _fullscreenButton: HTMLElement;
-    _className: string;
     _container: HTMLElement;
 
     constructor(options: Options) {
@@ -54,13 +53,12 @@ class FullscreenControl {
         } else if ('onmsfullscreenchange' in window.document) {
             this._fullscreenchange = 'MSFullscreenChange';
         }
-        this._className = 'mapboxgl-ctrl';
     }
 
     onAdd(map: Map) {
         this._map = map;
         if (!this._container) this._container = this._map.getContainer();
-        this._controlContainer = DOM.create('div', `${this._className} mapboxgl-ctrl-group`);
+        this._controlContainer = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
         if (this._checkFullscreenSupport()) {
             this._setupUI();
         } else {
@@ -86,7 +84,8 @@ class FullscreenControl {
     }
 
     _setupUI() {
-        const button = this._fullscreenButton = DOM.create('button', (`${this._className}-icon ${this._className}-fullscreen`), this._controlContainer);
+        const button = this._fullscreenButton = DOM.create('button', (`mapboxgl-ctrl-fullscreen`), this._controlContainer);
+        DOM.create('span', `mapboxgl-ctrl-icon`, button).setAttribute('aria-hidden', true);
         button.type = 'button';
         this._updateTitle();
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
@@ -94,9 +93,13 @@ class FullscreenControl {
     }
 
     _updateTitle() {
-        const title = this._isFullscreen() ? "Exit fullscreen" : "Enter fullscreen";
+        const title = this._getTitle();
         this._fullscreenButton.setAttribute("aria-label", title);
         this._fullscreenButton.title = title;
+    }
+
+    _getTitle() {
+        return this._map._getUIString(this._isFullscreen() ? 'FullscreenControl.Exit' : 'FullscreenControl.Enter');
     }
 
     _isFullscreen() {
@@ -112,8 +115,8 @@ class FullscreenControl {
 
         if ((fullscreenElement === this._container) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
-            this._fullscreenButton.classList.toggle(`${this._className}-shrink`);
-            this._fullscreenButton.classList.toggle(`${this._className}-fullscreen`);
+            this._fullscreenButton.classList.toggle(`mapboxgl-ctrl-shrink`);
+            this._fullscreenButton.classList.toggle(`mapboxgl-ctrl-fullscreen`);
             this._updateTitle();
         }
     }

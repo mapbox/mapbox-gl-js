@@ -1,0 +1,36 @@
+{
+  "expression": [
+    "boolean",
+    ["in", ["get", "i"], ["get", "arr"]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"i": null, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 1, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 9, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": "foo", "arr": ["baz", "bar", "hello", "foo", "world"]}}],
+    [{}, {"properties": {"i": true, "arr": ["foo", 123, null, 456, false, {}, true]}}],
+    [{}, {"properties": {"i": null, "arr": ["foo", 123, null, 456, false, {}, true]}}],
+    [{}, {"properties": {"i": 1, "arr": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ],
+    "serialized": [
+      "boolean",
+      ["in", ["get", "i"], ["get", "arr"]]
+    ]
+  }
+}

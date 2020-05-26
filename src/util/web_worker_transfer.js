@@ -4,15 +4,16 @@ import assert from 'assert';
 
 import Grid from 'grid-index';
 import Color from '../style-spec/util/color';
-import { StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomConstantExpression } from '../style-spec/expression';
+import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomConstantExpression} from '../style-spec/expression';
 import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import window from './window';
-const { ImageData } = window;
+const {ImageData, ImageBitmap} = window;
 
 import type {Transferable} from '../types/transferable';
 
-type SerializedObject = { [string]: Serialized }; // eslint-disable-line
+type SerializedObject = {[_: string]: Serialized }; // eslint-disable-line
 export type Serialized =
     | null
     | void
@@ -31,7 +32,7 @@ export type Serialized =
     | SerializedObject;
 
 type Registry = {
-    [string]: {
+    [_: string]: {
         klass: Class<any>,
         omit: $ReadOnlyArray<string>,
         shallow: $ReadOnlyArray<string>
@@ -86,6 +87,7 @@ register('Grid', Grid);
 
 register('Color', Color);
 register('Error', Error);
+register('ResolvedImage', ResolvedImage);
 
 register('StylePropertyFunction', StylePropertyFunction);
 register('StyleExpression', StyleExpression, {omit: ['_evaluator']});
@@ -96,6 +98,16 @@ register('CompoundExpression', CompoundExpression, {omit: ['_evaluate']});
 for (const name in expressions) {
     if ((expressions[name]: any)._classRegistryKey) continue;
     register(`Expression_${name}`, expressions[name]);
+}
+
+function isArrayBuffer(val: any): boolean {
+    return val && typeof ArrayBuffer !== 'undefined' &&
+           (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
+}
+
+function isImageBitmap(val: any): boolean {
+    return ImageBitmap &&
+        val instanceof ImageBitmap;
 }
 
 /**
@@ -112,7 +124,7 @@ for (const name in expressions) {
  *
  * @private
  */
-export function serialize(input: mixed, transferables?: Array<Transferable>): Serialized {
+export function serialize(input: mixed, transferables: ?Array<Transferable>): Serialized {
     if (input === null ||
         input === undefined ||
         typeof input === 'boolean' ||
@@ -126,9 +138,9 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
         return input;
     }
 
-    if (input instanceof ArrayBuffer) {
+    if (isArrayBuffer(input) || isImageBitmap(input)) {
         if (transferables) {
-            transferables.push(input);
+            transferables.push(((input: any): ArrayBuffer));
         }
         return input;
     }
@@ -216,7 +228,8 @@ export function deserialize(input: Serialized): mixed {
         input instanceof String ||
         input instanceof Date ||
         input instanceof RegExp ||
-        input instanceof ArrayBuffer ||
+        isArrayBuffer(input) ||
+        isImageBitmap(input) ||
         ArrayBuffer.isView(input) ||
         input instanceof ImageData) {
         return input;

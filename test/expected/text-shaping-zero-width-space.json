@@ -1,0 +1,349 @@
+{
+  "positionedLines": [
+    {
+      "positionedGlyphs": [
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": -63,
+          "y": -41,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": -42,
+          "y": -41,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": -21,
+          "y": -41,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": 0,
+          "y": -41,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": 21,
+          "y": -41,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": 42,
+          "y": -41,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        }
+      ],
+      "lineOffset": 0
+    },
+    {
+      "positionedGlyphs": [
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": -63,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": -42,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": -21,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": 0,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": 21,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": 42,
+          "y": -17,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        }
+      ],
+      "lineOffset": 0
+    },
+    {
+      "positionedGlyphs": [
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": -21,
+          "y": 7,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "glyph": 19977,
+          "imageName": null,
+          "x": 0,
+          "y": 7,
+          "vertical": false,
+          "scale": 1,
+          "fontStack": "Test",
+          "sectionIndex": 0,
+          "metrics": {
+            "width": 18,
+            "height": 18,
+            "left": 2,
+            "top": -8,
+            "advance": 21
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          }
+        }
+      ],
+      "lineOffset": 0
+    }
+  ],
+  "text": "三三​三三​三三​三三三三三三​三三",
+  "top": -36,
+  "bottom": 36,
+  "left": -63,
+  "right": 63,
+  "writingMode": 1,
+  "iconsInText": false,
+  "verticalizable": false
+}

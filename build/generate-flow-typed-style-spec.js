@@ -33,7 +33,7 @@ function flowType(property) {
             case 'light':
                 return 'LightSpecification';
             case 'sources':
-                return '{[string]: SourceSpecification}';
+                return '{[_: string]: SourceSpecification}';
             case '*':
                 return 'mixed';
             default:
@@ -119,6 +119,10 @@ fs.writeFileSync('src/style-spec/types.js', `// @flow
 export type ColorSpecification = string;
 
 export type FormattedSpecification = string;
+
+export type ResolvedImageSpecification = string;
+
+export type PromoteIdSpecification = {[_: string]: string} | string;
 
 export type FilterSpecification =
     | ['has', string]

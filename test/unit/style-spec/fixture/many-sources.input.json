@@ -1,0 +1,14 @@
+{
+  "version": 8,
+  "sources": {
+    "one": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v6"
+    },
+    "two": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v6,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,fourteen,fifteen,sixteen"
+    }
+  },
+  "layers": []
+}

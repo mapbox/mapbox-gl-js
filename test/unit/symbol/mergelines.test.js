@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import mergeLines from '../../../src/symbol/mergelines';
 import Point from '@mapbox/point-geometry';
 

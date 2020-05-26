@@ -89,4 +89,4 @@ function saturationFactor(saturation) {
         -saturation;
 }
 
-export { rasterUniforms, rasterUniformValues };
+export {rasterUniforms, rasterUniformValues};

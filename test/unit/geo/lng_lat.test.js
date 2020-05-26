@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import LngLat from '../../../src/geo/lng_lat';
 
 test('LngLat', (t) => {
@@ -39,10 +39,10 @@ test('LngLat', (t) => {
     });
 
     t.test('#wrap', (t) => {
-        t.deepEqual(new LngLat(0, 0).wrap(), { lng: 0, lat: 0 });
-        t.deepEqual(new LngLat(10, 20).wrap(), { lng: 10, lat: 20 });
-        t.deepEqual(new LngLat(360, 0).wrap(), { lng: 0, lat: 0 });
-        t.deepEqual(new LngLat(190, 0).wrap(), { lng: -170, lat: 0 });
+        t.deepEqual(new LngLat(0, 0).wrap(), {lng: 0, lat: 0});
+        t.deepEqual(new LngLat(10, 20).wrap(), {lng: 10, lat: 20});
+        t.deepEqual(new LngLat(360, 0).wrap(), {lng: 0, lat: 0});
+        t.deepEqual(new LngLat(190, 0).wrap(), {lng: -170, lat: 0});
         t.end();
     });
 
@@ -53,6 +53,33 @@ test('LngLat', (t) => {
 
     t.test('#toString', (t) => {
         t.equal(new LngLat(10, 20).toString(), 'LngLat(10, 20)');
+        t.end();
+    });
+
+    t.test('#distanceTo', (t) => {
+        const newYork = new LngLat(-74.0060, 40.7128);
+        const losAngeles = new LngLat(-118.2437, 34.0522);
+        const d = newYork.distanceTo(losAngeles); // 3935751.690893987, "true distance" is 3966km
+        t.ok(d > 3935750, "New York should be more than 3935750m from Los Angeles");
+        t.ok(d < 3935752, "New York should be less than 3935752m from Los Angeles");
+        t.end();
+    });
+
+    t.test('#distanceTo to pole', (t) => {
+        const newYork = new LngLat(-74.0060, 40.7128);
+        const northPole = new LngLat(-135, 90);
+        const d = newYork.distanceTo(northPole); // 5480494.158486183 , "true distance" is 5499km
+        t.ok(d > 5480493, "New York should be more than 5480493m from the North Pole");
+        t.ok(d < 5480495, "New York should be less than 5480495m from the North Pole");
+        t.end();
+    });
+
+    t.test('#distanceTo to Null Island', (t) => {
+        const newYork = new LngLat(-74.0060, 40.7128);
+        const nullIsland = new LngLat(0, 0);
+        const d = newYork.distanceTo(nullIsland); // 8667080.125666846 , "true distance" is 8661km
+        t.ok(d > 8667079, "New York should be more than 8667079m from Null Island");
+        t.ok(d < 8667081, "New York should be less than 8667081m from Null Island");
         t.end();
     });
 

@@ -1,0 +1,223 @@
+{
+  "version": 8,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "font-scale-override": 2.0,
+              "text-font-override": ["Arial"]
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 0 ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "no options - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text"
+        ]
+      }
+    },
+    {
+      "id": "empty options - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          {}
+        ]
+      }
+    },
+    {
+      "id": "no parameters - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format"
+        ]
+      }
+    },
+    {
+      "id": "empty options - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          {}
+        ]
+      }
+    },
+    {
+      "id": "font-scale option float literal - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "font-scale": 1.5 }
+        ]
+      }
+    },
+    {
+      "id": "font-scale option expression - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "font-scale": ["get", "font-scale-override"] }
+        ]
+      }
+    },
+    {
+      "id": "font-scale option invalid expression type - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "font-scale": ["string", 3.0] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option array - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["Helvetica"] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option literal coercion - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["literal", ["Helvetica"]] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option expression - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["get", "text-font-override"] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option invalid expression type - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["number", ["get", "font-scale-override"]] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option array expression - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          { "text-font": ["array", "string", ["literal", ["Helvetica"]]] }
+        ]
+      }
+    },
+    {
+      "id": "text-font option and font-scale option combined - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          "some text",
+          {
+            "text-font": ["literal", ["Helvetica"]],
+            "font-scale": 1.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "image section with empty options - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          ["image", "image-name"],
+          {}
+        ]
+      }
+    },
+    {
+      "id": "image section with no options - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          ["image", "image-name"]
+        ]
+      }
+    },
+    {
+      "id": "mixed sections with options - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": [
+          "format",
+          ["image", "image-name"],
+          "some text",
+          {
+            "text-font": ["literal", ["Helvetica"]],
+            "font-scale": 1.5
+          },
+          "\n",
+          ["image", "another-image"]
+        ]
+      }
+    }
+  ]
+}

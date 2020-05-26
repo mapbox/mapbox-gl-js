@@ -1,6 +1,7 @@
 // @flow
 
-import { register } from '../util/web_worker_transfer';
+import murmur3 from 'murmurhash-js';
+import {register} from '../util/web_worker_transfer';
 import assert from 'assert';
 
 type SerializedFeaturePositionMap = {
@@ -26,13 +27,15 @@ export default class FeaturePositionMap {
         this.indexed = false;
     }
 
-    add(id: number, index: number, start: number, end: number) {
-        this.ids.push(id);
+    add(id: mixed, index: number, start: number, end: number) {
+        this.ids.push(getNumericId(id));
         this.positions.push(index, start, end);
     }
 
-    getPositions(id: number): Array<FeaturePosition> {
+    getPositions(id: mixed): Array<FeaturePosition> {
         assert(this.indexed);
+
+        const intId = getNumericId(id);
 
         // binary search for the first occurrence of id in this.ids;
         // relies on ids/positions being sorted by id, which happens in serialization
@@ -40,14 +43,14 @@ export default class FeaturePositionMap {
         let j = this.ids.length - 1;
         while (i < j) {
             const m = (i + j) >> 1;
-            if (this.ids[m] >= id) {
+            if (this.ids[m] >= intId) {
                 j = m;
             } else {
                 i = m + 1;
             }
         }
         const positions = [];
-        while (this.ids[i] === id) {
+        while (this.ids[i] === intId) {
             const index = this.positions[3 * i];
             const start = this.positions[3 * i + 1];
             const end = this.positions[3 * i + 2];
@@ -63,7 +66,9 @@ export default class FeaturePositionMap {
 
         sort(ids, positions, 0, ids.length - 1);
 
-        transferables.push(ids.buffer, positions.buffer);
+        if (transferables) {
+            transferables.push(ids.buffer, positions.buffer);
+        }
 
         return {ids, positions};
     }
@@ -79,26 +84,42 @@ export default class FeaturePositionMap {
     }
 }
 
-// custom quicksort that sorts ids, indices and offsets together (by ids)
-function sort(ids, positions, left, right) {
-    if (left >= right) return;
+const MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
 
-    const pivot = ids[(left + right) >> 1];
-    let i = left - 1;
-    let j = right + 1;
-
-    while (true) {
-        do i++; while (ids[i] < pivot);
-        do j--; while (ids[j] > pivot);
-        if (i >= j) break;
-        swap(ids, i, j);
-        swap(positions, 3 * i, 3 * j);
-        swap(positions, 3 * i + 1, 3 * j + 1);
-        swap(positions, 3 * i + 2, 3 * j + 2);
+function getNumericId(value: mixed) {
+    const numValue = +value;
+    if (!isNaN(numValue) && numValue <= MAX_SAFE_INTEGER) {
+        return numValue;
     }
+    return murmur3(String(value));
+}
 
-    sort(ids, positions, left, j);
-    sort(ids, positions, j + 1, right);
+// custom quicksort that sorts ids, indices and offsets together (by ids)
+// uses Hoare partitioning & manual tail call optimization to avoid worst case scenarios
+function sort(ids, positions, left, right) {
+    while (left < right) {
+        const pivot = ids[(left + right) >> 1];
+        let i = left - 1;
+        let j = right + 1;
+
+        while (true) {
+            do i++; while (ids[i] < pivot);
+            do j--; while (ids[j] > pivot);
+            if (i >= j) break;
+            swap(ids, i, j);
+            swap(positions, 3 * i, 3 * j);
+            swap(positions, 3 * i + 1, 3 * j + 1);
+            swap(positions, 3 * i + 2, 3 * j + 2);
+        }
+
+        if (j - left < right - j) {
+            sort(ids, positions, left, j);
+            left = j + 1;
+        } else {
+            sort(ids, positions, j + 1, right);
+            right = j;
+        }
+    }
 }
 
 function swap(arr, i, j) {

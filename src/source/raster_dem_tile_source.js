@@ -1,11 +1,12 @@
 // @flow
 
-import { getImage, ResourceType } from '../util/ajax';
-import { extend } from '../util/util';
-import { Evented } from '../util/evented';
-import { normalizeTileURL as normalizeURL } from '../util/mapbox';
+import {getImage, ResourceType} from '../util/ajax';
+import {extend} from '../util/util';
+import {Evented} from '../util/evented';
 import browser from '../util/browser';
-import { OverscaledTileID } from './tile_id';
+import window from '../util/window';
+import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
+import {OverscaledTileID} from './tile_id';
 import RasterTileSource from './raster_tile_source';
 // ensure DEMData is registered for worker transfer on main thread:
 import '../data/dem_data';
@@ -16,7 +17,6 @@ import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {RasterDEMSourceSpecification} from '../style-spec/types';
 
-
 class RasterDEMTileSource extends RasterTileSource implements Source {
     encoding: "mapbox" | "terrarium";
 
@@ -24,7 +24,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
         this.maxzoom = 22;
-        this._options = extend({}, options);
+        this._options = extend({type: 'raster-dem'}, options);
         this.encoding = options.encoding || "mapbox";
     }
 
@@ -40,8 +40,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
-        tile.request = getImage(this.map._transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
+        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.tileSize);
+        tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
         function imageLoaded(err, img) {
@@ -56,8 +56,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
-
-                const rawImageData = browser.getImageData(img);
+                const transfer = window.ImageBitmap && img instanceof window.ImageBitmap && offscreenCanvasSupported();
+                const rawImageData = transfer ? img : browser.getImageData(img, 1);
                 const params = {
                     uid: tile.uid,
                     coord: tile.tileID,
@@ -66,8 +66,9 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                     encoding: this.encoding
                 };
 
-                if (!tile.workerID || tile.state === 'expired') {
-                    tile.workerID = this.dispatcher.send('loadDEMTile', params, done.bind(this));
+                if (!tile.actor || tile.state === 'expired') {
+                    tile.actor = this.dispatcher.getActor();
+                    tile.actor.send('loadDEMTile', params, done.bind(this));
                 }
             }
         }
@@ -86,7 +87,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
             }
         }
     }
-
 
     _getNeighboringTiles(tileID: OverscaledTileID) {
         const canonical = tileID.canonical;
@@ -118,7 +118,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         return neighboringTiles;
     }
 
-
     unloadTile(tile: Tile) {
         if (tile.demTexture) this.map.painter.saveTileTexture(tile.demTexture);
         if (tile.fbo) {
@@ -129,7 +128,9 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         delete tile.neighboringTiles;
 
         tile.state = 'unloaded';
-        this.dispatcher.send('removeDEMTile', { uid: tile.uid, source: this.id }, undefined, tile.workerID);
+        if (tile.actor) {
+            tile.actor.send('removeDEMTile', {uid: tile.uid, source: this.id});
+        }
     }
 
 }

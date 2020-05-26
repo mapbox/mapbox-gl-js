@@ -52,6 +52,8 @@ import symbolIconFrag from './symbol_icon.fragment.glsl';
 import symbolIconVert from './symbol_icon.vertex.glsl';
 import symbolSDFFrag from './symbol_sdf.fragment.glsl';
 import symbolSDFVert from './symbol_sdf.vertex.glsl';
+import symbolTextAndIconFrag from './symbol_text_and_icon.fragment.glsl';
+import symbolTextAndIconVert from './symbol_text_and_icon.vertex.glsl';
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const background = compile(backgroundFrag, backgroundVert);
@@ -78,6 +80,7 @@ export const lineSDF = compile(lineSDFFrag, lineSDFVert);
 export const raster = compile(rasterFrag, rasterVert);
 export const symbolIcon = compile(symbolIconFrag, symbolIconVert);
 export const symbolSDF = compile(symbolSDFFrag, symbolSDFVert);
+export const symbolTextAndIcon = compile(symbolTextAndIconFrag, symbolTextAndIconVert);
 
 // Expand #pragmas to #ifdefs.
 
@@ -113,7 +116,7 @@ uniform ${precision} ${type} u_${name};
             if (operation === 'define') {
                 return `
 #ifndef HAS_UNIFORM_u_${name}
-uniform lowp float a_${name}_t;
+uniform lowp float u_${name}_t;
 attribute ${precision} ${attrType} a_${name};
 varying ${precision} ${type} ${name};
 #else
@@ -133,7 +136,7 @@ uniform ${precision} ${type} u_${name};
                 } else {
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${name} = unpack_mix_${unpackType}(a_${name}, a_${name}_t);
+    ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif
@@ -144,7 +147,7 @@ uniform ${precision} ${type} u_${name};
             if (operation === 'define') {
                 return `
 #ifndef HAS_UNIFORM_u_${name}
-uniform lowp float a_${name}_t;
+uniform lowp float u_${name}_t;
 attribute ${precision} ${attrType} a_${name};
 #else
 uniform ${precision} ${type} u_${name};
@@ -163,7 +166,7 @@ uniform ${precision} ${type} u_${name};
                 } else /* */{
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, a_${name}_t);
+    ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif

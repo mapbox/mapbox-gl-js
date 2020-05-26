@@ -1,14 +1,14 @@
 // @flow
 
-import { AlphaImage } from '../util/image';
-import { register } from '../util/web_worker_transfer';
+import {AlphaImage} from '../util/image';
+import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
 
 import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph';
 
 const padding = 1;
 
-type Rect = {
+export type Rect = {
     x: number,
     y: number,
     w: number,
@@ -20,13 +20,13 @@ export type GlyphPosition = {
     metrics: GlyphMetrics
 };
 
-export type GlyphPositions = { [string]: { [number]: GlyphPosition } }
+export type GlyphPositions = {[_: string]: {[_: number]: GlyphPosition } }
 
 export default class GlyphAtlas {
     image: AlphaImage;
     positions: GlyphPositions;
 
-    constructor(stacks: { [string]: { [number]: ?StyleGlyph } }) {
+    constructor(stacks: {[_: string]: {[_: number]: ?StyleGlyph } }) {
         const positions = {};
         const bins = [];
 

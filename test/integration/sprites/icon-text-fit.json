@@ -2,8 +2,24 @@
   "label": {
     "x": 0,
     "y": 0,
-    "width": 240,
-    "height": 60,
+    "width": 76,
+    "height": 38,
+    "pixelRatio": 1,
+    "sdf": false
+  },
+  "small-box": {
+    "x": 76,
+    "y": 0,
+    "width": 18,
+    "height": 10,
+    "pixelRatio": 1,
+    "sdf": false
+  },
+  "tall-box": {
+    "x": 76,
+    "y": 10,
+    "width": 18,
+    "height": 28,
     "pixelRatio": 1,
     "sdf": false
   }

@@ -1,10 +1,10 @@
 // @flow
 
-import { CanonicalTileID } from './tile_id';
-import { Event, ErrorEvent, Evented } from '../util/evented';
-import { getImage, ResourceType } from '../util/ajax';
+import {CanonicalTileID} from './tile_id';
+import {Event, ErrorEvent, Evented} from '../util/evented';
+import {getImage, ResourceType} from '../util/ajax';
 import EXTENT from '../data/extent';
-import { RasterBoundsArray } from '../data/array_types';
+import {RasterBoundsArray} from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
@@ -73,16 +73,17 @@ class ImageSource extends Evented implements Source {
     url: string;
 
     coordinates: Coordinates;
-    tiles: {[string]: Tile};
+    tiles: {[_: string]: Tile};
     options: any;
     dispatcher: Dispatcher;
     map: Map;
     texture: Texture | null;
-    image: HTMLImageElement;
+    image: HTMLImageElement | ImageBitmap;
     tileID: CanonicalTileID;
     _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
     boundsSegments: SegmentVector;
+    _loaded: boolean;
 
     /**
      * @private
@@ -98,6 +99,7 @@ class ImageSource extends Evented implements Source {
         this.maxzoom = 22;
         this.tileSize = 512;
         this.tiles = {};
+        this._loaded = false;
 
         this.setEventedParent(eventedParent);
 
@@ -105,11 +107,13 @@ class ImageSource extends Evented implements Source {
     }
 
     load(newCoordinates?: Coordinates, successCallback?: () => void) {
+        this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this.url = this.options.url;
 
-        getImage(this.map._transformRequest(this.url, ResourceType.Image), (err, image) => {
+        getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
+            this._loaded = true;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
@@ -125,11 +129,15 @@ class ImageSource extends Evented implements Source {
         });
     }
 
+    loaded(): boolean {
+        return this._loaded;
+    }
+
     /**
      * Updates the image URL and, optionally, the coordinates. To avoid having the image flash after changing,
      * set the `raster-fade-duration` paint property on the raster layer to 0.
      *
-     * @param {Object} options
+     * @param {Object} options Options object.
      * @param {string} [options.url] Required image URL.
      * @param {Array<Array<number>>} [options.coordinates] Four geographical coordinates,
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.

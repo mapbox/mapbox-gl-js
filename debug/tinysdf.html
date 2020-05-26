@@ -4,7 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #originalMap, #newMap { height: 100%; }
@@ -47,8 +47,8 @@
     <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
 </div>
 
-<script src='/dist/mapbox-gl-dev.js'></script>
-<script src='/debug/access_token_generated.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
 <script>
 
 function localizeLayers(map) {
@@ -90,7 +90,6 @@ document.getElementById('show-overdraw-checkbox').onclick = function() {
     originalMap.showOverdrawInspector = !!this.checked;
     newMap.showOverdrawInspector = !!this.checked;
 };
-
 
 </script>
 </body>

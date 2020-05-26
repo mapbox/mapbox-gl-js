@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "debug": true,
+      "height": 256,
+      "allowed": 0.0062
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 16,
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "layout": {
+      },
+      "paint": {
+        "raster-opacity": 1,
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

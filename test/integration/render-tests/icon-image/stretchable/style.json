@@ -1,0 +1,41 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 200,
+      "height": 150
+    }
+  },
+  "zoom": 0.5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://geojson/anchors.json"
+    }
+  },
+  "sprite": "local://sprites/stretch",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "anchor-left",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "nine-part-content",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "anchors",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 2,
+        "circle-color": "green",
+        "circle-stroke-color": "white",
+        "circle-stroke-width": 1
+      }
+    }
+  ]
+}

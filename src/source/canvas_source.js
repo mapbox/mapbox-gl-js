@@ -6,7 +6,7 @@ import window from '../util/window';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
-import { ErrorEvent } from '../util/evented';
+import {ErrorEvent} from '../util/evented';
 import ValidationError from '../style-spec/error/validation_error';
 
 import type Map from '../ui/map';
@@ -111,6 +111,7 @@ class CanvasSource extends ImageSource {
      */
 
     load() {
+        this._loaded = true;
         if (!this.canvas) {
             this.canvas = (this.options.canvas instanceof window.HTMLCanvasElement) ?
                 this.options.canvas :
@@ -201,9 +202,9 @@ class CanvasSource extends ImageSource {
         }
 
         if (!this.texture) {
-            this.texture = new Texture(context, this.canvas, gl.RGBA, { premultiply: true });
+            this.texture = new Texture(context, this.canvas, gl.RGBA, {premultiply: true});
         } else if (resize || this._playing) {
-            this.texture.update(this.canvas, { premultiply: true });
+            this.texture.update(this.canvas, {premultiply: true});
         }
 
         for (const w in this.tiles) {

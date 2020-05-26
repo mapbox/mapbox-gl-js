@@ -1,7 +1,7 @@
 // @flow
 
 import Scope from './scope';
-import { checkSubtype } from './types';
+import {checkSubtype} from './types';
 import ParsingError from './parsing_error';
 import Literal from './definitions/literal';
 import Assertion from './definitions/assertion';
@@ -9,9 +9,9 @@ import Coercion from './definitions/coercion';
 import EvaluationContext from './evaluation_context';
 import CompoundExpression from './compound_expression';
 import CollatorExpression from './definitions/collator';
+import Within from './definitions/within';
 import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
 import Var from './definitions/var';
-
 
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
@@ -113,7 +113,7 @@ class ParsingContext {
                     //
                     if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object' || expected.kind === 'array') && actual.kind === 'value') {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'assert');
-                    } else if ((expected.kind === 'color' || expected.kind === 'formatted') && (actual.kind === 'value' || actual.kind === 'string')) {
+                    } else if ((expected.kind === 'color' || expected.kind === 'formatted' || expected.kind === 'resolvedImage') && (actual.kind === 'value' || actual.kind === 'string')) {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
                     } else if (this.checkSubtype(expected, actual)) {
                         return null;
@@ -122,8 +122,9 @@ class ParsingContext {
 
                 // If an expression's arguments are all literals, we can evaluate
                 // it immediately and replace it with a literal value in the
-                // parsed/compiled result.
-                if (!(parsed instanceof Literal) && isConstant(parsed)) {
+                // parsed/compiled result. Expressions that expect an image should
+                // not be resolved here so we can later get the available images.
+                if (!(parsed instanceof Literal) && (parsed.type.kind !== 'resolvedImage') && isConstant(parsed)) {
                     const ec = new EvaluationContext();
                     try {
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));
@@ -200,6 +201,8 @@ function isConstant(expression: Expression) {
         // Although the results of a Collator expression with fixed arguments
         // generally shouldn't change between executions, we can't serialize them
         // as constant expressions because results change based on environment.
+        return false;
+    } else if (expression instanceof Within) {
         return false;
     }
 

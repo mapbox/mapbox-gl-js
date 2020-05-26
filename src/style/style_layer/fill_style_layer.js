@@ -3,20 +3,23 @@
 import StyleLayer from '../style_layer';
 
 import FillBucket from '../../data/bucket/fill_bucket';
-import { polygonIntersectsMultiPolygon } from '../../util/intersection_tests';
-import { translateDistance, translate } from '../query_utils';
+import {polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
+import {translateDistance, translate} from '../query_utils';
 import properties from './fill_style_layer_properties';
-import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
+import {Transitionable, Transitioning, Layout, PossiblyEvaluated} from '../properties';
 
-import type { FeatureState } from '../../style-spec/expression';
+import type {FeatureState} from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
-import type {PaintProps} from './fill_style_layer_properties';
+import type {LayoutProps, PaintProps} from './fill_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
 
 class FillStyleLayer extends StyleLayer {
+    _unevaluatedLayout: Layout<LayoutProps>;
+    layout: PossiblyEvaluated<LayoutProps>;
+
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
@@ -25,8 +28,8 @@ class FillStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    recalculate(parameters: EvaluationParameters) {
-        super.recalculate(parameters);
+    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+        super.recalculate(parameters, availableImages);
 
         const outlineColor = this.paint._values['fill-outline-color'];
         if (outlineColor.value.kind === 'constant' && outlineColor.value.value === undefined) {
