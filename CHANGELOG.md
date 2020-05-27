@@ -1,3 +1,20 @@
+## 1.11.0-beta.1
+
+### ✨ Features
+* Add scale option to markers, to support custom sizing when using the default Marker SVG element.([#9414](https://github.com/mapbox/mapbox-gl-js/pull/9414)) (h/t [adrianababakanian](https://github.com/adrianababakanian))
+
+### 🍏 Improvements
+* Improving the shader compilation speed by manually getting the run-time attributes and uniforms.([#9497](https://github.com/mapbox/mapbox-gl-js/pull/9497))
+* Mapbox gl-js documentation improvements.([#9607](https://github.com/mapbox/mapbox-gl-js/pull/9607))
+
+### 🐞 Bug fixes
+* Fix multi-finger gestures that touch markers.([#9683](https://github.com/mapbox/mapbox-gl-js/pull/9683))
+* Fix files within the style-spec package importing files from the parent repository tree.([#9522](https://github.com/mapbox/mapbox-gl-js/pull/9522))
+* Fix a bug where using a combined expression of within and other expressions as a filter.([#9611](https://github.com/mapbox/mapbox-gl-js/pull/9611))
+* Fix a bug where map got stuck in a DragRotate interaction if it's mouseup occurred outside of the browser window or iframe.([#9512](https://github.com/mapbox/mapbox-gl-js/pull/9512))
+* Fix potential visual regression on pattern on AMD graphics card vendor.([#9681](https://github.com/mapbox/mapbox-gl-js/pull/9681))
+* Fix `image` expression evaluation which was broken under certain conditions.([#9668](https://github.com/mapbox/mapbox-gl-js/pull/9668))
+
 ## 1.10.1
 
 ### 🐞 Bug fixes
