@@ -4,7 +4,7 @@ import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import Program from './program';
-import {circleUniformValues} from './program/circle_program';
+import {circleUniformValues, circleDefinesValues} from './program/circle_program';
 import SegmentVector from '../data/segment';
 import {OverscaledTileID} from '../source/tile_id';
 
@@ -65,7 +65,8 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         if (!bucket) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram('circle', programConfiguration);
+        const definesValues = circleDefinesValues(layer);
+        const program = painter.useProgram('circle', programConfiguration, definesValues);
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
         const uniformValues = circleUniformValues(painter, coord, tile, layer);

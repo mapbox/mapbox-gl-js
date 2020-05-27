@@ -42,14 +42,20 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
     terrainUniforms: ?TerrainUniformsType;
 
+    static cacheKey(name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
+        let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
+        for (const define of defines) {
+            key += `/${define}`;
+        }
+        return key;
+    }
+
     constructor(context: Context,
             name: string,
             source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>, staticUniforms: Array<string>},
             configuration: ?ProgramConfiguration,
             fixedUniforms: (Context, UniformLocations) => Us,
-            showOverdrawInspector: boolean,
-            terrain: ?boolean,
-            renderingToTexture: ?boolean) {
+            fixedDefines: string[]) {
         const gl = context.gl;
         this.program = gl.createProgram();
 
@@ -66,16 +72,8 @@ class Program<Us: UniformBindings> {
             if (allUniformsInfo.indexOf(uniform) < 0) allUniformsInfo.push(uniform);
         }
 
-        const defines = configuration ? configuration.defines() : [];
-        if (showOverdrawInspector) {
-            defines.push('#define OVERDRAW_INSPECTOR;');
-        }
-        if (terrain) {
-            defines.push('#define TERRAIN;');
-        }
-        if (renderingToTexture) {
-            defines.push('#define RENDER_TO_TEXTURE;');
-        }
+        let defines = configuration ? configuration.defines() : [];
+        defines = defines.concat(fixedDefines.map((define) => `#define ${define};`));
 
         const fragmentSource = defines.concat(prelude.fragmentSource, source.fragmentSource).join('\n');
         const vertexSource = defines.concat(prelude.vertexSource, preludeTerrain.vertexSource, source.vertexSource).join('\n');
@@ -129,7 +127,7 @@ class Program<Us: UniformBindings> {
 
         this.fixedUniforms = fixedUniforms(context, uniformLocations);
         this.binderUniforms = configuration ? configuration.getUniforms(context, uniformLocations) : [];
-        if (terrain) { this.terrainUniforms = terrainUniforms(context, uniformLocations); }
+        if (fixedDefines.indexOf('TERRAIN') !== -1) { this.terrainUniforms = terrainUniforms(context, uniformLocations); }
     }
 
     setTerrainUniformValues(context: Context, terrainUnformValues: UniformValues<TerrainUniformsType>) {
