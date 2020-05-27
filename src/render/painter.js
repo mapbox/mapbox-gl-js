@@ -67,6 +67,7 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type ResolvedImage from '../style-spec/expression/types/resolved_image';
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
 
@@ -655,14 +656,34 @@ class Painter {
         return !imagePosA || !imagePosB;
     }
 
-    useProgram(name: string, programConfiguration: ?ProgramConfiguration): Program<any> {
-        this.cache = this.cache || {};
-        const terrain = this.terrain && !this.terrain.renderingToTexture; // Enable elevation sampling in vertex shader.
+    /**
+     * Returns #defines that would need to be injected into every Program
+     * based on the current state of Painter.
+     *
+     * @returns {string[]}
+     * @private
+     */
+    currentGlobalDefines(): string[] {
+        const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
-        const key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}${this._showOverdrawInspector ? '/overdraw' : ''}
-            ${terrain ? '/terrain' : ''}${rtt ? '/rtt' : ''}`;
+
+        const defines = [];
+        if (terrain) defines.push('TERRAIN');
+        if (rtt) defines.push('RENDER_TO_TEXTURE');
+        if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
+        return defines;
+    }
+
+    useProgram(name: string, programConfiguration: ?ProgramConfiguration, fixedDefines: ?DynamicDefinesType[]): Program<any> {
+        this.cache = this.cache || {};
+        const defines = (((fixedDefines || []): any): string[]);
+
+        const globalDefines = this.currentGlobalDefines();
+        const allDefines = globalDefines.concat(defines);
+        const key = Program.cacheKey(name, allDefines, programConfiguration);
+
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], this._showOverdrawInspector, terrain, rtt);
+            this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], allDefines);
         }
         return this.cache[key];
     }
