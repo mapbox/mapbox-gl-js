@@ -89,6 +89,11 @@ class Aabb {
         return pointOnAabb - point[1];
     }
 
+    distanceZ(point: Array<number>): number {
+        const pointOnAabb = Math.max(Math.min(this.max[2], point[2]), this.min[2]);
+        return pointOnAabb - point[2];
+    }
+
     // Performs a frustum-aabb intersection test. Returns 0 if there's no intersection,
     // 1 if shapes are intersecting and 2 if the aabb if fully inside the frustum.
     intersects(frustum: Frustum): number {

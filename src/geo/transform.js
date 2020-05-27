@@ -509,6 +509,30 @@ class Transform {
         const square = a => a * a;
         const cameraHeightSqr = square(cameraAltitude * meterToTile); // in tile coordinates.
 
+        // Scale distance to split for acute angles.
+        // dzSqr: z component of camera to tile distance, square.
+        // dSqr: 3D distance of camera to tile, square.
+        const distToSplitScale = (dzSqr, dSqr) => {
+            // When the angle between camera to tile ray and tile plane is smaller
+            // than acuteAngleThreshold, scale the distance to split. Scaling is adaptive: smaller
+            // the angle, the scale gets lower value.
+            const acuteAngleThresholdSin = 0.33; // Math.sin(19)
+            const stretchTile = 1.1;
+            // Distances longer than 'dz / acuteAngleThresholdSin' gets scaled
+            // following geometric series sum: every next dz length in distance can be
+            // 'stretchTile times' longer. It is further, the angle is sharper. Total,
+            // adjusted, distance would then be:
+            // = dz / acuteAngleThresholdSin + (dz * stretchTile + dz * stretchTile ^ 2 + ... + dz * stretchTile ^ k),
+            // where k = (d - dz / acuteAngleThresholdSin) / dz = d / dz - 1 / acuteAngleThresholdSin;
+            // = dz / acuteAngleThresholdSin + dz * ((stretchTile ^ (k + 1) - 1) / (stretchTile - 1) - 1)
+            // or put differently, given that k is based on d and dz, tile on distance d could be used on distance scaled by:
+            // 1 / acuteAngleThresholdSin + (stretchTile ^ (k + 1) - 1) / (stretchTile - 1) - 1
+            if (dSqr * square(acuteAngleThresholdSin) < dzSqr) return 1.0; // Early return, no scale.
+            const r = Math.sqrt(dSqr / dzSqr);
+            const k =  r - 1 / acuteAngleThresholdSin;
+            return r / (1 / acuteAngleThresholdSin + (Math.pow(stretchTile, k + 1) - 1) / (stretchTile - 1) - 1);
+        };
+
         if (this._renderWorldCopies) {
             // Render copy of the globe thrice on both sides
             for (let i = 1; i <= NUM_WORLD_COPIES; i++) {
@@ -546,26 +570,13 @@ class Transform {
 
             const dx = it.aabb.distanceX(cameraPoint);
             const dy = it.aabb.distanceY(cameraPoint);
-            const dzSqr = options.useElevationData ? square((cameraPoint[2] - it.aabb.center[2]) * meterToTile) : cameraHeightSqr;
+            const dzSqr = options.useElevationData ? square(it.aabb.distanceZ(cameraPoint) * meterToTile) : cameraHeightSqr;
             const distanceSqr = dx * dx + dy * dy + dzSqr;
 
             const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance;
-
-            // Model camera to tile obtuse angle conditions:
-            const sineSqr = distanceSqr / Math.max(dzSqr, cameraHeightSqr); // reciprocal of sine.
-            // 1/3 is sine of 19.5 degrees. Apart from adjustment below, using lower zoom
-            // tiles when incident angle camera to tile is < 19.5, another consequence is that for pitch
-            // above 70.5 we don't try to keep center of map having nominal zoom level as the angle is obtuse.
-            const distSqrAdjust = sineSqr < 9 && it.zoom >= maxZoom - 2 ? distToSplit * distToSplit :
-                // Steeper zoom cutoff the more the angle is obtuse. Interpretation would be like this:
-                // if camera is one tile over ground, tile that is more than three tiles away could be
-                // of 1.1 x smaller resolution, the next one could be 1.1 of that tile and so on and, given the
-                // obtuse angles we would get similar presentation with much lower number of tiles needed.
-                // The scale also means less reloading of distant tiles when traversing map.
-                square(distToSplit / (1 + Math.pow(1.1, Math.sqrt(sineSqr) - 3) / 3));
-
+            const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
             // Is the tile too far away to be any split further?
-            if (distanceSqr > distSqrAdjust && it.zoom >= minZoom) {
+            if (distanceSqr > distToSplitSqr && it.zoom >= minZoom) {
                 result.push({
                     tileID: it.tileID ? it.tileID : new OverscaledTileID(it.zoom, it.wrap, it.zoom, x, y),
                     distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x, centerPoint[1] - 0.5 - y])
@@ -580,6 +591,9 @@ class Transform {
                 const aabb = it.aabb.quadrant(i);
                 let tileID = null;
                 if (options.useElevationData && it.zoom > maxZoom - 6) {
+                    // Using elevation data for tiles helps clipping out tiles that are not visible and
+                    // precise distance calculation. This is an optimization - tiles with it.zoom <= maxZoom - 6 are always
+                    // considered slightly closer: aabb.distanceZ() there evaluates to 0 as min/max[3] = -/+ maxRange.
                     tileID = new OverscaledTileID(it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
                     getAABBFromElevation(aabb, tileID);
                 }
