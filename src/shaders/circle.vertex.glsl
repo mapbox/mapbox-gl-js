@@ -32,28 +32,33 @@ void main(void) {
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     vec2 circle_center = floor(a_pos * 0.5);
-    if (u_pitch_with_map) {
-        vec2 corner_position = circle_center;
-        if (u_scale_with_map) {
-            corner_position += extrude * (radius + stroke_width) * u_extrude_scale;
-        } else {
+    vec4 world_center = vec4(circle_center, 0, 1);
+    vec4 projected_center = u_matrix * world_center;
+
+    #ifdef PITCH_WITH_MAP
+        #ifdef SCALE_WITH_MAP
+            float view_scale = 1.0;
+        #else
             // Pitching the circle with the map effectively scales it with the map
             // To counteract the effect for pitch-scale: viewport, we rescale the
             // whole circle based on the pitch scaling effect at its central point
-            vec4 projected_center = u_matrix * vec4(circle_center, 0, 1);
-            corner_position += extrude * (radius + stroke_width) * u_extrude_scale * (projected_center.w / u_camera_to_center_distance);
-        }
+            float view_scale = projected_center.w / u_camera_to_center_distance;
+        #endif
+    #else
+        #ifdef SCALE_WITH_MAP
+            float view_scale = u_camera_to_center_distance;
+        #else
+            float view_scale = projected_center.w;
+        #endif
+    #endif
 
-        gl_Position = u_matrix * vec4(corner_position, 0, 1);
-    } else {
-        gl_Position = u_matrix * vec4(circle_center, 0, 1);
+    vec2 scale_offset = extrude * (radius + stroke_width) * u_extrude_scale * view_scale;
 
-        if (u_scale_with_map) {
-            gl_Position.xy += extrude * (radius + stroke_width) * u_extrude_scale * u_camera_to_center_distance;
-        } else {
-            gl_Position.xy += extrude * (radius + stroke_width) * u_extrude_scale * gl_Position.w;
-        }
-    }
+    #ifdef PITCH_WITH_MAP
+        gl_Position = u_matrix * (world_center + vec4(scale_offset, 0, 0));
+    #else
+        gl_Position = projected_center + vec4(scale_offset, 0 , 0);
+    #endif
 
     // This is a minimum blur distance that serves as a faux-antialiasing for
     // the circle. since blur is a ratio of the circle's size and the intent is
