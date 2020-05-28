@@ -42,7 +42,6 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
     terrainUniforms: ?TerrainUniformsType;
 
-
     /**
      * Helper method that generates a key that can be used to cache a compiled version of the Program.
      *

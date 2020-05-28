@@ -1,7 +1,6 @@
 // @flow
 
 import {
-    Uniform1i,
     Uniform1f,
     Uniform2f,
     UniformMatrix4f

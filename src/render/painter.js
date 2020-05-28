@@ -67,6 +67,7 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type ResolvedImage from '../style-spec/expression/types/resolved_image';
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
 
@@ -673,12 +674,12 @@ class Painter {
         return defines;
     }
 
-    useProgram(name: string, programConfiguration: ?ProgramConfiguration, fixedDefines: ?string[]): Program<any> {
+    useProgram(name: string, programConfiguration: ?ProgramConfiguration, fixedDefines: ?DynamicDefinesType[]): Program<any> {
         this.cache = this.cache || {};
         fixedDefines = fixedDefines || [];
 
         const globalDefines = this.currentGlobalDefines();
-        const allDefines = globalDefines.concat(fixedDefines);
+        const allDefines = globalDefines.concat((fixedDefines: string[]));
         const key = Program.cacheKey(name, allDefines, programConfiguration);
 
         if (!this.cache[key]) {
