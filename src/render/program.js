@@ -42,16 +42,6 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
     terrainUniforms: ?TerrainUniformsType;
 
-    /**
-     * Helper method that generates a key that can be used to cache a compiled version of the Program.
-     *
-     * @static
-     * @param {string} name
-     * @param {string[]} defines
-     * @param {?ProgramConfiguration} programConfiguration
-     * @returns {string}
-     * @private
-     */
     static cacheKey(name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
         for (const define of defines) {
