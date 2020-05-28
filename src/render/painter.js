@@ -639,6 +639,13 @@ class Painter {
         return !imagePosA || !imagePosB;
     }
 
+    /**
+     * Returns #defines that would need to be injected into every Program
+     * based on the currest state of Painter.
+     *
+     * @returns {string[]}
+     * @private
+     */
     currentGlobalDefines(): string[] {
         const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
