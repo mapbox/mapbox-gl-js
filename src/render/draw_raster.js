@@ -52,7 +52,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
 
         const stencilMode = painter.terrain && renderingToTexture ?
-            painter.terrain.stencilModeForRTTOverlap(coord, sourceCache) :
+            painter.terrain.stencilModeForRTTOverlap(coord) :
             stencilModes[coord.overscaledZ];
         tile.registerFadeDuration(layer.paint.get('raster-fade-duration'));
 

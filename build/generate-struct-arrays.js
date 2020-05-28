@@ -93,6 +93,8 @@ function createStructArrayLayoutType({members, size, alignment}) {
 
     const key = `${members.map(m => `${m.components}${typeAbbreviations[m.type]}`).join('')}${size}`;
     const className = `StructArrayLayout${key}`;
+    // Layout alignment to 4 bytes boundaries can be an issue on some set of graphics cards. Particularly AMD.
+    if (size % 4 !== 0) { console.warn(`Warning: The layout ${className} is not aligned to 4-bytes boundaries.`); }
     if (!layoutCache[key]) {
         layoutCache[key] = {
             className,
@@ -128,6 +130,7 @@ const fillAttributes = require('../src/data/bucket/fill_attributes').default;
 const fillExtrusionAttributes = require('../src/data/bucket/fill_extrusion_attributes').default;
 const lineAttributes = require('../src/data/bucket/line_attributes').default;
 const patternAttributes = require('../src/data/bucket/pattern_attributes').default;
+const skyboxAttributes = require('../src/render/skybox_attributes').default;
 
 // layout vertex arrays
 const layoutAttributes = {
@@ -195,6 +198,9 @@ createStructArrayType('line_index', createLayout([
 createStructArrayType('line_strip_index', createLayout([
     { type: 'Uint16', name: 'vertices', components: 1 }
 ]));
+
+// skybox vertex array
+createStructArrayType(`skybox_vertex`, skyboxAttributes);
 
 // paint vertex arrays
 

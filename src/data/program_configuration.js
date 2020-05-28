@@ -398,13 +398,11 @@ class CrossFadedCompositeBinder implements AttributeBinder {
 export default class ProgramConfiguration {
     binders: {[_: string]: (AttributeBinder | UniformBinder) };
     cacheKey: string;
-    layoutAttributes: Array<StructArrayMember>;
 
     _buffers: Array<VertexBuffer>;
 
-    constructor(layer: TypedStyleLayer, zoom: number, filterProperties: (_: string) => boolean, layoutAttributes: Array<StructArrayMember>) {
+    constructor(layer: TypedStyleLayer, zoom: number, filterProperties: (_: string) => boolean) {
         this.binders = {};
-        this.layoutAttributes = layoutAttributes;
         this._buffers = [];
 
         const keys = [];
@@ -500,6 +498,36 @@ export default class ProgramConfiguration {
         return result;
     }
 
+    getBinderAttributes(): Array<string> {
+        const result = [];
+        for (const property in this.binders) {
+            const binder = this.binders[property];
+            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder) {
+                for (let i = 0; i < binder.paintVertexAttributes.length; i++) {
+                    result.push(binder.paintVertexAttributes[i].name);
+                }
+            } else if (binder instanceof CrossFadedCompositeBinder) {
+                for (let i = 0; i < patternAttributes.members.length; i++) {
+                    result.push(patternAttributes.members[i].name);
+                }
+            }
+        }
+        return result;
+    }
+
+    getBinderUniforms(): Array<string> {
+        const uniforms = [];
+        for (const property in this.binders) {
+            const binder = this.binders[property];
+            if (binder instanceof ConstantBinder || binder instanceof CrossFadedConstantBinder || binder instanceof CompositeExpressionBinder) {
+                for (const uniformName of binder.uniformNames) {
+                    uniforms.push(uniformName);
+                }
+            }
+        }
+        return uniforms;
+    }
+
     getPaintVertexBuffers(): Array<VertexBuffer> {
         return this._buffers;
     }
@@ -567,10 +595,10 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     _featureMap: FeaturePositionMap;
     _bufferOffset: number;
 
-    constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (_: string) => boolean = () => true) {
+    constructor(layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (_: string) => boolean = () => true) {
         this.programConfigurations = {};
         for (const layer of layers) {
-            this.programConfigurations[layer.id] = new ProgramConfiguration(layer, zoom, filterProperties, layoutAttributes);
+            this.programConfigurations[layer.id] = new ProgramConfiguration(layer, zoom, filterProperties);
         }
         this.needsUpload = false;
         this._featureMap = new FeaturePositionMap();

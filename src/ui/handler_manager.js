@@ -49,10 +49,10 @@ export interface Handler {
 
     // Handlers can optionally implement these methods.
     // They are called with dom events whenever those dom evens are received.
-    +touchstart?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
-    +touchmove?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
-    +touchend?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
-    +touchcancel?: (e: TouchEvent, points: Array<Point>) => HandlerResult | void;
+    +touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    +touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    +touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    +touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
     +mousedown?: (e: MouseEvent, point: Point) => HandlerResult | void;
     +mousemove?: (e: MouseEvent, point: Point) => HandlerResult | void;
     +mouseup?: (e: MouseEvent, point: Point) => HandlerResult | void;
@@ -259,6 +259,10 @@ class HandlerManager {
         return !!this._eventsInProgress.rotate;
     }
 
+    isMoving() {
+        return Boolean(isMoving(this._eventsInProgress)) || this.isZooming();
+    }
+
     _blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string) {
         for (const name in activeHandlers) {
             if (name === myName) continue;
@@ -271,6 +275,17 @@ class HandlerManager {
 
     handleWindowEvent(e: InputEvent) {
         this.handleEvent(e, `${e.type}Window`);
+    }
+
+    _getMapTouches(touches: TouchList) {
+        const mapTouches = [];
+        for (const t of touches) {
+            const target = ((t.target: any): Node);
+            if (this._el.contains(target)) {
+                mapTouches.push(t);
+            }
+        }
+        return ((mapTouches: any): TouchList);
     }
 
     handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
@@ -294,9 +309,8 @@ class HandlerManager {
         const eventsInProgress = {};
         const activeHandlers = {};
 
-        const points = e ? (e.targetTouches ?
-            DOM.touchPos(this._el, ((e: any): TouchEvent).targetTouches) :
-            DOM.mousePos(this._el, ((e: any): MouseEvent))) : null;
+        const mapTouches = e.touches ? this._getMapTouches(((e: any): TouchEvent).touches) : undefined;
+        const points = mapTouches ? DOM.touchPos(this._el, mapTouches) : DOM.mousePos(this._el, ((e: any): MouseEvent));
 
         for (const {handlerName, handler, allowed} of this._handlers) {
             if (!handler.isEnabled()) continue;
@@ -307,7 +321,7 @@ class HandlerManager {
 
             } else {
                 if ((handler: any)[eventName || e.type]) {
-                    data = (handler: any)[eventName || e.type](e, points);
+                    data = (handler: any)[eventName || e.type](e, points, mapTouches);
                     this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data, handlerName, inputEvent);
                     if (data && data.needsRenderFrame) {
                         this._triggerRenderFrame();
@@ -430,17 +444,23 @@ class HandlerManager {
         const wasMoving = isMoving(this._eventsInProgress);
         const nowMoving = isMoving(newEventsInProgress);
 
+        const startEvents = {};
+
+        for (const eventName in newEventsInProgress) {
+            const {originalEvent} = newEventsInProgress[eventName];
+            if (!this._eventsInProgress[eventName]) {
+                startEvents[`${eventName}start`] = originalEvent;
+            }
+            this._eventsInProgress[eventName] = newEventsInProgress[eventName];
+        }
+
+        // fire start events only after this._eventsInProgress has been updated
         if (!wasMoving && nowMoving) {
             this._fireEvent('movestart', nowMoving.originalEvent);
         }
 
-        for (const eventName in newEventsInProgress) {
-            const {originalEvent} = newEventsInProgress[eventName];
-            const isStart = !this._eventsInProgress[eventName];
-            this._eventsInProgress[eventName] = newEventsInProgress[eventName];
-            if (isStart) {
-                this._fireEvent(`${eventName}start`, originalEvent);
-            }
+        for (const name in startEvents) {
+            this._fireEvent(name, startEvents[name]);
         }
 
         if (newEventsInProgress.rotate) this._bearingChanged = true;
@@ -454,14 +474,20 @@ class HandlerManager {
             this._fireEvent(eventName, originalEvent);
         }
 
+        const endEvents = {};
+
         let originalEndEvent;
         for (const eventName in this._eventsInProgress) {
             const {handlerName, originalEvent} = this._eventsInProgress[eventName];
             if (!this._handlersById[handlerName].isActive()) {
                 delete this._eventsInProgress[eventName];
                 originalEndEvent = deactivatedHandlers[handlerName] || originalEvent;
-                this._fireEvent(`${eventName}end`, originalEndEvent);
+                endEvents[`${eventName}end`] = originalEndEvent;
             }
+        }
+
+        for (const name in endEvents) {
+            this._fireEvent(name, endEvents[name]);
         }
 
         const stillMoving = isMoving(this._eventsInProgress);

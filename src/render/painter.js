@@ -9,7 +9,7 @@ import EXTENT from '../data/extent';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import SegmentVector from '../data/segment';
 import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types';
-import {values} from '../util/util';
+import {values, MAX_SAFE_INTEGER} from '../util/util';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import posAttributes from '../data/pos_attributes';
 import ProgramConfiguration from '../data/program_configuration';
@@ -36,6 +36,7 @@ import raster from './draw_raster';
 import background from './draw_background';
 import debug, {drawDebugPadding} from './draw_debug';
 import custom from './draw_custom';
+import sky from './draw_sky';
 import {Terrain} from '../terrain/terrain';
 
 const draw = {
@@ -48,6 +49,7 @@ const draw = {
     hillshade,
     raster,
     background,
+    sky,
     debug,
     custom
 };
@@ -66,7 +68,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type ResolvedImage from '../style-spec/expression/types/resolved_image';
 
-export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
+export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -105,7 +107,6 @@ class Painter {
     quadTriangleIndexBuffer: IndexBuffer;
     tileBorderIndexBuffer: IndexBuffer;
     _tileClippingMaskIDs: {[_: string]: number };
-    enableTileClipping: ?boolean;
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -114,6 +115,7 @@ class Painter {
     glyphManager: GlyphManager;
     depthRangeFor3D: DepthRangeType;
     opaquePassCutoff: number;
+    frameCounter: number;
     renderPass: RenderPass;
     currentLayer: number;
     currentStencilSource: ?string;
@@ -144,12 +146,11 @@ class Painter {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this.gpuTimers = {};
-
-        this.enableTileClipping = true;
+        this.frameCounter = 0;
     }
 
     updateTerrain(style: Style) {
-        const enabled = style.terrain.properties.get('source');
+        const enabled = style.terrain && style.terrain.properties.get('source');
         if (!enabled) {
             this.transform.elevation = null;
             if (this._terrain) {
@@ -158,7 +159,6 @@ class Painter {
             for (const id in style.sourceCaches) {
                 style.sourceCaches[id].usedForTerrain = false;
             }
-            this.enableTileClipping = true;
             return;
         }
         if (!this._terrain) {
@@ -170,7 +170,6 @@ class Painter {
         if (!terrain.valid) {
             this.transform.elevation = null;
         }
-        this.enableTileClipping = false;
     }
 
     get terrain(): ?Terrain {
@@ -323,7 +322,7 @@ class Painter {
     }
 
     stencilModeForClipping(tileID: OverscaledTileID): $ReadOnly<StencilMode>  {
-        if (!this.enableTileClipping) return StencilMode.disabled; // TO DO check without it.
+        if (this.terrain) return this.terrain.stencilModeForRTTOverlap(tileID);
         const gl = this.context.gl;
         return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
@@ -449,7 +448,7 @@ class Painter {
             if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
             const coords = coordsDescending[layer.source];
-            if (layer.type !== 'custom' && !coords.length) continue;
+            if (!(layer.type === 'custom' || layer.isSky()) && !coords.length) continue;
 
             this.renderLayer(this, sourceCaches[layer.source], layer, coords);
         }
@@ -471,11 +470,27 @@ class Painter {
         for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = sourceCaches[layer.source];
-            if (this.terrain && this.terrain.renderLayer(layer, sourceCache)) continue;
+            if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
             const coords = coordsAscending[layer.source];
 
             this._renderTileClippingMasks(layer, coords);
             this.renderLayer(this, sourceCache, layer, coords);
+        }
+
+        // Sky pass ======================================================
+        // Draw all sky layers bottom to top.
+        // They are drawn at max depth, they are drawn after opaque and before
+        // translucent to fail depth testing and mix with translucent objects.
+        this.renderPass = 'sky';
+        if (this.transform.isHorizonVisible()) {
+            for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
+                const layer = this.style._layers[layerIds[this.currentLayer]];
+                const sourceCache = sourceCaches[layer.source];
+                if (!layer.isSky()) continue;
+                const coords = coordsAscending[layer.source];
+
+                this.renderLayer(this, sourceCache, layer, coords);
+            }
         }
 
         // Translucent pass ===============================================
@@ -485,7 +500,7 @@ class Painter {
         for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = sourceCaches[layer.source];
-            if (this.terrain && this.terrain.renderLayer(layer, sourceCache)) continue;
+            if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
 
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
@@ -523,11 +538,12 @@ class Painter {
         // Set defaults for most GL values so that anyone using the state after the render
         // encounters more expected values.
         this.context.setDefault();
+        this.frameCounter = (this.frameCounter + 1) % MAX_SAFE_INTEGER;
     }
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if (layer.type !== 'background' && layer.type !== 'custom' && !coords.length) return;
+        if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && !coords.length) return;
         this.id = layer.id;
 
         this.gpuTimingStart(layer);
@@ -666,7 +682,7 @@ class Painter {
         const key = Program.cacheKey(name, allDefines, programConfiguration);
 
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, shaders[name], programConfiguration, programUniforms[name], allDefines);
+            this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], allDefines);
         }
         return this.cache[key];
     }

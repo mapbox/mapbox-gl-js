@@ -111,7 +111,7 @@ const defaultMaxZoom = 22;
 
 // the default values, but also the valid range
 const defaultMinPitch = 0;
-const defaultMaxPitch = 75;
+const defaultMaxPitch = 85;
 
 const defaultOptions = {
     center: [0, 0],
@@ -854,7 +854,7 @@ class Map extends Camera {
      * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving || this.handlers.isActive();
+        return this._moving || this.handlers.isMoving();
     }
 
     /**
@@ -2537,11 +2537,12 @@ class Map extends Camera {
         if (somethingDirty || this._repaint) {
             this.triggerRepaint();
         } else if (!this.isMoving() && this.loaded()) {
-            if (!this._fullyLoaded) {
-                this._fullyLoaded = true;
-                PerformanceUtils.mark(PerformanceMarkers.fullLoad);
-            }
             this.fire(new Event('idle'));
+        }
+
+        if (this._loaded && !this._fullyLoaded && !somethingDirty) {
+            this._fullyLoaded = true;
+            PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
 
         return this;

@@ -1,0 +1,19 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["setStyle", "local://styles/chicago.json"],
+        ["setZoom", 13 ],
+        ["setCenter", [-87.7942445, 41.8703965]],
+        ["lookAtPoint", [-87.6942445, 41.8703965], [1, 1, 1]],
+        ["setZoom", 13 ],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}
