@@ -63,7 +63,13 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
 
-        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
+        if (painter.terrain) {
+            painter.terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
+            if (!bucket.centroidVertexBuffer) {
+                const attrIndex: number | void = program.attributes['a_centroid_pos'];
+                if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
+            }
+        }
 
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);
