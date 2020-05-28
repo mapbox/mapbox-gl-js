@@ -1,14 +1,14 @@
 // @flow
 
-import { NumberType, toString } from '../types';
+import {NumberType, toString} from '../types';
 
-import { typeOf } from '../values';
+import {typeOf} from '../values';
 import RuntimeError from '../runtime_error';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Type } from '../types';
+import type {Type} from '../types';
 
 class Length implements Expression {
     type: Type;
@@ -19,7 +19,7 @@ class Length implements Expression {
         this.input = input;
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext) {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
         if (args.length !== 2)
             return context.error(`Expected 1 argument, but found ${args.length - 1} instead.`);
 
@@ -43,12 +43,12 @@ class Length implements Expression {
         }
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
     }
 
-    possibleOutputs() {
-        return [undefined];
+    outputDefined() {
+        return false;
     }
 
     serialize() {

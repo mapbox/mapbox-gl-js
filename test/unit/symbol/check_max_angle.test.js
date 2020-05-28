@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import Point from '@mapbox/point-geometry';
 import checkMaxAngle from '../../../src/symbol/check_max_angle';
 import Anchor from '../../../src/symbol/anchor';

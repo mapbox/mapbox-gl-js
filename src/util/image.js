@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-import { register } from './web_worker_transfer';
+import {register} from './web_worker_transfer';
 
 export type Size = {
     width: number,
@@ -17,6 +17,8 @@ type Point = {
 function createImage(image: *, {width, height}: Size, channels: number, data?: Uint8Array | Uint8ClampedArray) {
     if (!data) {
         data = new Uint8Array(width * height * channels);
+    } else if (data instanceof Uint8ClampedArray) {
+        data = new Uint8Array(data.buffer);
     } else if (data.length !== width * height * channels) {
         throw new RangeError('mismatched image size');
     }
@@ -74,14 +76,13 @@ function copyImage(srcImg: *, dstImg: *, srcPt: Point, dstPt: Point, size: Size,
             dstData[dstOffset + i] = srcData[srcOffset + i];
         }
     }
-
     return dstImg;
 }
 
 export class AlphaImage {
     width: number;
     height: number;
-    data: Uint8Array | Uint8ClampedArray;
+    data: Uint8Array;
 
     constructor(size: Size, data?: Uint8Array | Uint8ClampedArray) {
         createImage(this, size, 1, data);
@@ -105,7 +106,10 @@ export class AlphaImage {
 export class RGBAImage {
     width: number;
     height: number;
-    data: Uint8Array | Uint8ClampedArray;
+
+    // data must be a Uint8Array instead of Uint8ClampedArray because texImage2D does not
+    // support Uint8ClampedArray in all browsers
+    data: Uint8Array;
 
     constructor(size: Size, data?: Uint8Array | Uint8ClampedArray) {
         createImage(this, size, 4, data);
@@ -113,6 +117,16 @@ export class RGBAImage {
 
     resize(size: Size) {
         resizeImage(this, size, 4);
+    }
+
+    replace(data: Uint8Array | Uint8ClampedArray, copy?: boolean) {
+        if (copy) {
+            this.data.set(data);
+        } else if (data instanceof Uint8ClampedArray) {
+            this.data = new Uint8Array(data.buffer);
+        } else {
+            this.data = data;
+        }
     }
 
     clone() {

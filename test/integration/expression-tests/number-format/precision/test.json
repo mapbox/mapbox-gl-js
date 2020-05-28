@@ -1,0 +1,33 @@
+{
+  "expression": [
+    "number-format",
+    987654321.234567,
+    {
+        "locale": ["get", "locale"],
+        "min-fraction-digits": ["get", "min"],
+        "max-fraction-digits": ["get", "max"]
+    }
+  ],
+  "inputs": [
+    [{}, {"properties": {"locale": "en-US", "min": 15, "max": 20}}],
+    [{}, {"properties": {"locale": "en-US", "min": 2, "max": 4}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["987,654,321.234567000000000", "987,654,321.2346"],
+    "serialized": [
+      "number-format",
+      987654321.234567,
+      {
+          "locale": ["string", ["get", "locale"]],
+          "min-fraction-digits": ["number", ["get", "min"]],
+          "max-fraction-digits": ["number", ["get", "max"]]
+      }
+    ]
+  }
+}

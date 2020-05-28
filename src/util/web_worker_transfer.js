@@ -4,14 +4,16 @@ import assert from 'assert';
 
 import Grid from 'grid-index';
 import Color from '../style-spec/util/color';
-import { StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomConstantExpression } from '../style-spec/expression';
+import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomConstantExpression} from '../style-spec/expression';
 import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import window from './window';
-const { ImageData } = window;
+const {ImageData, ImageBitmap} = window;
 
 import type {Transferable} from '../types/transferable';
 
+type SerializedObject = {[_: string]: Serialized }; // eslint-disable-line
 export type Serialized =
     | null
     | void
@@ -27,10 +29,10 @@ export type Serialized =
     | $ArrayBufferView
     | ImageData
     | Array<Serialized>
-    | {| name: string, properties: {+[string]: Serialized} |};
+    | SerializedObject;
 
 type Registry = {
-    [string]: {
+    [_: string]: {
         klass: Class<any>,
         omit: $ReadOnlyArray<string>,
         shallow: $ReadOnlyArray<string>
@@ -68,21 +70,24 @@ export function register<T: any>(name: string, klass: Class<T>, options: Registe
 
 register('Object', Object);
 
-Grid.serialize = function serializeGrid(grid: Grid, transferables?: Array<Transferable>): Serialized {
-    const ab = grid.toArrayBuffer();
+type SerializedGrid = { buffer: ArrayBuffer };
+
+Grid.serialize = function serialize(grid: Grid, transferables?: Array<Transferable>): SerializedGrid {
+    const buffer = grid.toArrayBuffer();
     if (transferables) {
-        transferables.push(ab);
+        transferables.push(buffer);
     }
-    return ab;
+    return {buffer};
 };
 
-Grid.deserialize = function deserializeGrid(serialized: ArrayBuffer): Grid {
-    return new Grid(serialized);
+Grid.deserialize = function deserialize(serialized: SerializedGrid): Grid {
+    return new Grid(serialized.buffer);
 };
 register('Grid', Grid);
 
 register('Color', Color);
 register('Error', Error);
+register('ResolvedImage', ResolvedImage);
 
 register('StylePropertyFunction', StylePropertyFunction);
 register('StyleExpression', StyleExpression, {omit: ['_evaluator']});
@@ -93,6 +98,16 @@ register('CompoundExpression', CompoundExpression, {omit: ['_evaluate']});
 for (const name in expressions) {
     if ((expressions[name]: any)._classRegistryKey) continue;
     register(`Expression_${name}`, expressions[name]);
+}
+
+function isArrayBuffer(val: any): boolean {
+    return val && typeof ArrayBuffer !== 'undefined' &&
+           (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
+}
+
+function isImageBitmap(val: any): boolean {
+    return ImageBitmap &&
+        val instanceof ImageBitmap;
 }
 
 /**
@@ -109,7 +124,7 @@ for (const name in expressions) {
  *
  * @private
  */
-export function serialize(input: mixed, transferables?: Array<Transferable>): Serialized {
+export function serialize(input: mixed, transferables: ?Array<Transferable>): Serialized {
     if (input === null ||
         input === undefined ||
         typeof input === 'boolean' ||
@@ -123,9 +138,9 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
         return input;
     }
 
-    if (input instanceof ArrayBuffer) {
+    if (isArrayBuffer(input) || isImageBitmap(input)) {
         if (transferables) {
-            transferables.push(input);
+            transferables.push(((input: any): ArrayBuffer));
         }
         return input;
     }
@@ -146,7 +161,7 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
     }
 
     if (Array.isArray(input)) {
-        const serialized = [];
+        const serialized: Array<Serialized> = [];
         for (const item of input) {
             serialized.push(serialize(item, transferables));
         }
@@ -161,9 +176,7 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
         }
         assert(registry[name]);
 
-        const properties: {[string]: Serialized} = {};
-
-        if (klass.serialize) {
+        const properties: SerializedObject = klass.serialize ?
             // (Temporary workaround) allow a class to provide static
             // `serialize()` and `deserialize()` methods to bypass the generic
             // approach.
@@ -171,8 +184,9 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
             // approach for objects whose members include instances of dynamic
             // StructArray types. Once we refactor StructArray to be static,
             // we can remove this complexity.
-            properties._serialized = (klass.serialize: typeof serialize)(input, transferables);
-        } else {
+            (klass.serialize(input, transferables): SerializedObject) : {};
+
+        if (!klass.serialize) {
             for (const key in input) {
                 // any cast due to https://github.com/facebook/flow/issues/5393
                 if (!(input: any).hasOwnProperty(key)) continue;
@@ -182,13 +196,22 @@ export function serialize(input: mixed, transferables?: Array<Transferable>): Se
                     property :
                     serialize(property, transferables);
             }
-
             if (input instanceof Error) {
                 properties.message = input.message;
             }
+        } else {
+            // make sure statically serialized object survives transfer of $name property
+            assert(!transferables || properties !== transferables[transferables.length - 1]);
         }
 
-        return {name, properties};
+        if (properties.$name) {
+            throw new Error('$name property is reserved for worker serialization logic.');
+        }
+        if (name !== 'Object') {
+            properties.$name = name;
+        }
+
+        return properties;
     }
 
     throw new Error(`can't serialize object of type ${typeof input}`);
@@ -205,21 +228,19 @@ export function deserialize(input: Serialized): mixed {
         input instanceof String ||
         input instanceof Date ||
         input instanceof RegExp ||
-        input instanceof ArrayBuffer ||
+        isArrayBuffer(input) ||
+        isImageBitmap(input) ||
         ArrayBuffer.isView(input) ||
         input instanceof ImageData) {
         return input;
     }
 
     if (Array.isArray(input)) {
-        return input.map((i) => deserialize(i));
+        return input.map(deserialize);
     }
 
     if (typeof input === 'object') {
-        const {name, properties} = (input: any);
-        if (!name) {
-            throw new Error(`can't deserialize object of anonymous class`);
-        }
+        const name = (input: any).$name || 'Object';
 
         const {klass} = registry[name];
         if (!klass) {
@@ -227,14 +248,15 @@ export function deserialize(input: Serialized): mixed {
         }
 
         if (klass.deserialize) {
-            return (klass.deserialize: typeof deserialize)(properties._serialized);
+            return (klass.deserialize: typeof deserialize)(input);
         }
 
         const result = Object.create(klass.prototype);
 
-        for (const key of Object.keys(properties)) {
-            result[key] = registry[name].shallow.indexOf(key) >= 0 ?
-                properties[key] : deserialize(properties[key]);
+        for (const key of Object.keys(input)) {
+            if (key === '$name') continue;
+            const value = (input: SerializedObject)[key];
+            result[key] = registry[name].shallow.indexOf(key) >= 0 ? value : deserialize(value);
         }
 
         return result;

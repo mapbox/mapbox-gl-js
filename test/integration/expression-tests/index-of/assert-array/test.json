@@ -1,0 +1,26 @@
+{
+  "expression": ["index-of", ["get", "i"], ["array", ["get", "arr"]]],
+  "inputs": [
+    [{}, { "properties": { "i": null, "arr": [9, 8, 7] } }],
+    [{}, { "properties": { "i": null, "arr": [9, 8, 7, null] } }],
+    [{}, { "properties": { "i": 1, "arr": [9, 8, 7] } }],
+    [{}, { "properties": { "i": 9, "arr": [9, 8, 7, 9] } }],
+    [{}, { "properties": { "i": 1, "arr": null } }]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      -1,
+      3,
+      -1,
+      0,
+      { "error": "Expected value to be of type array, but found null instead." }
+    ],
+    "serialized": ["index-of", ["get", "i"], ["array", ["get", "arr"]]]
+  }
+}

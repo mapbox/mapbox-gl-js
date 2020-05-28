@@ -38,12 +38,11 @@ export function summaryStatistics(data) {
     // 20% trimmed mean
     const [lowerQuintile, upperQuintile] = [.2, .8].map(d => d3.quantile(sorted, d));
     const trimmedMean = d3.mean(data.filter(d => d >= lowerQuintile && d <= upperQuintile));
-    const windsorizedDeviation = d3.deviation(
-        data.map(d => d < lowerQuintile ? lowerQuintile :
-            d > upperQuintile ? upperQuintile :
-            d
-        )
-    );
+    const windsorizedDeviation = d3.deviation(data.map(d =>
+        d < lowerQuintile ? lowerQuintile :
+        d > upperQuintile ? upperQuintile :
+        d
+    ));
 
     return {
         mean,
@@ -88,7 +87,7 @@ function leastSquaresRegression(data) {
     const slope = covariance / varianceX;
     const intercept = meanY - slope * meanX;
 
-    return { correlation, slope, intercept, data };
+    return {correlation, slope, intercept, data};
 }
 
 export function kde(samples, summary, ticks) {

@@ -1,0 +1,18 @@
+[
+  {
+    "message": "glyphs: Styles must reference glyphs hosted by Mapbox",
+    "line": 3
+  },
+  {
+    "message": "sprite: Styles must reference sprites hosted by Mapbox",
+    "line": 4
+  },
+  {
+    "message": "sources[0]: Source url must be a valid Mapbox tileset url",
+    "line": 8
+  },
+  {
+    "message": "sources[1]: Source url must be a valid Mapbox tileset url",
+    "line": 12
+  }
+]

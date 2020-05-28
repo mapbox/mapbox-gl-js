@@ -1,0 +1,27 @@
+{
+  "expression": {"type": "identity", "property": "p"},
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": "blue"}}],
+    [{}, {"properties": {"p": 0}}]
+  ],
+  "propertySpec": {
+    "type": "color",
+    "property-type": "data-driven",
+    "expression": {"interpolated": false, "parameters": ["zoom", "feature"]}
+  },
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [
+      {"error": "Could not parse color from value 'null'"},
+      [0, 0, 1, 1],
+      {"error": "Could not parse color from value '0'"}
+    ],
+    "serialized": ["to-color", ["get", "p"]]
+  }
+}

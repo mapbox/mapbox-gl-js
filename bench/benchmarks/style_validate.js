@@ -1,12 +1,21 @@
+// @flow
 
+import type {StyleSpecification} from '../../src/style-spec/types';
 import Benchmark from '../lib/benchmark';
-import accessToken from '../lib/access_token';
 import validateStyle from '../../src/style-spec/validate_style.min';
+import fetchStyle from '../lib/fetch_style';
 
 export default class StyleValidate extends Benchmark {
-    setup() {
-        return fetch(`https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`)
-            .then(response => response.json())
+    style: string | StyleSpecification;
+    json: StyleSpecification;
+
+    constructor(style: string) {
+        super();
+        this.style = style;
+    }
+
+    setup(): Promise<void> {
+        return fetchStyle(this.style)
             .then(json => { this.json = json; });
     }
 

@@ -1,8 +1,8 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import fs from 'fs';
 import path from 'path';
 import Protobuf from 'pbf';
-import { VectorTile } from '@mapbox/vector-tile';
+import {VectorTile} from '@mapbox/vector-tile';
 import classifyRings from '../../../src/util/classify_rings';
 
 // Load a fill feature from fixture tile.
@@ -93,7 +93,6 @@ test('classifyRings + maxRings', (t) => {
         }
         return geometry;
     }
-
 
     t.test('maxRings=undefined', (t) => {
         const geometry = sortRings(classifyRings(createGeometry()));

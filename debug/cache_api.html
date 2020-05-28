@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { width: 500px; height: 500px; }
+    </style>
+</head>
+
+<body>
+<div id='log'>
+    <div id='result' style='background-color:#fec'>Result: running tests...</div>
+</div>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+const CACHE_NAME = 'mapbox-tiles';
+let map;
+let cache;
+let numFail = 0;
+start(logResult);
+
+function log(pass, message) {
+    if (!pass) numFail++;
+    const div = document.createElement('div');
+    div.innerHTML = (pass ? 'PASS' : 'FAIL') + ' ' + message;
+    const log = document.getElementById('log');
+    log.appendChild(div);
+}
+
+function catchError(err) {
+    log(false, err);
+}
+
+function logResult() {
+    const r = document.getElementById('result');
+    if (numFail === 0) {
+        r.innerHTML = 'Result: SUCCESS. All tests passed';
+        r.style.backgroundColor = '#cfc';
+    } else {
+        r.innerHTML = 'Result: FAIL. ' + numFail + ' tests failed.';
+        r.style.backgroundColor = '#fcc';
+    }
+}
+
+async function start(done) {
+    cache = await caches.open(CACHE_NAME);
+    storageClearedTest(() => {
+        initialize(12.5, () => {
+            testFirstView(() => {
+                initialize(13, () => {
+                    testSecondView(() => {
+                        initialize(12.5, () => {
+                            testThirdView(() => {
+                                initializeRaster(() => {
+                                    testFirstRaster(() => {
+                                        initializeRaster(() => {
+
+                                            testSecondRaster(() => {
+                                                // move 10 days into the future
+                                                moveToFuture(1000 * 60 * 60 * 24 * 10);
+                                                initializeRaster(() => {
+                                                    testThirdRaster(() => {
+                                                        done();
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+}
+
+function storageClearedTest(callback) {
+    mapboxgl.clearStorage(function() {
+        const message = 'Clears cache storage.';
+        caches.open(CACHE_NAME).catch(catchError).then(cache_ => {
+            cache = cache_;
+            cache.keys().then(function(keys) {
+                log(keys.length === 0, message);
+                callback();
+            }).catch(catchError);
+        });
+    });
+}
+
+function initialize(zoom, onLoad) {
+    if (map) map.remove();
+    map = window.map = new mapboxgl.Map({
+        container: 'map',
+        zoom,
+        center: [-77.01866, 38.888],
+        style: 'mapbox://styles/mapbox/streets-v10',
+        interactive: false,
+        hash: false
+    });
+
+    map.on('style.load', function() {
+        // add traffic layer that shouldn't be cached because of short expiry
+        map.addLayer({
+            "id": "traffic",
+            "source": {
+                "url": "mapbox://mapbox.mapbox-traffic-v1",
+                "type": "vector"
+            },
+            "source-layer": "traffic",
+            "type": "line",
+            "paint": {
+                "line-width": 1.5,
+                "line-color": "red"
+            }
+        });
+
+        // add third party source that shouldn't be cached
+        map.addLayer({
+            "id": "mapillary",
+            "type": "line",
+            "source": {
+                "type": "vector",
+                "tiles": ["https://d25uarhxywzl1j.cloudfront.net/v0.1/{z}/{x}/{y}.mvt"],
+                "minzoom": 6,
+                "maxzoom": 14
+            },
+            "source-layer": "mapillary-sequences",
+            "layout": {
+                "line-cap": "round",
+                "line-join": "round"
+            },
+            "paint": {
+                "line-opacity": 0.6,
+                "line-color": "rgb(53, 175, 109)",
+                "line-width": 2
+            }
+        });
+
+        map.on('load', onLoad);
+    });
+}
+
+function checkNotCached(keys) {
+    // check that no resources that shouldn't be cached are cached
+    const dontCache = ['traffic', 'style', 'fonts', 'd25uarhxywzl1j.cloudfront.net'];
+
+    for (const urlSubstring of dontCache) {
+        log(!matchURL(keys, urlSubstring), "Does not cache wrong resource: " + urlSubstring);
+    }
+}
+
+function testFirstView(done) {
+    cache.keys().catch(catchError).then(keys => {
+        log(keys.length === 4, "keys.length = 4");
+
+        // check for expected cache entries
+
+        const expected = [
+            "mapbox.mapbox-streets-v7/12/1171/1566.vector.pbf",
+            "mapbox.mapbox-streets-v7/12/1171/1567.vector.pbf",
+            "mapbox.mapbox-streets-v7/12/1172/1566.vector.pbf",
+            "mapbox.mapbox-streets-v7/12/1172/1567.vector.pbf",
+        ];
+
+        for (const expect of expected) {
+            log(matchURL(keys, expect), "Caches correct resource: " + expect);
+        }
+
+        checkNotCached(keys);
+
+        // lower cache limits so we can more easily test eviction
+        map._setCacheLimits(6, 0);
+
+        done();
+    });
+}
+
+function testSecondView(done) {
+    // wait 1 second to give the map a chance to evict from the cache
+    setTimeout(() => {
+        cache.keys().catch(catchError).then(keys => {
+
+            // some tiles were evicted!
+            log(keys.length === 6, "Enforces cache size limit: keys.length = 6");
+
+            // all the most recent tiles are in the cache
+            const expected = [
+                "mapbox.mapbox-streets-v7/13/2342/3133.vector.pbf",
+                "mapbox.mapbox-streets-v7/13/2342/3134.vector.pbf",
+                "mapbox.mapbox-streets-v7/13/2343/3133.vector.pbf",
+                "mapbox.mapbox-streets-v7/13/2343/3134.vector.pbf",
+            ];
+
+            for (const expect of expected) {
+                log(matchURL(keys, expect), "Evicts correct tiles: still has " + expect);
+            }
+
+            checkNotCached(keys);
+
+            done();
+        });
+    }, 1000);
+}
+
+function testThirdView(done) {
+
+    // wait 1 second to give the map a chance to evict from the cache
+    setTimeout(() => {
+        caches.open(CACHE_NAME).catch(catchError).then(cache => {
+            cache.keys().catch(catchError).then(keys => {
+
+                // some tiles were evicted!
+                log(keys.length === 6, "Enforces cache size limit: keys.length = 6");
+
+                // check that the cache entries are ordered in order of most least use
+
+                [13, 13, 12, 12, 12, 12].forEach((z, i) => {
+                    const correctZoom = keys[i].url.indexOf('/' + z + '/') > 0;
+                    log(correctZoom, 'Maintains LRU order: cache entry ' + i + ' has correct zoom level (' + z + ')');
+                });
+
+                // all the most recent tiles are in the cache
+                const expected = [
+                    "mapbox.mapbox-streets-v7/12/1171/1566.vector.pbf",
+                    "mapbox.mapbox-streets-v7/12/1171/1567.vector.pbf",
+                    "mapbox.mapbox-streets-v7/12/1172/1566.vector.pbf",
+                    "mapbox.mapbox-streets-v7/12/1172/1567.vector.pbf",
+                ];
+
+                for (const expect of expected) {
+                    log(matchURL(keys, expect), "Evicts correct tiles: still has " + expect);
+                }
+
+                checkNotCached(keys);
+
+                done();
+            });
+        });
+    }, 1000);
+}
+
+function initializeRaster(done) {
+    if (map) map.remove();
+    map = new mapboxgl.Map({
+        container: 'map',
+        zoom: 0,
+        center: [137.9150899566626, 36.25956997955441],
+        style: 'mapbox://styles/mapbox/satellite-v9'
+    });
+    map.on('load', done);
+}
+
+const expectedRasterURL = 'https://api.mapbox.com/v4/mapbox.satellite/1/0/0';
+let rasterTileExpiry;
+
+function testFirstRaster(done) {
+    caches.open(CACHE_NAME).catch(catchError).then(cache => {
+        fuzzyMatchAll(cache, expectedRasterURL, matches => {
+            const match = matches[0];
+            rasterTileExpiry = match && match.headers.get('Expires');
+            log(matches.length === 1, 'Caches raster tile.' + matches.length + ' ' + rasterTileExpiry);
+            done();
+        });
+    });
+}
+
+function testSecondRaster(done) {
+    caches.open(CACHE_NAME).catch(catchError).then(cache => {
+        fuzzyMatchAll(cache, expectedRasterURL, matches => {
+            // check that the tile in the cache after the second map load is the same as after the
+            // first one. No new tile was loaded or cached.
+            const match = matches[0];
+            const newExpiry = match && match.headers.get('Expires');
+            log(matches.length === 1 && rasterTileExpiry === newExpiry, 'Reuses cached raster tile without refetching.'  + matches.length + ' ' + newExpiry);
+            done();
+        });
+    });
+}
+
+function testThirdRaster(done) {
+    caches.open(CACHE_NAME).catch(catchError).then(cache => {
+        fuzzyMatchAll(cache, expectedRasterURL, matches => {
+            // check that the tile in the cache after the second map load is the same as after the
+            // first one. No new tile was loaded or cached.
+            const match = matches[0];
+            const newExpiry = match && match.headers.get('Expires');
+            log(matches.length === 1 && rasterTileExpiry !== newExpiry, 'Replaces expired raster tile with new version.' + matches.length + ' ' + newExpiry);
+            done();
+        });
+    });
+}
+
+function fuzzyMatchAll(cache, url, callback) {
+    cache.keys().catch(catchError).then(keys => {
+        for (const key of keys) {
+            if (key.url.indexOf(url) >= 0) {
+                return cache.matchAll(key.url).catch(catchError).then(callback);
+            }
+        }
+        return callback([]);
+    });
+}
+
+function moveToFuture(skip) {
+    Date._now = Date.now;
+    Date.now = function () {
+        return this._now() + skip;
+    };
+}
+
+function matchURL(keys, s) {
+    for (const key of keys) {
+        if (key.url.indexOf(s) >= 0) return true;
+    }
+    return false;
+}
+
+</script>
+</body>
+</html>

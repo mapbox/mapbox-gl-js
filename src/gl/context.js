@@ -6,11 +6,11 @@ import Framebuffer from './framebuffer';
 import DepthMode from './depth_mode';
 import StencilMode from './stencil_mode';
 import ColorMode from './color_mode';
-import { deepEqual } from '../util/util';
-import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha } from './value';
+import CullFaceMode from './cull_face_mode';
+import {deepEqual} from '../util/util';
+import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, BlendEquation, CullFace, CullFaceSide, FrontFace, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY} from './value';
 
-
-import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
+import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
 import type {
     StructArray,
     StructArrayMember
@@ -22,7 +22,6 @@ type ClearArgs = {
     depth?: number,
     stencil?: number
 };
-
 
 class Context {
     gl: WebGLRenderingContext;
@@ -44,6 +43,10 @@ class Context {
     blend: Blend;
     blendFunc: BlendFunc;
     blendColor: BlendColor;
+    blendEquation: BlendEquation;
+    cullFace: CullFace;
+    cullFaceSide: CullFaceSide;
+    frontFace: FrontFace;
     program: Program;
     activeTexture: ActiveTextureUnit;
     viewport: Viewport;
@@ -55,10 +58,13 @@ class Context {
     bindVertexArrayOES: BindVertexArrayOES;
     pixelStoreUnpack: PixelStoreUnpack;
     pixelStoreUnpackPremultiplyAlpha: PixelStoreUnpackPremultiplyAlpha;
+    pixelStoreUnpackFlipY: PixelStoreUnpackFlipY;
 
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
     extTextureHalfFloat: any;
+    extRenderToTextureHalfFloat: any;
+    extTimerQuery: any;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
@@ -79,6 +85,10 @@ class Context {
         this.blend = new Blend(this);
         this.blendFunc = new BlendFunc(this);
         this.blendColor = new BlendColor(this);
+        this.blendEquation = new BlendEquation(this);
+        this.cullFace = new CullFace(this);
+        this.cullFaceSide = new CullFaceSide(this);
+        this.frontFace = new FrontFace(this);
         this.program = new Program(this);
         this.activeTexture = new ActiveTextureUnit(this);
         this.viewport = new Viewport(this);
@@ -90,6 +100,7 @@ class Context {
         this.bindVertexArrayOES = this.extVertexArrayObject && new BindVertexArrayOES(this);
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
+        this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
 
         this.extTextureFilterAnisotropic = (
             gl.getExtension('EXT_texture_filter_anisotropic') ||
@@ -103,11 +114,79 @@ class Context {
         this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
         if (this.extTextureHalfFloat) {
             gl.getExtension('OES_texture_half_float_linear');
+            this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
         }
 
+        this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
     }
 
-    createIndexBuffer(array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
+    setDefault() {
+        this.unbindVAO();
+
+        this.clearColor.setDefault();
+        this.clearDepth.setDefault();
+        this.clearStencil.setDefault();
+        this.colorMask.setDefault();
+        this.depthMask.setDefault();
+        this.stencilMask.setDefault();
+        this.stencilFunc.setDefault();
+        this.stencilOp.setDefault();
+        this.stencilTest.setDefault();
+        this.depthRange.setDefault();
+        this.depthTest.setDefault();
+        this.depthFunc.setDefault();
+        this.blend.setDefault();
+        this.blendFunc.setDefault();
+        this.blendColor.setDefault();
+        this.blendEquation.setDefault();
+        this.cullFace.setDefault();
+        this.cullFaceSide.setDefault();
+        this.frontFace.setDefault();
+        this.program.setDefault();
+        this.activeTexture.setDefault();
+        this.bindFramebuffer.setDefault();
+        this.pixelStoreUnpack.setDefault();
+        this.pixelStoreUnpackPremultiplyAlpha.setDefault();
+        this.pixelStoreUnpackFlipY.setDefault();
+    }
+
+    setDirty() {
+        this.clearColor.dirty = true;
+        this.clearDepth.dirty = true;
+        this.clearStencil.dirty = true;
+        this.colorMask.dirty = true;
+        this.depthMask.dirty = true;
+        this.stencilMask.dirty = true;
+        this.stencilFunc.dirty = true;
+        this.stencilOp.dirty = true;
+        this.stencilTest.dirty = true;
+        this.depthRange.dirty = true;
+        this.depthTest.dirty = true;
+        this.depthFunc.dirty = true;
+        this.blend.dirty = true;
+        this.blendFunc.dirty = true;
+        this.blendColor.dirty = true;
+        this.blendEquation.dirty = true;
+        this.cullFace.dirty = true;
+        this.cullFaceSide.dirty = true;
+        this.frontFace.dirty = true;
+        this.program.dirty = true;
+        this.activeTexture.dirty = true;
+        this.viewport.dirty = true;
+        this.bindFramebuffer.dirty = true;
+        this.bindRenderbuffer.dirty = true;
+        this.bindTexture.dirty = true;
+        this.bindVertexBuffer.dirty = true;
+        this.bindElementBuffer.dirty = true;
+        if (this.extVertexArrayObject) {
+            this.bindVertexArrayOES.dirty = true;
+        }
+        this.pixelStoreUnpack.dirty = true;
+        this.pixelStoreUnpackPremultiplyAlpha.dirty = true;
+        this.pixelStoreUnpackFlipY.dirty = true;
+    }
+
+    createIndexBuffer(array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean) {
         return new IndexBuffer(this, array, dynamicDraw);
     }
 
@@ -126,8 +205,8 @@ class Context {
         return rbo;
     }
 
-    createFramebuffer(width: number, height: number) {
-        return new Framebuffer(this, width, height);
+    createFramebuffer(width: number, height: number, hasDepth: boolean) {
+        return new Framebuffer(this, width, height, hasDepth);
     }
 
     clear({color, depth}: ClearArgs) {
@@ -142,6 +221,11 @@ class Context {
 
         if (typeof depth !== 'undefined') {
             mask |= gl.DEPTH_BUFFER_BIT;
+
+            // Workaround for platforms where clearDepth doesn't seem to work
+            // without reseting the depthRange. See https://github.com/mapbox/mapbox-gl-js/issues/3437
+            this.depthRange.set([0, 1]);
+
             this.clearDepth.set(depth);
             this.depthMask.set(true);
         }
@@ -154,6 +238,16 @@ class Context {
         // }
 
         gl.clear(mask);
+    }
+
+    setCullFace(cullFaceMode: $ReadOnly<CullFaceMode>) {
+        if (cullFaceMode.enable === false) {
+            this.cullFace.set(false);
+        } else {
+            this.cullFace.set(true);
+            this.cullFaceSide.set(cullFaceMode.mode);
+            this.frontFace.set(cullFaceMode.frontFace);
+        }
     }
 
     setDepthMode(depthMode: $ReadOnly<DepthMode>) {
@@ -192,6 +286,14 @@ class Context {
         }
 
         this.colorMask.set(colorMode.mask);
+    }
+
+    unbindVAO() {
+        // Unbinding the VAO prevents other things (custom layers, new buffer creation) from
+        // unintentionally changing the state of the last VAO used.
+        if (this.extVertexArrayObject) {
+            this.bindVertexArrayOES.set(null);
+        }
     }
 }
 

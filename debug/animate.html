@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        #map { width: 1200px; height: 800px;  }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [0, 0],
+    zoom: 4
+});
+
+var radius = 30;
+
+function line(angle, radius) {
+    return {
+        "type": "Feature",
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [
+                [-Math.cos(angle) * radius, -Math.sin(angle) * radius + 1],
+                [Math.cos(angle) * radius, Math.sin(angle) * radius + 1],
+            ]
+        }
+    };
+}
+
+function crossWithAngle(angle) {
+    return {
+        "type": "FeatureCollection",
+        "features": [
+            line(angle - Math.PI / 4, radius),
+            line(angle + Math.PI / 4, radius)
+        ]
+    };
+}
+
+map.on('load', function () {
+    // Add a source and layer displaying a point which will be animated in a circle.
+    map.addSource('lines', {
+        "type": "geojson",
+        "data": crossWithAngle(0)
+    });
+
+    map.addLayer({
+        "id": "lines",
+        "source": "lines",
+        "type": "line",
+        "paint": {
+            "line-width": 4,
+            "line-color": "#007cbf"
+        }
+    });
+
+    map.addLayer({
+        "id": "dot",
+        "source": "lines",
+        "type": "circle",
+        "paint": {
+            "circle-radius": 10,
+            "circle-color": "#007cbf"
+        }
+    });
+
+    var updates = 0;
+
+    map.on('data', function (d) {
+        if (d.sourceDataType === 'content') {
+            updates++;
+        }
+    });
+
+    setInterval(function () {
+        console.log(updates + ' updates per second');
+        updates = 0;
+    }, 1000);
+
+    function animateMarker(timestamp) {
+        // Update the data to a new position based on the animation timestamp. The
+        // divisor in the expression `timestamp / 1000` controls the animation speed.
+        map.getSource('lines').setData(crossWithAngle(timestamp / 1000));
+
+        // Request the next frame of the animation.
+        requestAnimationFrame(animateMarker);
+    }
+
+    // Start the animation.
+    animateMarker(0);
+});
+</script>
+
+</body>
+</html>

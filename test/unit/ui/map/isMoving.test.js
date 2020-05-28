@@ -1,13 +1,13 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../../util/test';
 import browser from '../../../../src/util/browser';
 import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
-import simulate from 'mapbox-gl-js-test/simulate_interaction';
+import simulate from '../../../util/simulate_interaction';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({ container: DOM.create('div', '', window.document.body) });
+    return new Map({container: DOM.create('div', '', window.document.body)});
 }
 
 test('Map#isMoving returns false by default', (t) => {
@@ -30,17 +30,23 @@ test('Map#isMoving returns true during a camera zoom animation', (t) => {
         t.end();
     });
 
-    map.zoomTo(5, { duration: 0 });
+    map.zoomTo(5, {duration: 0});
 });
 
 test('Map#isMoving returns true when drag panning', (t) => {
     const map = createMap(t);
 
+    map.on('movestart', () => {
+        t.equal(map.isMoving(), true);
+    });
     map.on('dragstart', () => {
         t.equal(map.isMoving(), true);
     });
 
     map.on('dragend', () => {
+        t.equal(map.isMoving(), false);
+    });
+    map.on('moveend', () => {
         t.equal(map.isMoving(), false);
         map.remove();
         t.end();
@@ -62,11 +68,17 @@ test('Map#isMoving returns true when drag rotating', (t) => {
     // Prevent inertial rotation.
     t.stub(browser, 'now').returns(0);
 
+    map.on('movestart', () => {
+        t.equal(map.isMoving(), true);
+    });
     map.on('rotatestart', () => {
         t.equal(map.isMoving(), true);
     });
 
     map.on('rotateend', () => {
+        t.equal(map.isMoving(), false);
+    });
+    map.on('moveend', () => {
         t.equal(map.isMoving(), false);
         map.remove();
         t.end();
@@ -103,7 +115,9 @@ test('Map#isMoving returns true when scroll zooming', (t) => {
     map._renderTaskQueue.run();
 
     now += 400;
-    map._renderTaskQueue.run();
+    setTimeout(() => {
+        map._renderTaskQueue.run();
+    }, 400);
 });
 
 test('Map#isMoving returns true when drag panning and scroll zooming interleave', (t) => {
@@ -120,7 +134,9 @@ test('Map#isMoving returns true when drag panning and scroll zooming interleave'
     map.on('zoomend', () => {
         t.equal(map.isMoving(), true);
         simulate.mouseup(map.getCanvas());
-        map._renderTaskQueue.run();
+        setTimeout(() => {
+            map._renderTaskQueue.run();
+        });
     });
 
     map.on('dragend', () => {
@@ -146,5 +162,7 @@ test('Map#isMoving returns true when drag panning and scroll zooming interleave'
     map._renderTaskQueue.run();
 
     now += 400;
-    map._renderTaskQueue.run();
+    setTimeout(() => {
+        map._renderTaskQueue.run();
+    }, 400);
 });

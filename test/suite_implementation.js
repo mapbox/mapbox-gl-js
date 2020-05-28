@@ -7,6 +7,7 @@ import {plugin as rtlTextPlugin} from '../src/source/rtl_text_plugin';
 import rtlText from '@mapbox/mapbox-gl-rtl-text';
 import fs from 'fs';
 import path from 'path';
+import customLayerImplementations from './integration/custom_layer_implementations';
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
@@ -19,26 +20,31 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         callback(new Error('Test timed out'));
     }, options.timeout || 20000);
 
-    function callback() {
+    function callback(...args) {
         if (!wasCallbackCalled) {
             clearTimeout(timeout);
             wasCallbackCalled = true;
-            _callback.apply(this, arguments);
+            _callback(...args);
         }
     }
 
     window.devicePixelRatio = options.pixelRatio;
 
+    if (options.addFakeCanvas) {
+        const fakeCanvas = createFakeCanvas(window.document, options.addFakeCanvas.id, options.addFakeCanvas.image);
+        window.document.body.appendChild(fakeCanvas);
+    }
+
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'offsetWidth', {value: options.width});
-    Object.defineProperty(container, 'offsetHeight', {value: options.height});
+    Object.defineProperty(container, 'clientWidth', {value: options.width});
+    Object.defineProperty(container, 'clientHeight', {value: options.height});
 
     // We are self-hosting test files.
     config.REQUIRE_ACCESS_TOKEN = false;
 
     const map = new Map({
-        container: container,
-        style: style,
+        container,
+        style,
         classes: options.classes,
         interactive: false,
         attributionControl: false,
@@ -46,6 +52,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         axonometric: options.axonometric || false,
         skew: options.skew || [0, 0],
         fadeDuration: options.fadeDuration || 0,
+        localIdeographFontFamily: options.localIdeographFontFamily || false,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions
     });
 
@@ -59,6 +66,7 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
 
     if (options.debug) map.showTileBoundaries = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
+    if (options.showPadding) map.showPadding = true;
 
     const gl = map.painter.context.gl;
 
@@ -99,6 +107,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             map.remove();
             gl.getExtension('STACKGL_destroy_context').destroy();
             delete map.painter.context.gl;
+
+            if (options.addFakeCanvas) {
+                const fakeCanvas = window.document.getElementById(options.addFakeCanvas.id);
+                fakeCanvas.parentNode.removeChild(fakeCanvas);
+            }
 
             callback(null, data, results.map((feature) => {
                 feature = feature.toJSON();
@@ -141,10 +154,49 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
             const {data, width, height} = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
             map.addImage(operation[1], {width, height, data: new Uint8Array(data)}, operation[3] || {});
             applyOperations(map, operations.slice(1), callback);
-
+        } else if (operation[0] === 'addCustomLayer') {
+            map.addLayer(new customLayerImplementations[operation[1]](), operation[2]);
+            map._render();
+            applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'updateFakeCanvas') {
+            const canvasSource = map.getSource(operation[1]);
+            canvasSource.play();
+            // update before pause should be rendered
+            updateFakeCanvas(window.document, options.addFakeCanvas.id, operation[2]);
+            canvasSource.pause();
+            // update after pause should not be rendered
+            updateFakeCanvas(window.document, options.addFakeCanvas.id, operation[3]);
+            map._render();
+            applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'setStyle') {
+            // Disable local ideograph generation (enabled by default) for
+            // consistent local ideograph rendering using fixtures in all runs of the test suite.
+            map.setStyle(operation[1], {localIdeographFontFamily: false});
+            applyOperations(map, operations.slice(1), callback);
+        } else if (operation[0] === 'pauseSource') {
+            map.style.sourceCaches[operation[1]].pause();
+            applyOperations(map, operations.slice(1), callback);
         } else {
-            map[operation[0]].apply(map, operation.slice(1));
+            if (typeof map[operation[0]] === 'function') {
+                map[operation[0]](...operation.slice(1));
+            }
             applyOperations(map, operations.slice(1), callback);
         }
     }
 };
+
+function createFakeCanvas(document, id, imagePath) {
+    const fakeCanvas = document.createElement('canvas');
+    const image = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', imagePath)));
+    fakeCanvas.id = id;
+    fakeCanvas.data = image.data;
+    fakeCanvas.width = image.width;
+    fakeCanvas.height = image.height;
+    return fakeCanvas;
+}
+
+function updateFakeCanvas(document, id, imagePath) {
+    const fakeCanvas = document.getElementById(id);
+    const image = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', imagePath)));
+    fakeCanvas.data = image.data;
+}

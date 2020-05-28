@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+var places = {
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "properties": {
+            "description": "Ford's Theater",
+            "icon": "theatre"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-77.038659, 38.931567]
+        }
+    }, {
+        "type": "Feature",
+        "properties": {
+            "description": "The Gaslight",
+            "icon": "theatre"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-77.003168, 38.894651]
+        }
+    }, {
+        "type": "Feature",
+        "properties": {
+            "description": "Horrible Harry's",
+            "icon": "bar"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-77.090372, 38.881189]
+        }
+    }, {
+        "type": "Feature",
+        "properties": {
+            "description": "Bike Party",
+            "icon": "bicycle"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-77.052477, 38.943951]
+        }
+    }, {
+        "type": "Feature",
+        "properties": {
+            "description": "Rockabilly Rockstars",
+            "icon": "music"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-77.031706, 38.914581]
+        }
+    }, {
+        "type": "Feature",
+        "properties": {
+            "description": "District Drum Tribe",
+            "icon": "music"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-77.020945, 38.878241]
+        }
+    }, {
+        "type": "Feature",
+        "properties": {
+            "description": "Motown Memories",
+            "icon": "music"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-77.007481, 38.876516]
+        }
+    }]
+};
+var style = {
+    version: 8,
+    center: [-77.04, 38.907],
+    zoom: 12,
+    sources: {
+        places: {
+            type: 'geojson',
+            data: places,
+        }
+    },
+    sprite: 'mapbox://sprites/mapbox/streets-v11',
+    glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    layers: [{
+        id: 'foo',
+        type: 'symbol',
+        source: 'places',
+        layout: {
+            'icon-image': 'rectangle-orange-6',
+            'text-field': ['get', 'description'],
+            'text-size': 12.5,
+            'text-variable-anchor': ['left', 'right', 'bottom', 'top'],
+            'text-justify': 'auto',
+            'icon-text-fit': 'width',
+            'icon-text-fit-padding': [0, 5, 1, 5]
+        },
+        paint: {
+            'text-color': '#3C77C0'
+        }
+    }]
+};
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    style
+});
+</script>
+
+</body>
+</html>

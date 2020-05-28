@@ -24,7 +24,7 @@ function flowType(property) {
             case 'enum':
                 return flowEnum(property.values);
             case 'array':
-                const elementType = flowType(typeof property.value === 'string' ? {type: property.value} : property.value)
+                const elementType = flowType(typeof property.value === 'string' ? {type: property.value, values: property.values} : property.value)
                 if (property.length) {
                     return `[${Array(property.length).fill(elementType).join(', ')}]`;
                 } else {
@@ -33,7 +33,7 @@ function flowType(property) {
             case 'light':
                 return 'LightSpecification';
             case 'sources':
-                return '{[string]: SourceSpecification}';
+                return '{[_: string]: SourceSpecification}';
             case '*':
                 return 'mixed';
             default:
@@ -119,6 +119,10 @@ fs.writeFileSync('src/style-spec/types.js', `// @flow
 export type ColorSpecification = string;
 
 export type FormattedSpecification = string;
+
+export type ResolvedImageSpecification = string;
+
+export type PromoteIdSpecification = {[_: string]: string} | string;
 
 export type FilterSpecification =
     | ['has', string]

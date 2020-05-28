@@ -7,7 +7,7 @@ function generateLayers(layer) {
     const generated = [];
     for (let i = 0; i < 50; i++) {
         const id = layer.id + i;
-        generated.push(Object.assign({}, layer, {id: id}));
+        generated.push(Object.assign({}, layer, {id}));
     }
     return generated;
 }
@@ -17,13 +17,18 @@ const height = 768;
 const zoom = 4;
 
 export default class PaintStates extends Benchmark {
+    constructor(center) {
+        super();
+        this.center = center;
+    }
+
     setup() {
         return fetch('/bench/data/naturalearth-land.json')
             .then(response => response.json())
             .then(data => {
                 this.numFeatures = data.features.length;
                 return Object.assign({}, style, {
-                    sources: {'land': {'type': 'geojson', 'data': data, 'maxzoom': 23}},
+                    sources: {'land': {'type': 'geojson', data, 'maxzoom': 23}},
                     layers: generateLayers({
                         'id': 'layer',
                         'type': 'fill',
@@ -40,14 +45,16 @@ export default class PaintStates extends Benchmark {
                 });
             })
             .then((style) => {
-                return  createMap({
+                return createMap({
                     zoom,
                     width,
                     height,
-                    center: [-77.032194, 38.912753],
-                    style: style
+                    center: this.center,
+                    style
                 }).then(map => {
                     this.map = map;
+                }).catch(error => {
+                    console.error(error);
                 });
             });
     }
@@ -57,7 +64,7 @@ export default class PaintStates extends Benchmark {
         this.map._sourcesDirty = true;
         this.map._render();
         for (let i = 0; i < this.numFeatures; i += 50) {
-            this.map.setFeatureState({ source: 'land', id: i }, { bench: true });
+            this.map.setFeatureState({source: 'land', id: i}, {bench: true});
         }
         this.map._render();
     }

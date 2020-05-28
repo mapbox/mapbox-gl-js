@@ -2,7 +2,7 @@
 
 import quickselect from 'quickselect';
 
-import { calculateSignedArea } from './util';
+import {calculateSignedArea} from './util';
 
 import type Point from '@mapbox/point-geometry';
 
@@ -34,7 +34,7 @@ export default function classifyRings(rings: Array<Array<Point>>, maxRings: numb
     }
     if (polygon) polygons.push(polygon);
 
-    // Earcut performance degrages with the # of rings in a polygon. For this
+    // Earcut performance degrades with the # of rings in a polygon. For this
     // reason, we limit strip out all but the `maxRings` largest rings.
     if (maxRings > 1) {
         for (let j = 0; j < polygons.length; j++) {

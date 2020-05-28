@@ -6,6 +6,10 @@ export type ColorSpecification = string;
 
 export type FormattedSpecification = string;
 
+export type ResolvedImageSpecification = string;
+
+export type PromoteIdSpecification = {[_: string]: string} | string;
+
 export type FilterSpecification =
     | ['has', string]
     | ['!has', string]
@@ -62,7 +66,7 @@ export type StyleSpecification = {|
     "bearing"?: number,
     "pitch"?: number,
     "light"?: LightSpecification,
-    "sources": {[string]: SourceSpecification},
+    "sources": {[_: string]: SourceSpecification},
     "sprite"?: string,
     "glyphs"?: string,
     "transition"?: TransitionSpecification,
@@ -84,7 +88,11 @@ export type VectorSourceSpecification = {
     "scheme"?: "xyz" | "tms",
     "minzoom"?: number,
     "maxzoom"?: number,
-    "attribution"?: string
+    "attribution"?: string,
+    "cluster"?: boolean,
+    "clusterRadius"?: number,
+    "clusterProperties"?: mixed,
+    "promoteId"?: PromoteIdSpecification
 }
 
 export type RasterSourceSpecification = {
@@ -121,8 +129,10 @@ export type GeoJSONSourceSpecification = {|
     "cluster"?: boolean,
     "clusterRadius"?: number,
     "clusterMaxZoom"?: number,
+    "clusterProperties"?: mixed,
     "lineMetrics"?: boolean,
-    "generateId"?: boolean
+    "generateId"?: boolean,
+    "promoteId"?: PromoteIdSpecification
 |}
 
 export type VideoSourceSpecification = {|
@@ -155,6 +165,7 @@ export type FillLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
+        "fill-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
@@ -164,7 +175,7 @@ export type FillLayerSpecification = {|
         "fill-outline-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-translate"?: PropertyValueSpecification<[number, number]>,
         "fill-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
-        "fill-pattern"?: PropertyValueSpecification<string>
+        "fill-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>
     |}
 |}
 
@@ -182,6 +193,7 @@ export type LineLayerSpecification = {|
         "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter">,
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
+        "line-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
@@ -194,7 +206,7 @@ export type LineLayerSpecification = {|
         "line-offset"?: DataDrivenPropertyValueSpecification<number>,
         "line-blur"?: DataDrivenPropertyValueSpecification<number>,
         "line-dasharray"?: PropertyValueSpecification<Array<number>>,
-        "line-pattern"?: PropertyValueSpecification<string>,
+        "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "line-gradient"?: ExpressionSpecification
     |}
 |}
@@ -212,6 +224,8 @@ export type SymbolLayerSpecification = {|
         "symbol-placement"?: PropertyValueSpecification<"point" | "line" | "line-center">,
         "symbol-spacing"?: PropertyValueSpecification<number>,
         "symbol-avoid-edges"?: PropertyValueSpecification<boolean>,
+        "symbol-sort-key"?: DataDrivenPropertyValueSpecification<number>,
+        "symbol-z-order"?: PropertyValueSpecification<"auto" | "viewport-y" | "source">,
         "icon-allow-overlap"?: PropertyValueSpecification<boolean>,
         "icon-ignore-placement"?: PropertyValueSpecification<boolean>,
         "icon-optional"?: PropertyValueSpecification<boolean>,
@@ -219,7 +233,7 @@ export type SymbolLayerSpecification = {|
         "icon-size"?: DataDrivenPropertyValueSpecification<number>,
         "icon-text-fit"?: PropertyValueSpecification<"none" | "width" | "height" | "both">,
         "icon-text-fit-padding"?: PropertyValueSpecification<[number, number, number, number]>,
-        "icon-image"?: DataDrivenPropertyValueSpecification<string>,
+        "icon-image"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "icon-rotate"?: DataDrivenPropertyValueSpecification<number>,
         "icon-padding"?: PropertyValueSpecification<number>,
         "icon-keep-upright"?: PropertyValueSpecification<boolean>,
@@ -234,9 +248,12 @@ export type SymbolLayerSpecification = {|
         "text-max-width"?: DataDrivenPropertyValueSpecification<number>,
         "text-line-height"?: PropertyValueSpecification<number>,
         "text-letter-spacing"?: DataDrivenPropertyValueSpecification<number>,
-        "text-justify"?: DataDrivenPropertyValueSpecification<"left" | "center" | "right">,
+        "text-justify"?: DataDrivenPropertyValueSpecification<"auto" | "left" | "center" | "right">,
+        "text-radial-offset"?: DataDrivenPropertyValueSpecification<number>,
+        "text-variable-anchor"?: PropertyValueSpecification<Array<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">>,
         "text-anchor"?: DataDrivenPropertyValueSpecification<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">,
         "text-max-angle"?: PropertyValueSpecification<number>,
+        "text-writing-mode"?: PropertyValueSpecification<Array<"horizontal" | "vertical">>,
         "text-rotate"?: DataDrivenPropertyValueSpecification<number>,
         "text-padding"?: PropertyValueSpecification<number>,
         "text-keep-upright"?: PropertyValueSpecification<boolean>,
@@ -275,6 +292,7 @@ export type CircleLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
+        "circle-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
@@ -330,9 +348,10 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-extrusion-translate"?: PropertyValueSpecification<[number, number]>,
         "fill-extrusion-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
-        "fill-extrusion-pattern"?: PropertyValueSpecification<string>,
+        "fill-extrusion-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "fill-extrusion-height"?: DataDrivenPropertyValueSpecification<number>,
-        "fill-extrusion-base"?: DataDrivenPropertyValueSpecification<number>
+        "fill-extrusion-base"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-extrusion-vertical-gradient"?: PropertyValueSpecification<boolean>
     |}
 |}
 
@@ -393,7 +412,7 @@ export type BackgroundLayerSpecification = {|
     |},
     "paint"?: {|
         "background-color"?: PropertyValueSpecification<ColorSpecification>,
-        "background-pattern"?: PropertyValueSpecification<string>,
+        "background-pattern"?: PropertyValueSpecification<ResolvedImageSpecification>,
         "background-opacity"?: PropertyValueSpecification<number>
     |}
 |}
@@ -408,3 +427,4 @@ export type LayerSpecification =
     | RasterLayerSpecification
     | HillshadeLayerSpecification
     | BackgroundLayerSpecification;
+

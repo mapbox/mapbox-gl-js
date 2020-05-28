@@ -1,0 +1,7 @@
+[
+  {
+    "error": {},
+    "message": "Parse error on line 2:\n...  \"version\": \"1\"  \"buckets\": { }}\n---------------------^\nExpecting 'EOF', '}', ':', ',', ']', got 'STRING'",
+    "line": 2
+  }
+]

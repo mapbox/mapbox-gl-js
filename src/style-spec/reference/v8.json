@@ -70,12 +70,12 @@
     },
     "sprite": {
       "type": "string",
-      "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended. This property is required if any layer uses the `background-pattern`, `fill-pattern`, `line-pattern`, `fill-extrusion-pattern`, or `icon-image` properties.",
+      "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended. This property is required if any layer uses the `background-pattern`, `fill-pattern`, `line-pattern`, `fill-extrusion-pattern`, or `icon-image` properties. The URL must be absolute, containing the [scheme, authority and path components](https://en.wikipedia.org/wiki/URL#Syntax).",
       "example": "mapbox://sprites/mapbox/bright-v8"
     },
     "glyphs": {
       "type": "string",
-      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. The URL must include `{fontstack}` and `{range}` tokens. This property is required if any layer uses the `text-field` layout property.",
+      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. The URL must include `{fontstack}` and `{range}` tokens. This property is required if any layer uses the `text-field` layout property. The URL must be absolute, containing the [scheme, authority and path components](https://en.wikipedia.org/wiki/URL#Syntax).",
       "example": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
     },
     "transition": {
@@ -131,7 +131,7 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`."
     },
     "tiles": {
       "type": "array",
@@ -177,18 +177,29 @@
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
-    "aggregateBy": {
-      "type": "*",
-      "doc": "along with point_count will be an aggregate of this property in all the features in the cluster."
-    },
-    "groupBy": {
-      "type": "string",
-      "doc": "each aggregate along with count will have a breakdown based on the features value for the groupBy property."
-    },
     "geojsonTile": {
       "type": "boolean",
       "default": false,
       "doc": "if true, each tile's response(expected to be a valid geojson and not in pbf) will be converted to vector tiles."
+    },
+    "cluster": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If the data is a collection of point features, setting this to true clusters the points by radius into groups. Cluster groups become new `Point` features in the source with additional properties:\n * `cluster` Is `true` if the point is a cluster \n * `cluster_id` A unqiue id for the cluster to be used in conjunction with the [cluster inspection methods](https://www.mapbox.com/mapbox-gl-js/api/#geojsonsource#getclusterexpansionzoom)\n * `point_count` Number of original points grouped into this cluster\n * `point_count_abbreviated` An abbreviated point count"
+    },
+    "clusterRadius": {
+      "type": "number",
+      "default": 50,
+      "minimum": 0,
+      "doc": "Radius of each cluster if clustering is enabled. A value of 512 indicates a radius equal to the width of a tile."
+    },
+    "clusterProperties": {
+      "type": "*",
+      "doc": "An object defining custom properties on the generated clusters if clustering is enabled, aggregating values from clustered points. Has the form `{\"property_name\": [operator, map_expression]}`. `operator` is any expression function that accepts at least 2 operands (e.g. `\"+\"` or `\"max\"`) — it accumulates the property value from clusters/points the cluster contains; `map_expression` produces the value of a single point.\n\nExample: `{\"sum\": [\"+\", [\"get\", \"scalerank\"]]}`.\n\nFor more advanced use cases, in place of `operator`, you can use a custom reduce expression that references a special `[\"accumulated\"]` value, e.g.:\n`{\"sum\": [[\"+\", [\"accumulated\"], [\"get\", \"sum\"]], [\"get\", \"scalerank\"]]}`"
+    },
+    "promoteId": {
+      "type": "promoteId",
+      "doc": "A property to use as a feature id (for feature state). Either a property name, or an object of the form `{<sourceLayer>: <propertyName>}`. If specified as a string for a vector tile source, the same property is used across all its source layers."
     },
     "*": {
       "type": "*",
@@ -208,7 +219,7 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`."
     },
     "tiles": {
       "type": "array",
@@ -278,7 +289,7 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`."
     },
     "tiles": {
       "type": "array",
@@ -386,14 +397,9 @@
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
     },
-    "aggregateBy": {
-      "type": "string",
-      "doc": "point_count will be an aggregate of this property in all the features in the cluster."
-    },
-    "geojsonTile": {
-      "type": "boolean",
-      "default": false,
-      "doc": "if true, each tile's response(expected to be a valid geojson and not in pbf) will be converted to vector tiles."
+    "clusterProperties": {
+      "type": "*",
+      "doc": "An object defining custom properties on the generated clusters if clustering is enabled, aggregating values from clustered points. Has the form `{\"property_name\": [operator, map_expression]}`. `operator` is any expression function that accepts at least 2 operands (e.g. `\"+\"` or `\"max\"`) — it accumulates the property value from clusters/points the cluster contains; `map_expression` produces the value of a single point.\n\nExample: `{\"sum\": [\"+\", [\"get\", \"scalerank\"]]}`.\n\nFor more advanced use cases, in place of `operator`, you can use a custom reduce expression that references a special `[\"accumulated\"]` value, e.g.:\n`{\"sum\": [[\"+\", [\"accumulated\"], [\"get\", \"sum\"]], [\"get\", \"scalerank\"]]}`"
     },
     "lineMetrics": {
       "type": "boolean",
@@ -401,9 +407,13 @@
       "doc": "Whether to calculate line distance metrics. This is required for line layers that specify `line-gradient` values."
     },
     "generateId": {
-        "type": "boolean",
-        "default": false,
-        "doc": "Whether to generate ids for the geojson features. When enabled, the `feature.id` property will be auto assigned based on its index in the `features` array, over-writing any previous values."
+      "type": "boolean",
+      "default": false,
+      "doc": "Whether to generate ids for the geojson features. When enabled, the `feature.id` property will be auto assigned based on its index in the `features` array, over-writing any previous values."
+    },
+    "promoteId": {
+      "type": "promoteId",
+      "doc": "A property to use as a feature id (for feature state). Either a property name, or an object of the form `{<sourceLayer>: <propertyName>}`."
     }
   },
   "source_video": {
@@ -603,7 +613,7 @@
     },
     "filter": {
       "type": "filter",
-      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. The `feature-state` expression is not supported in filter expressions."
+      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. Zoom expressions in filters are only evaluated at integer zoom levels. The `feature-state` expression is not supported in filter expressions."
     },
     "layout": {
       "type": "layout",
@@ -650,6 +660,32 @@
     }
   },
   "layout_fill": {
+    "fill-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "1.2.0",
+          "android": "9.1.0",
+          "ios": "5.8.0",
+          "macos": "0.15.0"
+        },
+        "data-driven styling": {
+          "js": "1.2.0",
+          "android": "9.1.0",
+          "ios": "5.8.0",
+          "macos": "0.15.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -674,6 +710,32 @@
     }
   },
   "layout_circle": {
+    "circle-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "1.2.0",
+          "android": "9.2.0",
+          "ios": "5.9.0",
+          "macos": "0.16.0"
+        },
+        "data-driven styling": {
+          "js": "1.2.0",
+          "android": "9.2.0",
+          "ios": "5.9.0",
+          "macos": "0.16.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "visibility": {
       "type": "enum",
       "values": {
@@ -767,8 +829,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -831,8 +892,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -857,8 +917,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -867,6 +926,32 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "line-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with a higher sort key will appear above features with a lower sort key.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "1.2.0",
+          "android": "9.1.0",
+          "ios": "5.8.0",
+          "macos": "0.15.0"
+        },
+        "data-driven styling": {
+          "js": "1.2.0",
+          "android": "9.1.0",
+          "ios": "5.8.0",
+          "macos": "0.15.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
     },
     "visibility": {
       "type": "enum",
@@ -886,8 +971,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "property-type": "constant"
     }
@@ -916,9 +1000,11 @@
           "macos": "0.1.0"
         },
         "`line-center` value": {
-          "js": "0.47.0"
-        },
-        "data-driven styling": {}
+          "js": "0.47.0",
+          "android": "6.4.0",
+          "ios": "4.3.0",
+          "macos": "0.10.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -945,8 +1031,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -959,15 +1044,71 @@
     "symbol-avoid-edges": {
       "type": "boolean",
       "default": false,
-      "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer.",
+      "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer. When using a client that supports global collision detection, like Mapbox GL JS version 0.42.0 or greater, enabling this property is not needed to prevent clipped labels at tile boundaries.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "symbol-sort-key": {
+      "type": "number",
+      "doc": "Sorts features in ascending order based on this value. Features with lower sort keys are drawn and placed first.  When `icon-allow-overlap` or `text-allow-overlap` is `false`, features with a lower sort key will have priority during placement. When `icon-allow-overlap` or `text-allow-overlap` is set to `true`, features with a higher sort key will overlap over features with a lower sort key.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.53.0",
+          "android": "7.4.0",
+          "ios": "4.11.0",
+          "macos": "0.14.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.53.0",
+          "android": "7.4.0",
+          "ios": "4.11.0",
+          "macos": "0.14.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "symbol-z-order": {
+      "type": "enum",
+      "values": {
+        "auto": {
+          "doc": "Sorts symbols by `symbol-sort-key` if set. Otherwise, sorts symbols by their y-position relative to the viewport if `icon-allow-overlap` or `text-allow-overlap` is set to `true` or `icon-ignore-placement` or `text-ignore-placement` is `false`."
+        },
+        "viewport-y": {
+          "doc": "Sorts symbols by their y-position relative to the viewport if `icon-allow-overlap` or `text-allow-overlap` is set to `true` or `icon-ignore-placement` or `text-ignore-placement` is `false`."
+        },
+        "source": {
+          "doc": "Sorts symbols by `symbol-sort-key` if set. Otherwise, no sorting is applied; symbols are rendered in the same order as the source data."
+        }
+      },
+      "default": "auto",
+      "doc": "Determines whether overlapping symbols in the same layer are rendered in the order that they appear in the data source or by their y-position relative to the viewport. To control the order and prioritization of symbols otherwise, use `symbol-sort-key`.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.49.0",
+          "android": "6.6.0",
+          "ios": "4.5.0",
+          "macos": "0.12.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -990,8 +1131,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1014,8 +1154,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1039,8 +1178,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1080,8 +1218,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.3.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1152,7 +1289,12 @@
           "ios": "3.4.0",
           "macos": "0.2.1"
         },
-        "data-driven styling": {}
+        "stretchable icons": {
+          "js": "1.6.0",
+          "android": "9.2.0",
+          "ios": "5.8.0",
+          "macos": "0.15.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1191,8 +1333,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -1203,7 +1344,7 @@
       "property-type": "data-constant"
     },
     "icon-image": {
-      "type": "string",
+      "type": "resolvedImage",
       "doc": "Name of image in sprite to use for drawing an image background.",
       "tokens": true,
       "sdk-support": {
@@ -1276,8 +1417,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -1298,8 +1438,8 @@
         },
         {
           "symbol-placement": [
-              "line",
-              "line-center"
+            "line",
+            "line-center"
           ]
         }
       ],
@@ -1309,8 +1449,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1438,8 +1577,7 @@
           "android": "5.2.0",
           "ios": "3.7.0",
           "macos": "0.6.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1479,8 +1617,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.3.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1520,8 +1657,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.3.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1671,8 +1807,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -1716,6 +1851,9 @@
     "text-justify": {
       "type": "enum",
       "values": {
+        "auto": {
+          "doc": "The text is aligned towards the anchor position."
+        },
         "left": {
           "doc": "The text is aligned to the left."
         },
@@ -1743,6 +1881,12 @@
           "android": "5.2.0",
           "ios": "3.7.0",
           "macos": "0.6.0"
+        },
+        "auto": {
+          "js": "0.54.0",
+          "android": "7.4.0",
+          "ios": "4.10.0",
+          "macos": "0.14.0"
         }
       },
       "expression": {
@@ -1753,6 +1897,94 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "text-radial-offset": {
+      "type": "number",
+      "units": "ems",
+      "default": 0,
+      "doc": "Radial offset of text, in the direction of the symbol's anchor. Useful in combination with `text-variable-anchor`, which defaults to using the two-dimensional `text-offset` if present.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.54.0",
+          "android": "7.4.0",
+          "ios": "4.10.0",
+          "macos": "0.14.0"
+        },
+        "data-driven styling": {
+          "js": "0.54.0",
+          "android": "7.4.0",
+          "ios": "4.10.0",
+          "macos": "0.14.0"
+        }
+      },
+      "requires": [
+        "text-field"
+      ],
+      "property-type": "data-driven",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      }
+    },
+    "text-variable-anchor": {
+      "type": "array",
+      "value": "enum",
+      "values": {
+        "center": {
+          "doc": "The center of the text is placed closest to the anchor."
+        },
+        "left": {
+          "doc": "The left side of the text is placed closest to the anchor."
+        },
+        "right": {
+          "doc": "The right side of the text is placed closest to the anchor."
+        },
+        "top": {
+          "doc": "The top of the text is placed closest to the anchor."
+        },
+        "bottom": {
+          "doc": "The bottom of the text is placed closest to the anchor."
+        },
+        "top-left": {
+          "doc": "The top left corner of the text is placed closest to the anchor."
+        },
+        "top-right": {
+          "doc": "The top right corner of the text is placed closest to the anchor."
+        },
+        "bottom-left": {
+          "doc": "The bottom left corner of the text is placed closest to the anchor."
+        },
+        "bottom-right": {
+          "doc": "The bottom right corner of the text is placed closest to the anchor."
+        }
+      },
+      "requires": [
+        "text-field",
+        {
+          "symbol-placement": [
+            "point"
+          ]
+        }
+      ],
+      "doc": "To increase the chance of placing high-priority labels on the map, you can provide an array of `text-anchor` locations: the renderer will attempt to place the label at each location, in order, before moving onto the next label. Use `text-justify: auto` to choose justification based on anchor position. To apply an offset, use the `text-radial-offset` or the two-dimensional `text-offset`.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.54.0",
+          "android": "7.4.0",
+          "ios": "4.10.0",
+          "macos": "0.14.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     },
     "text-anchor": {
       "type": "enum",
@@ -1788,7 +2020,10 @@
       "default": "center",
       "doc": "Part of the text placed closest to the anchor.",
       "requires": [
-        "text-field"
+        "text-field",
+        {
+          "!": "text-variable-anchor"
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -1821,10 +2056,10 @@
       "requires": [
         "text-field",
         {
-            "symbol-placement": [
-                "line",
-                "line-center"
-            ]
+          "symbol-placement": [
+            "line",
+            "line-center"
+          ]
         }
       ],
       "sdk-support": {
@@ -1833,11 +2068,46 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "text-writing-mode": {
+      "type": "array",
+      "value": "enum",
+      "values": {
+        "horizontal": {
+          "doc": "If a text's language supports horizontal writing mode, symbols with point placement would be laid out horizontally."
+        },
+        "vertical": {
+          "doc": "If a text's language supports vertical writing mode, symbols with point placement would be laid out vertically."
+        }
+      },
+      "doc": "The property allows control over a symbol's orientation. Note that the property values act as a hint, so that a symbol whose language doesn’t support the provided orientation will be laid out in its natural orientation. Example: English point symbol will be rendered horizontally even if array value contains single 'vertical' enum value. The order of elements in an array define priority order for the placement of an orientation variant.",
+      "requires": [
+        "text-field",
+        {
+          "symbol-placement": [
+            "point"
+          ]
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "1.3.0",
+          "android": "8.3.0",
+          "ios": "5.3.0",
+          "macos": "0.15.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
         "parameters": [
           "zoom"
         ]
@@ -1891,8 +2161,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -1912,10 +2181,10 @@
           "text-rotation-alignment": "map"
         },
         {
-            "symbol-placement": [
-                "line",
-                "line-center"
-            ]
+          "symbol-placement": [
+            "line",
+            "line-center"
+          ]
         }
       ],
       "sdk-support": {
@@ -1924,8 +2193,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -1978,7 +2246,7 @@
     },
     "text-offset": {
       "type": "array",
-      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up.",
+      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up. If used with text-variable-anchor, input values will be taken as absolute values. Offsets along the x- and y-axis will be applied automatically based on the anchor position.",
       "value": "number",
       "units": "ems",
       "length": 2,
@@ -1987,7 +2255,10 @@
         0
       ],
       "requires": [
-        "text-field"
+        "text-field",
+        {
+          "!": "text-radial-offset"
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -2025,8 +2296,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2049,8 +2319,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2074,8 +2343,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2103,8 +2371,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "property-type": "constant"
     }
@@ -2128,8 +2395,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "property-type": "constant"
     }
@@ -2153,8 +2419,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "property-type": "constant"
     }
@@ -2205,6 +2470,9 @@
       },
       "!has": {
         "doc": "`[\"!has\", key]` `feature[key]` does not exist"
+      },
+      "within": {
+        "doc": "`[\"within\", object]` feature geometry is within object geometry"
       }
     },
     "doc": "The filter operator."
@@ -2289,7 +2557,7 @@
   "function_stop": {
     "type": "array",
     "minimum": 0,
-    "maximum": 22,
+    "maximum": 24,
     "value": [
       "number",
       "color"
@@ -2367,8 +2635,38 @@
           }
         }
       },
+      "in": {
+        "doc": "Determines whether an item exists in an array or a substring exists in a string.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.6.0",
+            "android": "9.1.0",
+            "ios": "5.8.0",
+            "macos": "0.15.0"
+          }
+        }
+      },
+      "index-of": {
+        "doc": "Returns the first position at which an item can be found in an array or a substring can be found in a string, or `-1` if the input cannot be found. Accepts an optional index from where to begin the search.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.10.0"
+          }
+        }
+      },
+      "slice": {
+        "doc": "Returns an item from an array or a substring from a string from a specified start index, or between a start index and an end index if set. The return value is inclusive of the start index but not of the end index.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.10.0"
+          }
+        }
+      },
       "case": {
-        "doc": "Selects the first output whose corresponding test condition evaluates to true.",
+        "doc": "Selects the first output whose corresponding test condition evaluates to true, or the fallback value otherwise.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2380,7 +2678,7 @@
         }
       },
       "match": {
-        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must either be a single literal value or an array of literal values (e.g. `\"a\"` or `[\"c\", \"b\"]`), and those values must be all strings or all numbers. (The values `\"1\"` and `1` cannot both be labels in the same match expression.) If the input type does not match the type of the labels, the result will be the fallback value.",
+        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must be either:\n - a single literal value; or\n - an array of literal values, whose values must be all strings or all numbers (e.g. `[100, 101]` or `[\"c\", \"b\"]`). The input matches if any of the values in the array matches, similar to the `\"in\"` operator.\nEach label must be unique. If the input type does not match the type of the labels, the result will be the fallback value.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2404,7 +2702,7 @@
         }
       },
       "step": {
-        "doc": "Produces discrete, stepped results by evaluating a piecewise-constant function defined by pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. Returns the output value of the stop just less than the input, or the first input if the input is less than the first stop.",
+        "doc": "Produces discrete, stepped results by evaluating a piecewise-constant function defined by pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. Returns the output value of the stop just less than the input, or the first output if the input is less than the first stop.",
         "group": "Ramps, scales, curves",
         "sdk-support": {
           "basic functionality": {
@@ -2416,7 +2714,7 @@
         }
       },
       "interpolate": {
-        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. The output type must be `number`, `array<number>`, or `color`.\n\nInterpolation types:\n- `[\"linear\"]`: interpolates linearly between the pair of stops just less than and just greater than the input.\n- `[\"exponential\", base]`: interpolates exponentially between the stops just less than and just greater than the input. `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y1, x2, y2]`: interpolates using the cubic bezier curve defined by the given control points.",
+        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. The output type must be `number`, `array<number>`, or `color`.\n\nInterpolation types:\n- `[\"linear\"]`: Interpolates linearly between the pair of stops just less than and just greater than the input.\n- `[\"exponential\", base]`: Interpolates exponentially between the stops just less than and just greater than the input. `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y1, x2, y2]`: Interpolates using the cubic bezier curve defined by the given control points.",
         "group": "Ramps, scales, curves",
         "sdk-support": {
           "basic functionality": {
@@ -2424,6 +2722,24 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          }
+        }
+      },
+      "interpolate-hcl": {
+        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). Works like `interpolate`, but the output type must be `color`, and the interpolation is performed in the Hue-Chroma-Luminance color space.",
+        "group": "Ramps, scales, curves",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.49.0"
+          }
+        }
+      },
+      "interpolate-lab": {
+        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). Works like `interpolate`, but the output type must be `color`, and the interpolation is performed in the CIELAB color space.",
+        "group": "Ramps, scales, curves",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.49.0"
           }
         }
       },
@@ -2529,17 +2845,66 @@
         "sdk-support": {
           "basic functionality": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
         }
       },
       "format": {
-        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. If set, the `text-font` argument overrides the font specified by the root layout properties. If set, the `font-scale` argument specifies a scaling factor relative to the `text-size` specified in the root layout properties.",
+        "doc": "Returns a `formatted` string for displaying mixed-format text in the `text-field` property. The input may contain a string literal or expression, including an [`'image'`](#types-image) expression. Strings may be followed by a style override object that supports the following properties:\n- `\"text-font\"`: Overrides the font stack specified by the root layout property.\n- `\"text-color\"`: Overrides the color specified by the root paint property.\n- `\"font-scale\"`: Applies a scaling factor on `text-size` as specified by the root layout property.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.48.0"
+            "js": "0.48.0",
+            "android": "6.7.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
+          },
+          "text-font": {
+            "js": "0.48.0",
+            "android": "6.7.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
+          },
+          "font-scale": {
+            "js": "0.48.0",
+            "android": "6.7.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
+          },
+          "text-color": {
+            "js": "1.3.0",
+            "android": "7.3.0",
+            "ios": "4.10.0",
+            "macos": "0.14.0"
+          },
+          "image": {
+            "js": "1.6.0",
+            "android": "8.6.0",
+            "ios": "5.7.0",
+            "macos": "0.15.0"
+          }
+        }
+      },
+      "image": {
+        "doc": "Returns an `image` type for use in `icon-image`, `*-pattern` entries and as a section in the `format` expression. If set, the `image` argument will check that the requested image exists in the style and will return either the resolved image name or `null`, depending on whether or not the image is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `image` argument.",
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.4.0",
+            "android": "8.6.0",
+            "ios": "5.7.0",
+            "macos": "0.15.0"
+          }
+        }
+      },
+      "number-format": {
+        "doc": "Converts the input number into a string representation using the providing formatting rules. If set, the `locale` argument specifies the locale to use, as a BCP 47 language tag. If set, the `currency` argument specifies an ISO 4217 code to use for currency-style formatting. If set, the `min-fraction-digits` and `max-fraction-digits` arguments specify the minimum and maximum number of fractional digits to include.",
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.54.0"
           }
         }
       },
@@ -2676,7 +3041,7 @@
         }
       },
       "feature-state": {
-        "doc": "Retrieves a property value from the current feature's state. Returns null if the requested property is not present on the feature's state. A feature's state is not part of the GeoJSON or vector tile data, and must be set programmatically on each feature. Note that [\"feature-state\"] can only be used with paint properties that support data-driven styling.",
+        "doc": "Retrieves a property value from the current feature's state. Returns null if the requested property is not present on the feature's state. A feature's state is not part of the GeoJSON or vector tile data, and must be set programmatically on each feature. Features are identified by their `id` attribute, which must be an integer or a string that can be cast to an integer. Note that [\"feature-state\"] can only be used with paint properties that support data-driven styling.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -2685,7 +3050,7 @@
         }
       },
       "geometry-type": {
-        "doc": "Gets the feature's geometry type: Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon.",
+        "doc": "Gets the feature's geometry type: `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -2734,7 +3099,24 @@
       },
       "line-progress": {
         "doc": "Gets the progress along a gradient line. Can only be used in the `line-gradient` property.",
-        "group": "Heatmap"
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0",
+            "android": "6.5.0",
+            "ios": "4.6.0",
+            "macos": "0.12.0"
+          }
+        }
+      },
+      "accumulated": {
+        "doc": "Gets the value of a cluster property accumulated so far. Can only be used in the `clusterProperties` option of a clustered GeoJSON source.",
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.53.0"
+          }
+        }
       },
       "+": {
         "doc": "Returns the sum of the inputs.",
@@ -3000,6 +3382,17 @@
           }
         }
       },
+      "distance": {
+        "doc": "Returns the shortest distance in meters between the evaluated feature and the input geometry. The input value can be a valid GeoJSON of type `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`. Distance values returned may vary in precision due to loss in precision from encoding geometries, particularly below zoom level 13.",
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "android": "9.2.0",
+            "ios": "5.9.0",
+            "macos": "0.16.0"
+          }
+        }
+      },
       "==": {
         "doc": "Returns `true` if the input values are equal, `false` otherwise. The comparison is strictly typed: values of different runtime types are always considered unequal. Cases where the types are known to be different at parse time are considered invalid and will produce a parse error. Accepts an optional `collator` argument to control locale-dependent string comparisons.",
         "group": "Decision",
@@ -3012,6 +3405,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3029,6 +3423,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3046,6 +3441,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3063,6 +3459,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3080,6 +3477,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3097,6 +3495,7 @@
           },
           "collator": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3138,9 +3537,27 @@
           }
         }
       },
+      "within": {
+        "doc": "Returns `true` if the evaluated feature is fully contained inside a boundary of the input geometry, `false` otherwise. The input value can be a valid GeoJSON of type `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`. Supported features for evaluation:\n- `Point`: Returns `false` if a point is on the boundary or falls outside the boundary.\n- `LineString`: Returns `false` if any part of a line falls outside the boundary, the line intersects the boundary, or a line's endpoint is on the boundary.",
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "1.9.0",
+            "android": "9.1.0",
+            "ios": "5.8.0",
+            "macos": "0.15.0"
+          }
+        }
+      },
       "is-supported-script": {
         "doc": "Returns `true` if the input string is expected to render legibly. Returns `false` if the input string contains sections that cannot be rendered without potential loss of meaning (e.g. Indic scripts that require complex text shaping, or right-to-left scripts if the the `mapbox-gl-rtl-text` plugin is not in use in Mapbox GL JS).",
-        "group": "String"
+        "group": "String",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0",
+            "android": "6.6.0"
+          }
+        }
       },
       "upcase": {
         "doc": "Returns the input string converted to uppercase. Follows the Unicode Default Case Conversion algorithm and the locale-insensitive case mappings in the Unicode Character Database.",
@@ -3167,7 +3584,7 @@
         }
       },
       "concat": {
-        "doc": "Returns a `string` consisting of the concatenation of the inputs. If any inputs are `formatted`, returns a `formatted` with default formatting options for all unformatted inputs.",
+        "doc": "Returns a `string` consisting of the concatenation of the inputs. Each input is converted to a string as if by `to-string`.",
         "group": "String",
         "sdk-support": {
           "basic functionality": {
@@ -3184,6 +3601,7 @@
         "sdk-support": {
           "basic functionality": {
             "js": "0.45.0",
+            "android": "6.5.0",
             "ios": "4.2.0",
             "macos": "0.9.0"
           }
@@ -3321,8 +3739,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -3450,8 +3867,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -3482,8 +3898,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -3494,7 +3909,7 @@
       "property-type": "data-constant"
     },
     "fill-pattern": {
-      "type": "string",
+      "type": "resolvedImage",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -3504,15 +3919,21 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.49.0",
+          "android": "6.5.0",
+          "macos": "0.11.0",
+          "ios": "4.4.0"
+        }
       },
       "expression": {
         "interpolated": false,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "cross-faded"
+      "property-type": "cross-faded-data-driven"
     }
   },
   "paint_fill-extrusion": {
@@ -3590,8 +4011,7 @@
           "android": "5.1.0",
           "ios": "3.6.0",
           "macos": "0.5.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -3622,8 +4042,7 @@
           "android": "5.1.0",
           "ios": "3.6.0",
           "macos": "0.5.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -3634,7 +4053,7 @@
       "property-type": "data-constant"
     },
     "fill-extrusion-pattern": {
-      "type": "string",
+      "type": "resolvedImage",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing images on extruded fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -3644,15 +4063,21 @@
           "ios": "3.6.0",
           "macos": "0.5.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.49.0",
+          "android": "6.5.0",
+          "macos": "0.11.0",
+          "ios": "4.4.0"
+        }
       },
       "expression": {
         "interpolated": false,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "cross-faded"
+      "property-type": "cross-faded-data-driven"
     },
     "fill-extrusion-height": {
       "type": "number",
@@ -3718,6 +4143,26 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "fill-extrusion-vertical-gradient": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Whether to apply a vertical gradient to the sides of a fill-extrusion layer. If true, sides will be shaded slightly darker farther down.",
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.50.0",
+          "ios": "4.7.0",
+          "macos": "0.13.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_line": {
@@ -3803,8 +4248,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -3835,8 +4279,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -3999,7 +4442,7 @@
       "property-type": "cross-faded"
     },
     "line-pattern": {
-      "type": "string",
+      "type": "resolvedImage",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image lines. For seamless patterns, image width must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -4009,15 +4452,21 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.49.0",
+          "android": "6.5.0",
+          "macos": "0.11.0",
+          "ios": "4.4.0"
+        }
       },
       "expression": {
         "interpolated": false,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "cross-faded"
+      "property-type": "cross-faded-data-driven"
     },
     "line-gradient": {
       "type": "color",
@@ -4039,7 +4488,10 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.45.0"
+          "js": "0.45.0",
+          "android": "6.5.0",
+          "ios": "4.4.0",
+          "macos": "0.11.0"
         },
         "data-driven styling": {}
       },
@@ -4190,8 +4642,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -4222,8 +4673,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -4251,8 +4701,7 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -4280,8 +4729,7 @@
           "android": "5.2.0",
           "ios": "3.7.0",
           "macos": "0.6.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -4457,8 +4905,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -4523,8 +4970,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -4722,8 +5168,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -4755,8 +5200,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -4805,6 +5249,7 @@
       "doc": "The color with which the text will be drawn.",
       "default": "#000000",
       "transition": true,
+      "overridable": true,
       "requires": [
         "text-field"
       ],
@@ -4952,8 +5397,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -4985,8 +5429,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -5011,8 +5454,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5035,8 +5477,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5059,8 +5500,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5083,8 +5523,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5107,8 +5546,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5131,8 +5569,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5160,8 +5597,7 @@
           "android": "6.3.0",
           "ios": "4.2.0",
           "macos": "0.9.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -5184,8 +5620,7 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5210,8 +5645,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5225,10 +5659,10 @@
       "type": "enum",
       "values": {
         "map": {
-            "doc": "The hillshade illumination is relative to the north direction."
+          "doc": "The hillshade illumination is relative to the north direction."
         },
         "viewport": {
-            "doc": "The hillshade illumination is relative to the top of the viewport."
+          "doc": "The hillshade illumination is relative to the top of the viewport."
         }
       },
       "default": "viewport",
@@ -5239,8 +5673,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": false,
@@ -5263,8 +5696,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5285,8 +5717,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5307,8 +5738,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5329,8 +5759,7 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
-        },
-        "data-driven styling": {}
+        }
       },
       "expression": {
         "interpolated": true,
@@ -5369,7 +5798,7 @@
       "property-type": "data-constant"
     },
     "background-pattern": {
-      "type": "string",
+      "type": "resolvedImage",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing an image background. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512). Note that zoom-dependent expressions will be evaluated only at integer zoom levels.",
       "sdk-support": {
@@ -5378,7 +5807,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       },
       "expression": {
         "interpolated": false,
@@ -5452,6 +5882,12 @@
     "constant": {
       "type": "property-type",
       "doc": "Property is constant across all zoom levels and property values."
+    }
+  },
+  "promoteId": {
+    "*": {
+      "type": "string",
+      "doc": "A name of a feature property to use as ID for feature state."
     }
   }
 }

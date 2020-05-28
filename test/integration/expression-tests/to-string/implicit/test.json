@@ -1,0 +1,24 @@
+{
+  "expression": ["get", "p"],
+  "propertySpec": {
+    "type": "string"
+  },
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": 0}}],
+    [{}, {"properties": {"p": "a"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["", "0", "a"],
+    "serialized": [
+      "to-string",
+      ["get", "p"]
+    ]
+  }
+}

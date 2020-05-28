@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import LngLat from '../../../src/geo/lng_lat';
 import LngLatBounds from '../../../src/geo/lng_lat_bounds';
 
@@ -60,12 +60,20 @@ test('LngLatBounds', (t) => {
         t.equal(bounds.getNorth(), 10);
         t.equal(bounds.getEast(), 10);
 
+        bounds.extend([-20, -20, 100]);
+
+        t.equal(bounds.getSouth(), -20);
+        t.equal(bounds.getWest(), -20);
+        t.equal(bounds.getNorth(), 10);
+        t.equal(bounds.getEast(), 10);
+
         t.end();
     });
 
     t.test('#extend with bounds', (t) => {
         const bounds1 = new LngLatBounds([0, 0], [10, 10]);
         const bounds2 = new LngLatBounds([-10, -10], [10, 10]);
+
         bounds1.extend(bounds2);
 
         t.equal(bounds1.getSouth(), -10);
@@ -80,6 +88,14 @@ test('LngLatBounds', (t) => {
         t.equal(bounds1.getWest(), -15);
         t.equal(bounds1.getNorth(), 15);
         t.equal(bounds1.getEast(), 15);
+
+        const bounds4 = new LngLatBounds([-20, -20, 20, 20]);
+        bounds1.extend(bounds4);
+
+        t.equal(bounds1.getSouth(), -20);
+        t.equal(bounds1.getWest(), -20);
+        t.equal(bounds1.getNorth(), 20);
+        t.equal(bounds1.getEast(), 20);
 
         t.end();
     });
@@ -121,6 +137,17 @@ test('LngLatBounds', (t) => {
         t.equal(bounds.getWest(), 0);
         t.equal(bounds.getNorth(), 15);
         t.equal(bounds.getEast(), 15);
+
+        t.end();
+    });
+
+    t.test('#extend with empty array', (t) => {
+        const point = new LngLat(0, 0);
+        const bounds = new LngLatBounds(point, point);
+
+        t.throws(() => {
+            bounds.extend([]);
+        }, "`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, an object {lon: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]", 'detects and throws on invalid input');
 
         t.end();
     });
@@ -172,5 +199,38 @@ test('LngLatBounds', (t) => {
         t.end();
     });
 
+    t.test('contains', (t) => {
+        t.test('point', (t) => {
+            t.test('point is in bounds', (t) => {
+                const llb = new LngLatBounds([-1, -1], [1, 1]);
+                const ll = {lng: 0, lat: 0};
+                t.ok(llb.contains(ll));
+                t.end();
+            });
+
+            t.test('point is not in bounds', (t) => {
+                const llb = new LngLatBounds([-1, -1], [1, 1]);
+                const ll = {lng: 3, lat: 3};
+                t.notOk(llb.contains(ll));
+                t.end();
+            });
+
+            t.test('point is in bounds that spans dateline', (t) => {
+                const llb = new LngLatBounds([190, -10], [170, 10]);
+                const ll = {lng: 180, lat: 0};
+                t.ok(llb.contains(ll));
+                t.end();
+            });
+
+            t.test('point is not in bounds that spans dateline', (t) => {
+                const llb = new LngLatBounds([190, -10], [170, 10]);
+                const ll = {lng: 0, lat: 0};
+                t.notOk(llb.contains(ll));
+                t.end();
+            });
+            t.end();
+        });
+        t.end();
+    });
     t.end();
 });

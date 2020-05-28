@@ -5,7 +5,8 @@ import validate from './validate';
 import validateObject from './validate_object';
 import validateArray from './validate_array';
 import validateNumber from './validate_number';
-import { unbundle } from '../util/unbundle_jsonlint';
+import {isExpression} from '../expression';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import {
     supportsPropertyExpression,
     supportsZoomExpression,
@@ -75,7 +76,7 @@ export default function validateFunction(options) {
 
         errors = errors.concat(validateArray({
             key: options.key,
-            value: value,
+            value,
             valueSpec: options.valueSpec,
             style: options.style,
             styleSpec: options.styleSpec,
@@ -123,10 +124,10 @@ export default function validateFunction(options) {
             errors = errors.concat(validateObject({
                 key: `${key}[0]`,
                 value: value[0],
-                valueSpec: { zoom: {} },
+                valueSpec: {zoom: {}},
                 style: options.style,
                 styleSpec: options.styleSpec,
-                objectElementValidators: { zoom: validateNumber, value: validateStopDomainValue }
+                objectElementValidators: {zoom: validateNumber, value: validateStopDomainValue}
             }));
         } else {
             errors = errors.concat(validateStopDomainValue({
@@ -136,6 +137,10 @@ export default function validateFunction(options) {
                 style: options.style,
                 styleSpec: options.styleSpec
             }, value));
+        }
+
+        if (isExpression(deepUnbundle(value[1]))) {
+            return errors.concat([new ValidationError(`${key}[1]`, value[1], 'expressions are not allowed in function stops.')]);
         }
 
         return errors.concat(validate({

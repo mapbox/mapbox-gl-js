@@ -1,7 +1,7 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import createStyleLayer from '../../../src/style/create_style_layer';
 import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';
-import { extend } from '../../../src/util/util';
+import {extend} from '../../../src/util/util';
 import Color from '../../../src/style-spec/util/color';
 
 test('StyleLayer', (t) => {
@@ -289,7 +289,7 @@ test('StyleLayer#serialize', (t) => {
         };
 
         t.deepEqual(
-            createStyleLayer(createSymbolLayer({ paint: layerPaint })).serialize().paint,
+            createStyleLayer(createSymbolLayer({paint: layerPaint})).serialize().paint,
             layerPaint
         );
         t.end();
@@ -311,6 +311,33 @@ test('StyleLayer#serialize', (t) => {
 
         t.equal(layer.serialize().layout['text-transform'], 'uppercase');
         t.equal(layer.serialize().layout['text-size'], 20);
+
+        t.end();
+    });
+
+    t.test('serializes "visibility" of "visible"', (t) => {
+        const layer = createStyleLayer(createSymbolLayer());
+        layer.setLayoutProperty('visibility', 'visible');
+
+        t.equal(layer.serialize().layout['visibility'], 'visible');
+
+        t.end();
+    });
+
+    t.test('serializes "visibility" of "none"', (t) => {
+        const layer = createStyleLayer(createSymbolLayer());
+        layer.setLayoutProperty('visibility', 'none');
+
+        t.equal(layer.serialize().layout['visibility'], 'none');
+
+        t.end();
+    });
+
+    t.test('serializes "visibility" of undefined', (t) => {
+        const layer = createStyleLayer(createSymbolLayer());
+        layer.setLayoutProperty('visibility', undefined);
+
+        t.equal(layer.serialize().layout['visibility'], undefined);
 
         t.end();
     });
@@ -350,7 +377,7 @@ test('StyleLayer#serialize', (t) => {
         };
 
         t.deepEqual(
-            createStyleLayer(createSymbolLayer({ paint: layerPaint })).serialize().paint,
+            createStyleLayer(createSymbolLayer({paint: layerPaint})).serialize().paint,
             layerPaint
         );
         t.end();
@@ -373,6 +400,13 @@ test('StyleLayer#serialize', (t) => {
         t.equal(layer.serialize().layout['text-transform'], 'uppercase');
         t.equal(layer.serialize().layout['text-size'], 20);
 
+        t.end();
+    });
+
+    t.test('layer.paint is never undefined', (t) => {
+        const layer = createStyleLayer({type: 'fill'});
+        // paint is never undefined
+        t.ok(layer.paint);
         t.end();
     });
 

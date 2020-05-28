@@ -3,20 +3,23 @@
 import StyleLayer from '../style_layer';
 
 import CircleBucket from '../../data/bucket/circle_bucket';
-import { multiPolygonIntersectsBufferedPoint } from '../../util/intersection_tests';
-import { getMaximumPaintValue, translateDistance, translate } from '../query_utils';
+import {polygonIntersectsBufferedPoint} from '../../util/intersection_tests';
+import {getMaximumPaintValue, translateDistance, translate} from '../query_utils';
 import properties from './circle_style_layer_properties';
-import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
-import { vec4 } from 'gl-matrix';
+import {Transitionable, Transitioning, Layout, PossiblyEvaluated} from '../properties';
+import {vec4} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 
-import type { FeatureState } from '../../style-spec/expression';
+import type {FeatureState} from '../../style-spec/expression';
 import type Transform from '../../geo/transform';
 import type {Bucket, BucketParameters} from '../../data/bucket';
-import type {PaintProps} from './circle_style_layer_properties';
+import type {LayoutProps, PaintProps} from './circle_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
 
 class CircleStyleLayer extends StyleLayer {
+    _unevaluatedLayout: Layout<LayoutProps>;
+    layout: PossiblyEvaluated<LayoutProps>;
+
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
@@ -36,14 +39,14 @@ class CircleStyleLayer extends StyleLayer {
             translateDistance(this.paint.get('circle-translate'));
     }
 
-    queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
+    queryIntersectsFeature(queryGeometry: Array<Point>,
                            feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
                            transform: Transform,
                            pixelsToTileUnits: number,
-                           posMatrix: Float32Array): boolean {
+                           pixelPosMatrix: Float32Array): boolean {
         const translatedPolygon = translate(queryGeometry,
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
@@ -57,23 +60,23 @@ class CircleStyleLayer extends StyleLayer {
         // // A circle with fixed scaling relative to the viewport gets larger in tile space as it moves into the distance
         // // A circle with fixed scaling relative to the map gets smaller in viewport space as it moves into the distance
         const alignWithMap = this.paint.get('circle-pitch-alignment') === 'map';
-        const transformedPolygon = alignWithMap ? translatedPolygon : projectQueryGeometry(translatedPolygon, posMatrix, transform);
+        const transformedPolygon = alignWithMap ? translatedPolygon : projectQueryGeometry(translatedPolygon, pixelPosMatrix);
         const transformedSize = alignWithMap ? size * pixelsToTileUnits : size;
 
         for (const ring of geometry) {
             for (const point of ring) {
 
-                const transformedPoint = alignWithMap ? point : projectPoint(point, posMatrix, transform);
+                const transformedPoint = alignWithMap ? point : projectPoint(point, pixelPosMatrix);
 
                 let adjustedSize = transformedSize;
-                const projectedCenter = vec4.transformMat4([], [point.x, point.y, 0, 1], posMatrix);
+                const projectedCenter = vec4.transformMat4([], [point.x, point.y, 0, 1], pixelPosMatrix);
                 if (this.paint.get('circle-pitch-scale') === 'viewport' && this.paint.get('circle-pitch-alignment') === 'map') {
                     adjustedSize *= projectedCenter[3] / transform.cameraToCenterDistance;
                 } else if (this.paint.get('circle-pitch-scale') === 'map' && this.paint.get('circle-pitch-alignment') === 'viewport') {
                     adjustedSize *= transform.cameraToCenterDistance / projectedCenter[3];
                 }
 
-                if (multiPolygonIntersectsBufferedPoint(transformedPolygon, transformedPoint, adjustedSize)) return true;
+                if (polygonIntersectsBufferedPoint(transformedPolygon, transformedPoint, adjustedSize)) return true;
             }
         }
 
@@ -81,18 +84,14 @@ class CircleStyleLayer extends StyleLayer {
     }
 }
 
-function projectPoint(p: Point, posMatrix: Float32Array, transform: Transform) {
-    const point = vec4.transformMat4([], [p.x, p.y, 0, 1], posMatrix);
-    return new Point(
-            (point[0] / point[3] + 1) * transform.width * 0.5,
-            (point[1] / point[3] + 1) * transform.height * 0.5);
+function projectPoint(p: Point, pixelPosMatrix: Float32Array) {
+    const point = vec4.transformMat4([], [p.x, p.y, 0, 1], pixelPosMatrix);
+    return new Point(point[0] / point[3], point[1] / point[3]);
 }
 
-function projectQueryGeometry(queryGeometry: Array<Array<Point>>, posMatrix: Float32Array, transform: Transform) {
-    return queryGeometry.map((r) => {
-        return r.map((p) => {
-            return projectPoint(p, posMatrix, transform);
-        });
+function projectQueryGeometry(queryGeometry: Array<Point>, pixelPosMatrix: Float32Array) {
+    return queryGeometry.map((p) => {
+        return projectPoint(p, pixelPosMatrix);
     });
 }
 

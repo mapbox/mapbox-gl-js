@@ -1,5 +1,5 @@
 import path from 'path';
-import diff from 'diff';
+import * as diff from 'diff';
 import fs from 'fs';
 import harness from './harness';
 import compactStringify from 'json-stringify-pretty-compact';

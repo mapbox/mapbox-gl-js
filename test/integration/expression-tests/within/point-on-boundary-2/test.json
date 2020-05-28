@@ -1,0 +1,248 @@
+{
+  "expression": ["within", {
+      "type": "Polygon",
+      "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]]
+    }],
+  "inputs": [[{
+        "zoom": 0,
+        "canonicalID": {
+          "z": 0,
+          "x": 0,
+          "y": 0
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 1,
+        "canonicalID": {
+          "z": 1,
+          "x": 1,
+          "y": 1
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 2,
+        "canonicalID": {
+          "z": 2,
+          "x": 2,
+          "y": 2
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 3,
+        "canonicalID": {
+          "z": 3,
+          "x": 3,
+          "y": 3
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 4,
+        "canonicalID": {
+          "z": 4,
+          "x": 1,
+          "y": 1
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 5,
+        "canonicalID": {
+          "z": 5,
+          "x": 16,
+          "y": 16
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 6,
+        "canonicalID": {
+          "z": 6,
+          "x": 32,
+          "y": 32
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 7,
+        "canonicalID": {
+          "z": 7,
+          "x": 65,
+          "y": 63
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 8,
+        "canonicalID": {
+          "z": 8,
+          "x": 131,
+          "y": 126
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 9,
+        "canonicalID": {
+          "z": 9,
+          "x": 261,
+          "y": 261
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 10,
+        "canonicalID": {
+          "z": 10,
+          "x": 512,
+          "y": 503
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 11,
+        "canonicalID": {
+          "z": 11,
+          "x": 1024,
+          "y": 1006
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 12,
+        "canonicalID": {
+          "z": 12,
+          "x": 2048,
+          "y": 2013
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 13,
+        "canonicalID": {
+          "z": 13,
+          "x": 4096,
+          "y": 4027
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 14,
+        "canonicalID": {
+          "z": 14,
+          "x": 8192,
+          "y": 8055
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 15,
+        "canonicalID": {
+          "z": 15,
+          "x": 16384,
+          "y": 16110
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 16,
+        "canonicalID": {
+          "z": 16,
+          "x": 32768,
+          "y": 32221
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 17,
+        "canonicalID": {
+          "z": 17,
+          "x": 65536,
+          "y": 64443
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }], [{
+        "zoom": 18,
+        "canonicalID": {
+          "z": 18,
+          "x": 131072,
+          "y": 128888
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 3]
+        }
+      }]],
+  "expected": {
+    "compiled": {
+      "type": "boolean",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "result": "success"
+    },
+    "outputs": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false ],
+    "serialized": ["within", {
+        "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]],
+        "type": "Polygon"
+      }]
+  }
+}

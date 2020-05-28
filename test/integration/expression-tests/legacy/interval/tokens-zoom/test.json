@@ -1,0 +1,30 @@
+{
+  "expression": {"type": "interval", "stops": [[0, "0 {a}"], [1, "{b}"]]},
+  "inputs": [
+    [{"zoom": 0}, {"properties": {"a": "a", "b": 2}}],
+    [{"zoom": 1}, {"properties": {"a": "a", "b": 2}}],
+    [{"zoom": 0}, {"properties": {}}]
+  ],
+  "propertySpec": {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": {"interpolated": true, "parameters": ["zoom", "feature"]},
+    "tokens": true
+  },
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": false,
+      "type": "string"
+    },
+    "outputs": ["0 a", "2", "0 "],
+    "serialized": [
+      "step",
+      ["zoom"],
+      ["concat", "0 ", ["get", "a"]],
+      1,
+      ["to-string", ["get", "b"]]
+    ]
+  }
+}

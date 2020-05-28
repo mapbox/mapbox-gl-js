@@ -30,19 +30,19 @@ const Xn = 0.950470, // D65 standard referent
     rad2deg = 180 / Math.PI;
 
 // Utilities
-function xyz2lab(t) {
+function xyz2lab(t: number) {
     return t > t3 ? Math.pow(t, 1 / 3) : t / t2 + t0;
 }
 
-function lab2xyz(t) {
+function lab2xyz(t: number) {
     return t > t1 ? t * t * t : t2 * (t - t0);
 }
 
-function xyz2rgb(x) {
+function xyz2rgb(x: number) {
     return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
 }
 
-function rgb2xyz(x) {
+function rgb2xyz(x: number) {
     x /= 255;
     return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
 }
@@ -95,7 +95,7 @@ function rgbToHcl(rgbColor: Color): HCLColor {
     return {
         h: h < 0 ? h + 360 : h,
         c: Math.sqrt(a * a + b * b),
-        l: l,
+        l,
         alpha: rgbColor.a
     };
 }
@@ -105,7 +105,7 @@ function hclToRgb(hclColor: HCLColor): Color {
         c = hclColor.c,
         l = hclColor.l;
     return labToRgb({
-        l: l,
+        l,
         a: Math.cos(h) * c,
         b: Math.sin(h) * c,
         alpha: hclColor.alpha

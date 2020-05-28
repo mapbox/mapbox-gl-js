@@ -1,9 +1,9 @@
 // @flow
 
-import { extend } from './util';
+import {extend} from './util';
 
 type Listener = (Object) => any;
-type Listeners = { [string]: Array<Listener> };
+type Listeners = {[_: string]: Array<Listener> };
 
 function _addEventListener(type: string, listener: Listener, listenerList: Listeners) {
     const listenerExists = listenerList[type] && listenerList[type].indexOf(listener) !== -1;
@@ -31,10 +31,14 @@ export class Event {
     }
 }
 
-export class ErrorEvent extends Event {
-    error: Error;
+interface ErrorLike {
+    message: string;
+}
 
-    constructor(error: Error, data: Object = {}) {
+export class ErrorEvent extends Event {
+    error: ErrorLike;
+
+    constructor(error: ErrorLike, data: Object = {}) {
         super('error', extend({error}, data));
     }
 }
@@ -89,19 +93,19 @@ export class Evented {
      * @param {Function} listener The function to be called when the event is fired the first time.
      * @returns {Object} `this`
      */
-    once(type: string, listener: Listener) {
+    once(type: *, listener: Listener) {
         this._oneTimeListeners = this._oneTimeListeners || {};
         _addEventListener(type, listener, this._oneTimeListeners);
 
         return this;
     }
 
-    fire(event: Event) {
+    fire(event: Event, properties?: Object) {
         // Compatibility with (type: string, properties: Object) signature from previous versions.
         // See https://github.com/mapbox/mapbox-gl-js/issues/6522,
         //     https://github.com/mapbox/mapbox-gl-draw/issues/766
         if (typeof event === 'string') {
-            event = new Event(event, arguments[1] || {});
+            event = new Event(event, properties || {});
         }
 
         const type = event.type;

@@ -1,6 +1,6 @@
 // @flow
 
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 
 import throttle from '../../../src/util/throttle';
 

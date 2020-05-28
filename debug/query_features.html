@@ -4,7 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -14,8 +14,8 @@
 <body>
 <div id='map'></div>
 
-<script src='/dist/mapbox-gl-dev.js'></script>
-<script src='/debug/access_token_generated.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
 <script>
 
 var map = new mapboxgl.Map({
@@ -28,10 +28,10 @@ var map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.NavigationControl());
 
-var emptyFc = { type: 'FeatureCollection', features: [] };
+var emptyFc = {type: 'FeatureCollection', features: []};
 
 map.on('style.load', function() {
-    map.addSource('queried', { type: 'geojson', data: emptyFc });
+    map.addSource('queried', {type: 'geojson', data: emptyFc});
     map.addLayer({
         "id": "query",
         "type": "line",
@@ -42,7 +42,7 @@ map.on('style.load', function() {
         }
     }, 'country-label-sm');
 
-    map.addSource('boxsource', { type: 'geojson', data: emptyFc });
+    map.addSource('boxsource', {type: 'geojson', data: emptyFc});
     map.addLayer({
         "id": "box",
         "type": "fill",

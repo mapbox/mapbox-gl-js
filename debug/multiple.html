@@ -4,7 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         .map { width: 300px; height: 300px; display: block; float: left; margin: 5px; }
@@ -17,8 +17,8 @@
 <div class='map'></div>
 <div class='map'></div>
 
-<script src='/dist/mapbox-gl-dev.js'></script>
-<script src='/debug/access_token_generated.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
 <script>
 
 var style = {
@@ -49,20 +49,31 @@ var style = {
         "type": "line",
         "source": "streets",
         "source-layer": "road",
-        "paint": { "line-color": "rgb(55,89,144)",  "line-width": 4  }
+        "paint": {"line-color": "rgb(55,89,144)",  "line-width": 4}
     }]
 };
 
 function addMap (container) {
     var map = new mapboxgl.Map({
-        container: container,
+        container,
         minZoom: 14,
         zoom: 15.5,
         center: [-122.514426, 37.562984],
         bearing: -96,
-        style: style,
+        style,
         hash: false
     });
+
+    map.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserLocation: true,
+        fitBoundsOptions: {
+            maxZoom: 20
+        }
+    }));
 }
 
 var containers = document.querySelectorAll('.map');

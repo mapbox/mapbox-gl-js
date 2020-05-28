@@ -1,0 +1,37 @@
+{
+  "expression": {
+    "type": "interval",
+    "property": "p",
+    "stops": [[0, "0"], [1, "1"]],
+    "default": "default"
+  },
+  "propertySpec": {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": {"interpolated": true, "parameters": ["zoom", "feature"]}
+  },
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": -1}}],
+    [{}, {"properties": {"p": 0}}],
+    [{}, {"properties": {"p": 0.5}}],
+    [{}, {"properties": {"p": 1}}],
+    [{}, {"properties": {"p": 2}}],
+    [{}, {"properties": {"p": "0"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["default", "0", "0", "0", "1", "1", "default"],
+    "serialized": [
+      "case",
+      ["==", ["typeof", ["get", "p"]], "number"],
+      ["step", ["number", ["get", "p"]], "0", 1, "1"],
+      "default"
+    ]
+  }
+}

@@ -1,14 +1,14 @@
 // @flow
 
-import { toString, ValueType, BooleanType, CollatorType } from '../types';
+import {toString, ValueType, BooleanType, CollatorType} from '../types';
 import Assertion from './assertion';
-import { typeOf } from '../values';
+import {typeOf} from '../values';
 import RuntimeError from '../runtime_error';
 
-import type { Expression } from '../expression';
+import type {Expression} from '../expression';
 import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
-import type { Type } from '../types';
+import type {Type} from '../types';
 
 type ComparisonOperator = '==' | '!=' | '<' | '>' | '<=' | '>=' ;
 
@@ -27,7 +27,6 @@ function isComparableType(op: ComparisonOperator, type: Type) {
             type.kind === 'value';
     }
 }
-
 
 function eq(ctx, a, b) { return a === b; }
 function neq(ctx, a, b) { return a !== b; }
@@ -78,7 +77,7 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
             this.hasUntypedArgument = lhs.type.kind === 'value' || rhs.type.kind === 'value';
         }
 
-        static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
+        static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
             if (args.length !== 3 && args.length !== 4)
                 return context.error(`Expected two or three arguments.`);
 
@@ -157,7 +156,7 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
                 compareBasic(ctx, lhs, rhs);
         }
 
-        eachChild(fn: (Expression) => void) {
+        eachChild(fn: (_: Expression) => void) {
             fn(this.lhs);
             fn(this.rhs);
             if (this.collator) {
@@ -165,8 +164,8 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
             }
         }
 
-        possibleOutputs() {
-            return [true, false];
+        outputDefined(): boolean {
+            return true;
         }
 
         serialize() {

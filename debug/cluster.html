@@ -4,7 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -14,13 +14,13 @@
 <body>
 <div id='map'></div>
 
-<script src='/dist/mapbox-gl-dev.js'></script>
-<script src='/debug/access_token_generated.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
 <script>
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 0,
+    zoom: 1,
     center: [0, 0],
     style: 'mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41',
     hash: true
@@ -31,7 +31,12 @@ map.on('load', () => {
         "type": "geojson",
         "data": "/test/integration/data/places.geojson",
         "cluster": true,
-        "clusterRadius": 50
+        "clusterRadius": 50,
+        "clusterProperties": {
+            "max": ["max", ["get", "scalerank"]],
+            "sum": ["+", ["get", "scalerank"]],
+            "has_island": ["any", ["==", ["get", "featureclass"], "island"]]
+        }
     });
     map.addLayer({
         "id": "cluster",
@@ -39,7 +44,7 @@ map.on('load', () => {
         "source": "geojson",
         "filter": ["==", "cluster", true],
         "paint": {
-            "circle-color": "rgba(0, 200, 0, 1)",
+            "circle-color": ["case", ["get", "has_island"], "orange", "rgba(0, 200, 0, 1)"],
             "circle-radius": 20
         }
     });
@@ -49,7 +54,7 @@ map.on('load', () => {
         "source": "geojson",
         "filter": ["==", "cluster", true],
         "layout": {
-            "text-field": "{point_count}",
+            "text-field": "{point_count} ({max})",
             "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
             "text-size": 12,
             "text-allow-overlap": true,
@@ -99,7 +104,7 @@ map.on('load', () => {
             updateHover([]);
             map.easeTo({
                 center: feature.geometry.coordinates,
-                zoom: zoom
+                zoom
             });
         });
     });

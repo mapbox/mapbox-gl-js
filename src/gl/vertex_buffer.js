@@ -40,6 +40,7 @@ class VertexBuffer {
 
     /**
      * @param dynamicDraw Whether this buffer will be repeatedly updated.
+     * @private
      */
     constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean) {
         this.length = array.length;
@@ -69,7 +70,7 @@ class VertexBuffer {
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.arrayBuffer);
     }
 
-    enableAttributes(gl: WebGLRenderingContext, program: Program) {
+    enableAttributes(gl: WebGLRenderingContext, program: Program<*>) {
         for (let j = 0; j < this.attributes.length; j++) {
             const member = this.attributes[j];
             const attribIndex: number | void = program.attributes[member.name];
@@ -85,7 +86,7 @@ class VertexBuffer {
      * @param program The active WebGL program
      * @param vertexOffset Index of the starting vertex of the segment
      */
-    setVertexAttribPointers(gl: WebGLRenderingContext, program: Program, vertexOffset: ?number) {
+    setVertexAttribPointers(gl: WebGLRenderingContext, program: Program<*>, vertexOffset: ?number) {
         for (let j = 0; j < this.attributes.length; j++) {
             const member = this.attributes[j];
             const attribIndex: number | void = program.attributes[member.name];

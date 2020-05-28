@@ -37,27 +37,15 @@ function getTileParams(tileUrl) {
 }
 
 function getSnapZoom(tileParams) {
-  var zoom = tileParams.z;
-  var defaultSnapZoom = Math.max(zoom - 6, 1);
-  var snapZoomOption = mapConstants.tileUrlOptions.snapZoom || {};
-
-  return snapZoomOption[zoom] || defaultSnapZoom;
+  return tileParams.z;
 }
 
 function getSnapPrecision(tileParams) {
-  var zoom = tileParams.z;
-  var defaultSnapPrecision = 0.0001 / (2 * zoom);
-  var snapPrecisionOption = mapConstants.tileUrlOptions.snapPrecision || {};
-
-  return Math.max(snapPrecisionOption[zoom] || defaultSnapPrecision, 0.0000001);
+  return Math.max(1 / Math.pow(2, tileParams.z), 0.0000001);
 }
 
 function getSimplifyPrecision(tileParams) {
-  var zoom = tileParams.z;
-  var defaultSimplifyPrecision = 0.0001 / (2 * zoom);
-  var simplifyPrecisionOption = mapConstants.tileUrlOptions.simplifyPrecision || {};
-
-  return Math.max(simplifyPrecisionOption[zoom] || defaultSimplifyPrecision, 0.0000001);
+  return Math.max(1 / Math.pow(2, tileParams.z), 0.0000001);
 }
 
 function tileParamsToBounds(tileParams) {

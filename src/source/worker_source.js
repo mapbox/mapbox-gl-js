@@ -2,12 +2,18 @@
 
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
+import type {GlyphPositions} from '../render/glyph_atlas';
+import type ImageAtlas from '../render/image_atlas';
 import type {OverscaledTileID} from './tile_id';
 import type {Bucket} from '../data/bucket';
 import type FeatureIndex from '../data/feature_index';
 import type {CollisionBoxArray} from '../data/array_types';
 import type DEMData from '../data/dem_data';
-import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
+import type {StyleGlyph} from '../style/style_glyph';
+import type {StyleImage} from '../style/style_image';
+import type {PromoteIdSpecification} from '../style-spec/types';
+import window from '../util/window';
+const {ImageBitmap} = window;
 
 export type TileParameters = {
     source: string,
@@ -20,25 +26,31 @@ export type WorkerTileParameters = TileParameters & {
     zoom: number,
     maxZoom: number,
     tileSize: number,
+    promoteId: ?PromoteIdSpecification,
     pixelRatio: number,
     showCollisionBoxes: boolean,
-    collectResourceTiming?: boolean
+    collectResourceTiming?: boolean,
+    returnDependencies?: boolean
 };
 
 export type WorkerDEMTileParameters = TileParameters & {
     coord: { z: number, x: number, y: number, w: number },
-    rawImageData: RGBAImage,
+    rawImageData: RGBAImage | ImageBitmap,
     encoding: "mapbox" | "terrarium"
 };
 
 export type WorkerTileResult = {
     buckets: Array<Bucket>,
-    iconAtlasImage: RGBAImage,
+    imageAtlas: ImageAtlas,
     glyphAtlasImage: AlphaImage,
     featureIndex: FeatureIndex,
     collisionBoxArray: CollisionBoxArray,
     rawTileData?: ArrayBuffer,
-    resourceTiming?: Array<PerformanceResourceTiming>
+    resourceTiming?: Array<PerformanceResourceTiming>,
+    // Only used for benchmarking:
+    glyphMap?: {[_: string]: {[_: number]: ?StyleGlyph}} | null,
+    iconMap?: {[_: string]: StyleImage} | null,
+    glyphPositions?: GlyphPositions | null
 };
 
 export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult) => void;
@@ -49,7 +61,7 @@ export type WorkerDEMTileCallback = (err: ?Error, result: ?DEMData) => void;
  * the WebWorkers. In addition to providing a custom
  * {@link WorkerSource#loadTile}, any other methods attached to a `WorkerSource`
  * implementation may also be targeted by the {@link Source} via
- * `dispatcher.send('source-type.methodname', params, callback)`.
+ * `dispatcher.getActor().send('source-type.methodname', params, callback)`.
  *
  * @see {@link Map#addSourceType}
  * @private
@@ -59,6 +71,7 @@ export type WorkerDEMTileCallback = (err: ?Error, result: ?DEMData) => void;
  * @param layerIndex
  */
 export interface WorkerSource {
+    availableImages: Array<string>,
     // Disabled due to https://github.com/facebook/flow/issues/5208
     // constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
 

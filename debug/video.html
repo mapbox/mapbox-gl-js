@@ -4,7 +4,8 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -13,9 +14,12 @@
 
 <body>
 <div id='map'></div>
-
-<script src='/dist/mapbox-gl-dev.js'></script>
-<script src='/debug/access_token_generated.js'></script>
+<div class='button pin-topleft z100' onclick='togglePlayback()'>Play/pause</div>
+<div class='pin-bottom pad1 z100 col12 bg-white' style='background:white'>
+    <input class="timeslider col12 fr" type="range" value="0" min="0" max="45" step="0.1" id="timeslider">
+</div>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
 <script>
 
 var videoStyle = {
@@ -28,7 +32,7 @@ var videoStyle = {
         },
         "video": {
             "type": "video",
-            "urls": [ "https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm" ],
+            "urls": [ "https://static-assets.mapbox.com/mapbox-gl-js/drone.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm" ],
             "coordinates": [
                 [-122.51596391201019, 37.56238816766053],
                 [-122.51467645168304, 37.56410183312965],
@@ -53,7 +57,6 @@ var videoStyle = {
         "source": "video"
     }]
 };
-
 var map = new mapboxgl.Map({
     container: 'map',
     minZoom: 14,
@@ -64,6 +67,24 @@ var map = new mapboxgl.Map({
     hash: false
 });
 
+document.getElementById('timeslider')
+    .addEventListener('change', function() {
+        map.getSource('video').seek(parseFloat(this.value));
+    });
+
+var playing = false;
+
+window.setInterval(function() {
+    if (!playing) return;
+    var time = map.getSource('video').video.currentTime;
+    document.getElementById('timeslider').value = time;
+}, 500);
+
+function togglePlayback() {
+    playing = !playing;
+    if (playing) map.getSource("video").play();
+    else map.getSource("video").pause();
+}
 </script>
 </body>
 </html>

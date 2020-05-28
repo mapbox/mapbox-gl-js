@@ -1,9 +1,9 @@
 // @flow
 
-import { test } from 'mapbox-gl-js-test';
-import { register, serialize, deserialize } from '../../../src/util/web_worker_transfer';
+import {test} from '../../util/test';
+import {register, serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
-import type { Serialized } from '../../../src/util/web_worker_transfer';
+import type {Serialized} from '../../../src/util/web_worker_transfer';
 
 test('round trip', (t) => {
     class Foo {
@@ -26,7 +26,7 @@ test('round trip', (t) => {
         }
     }
 
-    register('Foo', Foo, { omit: ['_cached'] });
+    register('Foo', Foo, {omit: ['_cached']});
 
     const foo = new Foo(10);
     const transferables = [];
@@ -64,11 +64,11 @@ test('custom serialization', (t) => {
         }
 
         static serialize(b: Bar): Serialized {
-            return `custom serialization,${b.id}`;
+            return {foo: `custom serialization,${b.id}`};
         }
 
         static deserialize(input: Serialized): Bar {
-            const b = new Bar((input: any).split(',')[1]);
+            const b = new Bar((input: any).foo.split(',')[1]);
             b._deserialized = true;
             return b;
         }
@@ -86,5 +86,4 @@ test('custom serialization', (t) => {
     t.assert(bar2._deserialized);
     t.end();
 });
-
 

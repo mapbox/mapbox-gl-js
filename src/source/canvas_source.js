@@ -4,9 +4,9 @@ import ImageSource from './image_source';
 
 import window from '../util/window';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import VertexArrayObject from '../render/vertex_array_object';
+import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
-import { ErrorEvent } from '../util/evented';
+import {ErrorEvent} from '../util/evented';
 import ValidationError from '../style-spec/error/validation_error';
 
 import type Map from '../ui/map';
@@ -111,6 +111,7 @@ class CanvasSource extends ImageSource {
      */
 
     load() {
+        this._loaded = true;
         if (!this.canvas) {
             this.canvas = (this.options.canvas instanceof window.HTMLCanvasElement) ?
                 this.options.canvas :
@@ -126,11 +127,14 @@ class CanvasSource extends ImageSource {
 
         this.play = function() {
             this._playing = true;
-            this.map._rerender();
+            this.map.triggerRepaint();
         };
 
         this.pause = function() {
-            this._playing = false;
+            if (this._playing) {
+                this.prepare();
+                this._playing = false;
+            }
         };
 
         this._finishLoading();
@@ -193,18 +197,14 @@ class CanvasSource extends ImageSource {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
         }
 
-        if (!this.boundsVAO) {
-            this.boundsVAO = new VertexArrayObject();
+        if (!this.boundsSegments) {
+            this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
         }
 
         if (!this.texture) {
-            this.texture = new Texture(context, this.canvas, gl.RGBA);
-            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        } else if (resize) {
-            this.texture.update(this.canvas);
-        } else if (this._playing) {
-            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+            this.texture = new Texture(context, this.canvas, gl.RGBA, {premultiply: true});
+        } else if (resize || this._playing) {
+            this.texture.update(this.canvas, {premultiply: true});
         }
 
         for (const w in this.tiles) {

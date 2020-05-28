@@ -4,32 +4,33 @@ import loadGlyphRange from '../style/load_glyph_range';
 
 import TinySDF from '@mapbox/tiny-sdf';
 import isChar from '../util/is_char_in_unicode_block';
-import { asyncAll } from '../util/util';
-import { AlphaImage } from '../util/image';
+import {asyncAll} from '../util/util';
+import {AlphaImage} from '../util/image';
 
 import type {StyleGlyph} from '../style/style_glyph';
-import type {RequestTransformFunction} from '../ui/map';
+import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 
 type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.
     glyphs: {[id: number]: StyleGlyph | null},
-    requests: {[range: number]: Array<Callback<{[number]: StyleGlyph | null}>>},
+    requests: {[range: number]: Array<Callback<{[_: number]: StyleGlyph | null}>>},
+    ranges: {[range: number]: boolean | null},
     tinySDF?: TinySDF
 };
 
 class GlyphManager {
-    requestTransform: RequestTransformFunction;
+    requestManager: RequestManager;
     localIdeographFontFamily: ?string;
-    entries: {[string]: Entry};
+    entries: {[_: string]: Entry};
     url: ?string;
 
     // exposed as statics to enable stubbing in unit tests
     static loadGlyphRange: typeof loadGlyphRange;
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestTransform: RequestTransformFunction, localIdeographFontFamily: ?string) {
-        this.requestTransform = requestTransform;
+    constructor(requestManager: RequestManager, localIdeographFontFamily: ?string) {
+        this.requestManager = requestManager;
         this.localIdeographFontFamily = localIdeographFontFamily;
         this.entries = {};
     }
@@ -52,7 +53,8 @@ class GlyphManager {
             if (!entry) {
                 entry = this.entries[stack] = {
                     glyphs: {},
-                    requests: {}
+                    requests: {},
+                    ranges: {}
                 };
             }
 
@@ -64,6 +66,7 @@ class GlyphManager {
 
             glyph = this._tinySDF(entry, stack, id);
             if (glyph) {
+                entry.glyphs[id] = glyph;
                 callback(null, {stack, id, glyph});
                 return;
             }
@@ -74,15 +77,23 @@ class GlyphManager {
                 return;
             }
 
+            if (entry.ranges[range]) {
+                callback(null, {stack, id, glyph});
+                return;
+            }
+
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
-                GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestTransform,
-                    (err, response: ?{[number]: StyleGlyph | null}) => {
+                GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestManager,
+                    (err, response: ?{[_: number]: StyleGlyph | null}) => {
                         if (response) {
                             for (const id in response) {
-                                entry.glyphs[+id] = response[+id];
+                                if (!this._doesCharSupportLocalGlyph(+id)) {
+                                    entry.glyphs[+id] = response[+id];
+                                }
                             }
+                            entry.ranges[range] = true;
                         }
                         for (const cb of requests) {
                             cb(err, response);
@@ -91,7 +102,7 @@ class GlyphManager {
                     });
             }
 
-            requests.push((err, result: ?{[number]: StyleGlyph | null}) => {
+            requests.push((err, result: ?{[_: number]: StyleGlyph | null}) => {
                 if (err) {
                     callback(err);
                 } else if (result) {
@@ -118,13 +129,23 @@ class GlyphManager {
         });
     }
 
+    _doesCharSupportLocalGlyph(id: number): boolean {
+        /* eslint-disable new-cap */
+        return !!this.localIdeographFontFamily &&
+            (isChar['CJK Unified Ideographs'](id) ||
+                isChar['Hangul Syllables'](id) ||
+                isChar['Hiragana'](id) ||
+                isChar['Katakana'](id));
+        /* eslint-enable new-cap */
+    }
+
     _tinySDF(entry: Entry, stack: string, id: number): ?StyleGlyph {
         const family = this.localIdeographFontFamily;
         if (!family) {
             return;
         }
 
-        if (!isChar['CJK Unified Ideographs'](id) && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
+        if (!this._doesCharSupportLocalGlyph(id)) {
             return;
         }
 

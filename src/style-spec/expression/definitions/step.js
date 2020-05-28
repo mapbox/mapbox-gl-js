@@ -1,15 +1,14 @@
 // @flow
 
-import { NumberType } from '../types';
+import {NumberType} from '../types';
 
-import { findStopLessThanOrEqualTo } from '../stops';
+import {findStopLessThanOrEqualTo} from '../stops';
 
-import type { Stops } from '../stops';
-import type { Expression } from '../expression';
+import type {Stops} from '../stops';
+import type {Expression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Value } from '../values';
-import type { Type } from '../types';
+import type {Type} from '../types';
 
 class Step implements Expression {
     type: Type;
@@ -30,9 +29,7 @@ class Step implements Expression {
         }
     }
 
-    static parse(args: Array<mixed>, context: ParsingContext) {
-        let [ , input, ...rest] = args;
-
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext) {
         if (args.length - 1 < 4) {
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         }
@@ -41,7 +38,7 @@ class Step implements Expression {
             return context.error(`Expected an even number of arguments.`);
         }
 
-        input = context.parse(input, 1, NumberType);
+        const input = context.parse(args[1], 1, NumberType);
         if (!input) return null;
 
         const stops: Stops = [];
@@ -51,14 +48,12 @@ class Step implements Expression {
             outputType = context.expectedType;
         }
 
-        rest.unshift(-Infinity);
+        for (let i = 1; i < args.length; i += 2) {
+            const label = i === 1 ? -Infinity : args[i];
+            const value = args[i + 1];
 
-        for (let i = 0; i < rest.length; i += 2) {
-            const label = rest[i];
-            const value = rest[i + 1];
-
-            const labelKey = i + 1;
-            const valueKey = i + 2;
+            const labelKey = i;
+            const valueKey = i + 1;
 
             if (typeof label !== 'number') {
                 return context.error('Input/output pairs for "step" expressions must be defined using literal numeric values (not computed expressions) for the input values.', labelKey);
@@ -99,15 +94,15 @@ class Step implements Expression {
         return outputs[index].evaluate(ctx);
     }
 
-    eachChild(fn: (Expression) => void) {
+    eachChild(fn: (_: Expression) => void) {
         fn(this.input);
         for (const expression of this.outputs) {
             fn(expression);
         }
     }
 
-    possibleOutputs(): Array<Value | void> {
-        return [].concat(...this.outputs.map((output) => output.possibleOutputs()));
+    outputDefined(): boolean {
+        return this.outputs.every(out => out.outputDefined());
     }
 
     serialize() {

@@ -1,12 +1,13 @@
 // @flow
 
-import { getVideo, ResourceType } from '../util/ajax';
+import {getVideo, ResourceType} from '../util/ajax';
 
 import ImageSource from './image_source';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import VertexArrayObject from '../render/vertex_array_object';
+import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
-import { ErrorEvent } from '../util/evented';
+import {ErrorEvent} from '../util/evented';
+import ValidationError from '../style-spec/error/validation_error';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -62,14 +63,16 @@ class VideoSource extends ImageSource {
     }
 
     load() {
+        this._loaded = false;
         const options = this.options;
 
         this.urls = [];
         for (const url of options.urls) {
-            this.urls.push(this.map._transformRequest(url, ResourceType.Source).url);
+            this.urls.push(this.map._requestManager.transformRequest(url, ResourceType.Source).url);
         }
 
         getVideo(this.urls, (err, video) => {
+            this._loaded = true;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (video) {
@@ -79,7 +82,7 @@ class VideoSource extends ImageSource {
                 // Start repainting when video starts playing. hasTransition() will then return
                 // true to trigger additional frames as long as the videos continues playing.
                 this.video.addEventListener('playing', () => {
-                    this.map._rerender();
+                    this.map.triggerRepaint();
                 });
 
                 if (this.map) {
@@ -89,6 +92,37 @@ class VideoSource extends ImageSource {
                 this._finishLoading();
             }
         });
+    }
+
+    /**
+     * Pauses the video.
+     */
+    pause() {
+        if (this.video) {
+            this.video.pause();
+        }
+    }
+
+    /**
+     * Plays the video.
+     */
+    play() {
+        if (this.video) {
+            this.video.play();
+        }
+    }
+
+    /**
+     * Sets playback to a timestamp, in seconds.
+     * @private
+     */
+    seek(seconds: number) {
+        if (this.video) {
+            const seekableRange = this.video.seekable;
+            if (seconds < seekableRange.start(0) || seconds > seekableRange.end(0)) {
+                this.fire(new ErrorEvent(new ValidationError(`sources.${this.id}`, null, `Playback for this video can be set only between the ${seekableRange.start(0)} and ${seekableRange.end(0)}-second mark.`)));
+            } else this.video.currentTime = seconds;
+        }
     }
 
     /**
@@ -116,10 +150,6 @@ class VideoSource extends ImageSource {
      * @method setCoordinates
      * @instance
      * @memberof VideoSource
-     * @param {Array<Array<number>>} coordinates Four geographical coordinates,
-     *   represented as arrays of longitude and latitude numbers, which define the corners of the video.
-     *   The coordinates start at the top left corner of the video and proceed in clockwise order.
-     *   They do not have to represent a rectangle.
      * @returns {VideoSource} this
      */
     // setCoordinates inherited from ImageSource
@@ -136,8 +166,8 @@ class VideoSource extends ImageSource {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
         }
 
-        if (!this.boundsVAO) {
-            this.boundsVAO = new VertexArrayObject();
+        if (!this.boundsSegments) {
+            this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
         }
 
         if (!this.texture) {

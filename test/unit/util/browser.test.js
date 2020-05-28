@@ -1,4 +1,4 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import browser from '../../../src/util/browser';
 
 test('browser', (t) => {
@@ -30,11 +30,6 @@ test('browser', (t) => {
 
     t.test('hardwareConcurrency', (t) => {
         t.equal(typeof browser.hardwareConcurrency, 'number');
-        t.end();
-    });
-
-    t.test('supportsWebp', (t) => {
-        t.equal(typeof browser.supportsWebp, 'boolean');
         t.end();
     });
 

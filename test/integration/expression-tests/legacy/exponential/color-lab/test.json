@@ -1,0 +1,50 @@
+{
+  "expression": {
+    "type": "exponential",
+    "property": "p",
+    "stops": [[0, "black"], [1, "white"]],
+    "colorSpace": "lab"
+  },
+  "propertySpec": {
+    "type": "color",
+    "property-type": "data-driven",
+    "expression": {"interpolated": true, "parameters": ["zoom", "feature"]}
+  },
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": -1}}],
+    [{}, {"properties": {"p": 0}}],
+    [{}, {"properties": {"p": 0.5}}],
+    [{}, {"properties": {"p": 1}}],
+    [{}, {"properties": {"p": 2}}],
+    [{}, {"properties": {"p": "0"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [
+      {"error": "Expected value to be of type number, but found null instead."},
+      [0, 0, 0, 1],
+      [0, 0, 0, 1],
+      [0.499999, 0.5, 0.499999, 1],
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      {
+        "error": "Expected value to be of type number, but found string instead."
+      }
+    ],
+    "serialized": [
+      "interpolate-lab",
+      ["linear"],
+      ["number", ["get", "p"]],
+      0,
+      ["rgba", 0, 0, 0, 1],
+      1,
+      ["rgba", 255, 255, 255, 1]
+    ]
+  }
+}

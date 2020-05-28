@@ -1,8 +1,7 @@
-import { test } from 'mapbox-gl-js-test';
-import { createPropertyExpression } from '../../../src/style-spec/expression';
+import {test} from '../../util/test';
+import {createPropertyExpression} from '../../../src/style-spec/expression';
 import definitions from '../../../src/style-spec/expression/definitions';
 import v8 from '../../../src/style-spec/reference/v8';
-import {expressions as definitionMetadata} from '../../../docs/components/expression-metadata';
 
 // filter out interal "error" and "filter-*" expressions from definition list
 const filterExpressionRegex = /filter-/;
@@ -12,13 +11,11 @@ const definitionList = Object.keys(definitions).filter((expression) => {
 
 test('v8.json includes all definitions from style-spec', (t) => {
     const v8List = Object.keys(v8.expression_name.values);
-    t.deepEquals(definitionList, v8List.sort());
-    t.end();
-});
-
-test('expression metadata includes all definitions from style-spec', (t) => {
-    const definitionMetadataList = Object.keys(definitionMetadata);
-    t.deepEquals(definitionList, definitionMetadataList.sort());
+    const v8SupportedList = v8List.filter((expression) => {
+        //filter out expressions that are not supported in GL-JS
+        return !!v8.expression_name.values[expression]["sdk-support"]["basic functionality"]["js"];
+    });
+    t.deepEquals(definitionList, v8SupportedList.sort());
     t.end();
 });
 
@@ -60,8 +57,8 @@ test('evaluate expression', (t) => {
 
         t.equal(value.kind, 'source');
 
-        t.equal(value.evaluate({}, { properties: {x: 'b'} }), 'b');
-        t.equal(value.evaluate({}, { properties: {x: 'invalid'} }), 'a');
+        t.equal(value.evaluate({}, {properties: {x: 'b'}}), 'b');
+        t.equal(value.evaluate({}, {properties: {x: 'invalid'}}), 'a');
         t.ok(console.warn.calledWith(`Expected value to be one of "a", "b", "c", but found "invalid" instead.`));
 
         t.end();

@@ -3,15 +3,24 @@
   "metadata": {
     "test": {
       "debug": true,
-      "height": 256
+      "height": 256,
+      "allowed": 0.0022
     }
   },
   "center": [
-    13.418056,
-    52.499167
+    13.425481,
+    52.496057
   ],
   "zoom": 14,
   "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 1,
+      "tileSize": 256
+    },
     "mapbox": {
       "type": "vector",
       "maxzoom": 14,
@@ -28,6 +37,14 @@
       "type": "background",
       "paint": {
         "background-color": "white"
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
       }
     },
     {

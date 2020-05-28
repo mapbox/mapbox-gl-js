@@ -1,16 +1,18 @@
 // @flow
 
 import {getTileBBox} from '@mapbox/whoots-js';
+import EXTENT from '../data/extent';
+import Point from '@mapbox/point-geometry';
+import MercatorCoordinate from '../geo/mercator_coordinate';
 
 import assert from 'assert';
-import { register } from '../util/web_worker_transfer';
-import Coordinate from '../geo/coordinate';
+import {register} from '../util/web_worker_transfer';
 
 export class CanonicalTileID {
     z: number;
     x: number;
     y: number;
-    key: number;
+    key: string;
 
     constructor(z: number, x: number, y: number) {
         assert(z >= 0 && z <= 25);
@@ -19,7 +21,7 @@ export class CanonicalTileID {
         this.z = z;
         this.x = x;
         this.y = y;
-        this.key = calculateKey(0, z, x, y);
+        this.key = calculateKey(0, z, z, x, y);
     }
 
     equals(id: CanonicalTileID) {
@@ -39,17 +41,28 @@ export class CanonicalTileID {
             .replace('{quadkey}', quadkey)
             .replace('{bbox-epsg-3857}', bbox);
     }
+
+    getTilePoint(coord: MercatorCoordinate) {
+        const tilesAtZoom = Math.pow(2, this.z);
+        return new Point(
+            (coord.x * tilesAtZoom - this.x) * EXTENT,
+            (coord.y * tilesAtZoom - this.y) * EXTENT);
+    }
+
+    toString() {
+        return `${this.z}/${this.x}/${this.y}`;
+    }
 }
 
 export class UnwrappedTileID {
     wrap: number;
     canonical: CanonicalTileID;
-    key: number;
+    key: string;
 
     constructor(wrap: number, canonical: CanonicalTileID) {
         this.wrap = wrap;
         this.canonical = canonical;
-        this.key = calculateKey(wrap, canonical.z, canonical.x, canonical.y);
+        this.key = calculateKey(wrap, canonical.z, canonical.z, canonical.x, canonical.y);
     }
 }
 
@@ -57,7 +70,7 @@ export class OverscaledTileID {
     overscaledZ: number;
     wrap: number;
     canonical: CanonicalTileID;
-    key: number;
+    key: string;
     posMatrix: Float32Array;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {
@@ -65,7 +78,7 @@ export class OverscaledTileID {
         this.overscaledZ = overscaledZ;
         this.wrap = wrap;
         this.canonical = new CanonicalTileID(z, +x, +y);
-        this.key = calculateKey(wrap, overscaledZ, x, y);
+        this.key = calculateKey(wrap, overscaledZ, z, x, y);
     }
 
     equals(id: OverscaledTileID) {
@@ -82,7 +95,26 @@ export class OverscaledTileID {
         }
     }
 
+    /*
+     * calculateScaledKey is an optimization:
+     * when withWrap == true, implements the same as this.scaledTo(z).key,
+     * when withWrap == false, implements the same as this.scaledTo(z).wrapped().key.
+     */
+    calculateScaledKey(targetZ: number, withWrap: boolean): string {
+        assert(targetZ <= this.overscaledZ);
+        const zDifference = this.canonical.z - targetZ;
+        if (targetZ > this.canonical.z) {
+            return calculateKey(this.wrap * +withWrap, targetZ, this.canonical.z, this.canonical.x, this.canonical.y);
+        } else {
+            return calculateKey(this.wrap * +withWrap, targetZ, targetZ, this.canonical.x >> zDifference, this.canonical.y >> zDifference);
+        }
+    }
+
     isChildOf(parent: OverscaledTileID) {
+        if (parent.wrap !== this.wrap) {
+            // We can't be a child if we're in a different world copy
+            return false;
+        }
         const zDifference = this.canonical.z - parent.canonical.z;
         // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
         return parent.overscaledZ === 0 || (
@@ -142,18 +174,17 @@ export class OverscaledTileID {
         return `${this.overscaledZ}/${this.canonical.x}/${this.canonical.y}`;
     }
 
-    toCoordinate() {
-        return new Coordinate(this.canonical.x + Math.pow(2, this.wrap), this.canonical.y, this.canonical.z);
+    getTilePoint(coord: MercatorCoordinate) {
+        return this.canonical.getTilePoint(new MercatorCoordinate(coord.x - this.wrap, coord.y));
     }
 }
 
-function calculateKey(wrap: number, z: number, x: number, y: number) {
+function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): string {
     wrap *= 2;
     if (wrap < 0) wrap = wrap * -1 - 1;
     const dim = 1 << z;
-    return ((dim * dim * wrap + dim * y + x) * 32) + z;
+    return (dim * dim * wrap + dim * y + x).toString(36) + z.toString(36) + overscaledZ.toString(36);
 }
-
 
 function getQuadkey(z, x, y) {
     let quadkey = '', mask;

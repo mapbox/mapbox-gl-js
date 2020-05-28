@@ -1,5 +1,5 @@
-import { test } from 'mapbox-gl-js-test';
-import { CanonicalTileID, OverscaledTileID } from '../../../src/source/tile_id';
+import {test} from '../../util/test';
+import {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id';
 
 test('CanonicalTileID', (t) => {
     t.test('#constructor', (t) => {
@@ -23,10 +23,10 @@ test('CanonicalTileID', (t) => {
     });
 
     t.test('.key', (t) => {
-        t.deepEqual(new CanonicalTileID(0, 0, 0).key, 0);
-        t.deepEqual(new CanonicalTileID(1, 0, 0).key, 1);
-        t.deepEqual(new CanonicalTileID(1, 1, 0).key, 33);
-        t.deepEqual(new CanonicalTileID(1, 1, 1).key, 97);
+        t.deepEqual(new CanonicalTileID(0, 0, 0).key, "000");
+        t.deepEqual(new CanonicalTileID(1, 0, 0).key, "011");
+        t.deepEqual(new CanonicalTileID(1, 1, 0).key, "111");
+        t.deepEqual(new CanonicalTileID(1, 1, 1).key, "311");
         t.end();
     });
 
@@ -77,11 +77,11 @@ test('OverscaledTileID', (t) => {
     });
 
     t.test('.key', (t) => {
-        t.deepEqual(new OverscaledTileID(0, 0, 0, 0, 0).key, 0);
-        t.deepEqual(new OverscaledTileID(1, 0, 1, 0, 0).key, 1);
-        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 0).key, 33);
-        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 1).key, 97);
-        t.deepEqual(new OverscaledTileID(1, -1, 1, 1, 1).key, 225);
+        t.deepEqual(new OverscaledTileID(0, 0, 0, 0, 0).key, "000");
+        t.deepEqual(new OverscaledTileID(1, 0, 1, 0, 0).key, "011");
+        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 0).key, "111");
+        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 1).key, "311");
+        t.deepEqual(new OverscaledTileID(1, -1, 1, 1, 1).key, "711");
         t.end();
     });
 
@@ -110,6 +110,12 @@ test('OverscaledTileID', (t) => {
             t.deepEqual(new OverscaledTileID(1, 0, 0, 0, 0).scaledTo(0), new OverscaledTileID(0, 0, 0, 0, 0));
             t.end();
         });
+        t.end();
+    });
+
+    t.test('.isChildOf', (t) => {
+        t.ok(new OverscaledTileID(2, 0, 2, 0, 0).isChildOf(new OverscaledTileID(0, 0, 0, 0, 0)), "child of z0 tile");
+        t.notOk(new OverscaledTileID(2, 0, 2, 0, 0).isChildOf(new OverscaledTileID(0, 1, 0, 0, 0)), "not child of tile with different wrap");
         t.end();
     });
 

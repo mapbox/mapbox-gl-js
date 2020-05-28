@@ -1,6 +1,6 @@
 
 import ValidationError from '../error/validation_error';
-import { unbundle } from '../util/unbundle_jsonlint';
+import {unbundle} from '../util/unbundle_jsonlint';
 import validateObject from './validate_object';
 import validateFilter from './validate_filter';
 import validatePaintProperty from './validate_paint_property';
@@ -76,18 +76,18 @@ export default function validateLayer(options) {
     }
 
     errors = errors.concat(validateObject({
-        key: key,
+        key,
         value: layer,
         valueSpec: styleSpec.layer,
         style: options.style,
         styleSpec: options.styleSpec,
         objectElementValidators: {
-            '*': function() {
+            '*'() {
                 return [];
             },
             // We don't want to enforce the spec's `"requires": true` for backward compatibility with refs;
             // the actual requirement is validated above. See https://github.com/mapbox/mapbox-gl-js/issues/5772.
-            type: function() {
+            type() {
                 return validateSpec({
                     key: `${key}.type`,
                     value: layer.type,
@@ -99,29 +99,29 @@ export default function validateLayer(options) {
                 });
             },
             filter: validateFilter,
-            layout: function(options) {
+            layout(options) {
                 return validateObject({
-                    layer: layer,
+                    layer,
                     key: options.key,
                     value: options.value,
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
-                        '*': function(options) {
+                        '*'(options) {
                             return validateLayoutProperty(extend({layerType: type}, options));
                         }
                     }
                 });
             },
-            paint: function(options) {
+            paint(options) {
                 return validateObject({
-                    layer: layer,
+                    layer,
                     key: options.key,
                     value: options.value,
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
-                        '*': function(options) {
+                        '*'(options) {
                             return validatePaintProperty(extend({layerType: type}, options));
                         }
                     }

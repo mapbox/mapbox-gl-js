@@ -1,0 +1,20 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "mapMode": "tile",
+      "collisionDebug": true,
+      "debug": true,
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["setStyle", "local://styles/chicago.json"],
+        ["setZoom", 13 ],
+        ["setCenter", [-87.7442445, 41.8403965] ],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}

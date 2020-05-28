@@ -1,0 +1,66 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+          [
+              "addCustomLayer",
+              "null-island",
+              "fill"
+          ]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -20,
+              -10
+            ],
+            [
+              -20,
+              10
+            ],
+            [
+              0,
+              10
+            ],
+            [
+              0,
+              -10
+            ],
+            [
+              -20,
+              -10
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(0,255,0, 1)"
+      }
+    },
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "rgba(235, 235,235, 1)"
+      }
+    }
+  ]
+}

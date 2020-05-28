@@ -6,6 +6,8 @@ import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
 import type Context from '../gl/context';
 import type {FeatureStates} from '../source/source_state';
+import type {ImagePosition} from '../render/image_atlas';
+import type {CanonicalTileID} from '../source/tile_id';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
@@ -21,14 +23,28 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
 export type PopulateParameters = {
     featureIndex: FeatureIndex,
     iconDependencies: {},
-    glyphDependencies: {}
+    patternDependencies: {},
+    glyphDependencies: {},
+    availableImages: Array<string>
 }
 
 export type IndexedFeature = {
     feature: VectorTileFeature,
+    id: number | string,
     index: number,
     sourceLayerIndex: number,
 }
+
+export type BucketFeature = {|
+    index: number,
+    sourceLayerIndex: number,
+    geometry: Array<Array<Point>>,
+    properties: Object,
+    type: 1 | 2 | 3,
+    id?: any,
+    +patterns: {[_: string]: {"min": string, "mid": string, "max": string}},
+    sortKey?: number
+|};
 
 /**
  * The `Bucket` interface is the single point of knowledge about turning vector
@@ -55,11 +71,12 @@ export type IndexedFeature = {
  */
 export interface Bucket {
     layerIds: Array<string>;
+    hasPattern: boolean;
     +layers: Array<any>;
     +stateDependentLayers: Array<any>;
-
-    populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
-    update(states: FeatureStates, vtLayer: VectorTileLayer): void;
+    +stateDependentLayerIds: Array<string>;
+    populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID): void;
+    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}): void;
     isEmpty(): boolean;
 
     upload(context: Context): void;
@@ -75,7 +92,7 @@ export interface Bucket {
     destroy(): void;
 }
 
-export function deserialize(input: Array<Bucket>, style: Style): {[string]: Bucket} {
+export function deserialize(input: Array<Bucket>, style: Style): {[_: string]: Bucket} {
     const output = {};
 
     // Guard against the case where the map's style has been set to null while
@@ -94,7 +111,9 @@ export function deserialize(input: Array<Bucket>, style: Style): {[string]: Buck
         // look up StyleLayer objects from layer ids (since we don't
         // want to waste time serializing/copying them from the worker)
         (bucket: any).layers = layers;
-        (bucket: any).stateDependentLayers = layers.filter((l) => l.isStateDependent());
+        if ((bucket: any).stateDependentLayerIds) {
+            (bucket: any).stateDependentLayers = (bucket: any).stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
+        }
         for (const layer of layers) {
             output[layer.id] = bucket;
         }

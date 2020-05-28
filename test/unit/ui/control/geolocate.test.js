@@ -1,6 +1,6 @@
-import { test } from 'mapbox-gl-js-test';
+import {test} from '../../../util/test';
 import window from '../../../../src/util/window';
-import { createMap } from '../../../util';
+import {createMap} from '../../../util';
 import GeolocateControl from '../../../../src/ui/control/geolocate_control';
 
 // window and navigator globals need to be set for mock-geolocation
@@ -46,6 +46,52 @@ test('GeolocateControl error event', (t) => {
     });
     geolocate._geolocateButton.dispatchEvent(click);
     geolocation.sendError({code: 2, message: 'error message'});
+});
+
+test('GeolocateControl outofmaxbounds event in active lock state', (t) => {
+    t.plan(5);
+
+    const map = createMap(t);
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+    map.setMaxBounds([[0, 0], [10, 10]]);
+    geolocate._watchState = 'ACTIVE_LOCK';
+
+    const click = new window.Event('click');
+
+    geolocate.on('outofmaxbounds', (position) => {
+        t.equal(geolocate._watchState, 'ACTIVE_ERROR', 'geolocate state');
+        t.equal(position.coords.latitude, 10, 'geolocate position latitude');
+        t.equal(position.coords.longitude, 20, 'geolocate position longitude');
+        t.equal(position.coords.accuracy, 3, 'geolocate position accuracy');
+        t.equal(position.timestamp, 4, 'geolocate timestamp');
+        t.end();
+    });
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 3, timestamp: 4});
+});
+
+test('GeolocateControl outofmaxbounds event in background state', (t) => {
+    t.plan(5);
+
+    const map = createMap(t);
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+    map.setMaxBounds([[0, 0], [10, 10]]);
+    geolocate._watchState = 'BACKGROUND';
+
+    const click = new window.Event('click');
+
+    geolocate.on('outofmaxbounds', (position) => {
+        t.equal(geolocate._watchState, 'BACKGROUND_ERROR', 'geolocate state');
+        t.equal(position.coords.latitude, 10, 'geolocate position latitude');
+        t.equal(position.coords.longitude, 20, 'geolocate position longitude');
+        t.equal(position.coords.accuracy, 3, 'geolocate position accuracy');
+        t.equal(position.timestamp, 4, 'geolocate timestamp');
+        t.end();
+    });
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 3, timestamp: 4});
 });
 
 test('GeolocateControl geolocate event', (t) => {
@@ -116,6 +162,43 @@ test('GeolocateControl geolocate fitBoundsOptions', (t) => {
     geolocation.send({latitude: 10, longitude: 20, accuracy: 1});
 });
 
+test('GeolocateControl with removed before Geolocation callback', (t) => {
+    const map = createMap(t);
+    t.plan(0);
+
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+    geolocate.trigger();
+    map.removeControl(geolocate);
+    t.end();
+});
+
+test('GeolocateControl non-zero bearing', (t) => {
+    t.plan(3);
+
+    const map = createMap(t);
+    map.setBearing(45);
+    const geolocate = new GeolocateControl({
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0,
+            maxZoom: 10
+        }
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    map.once('moveend', () => {
+        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location');
+        t.equal(map.getBearing(), 45, 'map bearing retained');
+        t.equal(map.getZoom(), 10, 'geolocate fitBounds maxZoom');
+        t.end();
+    });
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 1});
+});
+
 test('GeolocateControl no watching map camera on geolocation', (t) => {
     t.plan(6);
 
@@ -131,8 +214,8 @@ test('GeolocateControl no watching map camera on geolocation', (t) => {
 
     const click = new window.Event('click');
 
-    map.on('moveend', () => {
-        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 10, lng: 20 }, 'map centered on location');
+    map.once('moveend', () => {
+        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location');
 
         const mapBounds = map.getBounds();
 
@@ -181,11 +264,11 @@ test('GeolocateControl watching map updates recenter on location with dot', (t) 
         if (moveendCount > 0) return;
         moveendCount++;
 
-        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 10, lng: 20 }, 'map centered on location after 1st update');
+        t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 10, lng: 20}, 'map centered on location after 1st update');
         t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot marker on map');
         t.false(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation does not have stale class');
         map.once('moveend', () => {
-            t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 40, lng: 50 }, 'map centered on location after 2nd update');
+            t.deepEqual(lngLatAsFixed(map.getCenter(), 4), {lat: 40, lng: 50}, 'map centered on location after 2nd update');
             geolocate.once('error', () => {
                 t.ok(geolocate._userLocationDotMarker._map, 'userLocation dot  marker on map');
                 t.ok(geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale'), 'userLocation has stale class');
@@ -307,4 +390,129 @@ test('GeolocateControl trackuserlocationstart event', (t) => {
     });
     geolocate._geolocateButton.dispatchEvent(click);
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
+});
+
+test('GeolocateControl does not switch to BACKGROUND and stays in ACTIVE_LOCK state on window resize', (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        t.equal(geolocate._watchState, 'ACTIVE_LOCK');
+        window.dispatchEvent(new window.Event('resize'));
+        t.equal(geolocate._watchState, 'ACTIVE_LOCK');
+        t.end();
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
+});
+
+test('GeolocateControl switches to BACKGROUND state on map manipulation', (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        t.equal(geolocate._watchState, 'ACTIVE_LOCK');
+        map.jumpTo({
+            center: [0, 0]
+        });
+        t.equal(geolocate._watchState, 'BACKGROUND');
+        t.end();
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
+});
+
+test('GeolocateControl accuracy circle not shown if showAccuracyCircle = false', (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+        showAccuracyCircle: false,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        map.jumpTo({
+            center: [10, 20]
+        });
+        map.once('zoomend', () => {
+            t.ok(!geolocate._circleElement.style.width);
+            t.end();
+        });
+        map.zoomTo(10, {duration: 0});
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 700});
+});
+
+test('GeolocateControl accuracy circle radius matches reported accuracy', (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        t.ok(geolocate._accuracyCircleMarker._map, 'userLocation accuracy circle marker on map');
+        t.equal(geolocate._accuracy, 700);
+        map.jumpTo({
+            center: [10, 20]
+        });
+        map.once('zoomend', () => {
+            t.equal(geolocate._circleElement.style.width, '20px'); // 700m = 20px at zoom 10
+            map.once('zoomend', () => {
+                t.equal(geolocate._circleElement.style.width, '79px'); // 700m = 79px at zoom 12
+                t.end();
+            });
+            map.zoomTo(12, {duration: 0});
+        });
+        map.zoomTo(10, {duration: 0});
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 700});
+});
+
+test('GeolocateControl shown even if trackUserLocation = false', (t) => {
+    const map = createMap(t);
+    const geolocate = new GeolocateControl({
+        trackUserLocation: false,
+        showUserLocation: true,
+        showAccuracyCircle: true,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        map.jumpTo({
+            center: [10, 20]
+        });
+        map.once('zoomend', () => {
+            t.ok(geolocate._circleElement.style.width);
+            t.end();
+        });
+        map.zoomTo(10, {duration: 0});
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 700});
 });

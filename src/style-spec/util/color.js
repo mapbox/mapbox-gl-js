@@ -1,6 +1,6 @@
 // @flow
 
-import { parseCSSColor } from 'csscolorparser';
+import {parseCSSColor} from 'csscolorparser';
 
 /**
  * An RGBA color value. Create instances from color strings using the static
@@ -29,12 +29,13 @@ class Color {
     static black: Color;
     static white: Color;
     static transparent: Color;
+    static red: Color;
 
     /**
      * Parses valid CSS color strings and returns a `Color` instance.
      * @returns A `Color` instance, or `undefined` if the input is not a valid color string.
      */
-    static parse(input: ?string): Color | void {
+    static parse(input?: string | Color | null): Color | void {
         if (!input) {
             return undefined;
         }
@@ -89,5 +90,6 @@ class Color {
 Color.black = new Color(0, 0, 0, 1);
 Color.white = new Color(1, 1, 1, 1);
 Color.transparent = new Color(0, 0, 0, 0);
+Color.red = new Color(1, 0, 0, 1);
 
 export default Color;

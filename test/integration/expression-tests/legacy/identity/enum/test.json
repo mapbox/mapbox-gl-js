@@ -1,0 +1,30 @@
+{
+  "expression": {"type": "identity", "property": "p"},
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": "a"}}],
+    [{}, {"properties": {"p": "b"}}],
+    [{}, {"properties": {"p": "c"}}]
+  ],
+  "propertySpec": {
+    "type": "enum",
+    "values": {"a": {}, "b": {}},
+    "property-type": "data-driven",
+    "expression": {"interpolated": false, "parameters": ["zoom", "feature"]}
+  },
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": [
+      {"error": "Expected value to be of type string, but found null instead."},
+      "a",
+      "b",
+      "c"
+    ],
+    "serialized": ["string", ["get", "p"]]
+  }
+}

@@ -125,8 +125,9 @@ createStructArrayType('raster_bounds', rasterBoundsAttributes);
 
 const circleAttributes = require('../src/data/bucket/circle_attributes').default;
 const fillAttributes = require('../src/data/bucket/fill_attributes').default;
-const fillExtrusionAttributes = require('../src/data/bucket/fill_extrusion_attributes').default ;
+const fillExtrusionAttributes = require('../src/data/bucket/fill_extrusion_attributes').default;
 const lineAttributes = require('../src/data/bucket/line_attributes').default;
+const patternAttributes = require('../src/data/bucket/pattern_attributes').default;
 
 // layout vertex arrays
 const layoutAttributes = {
@@ -134,7 +135,8 @@ const layoutAttributes = {
     fill: fillAttributes,
     'fill-extrusion': fillExtrusionAttributes,
     heatmap: circleAttributes,
-    line: lineAttributes
+    line: lineAttributes,
+    pattern: patternAttributes
 };
 for (const name in layoutAttributes) {
     createStructArrayType(`${name.replace(/-/g, '_')}_layout`, layoutAttributes[name]);
@@ -149,7 +151,9 @@ const {
     collisionBoxLayout,
     collisionCircleLayout,
     collisionVertexAttributes,
+    quadTriangle,
     placement,
+    symbolInstance,
     glyphOffset,
     lineVertex
 } = require('../src/data/bucket/symbol_attributes');
@@ -161,7 +165,9 @@ createStructArrayType('collision_box', collisionBox, true);
 createStructArrayType(`collision_box_layout`, collisionBoxLayout);
 createStructArrayType(`collision_circle_layout`, collisionCircleLayout);
 createStructArrayType(`collision_vertex`, collisionVertexAttributes);
+createStructArrayType(`quad_triangle`, quadTriangle);
 createStructArrayType('placed_symbol', placement, true);
+createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
 
@@ -183,6 +189,11 @@ createStructArrayType('triangle_index', createLayout([
 // line index array
 createStructArrayType('line_index', createLayout([
     { type: 'Uint16', name: 'vertices', components: 2 }
+]));
+
+// line strip index array
+createStructArrayType('line_strip_index', createLayout([
+    { type: 'Uint16', name: 'vertices', components: 1 }
 ]));
 
 // paint vertex arrays
@@ -220,12 +231,9 @@ import {register} from '../util/web_worker_transfer';
 import Point from '@mapbox/point-geometry';
 
 ${layouts.map(structArrayLayoutJs).join('\n')}
-
 ${arraysWithStructAccessors.map(structArrayJs).join('\n')}
-
 export {
     ${layouts.map(layout => layout.className).join(',\n    ')},
     ${[...arrayTypeEntries].join(',\n    ')}
 };
 `);
-

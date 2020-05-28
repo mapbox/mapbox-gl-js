@@ -2,12 +2,14 @@
   "version": 8,
   "metadata": {
     "test": {
+      "allowed": 0.0005,
       "height": 256
     }
   },
   "sources": {
     "geojson": {
       "type": "geojson",
+      "buffer": 0,
       "data": {
         "type": "FeatureCollection",
         "features": [

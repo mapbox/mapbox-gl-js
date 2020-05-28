@@ -1,7 +1,7 @@
-import { test as t } from 'mapbox-gl-js-test';
+import {test} from '../../util/test';
 import deref from '../../../src/style-spec/deref';
 
-t('derefs a ref layer which follows its parent', (t) => {
+test('derefs a ref layer which follows its parent', (t) => {
     t.deepEqual(deref([
         {
             'id': 'parent',
@@ -24,7 +24,7 @@ t('derefs a ref layer which follows its parent', (t) => {
     t.end();
 });
 
-t('derefs a ref layer which precedes its parent', (t) => {
+test('derefs a ref layer which precedes its parent', (t) => {
     t.deepEqual(deref([
         {
             'id': 'child',

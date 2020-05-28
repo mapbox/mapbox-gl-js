@@ -1,6 +1,6 @@
 // @flow
 
-import { bindAll } from '../util/util';
+import {bindAll} from '../util/util';
 import window from '../util/window';
 import throttle from '../util/throttle';
 
@@ -14,10 +14,13 @@ import type Map from './map';
  */
 class Hash {
     _map: Map;
-    _updateHash: () => TimeoutID;
+    _updateHash: () => ?TimeoutID;
+    _hashName: ?string;
 
-    constructor() {
+    constructor(hashName: ?string) {
+        this._hashName = hashName && encodeURIComponent(hashName);
         bindAll([
+            '_getCurrentHash',
             '_onHashChange',
             '_updateHash'
         ], this);
@@ -67,23 +70,60 @@ class Hash {
         if (mapFeedback) {
             // new map feedback site has some constraints that don't allow
             // us to use the same hash format as we do for the Map hash option.
-            hash += `#/${lng}/${lat}/${zoom}`;
+            hash += `/${lng}/${lat}/${zoom}`;
         } else {
-            hash += `#${zoom}/${lat}/${lng}`;
+            hash += `${zoom}/${lat}/${lng}`;
         }
 
         if (bearing || pitch) hash += (`/${Math.round(bearing * 10) / 10}`);
         if (pitch) hash += (`/${Math.round(pitch)}`);
-        return hash;
+
+        if (this._hashName) {
+            const hashName = this._hashName;
+            let found = false;
+            const parts = window.location.hash.slice(1).split('&').map(part => {
+                const key = part.split('=')[0];
+                if (key === hashName) {
+                    found = true;
+                    return `${key}=${hash}`;
+                }
+                return part;
+            }).filter(a => a);
+            if (!found) {
+                parts.push(`${hashName}=${hash}`);
+            }
+            return `#${parts.join('&')}`;
+        }
+
+        return `#${hash}`;
+    }
+
+    _getCurrentHash() {
+        // Get the current hash from location, stripped from its number sign
+        const hash = window.location.hash.replace('#', '');
+        if (this._hashName) {
+            // Split the parameter-styled hash into parts and find the value we need
+            let keyval;
+            hash.split('&').map(
+                part => part.split('=')
+            ).forEach(part => {
+                if (part[0] === this._hashName) {
+                    keyval = part;
+                }
+            });
+            return (keyval ? keyval[1] || '' : '').split('/');
+        }
+        return hash.split('/');
     }
 
     _onHashChange() {
-        const loc = window.location.hash.replace('#', '').split('/');
-        if (loc.length >= 3) {
+        const loc = this._getCurrentHash();
+        if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
+            const bearing = this._map.dragRotate.isEnabled() && this._map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : this._map.getBearing();
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
-                bearing: +(loc[3] || 0),
+                bearing,
                 pitch: +(loc[4] || 0)
             });
             return true;
@@ -93,7 +133,13 @@ class Hash {
 
     _updateHashUnthrottled() {
         const hash = this.getHashString();
-        window.history.replaceState(window.history.state, '', hash);
+        try {
+            window.history.replaceState(window.history.state, '', hash);
+        } catch (SecurityError) {
+            // IE11 does not allow this if the page is within an iframe created
+            // with iframe.contentWindow.document.write(...).
+            // https://github.com/mapbox/mapbox-gl-js/issues/7410
+        }
     }
 
 }

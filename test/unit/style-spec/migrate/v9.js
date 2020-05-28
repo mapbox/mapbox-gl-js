@@ -1,11 +1,11 @@
-import { test as t } from 'mapbox-gl-js-test';
+import {test} from '../../../util/test';
 import migrate from '../../../../src/style-spec/migrate/v9';
 
-t('deref layers', (t) => {
+test('deref layers', (t) => {
     const input = {
         version: 8,
         sources: {
-            a: { type: 'vector', tiles: [ 'http://dev/null' ] }
+            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
         },
         layers: [{
             id: 'parent',
@@ -21,7 +21,7 @@ t('deref layers', (t) => {
     t.deepEqual(migrate(input), {
         version: 9,
         sources: {
-            a: { type: 'vector', tiles: [ 'http://dev/null' ] }
+            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
         },
         layers: [{
             id: 'parent',
@@ -39,11 +39,11 @@ t('deref layers', (t) => {
     t.end();
 });
 
-t('declass style', (t) => {
+test('declass style', (t) => {
     const input = {
         version: 8,
         sources: {
-            a: { type: 'vector', tiles: [ 'http://dev/null' ] }
+            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
         },
         layers: [{
             id: 'a',
@@ -62,7 +62,7 @@ t('declass style', (t) => {
     t.deepEqual(migrate(input), {
         version: 9,
         sources: {
-            a: { type: 'vector', tiles: [ 'http://dev/null' ] }
+            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
         },
         layers: [{
             id: 'a',

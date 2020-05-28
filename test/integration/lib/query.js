@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import diff from 'diff';
+import * as diff from 'diff';
 import {PNG} from 'pngjs';
 import harness from './harness';
 
@@ -54,14 +54,6 @@ export function run(implementation, options, query) {
 
             const expected = require(path.join(dir, 'expected.json'));
 
-            //For feature states, remove 'state' from fixtures until implemented in native https://github.com/mapbox/mapbox-gl-native/issues/11846
-            if (implementation === 'native') {
-                for (let i = 0; i < expected.length; i++) {
-                    delete expected[i].state;
-                    delete expected[i].source;
-                    delete expected[i].sourceLayer;
-                }
-            }
             params.ok = deepEqual(results, expected);
 
             if (!params.ok) {

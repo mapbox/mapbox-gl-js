@@ -1,11 +1,11 @@
-import { test } from 'mapbox-gl-js-test';
-import { createMap } from '../../../util';
+import {test} from '../../../util/test';
+import {createMap} from '../../../util';
 
 test('Map#_requestRenderFrame schedules a new render frame if necessary', (t) => {
     const map = createMap(t);
-    t.stub(map, '_rerender');
+    t.stub(map, 'triggerRepaint');
     map._requestRenderFrame(() => {});
-    t.equal(map._rerender.callCount, 1);
+    t.equal(map.triggerRepaint.callCount, 1);
     map.remove();
     t.end();
 });

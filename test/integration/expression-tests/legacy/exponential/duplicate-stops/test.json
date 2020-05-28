@@ -1,0 +1,22 @@
+{
+  "expression": {
+    "type": "exponential",
+    "stops": [[0, 10], [1, 20], [1, 25], [2, 30]]
+  },
+  "propertySpec": {
+    "type": "number",
+    "property-type": "data-driven",
+    "expression": {"interpolated": true, "parameters": ["zoom", "feature"]}
+  },
+  "inputs": [[{"zoom": 1}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": false,
+      "type": "number"
+    },
+    "outputs": [20],
+    "serialized": ["interpolate", ["linear"], ["zoom"], 0, 10, 1, 20, 2, 30]
+  }
+}

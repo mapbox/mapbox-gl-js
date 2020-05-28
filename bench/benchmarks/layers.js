@@ -3,25 +3,31 @@ import Benchmark from '../lib/benchmark';
 import createMap from '../lib/create_map';
 import style from '../data/empty.json';
 
+const width = 1024;
+const height = 768;
+const layerCount = 50;
+
 function generateLayers(layer) {
     const generated = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < layerCount; i++) {
         const id = layer.id + i;
-        generated.push(Object.assign({}, layer, {id: id}));
+        generated.push(Object.assign({}, layer, {id}));
     }
     return generated;
 }
 
-class LayerBenchmark extends Benchmark {
+export class LayerBenchmark extends Benchmark {
     setup() {
         return createMap({
             zoom: 16,
-            width: 1024,
-            height: 768,
+            width,
+            height,
             center: [-77.032194, 38.912753],
             style: this.layerStyle
         }).then(map => {
             this.map = map;
+        }).catch(error => {
+            console.error(error);
         });
     }
 
@@ -34,7 +40,7 @@ class LayerBenchmark extends Benchmark {
     }
 }
 
-class LayerBackground extends LayerBenchmark {
+export class LayerBackground extends LayerBenchmark {
     constructor() {
         super();
 
@@ -47,7 +53,7 @@ class LayerBackground extends LayerBenchmark {
     }
 }
 
-class LayerCircle extends LayerBenchmark {
+export class LayerCircle extends LayerBenchmark {
     constructor() {
         super();
 
@@ -62,7 +68,7 @@ class LayerCircle extends LayerBenchmark {
     }
 }
 
-class LayerFill extends LayerBenchmark {
+export class LayerFill extends LayerBenchmark {
     constructor() {
         super();
 
@@ -81,7 +87,7 @@ class LayerFill extends LayerBenchmark {
     }
 }
 
-class LayerFillExtrusion extends LayerBenchmark {
+export class LayerFillExtrusion extends LayerBenchmark {
     constructor() {
         super();
 
@@ -99,7 +105,7 @@ class LayerFillExtrusion extends LayerBenchmark {
     }
 }
 
-class LayerHeatmap extends LayerBenchmark {
+export class LayerHeatmap extends LayerBenchmark {
     setup() {
         return fetch('/bench/data/naturalearth-land.json')
             .then(response => response.json())
@@ -108,7 +114,7 @@ class LayerHeatmap extends LayerBenchmark {
                     sources: {
                         'heatmap': {
                             'type': 'geojson',
-                            'data': data,
+                            data,
                             'maxzoom': 23
                         }
                     },
@@ -141,7 +147,7 @@ class LayerHeatmap extends LayerBenchmark {
     }
 }
 
-class LayerHillshade extends LayerBenchmark {
+export class LayerHillshade extends LayerBenchmark {
     constructor() {
         super();
 
@@ -161,7 +167,7 @@ class LayerHillshade extends LayerBenchmark {
     }
 }
 
-class LayerLine extends LayerBenchmark {
+export class LayerLine extends LayerBenchmark {
     constructor() {
         super();
 
@@ -176,7 +182,7 @@ class LayerLine extends LayerBenchmark {
     }
 }
 
-class LayerRaster extends LayerBenchmark {
+export class LayerRaster extends LayerBenchmark {
     constructor() {
         super();
 
@@ -197,7 +203,7 @@ class LayerRaster extends LayerBenchmark {
     }
 }
 
-class LayerSymbol extends LayerBenchmark {
+export class LayerSymbol extends LayerBenchmark {
     constructor() {
         super();
 
@@ -216,15 +222,78 @@ class LayerSymbol extends LayerBenchmark {
     }
 }
 
+export class LayerSymbolWithIcons extends LayerBenchmark {
+    constructor() {
+        super();
 
-export default [
-    LayerBackground,
-    LayerCircle,
-    LayerFill,
-    LayerFillExtrusion,
-    LayerHeatmap,
-    LayerHillshade,
-    LayerLine,
-    LayerRaster,
-    LayerSymbol
-];
+        this.layerStyle = Object.assign({}, style, {
+            layers: generateLayers({
+                'id': 'symbollayer',
+                'type': 'symbol',
+                'source': 'composite',
+                'source-layer': 'poi_label',
+                'layout': {
+                    'icon-image': 'dot-11',
+                    'text-field': ['format', ['get', 'name_en'], ['image', 'dot-11']]
+                }
+            })
+        });
+    }
+}
+
+export class LayerSymbolWithSortKey extends LayerBenchmark {
+    constructor() {
+        super();
+
+        this.layerStyle = Object.assign({}, style, {
+            layers: this.generateSortKeyLayers()
+        });
+    }
+
+    generateSortKeyLayers() {
+        const generated = [];
+        for (let i = 0; i < layerCount; i++) {
+            generated.push({
+                'id': `symbollayer${i}`,
+                'type': 'symbol',
+                'source': 'composite',
+                'source-layer': 'poi_label',
+                'layout': {
+                    'symbol-sort-key': i,
+                    'text-field': '{name_en}'
+                }
+            });
+        }
+        return generated;
+    }
+}
+
+export class LayerTextWithVariableAnchor extends LayerBenchmark {
+    constructor() {
+        super();
+
+        this.layerStyle = Object.assign({}, style, {
+            layers: generateLayers({
+                'id': 'symbollayer',
+                'type': 'symbol',
+                'source': 'composite',
+                'source-layer': 'poi_label',
+                'layout': {
+                    'text-field': 'Test Test Test',
+                    'text-justify': 'auto',
+                    'text-variable-anchor': [
+                        'center',
+                        'top',
+                        'bottom',
+                        'left',
+                        'right',
+                        'top-left',
+                        'top-right',
+                        'bottom-left',
+                        'bottom-right'
+                    ]
+                }
+            })
+        });
+    }
+}

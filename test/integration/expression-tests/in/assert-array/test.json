@@ -1,0 +1,32 @@
+{
+  "expression": [
+    "boolean",
+    ["in", ["get", "i"], ["array", ["get", "arr"]]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"i": null, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 1, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 9, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": null, "arr": [9, 8, 7, null]}}],
+    [{}, {"properties": {"i": 1, "arr": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [
+      false,
+      false,
+      true,
+      true,
+      {"error":"Expected value to be of type array, but found null instead."}
+    ],
+    "serialized": [
+      "boolean",
+      ["in", ["get", "i"], ["array", ["get", "arr"]]]
+    ]
+  }
+}
