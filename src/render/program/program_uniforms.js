@@ -1,5 +1,6 @@
 // @flow
 
+import type {CircleDefinesType} from './circle_program';
 import {fillExtrusionUniforms, fillExtrusionPatternUniforms} from './fill_extrusion_program';
 import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms} from './fill_program';
 import {circleUniforms} from './circle_program';
@@ -15,6 +16,8 @@ import {backgroundUniforms, backgroundPatternUniforms} from './background_progra
 import {terrainRasterUniforms} from '../../terrain/terrain_raster_program';
 import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program';
 import {skyboxCaptureUniforms} from './skybox_capture_program';
+
+export type DynamicDefinesType = CircleDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,

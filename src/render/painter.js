@@ -676,10 +676,10 @@ class Painter {
 
     useProgram(name: string, programConfiguration: ?ProgramConfiguration, fixedDefines: ?DynamicDefinesType[]): Program<any> {
         this.cache = this.cache || {};
-        fixedDefines = fixedDefines || [];
+        const defines = (((fixedDefines || []): any): string[]);
 
         const globalDefines = this.currentGlobalDefines();
-        const allDefines = globalDefines.concat((fixedDefines: string[]));
+        const allDefines = globalDefines.concat(defines);
         const key = Program.cacheKey(name, allDefines, programConfiguration);
 
         if (!this.cache[key]) {
