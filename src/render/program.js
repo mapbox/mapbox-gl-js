@@ -138,7 +138,7 @@ class Program<Us: UniformBindings> {
 
         this.fixedUniforms = fixedUniforms(context, uniformLocations);
         this.binderUniforms = configuration ? configuration.getUniforms(context, uniformLocations) : [];
-        if (fixedDefines.includes('TERRAIN')) { this.terrainUniforms = terrainUniforms(context, uniformLocations); }
+        if (fixedDefines.indexOf('TERRAIN') !== -1) { this.terrainUniforms = terrainUniforms(context, uniformLocations); }
     }
 
     setTerrainUniformValues(context: Context, terrainUnformValues: UniformValues<TerrainUniformsType>) {
