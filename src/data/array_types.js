@@ -1080,7 +1080,6 @@ export {
     StructArrayLayout2i4 as CircleLayoutArray,
     StructArrayLayout2i4 as FillLayoutArray,
     StructArrayLayout4i8 as FillExtrusionLayoutArray,
-    StructArrayLayout2i4 as FillExtrusionCentroidArray,
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub8 as LineLayoutArray,
     StructArrayLayout10ui20 as PatternLayoutArray,
@@ -1094,5 +1093,6 @@ export {
     StructArrayLayout3ui6 as TriangleIndexArray,
     StructArrayLayout2ui4 as LineIndexArray,
     StructArrayLayout1ui2 as LineStripIndexArray,
-    StructArrayLayout3f12 as SkyboxVertexArray
+    StructArrayLayout3f12 as SkyboxVertexArray,
+    StructArrayLayout2ui4 as FillExtrusionCentroidArray
 };
