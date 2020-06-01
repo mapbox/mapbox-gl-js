@@ -436,13 +436,7 @@ class Map extends Camera {
         if (typeof window !== 'undefined') {
             window.addEventListener('online', this._onWindowOnline, false);
             window.addEventListener('resize', this._onWindowResize, false);
-            if (typeof window.screen.orientation === 'object') {
-                // ensures browser supports latest ScreenOrientation API
-                window.screen.orientation.addEventListener('change', this._onWindowResize, false);
-            } else {
-                // If not then use deprecated 'orientationchange' event
-                window.addEventListener('orientationchange', this._onWindowResize, false);
-            }
+            window.addEventListener('orientationchange', this._onWindowResize, false);
         }
 
         this.handlers = new HandlerManager(this, options);
@@ -2565,11 +2559,7 @@ class Map extends Camera {
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
-            if (typeof window.screen.orientation === 'object') {
-                window.screen.orientation.removeEventListener('change', this._onWindowResize, false);
-            } else {
-                window.removeEventListener('orientationchange', this._onWindowResize, false);
-            }
+            window.removeEventListener('orientationchange', this._onWindowResize, false);
             window.removeEventListener('online', this._onWindowOnline, false);
         }
 
