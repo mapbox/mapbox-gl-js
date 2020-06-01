@@ -436,6 +436,7 @@ class Map extends Camera {
         if (typeof window !== 'undefined') {
             window.addEventListener('online', this._onWindowOnline, false);
             window.addEventListener('resize', this._onWindowResize, false);
+            window.addEventListener('orientationchange', this._onWindowResize, false);
         }
 
         this.handlers = new HandlerManager(this, options);
@@ -2559,6 +2560,7 @@ class Map extends Camera {
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
+            window.removeEventListener('orientationchange', this._onWindowResize, false);
             window.removeEventListener('online', this._onWindowOnline, false);
         }
 
