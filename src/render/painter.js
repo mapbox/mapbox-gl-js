@@ -658,7 +658,7 @@ class Painter {
 
     /**
      * Returns #defines that would need to be injected into every Program
-     * based on the currest state of Painter.
+     * based on the current state of Painter.
      *
      * @returns {string[]}
      * @private
