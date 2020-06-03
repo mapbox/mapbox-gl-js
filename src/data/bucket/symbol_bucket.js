@@ -609,6 +609,7 @@ class SymbolBucket implements Bucket {
                lineOffset: [number, number],
                alongLine: boolean,
                feature: SymbolFeature,
+               layer: SymbolStyleLayer,
                writingMode: any,
                labelAnchor: Anchor,
                lineStartIndex: number,
@@ -618,7 +619,12 @@ class SymbolBucket implements Bucket {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
-        const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, indexArray, feature.sortKey);
+        const canOverlap = layer.layout.get('icon-ignore-placement') ||
+            layer.layout.get('icon-allow-overlap') ||
+            layer.layout.get('text-ignore-placement') ||
+            layer.layout.get('text-allow-overlap');
+
+        const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, indexArray, canOverlap ? feature.sortKey : undefined);
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
         const vertexStartIndex = segment.vertexLength;
 
