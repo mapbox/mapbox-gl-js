@@ -128,12 +128,14 @@ class HandlerManager {
         const el = this._el;
 
         this._listeners = [
-            // Bind touchstart and touchmove with passive: false because, even though
-            // they only fire a map events and therefore could theoretically be
-            // passive, binding with passive: true causes iOS not to respect
-            // e.preventDefault() in _other_ handlers, even if they are non-passive
-            // (see https://bugs.webkit.org/show_bug.cgi?id=184251)
-            [el, 'touchstart', {passive: false}],
+            // This needs to be `passive: true` so that a double tap fires two
+            // pairs of touchstart/end events in iOS Safari 13. If this is set to
+            // `passive: false` then the second pair of events is only fired if
+            // preventDefault() is called on the first touchstart. Calling preventDefault()
+            // undesirably prevents click events.
+            [el, 'touchstart', {passive: true}],
+            // This needs to be `passive: false` so that scrolls and pinches can be
+            // prevented in browsers that don't support `touch-actions: none`, for example iOS Safari 12.
             [el, 'touchmove', {passive: false}],
             [el, 'touchend', undefined],
             [el, 'touchcancel', undefined],
