@@ -36,6 +36,11 @@ test('can be browserified', (t) => {
     });
 });
 
+test('evaluates without errors', (t) => {
+    t.doesNotThrow(() => require(path.join(__dirname, '../../dist/mapbox-gl.js')));
+    t.end();
+});
+
 test('distributed in plain ES5 code', (t) => {
     const linter = new Linter();
     const messages = linter.verify(minBundle, {
