@@ -1,7 +1,6 @@
 // @flow
 
 import {
-    Uniform1i,
     Uniform1f,
     Uniform2f,
     UniformMatrix4f
@@ -18,17 +17,15 @@ import browser from '../../util/browser';
 
 export type CircleUniformsType = {|
     'u_camera_to_center_distance': Uniform1f,
-    'u_scale_with_map': Uniform1i,
-    'u_pitch_with_map': Uniform1i,
     'u_extrude_scale': Uniform2f,
     'u_device_pixel_ratio': Uniform1f,
     'u_matrix': UniformMatrix4f
 |};
 
+export type CircleDefinesType = 'PITCH_WITH_MAP' | 'SCALE_WITH_MAP';
+
 const circleUniforms = (context: Context, locations: UniformLocations): CircleUniformsType => ({
     'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
-    'u_scale_with_map': new Uniform1i(context, locations.u_scale_with_map),
-    'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
     'u_extrude_scale': new Uniform2f(context, locations.u_extrude_scale),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix)
@@ -42,28 +39,32 @@ const circleUniformValues = (
 ): UniformValues<CircleUniformsType> => {
     const transform = painter.transform;
 
-    let pitchWithMap: boolean, extrudeScale: [number, number];
+    let extrudeScale: [number, number];
     if (layer.paint.get('circle-pitch-alignment') === 'map') {
         const pixelRatio = pixelsToTileUnits(tile, 1, transform.zoom);
-        pitchWithMap = true;
         extrudeScale = [pixelRatio, pixelRatio];
     } else {
-        pitchWithMap = false;
         extrudeScale = transform.pixelsToGLUnits;
     }
 
     return {
         'u_camera_to_center_distance': transform.cameraToCenterDistance,
-        'u_scale_with_map': +(layer.paint.get('circle-pitch-scale') === 'map'),
         'u_matrix': painter.translatePosMatrix(
             coord.posMatrix,
             tile,
             layer.paint.get('circle-translate'),
             layer.paint.get('circle-translate-anchor')),
-        'u_pitch_with_map': +(pitchWithMap),
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_extrude_scale': extrudeScale
     };
 };
 
-export {circleUniforms, circleUniformValues};
+const circleDefinesValues = (layer: CircleStyleLayer): CircleDefinesType[] => {
+    const values = [];
+    if (layer.paint.get('circle-pitch-alignment') === 'map') values.push('PITCH_WITH_MAP');
+    if (layer.paint.get('circle-pitch-scale') === 'map') values.push('SCALE_WITH_MAP');
+
+    return values;
+};
+
+export {circleUniforms, circleUniformValues, circleDefinesValues};
