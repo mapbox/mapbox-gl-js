@@ -65,8 +65,8 @@ let noTimeout = false;
  * Not all browsers support geolocation,
  * and some users may disable the feature. Geolocation support for modern
  * browsers including Chrome requires sites to be served over HTTPS. If
- * geolocation support is not available, the GeolocateControl will not
- * be visible.
+ * geolocation support is not available, the GeolocateControl will show
+ * as disabled.
  *
  * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
  *
@@ -154,6 +154,13 @@ class GeolocateControl extends Evented {
         noTimeout = false;
     }
 
+    /**
+     * Check if the Geolocation API Position is outside the map's maxbounds.
+     *
+     * @param {Position} position the Geolocation API Position
+     * @returns {boolean} Returns `true` if position is outside the map's maxbounds, otherwise returns `false`.
+     * @private
+     */
     _isOutOfMapMaxBounds(position: Position) {
         const bounds = this._map.getMaxBounds();
         const coordinates = position.coords;
@@ -194,6 +201,12 @@ class GeolocateControl extends Evented {
         }
     }
 
+    /**
+     * When the Geolocation API returns a new location, update the GeolocateControl.
+     *
+     * @param {Position} position the Geolocation API Position
+     * @private
+     */
     _onSuccess(position: Position) {
         if (!this._map) {
             // control has since been removed
@@ -256,6 +269,12 @@ class GeolocateControl extends Evented {
         this._finish();
     }
 
+    /**
+     * Update the camera location to center on the current position
+     *
+     * @param {Position} position the Geolocation API Position
+     * @private
+     */
     _updateCamera(position: Position) {
         const center = new LngLat(position.coords.longitude, position.coords.latitude);
         const radius = position.coords.accuracy;
@@ -267,6 +286,12 @@ class GeolocateControl extends Evented {
         });
     }
 
+    /**
+     * Update the user location dot Marker to the current position
+     *
+     * @param {Position} [position] the Geolocation API Position
+     * @private
+     */
     _updateMarker(position: ?Position) {
         if (position) {
             const center = new LngLat(position.coords.longitude, position.coords.latitude);
