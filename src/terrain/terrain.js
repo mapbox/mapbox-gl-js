@@ -220,6 +220,8 @@ export class Terrain extends Elevation {
             }
         };
 
+        // Ensure there's cache entry:
+        this._findCoveringTileCache[this.sourceCache.id] = this._findCoveringTileCache[this.sourceCache.id] || {};
         if (!this.sourceCache.usedForTerrain) {
             // When toggling terrain on/off load available terrain tiles from cache
             // before reading elevation at center.
@@ -230,8 +232,10 @@ export class Terrain extends Elevation {
         transform.updateElevation();
         updateSourceCache();
 
-        this._findCoveringTileCache = {};
-        this._findCoveringTileCache[sourceId] = {};
+        // Reset tile lookup caches and update draped tiles coordinates.
+        this._findCoveringTileCache = {[this.proxySourceCache.id]: {}, [this.sourceCache.id]: {}};
+        this.proxySourceCache.update(transform);
+
         this._depthDone = false;
     }
 
@@ -260,11 +264,8 @@ export class Terrain extends Elevation {
         if (!this.valid) return;
         this.terrainTileForTile = {};
         this.proxyToSource = {};
-        // Update draped tiles coordinates.
         const psc = this.proxySourceCache;
         const tr = this.painter.transform;
-        const sourceCaches = this.painter.style.sourceCaches;
-        psc.update(tr);
         // when zooming in, no need for handling partially loaded tiles to hide holes.
         const coords = this.proxyCoords = this.painter.options.zooming && tr.zoom > this._previousZoom ? psc.getVisibleCoordinates(false) :
             psc.getIds().map((id) => {
@@ -277,6 +278,7 @@ export class Terrain extends Elevation {
         coords.forEach((tileID) => {
             this.proxyToSource[tileID.key] = {};
         });
+        const sourceCaches = this.painter.style.sourceCaches;
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[id]);
@@ -616,12 +618,14 @@ export class Terrain extends Elevation {
     }
 
     _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>) {
+        this._findCoveringTileCache[sourceCache.id] = this._findCoveringTileCache[sourceCache.id] || {};
         const coords = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
         for (let i = 0; i < proxys.length; i++) {
             const proxyTileID = proxys[i];
             const proxied = this._findTileCoveringTileID(proxyTileID, sourceCache);
             if (proxied) {
+                assert(proxied.hasData());
                 const id = this._createProxiedId(proxyTileID, proxied);
                 coords.push(id);
                 this.proxyToSource[proxyTileID.key][sourceCache.id] = [id];
@@ -674,39 +678,40 @@ export class Terrain extends Elevation {
 
     // A variant of SourceCache.findLoadedParent that considers only visible
     // tiles (and doesn't check SourceCache._cache). Another difference is in
-    // caching: "not found" results along the lookup are cached, to speedup the lookup.
+    // caching "not found" results along the lookup, to leave the lookup early.
+    // Not found is cached by this._findCoveringTileCache[key] = null;
     _findTileCoveringTileID(tileID: OverscaledTileID, sourceCache: SourceCache): ?Tile {
         let tile = sourceCache.getTile(tileID);
         if (tile && tile.hasData()) return tile;
 
-        let lookup = this._findCoveringTileCache[sourceCache.id];
-        if (!lookup) {
-            lookup = this._findCoveringTileCache[sourceCache.id] = {};
-        }
-
+        const lookup = this._findCoveringTileCache[sourceCache.id];
         const key = lookup[tileID.key];
-        if (key !== undefined) return key ? sourceCache.getTileByID(key) : null;
+        tile = key ? sourceCache.getTileByID(key) : null;
+        if ((tile && tile.hasData()) || key === null) return tile;
 
-        let sourceTileID = tileID;
+        assert(!key || tile);
+        let sourceTileID = tile ? tile.tileID : tileID;
         let z = sourceTileID.overscaledZ;
-        const maxzoom = sourceCache.getSource().maxzoom;
         const minzoom = sourceCache.getSource().minzoom;
         const path = [];
-        if (tileID.canonical.z >= maxzoom) {
-            const downscale = tileID.canonical.z - maxzoom;
-            if (sourceCache.getSource().reparseOverscaled) {
-                z = Math.max(tileID.canonical.z + 2, sourceCache.transform.tileZoom);
-                sourceTileID = new OverscaledTileID(z, tileID.wrap, maxzoom,
-                    tileID.canonical.x >> downscale, tileID.canonical.y >> downscale);
-            } else if (downscale !== 0) {
-                z = maxzoom;
-                sourceTileID = new OverscaledTileID(z, tileID.wrap, maxzoom,
-                    tileID.canonical.x >> downscale, tileID.canonical.y >> downscale);
+        if (!key) {
+            const maxzoom = sourceCache.getSource().maxzoom;
+            if (tileID.canonical.z >= maxzoom) {
+                const downscale = tileID.canonical.z - maxzoom;
+                if (sourceCache.getSource().reparseOverscaled) {
+                    z = Math.max(tileID.canonical.z + 2, sourceCache.transform.tileZoom);
+                    sourceTileID = new OverscaledTileID(z, tileID.wrap, maxzoom,
+                        tileID.canonical.x >> downscale, tileID.canonical.y >> downscale);
+                } else if (downscale !== 0) {
+                    z = maxzoom;
+                    sourceTileID = new OverscaledTileID(z, tileID.wrap, maxzoom,
+                        tileID.canonical.x >> downscale, tileID.canonical.y >> downscale);
+                }
             }
-        }
-        if (sourceTileID.key !== tileID.key) {
-            path.push(sourceTileID.key);
-            tile = sourceCache.getTile(sourceTileID);
+            if (sourceTileID.key !== tileID.key) {
+                path.push(sourceTileID.key);
+                tile = sourceCache.getTile(sourceTileID);
+            }
         }
 
         const pathToLookup = (key) => {
@@ -726,6 +731,7 @@ export class Terrain extends Elevation {
                 break; // There's no tile loaded and no point searching further.
             } else if (key !== undefined) {
                 tile = sourceCache.getTileByID(key);
+                assert(tile);
                 continue;
             }
             path.push(id);
