@@ -53,6 +53,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const program = painter.useProgram('heatmap', programConfiguration);
             const {zoom} = painter.transform;
+            if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
                 heatmapUniformValues(coord.posMatrix,
