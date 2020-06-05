@@ -207,18 +207,16 @@ export class Terrain extends Elevation {
         this._exaggeration = style.terrain.properties.get('exaggeration');
         const demTileSize = this.sourceCache.getSource().tileSize;
         this.valid = true;
-        const tr = transform;
 
         const updateSourceCache = () => {
             if (this.sourceCache.used) {
                 // Use higher resolution for terrain, the same one that is used for hillshade.
-                this.sourceCache.update(tr, true);
+                this.sourceCache.update(transform, true);
             } else {
                 // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
-                const originalZoom = tr.zoom;
+                const tr = transform.clone();
                 tr.zoom -= tr.scaleZoom(demTileSize / GRID_DIM);
                 this.sourceCache.update(tr, true);
-                tr.zoom = originalZoom;
             }
         };
 
@@ -229,7 +227,7 @@ export class Terrain extends Elevation {
             updateSourceCache();
         }
 
-        tr.updateElevation();
+        transform.updateElevation();
         updateSourceCache();
 
         this._findCoveringTileCache = {};

@@ -104,7 +104,7 @@ class Transform {
         clone.width = this.width;
         clone.height = this.height;
         clone._center = this._center;
-        clone.zoom = this.zoom;
+        clone._setZoom(this.zoom);
         clone.angle = this.angle;
         clone._fov = this._fov;
         clone._pitch = this._pitch;
@@ -223,12 +223,15 @@ class Transform {
         const z = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
         if (this._zoom === z) return;
         this._unmodified = false;
+        this._setZoom(z);
+        this._constrain();
+        this._calcMatrices();
+    }
+    _setZoom(z: number) {
         this._zoom = z;
         this.scale = this.zoomScale(z);
         this.tileZoom = Math.floor(z);
         this.zoomFraction = z - this.tileZoom;
-        this._constrain();
-        this._calcMatrices();
     }
 
     get center(): LngLat { return this._center; }
