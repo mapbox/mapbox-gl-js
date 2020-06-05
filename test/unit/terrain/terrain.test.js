@@ -161,6 +161,60 @@ test('Elevation', (t) => {
             });
         });
     });
+
+    t.test('mapbox-gl-js-internal#32', t => {
+        const map = createMap(t, {
+            style: {
+                version: 8,
+                center: [85, 85],
+                zoom: 2.1,
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    },
+                    'mapbox-dem': {
+                        type: "raster-dem",
+                        tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                        tileSize: 512,
+                        maxzoom: 14
+                    }
+                },
+                layers: [{
+                    id: 'layerId1',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                }]
+            }
+        });
+
+        map.on('style.load', () => {
+            const cache = map.style.sourceCaches['mapbox-dem'];
+            cache._loadTile = (tile, callback) => {
+                const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
+                tile.state = 'loaded';
+                callback(null);
+            };
+            cache.used = cache._sourceLoaded = true;
+            const tr = map.painter.transform.clone();
+            map.setTerrain({"source": "mapbox-dem"});
+            map.painter.updateTerrain(map.style);
+            map.once('render', () => {
+                t.test('center is not further constrained', t => {
+                    t.deepEqual(tr.center, map.painter.transform.center);
+                    t.end();
+                });
+                t.end();
+            });
+        });
+    });
+
     t.end();
 });
 

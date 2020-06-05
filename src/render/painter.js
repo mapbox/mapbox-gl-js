@@ -151,7 +151,7 @@ class Painter {
     }
 
     updateTerrain(style: Style) {
-        const enabled = style.terrain && style.terrain.properties.get('source');
+        const enabled = style.terrain && style.terrain.properties && style.terrain.properties.get('source');
         if (!enabled) {
             this.transform.elevation = null;
             if (this._terrain) {
