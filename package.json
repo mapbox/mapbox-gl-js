@@ -163,11 +163,7 @@
     "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js"
   },
   "files": [
-    "build/",
-    "dist/mapbox-gl*",
-    "dist/style-spec/",
-    "flow-typed/*.js",
-    "src/",
-    ".flowconfig"
+    "dist/",
+    "src/"
   ]
 }
