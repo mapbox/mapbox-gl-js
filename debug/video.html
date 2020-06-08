@@ -15,6 +15,9 @@
 <body>
 <div id='map'></div>
 <div class='button pin-topleft z100' onclick='togglePlayback()'>Play/pause</div>
+<div class = 'pin-topright'>
+    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+</div>
 <div class='pin-bottom pad1 z100 col12 bg-white' style='background:white'>
     <input class="timeslider col12 fr" type="range" value="0" min="0" max="45" step="0.1" id="timeslider">
 </div>
@@ -39,6 +42,12 @@ var videoStyle = {
                 [-122.51309394836426, 37.563391708549425],
                 [-122.51423120498657, 37.56161849366671]
             ]
+        },
+        'mapbox-dem': {
+            "type": "raster-dem",
+            "url": "mapbox://mapbox.terrain-rgb",
+            "tileSize": 512,
+            "maxzoom": 14
         }
     },
     "layers": [{
@@ -66,6 +75,10 @@ var map = new mapboxgl.Map({
     style: videoStyle,
     hash: false
 });
+
+document.getElementById('terrain-checkbox').onclick = function() {
+    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
+};
 
 document.getElementById('timeslider')
     .addEventListener('change', function() {
