@@ -18,6 +18,7 @@ import {mat4} from 'gl-matrix';
 import getWorkerPool from '../util/global_worker_pool';
 import Dispatcher from '../util/dispatcher';
 import GeoJSONSource from '../source/geojson_source';
+import ImageSource from '../source/image_source';
 import Color from '../style-spec/util/color';
 import StencilMode from '../gl/stencil_mode';
 import {DepthStencilAttachment} from '../gl/value';
@@ -28,7 +29,7 @@ import ColorMode from '../gl/color_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {clippingMaskUniformValues} from '../render/program/clipping_mask_program';
-import {mercatorZfromAltitude} from '../geo/mercator_coordinate';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 
 import type Map from '../ui/map';
 import type Painter from '../render/painter';
@@ -281,6 +282,7 @@ export class Terrain extends Elevation {
         const sourceCaches = this.painter.style.sourceCaches;
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
+            if (!sourceCache.getSource().loaded()) continue;
             this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[id]);
             if (sourceCache.usedForTerrain) continue;
             const coordinates = sourcesCoords[id];
@@ -618,6 +620,9 @@ export class Terrain extends Elevation {
     }
 
     _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>) {
+        if (sourceCache.getSource() instanceof ImageSource) {
+            return this._setupProxiedCoordsForImageSource(sourceCache, sourceCoords);
+        }
         this._findCoveringTileCache[sourceCache.id] = this._findCoveringTileCache[sourceCache.id] || {};
         const coords = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
@@ -654,20 +659,67 @@ export class Terrain extends Elevation {
         this._sourceTilesOverlap[sourceCache.id] = hasOverlap;
     }
 
+    _setupProxiedCoordsForImageSource(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>) {
+        const coords = this.proxiedCoords[sourceCache.id] = [];
+        const proxys = this.proxyCoords;
+        const imageSource: ImageSource = ((sourceCache.getSource(): any): ImageSource);
+
+        const anchor = new Point(imageSource.tileID.x, imageSource.tileID.y)._div(1 << imageSource.tileID.z);
+        const aabb = imageSource.coordinates.map(MercatorCoordinate.fromLngLat).reduce((acc, coord) => {
+            acc.min.x = Math.min(acc.min.x, coord.x - anchor.x);
+            acc.min.y = Math.min(acc.min.y, coord.y - anchor.y);
+            acc.max.x = Math.max(acc.max.x, coord.x - anchor.x);
+            acc.max.y = Math.max(acc.max.y, coord.y - anchor.y);
+            return acc;
+        }, {min: new Point(Number.MAX_VALUE, Number.MAX_VALUE), max: new Point(-Number.MAX_VALUE, -Number.MAX_VALUE)});
+
+        // Fast conservative check using aabb: content outside proxy tile gets clipped out by on render, anyway.
+        const tileOutsideImage = (tileID, imageTileID) => {
+            const x = tileID.wrap + tileID.canonical.x / (1 << tileID.canonical.z);
+            const y = tileID.canonical.y / (1 << tileID.canonical.z);
+            const d = EXTENT / (1 << tileID.canonical.z);
+
+            const ix = imageTileID.wrap + imageTileID.canonical.x / (1 << imageTileID.canonical.z);
+            const iy = imageTileID.canonical.y / (1 << imageTileID.canonical.z);
+
+            return x + d < ix + aabb.min.x || x > ix + aabb.max.x || y + d < iy + aabb.min.y || y > iy + aabb.max.y;
+        };
+
+        for (let i = 0; i < proxys.length; i++) {
+            const proxyTileID = proxys[i];
+            for (let j = 0; j < sourceCoords.length; j++) {
+                const tile = sourceCache.getTile(sourceCoords[j]);
+                if (!tile || !tile.hasData()) continue;
+
+                // Setup proxied -> proxy mapping only if image on given tile wrap intersects the proxy tile.
+                if (tileOutsideImage(proxyTileID, tile.tileID)) continue;
+
+                const id = this._createProxiedId(proxyTileID, tile);
+                const array = this.proxyToSource[proxyTileID.key][sourceCache.id];
+                if (!array) {
+                    this.proxyToSource[proxyTileID.key][sourceCache.id] = [id];
+                } else {
+                    array.push(id);
+                }
+                coords.push(id);
+            }
+        }
+    }
+
     _createProxiedId(proxyTileID: OverscaledTileID, tile: Tile): ProxiedTileID {
         let matrix = this.orthoMatrix;
-        if (tile.tileID.canonical.key !== proxyTileID.canonical.key) {
+        if (tile.tileID.key !== proxyTileID.key) {
             const scale = proxyTileID.canonical.z - tile.tileID.canonical.z;
-            assert(scale !== 0);
             matrix = mat4.create();
             let size, xOffset, yOffset;
+            const wrap = (tile.tileID.wrap - proxyTileID.wrap) << proxyTileID.overscaledZ;
             if (scale > 0) {
                 size = EXTENT >> scale;
-                xOffset = size * ((tile.tileID.canonical.x << scale) - proxyTileID.canonical.x);
+                xOffset = size * ((tile.tileID.canonical.x << scale) - proxyTileID.canonical.x + wrap);
                 yOffset = size * ((tile.tileID.canonical.y << scale) - proxyTileID.canonical.y);
             } else {
                 size = EXTENT << -scale;
-                xOffset = EXTENT * (tile.tileID.canonical.x - (proxyTileID.canonical.x << -scale));
+                xOffset = EXTENT * (tile.tileID.canonical.x - ((proxyTileID.canonical.x + wrap) << -scale));
                 yOffset = EXTENT * (tile.tileID.canonical.y - (proxyTileID.canonical.y << -scale));
             }
             mat4.ortho(matrix, 0, size, 0, size, 0, 1);
