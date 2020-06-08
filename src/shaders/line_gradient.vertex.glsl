@@ -8,21 +8,19 @@
 
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
-attribute float a_line_progress;
-attribute float a_line_clip;
+attribute float a_uv_x;
 attribute float a_split_index;
 
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
 uniform lowp float u_device_pixel_ratio;
 uniform vec2 u_units_to_pixels;
+uniform float u_image_height;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_gamma_scale;
-varying highp float v_lineprogress;
-varying highp float v_line_clip;
-varying highp float v_split_index;
+varying highp vec2 v_uv;
 
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
@@ -44,9 +42,9 @@ void main() {
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
 
-    v_lineprogress = a_line_progress;
-    v_line_clip = a_line_clip;
-    v_split_index = a_split_index;
+    highp float texel_height = 1.0 / u_image_height;
+    highp float half_texel_height = 0.5 * texel_height;
+    v_uv = vec2(a_uv_x, a_split_index * texel_height - half_texel_height);
 
     vec2 pos = floor(a_pos_normal * 0.5);
 

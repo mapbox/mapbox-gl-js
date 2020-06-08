@@ -529,8 +529,9 @@ class LineBucket implements Bucket {
     }
 
     addHalfVertex({x, y}: Point, extrudeX: number, extrudeY: number, round: boolean, up: boolean, dir: number, segment: Segment) {
+        const totalDistance = this.lineClips ? this.scaledDistance * (MAX_LINE_DISTANCE - 1) : this.scaledDistance;
         // scale down so that we can store longer distances while sacrificing precision.
-        const linesofarScaled = (this.totalDistance > 0 ? this.scaledDistance * (MAX_LINE_DISTANCE - 1) : this.scaledDistance) * LINE_DISTANCE_SCALE;
+        const linesofarScaled = totalDistance * LINE_DISTANCE_SCALE;
 
         this.layoutVertexArray.emplaceBack(
             // a_pos_normal
@@ -550,10 +551,10 @@ class LineBucket implements Bucket {
 
         // Constructs a second vertex buffer with higher precision line progress
         if (this.lineClips) {
-            this.layoutVertexArray2.emplaceBack(
-                this.scaledDistance - this.lineClips.start,
-                this.lineClips.end - this.lineClips.start,
-                this.lineClipsArray.length);
+            const progressRealigned = this.scaledDistance - this.lineClips.start;
+            const endClipRealigned = this.lineClips.end - this.lineClips.start;
+            const uvX = progressRealigned / endClipRealigned;
+            this.layoutVertexArray2.emplaceBack(uvX, this.lineClipsArray.length);
         }
 
         const e = segment.vertexLength++;
