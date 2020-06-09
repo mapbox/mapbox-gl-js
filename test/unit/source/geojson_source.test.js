@@ -176,6 +176,7 @@ test('GeoJSONSource#update', (t) => {
                 t.equal(message, 'geojson.loadData');
                 t.deepEqual(params.superclusterOptions, {
                     maxZoom: 12,
+                    minPoints: 3,
                     extent: 8192,
                     radius: 1600,
                     log: false,
@@ -190,6 +191,7 @@ test('GeoJSONSource#update', (t) => {
             cluster: true,
             clusterMaxZoom: 12,
             clusterRadius: 100,
+            clusterMinPoints: 3,
             generateId: true
         }, mockDispatcher).load();
     });
