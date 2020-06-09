@@ -115,9 +115,8 @@ class Program<Us: UniformBindings> {
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);
 
-        const uniformsArray = Array.from(allUniformsInfo);
-        for (let it = 0; it < uniformsArray.length; it++) {
-            const uniform = uniformsArray[it];
+        for (let it = 0; it < allUniformsInfo.length; it++) {
+            const uniform = allUniformsInfo[it];
             if (uniform && !uniformLocations[uniform]) {
                 const uniformLocation = gl.getUniformLocation(this.program, uniform);
                 if (uniformLocation) {

@@ -10,14 +10,9 @@ import type Point from '@mapbox/point-geometry';
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
 // contain cordinates within [-Infinity, Infinity]. Our range is limited by the
 // number of bits used to represent the coordinate.
-function createBounds(bits) {
-    return {
-        min: -1 * Math.pow(2, bits - 1),
-        max: Math.pow(2, bits - 1) - 1
-    };
-}
-
-const bounds = createBounds(15);
+const BITS = 15;
+const MAX = Math.pow(2, BITS - 1) - 1;
+const MIN = -MAX - 1;
 
 /**
  * Loads a geometry from a VectorTileFeature and scales it to the common extent
@@ -34,13 +29,16 @@ export default function loadGeometry(feature: VectorTileFeature): Array<Array<Po
             const point = ring[p];
             // round here because mapbox-gl-native uses integers to represent
             // points and we need to do the same to avoid renering differences.
-            point.x = Math.round(point.x * scale);
-            point.y = Math.round(point.y * scale);
+            const x = Math.round(point.x * scale);
+            const y = Math.round(point.y * scale);
 
-            if (point.x < bounds.min || point.x > bounds.max || point.y < bounds.min || point.y > bounds.max) {
+            point.x = clamp(x, MIN, MAX);
+            point.y = clamp(y, MIN, MAX);
+
+            if (x < point.x || x > point.x + 1 || y < point.y || y > point.y + 1) {
+                // warn when exceeding allowed extent except for the 1-px-off case
+                // https://github.com/mapbox/mapbox-gl-js/issues/8992
                 warnOnce('Geometry exceeds allowed extent, reduce your vector tile buffer size');
-                point.x = clamp(point.x, bounds.min, bounds.max);
-                point.y = clamp(point.y, bounds.min, bounds.max);
             }
         }
     }

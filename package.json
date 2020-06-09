@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "1.11.0-dev",
+  "version": "1.12.0-dev",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",
@@ -33,7 +33,7 @@
     "potpack": "^1.0.1",
     "quickselect": "^2.0.0",
     "rw": "^1.3.3",
-    "supercluster": "^7.0.0",
+    "supercluster": "^7.1.0",
     "tinyqueue": "^2.0.3",
     "vt-pbf": "^3.1.1"
   },
