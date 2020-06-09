@@ -32,7 +32,8 @@ export type LineGradientUniformsType = {|
     'u_ratio': Uniform1f,
     'u_device_pixel_ratio': Uniform1f,
     'u_units_to_pixels': Uniform2f,
-    'u_image': Uniform1i
+    'u_image': Uniform1i,
+    'u_image_height': Uniform1f,
 |};
 
 export type LinePatternUniformsType = {|
@@ -72,7 +73,8 @@ const lineGradientUniforms = (context: Context, locations: UniformLocations): Li
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
     'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
-    'u_image': new Uniform1i(context, locations.u_image)
+    'u_image': new Uniform1i(context, locations.u_image),
+    'u_image_height': new Uniform1f(context, locations.u_image_height),
 });
 
 const linePatternUniforms = (context: Context, locations: UniformLocations): LinePatternUniformsType => ({
@@ -121,10 +123,12 @@ const lineUniformValues = (
 const lineGradientUniformValues = (
     painter: Painter,
     tile: Tile,
-    layer: LineStyleLayer
+    layer: LineStyleLayer,
+    imageHeight: number
 ): UniformValues<LineGradientUniformsType> => {
     return extend(lineUniformValues(painter, tile, layer), {
-        'u_image': 0
+        'u_image': 0,
+        'u_image_height': imageHeight,
     });
 };
 

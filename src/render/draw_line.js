@@ -15,6 +15,9 @@ import type SourceCache from '../source/source_cache';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
+import {clamp, nextPowerOfTwo} from '../util/util';
+import {renderColorRamp} from '../util/color_ramp';
+import EXTENT from '../data/extent';
 
 export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
@@ -43,15 +46,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     let firstTile = true;
 
-    if (gradient) {
-        context.activeTexture.set(gl.TEXTURE0);
-
-        let gradientTexture = layer.gradientTexture;
-        if (!layer.gradient) return;
-        if (!gradientTexture) gradientTexture = layer.gradientTexture = new Texture(context, layer.gradient, gl.RGBA);
-        gradientTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-    }
-
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
 
@@ -75,7 +69,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const uniformValues = image ? linePatternUniformValues(painter, tile, layer, crossfade) :
             dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray, crossfade) :
-            gradient ? lineGradientUniformValues(painter, tile, layer) :
+            gradient ? lineGradientUniformValues(painter, tile, layer, bucket.lineClipsArray.length) :
             lineUniformValues(painter, tile, layer);
 
         if (image) {
@@ -85,12 +79,44 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         } else if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
             context.activeTexture.set(gl.TEXTURE0);
             painter.lineAtlas.bind(context);
+        } else if (gradient) {
+            let gradientTexture = bucket.gradientTexture;
+            if (!gradientTexture || (gradientTexture && layer.gradientVersion !== bucket.gradientVersion)) {
+                let textureResolution = 256;
+                if (layer.stepInterpolant) {
+                    const sourceMaxZoom = sourceCache.getSource().maxzoom;
+                    const potentialOverzoom = coord.canonical.z === sourceMaxZoom ?
+                        Math.ceil(1 << (painter.transform.maxZoom - coord.canonical.z)) : 1;
+                    const lineLength = bucket.maxLineLength / EXTENT;
+                    // Logical pixel tile size is 512px, and 1024px right before current zoom + 1
+                    const maxTilePixelSize = 1024;
+                    // Maximum possible texture coverage heuristic, bound by hardware max texture size
+                    const maxTextureCoverage = lineLength * maxTilePixelSize * potentialOverzoom;
+                    textureResolution = clamp(nextPowerOfTwo(maxTextureCoverage), 256, context.maxTextureSize);
+                }
+                bucket.gradient = renderColorRamp({
+                    expression: layer.gradientExpression(),
+                    evaluationKey: 'lineProgress',
+                    resolution: textureResolution,
+                    image: bucket.gradient || undefined,
+                    clips: bucket.lineClipsArray
+                });
+                if (bucket.gradientTexture) {
+                    bucket.gradientTexture.update(bucket.gradient);
+                } else {
+                    bucket.gradientTexture = new Texture(context, bucket.gradient, gl.RGBA);
+                }
+                bucket.gradientVersion = layer.gradientVersion;
+                gradientTexture = bucket.gradientTexture;
+            }
+            context.activeTexture.set(gl.TEXTURE0);
+            gradientTexture.bind(layer.stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
 
         program.draw(context, gl.TRIANGLES, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-            layer.paint, painter.transform.zoom, programConfiguration);
+            layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
 
         firstTile = false;
         // once refactored so that bound texture state is managed, we'll also be able to remove this firstTile/programChanged logic

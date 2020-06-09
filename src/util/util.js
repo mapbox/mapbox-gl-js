@@ -7,6 +7,9 @@ import window from './window';
 
 import type {Callback} from '../types/callback';
 
+// Number.MAX_SAFE_INTEGER not available in IE
+export const MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+
 /**
  * @module util
  * @private
@@ -207,6 +210,23 @@ export function uuid(): string {
             ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
     }
     return b();
+}
+
+/**
+ * Return whether a given value is a power of two
+ * @private
+ */
+export function isPowerOfTwo(value: number): boolean {
+    return (Math.log(value) / Math.LN2) % 1 === 0;
+}
+
+/**
+ * Return the next power of two, or the input value if already a power of two
+ * @private
+ */
+export function nextPowerOfTwo(value: number): number {
+    if (value <= 1) return 1;
+    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 }
 
 /**

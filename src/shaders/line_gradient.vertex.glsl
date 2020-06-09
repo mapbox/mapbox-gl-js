@@ -1,7 +1,3 @@
-
-// the attribute conveying progress along a line is scaled to [0, 2^15)
-#define MAX_LINE_DISTANCE 32767.0
-
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
 // stored in a byte (-128..127). we scale regular normals up to length 63, but
@@ -12,16 +8,19 @@
 
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
+attribute float a_uv_x;
+attribute float a_split_index;
 
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
 uniform lowp float u_device_pixel_ratio;
 uniform vec2 u_units_to_pixels;
+uniform float u_image_height;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_gamma_scale;
-varying highp float v_lineprogress;
+varying highp vec2 v_uv;
 
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
@@ -43,7 +42,9 @@ void main() {
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
 
-    v_lineprogress = (floor(a_data.z / 4.0) + a_data.w * 64.0) * 2.0 / MAX_LINE_DISTANCE;
+    highp float texel_height = 1.0 / u_image_height;
+    highp float half_texel_height = 0.5 * texel_height;
+    v_uv = vec2(a_uv_x, a_split_index * texel_height - half_texel_height);
 
     vec2 pos = floor(a_pos_normal * 0.5);
 
