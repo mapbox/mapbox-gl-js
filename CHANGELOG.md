@@ -1,3 +1,8 @@
+## 1.10.2
+
+### 🐞 Bug fixes
+* Fix zooming with a double tap in iOS Safari 13 ([#9757](https://github.com/mapbox/mapbox-gl-js/pull/9757))
+
 ## 1.10.1
 
 ### 🐞 Bug fixes
