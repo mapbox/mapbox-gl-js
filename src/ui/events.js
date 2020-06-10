@@ -23,16 +23,16 @@ import type LngLat from '../geo/lng_lat';
  */
 export class MapMouseEvent extends Event {
     /**
-     * The event type (one of [`mousedown`](#map.event:mousedown),
-     * [`mouseup`](#map.event:mouseup),
-     * [`click`](#map.event:click),
-     * [`dblclick`](#map.event:dblclick),
-     * [`mousemove`](#map.event:mousemove),
-     * [`mouseover`](#map.event:mouseover),
-     * [`mouseenter`](#map.event:mouseenter),
-     * [`mouseleave`](#map.event:mouseleave),
-     * [`mouseout`](#map.event:mouseout),
-     * [`contextmenu`](#map.event:contextmenu)).
+     * The event type (one of {@link Map.event:mousedown},
+     * {@link Map.event:mouseup},
+     * {@link Map.event:click},
+     * {@link Map.event:dblclick},
+     * {@link Map.event:mousemove},
+     * {@link Map.event:mouseover},
+     * {@link Map.event:mouseenter},
+     * {@link Map.event:mouseleave},
+     * {@link Map.event:mouseout},
+     * {@link Map.event:contextmenu}).
      */
     type: 'mousedown'
         | 'mouseup'
@@ -796,6 +796,7 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent | MapTouchEvent} data
+     * @example
      * // Initialize the map
      * var map = new mapboxgl.Map({ // map options });
      * // Set an event listener that fires

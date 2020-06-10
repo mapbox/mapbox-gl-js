@@ -227,7 +227,7 @@ const defaultOptions = {
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
- * @param {Object} [options.fitBoundsOptions] A [`fitBounds`](#map#fitbounds) options object to use _only_ when fitting the initial `bounds` provided above.
+ * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
  * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
  * container, there will be blank space beyond 180 and -180 degrees longitude.
@@ -437,6 +437,7 @@ class Map extends Camera {
         if (typeof window !== 'undefined') {
             window.addEventListener('online', this._onWindowOnline, false);
             window.addEventListener('resize', this._onWindowResize, false);
+            window.addEventListener('orientationchange', this._onWindowResize, false);
         }
 
         this.handlers = new HandlerManager(this, options);
@@ -1561,7 +1562,7 @@ class Map extends Camera {
      * [`background-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-background-background-pattern),
      * [`fill-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-fill-fill-pattern),
      * or [`line-pattern`](https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-line-line-pattern).
-     * A {@link Map#error} event will be fired if there is not enough space in the sprite to add this image.
+     * A {@link Map.event:error} event will be fired if there is not enough space in the sprite to add this image.
      *
      * @param id The ID of the image.
      * @param image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
@@ -1760,14 +1761,14 @@ class Map extends Camera {
      * A layer defines how data from a specified source will be styled. Read more about layer types
      * and available paint and layout properties in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers).
      *
-     * @param {Object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the [`CustomLayerInterface`](https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface) specification.
+     * @param {Object | CustomLayerInterface} layer The layer to add, conforming to either the Mapbox Style Specification's [layer definition](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers) or, less commonly, the {@link CustomLayerInterface} specification.
      * The Mapbox Style Specification's layer definition is appropriate for most layers.
      *
      * @param {string} layer.id A unique idenfier that you define.
      * @param {string} layer.type The type of layer (for example `fill` or `symbol`).
      * A list of layer types is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#type).
      *
-     * (This can also be `custom`. For more information, see [`CustomLayerInterface`](https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface).)
+     * (This can also be `custom`. For more information, see {@link CustomLayerInterface}.)
      * @param {string | Object} [layer.source] The data source for the layer.
      * Reference a source that has _already been defined_ using the source's unique id.
      * Reference a _new source_ using a source object (as defined in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/)) directly.
@@ -1797,9 +1798,11 @@ class Map extends Camera {
      * If no minzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
      * @param {Object} [layer.metadata] (optional) Arbitrary properties useful to track with the layer, but do not influence rendering.
      * @param {string} [layer.renderingMode] This is only applicable for layers with the type `custom`.
-     * See [`CustomLayerInterface`](https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface) for more information.
-     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
-     * If this argument is not specified, the layer will be appended to the end of the layers array.
+     * See {@link CustomLayerInterface} for more information.
+     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before,
+     * resulting in the new layer appearing visually beneath the existing layer.
+     * If this argument is not specified, the layer will be appended to the end of the layers array
+     * and appear visually above all other layers.
      *
      * @returns {Map} `this`
      *
@@ -2574,6 +2577,7 @@ class Map extends Camera {
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
+            window.removeEventListener('orientationchange', this._onWindowResize, false);
             window.removeEventListener('online', this._onWindowOnline, false);
         }
 

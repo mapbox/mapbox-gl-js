@@ -1,3 +1,8 @@
+## 13.15.0
+
+### ✨ Features and improvements
+* Add `distance` expression to `style-spec`. This expression returns the shortest distance between a feature and an input geometry ([#9655](https://github.com/mapbox/mapbox-gl-js/pull/9655))
+
 ## 13.14.0
 
 ### ✨ Features and improvements

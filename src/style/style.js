@@ -956,7 +956,7 @@ class Style extends Evented {
         }
 
         if (key && (typeof target.id !== 'string' && typeof target.id !== 'number')) {
-            this.fire(new ErrorEvent(new Error(`A feature id is requred to remove its specific state property.`)));
+            this.fire(new ErrorEvent(new Error(`A feature id is required to remove its specific state property.`)));
             return;
         }
 

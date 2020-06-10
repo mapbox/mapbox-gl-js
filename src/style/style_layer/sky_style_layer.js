@@ -3,7 +3,7 @@
 import StyleLayer from '../style_layer';
 import properties from './sky_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
-import renderColorRamp from '../../util/color_ramp';
+import {renderColorRamp} from '../../util/color_ramp';
 import type {PaintProps} from './sky_style_layer_properties';
 import type Texture from '../../render/texture';
 import type {LayerSpecification} from '../../style-spec/types';
@@ -41,7 +41,10 @@ class SkyLayer extends StyleLayer {
 
     _updateColorRamp() {
         const expression = this._transitionablePaint._values['sky-gradient'].value.expression;
-        this.colorRamp = renderColorRamp(expression, 'skyRadialProgress');
+        this.colorRamp = renderColorRamp({
+            expression,
+            evaluationKey: 'skyRadialProgress'
+        });
         if (this.colorRampTexture) {
             this.colorRampTexture.destroy();
             this.colorRampTexture = null;
