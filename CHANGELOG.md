@@ -1,12 +1,18 @@
-## 1.11.0-beta.1
+## 1.11.0
 
 ### ✨ Features and improvments
 * Add an option to scale the default `Marker` icon.([#9414](https://github.com/mapbox/mapbox-gl-js/pull/9414)) (h/t [adrianababakanian](https://github.com/adrianababakanian))
 * Improving the shader compilation speed by manually getting the run-time attributes and uniforms.([#9497](https://github.com/mapbox/mapbox-gl-js/pull/9497))
+* Added `clusterMinPoints` option for clustered GeoJSON sources that defines the minimum number of points to form a cluster.([#9748](https://github.com/mapbox/mapbox-gl-js/pull/9748))
 
 ### 🐞 Bug fixes
 * Fix a bug where map got stuck in a DragRotate interaction if it's mouseup occurred outside of the browser window or iframe.([#9512](https://github.com/mapbox/mapbox-gl-js/pull/9512))
 * Fix potential visual regression for `*-pattern` properties on AMD graphics card vendor.([#9681](https://github.com/mapbox/mapbox-gl-js/pull/9681))
+* Fix zooming with a double tap on iOS SafarI 13.([#9757](https://github.com/mapbox/mapbox-gl-js/pull/9757))
+* Removed a misleading `geometry exceeds allowed extent` warning when using Mapbox Streets vector tiles.([#9753](https://github.com/mapbox/mapbox-gl-js/pull/9753))
+* Fix reference error when requiring the browser bundle in Node. ([$9749](https://github.com/mapbox/mapbox-gl-js/pull/9749))
+
+
 
 ## 1.10.1
 
