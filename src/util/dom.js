@@ -20,7 +20,7 @@ DOM.createNS = function (namespaceURI: string, tagName: string) {
     return el;
 };
 
-const docStyle = window.document.documentElement.style;
+const docStyle = window.document && window.document.documentElement.style;
 
 function testProp(props) {
     if (!docStyle) return props[0];

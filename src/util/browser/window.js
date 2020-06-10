@@ -2,4 +2,5 @@
 /* eslint-env browser */
 import type {Window} from '../../types/window';
 
-export default (self: Window);
+// shim window for the case of requiring the browser bundle in Node
+export default typeof self !== 'undefined' ? (self: Window) : (({}: any): Window);
