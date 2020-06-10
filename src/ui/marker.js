@@ -213,12 +213,6 @@ export default class Marker extends Evented {
             // prevent focusing on click
             e.preventDefault();
         });
-        this._element.addEventListener('focus', () => {
-            // revert the default scrolling action of the container
-            const el = this._map.getContainer();
-            el.scrollTop = 0;
-            el.scrollLeft = 0;
-        });
         applyAnchorClass(this._element, this._anchor, 'marker');
 
         this._popup = null;

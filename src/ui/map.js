@@ -419,6 +419,7 @@ class Map extends Camera {
         bindAll([
             '_onWindowOnline',
             '_onWindowResize',
+            '_onMapScroll',
             '_contextLost',
             '_contextRestored'
         ], this);
@@ -2295,6 +2296,8 @@ class Map extends Camera {
         ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
             positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
         });
+
+        this._container.addEventListener('scroll', this._onMapScroll, false);
     }
 
     _resizeCanvas(width: number, height: number) {
@@ -2343,6 +2346,15 @@ class Map extends Camera {
         this.resize();
         this._update();
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
+    }
+
+    _onMapScroll(event: Event) {
+        if (event.target !== this._container) return;
+
+       // Revert any scroll which would move the canvas outside of the view
+        this._container.scrollTop = 0;
+        this._container.scrollLeft = 0;
+        return false;
     }
 
     /**
