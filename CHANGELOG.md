@@ -12,8 +12,6 @@
 * Removed a misleading `geometry exceeds allowed extent` warning when using Mapbox Streets vector tiles.([#9753](https://github.com/mapbox/mapbox-gl-js/pull/9753))
 * Fix reference error when requiring the browser bundle in Node. ([$9749](https://github.com/mapbox/mapbox-gl-js/pull/9749))
 
-
-
 ## 1.10.1
 
 ### 🐞 Bug fixes
