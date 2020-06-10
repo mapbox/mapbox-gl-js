@@ -2348,10 +2348,10 @@ class Map extends Camera {
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
 
-    _onMapScroll(event: Event) {
+    _onMapScroll(event: *) {
         if (event.target !== this._container) return;
 
-       // Revert any scroll which would move the canvas outside of the view
+        // Revert any scroll which would move the canvas outside of the view
         this._container.scrollTop = 0;
         this._container.scrollLeft = 0;
         return false;
