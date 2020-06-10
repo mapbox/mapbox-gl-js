@@ -8,7 +8,7 @@
 ### 🐞 Bug fixes
 * Fix a bug where map got stuck in a DragRotate interaction if it's mouseup occurred outside of the browser window or iframe.([#9512](https://github.com/mapbox/mapbox-gl-js/pull/9512))
 * Fix potential visual regression for `*-pattern` properties on AMD graphics card vendor.([#9681](https://github.com/mapbox/mapbox-gl-js/pull/9681))
-* Fix zooming with a double tap on iOS SafarI 13.([#9757](https://github.com/mapbox/mapbox-gl-js/pull/9757))
+* Fix zooming with a double tap on iOS Safari 13.([#9757](https://github.com/mapbox/mapbox-gl-js/pull/9757))
 * Removed a misleading `geometry exceeds allowed extent` warning when using Mapbox Streets vector tiles.([#9753](https://github.com/mapbox/mapbox-gl-js/pull/9753))
 * Fix reference error when requiring the browser bundle in Node. ([$9749](https://github.com/mapbox/mapbox-gl-js/pull/9749))
 
