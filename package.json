@@ -26,6 +26,7 @@
     "earcut": "^2.2.2",
     "geojson-vt": "^3.2.1",
     "gl-matrix": "^3.2.1",
+    "glsl-optimizer-emcc": "file:glsl-optimizer-emcc",
     "grid-index": "^1.1.0",
     "minimist": "^1.2.5",
     "murmurhash-js": "^1.0.0",

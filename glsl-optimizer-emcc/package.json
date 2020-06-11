@@ -1,0 +1,9 @@
+{
+  "name": "glsl-optimizer-emcc",
+  "version": "1.0.0",
+  "main": "dist/glsl-optimizer.js",
+  "unpkg": "dist/glsl-optimizer.js",
+  "files": [
+    "dist/glsl-optimizer.js"
+  ]
+}
