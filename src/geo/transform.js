@@ -425,8 +425,6 @@ class Transform {
      * @param {number} options.maxzoom
      * @param {boolean} options.roundZoom
      * @param {boolean} options.reparseOverscaled
-     * @param {boolean} options.renderWorldCopies
-     * @param {boolean} options.useElevationData
      * @returns {Array<OverscaledTileID>} OverscaledTileIDs
      * @private
      */
@@ -443,6 +441,8 @@ class Transform {
     ): Array<OverscaledTileID> {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;
+
+        const useElevationData = !!options.useElevationData;
 
         if (options.minzoom !== undefined && z < options.minzoom) return [];
         if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
@@ -518,8 +518,9 @@ class Transform {
         const distToSplitScale = (dzSqr, dSqr) => {
             // When the angle between camera to tile ray and tile plane is smaller
             // than acuteAngleThreshold, scale the distance to split. Scaling is adaptive: smaller
-            // the angle, the scale gets lower value.
-            const acuteAngleThresholdSin = 0.33; // Math.sin(19)
+            // the angle, the scale gets lower value. Although it seems early to start at 45,
+            // it is not: scaling kicks in around 60 degrees pitch.
+            const acuteAngleThresholdSin = 0.707; // Math.sin(45)
             const stretchTile = 1.1;
             // Distances longer than 'dz / acuteAngleThresholdSin' gets scaled
             // following geometric series sum: every next dz length in distance can be
@@ -566,14 +567,14 @@ class Transform {
             if (it.zoom === maxZoom) {
                 result.push({
                     tileID: it.tileID ? it.tileID : new OverscaledTileID(overscaledZ, it.wrap, it.zoom, x, y),
-                    distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x, centerPoint[1] - 0.5 - y])
+                    distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x - (it.wrap << z), centerPoint[1] - 0.5 - y])
                 });
                 continue;
             }
 
             const dx = it.aabb.distanceX(cameraPoint);
             const dy = it.aabb.distanceY(cameraPoint);
-            const dzSqr = options.useElevationData ? square(it.aabb.distanceZ(cameraPoint) * meterToTile) : cameraHeightSqr;
+            const dzSqr = useElevationData ? square(it.aabb.distanceZ(cameraPoint) * meterToTile) : cameraHeightSqr;
             const distanceSqr = dx * dx + dy * dy + dzSqr;
 
             const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance;
@@ -582,7 +583,7 @@ class Transform {
             if (distanceSqr > distToSplitSqr && it.zoom >= minZoom) {
                 result.push({
                     tileID: it.tileID ? it.tileID : new OverscaledTileID(it.zoom, it.wrap, it.zoom, x, y),
-                    distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x, centerPoint[1] - 0.5 - y])
+                    distanceSq: vec2.sqrLen([centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) << (z - it.zoom)), centerPoint[1] - 0.5 - y])
                 });
                 continue;
             }
@@ -593,7 +594,7 @@ class Transform {
 
                 const aabb = it.aabb.quadrant(i);
                 let tileID = null;
-                if (options.useElevationData && it.zoom > maxZoom - 6) {
+                if (useElevationData && it.zoom > maxZoom - 6) {
                     // Using elevation data for tiles helps clipping out tiles that are not visible and
                     // precise distance calculation. This is an optimization - tiles with it.zoom <= maxZoom - 6 are always
                     // considered slightly closer: aabb.distanceZ() there evaluates to 0 as min/max[3] = -/+ maxRange.
@@ -606,7 +607,7 @@ class Transform {
         const cover = result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
         // Relax the assertion on terrain, on high zoom we use distance to center of tile
         // while camera might be closer to selected center of map.
-        assert(!cover.length || options.useElevationData || cover[0].overscaledZ === overscaledZ);
+        assert(!cover.length || useElevationData || cover[0].overscaledZ === overscaledZ);
         return cover;
     }
 

@@ -219,11 +219,13 @@ export class Terrain extends Elevation {
                 tr.zoom -= tr.scaleZoom(demTileSize / GRID_DIM);
                 this.sourceCache.update(tr, true);
             }
+            // As a result of update, we get new set of tiles: reset lookup cache.
+            this._findCoveringTileCache[this.sourceCache.id] = {};
         };
 
-        // Ensure there's cache entry:
-        this._findCoveringTileCache[this.sourceCache.id] = this._findCoveringTileCache[this.sourceCache.id] || {};
         if (!this.sourceCache.usedForTerrain) {
+            // Init cache entry.
+            this._findCoveringTileCache[this.sourceCache.id] = {};
             // When toggling terrain on/off load available terrain tiles from cache
             // before reading elevation at center.
             this.sourceCache.usedForTerrain = true;
@@ -233,8 +235,8 @@ export class Terrain extends Elevation {
         transform.updateElevation();
         updateSourceCache();
 
-        // Reset tile lookup caches and update draped tiles coordinates.
-        this._findCoveringTileCache = {[this.proxySourceCache.id]: {}, [this.sourceCache.id]: {}};
+        // Reset tile lookup cache and update draped tiles coordinates.
+        this._findCoveringTileCache[this.proxySourceCache.id] = {};
         this.proxySourceCache.update(transform);
 
         this._depthDone = false;
@@ -283,6 +285,8 @@ export class Terrain extends Elevation {
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (!sourceCache.getSource().loaded()) continue;
+            if (!sourceCache.used) continue;
+            if (sourceCache !== this.sourceCache) this._findCoveringTileCache[sourceCache.id] = {};
             this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[id]);
             if (sourceCache.usedForTerrain) continue;
             const coordinates = sourcesCoords[id];
