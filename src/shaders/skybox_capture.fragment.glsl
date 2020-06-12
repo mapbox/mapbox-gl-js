@@ -19,11 +19,11 @@ precision highp float;
 // The following constants are from [1] Figure 6 and section 2.1
 #define BETA_M                  vec3(21e-6, 21e-6, 21e-6)
 #define MIE_G                   0.76
-#define DENSITY_HEIGHT_SCALE_R  8000.0 // km
-#define DENSITY_HEIGHT_SCALE_M  1200.0 // km
+#define DENSITY_HEIGHT_SCALE_R  8000.0 // m
+#define DENSITY_HEIGHT_SCALE_M  1200.0 // m
 // [1] and [2] section 2.1
-#define PLANET_RADIUS           6360e3 // km
-#define ATMOSPHERE_RADIUS       6420e3 // km
+#define PLANET_RADIUS           6360e3 // m
+#define ATMOSPHERE_RADIUS       6420e3 // m
 #define SAMPLE_STEPS            10
 #define DENSITY_STEPS           10
 
@@ -49,7 +49,11 @@ vec3 extinction(vec2 density) {
 
 vec2 local_density(vec3 point) {
     float height = max(length(point) - PLANET_RADIUS, 0.0);
-    return exp(-vec2(height / DENSITY_HEIGHT_SCALE_R, height / DENSITY_HEIGHT_SCALE_M));
+    // Explicitly split in two shader statements, exp(vec2)
+    // did not behave correctly on specific arm mali arch.
+    float exp_r = exp(-height / DENSITY_HEIGHT_SCALE_R);
+    float exp_m = exp(-height / DENSITY_HEIGHT_SCALE_M);
+    return vec2(exp_r, exp_m);
 }
 
 float phase_ray(float cos_angle) {
