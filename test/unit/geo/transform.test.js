@@ -211,7 +211,7 @@ test('transform', (t) => {
         transform.bearing = 0;
         transform.resize(300, 300);
         t.test('calculates tile coverage at w > 0', (t) => {
-            transform.center = {lng: 630.01, lat: 0.01};
+            transform.center = {lng: 630.02, lat: 0.01};
             t.deepEqual(transform.coveringTiles(options), [
                 new OverscaledTileID(2, 2, 2, 1, 1),
                 new OverscaledTileID(2, 2, 2, 1, 2),
@@ -222,11 +222,11 @@ test('transform', (t) => {
         });
 
         t.test('calculates tile coverage at w = -1', (t) => {
-            transform.center = {lng: -360.01, lat: 0.01};
+            transform.center = {lng: -360.01, lat: 0.02};
             t.deepEqual(transform.coveringTiles(options), [
                 new OverscaledTileID(2, -1, 2, 1, 1),
-                new OverscaledTileID(2, -1, 2, 1, 2),
                 new OverscaledTileID(2, -1, 2, 2, 1),
+                new OverscaledTileID(2, -1, 2, 1, 2),
                 new OverscaledTileID(2, -1, 2, 2, 2)
             ]);
             t.end();
@@ -234,12 +234,12 @@ test('transform', (t) => {
 
         t.test('calculates tile coverage across meridian', (t) => {
             transform.zoom = 1;
-            transform.center = {lng: -180.01, lat: 0.01};
+            transform.center = {lng: -180.01, lat: 0.02};
             t.deepEqual(transform.coveringTiles(options), [
-                new OverscaledTileID(1, 0, 1, 0, 0),
-                new OverscaledTileID(1, 0, 1, 0, 1),
                 new OverscaledTileID(1, -1, 1, 1, 0),
-                new OverscaledTileID(1, -1, 1, 1, 1)
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, -1, 1, 1, 1),
+                new OverscaledTileID(1, 0, 1, 0, 1)
             ]);
             t.end();
         });
@@ -370,7 +370,7 @@ test('transform', (t) => {
         transform.bearing = 0;
         transform.resize(300, 300);
         t.test('calculates tile coverage at w > 0', (t) => {
-            transform.center = {lng: 630.01, lat: 0.01};
+            transform.center = {lng: 630.02, lat: 0.01};
             t.deepEqual(transform.coveringTiles(options), [
                 new OverscaledTileID(2, 2, 2, 1, 1),
                 new OverscaledTileID(2, 2, 2, 1, 2),
@@ -381,11 +381,11 @@ test('transform', (t) => {
         });
 
         t.test('calculates tile coverage at w = -1', (t) => {
-            transform.center = {lng: -360.01, lat: 0.01};
+            transform.center = {lng: -360.01, lat: 0.02};
             t.deepEqual(transform.coveringTiles(options), [
                 new OverscaledTileID(2, -1, 2, 1, 1),
-                new OverscaledTileID(2, -1, 2, 1, 2),
                 new OverscaledTileID(2, -1, 2, 2, 1),
+                new OverscaledTileID(2, -1, 2, 1, 2),
                 new OverscaledTileID(2, -1, 2, 2, 2)
             ]);
             t.end();
@@ -393,16 +393,15 @@ test('transform', (t) => {
 
         t.test('calculates tile coverage across meridian', (t) => {
             transform.zoom = 1;
-            transform.center = {lng: -180.01, lat: 0.01};
+            transform.center = {lng: -180.01, lat: 0.02};
             t.deepEqual(transform.coveringTiles(options), [
-                new OverscaledTileID(1, 0, 1, 0, 0),
-                new OverscaledTileID(1, 0, 1, 0, 1),
                 new OverscaledTileID(1, -1, 1, 1, 0),
-                new OverscaledTileID(1, -1, 1, 1, 1)
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, -1, 1, 1, 1),
+                new OverscaledTileID(1, 0, 1, 0, 1)
             ]);
             t.end();
         });
-
         t.test('only includes tiles for a single world, if renderWorldCopies is set to false', (t) => {
             transform.zoom = 1;
             transform.center = {lng: -180.01, lat: 0.01};
@@ -411,6 +410,17 @@ test('transform', (t) => {
                 new OverscaledTileID(1, 0, 1, 0, 0),
                 new OverscaledTileID(1, 0, 1, 0, 1)
             ]);
+            t.end();
+        });
+        t.test('proper distance to center with wrap. Zoom drop at the end.', (t) => {
+            transform.resize(2000, 2000);
+            transform.zoom = 3.29;
+            transform.pitch = 57;
+            transform.bearing = 91.8;
+            transform.center = {lng: -134.66, lat: 20.52};
+            const cover = transform.coveringTiles(options);
+            t.assert(cover[0].overscaledZ === 3);
+            t.assert(cover[cover.length - 1].overscaledZ <= 2);
             t.end();
         });
 
