@@ -22,12 +22,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - check-size:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
       - collect-stats:
           requires:
             - build
@@ -157,6 +151,10 @@ jobs:
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
       - run: yarn run test-build
+      - run:
+          name: Check bundle size
+          command: |
+            node build/check-bundle-size.js
       - deploy:
           name: Trigger memory metrics when merging to master
           command: |
@@ -173,17 +171,6 @@ jobs:
           root: .
           paths:
             - dist
-
-  check-size:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Check bundle size
-          command: |
-            node build/check-bundle-size.js "dist/mapbox-gl.js" "JS"
-            node build/check-bundle-size.js "dist/mapbox-gl.css" "CSS"
 
   collect-stats:
     <<: *defaults
