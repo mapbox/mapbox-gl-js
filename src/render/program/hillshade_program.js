@@ -36,7 +36,6 @@ export type HillshadePrepareUniformsType = {|
     'u_image': Uniform1i,
     'u_dimension': Uniform2f,
     'u_zoom': Uniform1f,
-    'u_maxzoom': Uniform1f,
     'u_unpack': Uniform4f
 |};
 
@@ -55,7 +54,6 @@ const hillshadePrepareUniforms = (context: Context, locations: UniformLocations)
     'u_image': new Uniform1i(context, locations.u_image),
     'u_dimension': new Uniform2f(context, locations.u_dimension),
     'u_zoom': new Uniform1f(context, locations.u_zoom),
-    'u_maxzoom': new Uniform1f(context, locations.u_maxzoom),
     'u_unpack': new Uniform4f(context, locations.u_unpack)
 });
 
@@ -86,7 +84,7 @@ const hillshadeUniformValues = (
 };
 
 const hillshadeUniformPrepareValues = (
-    tileID: OverscaledTileID, dem: DEMData, maxzoom: number
+    tileID: OverscaledTileID, dem: DEMData
 ): UniformValues<HillshadePrepareUniformsType> => {
 
     const stride = dem.stride;
@@ -100,7 +98,6 @@ const hillshadeUniformPrepareValues = (
         'u_image': 1,
         'u_dimension': [stride, stride],
         'u_zoom': tileID.overscaledZ,
-        'u_maxzoom': maxzoom,
         'u_unpack': dem.getUnpackVector()
     };
 };
