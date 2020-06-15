@@ -43,9 +43,16 @@ const repo = 'mapbox-gl-js-internal';
 
     // compute sizes for merge base
     const pr = process.env['CIRCLE_PULL_REQUEST'];
-    const pull_number = +pr.match(/\/(\d+)\/?$/)[1];
-    const pull = await github.pulls.get({owner, repo, pull_number});
-    execSync(`git checkout ${pull.data.base.sha}`);
+    const base = 'master';
+    // If the commit is created before the PR is opened, CIRCLE_PULL_REQUEST will be null.
+    // Since the job's don't re-run when the PR is opened, it would show a failed check if we didnt account for pr being null.
+    if (pr) {
+        const pull_number = +pr.match(/\/(\d+)\/?$/)[1];
+        const pull = await github.pulls.get({owner, repo, pull_number});
+        base = pull.data.base.sha;
+    }
+    console.log(`Using ${base} as prior comparison point.`)
+    execSync(`git checkout ${base}`);
     execSync('yarn run build-prod-min');
     const priorSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(priorSizes);
