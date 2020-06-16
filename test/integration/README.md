@@ -124,7 +124,7 @@ imply that in the event of a rendering discrepancy, the js implementation is alw
 To add a new render test:
 1. Create a new directory `test/integration/render-tests/<property-name>/<new-test-name>`
 
-2. Create a new `style.json` file within that directory, specifying the map to load. Feel free to copy & modify one of the existing `style.json` files from the `render-tests` subdirectories. For tests that require informative details, you can give a description under the [`description`](https://github.com/mapbox/mapbox-gl-js/blob/8121e9db044533d7e44e0afc8c58e71b6d8ec260/test/integration/render-tests/regressions/mapbox-gl-js%236706/style.json#L7) field of the test fixture.
+2. Create a new `style.json` file within that directory, specifying the map to load. Feel free to copy & modify one of the existing `style.json` files from the `render-tests` subdirectories. In this file, you can add additional information to describe the test and expected outcomes using the [`description`](https://github.com/mapbox/mapbox-gl-js/blob/8121e9db044533d7e44e0afc8c58e71b6d8ec260/test/integration/render-tests/regressions/mapbox-gl-js%236706/style.json#L7) metadata field.
 
 3. Generate an `expected.png` image from the given style by running the new test with the `UPDATE` flag enabled:
    ```
