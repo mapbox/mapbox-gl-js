@@ -952,6 +952,7 @@ class Camera extends Evented {
 
     _prepareEase(eventData?: Object, noMoveStart: boolean, currently: Object = {}) {
         this._moving = true;
+        this.transform.constantCameraHeight = false;
 
         if (!noMoveStart && !currently.moving) {
             this.fire(new Event('movestart', eventData));
@@ -987,6 +988,8 @@ class Camera extends Evented {
             return;
         }
         delete this._easeId;
+        this.transform.recenterOnTerrain();
+        this.transform.constantCameraHeight = true;
 
         const wasZooming = this._zooming;
         const wasRotating = this._rotating;

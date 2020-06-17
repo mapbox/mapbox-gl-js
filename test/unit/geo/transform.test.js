@@ -5,10 +5,10 @@ import LngLat from '../../../src/geo/lng_lat';
 import {OverscaledTileID, CanonicalTileID} from '../../../src/source/tile_id';
 import {fixedNum, fixedLngLat, fixedCoord, fixedPoint, fixedVec3, fixedVec4} from '../../util/fixed';
 import {FreeCameraOptions} from '../../../src/ui/free_camera';
-import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate';
 import {vec3, quat} from 'gl-matrix';
 import LngLatBounds from '../../../src/geo/lng_lat_bounds';
-import {extend} from '../../../src/util/util';
+import {extend, degToRad} from '../../../src/util/util';
 
 test('transform', (t) => {
 
@@ -258,6 +258,134 @@ test('transform', (t) => {
         t.end();
     });
 
+    const createCollisionElevation = (elevation) => {
+        return {
+            getAtPoint(p) {
+                if (p.x === 0.5 && p.y === 0.5)
+                    return 0;
+                return elevation;
+            },
+            getForTilePoints(tileID, points) {
+                for (const p of points) {
+                    p[2] = elevation;
+                }
+                return true;
+            },
+        };
+    };
+
+    const createConstantElevation = (elevation) => {
+        return {
+            getAtPoint(_) {
+                return elevation;
+            },
+            getForTilePoints(tileID, points) {
+                for (const p of points) {
+                    p[2] = elevation;
+                }
+                return true;
+            },
+        };
+    };
+
+    const createRampElevation = (scale) => {
+        return {
+            getAtPoint(p) {
+                return scale * (p.x + p.y - 1.0);
+            },
+            getForTilePoints(tileID, points) {
+                for (const p of points) {
+                    p[2] = scale * (p.x + p.y - 1.0);
+                }
+                return true;
+            },
+        };
+    };
+
+    test('Constrained camera height over terrain', (t) => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+        transform.maxPitch = 85;
+
+        transform.elevation = createCollisionElevation(10);
+        transform.constantCameraHeight = false;
+        transform.bearing = -45;
+        transform.pitch = 85;
+
+        // Set camera altitude to 5 meters
+        const altitudeZ = mercatorZfromAltitude(5, transform.center.lat) / Math.cos(degToRad(85));
+        const zoom = transform._zoomFromMercatorZ(altitudeZ);
+        transform.zoom = zoom;
+
+        // Pitch should have been adjusted so that the camera isn't under the terrain
+        const pixelsPerMeter = mercatorZfromAltitude(1, transform.center.lat) * transform.worldSize;
+        const updatedAltitude = transform.cameraToCenterDistance / pixelsPerMeter * Math.cos(degToRad(transform.pitch));
+
+        t.true(updatedAltitude > 10);
+        t.equal(transform.zoom, zoom);
+        t.equal(transform.bearing, -45);
+
+        t.end();
+    });
+
+    test('Compute zoom from camera height', (t) => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+        transform.center = {lng: 0, lat: 0};
+        transform.zoom = 16;
+        transform.elevation = createRampElevation(500);
+        t.equal(transform.elevation.getAtPoint(new MercatorCoordinate(1.0, 0.5)), 250);
+
+        t.equal(transform.zoom, 16);
+        t.equal(transform._cameraZoom, 16);
+
+        // zoom should remain unchanged
+        transform.constantCameraHeight = true;
+        transform.center = new LngLat(180, 0);
+        t.equal(transform.zoom, 16);
+
+        transform.center = new LngLat(0, 0);
+        t.equal(transform.zoom, 16);
+
+        // zoom should change so that the altitude remains constant
+        transform.constantCameraHeight = false;
+        transform.center = new LngLat(180, 0);
+        t.equal(transform._cameraZoom, 16);
+
+        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._cameraZoom) * transform.tileSize);
+        const heightZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform.zoom) * transform.tileSize);
+        const elevationZ = mercatorZfromAltitude(250, 0);
+        t.equal(fixedNum(elevationZ + heightZ), fixedNum(altitudeZ));
+
+        t.end();
+    });
+
+    test('Constant camera height over terrain', (t) => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+        transform.center = {lng: 0, lat: 0};
+        transform.zoom = 16;
+
+        transform.elevation = createConstantElevation(0);
+        t.equal(transform.zoom, transform._cameraZoom);
+
+        // Camera zoom should change so that the standard zoom value describes distance between the camera and the terrain
+        transform.elevation = createConstantElevation(10000);
+        t.equal(fixedNum(transform._cameraZoom), 11.1449615644);
+
+        // Camera height over terrain should remain constant
+        const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._cameraZoom) * transform.tileSize);
+        const heightZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform.zoom) * transform.tileSize);
+        const elevationZ = mercatorZfromAltitude(10000, 0);
+        t.equal(elevationZ + heightZ, altitudeZ);
+
+        transform.pitch = 32;
+        t.equal(fixedNum(transform._cameraZoom), 11.1449615644);
+        t.equal(transform.zoom, 16);
+
+        t.end();
+    });
+
     test('coveringTiles for terrain', (t) => {
         const options2D = {
             minzoom: 1,
@@ -348,8 +476,11 @@ test('transform', (t) => {
 
         // Elevated LOD with elevated center returns the same
         tilesDefaultElevation = centerElevation = 10000;
-        transform.updateElevation();
+
+        transform.elevation = null;
+        transform.elevation = elevation;
         const cover10k = transform.coveringTiles(options);
+
         t.deepEqual(cover, cover10k);
 
         // Lower tiles on side get clipped.

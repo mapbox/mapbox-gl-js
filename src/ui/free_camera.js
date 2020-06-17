@@ -154,6 +154,11 @@ class FreeCamera {
         }
     }
 
+    get mercatorPosition(): MercatorCoordinate {
+        const pos = this.position;
+        return new MercatorCoordinate(pos[0], pos[1], pos[2]);
+    }
+
     get position(): vec3 {
         const col: vec4 = getColumn(this._transform, 3);
         return [col[0], col[1], col[2]];
