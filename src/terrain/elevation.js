@@ -19,14 +19,15 @@ export class Elevation {
     /**
      * Altitude above sea level in meters at specified point.
      * @param {MercatorCoordinate} point Mercator coordinate of the point.
+     * @param {number} defaultIfNotLoaded Value that is returned if the dem tile of the provided point is not loaded
      * @returns {number} Altitude in meters.
      * If there is no loaded tile that carries information for the requested
      * point elevation, returns 0.
      * Doesn't invoke network request to fetch the data.
      */
-    getAtPoint(point: MercatorCoordinate): number {
+    getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
         const src = this._source();
-        if (!src) return 0;
+        if (!src) return defaultIfNotLoaded;
         const cache: SourceCache = src;
         const z = cache.getSource().maxzoom;
         const tiles = 1 << z;
@@ -34,7 +35,7 @@ export class Elevation {
         const px = point.x - wrap;
         const tileID = new OverscaledTileID(z, wrap, z, Math.floor(px * tiles), Math.floor(point.y * tiles));
         const demTile = this.findDEMTileFor(tileID);
-        if (!(demTile && demTile.dem)) { return 0; }
+        if (!(demTile && demTile.dem)) { return defaultIfNotLoaded; }
         const dem: DEMData = demTile.dem;
         const tilesAtTileZoom = 1 << demTile.tileID.canonical.z;
         const x = (px * tilesAtTileZoom - demTile.tileID.canonical.x) * demTile.tileSize;
@@ -81,6 +82,33 @@ export class Elevation {
             p[2] = this.exaggeration() * dem.get(i, j);
         });
         return true;
+    }
+
+    /*
+     * Find an intersection between the elevation surface and a line segment.
+     * Uses a binary-search approach for sampling the heightmap. This function is not
+     * guaranteed to return a correct result if the provided segment has multiple intersction
+     * points with the terrain.
+     */
+    raycast(start: MercatorCoordinate, end: MercatorCoordinate, samples: number = 20, threshold: number = 0.01): ?MercatorCoordinate {
+        let newCenter: ?MercatorCoordinate = null;
+
+        for (let i = 0; i < samples; i++) {
+            newCenter = new MercatorCoordinate(0.5 * (start.x + end.x), 0.5 * (start.y + end.y), 0.5 * (start.z + end.z));
+            const terrainElevation = this.getAtPoint(newCenter);
+            const sampleElevation = newCenter.toAltitude();
+            const diff = terrainElevation - sampleElevation;
+
+            if (Math.abs(diff) < threshold) {
+                return newCenter;
+            } if (diff > 0) {
+                end = newCenter;
+            } else {
+                start = newCenter;
+            }
+        }
+
+        return null;
     }
 
     /*

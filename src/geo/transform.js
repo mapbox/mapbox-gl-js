@@ -4,7 +4,7 @@ import LngLat from './lng_lat';
 import LngLatBounds from './lng_lat_bounds';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from './mercator_coordinate';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, radToDeg} from '../util/util';
+import {wrap, clamp, radToDeg, degToRad} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
 import {vec4, mat4, mat2, vec2, vec3, quat} from 'gl-matrix';
@@ -49,11 +49,12 @@ class Transform {
     skyboxMatrix: Float32Array;
     glCoordMatrix: Float32Array;
     labelPlaneMatrix: Float32Array;
+    constantCameraHeight: boolean;
     _elevation: ?Elevation;
-    _elevationAtCenter: number;
     _fov: number;
     _pitch: number;
     _zoom: number;
+    _cameraZoom: ?number;
     _unmodified: boolean;
     _renderWorldCopies: boolean;
     _minZoom: number;
@@ -66,6 +67,7 @@ class Transform {
     _posMatrixCache: {[_: string]: Float32Array};
     _alignedPosMatrixCache: {[_: string]: Float32Array};
     _camera: FreeCamera;
+    _centerAltitude: number;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
@@ -92,19 +94,22 @@ class Transform {
         this._posMatrixCache = {};
         this._alignedPosMatrixCache = {};
         this._camera = new FreeCamera();
-        this._elevationAtCenter = 0;
+        this._centerAltitude = 0;
+        this.constantCameraHeight = true;
     }
 
     clone(): Transform {
         const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies);
         clone._elevation = this._elevation;
-        clone._elevationAtCenter = this._elevationAtCenter;
+        clone._centerAltitude = this._centerAltitude;
         clone.tileSize = this.tileSize;
         clone.latRange = this.latRange;
         clone.width = this.width;
         clone.height = this.height;
+        clone.constantCameraHeight = this.constantCameraHeight;
         clone._center = this._center;
         clone._setZoom(this.zoom);
+        clone._cameraZoom = this._cameraZoom;
         clone.angle = this.angle;
         clone._fov = this._fov;
         clone._pitch = this._pitch;
@@ -119,14 +124,13 @@ class Transform {
     set elevation(elevation: ?Elevation) {
         if (this._elevation === elevation) return;
         this._elevation = elevation;
-        if (!elevation) this._elevationAtCenter = 0;
+        if (!elevation) {
+            this._cameraZoom = null;
+            this._centerAltitude = 0;
+        }
         this._calcMatrices();
     }
     updateElevation() { // On render, no need for higher granularity on update reasons.
-        if (!this._elevation) return;
-        const elevationAtCenter = this._elevation.getAtPoint(MercatorCoordinate.fromLngLat(this.center));
-        if (this._elevationAtCenter === elevationAtCenter) return;
-        this._elevationAtCenter = elevationAtCenter;
         this._calcMatrices();
     }
 
@@ -224,6 +228,7 @@ class Transform {
         if (this._zoom === z) return;
         this._unmodified = false;
         this._setZoom(z);
+        this._computeCameraZoom();
         this._constrain();
         this._calcMatrices();
     }
@@ -234,13 +239,53 @@ class Transform {
         this.zoomFraction = z - this.tileZoom;
     }
 
+    _computeCameraZoom() {
+        if (!this._elevation)
+            return;
+
+        // Camera zoom describes the distance of the camera to the sea level (altitude). It is used only for manipulating the camera location.
+        // The standard zoom (this._zoom) defines the camera distance to the terrain (height). Its behavior and conceptual meaning in determining
+        // which tiles to stream is same with or without the terrain.
+        const elevationAtCenter = this._elevation.getAtPoint(MercatorCoordinate.fromLngLat(this.center), -1);
+
+        if (elevationAtCenter === -1) {
+            // Elevation data not loaded yet
+            this._cameraZoom = null;
+            return;
+        }
+
+        const height = this.cameraToCenterDistance / this.worldSize;
+        const terrainElevation = mercatorZfromAltitude(elevationAtCenter, this.center.lat);
+
+        this._cameraZoom = this._zoomFromMercatorZ(terrainElevation + height);
+        this._centerAltitude = elevationAtCenter;
+    }
+
     get center(): LngLat { return this._center; }
     set center(center: LngLat) {
         if (center.lat === this._center.lat && center.lng === this._center.lng) return;
         this._unmodified = false;
         this._center = center;
+        if (!this.constantCameraHeight) {
+            this._updateZoomFromElevation();
+        }
         this._constrain();
         this._calcMatrices();
+    }
+
+    _updateZoomFromElevation() {
+        if (!this._cameraZoom || !this._elevation)
+            return;
+
+        // Compute zoom level from the height of the camera relative to the terrain
+        const cameraZoom: number = this._cameraZoom;
+        const elevationAtCenter = this._elevation.getAtPoint(MercatorCoordinate.fromLngLat(this.center));
+        const mercatorElevation = mercatorZfromAltitude(elevationAtCenter, this.center.lat);
+        const altitude  = this._mercatorZfromZoom(cameraZoom);
+        const minHeight = this._mercatorZfromZoom(this._maxZoom);
+        const height = Math.max(altitude - mercatorElevation, minHeight);
+
+        this._setZoom(this._zoomFromMercatorZ(height));
     }
 
     get padding(): PaddingOptions { return this._edgeInsets.toJSON(); }
@@ -453,8 +498,7 @@ class Transform {
         const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z);
         const cameraCoord = this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
-        const cameraToCenterDistance = this.cameraToCenterDistance / this.worldSize * numTiles;
-        const cameraAltitude = Math.cos(this._pitch) * cameraToCenterDistance / meterToTile;
+        const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
         const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude];
         // Let's consider an example for !roundZoom: e.g. tileZoom 16 is used from zoom 16 all the way to zoom 16.99.
         // This would mean that the minimal distance to split would be based on distance from camera to center of 16.99 zoom.
@@ -504,13 +548,11 @@ class Transform {
                     aabb.min[2] = Math.min(val[2], aabb.min[2]);
                     aabb.max[2] = Math.max(val[2], aabb.max[2]);
                 }
-                aabb.min[2] -= this._elevationAtCenter;
-                aabb.max[2] -= this._elevationAtCenter;
                 aabb.center[2] = interpolate(aabb.min[2], aabb.max[2], 0.5);
             }
         };
         const square = a => a * a;
-        const cameraHeightSqr = square(cameraAltitude * meterToTile); // in tile coordinates.
+        const cameraHeightSqr = square((cameraAltitude - this._centerAltitude) * meterToTile); // in tile coordinates.
 
         // Scale distance to split for acute angles.
         // dzSqr: z component of camera to tile distance, square.
@@ -702,7 +744,7 @@ class Transform {
      * @private
      */
     pointRayIntersection(p: Point): RayIntersectionResult {
-        const targetZ = 0;
+        const targetZ = this._centerAltitude;
         // since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
         // line with z=0
@@ -752,7 +794,7 @@ class Transform {
      * @private
      */
     coordinatePoint(coord: MercatorCoordinate) {
-        const p = [coord.x * this.worldSize, coord.y * this.worldSize, 0, 1];
+        const p = [coord.x * this.worldSize, coord.y * this.worldSize, this._centerAltitude + coord.toAltitude(), 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
         return new Point(p[0] / p[3], p[1] / p[3]);
     }
@@ -825,6 +867,69 @@ class Transform {
         return this.mercatorMatrix.slice();
     }
 
+    recenterOnTerrain() {
+        if (!this._elevation)
+            return;
+
+        const elevation: Elevation = this._elevation;
+        this._updateCameraState();
+
+        // Cast a ray towards the sea level and find the intersection point with the terrain.
+        const start = this._camera.mercatorPosition;
+        const dir = this._camera.forward();
+
+        if (start.z <= 0 || dir[2] >= 0)
+            return;
+
+        const distance = start.z / -dir[2];
+        const end = new MercatorCoordinate(start.x + dir[0] * distance, start.y + dir[1] * distance, start.z + dir[2] * distance);
+        const newCenter = elevation.raycast(start, end);
+
+        if (newCenter) {
+            const pos = this._camera.mercatorPosition;
+            const camToNew = [newCenter.x - pos.x, newCenter.y - pos.y, newCenter.z - pos.z];
+            const maxAltitude = mercatorZfromAltitude(newCenter.toAltitude(), this.center.lat) + vec3.length(camToNew);
+
+            // Camera zoom has to be updated as the orbit distance might have changed
+            this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
+            this._centerAltitude = newCenter.toAltitude();
+            this.center = newCenter.toLngLat();
+        }
+    }
+
+    _constrainCameraAltitude() {
+        if (!this._elevation)
+            return;
+
+        const elevationAtCamera = this._elevation.getAtPoint(this._camera.mercatorPosition);
+        this._updateCameraState();
+
+        // Use maxZoom to determine minimum height for the camera over the terrain
+        const minHeight = this.cameraToCenterDistance / this._worldSizeFromZoom(this._maxZoom) * Math.cos(degToRad(this._maxPitch));
+        const terrainElevation = mercatorZfromAltitude(elevationAtCamera, this._center.lat);
+        const cameraHeight = this._camera.position[2] - terrainElevation;
+
+        if (cameraHeight < minHeight) {
+            const center = MercatorCoordinate.fromLngLat(this._center, this._centerAltitude);
+            const cameraPos = this._camera.mercatorPosition;
+            const cameraToCenter = [center.x - cameraPos.x, center.y - cameraPos.y, center.z - cameraPos.z];
+            const prevDistToCamera = vec3.length(cameraToCenter);
+
+            // Adjust the camera vector so that the camera is placed above the terrain.
+            // Distance between the camera and the center point is kept constant.
+            cameraToCenter[2] -= minHeight - cameraHeight;
+
+            const newDistToCamera = vec3.length(cameraToCenter);
+            if (newDistToCamera === 0)
+                return;
+
+            vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera);
+            this._camera.position = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z - cameraToCenter[2]];
+            this._camera.orientation = orientationFromFrame(cameraToCenter, this._camera.up());
+            this._updateStateFromCamera();
+        }
+    }
+
     _constrain() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
@@ -890,6 +995,8 @@ class Transform {
                 y2 !== undefined ? y2 : point.y));
         }
 
+        this._constrainCameraAltitude();
+
         this._unmodified = unmodified;
         this._constraining = false;
     }
@@ -901,7 +1008,17 @@ class Transform {
         const offset = this.centerOffset;
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height;
         const pixelsPerMeter = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
-        const elevationAtCenter = this._elevationAtCenter;
+
+        if (this._elevation) {
+            if (this.constantCameraHeight || !this._cameraZoom) {
+                this._computeCameraZoom();
+            }
+
+            if (!this.constantCameraHeight)
+                this._updateZoomFromElevation();
+        }
+
+        this._updateCameraState();
 
         // Find the distance from the center point [width/2 + offset.x, height/2 + offset.y] to the
         // center top point [width/2 + offset.x, 0] in Z units, using the law of sines.
@@ -910,14 +1027,13 @@ class Transform {
         const groundAngle = Math.PI / 2 + this._pitch;
         const fovAboveCenter = this.fovAboveCenter;
 
-        const elevationInScreenCoordinates = elevationAtCenter * pixelsPerMeter;
-        const cameraToCenterAt0LevelDistance = this.cameraToCenterDistance + elevationInScreenCoordinates / Math.cos(this._pitch);
-        const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * cameraToCenterAt0LevelDistance / Math.sin(clamp(Math.PI - groundAngle - fovAboveCenter, 0.01, Math.PI - 0.01));
+        const cameraToSeaLevelDistance = this._camera.position[2] * this.worldSize / Math.cos(this._pitch);
+        const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * cameraToSeaLevelDistance / Math.sin(clamp(Math.PI - groundAngle - fovAboveCenter, 0.01, Math.PI - 0.01));
         const point = this.point;
         const x = point.x, y = point.y;
 
         // Calculate z distance of the farthest fragment that should be rendered.
-        const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + cameraToCenterAt0LevelDistance;
+        const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + cameraToSeaLevelDistance;
         // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
         const farZ = furthestDistance * 1.01;
 
@@ -929,8 +1045,6 @@ class Transform {
         // when rendering it's layers using custom layers. This value was experimentally chosen and
         // seems to solve z-fighting issues in deckgl while not clipping buildings too close to the camera.
         const nearZ = this.height / 50;
-
-        this._updateCameraState();
 
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, pixelsPerMeter);
         const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, nearZ, farZ);
@@ -945,15 +1059,10 @@ class Transform {
         // ([0, 0] nw, [1, 1] se) to GL coordinates.
         this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter]);
 
-        let projMatrixBase = m;
-        if (elevationAtCenter) {
-            projMatrixBase = new Float64Array(m); // Take a copy.
-            mat4.translate(m, m, [0, 0, -elevationAtCenter]);
-        }
         this.projMatrix = m;
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
-        this.invProjMatrix = mat4.invert(new Float64Array(16), projMatrixBase);
+        this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
 
         const view = new Float32Array(16);
         mat4.identity(view);
@@ -990,7 +1099,7 @@ class Transform {
         this.glCoordMatrix = m;
 
         // matrix for conversion from location to screen coordinates
-        this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, projMatrixBase);
+        this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
 
         // inverse matrix for conversion from screen coordinates to location
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
@@ -1011,10 +1120,18 @@ class Transform {
         const distance = this.cameraToCenterDistance;
         const center = this.point;
 
+        // Use camera zoom (if terrain is enabled) to maintain constant altitude to sea level
+        const zoom = this._cameraZoom ? this._cameraZoom : this._zoom;
+        const altitude = this.cameraToCenterDistance / this._worldSizeFromZoom(zoom);
+        const height = altitude - mercatorZfromAltitude(this._centerAltitude, this.center.lat);
+
+        // simplified version of: this._worldSizeFromZoom(this._zoomFromMercatorZ(height))
+        const updatedWorldSize = this.cameraToCenterDistance / height;
+
         this._camera.position = [
-            (center.x - dir[0] * distance) / this.worldSize,
-            (center.y - dir[1] * distance) / this.worldSize,
-            (-dir[2] * distance) / this.worldSize
+            center.x / this.worldSize - (dir[0] * distance) / updatedWorldSize,
+            center.y / this.worldSize - (dir[1] * distance) / updatedWorldSize,
+            mercatorZfromAltitude(this._centerAltitude, this._center.lat) + (-dir[2] * distance) / updatedWorldSize
         ];
     }
 
@@ -1023,16 +1140,31 @@ class Transform {
         const dir = this._camera.forward();
         const {pitch, bearing} = this._camera.getPitchBearing();
 
-        // Compute zoom level from the camera altitude
-        const zoom = Math.log2(this.cameraToCenterDistance / (position[2] / Math.cos(pitch) * this.tileSize));
-        vec3.scaleAndAdd(position, position, dir, -position[2] / dir[2]);
+        // Compute zoom from the distance between camera and terrain
+        const centerAltitude = mercatorZfromAltitude(this._centerAltitude, this.center.lat);
+        const height = (position[2] - centerAltitude) / Math.cos(pitch);
+        const zoom = this._zoomFromMercatorZ(height);
 
-        // The internal representation of bearing (`angle`) has an opposite direction of the public one.
-        // The new bearing value has to be negated as it's set through the public function
+        // Cast a ray towards the ground to find the center point
+        vec3.scaleAndAdd(position, position, dir, -height * Math.cos(pitch) / dir[2]);
+
         this.pitch = radToDeg(pitch);
         this.bearing = radToDeg(-bearing);
-        this.zoom = zoom;
+        this._setZoom(clamp(zoom, this._minZoom, this._maxZoom));
         this.center = new MercatorCoordinate(position[0], position[1], position[2]).toLngLat();
+    }
+
+    _worldSizeFromZoom(zoom: number): number {
+        return Math.pow(2.0, zoom) * this.tileSize;
+    }
+
+    _mercatorZfromZoom(zoom: number, pitch: ?number): number {
+        const cosPitch = pitch ? Math.cos(pitch) : 1.0;
+        return this.cameraToCenterDistance / this._worldSizeFromZoom(zoom) * cosPitch;
+    }
+
+    _zoomFromMercatorZ(z: number): number {
+        return this.scaleZoom(this.cameraToCenterDistance / (z * this.tileSize));
     }
 
     maxPitchScaleFactor() {
