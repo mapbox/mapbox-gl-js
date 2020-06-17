@@ -26,5 +26,6 @@
   "render-tests/within/paint-line": "https://github.com/mapbox/mapbox-gl-js/issues/7023",
   "render-tests/icon-text-fit/text-variable-anchor-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/text-variable-anchor/all-anchors-labels-priority-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
-  "render-tests/fill-extrusion-pattern/1.5x-on-1x-add-image": "skip - non-deterministic on AMD graphics cards"
+  "render-tests/fill-extrusion-pattern/1.5x-on-1x-add-image": "skip - non-deterministic on AMD graphics cards",
+  "render-tests/text-variable-anchor/avoid-edges-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode"
 }
