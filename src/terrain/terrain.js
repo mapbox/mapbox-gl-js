@@ -9,7 +9,7 @@ import {RasterBoundsArray, TriangleIndexArray} from '../data/array_types';
 import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
 import Program from '../render/program';
-import {Uniform1i, Uniform1f, Uniform2f, Uniform4f} from '../render/uniform_binding';
+import {Uniform1i, Uniform1f, Uniform2f, Uniform4f, UniformMatrix4f} from '../render/uniform_binding';
 import {prepareDEMTexture} from '../render/draw_hillshade';
 import EXTENT from '../data/extent';
 import {clamp} from '../util/util';
@@ -39,7 +39,7 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type Context from '../gl/context';
 import type DEMData from '../data/dem_data';
-import type {UniformLocations} from '../render/uniform_binding';
+import type {UniformLocations, UniformValues} from '../render/uniform_binding';
 import type Transform from '../geo/transform';
 
 export const GRID_DIM = 128;
@@ -342,22 +342,22 @@ export class Terrain extends Elevation {
     setupElevationDraw(tile: Tile, program: Program<*>,
         options?: {
             useDepthForOcclusion?: boolean,
-            useMeterToDem?: boolean
+            useMeterToDem?: boolean,
+            labelPlaneMatrixInv?: ?Float32Array
         }) {
         const context = this.painter.context;
         const gl = context.gl;
         context.activeTexture.set(gl.TEXTURE2);
         let demTexture = this.painter.emptyTexture;
         const cl = tile.tileID.canonical;
-        const uniforms = {
+        const uniforms: UniformValues<TerrainUniformsType> = {
             'u_dem': 2,
             'u_dem_unpack': [0, 0, 0, 0],
             'u_dem_tl': [0, 0],
             'u_dem_scale': 0,
             'u_dem_size': this.sourceCache.getSource().tileSize,
             'u_exaggeration': this.exaggeration(),
-            'u_depth': 3,
-            'u_meter_to_dem': 0
+            'u_depth': 3
         };
 
         const demTile: Tile = this.terrainTileForTile[tile.tileID.key];
@@ -378,6 +378,9 @@ export class Terrain extends Elevation {
         if (options && options.useMeterToDem && demTile) {
             const meterToDEM = (1 << demTile.tileID.canonical.z) * mercatorZfromAltitude(1, this.painter.transform.center.lat) * this.sourceCache.getSource().tileSize;
             uniforms['u_meter_to_dem'] = meterToDEM;
+        }
+        if (options && options.labelPlaneMatrixInv) {
+            uniforms['u_label_plane_matrix_inv'] = options.labelPlaneMatrixInv;
         }
         program.setTerrainUniformValues(context, uniforms);
     }
@@ -896,7 +899,8 @@ export type TerrainUniformsType = {|
     'u_dem_size': Uniform1f,
     "u_exaggeration": Uniform1f,
     'u_depth': Uniform1i,
-    'u_meter_to_dem': Uniform1f
+    'u_meter_to_dem'?: Uniform1f,
+    'u_label_plane_matrix_inv'?: UniformMatrix4f
 |};
 
 export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
@@ -907,6 +911,7 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_dem_size': new Uniform1f(context, locations.u_dem_size),
     'u_exaggeration': new Uniform1f(context, locations.u_exaggeration),
     'u_depth': new Uniform1i(context, locations.u_depth),
-    'u_meter_to_dem': new Uniform1f(context, locations.u_meter_to_dem)
+    'u_meter_to_dem': new Uniform1f(context, locations.u_meter_to_dem),
+    'u_label_plane_matrix_inv': new UniformMatrix4f(context, locations.u_label_plane_matrix_inv)
 });
 
