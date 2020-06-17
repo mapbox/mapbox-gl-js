@@ -2116,9 +2116,6 @@ class Map extends Camera {
     }
 
     /**
-     * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
-     * Features are identified by their `id` attribute, which must be an integer or a string that can be
-     * cast to an integer.
      * Sets the `state` of a feature.
      * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
      * When using this method, the `state` object is merged with any existing key-value pairs in the feature's state.

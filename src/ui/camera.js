@@ -763,7 +763,6 @@ class Camera extends Evented {
     }
 
     /**
-     * Changes any combination of `center`, `zoom`, `bearing`, `pitch`, and `padding` with an animated transition
      * Returns position and orientation of the camera entity.
      *
      * @memberof Map#
@@ -835,7 +834,7 @@ class Camera extends Evented {
     }
 
     /**
-     * Changes any combination of center, zoom, bearing, pitch, and padding with an animated transition
+     * Changes any combination of `center`, `zoom`, `bearing`, `pitch`, and `padding` with an animated transition
      * between old and new values. The map will retain its current values for any
      * details not specified in `options`.
      *

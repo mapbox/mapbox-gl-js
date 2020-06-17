@@ -51,11 +51,11 @@ class Program<Us: UniformBindings> {
     }
 
     constructor(context: Context,
-            name: string,
-            source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>, staticUniforms: Array<string>},
-            configuration: ?ProgramConfiguration,
-            fixedUniforms: (Context, UniformLocations) => Us,
-            fixedDefines: string[]) {
+                name: string,
+                source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>, staticUniforms: Array<string>},
+                configuration: ?ProgramConfiguration,
+                fixedUniforms: (Context, UniformLocations) => Us,
+                fixedDefines: string[]) {
         const gl = context.gl;
         this.program = gl.createProgram();
 
