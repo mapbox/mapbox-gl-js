@@ -4,7 +4,7 @@
 // It implements a JSDOM window object for use in Node environments
 // In a browser environment, this file is replaced with ./src/util/browser/window.js
 // when Rollup builds the main bundle
-// See https://github.com/mapbox/mapbox-gl-js/blob/master/package.json#L104-L108
+// See package.json#browser
 
 import jsdom from 'jsdom';
 

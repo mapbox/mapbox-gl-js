@@ -62,11 +62,11 @@ function getMergeBase() {
         });
     } else {
         // Walk backward through the history (maximum of 10 commits) until
-        // finding a commit on either master or release-*; assume that's the
+        // finding a commit on either main or release-*; assume that's the
         // base branch.
         const head = process.env['CIRCLE_SHA1'];
         for (const sha of execSync(`git rev-list --max-count=10 ${head}`).toString().trim().split('\n')) {
-            const base = execSync(`git branch -r --contains ${sha} origin/master origin/release-* origin/publisher-production`).toString().split('\n')[0].trim().replace(/^origin\//, '');
+            const base = execSync(`git branch -r --contains ${sha} origin/main origin/release-* origin/publisher-production`).toString().split('\n')[0].trim().replace(/^origin\//, '');
             if (base) {
                 return Promise.resolve(execSync(`git merge-base origin/${base} ${head}`).toString().trim());
             }

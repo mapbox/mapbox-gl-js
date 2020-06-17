@@ -4,11 +4,11 @@ These integration tests verify the correctness and consistency of [mapbox-gl-js]
 ## Organization
 
 Tests are contained in a directory tree, generally organized by [style specification](https://github.com/mapbox/mapbox-gl-style-spec)
-property: `background-color`, `line-width`, etc., with a second level of directories below that for individual tests. For example, the test for specifying a literal `circle-radius` value lives in [`test/integration/render-tests/circle-radius/literal/`](https://github.com/mapbox/mapbox-gl-js/tree/master/test/integration/render-tests/circle-radius/literal).
+property: `background-color`, `line-width`, etc., with a second level of directories below that for individual tests. For example, the test for specifying a literal `circle-radius` value lives in [`test/integration/render-tests/circle-radius/literal/`](./render-tests/circle-radius/literal).
 
-Within a leaf directory is a `style.json` file (e.g. [`circle-radius/literal/style.json`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/integration/render-tests/circle-radius/literal/style.json)), which contains the minimal style needed for the given test case. The style can specify the map size, center, bearing, and pitch, and additional test metadata (e.g. output image dimensions).
+Within a leaf directory is a `style.json` file (e.g. [`circle-radius/literal/style.json`](./render-tests/circle-radius/literal/style.json)), which contains the minimal style needed for the given test case. The style can specify the map size, center, bearing, and pitch, and additional test metadata (e.g. output image dimensions).
 
-The expected output for a given test case is in `expected.png`, e.g. [`circle-radius/literal/expected.png`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/integration/render-tests/circle-radius/literal/expected.png).
+The expected output for a given test case is in `expected.png`, e.g. [`circle-radius/literal/expected.png`](./render-tests/circle-radius/literal/expected.png).
 
 Supporting files -- glyphs, sprites, and tiles -- live in their own respective subdirectories at the top level. The test
 harness sets up the environment such that requests for these resources are directed to the correct location.
