@@ -17,6 +17,7 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {UniformValues} from './uniform_binding';
 import type {CircleUniformsType} from './program/circle_program';
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawCircles;
 
@@ -66,7 +67,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const definesValues = circleDefinesValues(layer);
-        const program = painter.useProgram('circle', programConfiguration, definesValues);
+        const program = painter.useProgram('circle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
         const uniformValues = circleUniformValues(painter, coord, tile, layer);

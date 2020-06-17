@@ -133,7 +133,8 @@ class CollisionIndex {
             lineVertexArray,
             labelPlaneMatrix,
             projectionCache,
-            getElevation
+            getElevation,
+            pitchWithMap && !!elevation
         );
 
         let collisionDetected = false;
@@ -164,7 +165,13 @@ class CollisionIndex {
 
             // The path might need to be converted into screen space if a pitched map is used as the label space
             if (labelToScreenMatrix) {
-                const screenSpacePath = projectedPath.map(p => projection.project(p, labelToScreenMatrix));
+                assert(pitchWithMap);
+                const screenSpacePath = elevation ?
+                    projectedPath.map((p, index) => {
+                        const z = index < first.path.length - 1 ? first.pathElevation[first.path.length - 1 - index] : last.pathElevation[index - first.path.length + 2];
+                        return projection.project(p, labelToScreenMatrix, z);
+                    }) :
+                    projectedPath.map(p => projection.project(p, labelToScreenMatrix));
 
                 // Do not try to place collision circles if even of the points is behind the camera.
                 // This is a plausible scenario with big camera pitch angles

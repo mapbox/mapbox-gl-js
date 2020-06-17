@@ -49,7 +49,8 @@ type SymbolTileRenderState = {
         atlasInterpolationIcon: any,
         isSDF: boolean,
         hasHalo: boolean,
-        tile: Tile
+        tile: Tile,
+        labelPlaneMatrixInv: ?Float32Array
     }
 };
 
@@ -227,7 +228,6 @@ function getSymbolProgramName(isSDF: boolean, isText: boolean, bucket: SymbolBuc
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
                           rotationAlignment, pitchAlignment, keepUpright, stencilMode, colorMode) {
-
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -247,6 +247,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const variablePlacement = layer.layout.get('text-variable-anchor');
 
     const tileRenderState: Array<SymbolTileRenderState> = [];
+    const defines = painter.terrain && pitchWithMap ? ['PITCH_WITH_MAP_TERRAIN'] : null;
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -261,7 +262,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
         const transformed = pitchWithMap || tr.pitch !== 0;
 
-        const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration);
+        const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration, defines);
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
 
         let texSize: [number, number];
@@ -291,6 +292,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
+        // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
+        const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(new Float32Array(16), labelPlaneMatrix) : identityMat4;
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
@@ -337,7 +340,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             atlasInterpolationIcon,
             isSDF,
             hasHalo,
-            tile
+            tile,
+            labelPlaneMatrixInv
         };
 
         if (sortFeaturesByKey) {
@@ -365,7 +369,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
 
-        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: true});
+        if (painter.terrain) painter.terrain.setupElevationDraw(state.tile, state.program, {useDepthForOcclusion: true, labelPlaneMatrixInv: state.labelPlaneMatrixInv});
         context.activeTexture.set(gl.TEXTURE0);
         state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
         if (state.atlasTextureIcon) {

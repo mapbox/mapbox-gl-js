@@ -137,7 +137,7 @@ class Program<Us: UniformBindings> {
         if (this.failedToCreate) return;
         context.program.set(this.program);
 
-        for (const name in uniforms) {
+        for (const name in terrainUnformValues) {
             uniforms[name].set(terrainUnformValues[name]);
         }
     }

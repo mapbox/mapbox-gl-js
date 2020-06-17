@@ -7,6 +7,7 @@ uniform float u_dem_scale;
 uniform float u_dem_size;
 uniform float u_exaggeration;
 uniform float u_meter_to_dem;
+uniform mat4 u_label_plane_matrix_inv;
 
 uniform sampler2D u_depth;
 

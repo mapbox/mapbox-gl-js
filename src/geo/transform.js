@@ -598,7 +598,7 @@ class Transform {
                     // Using elevation data for tiles helps clipping out tiles that are not visible and
                     // precise distance calculation. This is an optimization - tiles with it.zoom <= maxZoom - 6 are always
                     // considered slightly closer: aabb.distanceZ() there evaluates to 0 as min/max[3] = -/+ maxRange.
-                    tileID = new OverscaledTileID(it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
+                    tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
                     getAABBFromElevation(aabb, tileID);
                 }
                 stack.push({aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID});
