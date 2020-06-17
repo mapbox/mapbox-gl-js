@@ -217,7 +217,7 @@ function updateLineLabels(bucket: SymbolBucket,
     }
 }
 
-function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: mat4, projectionCache: any, getElevation: ((p: Point) => number)) {
+function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: mat4, projectionCache: any, getElevation: ((p: Point) => number), returnElevationAlongPath: ?boolean) {
     const glyphEndIndex = symbol.glyphStartIndex + symbol.numGlyphs;
     const lineStartIndex = symbol.lineStartIndex;
     const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
@@ -226,12 +226,12 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffset
     const lastGlyphOffset = glyphOffsetArray.getoffsetX(glyphEndIndex - 1);
 
     const firstPlacedGlyph = placeGlyphAlongLine(fontScale * firstGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
-        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation);
+        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation, returnElevationAlongPath);
     if (!firstPlacedGlyph)
         return null;
 
     const lastPlacedGlyph = placeGlyphAlongLine(fontScale * lastGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
-        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation);
+        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation, returnElevationAlongPath);
     if (!lastPlacedGlyph)
         return null;
 
@@ -354,7 +354,8 @@ function placeGlyphAlongLine(offsetX: number,
                              lineVertexArray: SymbolLineVertexArray,
                              labelPlaneMatrix: mat4,
                              projectionCache: {[_: number]: Point},
-                             getElevation: ((p: Point) => number)) {
+                             getElevation: ((p: Point) => number),
+                             returnElevationAlongPath: ?boolean) {
 
     const combinedOffsetX = flip ?
         offsetX - lineOffsetX :
@@ -382,6 +383,8 @@ function placeGlyphAlongLine(offsetX: number,
     let currentSegmentDistance = 0;
     const absOffsetX = Math.abs(combinedOffsetX);
     const pathVertices = [];
+    const pathElevation = [];
+    let currentElevation, prevElevation;
 
     while (distanceToPrev + currentSegmentDistance <= absOffsetX) {
         currentIndex += dir;
@@ -391,13 +394,15 @@ function placeGlyphAlongLine(offsetX: number,
             return null;
 
         prev = current;
+        prevElevation = currentElevation;
         pathVertices.push(current);
+        if (returnElevationAlongPath) pathElevation.push(currentElevation); // undefined for 1st point (anchor).
 
         current = projectionCache[currentIndex];
         if (current === undefined) {
             const currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
-            const elevation = getElevation(currentVertex);
-            const projection = project(currentVertex, labelPlaneMatrix, elevation);
+            currentElevation = getElevation(currentVertex);
+            const projection = project(currentVertex, labelPlaneMatrix, currentElevation);
             if (projection.signedDistanceFromCamera > 0) {
                 current = projectionCache[currentIndex] = projection.point;
             } else {
@@ -408,8 +413,11 @@ function placeGlyphAlongLine(offsetX: number,
                     tileAnchorPoint :
                     new Point(lineVertexArray.getx(previousLineVertexIndex), lineVertexArray.gety(previousLineVertexIndex));
                 // Don't cache because the new vertex might not be far enough out for future glyphs on the same segment
-                current = projectTruncatedLineSegment(previousTilePoint, currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, elevation);
+                current = projectTruncatedLineSegment(previousTilePoint, currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, currentElevation);
             }
+        } else if (returnElevationAlongPath) {
+            const currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
+            currentElevation = getElevation(currentVertex);
         }
 
         distanceToPrev += currentSegmentDistance;
@@ -427,11 +435,17 @@ function placeGlyphAlongLine(offsetX: number,
     const segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
 
     pathVertices.push(p);
+    if (returnElevationAlongPath) {
+        prevElevation = prevElevation || getElevation(tileAnchorPoint);
+        currentElevation = currentElevation || prevElevation;
+        pathElevation.push(prevElevation + (currentElevation - prevElevation) * segmentInterpolationT);
+    }
 
     return {
         point: p,
         angle: segmentAngle,
-        path: pathVertices
+        path: pathVertices,
+        pathElevation
     };
 }
 

@@ -108,8 +108,13 @@ void main() {
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h, 1.0);
-    float z = float(u_pitch_with_map) * projected_pos.z / projected_pos.w; // After draping them to texture, no need for this.
-    gl_Position = u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 32.0 * fontScale), z, 1.0);
+    float z = 0.0;
+    vec2 offset = rotation_matrix * (a_offset / 32.0 * fontScale);
+#ifdef PITCH_WITH_MAP_TERRAIN
+    vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
+    z = elevation(tile_pos.xy);
+#endif
+    gl_Position = u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0);
     float gamma_scale = gl_Position.w;
 
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);

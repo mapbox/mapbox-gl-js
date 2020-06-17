@@ -8,11 +8,23 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
+<div id='checkboxes'>
+    <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
+    <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
+    <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
+    <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
+</div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -34,6 +46,13 @@ map.on('load', function() {
     map.addSource('circles', {
         "type": "geojson",
         "data": "/test/integration/data/places.geojson"
+    });
+
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
     });
 
     map.addLayer({
@@ -82,7 +101,36 @@ map.on('load', function() {
             ]
         }
     });
+
+    document.getElementById('terrain-checkbox').onclick();
 });
+
+document.getElementById('terrain-checkbox').onclick = function() {
+    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
+};
+
+document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
+    map.showTileBoundaries = !!this.checked;
+};
+
+document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
+    map.showCollisionBoxes = !!this.checked;
+};
+
+document.getElementById('repaint-checkbox').onclick = function() {
+    map.repaint = !!this.checked;
+    if (this.checked) {
+        this['frameCounter'] = map.painter.frameCounter;
+        this['fpsTimer'] = window.setInterval(() => {
+            document.getElementById('fps').innerHTML = `${(map.painter.frameCounter - this.frameCounter) / 2}`;
+            this.frameCounter = map.painter.frameCounter;
+        }, 2000);
+    } else {
+        window.clearInterval(this.fpsTimer);
+        document.getElementById('fps').innerHTML = `0`;
+    }
+    if (map.painter.terrain) map.painter.terrain.forceDrapeFirst = !!this.checked;
+};
 
 </script>
 </body>

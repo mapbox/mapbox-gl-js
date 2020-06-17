@@ -78,6 +78,8 @@ export type symbolTextAndIconUniformsType = {|
     'u_is_halo': Uniform1i
 |};
 
+export type SymbolDefinesType = 'PITCH_WITH_MAP_TERRAIN';
+
 const symbolIconUniforms = (context: Context, locations: UniformLocations): SymbolIconUniformsType => ({
     'u_is_size_zoom_constant': new Uniform1i(context, locations.u_is_size_zoom_constant),
     'u_is_size_feature_constant': new Uniform1i(context, locations.u_is_size_feature_constant),
