@@ -1797,7 +1797,7 @@ test('camera', (t) => {
     });
 
     t.test('#cameraForBounds', (t) => {
-        t.test('no padding passed', (t) => {
+        t.test('no options passed', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
@@ -1806,6 +1806,28 @@ test('camera', (t) => {
             t.equal(fixedNum(transform.zoom, 3), 2.469);
             t.end();
         });
+
+        t.test('bearing positive number', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, { bearing: 175 });
+            t.deepEqual(fixedLngLat(transform.center, 4), { lng: -100.5, lat: 34.7171 }, 'correctly calculates coordinates for new bounds');
+            t.equal(fixedNum(transform.zoom, 3), 2.558);
+            t.equal(transform.bearing, 175);
+            t.end();
+        });
+
+        t.test('bearing negative number', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, { bearing: -30 });
+            t.deepEqual(fixedLngLat(transform.center, 4), { lng: -100.5, lat: 34.7171 }, 'correctly calculates coordinates for new bounds');
+            t.equal(fixedNum(transform.zoom, 3), 2.392);
+            t.equal(transform.bearing, -30);
+            t.end();
+        });        
 
         t.test('padding number', (t) => {
             const camera = createCamera();
