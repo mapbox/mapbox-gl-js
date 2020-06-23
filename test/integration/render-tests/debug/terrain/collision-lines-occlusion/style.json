@@ -2,44 +2,43 @@
     "version": 8,
     "metadata": {
         "test": {
+            "width": 200,
+            "height": 200,
             "collisionDebug": true,
-            "width": 256,
-            "height": 256,
             "description": "Covers placement and collision for elevated text. There is also text completely behind terrain that shouldn't be visible.",
             "operations": [
-                ["wait", 1000]
+                ["wait", 1500]
             ]
         }
     },
-    "center": [-74.689, 39.1917],
-    "pitch": 50,
-    "zoom": 8.34,
-    "bearing": -55,
+    "center": [-74.7546, 39.1667],
+    "pitch": 35,
+    "zoom": 9.1,
+    "bearing": -90,
     "terrain": {
         "source": "rgbterrain",
         "exaggeration": 33
-    },    
+    },
     "sources": {
         "us-counties": {
             "type": "vector",
             "maxzoom": 7,
             "minzoom": 7,
             "tiles": [
-                "local://tiles/counties-7-37-48.mvt"
+                "local://tiles/counties-{z}-{x}-{y}.mvt"
             ]
         },
         "rgbterrain": {
             "type": "raster-dem",
             "tiles": [
-              "local://tiles/const/7-37-48.terrain.512.png"
+              "local://tiles/const/{z}-{x}-{y}.terrain.512.png"
             ],
-            "minzoom": 7,
+            "minzoom": 6,
             "maxzoom": 7,
             "tileSize": 512
         }      
     },
     "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
-    "sprite": "local://sprites/sprite",
     "layers": [
         {
             "id": "background",
@@ -47,11 +46,6 @@
             "paint": {
                 "background-color": "white"
             }
-        },
-        {
-            "id": "hillshade",
-            "source": "rgbterrain",
-            "type": "hillshade"
         },
         {
             "id": "counties",

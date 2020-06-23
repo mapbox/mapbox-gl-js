@@ -8,6 +8,12 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
     </style>
 </head>
 
@@ -59,6 +65,9 @@
 
 <nav id="menu"></nav>
 <div id='map'></div>
+<div id='checkboxes'>
+    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+</div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -77,6 +86,12 @@ map.on('load', function () {
         "type": "raster-dem",
         "url": "mapbox://mapbox.terrain-rgb",
         "tileSize": 256,
+    });
+    map.addSource('mapbox-terrain', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
     });
     map.addLayer({
         "id": "Mapbox data",
@@ -122,6 +137,7 @@ map.on('load', function () {
             "visibility": "none"
         }
     }, 'waterway-river-canal-shadow');
+    document.getElementById('terrain-checkbox').onclick();
 });
 
 var toggleableLayerIds = ['Mapbox data', 'Terrarium data', 'Mapbox data to Z8'];
@@ -151,6 +167,10 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
     var layers = document.getElementById('menu');
     layers.appendChild(link);
 }
+
+document.getElementById('terrain-checkbox').onclick = function() {
+    map.setTerrain(this.checked ? {"source": 'mapbox-terrain'} : null);
+};
 
 </script>
 </body>

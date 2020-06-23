@@ -3,11 +3,16 @@
   "metadata": {
     "test": {
       "height": 200,
-      "width": 200
+      "width": 200,
+      "operations": [
+        [
+          "wait", 1500
+        ]
+      ]
     }
   },
   "center": [-113.2697514325975, 35.962383122262054],
-  "zoom": 12.7,
+  "zoom": 12.49,
   "pitch": 64,
   "bearing": -40,
   "terrain": {

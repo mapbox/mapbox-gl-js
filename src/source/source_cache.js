@@ -474,8 +474,10 @@ class SourceCache extends Evented {
      * @private
      * @param {boolean} updateForTerrain Signals to update tiles even if the
      * source is not used (this.used) by layers: it is used for terrain.
+     * @param {tileSize} tileSize If needed to get lower resolution ideal cover,
+     * override source.tileSize used in tile cover calculation.
      */
-    update(transform: Transform, updateForTerrain?: boolean) {
+    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) {
         this.transform = transform;
         if (!this._sourceLoaded || this._paused) { return; }
         assert(!(updateForTerrain && !this.usedForTerrain));
@@ -499,36 +501,16 @@ class SourceCache extends Evented {
                 .map((unwrapped) => new OverscaledTileID(unwrapped.canonical.z, unwrapped.wrap, unwrapped.canonical.z, unwrapped.canonical.x, unwrapped.canonical.y));
         } else {
             idealTileIDs = transform.coveringTiles({
-                tileSize: this._source.tileSize,
+                tileSize: tileSize || this._source.tileSize,
                 minzoom: this._source.minzoom,
                 maxzoom: this._source.maxzoom,
-                roundZoom: this._source.roundZoom,
+                roundZoom: this._source.roundZoom && !updateForTerrain,
                 reparseOverscaled: this._source.reparseOverscaled,
                 useElevationData: !!this.transform.elevation && !this.usedForTerrain
             });
 
             if (this._source.hasTile) {
                 idealTileIDs = idealTileIDs.filter((coord) => (this._source.hasTile: any)(coord));
-            }
-        }
-
-        if (this.usedForTerrain) {
-            // Append deeper tile cover (all parents withing depth of 3).
-            // These are covered tiles, fetched to avoid holes while zooming out.
-            const deepCover = {};
-            const cover = idealTileIDs.sort((a, b) => b.overscaledZ - a.overscaledZ);
-            for (const tileID of cover) {
-                if (deepCover.hasOwnProperty(tileID.key)) delete deepCover[tileID.key];
-                const limit = Math.max(tileID.overscaledZ - 3, 0);
-                for (let i = tileID.overscaledZ - 1; i > limit; i--) {
-                    const parent = tileID.scaledTo(i);
-                    deepCover[parent.key] = parent;
-                }
-            }
-            for (const key in deepCover) {
-                // Mark as covered to ensure that hillshade doesn't get prepared.
-                this._coveredTiles[key] = true;
-                idealTileIDs.push(deepCover[key]);
             }
         }
 

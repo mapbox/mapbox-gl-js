@@ -69,23 +69,11 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
     if (options.debug) map.showTileBoundaries = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
     if (options.showPadding) map.showPadding = true;
+    if (options.collisionDebug) map.showCollisionBoxes = true;
 
     const gl = map.painter.context.gl;
 
     map.once('load', () => {
-        if (options.collisionDebug) {
-            map.showCollisionBoxes = true;
-            if (options.operations) {
-                // When it is not practical to define all the tiles, to get them loaded,
-                // test can decide to use sleep or time-limited wait instead of wait.
-                // In such cases, don't append wait.
-                const lastOp = options.operations[options.operations.length - 1];
-                if (lastOp[0] !== 'sleep' && !(lastOp[0] === 'wait' && lastOp.length > 1))
-                    options.operations.push(["wait"]);
-            } else {
-                options.operations = [["wait"]];
-            }
-        }
         applyOperations(map, options.operations, () => {
             const viewport = gl.getParameter(gl.VIEWPORT);
             const w = viewport[2];
