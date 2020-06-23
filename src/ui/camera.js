@@ -480,6 +480,7 @@ class Camera extends Evented {
      *      in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
      * @param options Options object
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+     * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
@@ -492,7 +493,8 @@ class Camera extends Evented {
      */
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         bounds = LngLatBounds.convert(bounds);
-        return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), 0, options);
+        const bearing = options && options.bearing || 0;
+        return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
     }
 
     /**
