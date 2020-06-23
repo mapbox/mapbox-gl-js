@@ -8,7 +8,7 @@
       "allowed": 0.0005,
       "description": "Collision debug and occlusion test for text and icons.",
       "operations": [
-        ["sleep", 1200]
+        ["wait"]
       ]
     }
   },

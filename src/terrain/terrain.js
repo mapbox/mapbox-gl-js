@@ -12,7 +12,7 @@ import Program from '../render/program';
 import {Uniform1i, Uniform1f, Uniform2f, Uniform4f, UniformMatrix4f} from '../render/uniform_binding';
 import {prepareDEMTexture} from '../render/draw_hillshade';
 import EXTENT from '../data/extent';
-import {clamp} from '../util/util';
+import {clamp, warnOnce} from '../util/util';
 import assert from 'assert';
 import {mat4} from 'gl-matrix';
 import getWorkerPool from '../util/global_worker_pool';
@@ -73,7 +73,8 @@ class ProxySourceCache extends SourceCache {
     }
 
     // Override for transient nature of cover here: don't cache and retain.
-    update(transform: Transform, _?: boolean) {
+    /* eslint-disable no-unused-vars */
+    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) {
         this.transform = transform;
         const idealTileIDs = transform.coveringTiles({
             tileSize: this._source.tileSize,
@@ -206,19 +207,19 @@ export class Terrain extends Elevation {
             return console.warn(`Terrain cannot use source "${sourceId}" for terrain. Only 'raster-dem' source type is supported.`);
         }
         this._exaggeration = style.terrain.properties.get('exaggeration');
-        const demTileSize = this.sourceCache.getSource().tileSize;
         this.valid = true;
 
         const updateSourceCache = () => {
             if (this.sourceCache.used) {
-                // Use higher resolution for terrain, the same one that is used for hillshade.
-                this.sourceCache.update(transform, true);
-            } else {
-                // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
-                const tr = transform.clone();
-                tr.zoom -= tr.scaleZoom(demTileSize / GRID_DIM);
-                this.sourceCache.update(tr, true);
+                warnOnce(`Raster DEM source '${this.sourceCache.id}' is used both for terrain and as layer source.\n` +
+                    'This leads to lower resolution of hillshade. For full hillshade resolution but higher memory consumption, define another raster DEM source.');
             }
+            // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
+            const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
+            const proxyTileSize = this.proxySourceCache.getSource().tileSize;
+            // Dem tile needs to be parent or at least of the same zoom level as proxy tile.
+            // Tile cover roundZoom behavior is set to the same as for proxy (false) in SourceCache.update().
+            this.sourceCache.update(transform, demScale * proxyTileSize, true);
             // As a result of update, we get new set of tiles: reset lookup cache.
             this._findCoveringTileCache[this.sourceCache.id] = {};
         };
@@ -312,12 +313,11 @@ export class Terrain extends Elevation {
     _assignTerrainTiles(coords: Array<OverscaledTileID>) {
         coords.forEach((tileID) => {
             if (this.terrainTileForTile[tileID.key]) return;
-            let demTile = this.sourceCache.getTile(tileID) || this.sourceCache.findLoadedParent(tileID, 0);
+            let demTile = this.sourceCache.getTile(tileID) || this._findTileCoveringTileID(tileID, this.sourceCache);
             while (demTile && !demTile.dem) {
-                demTile = this.sourceCache.findLoadedParent(demTile.tileID, 0);
+                demTile = this._findTileCoveringTileID(tileID, this.sourceCache);
             }
             if (!demTile || !demTile.dem) return;
-            this.sourceCache._addTile(demTile.tileID); // If not in _tiles, promote from _cache to _tiles.
             this.terrainTileForTile[tileID.key] = demTile;
         });
     }
