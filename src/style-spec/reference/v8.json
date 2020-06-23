@@ -3109,7 +3109,7 @@
         }
       },
       "feature": {
-        "doc": "",
+        "doc": "Generates an integer hash of the feature geometry, attributes, and ID.",
         "group": "MTS - Server Side Tiling",
         "sdk-support": {
           "basic functionality": {
@@ -3118,7 +3118,7 @@
         }
       },
       "random": {
-        "doc": "",
+        "doc": "Generates a random integer value.",
         "group": "MTS - Server Side Tiling",
         "sdk-support": {
           "basic functionality": {
@@ -3127,7 +3127,7 @@
         }
       },
       "hash": {
-        "doc": "",
+        "doc": "Generates an integer hash of a string value.",
         "group": "MTS - Server Side Tiling",
         "sdk-support": {
           "basic functionality": {
