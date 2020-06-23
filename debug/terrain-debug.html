@@ -28,6 +28,7 @@
     <label><input id='satellite-checkbox' type='checkbox'> satellite</label><br />
     <label><input id='buildings-checkbox' type='checkbox'> buildings</label><br />
     <label><input id='road-label-checkbox' type='checkbox'> road-label-*</label><br />
+    <label><input id='hillshade-checkbox' type='checkbox'> hillshade using terrain</label><br />
     <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
 </div>
 
@@ -152,6 +153,20 @@ document.getElementById('satellite-checkbox').onclick = function() {
 
 document.getElementById('buildings-checkbox').onclick = function() {
     map.setLayoutProperty(buildingsLayerId, 'visibility', this.checked ? 'visible' : 'none');
+};
+
+document.getElementById('hillshade-checkbox').onclick = function() {
+    const hillshadeId = 'mapbox-dem-hillshade';
+    if (!map.getLayer(hillshadeId)) {
+        // Inject hillshade from terrain layer
+        const addHillshadeBefore = map.style._order.find(id => id.includes('hillshade'));
+        map.addLayer({
+            "id": 'mapbox-dem-hillshade',
+            "source": "mapbox-dem",
+            "type": "hillshade"
+        }, addHillshadeBefore);
+    }
+    map.setLayoutProperty(hillshadeId, 'visibility', this.checked ? 'visible' : 'none');
 };
 
 document.getElementById('road-label-checkbox').onclick = function() {

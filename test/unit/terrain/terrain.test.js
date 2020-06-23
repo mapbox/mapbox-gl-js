@@ -13,7 +13,7 @@ function createStyle() {
     return {
         version: 8,
         center: [180, 0],
-        zoom: 12,
+        zoom: 14,
         sources: {},
         layers: []
     };
