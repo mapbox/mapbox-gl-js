@@ -479,7 +479,7 @@ class SourceCache extends Evented {
      */
     update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) {
         this.transform = transform;
-        if (!this._sourceLoaded || this._paused) { return; }
+        if (!this._sourceLoaded || this._paused || this.transform.freezeTileCoverage) { return; }
         assert(!(updateForTerrain && !this.usedForTerrain));
         if (this.usedForTerrain && !updateForTerrain) {
             // If source is used for both terrain and hillshade, don't update it twice.
