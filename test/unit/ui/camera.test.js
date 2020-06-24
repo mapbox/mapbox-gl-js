@@ -1848,12 +1848,21 @@ test('camera', (t) => {
             t.end();
         });
 
-        t.test('asymetrical padding', (t) => {
+        t.test('asymmetrical padding', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
             const transform = camera.cameraForBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
             t.deepEqual(fixedLngLat(transform.center, 4), {lng: -96.5558, lat: 32.0833}, 'correctly calculates coordinates for bounds with padding option as object applied');
+            t.end();
+        });
+
+        t.test('bearing and asymmetrical padding', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -103.3761, lat: 31.7099}, 'correctly calculates coordinates for bounds with bearing and padding option as object applied');
             t.end();
         });
 
