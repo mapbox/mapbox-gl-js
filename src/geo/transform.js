@@ -49,6 +49,7 @@ class Transform {
     skyboxMatrix: Float32Array;
     glCoordMatrix: Float32Array;
     labelPlaneMatrix: Float32Array;
+    freezeTileCoverage: boolean;
     constantCameraHeight: boolean;
     _elevation: ?Elevation;
     _fov: number;
@@ -117,6 +118,7 @@ class Transform {
         clone._edgeInsets = this._edgeInsets.clone();
         clone._camera = this._camera.clone();
         clone._calcMatrices();
+        clone.freezeTileCoverage = this.freezeTileCoverage;
         return clone;
     }
 
