@@ -117,6 +117,7 @@ class Camera extends Evented {
     transform: Transform;
     _moving: boolean;
     _zooming: boolean;
+    _zoomChanging: boolean;
     _rotating: boolean;
     _pitching: boolean;
     _padding: boolean;
@@ -138,6 +139,7 @@ class Camera extends Evented {
         super();
         this._moving = false;
         this._zooming = false;
+        this._zoomChanging = false;
         this.transform = transform;
         this._bearingSnap = options.bearingSnap;
 
@@ -902,7 +904,7 @@ class Camera extends Evented {
             pitching: this._pitching
         };
 
-        this._zooming = this._zooming || (zoom !== startZoom);
+        this._zooming = this._zoomChanging = this._zooming || (zoom !== startZoom);
         this._rotating = this._rotating || (startBearing !== bearing);
         this._pitching = this._pitching || (pitch !== startPitch);
         this._padding = !tr.isPaddingEqual(padding);
@@ -929,6 +931,7 @@ class Camera extends Evented {
                 pointAtOffset = tr.centerPoint.add(offsetAsPoint);
             }
 
+            const preZoom = tr.zoom;
             if (around) {
                 tr.setLocationAtPoint(around, aroundPoint);
             } else {
@@ -940,6 +943,10 @@ class Camera extends Evented {
                 const newCenter = tr.unproject(from.add(delta.mult(k * speedup)).mult(scale));
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
+
+            // Change in the zoom might be implicit due to terrain elevation
+            if (preZoom !== tr.zoom)
+                this._zoomChanging = true;
 
             this._fireMoveEvents(eventData);
 
@@ -970,7 +977,7 @@ class Camera extends Evented {
 
     _fireMoveEvents(eventData?: Object) {
         this.fire(new Event('move', eventData));
-        if (this._zooming) {
+        if (this._zoomChanging) {
             this.fire(new Event('zoom', eventData));
         }
         if (this._rotating) {
@@ -996,6 +1003,7 @@ class Camera extends Evented {
         const wasPitching = this._pitching;
         this._moving = false;
         this._zooming = false;
+        this._zoomChanging = false;
         this._rotating = false;
         this._pitching = false;
         this._padding = false;
@@ -1193,7 +1201,7 @@ class Camera extends Evented {
             options.duration = 0;
         }
 
-        this._zooming = true;
+        this._zooming = this._zoomChanging = true;
         this._rotating = (startBearing !== bearing);
         this._pitching = (pitch !== startPitch);
         this._padding = !tr.isPaddingEqual(padding);
