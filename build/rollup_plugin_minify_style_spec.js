@@ -11,8 +11,12 @@ export default function minifyStyleSpec() {
                 return;
             }
 
+            const spec = JSON.parse(source);
+
+            delete spec['expression_name'];
+
             return {
-                code: JSON.stringify(JSON.parse(source), replacer, 0),
+                code: JSON.stringify(spec, replacer, 0),
                 map: {mappings: ''}
             };
         }
