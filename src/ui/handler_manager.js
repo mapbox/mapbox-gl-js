@@ -522,7 +522,8 @@ class HandlerManager {
 
     _triggerRenderFrame() {
         if (this._frameId === undefined) {
-            this._frameId = this._map._requestRenderFrame(timeStamp => {
+            this._map.triggerRepaint();
+            this.frameId = this._map._renderTaskQueue.add(timeStamp => {
                 delete this._frameId;
                 this.handleEvent(new RenderFrameEvent('renderFrame', {timeStamp}));
                 this._applyChanges();

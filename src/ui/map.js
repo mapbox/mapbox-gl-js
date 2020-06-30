@@ -2383,7 +2383,7 @@ class Map extends Camera {
      * @private
      */
     _requestRenderFrame(callback: () => void): TaskID {
-        this.triggerRepaint();
+        this._update();
         return this._renderTaskQueue.add(callback);
     }
 
