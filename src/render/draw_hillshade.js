@@ -23,7 +23,6 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     if (painter.renderPass !== 'offscreen' && painter.renderPass !== 'translucent') return;
 
     const context = painter.context;
-    const sourceMaxZoom = sourceCache.getSource().maxzoom;
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const colorMode = painter.colorModeForRenderPass();
@@ -37,7 +36,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         if (tile.needsHillshadePrepare && painter.renderPass === 'offscreen') {
-            prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, StencilMode.disabled, colorMode);
+            prepareHillshade(painter, tile, layer, depthMode, StencilMode.disabled, colorMode);
         } else if (painter.renderPass === 'translucent') {
             const stencilMode = renderingToTexture && painter.terrain ?
                 painter.terrain.stencilModeForRTTOverlap(coord) : stencilModes[coord.overscaledZ];
@@ -87,7 +86,7 @@ export function prepareDEMTexture(painter: Painter, tile: Tile, dem: DEMData) {
 
 // hillshade rendering is done in two steps. the prepare step first calculates the slope of the terrain in the x and y
 // directions for each pixel, and saves those values to a framebuffer texture in the r and g channels.
-function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stencilMode, colorMode) {
+function prepareHillshade(painter, tile, layer, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
     if (!tile.dem) return;
@@ -115,7 +114,7 @@ function prepareHillshade(painter, tile, layer, sourceMaxZoom, depthMode, stenci
 
     painter.useProgram('hillshadePrepare').draw(context, gl.TRIANGLES,
         depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        hillshadeUniformPrepareValues(tile.tileID, dem, sourceMaxZoom),
+        hillshadeUniformPrepareValues(tile.tileID, dem),
         layer.id, painter.rasterBoundsBuffer,
         painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
 
