@@ -56,6 +56,58 @@ test('Elevation', (t) => {
         callback();
     });
 
+    t.test('elevation sampling', t => {
+
+        // Dem texture with 0m elevation
+        const pixelCount = (TILE_SIZE + 2) * (TILE_SIZE + 2);
+        const pixelData = new Uint8Array(pixelCount * 4);
+
+        for (let i = 0; i < pixelCount * 4; i += 4) {
+            pixelData[i + 0] = 1;
+            pixelData[i + 1] = 134;
+            pixelData[i + 2] = 160;
+            pixelData[i + 3] = 0;
+        }
+        const zeroDem = new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixelData));
+
+        const map = createMap(t);
+        map.on('style.load', () => {
+            map.addSource('mapbox-dem', {
+                "type": "raster-dem",
+                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                "tileSize": TILE_SIZE,
+                "maxzoom": 14
+            });
+            const cache = map.style.sourceCaches['mapbox-dem'];
+            cache.used = cache._sourceLoaded = true;
+            cache._loadTile = (tile, callback) => {
+                tile.dem = zeroDem;
+                tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
+                tile.state = 'loaded';
+                callback(null);
+            };
+            map.setTerrain({"source": "mapbox-dem"});
+            map.once('render', () => {
+                const elevationError = -1;
+                t.test('Sample', t => {
+                    const elevation = map.painter.terrain.getAtPoint({x: 0.51, y: 0.49}, elevationError);
+                    t.equal(elevation, 0);
+                    t.end();
+                });
+
+                t.test('Invalid sample position', t => {
+                    const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 1.1}, elevationError);
+                    const elevation2 = map.painter.terrain.getAtPoint({x: 1.15, y: -0.001}, elevationError);
+                    t.equal(elevation1, elevationError);
+                    t.equal(elevation2, elevationError);
+                    t.end();
+                });
+                t.end();
+            });
+        });
+    });
+
     t.test('interpolation', t => {
         const map = createMap(t, {
             style: extend(createStyle(), {

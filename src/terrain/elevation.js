@@ -22,12 +22,15 @@ export class Elevation {
      * @param {number} defaultIfNotLoaded Value that is returned if the dem tile of the provided point is not loaded
      * @returns {number} Altitude in meters.
      * If there is no loaded tile that carries information for the requested
-     * point elevation, returns 0.
+     * point elevation, returns `defaultIfNotLoaded`.
      * Doesn't invoke network request to fetch the data.
      */
     getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: number = 0): number {
         const src = this._source();
         if (!src) return defaultIfNotLoaded;
+        if (point.y < 0.0 || point.y > 1.0) {
+            return defaultIfNotLoaded;
+        }
         const cache: SourceCache = src;
         const z = cache.getSource().maxzoom;
         const tiles = 1 << z;
