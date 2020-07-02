@@ -45,6 +45,7 @@ import type Transform from '../geo/transform';
 export const GRID_DIM = 128;
 
 const FBO_POOL_SIZE = 5;
+const RENDER_CACHE_MAX_SIZE = 50;
 
 // Symbols are draped only for specific cases: see _isLayerDrapedOverTerrain
 const drapedLayers = {'fill': true, 'line': true, 'background': true, "hillshade": true, "raster": true};
@@ -60,6 +61,10 @@ const drapedLayers = {'fill': true, 'line': true, 'background': true, "hillshade
  * constructed only for proxy tile content, not for full overscalled vector tile.
  */
 class ProxySourceCache extends SourceCache {
+    renderCache: Array<FBO>;
+    renderCachePool: Array<number>;
+    proxyCachedFBO: {[string]: number};
+
     constructor(map: Map) {
         super('proxy', {
             type: 'geojson',
@@ -70,6 +75,9 @@ class ProxySourceCache extends SourceCache {
         // For that, initialize internal structures used for tile cover update.
         this.map = ((this.getSource(): any): GeoJSONSource).map = map;
         this.used = this._sourceLoaded = true;
+        this.renderCache = [];
+        this.renderCachePool = [];
+        this.proxyCachedFBO = {};
     }
 
     // Override for transient nature of cover here: don't cache and retain.
@@ -98,10 +106,26 @@ class ProxySourceCache extends SourceCache {
 
         for (const id in this._tiles) {
             if (!(id in incoming)) {
+                this.freeFBO(id);
                 this._tiles[id].state = 'unloaded';
                 delete this._tiles[id];
             }
         }
+    }
+
+    freeFBO(id: string) {
+        const fboIndex = this.proxyCachedFBO[id];
+        if (fboIndex !== undefined) {
+            this.renderCachePool.push(fboIndex);
+            delete this.proxyCachedFBO[id];
+        }
+    }
+
+    deallocRenderCache() {
+        this.renderCache.forEach(fbo => fbo.fb.destroy());
+        this.renderCache = [];
+        this.renderCachePool = [];
+        this.proxyCachedFBO = {};
     }
 }
 
@@ -123,6 +147,7 @@ class ProxiedTileID extends OverscaledTileID {
 }
 
 type OverlapStencilType = false | 'Clip' | 'Mask';
+type FBO = {fb: Framebuffer, tex: Texture, dirty: boolean, ref: number};
 
 export class Terrain extends Elevation {
     terrainTileForTile: {[string]: Tile};
@@ -137,7 +162,7 @@ export class Terrain extends Elevation {
     proxyToSource: {[string]: {[string]: Array<ProxiedTileID>}};
     proxySourceCache: ProxySourceCache;
     renderingToTexture: boolean;
-    styleDirty: boolean;
+    style: Style;
     orthoMatrix: mat4;
     valid: boolean;
 
@@ -154,11 +179,13 @@ export class Terrain extends Elevation {
     _depthTexture: Texture;
     _depthDone: boolean;
     _previousZoom: number;
-    pool: Array<{fb: Framebuffer, tex: Texture, dirty: boolean, ref: number}>;
-    poolIndex: number;
+    pool: Array<FBO>;
+    currentFBO: FBO;
     renderedToTile: boolean;
 
     _findCoveringTileCache: {[string]: {[string]: ?string}};
+
+    _tilesDirty: {[string]: {[string]: boolean}};
 
     constructor(painter: Painter, style: Style) {
         super();
@@ -186,9 +213,12 @@ export class Terrain extends Elevation {
         this._previousZoom = painter.transform.zoom;
         this.pool = [];
         this._findCoveringTileCache = {};
-
+        this._tilesDirty = {};
+        this.style = style;
         style.on('data', (event) => {
-            this.styleDirty = this.styleDirty || event.dataType === 'style';
+            if (event.coord && event.dataType === 'source') {
+                this._clearRenderCacheForTile(event.sourceId, event.coord);
+            }
         });
     }
 
@@ -198,13 +228,23 @@ export class Terrain extends Elevation {
      * before using transform for source cache update.
      */
     update(style: Style, transform: Transform) {
+        if (this.style !== style) {
+            style.on('data', (event) => {
+                if (event.coord && event.dataType === 'source') {
+                    this._clearRenderCacheForTile(event.sourceId, event.coord);
+                }
+            });
+            this.style = style;
+        }
         const sourceId = style.terrain.properties.get('source');
-        this.valid = false;
-        if (!sourceId) return console.warn(`Terrain source is not defined.`);
         const sourceCaches = style.sourceCaches;
         this.sourceCache = sourceCaches[sourceId];
-        if (!this.sourceCache) return console.warn(`Terrain source "${sourceId}" is not defined.`);
+        if (!this.sourceCache) {
+            this._disable();
+            return console.warn(`Terrain source "${sourceId}" is not defined.`);
+        }
         if (this.sourceCache.getSource().type !== 'raster-dem') {
+            this._disable();
             return console.warn(`Terrain cannot use source "${sourceId}" for terrain. Only 'raster-dem' source type is supported.`);
         }
         this._exaggeration = style.terrain.properties.get('exaggeration');
@@ -244,6 +284,17 @@ export class Terrain extends Elevation {
         this._depthDone = false;
     }
 
+    // Terrain
+    _disable() {
+        this.valid = false;
+        this.proxySourceCache.deallocRenderCache();
+        if (this.painter.style) {
+            for (const id in this.painter.style.sourceCaches) {
+                this.painter.style.sourceCaches[id].usedForTerrain = false;
+            }
+        }
+    }
+
     // Implements Elevation::_source.
     _source(): ?SourceCache {
         return this.valid ? this.sourceCache : null;
@@ -267,29 +318,33 @@ export class Terrain extends Elevation {
     // texture over terrain grid.
     updateTileBinding(sourcesCoords: {[string]: Array<OverscaledTileID>}) {
         if (!this.valid) return;
-        this.terrainTileForTile = {};
-        this.proxyToSource = {};
+
         const psc = this.proxySourceCache;
         const tr = this.painter.transform;
-        // when zooming in, no need for handling partially loaded tiles to hide holes.
-        const coords = this.proxyCoords = this.painter.options.zooming && tr.zoom > this._previousZoom ? psc.getVisibleCoordinates(false) :
-            psc.getIds().map((id) => {
-                const tileID = psc.getTileByID(id).tileID;
-                tileID.posMatrix = tr.calculatePosMatrix(tileID.toUnwrapped());
-                return tileID;
-            });
+        const options = this.painter.options;
+        this.drapeFirst = options.zooming || options.moving || options.rotating || this.forceDrapeFirst;
+        const coords = this.proxyCoords = psc.getIds().map((id) => {
+            const tileID = psc.getTileByID(id).tileID;
+            tileID.posMatrix = tr.calculatePosMatrix(tileID.toUnwrapped());
+            return tileID;
+        });
         sortByDistanceToCamera(coords, this.painter);
         this._previousZoom = tr.zoom;
+
+        const previousProxyToSource = this.proxyToSource || {};
+        this.proxyToSource = {};
         coords.forEach((tileID) => {
             this.proxyToSource[tileID.key] = {};
         });
+
+        this.terrainTileForTile = {};
         const sourceCaches = this.painter.style.sourceCaches;
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (!sourceCache.getSource().loaded()) continue;
             if (!sourceCache.used) continue;
             if (sourceCache !== this.sourceCache) this._findCoveringTileCache[sourceCache.id] = {};
-            this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[id]);
+            this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[id], previousProxyToSource);
             if (sourceCache.usedForTerrain) continue;
             const coordinates = sourcesCoords[id];
             if (sourceCache.getSource().reparseOverscaled) {
@@ -303,11 +358,10 @@ export class Terrain extends Elevation {
         this._assignTerrainTiles(coords);
         this._prepareDEMTextures();
 
-        const options = this.painter.options;
-        this.drapeFirst = options.zooming || options.moving || options.rotating || this.forceDrapeFirst;
+        this._setupRenderCache(previousProxyToSource);
+
         this.drapeFirstPending = this.drapeFirst;
         this.renderingToTexture = false;
-        if (this.styleDirty) this.styleDirty = false;
         this._initFBOPool();
     }
 
@@ -418,26 +472,39 @@ export class Terrain extends Elevation {
         const painter = this.painter;
         const context = this.painter.context;
         const sourceCaches = this.painter.style.sourceCaches;
-        const proxies = this.proxiedCoords[this.proxySourceCache.id];
+        const psc = this.proxySourceCache;
+        const proxies = this.proxiedCoords[psc.id];
+        const setupRenderToScreen = () => {
+            context.bindFramebuffer.set(null);
+            context.viewport.set([0, 0, painter.width, painter.height]);
+            this.renderingToTexture = false;
+        };
+
         const start = painter.currentLayer;
-        let end = start;
+        let end = start; // end is computed as the first next non draped layer. It is not used in drapeFirst mode.
+
+        let drawAsRasterCoords = [];
         const layerIds = painter.style._order;
 
-        let j = 0;
+        let poolIndex = 0;
         for (let i = 0; i < proxies.length; i++) {
             const proxy = proxies[i];
 
-            // assign fbo and texture to the tile.
-            const tile = this.proxySourceCache.getTileByID(proxy.proxyTileKey);
-            this.poolIndex = i % FBO_POOL_SIZE;
-            const pool = this.pool[this.poolIndex];
-            tile.texture = pool.tex;
-            context.bindFramebuffer.set(pool.fb.framebuffer);
+            // bind framebuffer and assign texture to the tile (texture used in drawTerrainRaster).
+            const tile = psc.getTileByID(proxy.proxyTileKey);
+            const renderCacheIndex = psc.proxyCachedFBO[proxy.key];
+            const fbo = this.currentFBO = renderCacheIndex !== undefined ? psc.renderCache[renderCacheIndex] : this.pool[poolIndex++];
+            tile.texture = fbo.tex;
+            if (renderCacheIndex !== undefined && !fbo.dirty) {
+                drawAsRasterCoords.push(tile.tileID); // use cached render from previous pass, no need to render again.
+                continue;
+            }
+            context.bindFramebuffer.set(fbo.fb.framebuffer);
             this.renderedToTile = false; // reset flag.
-            if (pool.dirty) {
+            if (fbo.dirty) {
                 // Clear on start.
                 context.clear({color: Color.transparent});
-                pool.dirty = false;
+                fbo.dirty = false;
             }
 
             let currentStencilSource; // There is no need to setup stencil for the same source for consecutive layers.
@@ -454,56 +521,107 @@ export class Terrain extends Elevation {
                 const proxiedCoords = sourceCache ? this.proxyToSource[proxy.key][sourceCache.id] : [proxy];
                 if (!proxiedCoords) continue; // when tile is not loaded yet for the source cache.
                 const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
-                context.viewport.set([0, 0, pool.fb.width, pool.fb.height]);
+                context.viewport.set([0, 0, fbo.fb.width, fbo.fb.height]);
                 if (currentStencilSource !== layer.source) {
                     this._setupStencil(proxiedCoords, layer);
                     currentStencilSource = layer.source;
                 }
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
-            pool.dirty = this.renderedToTile;
+            fbo.dirty = this.renderedToTile;
+            if (this.renderedToTile) drawAsRasterCoords.push(tile.tileID);
 
-            if ((i + 1) % FBO_POOL_SIZE === 0 || i === proxies.length - 1) {
-                // End of pool or tiles to render: render prepared to screen.
-                const coords = [];
-                const psc = this.proxySourceCache;
-                for (; j <= i; j++) {
-                    if (this.pool[j % FBO_POOL_SIZE].dirty) {
-                        const proxy = proxies[j];
-                        const tile = psc.getTileByID(proxy.proxyTileKey);
-                        coords.push(tile.tileID);
-                    }
-                }
-
-                if (coords.length > 0) {
-                    context.bindFramebuffer.set(null);
-                    context.viewport.set([0, 0, painter.width, painter.height]);
-                    this.renderingToTexture = false;
-                    drawTerrainRaster(painter, this, psc, coords);
+            if (poolIndex === FBO_POOL_SIZE) {
+                poolIndex = 0;
+                if (drawAsRasterCoords.length > 0) {
+                    setupRenderToScreen();
+                    drawTerrainRaster(painter, this, psc, drawAsRasterCoords);
                     this.renderingToTexture = true;
+                    drawAsRasterCoords = [];
                 }
             }
         }
-        this.renderingToTexture = false;
-        context.bindFramebuffer.set(null);
-        context.viewport.set([0, 0, painter.width, painter.height]);
+        setupRenderToScreen();
+        if (drawAsRasterCoords.length > 0) drawTerrainRaster(painter, this, psc, drawAsRasterCoords);
         painter.currentLayer = this.drapeFirst ? -1 : end;
         assert(!this.drapeFirst || (start === 0 && painter.currentLayer === -1));
     }
 
-    _initFBOPool() {
+    _createFBO(): FBO {
         const painter = this.painter;
         const context = painter.context;
         const gl = context.gl;
+        const tileSize = this.proxySourceCache.getSource().tileSize * 2; // *2 is to avoid upscaling bitmap on zoom.
+        context.activeTexture.set(gl.TEXTURE0);
+        const tex = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
+        tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        const fb = context.createFramebuffer(tileSize, tileSize, false);
+        fb.colorAttachment.set(tex.texture);
+        return {fb, tex, dirty: false, ref: 1};
+    }
+
+    _initFBOPool() {
         while (this.pool.length < Math.min(FBO_POOL_SIZE, this.proxyCoords.length)) {
-            const tileSize = this.proxySourceCache.getSource().tileSize * 2; // *2 is to avoid upscaling bitmap on zoom.
-            context.activeTexture.set(gl.TEXTURE0);
-            const tex = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
-            tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            const fb = context.createFramebuffer(tileSize, tileSize, false);
-            fb.colorAttachment.set(tex.texture);
-            this.pool.push({fb, tex, dirty: false, ref: 1});
+            this.pool.push(this._createFBO());
         }
+    }
+
+    _setupRenderCache(previousProxyToSource: {[string]: {[string]: Array<ProxiedTileID>}}) {
+        const psc = this.proxySourceCache;
+        if (!this.drapeFirst || this.painter.style._order.some(id => {
+            // Disable render caches on dynamic events due to fading.
+            const layer = this.painter.style._layers[id];
+            return !layer.isHidden(this.painter.transform.zoom) && layer.getCrossfadeParameters().t !== 1;
+        })) {
+            if (psc.renderCache.length > psc.renderCachePool.length) {
+                const used = ((Object.values(psc.proxyCachedFBO): any): Array<number>);
+                psc.proxyCachedFBO = {};
+                assert(psc.renderCache.length === psc.renderCachePool.length + used.length);
+                psc.renderCachePool = psc.renderCachePool.concat(used);
+            }
+            return;
+        }
+        const coords = this.proxyCoords;
+        const dirty = this._tilesDirty;
+        for (let i = coords.length - 1; i >= 0; i--) {
+            const proxy = coords[i];
+            const tile = psc.getTileByID(proxy.key);
+
+            if (psc.proxyCachedFBO[proxy.key] !== undefined) {
+                assert(tile.texture);
+                const prev = previousProxyToSource[proxy.key];
+                assert(prev);
+                // Reuse previous render from cache if there was no change of
+                // content that was used to render proxy tile.
+                const current = this.proxyToSource[proxy.key];
+                let equal = 0;
+                for (const source in current) {
+                    const tiles = current[source];
+                    const prevTiles = prev[source];
+                    if (!prevTiles || prevTiles.length !== tiles.length ||
+                        tiles.some((t, index) => (t !== prevTiles[index] || (dirty[source] && dirty[source].hasOwnProperty(t.key))))) {
+                        equal = -1;
+                        break;
+                    }
+                    ++equal;
+                }
+                // dirty === false: doesn't need to be rendered to, just use cached render.
+                psc.renderCache[psc.proxyCachedFBO[proxy.key]].dirty = equal < 0 || equal !== Object.values(prev).length;
+            } else {
+                // Assign renderCache FBO if there are available FBOs in pool.
+                let index = psc.renderCachePool.pop();
+                if (index === undefined && psc.renderCache.length < RENDER_CACHE_MAX_SIZE) {
+                    index = psc.renderCache.length;
+                    psc.renderCache.push(this._createFBO());
+                    assert(psc.renderCache.length <= coords.length);
+                }
+                if (index !== undefined) {
+                    psc.proxyCachedFBO[proxy.key] = index;
+                    psc.renderCache[index].dirty = true; // needs to be rendered to.
+                }
+            }
+        }
+        this._tilesDirty = {};
     }
 
     _setupStencil(proxiedCoords: Array<ProxiedTileID>, layer: StyleLayer) {
@@ -518,8 +636,8 @@ export class Terrain extends Elevation {
         // more need: in such case, if there is no overlap, stencilling is disabled.
         if (proxiedCoords.length <= 1) { this._overlapStencilType = false; return; }
 
-        const pool = this.pool[this.poolIndex];
-        const fbo = pool.fb;
+        const fbo = this.currentFBO;
+        const fb = fbo.fb;
         let stencilRange;
         if (layer.isTileClipped()) {
             stencilRange = proxiedCoords.length;
@@ -533,18 +651,18 @@ export class Terrain extends Elevation {
             this._overlapStencilType = false;
             return;
         }
-        if (!fbo.depthAttachment) {
-            const renderbuffer = context.createRenderbuffer(context.gl.DEPTH_STENCIL, fbo.width, fbo.height);
-            fbo.depthAttachment = new DepthStencilAttachment(context, fbo.framebuffer);
-            fbo.depthAttachment.set(renderbuffer);
+        if (!fb.depthAttachment) {
+            const renderbuffer = context.createRenderbuffer(context.gl.DEPTH_STENCIL, fb.width, fb.height);
+            fb.depthAttachment = new DepthStencilAttachment(context, fb.framebuffer);
+            fb.depthAttachment.set(renderbuffer);
             context.clear({stencil: 0});
         }
-        if (pool.ref + stencilRange > 256) {
+        if (fbo.ref + stencilRange > 256) {
             context.clear({stencil: 0});
-            pool.ref = 0;
+            fbo.ref = 0;
         }
-        pool.ref += stencilRange;
-        this._overlapStencilMode.ref = pool.ref;
+        fbo.ref += stencilRange;
+        this._overlapStencilMode.ref = fbo.ref;
         if (layer.isTileClipped()) {
             this._renderTileClippingMasks(proxiedCoords, this._overlapStencilMode.ref);
         }
@@ -627,9 +745,9 @@ export class Terrain extends Elevation {
         return drapedLayers.hasOwnProperty(styleLayer.type);
     }
 
-    _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>) {
+    _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[string]: {[string]: Array<ProxiedTileID>}}) {
         if (sourceCache.getSource() instanceof ImageSource) {
-            return this._setupProxiedCoordsForImageSource(sourceCache, sourceCoords);
+            return this._setupProxiedCoordsForImageSource(sourceCache, sourceCoords, previousProxyToSource);
         }
         this._findCoveringTileCache[sourceCache.id] = this._findCoveringTileCache[sourceCache.id] || {};
         const coords = this.proxiedCoords[sourceCache.id] = [];
@@ -639,7 +757,7 @@ export class Terrain extends Elevation {
             const proxied = this._findTileCoveringTileID(proxyTileID, sourceCache);
             if (proxied) {
                 assert(proxied.hasData());
-                const id = this._createProxiedId(proxyTileID, proxied);
+                const id = this._createProxiedId(proxyTileID, proxied, previousProxyToSource[proxyTileID.key] && previousProxyToSource[proxyTileID.key][sourceCache.id]);
                 coords.push(id);
                 this.proxyToSource[proxyTileID.key][sourceCache.id] = [id];
             }
@@ -652,7 +770,7 @@ export class Terrain extends Elevation {
             // Don't add the tile if already added in loop above.
             if (proxy && proxy.tileID.canonical.z !== tile.tileID.canonical.z) {
                 const array = this.proxyToSource[proxy.tileID.key][sourceCache.id];
-                const id = this._createProxiedId(proxy.tileID, tile);
+                const id = this._createProxiedId(proxy.tileID, tile, previousProxyToSource[proxy.tileID.key] && previousProxyToSource[proxy.tileID.key][sourceCache.id]);
                 if (!array) {
                     this.proxyToSource[proxy.tileID.key][sourceCache.id] = [id];
                 } else {
@@ -667,7 +785,7 @@ export class Terrain extends Elevation {
         this._sourceTilesOverlap[sourceCache.id] = hasOverlap;
     }
 
-    _setupProxiedCoordsForImageSource(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>) {
+    _setupProxiedCoordsForImageSource(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[string]: {[string]: Array<ProxiedTileID>}}) {
         const coords = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
         const imageSource: ImageSource = ((sourceCache.getSource(): any): ImageSource);
@@ -702,7 +820,7 @@ export class Terrain extends Elevation {
                 // Setup proxied -> proxy mapping only if image on given tile wrap intersects the proxy tile.
                 if (tileOutsideImage(proxyTileID, tile.tileID)) continue;
 
-                const id = this._createProxiedId(proxyTileID, tile);
+                const id = this._createProxiedId(proxyTileID, tile, previousProxyToSource[proxyTileID.key] && previousProxyToSource[proxyTileID.key][sourceCache.id]);
                 const array = this.proxyToSource[proxyTileID.key][sourceCache.id];
                 if (!array) {
                     this.proxyToSource[proxyTileID.key][sourceCache.id] = [id];
@@ -714,8 +832,13 @@ export class Terrain extends Elevation {
         }
     }
 
-    _createProxiedId(proxyTileID: OverscaledTileID, tile: Tile): ProxiedTileID {
+    // recycle is previous pass content that likely contains proxied ID combining proxy and source tile.
+    _createProxiedId(proxyTileID: OverscaledTileID, tile: Tile, recycle: Array<ProxiedTileID>): ProxiedTileID {
         let matrix = this.orthoMatrix;
+        if (recycle) {
+            const recycled = recycle.find(proxied => (proxied.key === tile.tileID.key));
+            if (recycled) return recycled;
+        }
         if (tile.tileID.key !== proxyTileID.key) {
             const scale = proxyTileID.canonical.z - tile.tileID.canonical.z;
             matrix = mat4.create();
@@ -808,10 +931,20 @@ export class Terrain extends Elevation {
     /*
      * Bookkeeping if something gets rendered to the tile.
      */
-    prepareDrawTile(_: OverscaledTileID) {
+    prepareDrawTile(coord: OverscaledTileID, disableRenderCache?: boolean) {
         if (!this.renderedToTile) {
             this.renderedToTile = true;
         }
+        if (disableRenderCache) {
+            const layer = this.painter.style._layers[this.painter.style._order[this.painter.currentLayer]];
+            this._clearRenderCacheForTile(layer.source, coord);
+        }
+    }
+
+    _clearRenderCacheForTile(source: string, coord: OverscaledTileID) {
+        let sourceTiles = this._tilesDirty[source];
+        if (!sourceTiles) sourceTiles = this._tilesDirty[source] = {};
+        sourceTiles[coord.key] = true;
     }
 }
 
