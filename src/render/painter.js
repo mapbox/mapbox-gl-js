@@ -152,14 +152,10 @@ class Painter {
 
     updateTerrain(style: Style) {
         const enabled = style.terrain && style.terrain.properties && style.terrain.properties.get('source');
+        if (!enabled && (!this._terrain || !this._terrain.valid)) return;
         if (!enabled) {
+            if (this._terrain) this._terrain._disable();
             this.transform.elevation = null;
-            if (this._terrain) {
-                this._terrain.valid = false;
-            }
-            for (const id in style.sourceCaches) {
-                style.sourceCaches[id].usedForTerrain = false;
-            }
             return;
         }
         if (!this._terrain) {
