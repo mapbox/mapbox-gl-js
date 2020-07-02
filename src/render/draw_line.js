@@ -80,8 +80,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             context.activeTexture.set(gl.TEXTURE0);
             painter.lineAtlas.bind(context);
         } else if (gradient) {
-            let gradientTexture = bucket.gradientTexture;
-            if (!gradientTexture || (gradientTexture && layer.gradientVersion !== bucket.gradientVersion)) {
+            const layerGradient = bucket.gradients[layer.id];
+            let gradientTexture = layerGradient.texture;
+            if (layer.gradientVersion !== layerGradient.version) {
                 let textureResolution = 256;
                 if (layer.stepInterpolant) {
                     const sourceMaxZoom = sourceCache.getSource().maxzoom;
@@ -94,20 +95,20 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                     const maxTextureCoverage = lineLength * maxTilePixelSize * potentialOverzoom;
                     textureResolution = clamp(nextPowerOfTwo(maxTextureCoverage), 256, context.maxTextureSize);
                 }
-                bucket.gradient = renderColorRamp({
+                layerGradient.gradient = renderColorRamp({
                     expression: layer.gradientExpression(),
                     evaluationKey: 'lineProgress',
                     resolution: textureResolution,
-                    image: bucket.gradient || undefined,
+                    image: layerGradient.gradient || undefined,
                     clips: bucket.lineClipsArray
                 });
-                if (bucket.gradientTexture) {
-                    bucket.gradientTexture.update(bucket.gradient);
+                if (layerGradient.texture) {
+                    layerGradient.texture.update(layerGradient.gradient);
                 } else {
-                    bucket.gradientTexture = new Texture(context, bucket.gradient, gl.RGBA);
+                    layerGradient.texture = new Texture(context, layerGradient.gradient, gl.RGBA);
                 }
-                bucket.gradientVersion = layer.gradientVersion;
-                gradientTexture = bucket.gradientTexture;
+                layerGradient.version = layer.gradientVersion;
+                gradientTexture = layerGradient.texture;
             }
             context.activeTexture.set(gl.TEXTURE0);
             gradientTexture.bind(layer.stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);

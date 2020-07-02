@@ -75,6 +75,12 @@ type LineClips = {
     end: number;
 }
 
+type GradientTexture = {
+    texture: Texture;
+    gradient: ?RGBAImage;
+    version: number;
+}
+
 /**
  * @private
  */
@@ -93,6 +99,7 @@ class LineBucket implements Bucket {
     overscaling: number;
     layers: Array<LineStyleLayer>;
     layerIds: Array<string>;
+    gradients: {[string]: GradientTexture};
     stateDependentLayers: Array<any>;
     stateDependentLayerIds: Array<string>;
     patternFeatures: Array<BucketFeature>;
@@ -102,9 +109,6 @@ class LineBucket implements Bucket {
     layoutVertexBuffer: VertexBuffer;
     layoutVertexArray2: LineExtLayoutArray;
     layoutVertexBuffer2: VertexBuffer;
-    gradientTexture: Texture;
-    gradient: ?RGBAImage;
-    gradientVersion: number;
 
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
@@ -123,6 +127,10 @@ class LineBucket implements Bucket {
         this.hasPattern = false;
         this.patternFeatures = [];
         this.lineClipsArray = [];
+        this.gradients = {};
+        this.layers.forEach(layer => {
+            this.gradients[layer.id] = {};
+        });
 
         this.layoutVertexArray = new LineLayoutArray();
         this.layoutVertexArray2 = new LineExtLayoutArray();
