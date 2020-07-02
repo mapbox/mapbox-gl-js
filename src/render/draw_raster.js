@@ -46,7 +46,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const tile = sourceCache.getTile(coord);
         if (renderingToTexture && !(tile && tile.hasData())) continue;
-        painter.prepareDrawTile(coord);
 
         const posMatrix = (renderingToTexture) ? coord.posMatrix :
             painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
@@ -58,6 +57,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const parentTile = sourceCache.findLoadedParent(coord, 0),
             fade = getFadeValues(tile, parentTile, sourceCache, layer, painter.transform);
+
+        if (painter.terrain) painter.terrain.prepareDrawTile(coord, fade.opacity !== 1 || fade.mix !== 0); // Disable caching for the proxy during fade.
 
         let parentScaleBy, parentTL;
 
