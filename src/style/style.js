@@ -518,6 +518,7 @@ class Style extends Evented {
         this._availableImages = this.imageManager.listImages();
         this._changedImages[id] = true;
         this._changed = true;
+        this.dispatcher.broadcast('setImages', this._availableImages);
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
@@ -537,6 +538,7 @@ class Style extends Evented {
         this._availableImages = this.imageManager.listImages();
         this._changedImages[id] = true;
         this._changed = true;
+        this.dispatcher.broadcast('setImages', this._availableImages);
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
