@@ -188,8 +188,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "Not yet available",
-          "android": "Not yet available",
-          "ios": "Not yet available",
+          "android": "9.3.0",
+          "ios": "5.10.0",
           "macos": "Not yet available"
         }
       }
@@ -271,8 +271,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "Not yet available",
-          "android": "Not yet available",
-          "ios": "Not yet available",
+          "android": "9.3.0",
+          "ios": "5.10.0",
           "macos": "Not yet available"
         }
       }
@@ -354,8 +354,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "Not yet available",
-          "android": "Not yet available",
-          "ios": "Not yet available",
+          "android": "9.3.0",
+          "ios": "5.10.0",
           "macos": "Not yet available"
         }
       }
