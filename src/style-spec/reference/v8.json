@@ -187,10 +187,8 @@
       "doc": "A setting to determine whether a source's tiles are cached locally.",
       "sdk-support": {
         "basic functionality": {
-          "js": "Not yet available",
-          "android": "Not yet available",
-          "ios": "Not yet available",
-          "macos": "Not yet available"
+          "android": "9.3.0",
+          "ios": "5.10.0"
         }
       }
     },
@@ -270,10 +268,8 @@
       "doc": "A setting to determine whether a source's tiles are cached locally.",
       "sdk-support": {
         "basic functionality": {
-          "js": "Not yet available",
-          "android": "Not yet available",
-          "ios": "Not yet available",
-          "macos": "Not yet available"
+          "android": "9.3.0",
+          "ios": "5.10.0"
         }
       }
     },
@@ -353,10 +349,8 @@
       "doc": "A setting to determine whether a source's tiles are cached locally.",
       "sdk-support": {
         "basic functionality": {
-          "js": "Not yet available",
-          "android": "Not yet available",
-          "ios": "Not yet available",
-          "macos": "Not yet available"
+          "android": "9.3.0",
+          "ios": "5.10.0"
         }
       }
     },
