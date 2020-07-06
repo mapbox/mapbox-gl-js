@@ -178,7 +178,7 @@ test('DragPanHandler ends a touch-triggered drag if the window blurs', (t) => {
 
 test('DragPanHandler requests a new render frame after each mousemove event', (t) => {
     const map = createMap(t);
-    const requestFrame = t.spy(map, '_requestRenderFrame');
+    const requestFrame = t.spy(map.handlers, '_requestFrame');
 
     simulate.mousedown(map.getCanvas());
     simulate.mousemove(map.getCanvas(), {buttons, clientX: 10, clientY: 10});
