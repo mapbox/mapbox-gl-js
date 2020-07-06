@@ -184,7 +184,15 @@
     "volatile": {
       "type": "boolean",
       "default": false,
-      "doc": "Setting this flag to true indicates that the source tiles shall not be stored in the local cache." 
+      "doc": "A setting to determine whether a source's tiles are cached locally.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "Not yet available",
+          "android": "Not yet available",
+          "ios": "Not yet available",
+          "macos": "Not yet available"
+        }
+      }
     },
     "*": {
       "type": "*",
@@ -259,7 +267,15 @@
     "volatile": {
       "type": "boolean",
       "default": false,
-      "doc": "Setting this flag to true indicates that the source tiles shall not be stored in the local cache." 
+      "doc": "A setting to determine whether a source's tiles are cached locally.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "Not yet available",
+          "android": "Not yet available",
+          "ios": "Not yet available",
+          "macos": "Not yet available"
+        }
+      }
     },
     "*": {
       "type": "*",
@@ -334,7 +350,15 @@
     "volatile": {
       "type": "boolean",
       "default": false,
-      "doc": "Setting this flag to true indicates that the source tiles shall not be stored in the local cache." 
+      "doc": "A setting to determine whether a source's tiles are cached locally.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "Not yet available",
+          "android": "Not yet available",
+          "ios": "Not yet available",
+          "macos": "Not yet available"
+        }
+      }
     },
     "*": {
       "type": "*",
