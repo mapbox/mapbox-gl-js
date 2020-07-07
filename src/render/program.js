@@ -73,7 +73,7 @@ class Program<Us: UniformBindings> {
         }
 
         let defines = configuration ? configuration.defines() : [];
-        defines = defines.concat(fixedDefines.map((define) => `#define ${define};`));
+        defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
 
         const fragmentSource = defines.concat(prelude.fragmentSource, source.fragmentSource).join('\n');
         const vertexSource = defines.concat(prelude.vertexSource, preludeTerrain.vertexSource, source.vertexSource).join('\n');

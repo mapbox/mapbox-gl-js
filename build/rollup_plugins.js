@@ -68,7 +68,7 @@ function glsl(include, minify) {
                     .replace(/\n+/g, '\n') // collapse multi line breaks
                     .replace(/\n\s+/g, '\n') // strip identation
                     .replace(/\s?([+-\/*=,])\s?/g, '$1') // strip whitespace around operators
-                    .replace(/([;\(\),\{\}])\n(?=[^#])/g, '$1'); // strip more line breaks
+                    .replace(/([;,\{\}])\n(?=[^#])/g, '$1'); // strip more line breaks
             }
 
             return {
