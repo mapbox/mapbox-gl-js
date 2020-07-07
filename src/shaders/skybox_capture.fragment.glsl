@@ -25,7 +25,7 @@ precision highp float;
 #define PLANET_RADIUS           6360e3 // m
 #define ATMOSPHERE_RADIUS       6420e3 // m
 #define SAMPLE_STEPS            10
-#define DENSITY_STEPS           10
+#define DENSITY_STEPS           4
 
 vec3 beta_ray() {
      return BETA_R * u_color_tint_r.rgb * u_color_tint_r.a;
@@ -78,15 +78,16 @@ vec2 density_to_atmosphere(vec3 point, vec3 light_dir) {
     return density_point_to_atmosphere;
 }
 
-vec3 atmosphere(vec3 ray_dir, vec3 ray_origin, vec3 sun_direction, float sun_intensity) {
+vec3 atmosphere(vec3 ray_dir, vec3 sun_direction, float sun_intensity) {
     vec2 density_orig_to_point = vec2(0.0);
     vec3 scatter_r = vec3(0.0);
     vec3 scatter_m = vec3(0.0);
+    vec3 origin = vec3(0.0, PLANET_RADIUS, 0.0);
 
-    float ray_len = ray_sphere_exit(ray_origin, ray_dir, ATMOSPHERE_RADIUS);
+    float ray_len = ray_sphere_exit(origin, ray_dir, ATMOSPHERE_RADIUS);
     float step_len = ray_len / float(SAMPLE_STEPS);
     for (int i = 0; i < SAMPLE_STEPS; ++i) {
-        vec3 point_on_ray = ray_origin + ray_dir * ((float(i) + 0.5) * step_len);
+        vec3 point_on_ray = origin + ray_dir * ((float(i) + 0.5) * step_len);
 
         // Local density
         vec2 density = local_density(point_on_ray) * step_len;
@@ -123,7 +124,17 @@ vec3 uncharted2_tonemap(vec3 x) {
 }
 
 void main() {
-    vec3 color = atmosphere(normalize(v_position), vec3(0.0, PLANET_RADIUS, 0), u_sun_direction, u_sun_intensity);
+    vec3 ray_direction = v_position;
+
+    // Non-linear UV parameterization to increase horizon events
+    ray_direction.y = pow(ray_direction.y, 5.0);
+
+    // Add a small offset to prevent black bands around areas where
+    // the scattering algorithm does not manage to gather lighting
+    const float y_bias = 0.015;
+    ray_direction.y += y_bias;
+
+    vec3 color = atmosphere(normalize(ray_direction), u_sun_direction, u_sun_intensity);
 
     // Apply exposure [3]
     float white_scale = 1.0748724675633854; // 1.0 / uncharted2_tonemap(1000.0)
