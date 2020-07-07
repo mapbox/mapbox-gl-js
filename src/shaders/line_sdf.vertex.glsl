@@ -6,12 +6,9 @@
 // #define scale 63.0
 #define scale 0.015873016
 
-// We scale the distance before adding it to the buffers so that we can store
-// long distances for long segments. Use this value to unscale the distance.
-#define LINE_DISTANCE_SCALE 2.0
-
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
+attribute float a_linesofar;
 
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
@@ -51,7 +48,6 @@ void main() {
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
-    float a_linesofar = (floor(a_data.z / 4.0) + a_data.w * 64.0) * LINE_DISTANCE_SCALE;
 
     vec2 pos = floor(a_pos_normal * 0.5);
 
@@ -73,7 +69,7 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    mediump vec2 dist =outset * a_extrude * scale;
+    mediump vec2 dist = outset * a_extrude * scale;
 
     // Calculate the offset when drawing a line that is to the side of the actual line.
     // We do this by creating a vector that points towards the extrude, but rotate
