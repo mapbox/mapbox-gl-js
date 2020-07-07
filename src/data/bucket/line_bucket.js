@@ -60,17 +60,6 @@ const SHARP_CORNER_OFFSET = 15;
 // Angle per triangle for approximating round line joins.
 const DEG_PER_TRIANGLE = 20;
 
-// The number of bits that is used to store the line distance in the buffer.
-const LINE_DISTANCE_BUFFER_BITS = 15;
-
-// We don't have enough bits for the line distance as we'd like to have, so
-// use this value to scale the line distance (in tile units) down to a smaller
-// value. This lets us store longer distances while sacrificing precision.
-const LINE_DISTANCE_SCALE = 1 / 2;
-
-// The maximum line distance, in tile units, that fits in the buffer.
-const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
-
 type LineClips = {
     start: number;
     end: number;
@@ -90,6 +79,7 @@ class LineBucket implements Bucket {
     totalDistance: number;
     maxLineLength: number;
     scaledDistance: number;
+    lineSoFar: number;
     lineClips: ?LineClips;
 
     e1: number;
@@ -262,6 +252,7 @@ class LineBucket implements Bucket {
         this.distance = 0;
         this.scaledDistance = 0;
         this.totalDistance = 0;
+        this.lineSoFar = 0;
 
         if (this.lineClips) {
             this.lineClipsArray.push(this.lineClips);
@@ -521,22 +512,9 @@ class LineBucket implements Bucket {
 
         this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment);
         this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment);
-
-        // There is a maximum "distance along the line" that we can store in the buffers.
-        // When we get close to the distance, reset it to zero and add the vertex again with
-        // a distance of zero. The max distance is determined by the number of bits we allocate
-        // to `linesofar`.
-        if (this.distance > MAX_LINE_DISTANCE / 2 && this.totalDistance === 0) {
-            this.distance = 0;
-            this.addCurrentVertex(p, normal, endLeft, endRight, segment, round);
-        }
     }
 
     addHalfVertex({x, y}: Point, extrudeX: number, extrudeY: number, round: boolean, up: boolean, dir: number, segment: Segment) {
-        const totalDistance = this.lineClips ? this.scaledDistance * (MAX_LINE_DISTANCE - 1) : this.scaledDistance;
-        // scale down so that we can store longer distances while sacrificing precision.
-        const linesofarScaled = totalDistance * LINE_DISTANCE_SCALE;
-
         this.layoutVertexArray.emplaceBack(
             // a_pos_normal
             // Encode round/up the least significant bits
@@ -546,19 +524,14 @@ class LineBucket implements Bucket {
             // add 128 to store a byte in an unsigned byte
             Math.round(EXTRUDE_SCALE * extrudeX) + 128,
             Math.round(EXTRUDE_SCALE * extrudeY) + 128,
-            // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
-            // Combine it with the lower 6 bits of `linesofarScaled` (shifted by 2 bits to make
-            // room for the direction value). The upper 8 bits of `linesofarScaled` are placed in
-            // the `w` component.
-            ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | ((linesofarScaled & 0x3F) << 2),
-            linesofarScaled >> 6);
+            ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1),
+            0, // unused
+            // a_linesofar
+            this.lineSoFar);
 
         // Constructs a second vertex buffer with higher precision line progress
         if (this.lineClips) {
-            const progressRealigned = this.scaledDistance - this.lineClips.start;
-            const endClipRealigned = this.lineClips.end - this.lineClips.start;
-            const uvX = progressRealigned / endClipRealigned;
-            this.layoutVertexArray2.emplaceBack(uvX, this.lineClipsArray.length);
+            this.layoutVertexArray2.emplaceBack(this.scaledDistance, this.lineClipsArray.length);
         }
 
         const e = segment.vertexLength++;
@@ -577,10 +550,15 @@ class LineBucket implements Bucket {
         // Knowing the ratio of the full linestring covered by this tiled feature, as well
         // as the total distance (in tile units) of this tiled feature, and the distance
         // (in tile units) of the current vertex, we can determine the relative distance
-        // of this vertex along the full linestring feature and scale it to [0, 2^15)
-        this.scaledDistance = this.lineClips ?
-            this.lineClips.start + (this.lineClips.end - this.lineClips.start) * this.distance / this.totalDistance :
-            this.distance;
+        // of this vertex along the full linestring feature.
+        if (this.lineClips) {
+            const featureShare = this.lineClips.end - this.lineClips.start;
+            const totalFeatureLength = this.totalDistance / featureShare;
+            this.scaledDistance = this.distance / this.totalDistance;
+            this.lineSoFar = totalFeatureLength * this.lineClips.start + this.distance;
+        } else {
+            this.lineSoFar = this.distance;
+        }
     }
 
     updateDistance(prev: Point, next: Point) {
