@@ -19,10 +19,5 @@ void main() {
     // (-1.0,1.0) to (0.0,1.0) on y. The inverse operation is applied when sampling.
     v_position.y = map(v_position.y, -1.0, 1.0, 0.0, 1.0);
 
-    // Add a small offset to prevent black bands around areas where
-    // the scattering algorithm does not manage to gather lighting
-    const float y_bias = 0.015;
-    v_position.y += y_bias;
-
     gl_Position = vec4(a_pos.xy, 0.0, 1.0);
 }
