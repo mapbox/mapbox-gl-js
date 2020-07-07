@@ -27,5 +27,19 @@
   "render-tests/icon-text-fit/text-variable-anchor-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/text-variable-anchor/all-anchors-labels-priority-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/fill-extrusion-pattern/1.5x-on-1x-add-image": "skip - non-deterministic on AMD graphics cards",
-  "render-tests/text-variable-anchor/avoid-edges-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode"
+  "render-tests/text-variable-anchor/avoid-edges-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
+  "render-tests/text-font-metrics/font-with-baseline-font-without-baseline": "https://github.com/mapbox/mapbox-gl-js-internal/issues/74",
+  "render-tests/text-font-metrics/mixed-fonts-both-with-baseline": "https://github.com/mapbox/mapbox-gl-js-internal/issues/74",
+  "render-tests/text-font-metrics/mixed-fonts-with-image": "https://github.com/mapbox/mapbox-gl-js-internal/issues/74",
+  "render-tests/text-font-metrics/mixed-fonts-with-image-vertical": "https://github.com/mapbox/mapbox-gl-js-internal/issues/74",
+  "render-tests/text-font-metrics/mixed-fonts-with-scales": "https://github.com/mapbox/mapbox-gl-js-internal/issues/74",
+  "render-tests/text-font-metrics/font-with-image-vertical": "https://github.com/mapbox/mapbox-gl-js-internal/issues/75",
+  "render-tests/text-font-metrics/latin-alphabets-vertical-no-ascender-descender": "https://github.com/mapbox/mapbox-gl-js-internal/issues/75",
+  "render-tests/text-font-metrics/latin-alphabets-vertical": "https://github.com/mapbox/mapbox-gl-js-internal/issues/75",
+  "render-tests/text-font-metrics/mixed-fonts-with-images-vertical": "https://github.com/mapbox/mapbox-gl-js-internal/issues/75",
+  "render-tests/text-font-metrics/punctuations-vertical": "https://github.com/mapbox/mapbox-gl-js-internal/issues/75",
+  "render-tests/text-font-metrics/line-placement-vertical-shaping-with-punctuations": "https://github.com/mapbox/mapbox-gl-js-internal/issues/76",
+  "render-tests/text-font-metrics/multiline-point-placement-vertical-shaping-with-punctuations": "https://github.com/mapbox/mapbox-gl-js-internal/issues/76",
+  "render-tests/text-font-metrics/point-placement-vertical-shaping-with-punctuations": "https://github.com/mapbox/mapbox-gl-js-internal/issues/76",
+  "render-tests/text-font-metrics/vertical-shaping-with-ZWSP": "https://github.com/mapbox/mapbox-gl-js-internal/issues/76"
 }
