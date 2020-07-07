@@ -33,8 +33,27 @@ float sun_disk(highp vec3 ray_direction, vec3 sun_direction) {
         cos_angle);
 }
 
+float map(float value, float start, float end, float new_start, float new_end) {
+    return ((value - start) * (new_end - new_start)) / (end - start) + new_start;
+}
+
 void main() {
-    vec3 sky_color = textureCube(u_cubemap, v_uv).rgb;
+    vec3 uv = v_uv;
+
+    // Add a small offset to prevent black bands around areas where
+    // the scattering algorithm does not manage to gather lighting
+    const float y_bias = 0.015;
+    uv.y += y_bias;
+
+    // Inverse of the operation applied for non-linear UV parameterization
+    uv.y = pow(uv.y, 1.0 / 5.0);
+
+    // To make better utilization of the visible range (e.g. over the horizon, UVs
+    // from 0.0 to 1.0 on the Y-axis in cubemap space), the UV range is remapped from
+    // (0.0,1.0) to (-1.0,1.0) on y. The inverse operation is applied when generating.
+    uv.y = map(uv.y, 0.0, 1.0, -1.0, 1.0);
+
+    vec3 sky_color = textureCube(u_cubemap, uv).rgb;
 
     // Dither [1]
     sky_color.rgb = dither(sky_color.rgb, gl_FragCoord.xy + u_temporal_offset);
