@@ -29,7 +29,7 @@ export default class TouchPanHandler {
     }
 
     touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
-        if (!this._active) return;
+        if (!this._active || mapTouches.length < this._minTouches) return;
         e.preventDefault();
         return this._calculateTransform(e, points, mapTouches);
     }
