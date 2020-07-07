@@ -17,6 +17,7 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {UniformValues} from './uniform_binding';
 import type {CircleUniformsType} from './program/circle_program';
+import type Tile from '../source/tile';
 import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawCircles;
@@ -26,7 +27,8 @@ type TileRenderState = {
     program: Program<*>,
     layoutVertexBuffer: VertexBuffer,
     indexBuffer: IndexBuffer,
-    uniformValues: UniformValues<CircleUniformsType>
+    uniformValues: UniformValues<CircleUniformsType>,
+    tile: Tile
 };
 
 type SegmentsTileRenderState = {
@@ -78,6 +80,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             layoutVertexBuffer,
             indexBuffer,
             uniformValues,
+            tile
         };
 
         if (sortFeaturesByKey) {
@@ -104,8 +107,9 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     }
 
     for (const segmentsState of segmentsRenderStates) {
-        const {programConfiguration, program, layoutVertexBuffer, indexBuffer, uniformValues} = segmentsState.state;
+        const {programConfiguration, program, layoutVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;
         const segments = segmentsState.segments;
+        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, {useDepthForOcclusion: true});
 
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,
