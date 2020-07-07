@@ -444,8 +444,8 @@ export class Terrain extends Elevation {
     renderLayer(layer: StyleLayer, _: SourceCache): boolean {
         const painter = this.painter;
         if (painter.renderPass !== 'translucent') {
-            // Depth texture is used only for POI symbols, to skip render of symbols occluded by e.g. hill.
-            if (!this._depthDone && layer.type === 'symbol') this.drawDepth();
+            // Depth texture is used only for POI symbols and circles, to skip render of symbols occluded by e.g. hill.
+            if (!this._depthDone && (layer.type === 'symbol' || layer.type === 'circle')) this.drawDepth();
             return true; // Early leave: all rendering is done in translucent pass.
         }
         if (this.drapeFirst && this.drapeFirstPending) {
