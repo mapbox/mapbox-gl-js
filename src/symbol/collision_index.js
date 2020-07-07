@@ -75,9 +75,11 @@ class CollisionIndex {
         const tlY = collisionBox.y1 * tileToViewport + projectedPoint.point.y;
         const brX = collisionBox.x2 * tileToViewport + projectedPoint.point.x;
         const brY = collisionBox.y2 * tileToViewport + projectedPoint.point.y;
+        const isBehindCamera = projectedPoint.perspectiveRatio <= 0.5;
 
         if (!this.isInsideGrid(tlX, tlY, brX, brY) ||
-            (!allowOverlap && this.grid.hitTest(tlX, tlY, brX, brY, collisionGroupPredicate))) {
+            (!allowOverlap && this.grid.hitTest(tlX, tlY, brX, brY, collisionGroupPredicate)) ||
+            isBehindCamera) {
             return {
                 box: [],
                 offscreen: false
