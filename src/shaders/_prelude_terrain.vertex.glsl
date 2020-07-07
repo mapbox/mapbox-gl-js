@@ -46,15 +46,6 @@ bool isOccluded(vec4 frag) {
     return depth * (coord.z - depth) > 0.0005; // === coord.z > depth + 0.0005 / depth;
 }
 
-bool hideIfOccluded(vec4 frag) {
-    if (isOccluded(frag)) {
-        const float AWAY = -1000.0;
-        gl_Position = vec4(AWAY, AWAY, AWAY, 1.0);
-        return true;
-    }
-    return false;
-}
-
 vec4 fourSample(vec2 pos, vec2 off) {
     vec4 demtl = vec4(texture2D(u_dem, pos).xyz * 255.0, -1.0);
     float tl = dot(demtl, u_dem_unpack);
@@ -104,6 +95,5 @@ float flatElevation(vec2 pack, float height) {
 
 float elevation(vec2 pos) { return 0.0; }
 bool isOccluded(vec4 frag) { return false; }
-bool hideIfOccluded(vec4 frag) { return false; }
 
 #endif
