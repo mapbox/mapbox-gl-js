@@ -1,3 +1,8 @@
+## 1.11.1
+
+### 🐞 Bug fixes
+* Fix a bug where `click` triggered map changes and set the `map._sourcesDirty` to true. ([#9825](https://github.com/mapbox/mapbox-gl-js/pull/9825))
+
 ## 1.11.0
 
 ### ✨ Features and improvements
