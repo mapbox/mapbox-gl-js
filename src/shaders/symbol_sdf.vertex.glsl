@@ -67,9 +67,6 @@ void main() {
 
     float h = elevation(a_pos);
     vec4 projectedPoint = u_matrix * vec4(a_pos, h, 1);
-    if (hideIfOccluded(projectedPoint)) {
-        return;
-    }
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     // If the label is pitched with the map, layout is done in pitched space,
@@ -114,7 +111,8 @@ void main() {
     vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
     z = elevation(tile_pos.xy);
 #endif
-    gl_Position = u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0);
+    // Symbols might end up being behind the camera. Move them AWAY.
+    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projectedPoint.w <= 0.0 || isOccluded(projectedPoint)));
     float gamma_scale = gl_Position.w;
 
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
