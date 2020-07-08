@@ -4,6 +4,9 @@ import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {terrainRasterUniformValues} from './terrain_raster_program';
 import {Terrain} from './terrain';
+import Tile from '../source/tile';
+import assert from 'assert';
+import {easeCubicInOut} from '../util/util';
 
 import type Painter from '../render/painter';
 import type SourceCache from '../source/source_cache';
@@ -16,25 +19,154 @@ export {
     drawTerrainDepth
 };
 
-function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>) {
+type DEMChain = {
+    startTime: number,
+    phase: number,
+    duration: number,   // Interpolation duration in milliseconds
+    from: Tile,
+    to: Tile,
+    queued: ?Tile
+};
+
+class VertexMorphing {
+    operations: {[string]: DEMChain };
+
+    constructor() {
+        this.operations = {};
+    }
+
+    newMorphing(key: string, from: Tile, to: Tile, now: number, duration: number) {
+        assert(from.demTexture && to.demTexture);
+        assert(from.tileID.key !== to.tileID.key);
+
+        if (key in this.operations) {
+            const op = this.operations[key];
+            assert(op.from && op.to);
+            // Queue the target tile unless it's being morphed to already
+            if (op.to.tileID.key !== to.tileID.key)
+                op.queued = to;
+        } else {
+            this.operations[key] = {
+                startTime: now,
+                phase: 0.0,
+                duration,
+                from,
+                to,
+                queued: null
+            };
+        }
+    }
+
+    getMorphValuesForProxy(key: string): ?{from: Tile, to: Tile, phase: number} {
+        if (!(key in this.operations))
+            return null;
+
+        const op = this.operations[key];
+        const from = op.from;
+        const to = op.to;
+        assert(from && to);
+
+        return {from, to, phase: op.phase};
+    }
+
+    update(now: number) {
+        for (const key in this.operations) {
+            const op = this.operations[key];
+            assert(op.from && op.to);
+
+            op.phase = (now - op.startTime) / op.duration;
+
+            // Start the queued operation if the current one is finished or the data has expired
+            while (op.phase >= 1.0 || !this._validOp(op)) {
+                if (!this._nextOp(op, now)) {
+                    delete this.operations[key];
+                    break;
+                }
+            }
+        }
+    }
+
+    _nextOp(op: DEMChain, now: number): boolean {
+        if (!op.queued)
+            return false;
+        op.from = op.to;
+        op.to = op.queued;
+        op.queued = null;
+        op.phase = 0.0;
+        op.startTime = now;
+        return true;
+    }
+
+    _validOp(op: DEMChain): boolean {
+        return op.from.hasData() && op.to.hasData();
+    }
+}
+
+function demTileChanged(prev: ?Tile, next: ?Tile): boolean {
+    if (prev == null || next == null)
+        return false;
+    if (!prev.hasData() || !next.hasData())
+        return false;
+    if (prev.demTexture == null || next.demTexture == null)
+        return false;
+    return prev.tileID.key !== next.tileID.key;
+}
+
+const vertexMorphing = new VertexMorphing();
+const SHADER_DEFAULT = 0;
+const SHADER_MORPHING = 1;
+const defaultDuration = 250;
+
+const shaderDefines = {
+    "0": null,
+    "1": 'TERRAIN_VERTEX_MORPHING'
+};
+
+function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>, now: number) {
     const context = painter.context;
     const gl = context.gl;
-    const program = painter.useProgram('terrainRaster');
+
+    let program = painter.useProgram('terrainRaster');
+    let programMode = SHADER_DEFAULT;
+
+    const setShaderMode = (mode) => {
+        if (programMode === mode)
+            return;
+        program = painter.useProgram('terrainRaster', null, shaderDefines[mode]);
+        programMode = mode;
+    };
 
     const colorMode = painter.colorModeForRenderPass();
-
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+    vertexMorphing.update(now);
 
     for (const coord of tileIDs) {
         const tile = sourceCache.getTile(coord);
         const stencilMode = StencilMode.disabled;
 
+        const prevDemTile = terrain.prevTerrainTileForTile[coord.key];
+        const nextDemTile = terrain.terrainTileForTile[coord.key];
+
+        if (demTileChanged(prevDemTile, nextDemTile)) {
+            vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
+        }
+
+        // Bind the main draped texture
         context.activeTexture.set(gl.TEXTURE0);
         tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
-        const uniformValues = terrainRasterUniformValues(coord.posMatrix, painter.transform.zoom);
-        terrain.setupElevationDraw(tile, program);
+        const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
+        const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
+        let elevationOptions;
 
+        if (morph) {
+            elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
+        }
+
+        const uniformValues = terrainRasterUniformValues(coord.posMatrix, painter.transform.zoom);
+
+        setShaderMode(shaderMode);
+        terrain.setupElevationDraw(tile, program, elevationOptions);
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, "terrain_raster", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridSegments);
     }
@@ -55,3 +187,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
             uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
     }
 }
+
+export {
+    VertexMorphing
+};
