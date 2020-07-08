@@ -7,7 +7,9 @@
     [{}, {"properties": {"x": "Not a number"}}],
     [{}, {"properties": {"x": null}}],
     [{}, {"properties": {"x": [1, 2]}}],
-    [{}, {"properties": {"x": {"y": 1}}}]
+    [{}, {"properties": {"x": {"y": 1}}}],
+    [{}, {"properties": {"x": true}}],
+    [{}, {"properties": {"x": false}}]
   ],
   "expected": {
     "compiled": {
@@ -23,7 +25,9 @@
       {"error": "Could not convert \"Not a number\" to number."},
       0,
       {"error": "Could not convert [1,2] to number."},
-      {"error": "Could not convert {\"y\":1} to number."}
+      {"error": "Could not convert {\"y\":1} to number."},
+      1,
+      0
     ],
     "serialized": ["to-number", ["get", "x"]]
   }
