@@ -8,6 +8,8 @@ import window from '../../../src/util/window';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import styleSpec from '../../../src/style-spec/reference/latest';
 import Terrain from '../../../src/style/terrain';
+import Tile from '../../../src/source/tile';
+import {VertexMorphing} from '../../../src/terrain/draw_terrain_raster';
 
 function createStyle() {
     return {
@@ -306,6 +308,160 @@ test('Terrain style', (t) => {
         terrain.recalculate({zoom: 16, zoomHistory: {}, now: 10});
         t.ok(spy.calledOnce);
         t.ok(console.error.calledOnce);
+        t.end();
+    });
+
+    t.end();
+});
+
+test('Vertex morphing', (t) => {
+    const createTile = (id) => {
+        const tile = new Tile(id);
+        tile.demTexture = {};
+        tile.state = 'loaded';
+        return tile;
+    };
+
+    t.test('Morph single tile', (t) => {
+        const morphing = new VertexMorphing();
+        const coord = new OverscaledTileID(2, 0, 2, 1, 1);
+        const src = createTile(new OverscaledTileID(4, 0, 4, 8, 15));
+        const dst = createTile(new OverscaledTileID(5, 0, 5, 8, 15));
+
+        morphing.newMorphing(coord.key, src, dst, 0, 250);
+        let values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+
+        // Initial state
+        t.deepEqual(values.from, src);
+        t.deepEqual(values.to, dst);
+        t.equal(values.phase, 0);
+
+        morphing.update(125);
+
+        // Half way through
+        values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+        t.deepEqual(values.from, src);
+        t.deepEqual(values.to, dst);
+        t.equal(values.phase, 0.5);
+
+        // Done
+        values = morphing.getMorphValuesForProxy(250);
+        t.notOk(values);
+
+        t.end();
+    });
+
+    t.test('Queue dem tiles', (t) => {
+        const morphing = new VertexMorphing();
+        const coord = new OverscaledTileID(2, 0, 2, 1, 1);
+        const src = createTile(new OverscaledTileID(4, 0, 4, 8, 15));
+        const dst = createTile(new OverscaledTileID(5, 0, 5, 8, 15));
+        const intermediate = createTile(new OverscaledTileID(5, 0, 5, 9, 16));
+        const queued = createTile(new OverscaledTileID(6, 0, 5, 9, 16));
+
+        // Intermediate steps are expected to be discarded and only destination tile matters for queued morphing
+        morphing.newMorphing(coord.key, src, dst, 0, 500);
+        morphing.newMorphing(coord.key, dst, intermediate, 0, 500);
+        morphing.newMorphing(coord.key, src, queued, 0, 500);
+        let values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+
+        morphing.update(250);
+        values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+        t.deepEqual(values.from, src);
+        t.deepEqual(values.to, dst);
+        t.equal(values.phase, 0.5);
+
+        // Expect to find the `queued` tile. `intermediate` should have been discarded
+        morphing.update(500);
+        values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+        t.deepEqual(values.from, dst);
+        t.deepEqual(values.to, queued);
+        t.equal(values.phase, 0.0);
+
+        morphing.update(750);
+        values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+        t.deepEqual(values.from, dst);
+        t.deepEqual(values.to, queued);
+        t.equal(values.phase, 0.5);
+
+        morphing.update(1000);
+        values = morphing.getMorphValuesForProxy(coord.key);
+        t.notOk(values);
+
+        t.end();
+    });
+
+    t.test('Queue dem tiles multiple times', (t) => {
+        const morphing = new VertexMorphing();
+        const coord = new OverscaledTileID(2, 0, 2, 1, 1);
+        const src = createTile(new OverscaledTileID(4, 0, 4, 8, 15));
+        const dst = createTile(new OverscaledTileID(5, 0, 5, 8, 15));
+        const duplicate0 = createTile(new OverscaledTileID(5, 0, 5, 8, 15));
+        const duplicate1 = createTile(new OverscaledTileID(5, 0, 5, 8, 15));
+        const duplicate2 = createTile(new OverscaledTileID(5, 0, 5, 8, 15));
+
+        morphing.newMorphing(coord.key, src, dst, 0, 100);
+        morphing.newMorphing(coord.key, src, duplicate0, 0, 100);
+        morphing.newMorphing(coord.key, src, duplicate1, 0, 100);
+        morphing.newMorphing(coord.key, src, duplicate2, 0, 100);
+        let values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+
+        morphing.update(75);
+        values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+        t.deepEqual(values.from, src);
+        t.deepEqual(values.to, dst);
+        t.equal(values.phase, 0.75);
+
+        morphing.update(110);
+        values = morphing.getMorphValuesForProxy(coord.key);
+        t.notOk(values);
+
+        t.end();
+    });
+
+    t.test('Expired data', (t) => {
+        const morphing = new VertexMorphing();
+        const coord = new OverscaledTileID(2, 0, 2, 1, 1);
+        const src = createTile(new OverscaledTileID(4, 0, 4, 8, 15));
+        const dst = createTile(new OverscaledTileID(5, 0, 5, 8, 15));
+        const queued = createTile(new OverscaledTileID(6, 0, 5, 9, 16));
+
+        morphing.newMorphing(coord.key, src, dst, 0, 1000);
+        morphing.newMorphing(coord.key, dst, queued, 0, 1000);
+
+        morphing.update(200);
+        let values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+        t.deepEqual(values.from, src);
+        t.deepEqual(values.to, dst);
+        t.equal(values.phase, 0.2);
+
+        // source tile is expired
+        src.state = 'unloaded';
+        morphing.update(300);
+        values = morphing.getMorphValuesForProxy(coord.key);
+        t.ok(values);
+        t.deepEqual(values.from, dst);
+        t.deepEqual(values.to, queued);
+        t.equal(values.phase, 0.0);
+
+        const newQueued = createTile(new OverscaledTileID(7, 0, 7, 9, 16));
+        morphing.newMorphing(coord.key, queued, newQueued, 1000);
+
+        // The target tile is expired. The morphing operation should be cancelled
+        queued.state = 'unloaded';
+        morphing.update(500);
+        values = morphing.getMorphValuesForProxy(coord.key);
+        t.notOk(values);
+
         t.end();
     });
 
