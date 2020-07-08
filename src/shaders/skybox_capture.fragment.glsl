@@ -27,14 +27,6 @@ precision highp float;
 #define SAMPLE_STEPS            10
 #define DENSITY_STEPS           4
 
-vec3 beta_ray() {
-     return BETA_R * u_color_tint_r.rgb * u_color_tint_r.a;
-}
-
-vec3 beta_mie() {
-    return BETA_M * u_color_tint_m.rgb * u_color_tint_m.a;
-}
-
 float ray_sphere_exit(vec3 orig, vec3 dir, float radius) {
     float a = dot(dir, dir);
     float b = 2.0 * dot(dir, orig);
@@ -44,7 +36,7 @@ float ray_sphere_exit(vec3 orig, vec3 dir, float radius) {
 }
 
 vec3 extinction(vec2 density) {
-    return exp(-vec3(beta_ray() * density.x + beta_mie() * density.y));
+    return exp(-vec3(BETA_R * u_color_tint_r.a * density.x + BETA_M * u_color_tint_m.a * density.y));
 }
 
 vec2 local_density(vec3 point) {
@@ -109,7 +101,11 @@ vec3 atmosphere(vec3 ray_dir, vec3 sun_direction, float sun_intensity) {
     float phase_r = phase_ray(cos_angle);
     float phase_m = phase_mie(cos_angle);
 
-    return (scatter_r * phase_r * beta_ray() + scatter_m * phase_m * beta_mie()) * sun_intensity;
+    // Apply light color adjustments
+    vec3 beta_r = BETA_R * u_color_tint_r.rgb * u_color_tint_r.a;
+    vec3 beta_m = BETA_M * u_color_tint_m.rgb * u_color_tint_m.a;
+
+    return (scatter_r * phase_r * beta_r + scatter_m * phase_m * beta_m) * sun_intensity;
 }
 
 const float A = 0.15;
