@@ -1,36 +1,70 @@
 #ifdef TERRAIN
 
 uniform sampler2D u_dem;
+uniform sampler2D u_dem_prev;
 uniform vec4 u_dem_unpack;
+uniform vec4 u_dem_unpack_prev;
 uniform vec2 u_dem_tl;
+uniform vec2 u_dem_tl_prev;
 uniform float u_dem_scale;
+uniform float u_dem_scale_prev;
 uniform float u_dem_size;
+uniform float u_dem_lerp;
 uniform float u_exaggeration;
 uniform float u_meter_to_dem;
 uniform mat4 u_label_plane_matrix_inv;
 
 uniform sampler2D u_depth;
 
-float elevation(vec2 apos) {
-    vec2 uvTex = apos / 8192.0;
-    float size = u_dem_size + 2.0;
-    float dd = 1.0 / size;
-
-    vec2 pos = u_dem_size * (uvTex * u_dem_scale + u_dem_tl) + 1.0;
+vec4 tileUvToDemSample(vec2 uv, float dem_size, float dem_scale, vec2 dem_tl) {
+    vec2 pos = dem_size * (uv * dem_scale + dem_tl) + 1.0;
     vec2 f = fract(pos);
-    pos = (pos - f + 0.5) * dd;
+    return vec4((pos - f + 0.5) / (dem_size + 2.0), f);
+}
 
-    vec4 dem = vec4(texture2D(u_dem, pos).xyz * 255.0, -1.0);
-    float tl = dot(dem, u_dem_unpack);
-    vec4 demtr = vec4(texture2D(u_dem, pos + vec2(dd, 0.0)).xyz * 255.0, -1.0);
-    float tr = dot(demtr, u_dem_unpack);
-    vec4 dembl = vec4(texture2D(u_dem, pos + vec2(0.0, dd)).xyz * 255.0, -1.0);
-    float bl = dot(dembl, u_dem_unpack);
-    vec4 dembr = vec4(texture2D(u_dem, pos + vec2(dd, dd)).xyz * 255.0, -1.0);
-    float br = dot(dembr, u_dem_unpack);
+float decodeElevation(vec4 v, vec4 unpackVector) {
+    return dot(vec4(v.xyz * 255.0, -1.0), unpackVector);
+}
+
+float currentElevation(vec2 apos) {
+    float dd = 1.0 / (u_dem_size + 2.0);
+    vec4 r = tileUvToDemSample(apos / 8192.0, u_dem_size, u_dem_scale, u_dem_tl);
+    vec2 pos = r.xy;
+    vec2 f = r.zw;
+
+    float tl = decodeElevation(texture2D(u_dem, pos), u_dem_unpack);
+    float tr = decodeElevation(texture2D(u_dem, pos + vec2(dd, 0.0)), u_dem_unpack);
+    float bl = decodeElevation(texture2D(u_dem, pos + vec2(0.0, dd)), u_dem_unpack);
+    float br = decodeElevation(texture2D(u_dem, pos + vec2(dd, dd)), u_dem_unpack);
 
     return u_exaggeration * mix(mix(tl, tr, f.x), mix(bl, br, f.x), f.y);
 }
+
+float prevElevation(vec2 apos) {
+    float dd = 1.0 / (u_dem_size + 2.0);
+    vec4 r = tileUvToDemSample(apos / 8192.0, u_dem_size, u_dem_scale_prev, u_dem_tl_prev);
+    vec2 pos = r.xy;
+    vec2 f = r.zw;
+
+    float tl = decodeElevation(texture2D(u_dem_prev, pos), u_dem_unpack_prev);
+    float tr = decodeElevation(texture2D(u_dem_prev, pos + vec2(dd, 0.0)), u_dem_unpack_prev);
+    float bl = decodeElevation(texture2D(u_dem_prev, pos + vec2(0.0, dd)), u_dem_unpack_prev);
+    float br = decodeElevation(texture2D(u_dem_prev, pos + vec2(dd, dd)), u_dem_unpack_prev);
+
+    return u_exaggeration * mix(mix(tl, tr, f.x), mix(bl, br, f.x), f.y);
+}
+
+#ifdef TERRAIN_VERTEX_MORPHING
+float elevation(vec2 apos) {
+    float nextElevation = currentElevation(apos);
+    float prevElevation = prevElevation(apos);
+    return mix(prevElevation, nextElevation, u_dem_lerp);
+}
+#else
+float elevation(vec2 apos) {
+    return currentElevation(apos);
+}
+#endif
 
 // Unpack depth from RGBA. A piece of code copied in various libraries and WebGL
 // shadow mapping examples.
