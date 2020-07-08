@@ -123,7 +123,7 @@ class CollisionIndex {
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
 
-        const firstAndLastGlyph = projection.placeFirstAndLastGlyph(
+        const firstAndLastGlyph = screenAnchorPoint.signedDistanceFromCamera > 0 ? projection.placeFirstAndLastGlyph(
             labelPlaneFontScale,
             glyphOffsetArray,
             lineOffsetX,
@@ -135,9 +135,9 @@ class CollisionIndex {
             lineVertexArray,
             labelPlaneMatrix,
             projectionCache,
-            getElevation,
+            elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
             pitchWithMap && !!elevation
-        );
+        ) : null;
 
         let collisionDetected = false;
         let inGrid = false;
@@ -170,7 +170,7 @@ class CollisionIndex {
                 assert(pitchWithMap);
                 const screenSpacePath = elevation ?
                     projectedPath.map((p, index) => {
-                        const z = index < first.path.length - 1 ? first.pathElevation[first.path.length - 1 - index] : last.pathElevation[index - first.path.length + 2];
+                        const z = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
                         return projection.project(p, labelToScreenMatrix, z);
                     }) :
                     projectedPath.map(p => projection.project(p, labelToScreenMatrix));
