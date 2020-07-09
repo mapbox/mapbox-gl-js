@@ -1298,4 +1298,22 @@ export type MapEvent =
      * @instance
      * @private
      */
-    | 'style.load';
+    | 'style.load'
+
+    /**
+     * Fired after speed index calculation is completed if speedIndexTiming option has set to true
+     *
+     * @event speedindexcompleted
+     * @memberof Map
+     * @instance
+     * @example
+     * // Initialize the map
+     * var map = new mapboxgl.Map({ // map options });
+     * map.speedIndexTiming = true;
+     * // Set an event listener that fires
+     * map.on('speedindexcompleted', function() {
+     *   console.log(`speed index is ${map.speedIndexNumber}`);
+     * });
+     */
+    | 'speedindexcompleted'
+;
