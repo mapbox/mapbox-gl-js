@@ -70,6 +70,10 @@ import type ResolvedImage from '../style-spec/expression/types/resolved_image';
 import type {DynamicDefinesType} from './program/program_uniforms';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
+export type CanvasCopyInstances = {
+    canvasCopies: Uint8Array[],
+    timeStamps: number[]
+}
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -79,7 +83,8 @@ type PainterOptions = {
     zooming: boolean,
     moving: boolean,
     gpuTiming: boolean,
-    fadeDuration: number
+    fadeDuration: number,
+    speedIndexTiming: boolean
 }
 
 /**
@@ -131,11 +136,16 @@ class Painter {
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
+    tileLoaded: boolean;
+    pixelArrays: Array<Uint8Array>;
+    loadTimeStamps: Array<number>;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
+        this.pixelArrays = [];
+        this.loadTimeStamps = [];
 
         this.setup();
 
@@ -245,6 +255,7 @@ class Painter {
 
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
+        this.loadTimeStamps.push(window.performance.now());
     }
 
     /*
@@ -536,6 +547,11 @@ class Painter {
         // encounters more expected values.
         this.context.setDefault();
         this.frameCounter = (this.frameCounter + 1) % MAX_SAFE_INTEGER;
+
+        if (this.tileLoaded && this.options.speedIndexTiming) {
+            this.loadTimeStamps.push(window.performance.now());
+            this.saveCanvasCopy();
+        }
     }
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
@@ -641,7 +657,7 @@ class Painter {
     /**
      * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
      *
-     * @returns true if a needed image is missing and rendering needs to be skipped.
+* @returns true if a needed image is missing and rendering needs to be skipped.
      * @private
      */
     isPatternMissing(image: ?CrossFaded<ResolvedImage>): boolean {
@@ -734,6 +750,29 @@ class Painter {
         if (this.terrain) {
             this.terrain.prepareDrawTile(tileID);
         }
+    }
+
+    setTileLoadedFlag(flag: boolean) {
+        this.tileLoaded = flag;
+    }
+
+    saveCanvasCopy() {
+        this.pixelArrays.push(this.canvasCopy());
+        this.tileLoaded = false;
+    }
+
+    canvasCopy(): Uint8Array {
+        const gl = this.context.gl;
+        const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
+        gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        return pixels;
+    }
+
+    getCanvasCopiesAndTimestamps(): CanvasCopyInstances {
+        return {
+            canvasCopies: this.pixelArrays,
+            timeStamps: this.loadTimeStamps
+        };
     }
 }
 
