@@ -19,6 +19,32 @@ import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 
+/**
+ * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
+ * (See the [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector) for detailed documentation of options.)
+ *
+ * @example
+ * map.addSource('some id', {
+ *     type: 'vector',
+ *     url: 'mapbox://mapbox.mapbox-streets-v6'
+ * });
+ *
+ * @example
+ * map.addSource('some id', {
+ *     type: 'vector',
+ *     tiles: ['https://d25uarhxywzl1j.cloudfront.net/v0.1/{z}/{x}/{y}.mvt'],
+ *     minzoom: 6,
+ *     maxzoom: 14
+ * });
+ *
+ * @example
+ * map.getSource('some id').setUrl("mapbox://mapbox.mapbox-streets-v6");
+ *
+ * @example
+ * map.getSource('some id').setTiles(['https://d25uarhxywzl1j.cloudfront.net/v0.1/{z}/{x}/{y}.mvt']);
+ * @see [Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
+ * @see [Add a third party vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/third-party/)
+ */
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
     id: string;
@@ -101,6 +127,47 @@ class VectorTileSource extends Evented implements Source {
     onAdd(map: Map) {
         this.map = map;
         this.load();
+    }
+
+    setSourceProperty(callback: Function) {
+        if (this._tileJSONRequest) {
+            this._tileJSONRequest.cancel();
+        }
+
+        callback();
+
+        const sourceCache = this.map.style.sourceCaches[this.id];
+        sourceCache.clearTiles();
+        this.load();
+    }
+
+    /**
+     * Sets the source `tiles` property and re-renders the map.
+     *
+     * @param {string[]} tiles An array of one or more tile source URLs, as in the TileJSON spec.
+     * @returns {VectorTileSource} this
+     */
+    setTiles(tiles: Array<string>) {
+        this.setSourceProperty(() => {
+            this._options.tiles = tiles;
+        });
+
+        return this;
+    }
+
+    /**
+     * Sets the source `url` property and re-renders the map.
+     *
+     * @param {string} url A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`.
+     * @returns {VectorTileSource} this
+     */
+    setUrl(url: string) {
+        this.setSourceProperty(() => {
+            this.url = url;
+            this._options.url = url;
+        });
+
+        return this;
     }
 
     onRemove() {
