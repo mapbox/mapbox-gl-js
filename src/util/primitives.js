@@ -2,6 +2,16 @@
 
 import {vec3, vec4} from 'gl-matrix';
 
+class Ray {
+    pos: vec3;
+    dir: vec3;
+
+    constructor(pos_: vec3, dir_: vec3) {
+        this.pos = pos_;
+        this.dir = dir_;
+    }
+}
+
 class Frustum {
     points: Array<Array<number>>;
     planes: Array<Array<number>>;
@@ -151,5 +161,6 @@ class Aabb {
 }
 export {
     Aabb,
-    Frustum
+    Frustum,
+    Ray
 };
