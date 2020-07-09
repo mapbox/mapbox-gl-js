@@ -22,13 +22,13 @@ native SDKs. For code and issues specific to the native SDKs, see the
 - [Examples](https://docs.mapbox.com/mapbox-gl-js/examples/)
 - [Style documentation](https://docs.mapbox.com/mapbox-gl-js/style-spec/)
 - [Open source styles](https://github.com/mapbox/mapbox-gl-styles)
-- [Contributor documentation](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md)
+- [Contributor documentation](./CONTRIBUTING.md)
 
 [<img width="981" alt="Mapbox GL gallery" src="https://raw.githubusercontent.com/mapbox/mapbox-gl-js-docs/publisher-production/docs/pages/assets/gallery.png">](https://www.mapbox.com/gallery/)
 
 ## License
 
-Mapbox GL JS is licensed under the [3-Clause BSD license](https://github.com/mapbox/mapbox-gl-js/blob/master/LICENSE.txt).
+Mapbox GL JS is licensed under the [3-Clause BSD license](./LICENSE.txt).
 The licenses of its dependencies are tracked via [FOSSA](https://app.fossa.io/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fmapbox%2Fmapbox-gl-js):
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fmapbox%2Fmapbox-gl-js.svg?type=large)](https://app.fossa.io/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fmapbox%2Fmapbox-gl-js?ref=badge_large)

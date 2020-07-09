@@ -29,7 +29,7 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              only: master
+              only: main
       - test-flow:
           requires:
             - prepare
@@ -80,7 +80,7 @@ workflows:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
             branches:
               only:
-                - master
+                - main
                 - /release-.*/
       - deploy-release:
           requires:
@@ -156,10 +156,10 @@ jobs:
           command: |
             node build/check-bundle-size.js
       - deploy:
-          name: Trigger memory metrics when merging to master
+          name: Trigger memory metrics when merging to main
           command: |
             if [ -n "${WEB_METRICS_TOKEN}" ]; then
-              if [[ $CIRCLE_BRANCH == master ]]; then
+              if [[ $CIRCLE_BRANCH == main ]]; then
                 curl -X POST https://circleci.com/api/v1.1/project/github/mapbox/web-metrics/build?circle-token=${WEB_METRICS_TOKEN}
               fi
             fi

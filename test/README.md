@@ -3,7 +3,7 @@
 
 ## Running Tests
 
-First you must configure your development environment per [`../CONTRIBUTING.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md)
+First you must configure your development environment per [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
 
 There are two test suites associated with Mapbox GL JS
 
@@ -18,7 +18,7 @@ There are two test suites associated with Mapbox GL JS
 
 ## Integration Tests
 
-See [`test/integration/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/integration/README.md).
+See [`test/integration/README.md`](./integration/README.md).
 
 ## Writing Unit Tests
 
@@ -31,7 +31,7 @@ See [`test/integration/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/m
 
 ## Browser Tests
 
-See [`test/browser/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/browser/README.md).
+See [`test/browser/README.md`](./browser/README.md).
 
 ## Spies, Stubs, and Mocks
 

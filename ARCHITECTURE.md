@@ -15,7 +15,7 @@ Vector tiles are fetched and parsed on WebWorker threads.  "Parsing" a vector ti
 
 `WorkerTile#parse()` takes a (deserialized) vector tile, fetches additional resources if they're needed (fonts, images), and then creates a `Bucket` for each 'family' of style layers that share the same underlying features and 'layout' properties (see `group_by_layout.js`).
 
-[Bucket](https://github.com/mapbox/mapbox-gl-js/blob/master/src/data/bucket.js) is the single point of knowledge about turning vector tiles into WebGL buffers. Each bucket holds the vertex and element array data needed to render its group of style layers (see [ArrayGroup](https://github.com/mapbox/mapbox-gl-js/blob/master/src/data/bucket.js)).  The particular bucket types each know how to populate that data for their layer types.
+[Bucket](./src/data/bucket.js) is the single point of knowledge about turning vector tiles into WebGL buffers. Each bucket holds the vertex and element array data needed to render its group of style layers (see [ArrayGroup](./src/data/bucket.js)).  The particular bucket types each know how to populate that data for their layer types.
 
 ### Rendering with WebGL
 
