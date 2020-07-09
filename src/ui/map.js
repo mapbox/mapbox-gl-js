@@ -309,6 +309,7 @@ class Map extends Camera {
     _requestManager: RequestManager;
     _locale: Object;
     _removed: boolean;
+    _speedIndexTiming: boolean;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -2339,6 +2340,11 @@ class Map extends Camera {
         }
 
         this.painter = new Painter(gl, this.transform);
+        this.on('data', (event: MapDataEvent) => {
+            if (event.dataType === 'source') {
+                this.painter.setTileLoadedFlag(true);
+            }
+        });
 
         webpSupported.testSupport(gl);
     }
@@ -2483,6 +2489,7 @@ class Map extends Camera {
             fadeDuration: this._fadeDuration,
             showPadding: this.showPadding,
             gpuTiming: !!this.listens('gpu-timing-layer'),
+            speedIndexTiming: this.speedIndexTiming,
         });
 
         this.fire(new Event('render'));
@@ -2541,6 +2548,12 @@ class Map extends Camera {
             this.triggerRepaint();
         } else if (!this.isMoving() && this.loaded()) {
             this.fire(new Event('idle'));
+            // check the options to see if need to calculate the speed index
+            if (this.speedIndexTiming) {
+                const speedIndexNumber = this._calculateSpeedIndex();
+                this.fire(new Event('speedindexcompleted', {speedIndex: speedIndexNumber}));
+                this.speedIndexTiming = false;
+            }
         }
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
@@ -2549,6 +2562,35 @@ class Map extends Camera {
         }
 
         return this;
+    }
+    _calculateSpeedIndex(): number {
+        const finalFrame = this.painter.canvasCopy();
+        const canvasCopyInstances = this.painter.getCanvasCopiesAndTimestamps();
+        canvasCopyInstances.timeStamps.push(performance.now());
+        return this._canvasPixelComparison(finalFrame, canvasCopyInstances.canvasCopies, canvasCopyInstances.timeStamps);
+    }
+
+    _canvasPixelComparison(finalFrame: Uint8Array, allFrames: Uint8Array[], timeStamps: number[]): number {
+        let finalScore = timeStamps[1] - timeStamps[0];
+        const numPixels = finalFrame.length / 4;
+
+        for (let i = 0; i < allFrames.length; i++) {
+            const frame = allFrames[i];
+            let cnt = 0;
+            for (let j = 0; j < frame.length; j += 4) {
+                if (frame[j] === finalFrame[j] &&
+                    frame[j + 1] === finalFrame[j + 1] &&
+                    frame[j + 2] === finalFrame[j + 2] &&
+                    frame[j + 3] === finalFrame[j + 3]) {
+                    cnt = cnt + 1;
+                }
+            }
+            //calculate the % visual completeness
+            const interval = timeStamps[i + 2] - timeStamps[i + 1];
+            const visualCompletness = cnt / numPixels;
+            finalScore +=  interval * (1 - visualCompletness);
+        }
+        return finalScore;
     }
 
     /**
@@ -2642,6 +2684,23 @@ class Map extends Camera {
     set showTileBoundaries(value: boolean) {
         if (this._showTileBoundaries === value) return;
         this._showTileBoundaries = value;
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the speedindex metric calculation is on or off
+     *
+     * @name speedIndexTiming
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     * @example
+     * map.speedIndexTiming = true;
+     */
+    get speedIndexTiming(): boolean { return !!this._speedIndexTiming; }
+    set speedIndexTiming(value: boolean) {
+        if (this._speedIndexTiming === value) return;
+        this._speedIndexTiming = value;
         this._update();
     }
 
