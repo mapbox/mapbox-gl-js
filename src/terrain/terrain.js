@@ -14,7 +14,7 @@ import {prepareDEMTexture} from '../render/draw_hillshade';
 import EXTENT from '../data/extent';
 import {clamp, warnOnce} from '../util/util';
 import assert from 'assert';
-import {mat4} from 'gl-matrix';
+import {vec3, mat4, vec4} from 'gl-matrix';
 import getWorkerPool from '../util/global_worker_pool';
 import Dispatcher from '../util/dispatcher';
 import GeoJSONSource from '../source/geojson_source';
@@ -745,6 +745,60 @@ export class Terrain extends Elevation {
                 '$clipping', painter.tileExtentBuffer,
                 painter.quadTriangleIndexBuffer, painter.tileExtentSegments);
         }
+    }
+
+    /*
+     * Reconstructs a picked world position by casting a ray from screen coordinates
+     * and sampling depth from the custom depth buffer. This function introduces
+     * a potential stall (few frames) due to it reading pixel information from the gpu.
+     * Depth buffer will also be generated if it doesn't already exist.
+     */
+    pickWorldPosition(screenPoint: Point, transform: Transform): ?vec3 {
+        if (screenPoint.x < 0 || screenPoint.x >= transform.width ||
+            screenPoint.y < 0 || screenPoint.y >= transform.height) {
+            return null;
+        }
+
+        // Generate a depth map if one doesn't exist yet
+        if (!this._depthDone)
+            this.drawDepth();
+
+        // Reconstruct world position from the depth information
+        const context = this.painter.context;
+        const gl = context.gl;
+        const data = new Uint8Array(4);
+        const fboHeight = this.painter.height;
+
+        context.bindFramebuffer.set(this._depthFBO.framebuffer);
+
+        gl.readPixels(
+            screenPoint.x,
+            fboHeight - screenPoint.y / transform.height * fboHeight,
+            1, 1,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            data);
+
+        const unpackDepth = (pixel: Uint8Array): number => {
+            return (pixel[0] / 16777216.0 + pixel[1] / 65536.0 + pixel[2] / 256.0 + pixel[3]) / 255.0;
+        };
+
+        const depth = unpackDepth(data);
+
+        // The depth buffer is zero-initialized => no depth information if the value is 0
+        if (depth === 0)
+            return null;
+
+        const worldPosition = [screenPoint.x, screenPoint.y, depth, 1];
+        vec4.transformMat4(worldPosition, worldPosition, transform.pixelMatrixInverse);
+        vec4.scale(worldPosition, worldPosition, 1.0 / worldPosition[3]);
+
+        // x & y in pixel coordinates, z is altitude in meters
+        worldPosition[0] /= transform.worldSize;
+        worldPosition[1] /= transform.worldSize;
+        worldPosition[2] = mercatorZfromAltitude(worldPosition[2], transform.center.lat);
+
+        return worldPosition;
     }
 
     drawDepth() {

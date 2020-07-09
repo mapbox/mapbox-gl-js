@@ -8,7 +8,7 @@ import {wrap, clamp, radToDeg, degToRad} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
 import {vec4, mat4, mat2, vec2, vec3, quat} from 'gl-matrix';
-import {Aabb, Frustum} from '../util/primitives.js';
+import {Aabb, Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
 import assert from 'assert';
@@ -695,6 +695,13 @@ class Transform {
         }
     }
 
+    setLocation(location: MercatorCoordinate) {
+        this.center = this.coordinateLocation(location);
+        if (this._renderWorldCopies) {
+            this.center = this.center.wrap();
+        }
+    }
+
     /**
      * Given a location, return the screen point that corresponds to it
      * @param {LngLat} lnglat location
@@ -768,6 +775,26 @@ class Transform {
         const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
         return {p0, p1, t};
+    }
+
+    screenPointToMercatorRay(p: Point): Ray {
+        const p0 = [p.x, p.y, 0, 1];
+        const p1 = [p.x, p.y, 1, 1];
+
+        vec4.transformMat4(p0, p0, this.pixelMatrixInverse);
+        vec4.transformMat4(p1, p1, this.pixelMatrixInverse);
+
+        vec4.scale(p0, p0, 1 / p0[3]);
+        vec4.scale(p1, p1, 1 / p1[3]);
+
+        // Convert altitude from meters to pixels
+        p0[2] = mercatorZfromAltitude(p0[2], this._center.lat) * this.worldSize;
+        p1[2] = mercatorZfromAltitude(p1[2], this._center.lat) * this.worldSize;
+
+        vec4.scale(p0, p0, 1 / this.worldSize);
+        vec4.scale(p1, p1, 1 / this.worldSize);
+
+        return new Ray([p0[0], p0[1], p0[2]], vec3.normalize([], vec3.sub([], p1, p0)));
     }
 
     /**
