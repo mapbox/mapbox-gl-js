@@ -22,6 +22,7 @@ import {bindAll, extend} from '../util/util';
 import window from '../util/window';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
+import {vec3} from 'gl-matrix';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
@@ -30,6 +31,51 @@ const isMoving = p => p.zoom || p.drag || p.pitch || p.rotate;
 class RenderFrameEvent extends Event {
     type: 'renderFrame';
     timeStamp: number;
+}
+
+class TrackingEllipsoid {
+    constants: Array<number>;
+    radius: number;
+
+    constructor() {
+        // a, b, c in the equation x²/a² + y²/b² + z²/c² = 1
+        this.constants = [1, 1, 0.01];
+        this.radius = 0;
+    }
+
+    setup(center: vec3, pointOnSurface: vec3) {
+        const centerToSurface = vec3.sub([], pointOnSurface, center);
+        if (centerToSurface[2] < 0) {
+            this.radius = vec3.length(vec3.div([], centerToSurface, this.constants));
+        } else {
+            // The point on surface is above the center. This can happen for example when the camera is
+            // below the clicked point (like a mountain) Use slightly shorter radius for less aggressive movement
+            this.radius = vec3.length([centerToSurface[0], centerToSurface[1], 0]);
+        }
+    }
+
+    // Cast a ray from the center of the ellipsoid and the intersection point.
+    projectRay(dir: vec3): vec3 {
+        // Perform the intersection test against a unit sphere
+        vec3.div(dir, dir, this.constants);
+        vec3.normalize(dir, dir);
+        vec3.mul(dir, dir, this.constants);
+
+        const intersection = vec3.scale([], dir, this.radius);
+
+        if (intersection[2] > 0) {
+            // The intersection point is above horizon so special handling is required.
+            // Otherwise direction of the movement would be inverted due to the ellipsoid shape
+            const h = vec3.scale([], [0, 0, 1], vec3.dot(intersection, [0, 0, 1]));
+            const r = vec3.scale([], vec3.normalize([], [intersection[0], intersection[1], 0]), this.radius);
+            const p = vec3.add([], intersection, vec3.scale([], vec3.sub([], vec3.add([], r, h), intersection), 2));
+
+            intersection[0] = p[0];
+            intersection[1] = p[1];
+        }
+
+        return intersection;
+    }
 }
 
 // Handlers interpret dom events and return camera changes that should be
@@ -106,6 +152,8 @@ class HandlerManager {
     _previousActiveHandlers: { [string]: Handler };
     _bearingChanged: boolean;
     _listeners: Array<[HTMLElement, string, void | {passive?: boolean, capture?: boolean}]>;
+    _trackingEllipsoid: TrackingEllipsoid;
+    _dragOrigin: ?vec3;
 
     constructor(map: Map, options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number, bearingSnap: number}) {
         this._map = map;
@@ -117,6 +165,8 @@ class HandlerManager {
         this._inertia = new HandlerInertia(map);
         this._bearingSnap = options.bearingSnap;
         this._previousActiveHandlers = {};
+        this._trackingEllipsoid = new TrackingEllipsoid();
+        this._dragOrigin = null;
 
         // Track whether map is currently moving, to compute start/move/end events
         this._eventsInProgress = {};
@@ -384,7 +434,6 @@ class HandlerManager {
         if (handlerResult.bearingDelta !== undefined) {
             eventsInProgress.rotate = eventData;
         }
-
     }
 
     _applyChanges() {
@@ -415,8 +464,13 @@ class HandlerManager {
         const map = this._map;
         const tr = map.transform;
 
+        const eventStarted = (type) => {
+            const newEvent = combinedEventsInProgress[type];
+            return newEvent && !this._eventsInProgress[type];
+        };
+
         // Camera should keep constant altitude to the sea level user is transforming the map
-        if (isMoving(this._eventsInProgress)) {
+        if (eventStarted("drag") || isMoving(this._eventsInProgress)) {
             tr.constantCameraHeight = false;
         }
 
@@ -430,8 +484,22 @@ class HandlerManager {
 
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, pinchAround} = combinedResult;
 
+        const terrain = map.painter._terrain;
+
         if (pinchAround !== undefined) {
             around = pinchAround;
+        }
+
+        if (eventStarted("drag") && terrain && around) {
+            // Elevation information has to be used to find the picked position on the terrain when the user starts to drag the map.
+            // This position can be used as the movement origin instead of the sea-level position
+            this._dragOrigin = terrain.pickWorldPosition(around, tr);
+
+            if (this._dragOrigin) {
+                // Construct the tracking ellipsoid every time user changes the drag origin.
+                // Direction of the ray will define size of the shape and hence defining the available range of movement
+                this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
+            }
         }
 
         // stop any ongoing camera animations (easeTo, flyTo)
@@ -443,7 +511,26 @@ class HandlerManager {
         if (bearingDelta) tr.bearing += bearingDelta;
         if (pitchDelta) tr.pitch += pitchDelta;
         if (zoomDelta) tr.zoom += zoomDelta;
-        tr.setLocationAtPoint(loc, around);
+
+        if (this._dragOrigin && panDelta) {
+            // Use tracking ellipsoid instead of a plane when terrain is enabled.
+            // Find screen point rays on the ellipsoid surface and use the delta vector projected
+            // to xy-plane for map translation.
+            const startRay = tr.screenPointToMercatorRay(around);
+            const endRay = tr.screenPointToMercatorRay(around.sub(panDelta));
+
+            const startPoint = this._trackingEllipsoid.projectRay(startRay.dir);
+            const endPoint = this._trackingEllipsoid.projectRay(endRay.dir);
+            const deltaX = endPoint[0] - startPoint[0];
+            const deltaY = endPoint[1] - startPoint[1];
+
+            const newCenter = tr.locationCoordinate(tr.center);
+            newCenter.x += deltaX;
+            newCenter.y += deltaY;
+            tr.setLocation(newCenter);
+        } else {
+            tr.setLocationAtPoint(loc, around);
+        }
 
         if (panDelta)
             tr.recenterOnTerrain();
