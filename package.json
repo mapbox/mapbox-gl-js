@@ -169,6 +169,7 @@
     "dist/style-spec/",
     "flow-typed/*.js",
     "src/",
-    ".flowconfig"
+    ".flowconfig",
+    "COPYRIGHT.txt"
   ]
 }
