@@ -66,6 +66,14 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - deploy-hey-pages:
+          requires:
+            - prepare
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
       - deploy-benchmarks:
           requires:
             - lint
@@ -261,6 +269,31 @@ jobs:
       - run:
           name: Upload source maps
           command: aws s3 cp --acl private --content-type application/javascript bench/versions/benchmarks_generated.js.map s3://mapbox-gl-js-internal/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js.map
+
+  deploy-hey-pages:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy hey-pages
+          command: |
+            # Add ssh host key and setup user config
+            mkdir -p ~/.ssh
+            echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==' >> ~/.ssh/known_hosts
+            git config --global user.email "karim.naaji@gmail.com"
+            git config --global user.name "karimnaaji"
+
+            # Build new package
+            yarn run build-dev
+
+            git checkout hey-pages
+
+            # Update version number and deploy
+            sed -i 's|\(MAPBOX_GL_JS_V2_VERSION = \)\(.*\)|\1'"'`git describe --tags $(git rev-list --tags --max-count=1)`'|" index.js
+            cp dist/mapbox-gl-dev.js mapbox-gl-dev.js
+            git commit mapbox-gl-dev.js index.js -m "Automated update deployment of hey-pages `date`"
+            git push origin hey-pages
 
   deploy-release:
     <<: *defaults
