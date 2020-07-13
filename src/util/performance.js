@@ -47,8 +47,10 @@ export const PerformanceUtils = {
         }
     },
     getPerformanceMetrics(): PerformanceMetrics {
-        const loadTime = performance.measure('loadTime', PerformanceMarkers.create, PerformanceMarkers.load).duration;
-        const fullLoadTime = performance.measure('fullLoadTime', PerformanceMarkers.create, PerformanceMarkers.fullLoad).duration;
+        performance.measure('loadTime', PerformanceMarkers.create, PerformanceMarkers.load);
+        performance.measure('fullLoadTime', PerformanceMarkers.create, PerformanceMarkers.fullLoad);
+        const loadTime = performance.getEntriesByName('loadTime', 'measure').duration;
+        const fullLoadTime = performance.getEntriesByName('fullLoadTime', 'measure').duration;
         const totalFrames = frameTimes.length;
 
         const avgFrameTime = frameTimes.reduce((prev, curr) => prev + curr, 0) / totalFrames / 1000;
