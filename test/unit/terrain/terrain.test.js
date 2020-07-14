@@ -23,6 +23,37 @@ function createStyle() {
 
 const TILE_SIZE = 128;
 
+// Dem texture with 0m elevation
+const pixelCount = (TILE_SIZE + 2) * (TILE_SIZE + 2);
+const pixelData = new Uint8Array(pixelCount * 4);
+
+for (let i = 0; i < pixelCount * 4; i += 4) {
+    pixelData[i + 0] = 1;
+    pixelData[i + 1] = 134;
+    pixelData[i + 2] = 160;
+    pixelData[i + 3] = 0;
+}
+const zeroDem = new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixelData));
+
+const setZeroElevationTerrain = (map) => {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+        "tileSize": TILE_SIZE,
+        "maxzoom": 14
+    });
+    const cache = map.style.sourceCaches['mapbox-dem'];
+    cache.used = cache._sourceLoaded = true;
+    cache._loadTile = (tile, callback) => {
+        tile.dem = zeroDem;
+        tile.needsHillshadePrepare = true;
+        tile.needsDEMTextureUpload = true;
+        tile.state = 'loaded';
+        callback(null);
+    };
+    map.setTerrain({"source": "mapbox-dem"});
+};
+
 test('Elevation', (t) => {
 
     const pixels = new Uint8Array((TILE_SIZE + 2) * (TILE_SIZE + 2) * 4);
@@ -59,37 +90,9 @@ test('Elevation', (t) => {
     });
 
     t.test('elevation sampling', t => {
-
-        // Dem texture with 0m elevation
-        const pixelCount = (TILE_SIZE + 2) * (TILE_SIZE + 2);
-        const pixelData = new Uint8Array(pixelCount * 4);
-
-        for (let i = 0; i < pixelCount * 4; i += 4) {
-            pixelData[i + 0] = 1;
-            pixelData[i + 1] = 134;
-            pixelData[i + 2] = 160;
-            pixelData[i + 3] = 0;
-        }
-        const zeroDem = new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixelData));
-
         const map = createMap(t);
         map.on('style.load', () => {
-            map.addSource('mapbox-dem', {
-                "type": "raster-dem",
-                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
-                "tileSize": TILE_SIZE,
-                "maxzoom": 14
-            });
-            const cache = map.style.sourceCaches['mapbox-dem'];
-            cache.used = cache._sourceLoaded = true;
-            cache._loadTile = (tile, callback) => {
-                tile.dem = zeroDem;
-                tile.needsHillshadePrepare = true;
-                tile.needsDEMTextureUpload = true;
-                tile.state = 'loaded';
-                callback(null);
-            };
-            map.setTerrain({"source": "mapbox-dem"});
+            setZeroElevationTerrain(map);
             map.once('render', () => {
                 const elevationError = -1;
                 t.test('Sample', t => {
@@ -105,6 +108,74 @@ test('Elevation', (t) => {
                     t.equal(elevation2, elevationError);
                     t.end();
                 });
+                t.end();
+            });
+        });
+    });
+
+    t.test('style diff / remove dem source cache', t => {
+        const map = createMap(t);
+        map.on('style.load', () => {
+            setZeroElevationTerrain(map);
+            map.once('render', () => {
+                const elevationError = -1;
+                t.test('Disabled if style update removes terrain DEM source', t => {
+                    const terrain = map.painter.terrain;
+                    const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+                    t.equal(elevation1, 0);
+
+                    t.stub(console, 'warn');
+                    map.setStyle(createStyle());
+                    const elevation2 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+                    t.ok(console.warn.calledOnce);
+                    t.ok(console.warn.getCall(0).calledWithMatch(/Terrain source "mapbox-dem" is not defined./));
+                    t.equal(elevation2, elevationError);
+
+                    // Add terrain back.
+                    setZeroElevationTerrain(map);
+
+                    map.painter.updateTerrain(map.style);
+                    const elevation3 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+                    t.equal(elevation3, 0);
+
+                    t.test('remove source', t => {
+                        t.stub(console, 'warn');
+                        map.removeSource('mapbox-dem');
+                        const elevation2 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+                        t.equal(elevation2, elevationError);
+                        t.ok(console.warn.calledOnce);
+                        t.ok(console.warn.getCall(0).calledWithMatch(/Terrain source "mapbox-dem" is not defined./));
+
+                        setZeroElevationTerrain(map);
+
+                        map.painter.updateTerrain(map.style);
+                        const elevation3 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+                        t.equal(elevation3, 0);
+                        t.end();
+                    });
+
+                    t.end();
+                });
+                t.end();
+            });
+        });
+    });
+
+    t.test('style diff=false removes dem source', t => {
+        const map = createMap(t);
+        map.once('style.load', () => {
+            setZeroElevationTerrain(map);
+            map.once('render', () => {
+                map.painter.updateTerrain(map.style);
+                const elevationError = -1;
+                const terrain = map.painter.terrain;
+                const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+                t.equal(elevation1, 0);
+
+                map.setStyle(createStyle(), {diff: false});
+
+                const elevation2 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+                t.equal(elevation2, elevationError);
                 t.end();
             });
         });
