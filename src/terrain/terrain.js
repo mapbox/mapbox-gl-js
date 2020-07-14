@@ -1019,7 +1019,7 @@ export class Terrain extends Elevation {
     }
 
     findDEMTileFor(tileID: OverscaledTileID): ?Tile {
-        return this._findTileCoveringTileID(tileID, this.sourceCache);
+        return this.valid ? this._findTileCoveringTileID(tileID, this.sourceCache) : null;
     }
 
     /*

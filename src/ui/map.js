@@ -1341,23 +1341,20 @@ class Map extends Camera {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-        }
-
-        if (!style) {
             delete this.style;
-            return this;
-        } else {
+        }
+
+        if (style) {
             this.style = new Style(this, options || {});
+            this.style.setEventedParent(this, {style: this.style});
+
+            if (typeof style === 'string') {
+                this.style.loadURL(style);
+            } else {
+                this.style.loadJSON(style);
+            }
         }
-
-        this.style.setEventedParent(this, {style: this.style});
-
-        if (typeof style === 'string') {
-            this.style.loadURL(style);
-        } else {
-            this.style.loadJSON(style);
-        }
-
+        this._updateTerrain();
         return this;
     }
 
@@ -1389,6 +1386,7 @@ class Map extends Camera {
         try {
             if (this.style.setState(style)) {
                 this._update(true);
+                this._updateTerrain();
             }
         } catch (e) {
             warnOnce(
@@ -1528,6 +1526,7 @@ class Map extends Camera {
      */
     removeSource(id: string) {
         this.style.removeSource(id);
+        this._updateTerrain();
         return this._update(true);
     }
 
@@ -2473,7 +2472,7 @@ class Map extends Camera {
         // need for the current transform
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
-            this.painter.updateTerrain(this.style); // Terrain DEM source updates here and skips update in style._updateSources.
+            this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             this.style._updateSources(this.transform);
         }
 
@@ -2563,6 +2562,13 @@ class Map extends Camera {
 
         return this;
     }
+
+    _updateTerrain() {
+        // Recalculate if enabled/disabled and calculate elevation cover. As camera is using elevation tiles before
+        // render (and deferred update after zoom recalculation), this needs to be called when removing terrain source.
+        this.painter.updateTerrain(this.style);
+    }
+
     _calculateSpeedIndex(): number {
         const finalFrame = this.painter.canvasCopy();
         const canvasCopyInstances = this.painter.getCanvasCopiesAndTimestamps();

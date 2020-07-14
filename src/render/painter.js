@@ -161,7 +161,7 @@ class Painter {
     }
 
     updateTerrain(style: Style) {
-        const enabled = style.terrain && style.terrain.properties && style.terrain.properties.get('source');
+        const enabled = style && style.terrain && style.terrain.properties && style.terrain.properties.get('source');
         if (!enabled && (!this._terrain || !this._terrain.valid)) return;
         if (!enabled) {
             if (this._terrain) this._terrain._disable();
