@@ -189,6 +189,7 @@ export class Terrain extends Elevation {
     _findCoveringTileCache: {[string]: {[string]: ?string}};
 
     _tilesDirty: {[string]: {[string]: boolean}};
+    _invalidateRenderCache: boolean;
 
     constructor(painter: Painter, style: Style) {
         super();
@@ -221,11 +222,7 @@ export class Terrain extends Elevation {
         this._findCoveringTileCache = {};
         this._tilesDirty = {};
         this.style = style;
-        style.on('data', (event) => {
-            if (event.coord && event.dataType === 'source') {
-                this._clearRenderCacheForTile(event.sourceId, event.coord);
-            }
-        });
+        style.on('data', this._onStyleDataEvent.bind(this));
     }
 
     /*
@@ -235,11 +232,7 @@ export class Terrain extends Elevation {
      */
     update(style: Style, transform: Transform) {
         if (this.style !== style) {
-            style.on('data', (event) => {
-                if (event.coord && event.dataType === 'source') {
-                    this._clearRenderCacheForTile(event.sourceId, event.coord);
-                }
-            });
+            style.on('data', this._onStyleDataEvent.bind(this));
             this.style = style;
         }
         const sourceId = style.terrain.properties.get('source');
@@ -290,6 +283,14 @@ export class Terrain extends Elevation {
         this._depthDone = false;
     }
 
+    _onStyleDataEvent(event: any) {
+        if (event.coord && event.dataType === 'source') {
+            this._clearRenderCacheForTile(event.sourceId, event.coord);
+        } else if (event.dataType === 'style') {
+            this._invalidateRenderCache = true;
+        }
+    }
+
     // Terrain
     _disable() {
         this.valid = false;
@@ -329,7 +330,8 @@ export class Terrain extends Elevation {
         const psc = this.proxySourceCache;
         const tr = this.painter.transform;
         const options = this.painter.options;
-        this.drapeFirst = options.zooming || options.moving || options.rotating || this.forceDrapeFirst;
+        this.drapeFirst = (options.zooming || options.moving || options.rotating || this.forceDrapeFirst) && !this._invalidateRenderCache;
+        this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
             tileID.posMatrix = tr.calculatePosMatrix(tileID.toUnwrapped());
