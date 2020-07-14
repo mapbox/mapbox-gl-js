@@ -39,6 +39,7 @@ var Demo3D = function() {
     this.sunAzimuth = 90;
     this.sunHaloIntensity = 1.0;
     this.sunAtmosphereIntensity = 1.0;
+    this.animateSky = false;
     this.sunHaloColor = [ 255, 255, 255 ];
     this.skyColor = [ 255, 255, 255 ];
 };
@@ -69,6 +70,7 @@ window.onload = function() {
     camera.add(demo3d, 'animateCamera');
 
     var sky = gui.addFolder('Sky');
+    sky.add(demo3d, 'animateSky');
     var sunAltitude = sky.add(demo3d, 'sunAltitude', 0.0, 90.0);
     sunAltitude.onFinishChange((value) => {
         map.setPaintProperty('sky', 'sky-sun-direction', [demo3d.sunAzimuth, value]);
@@ -112,7 +114,8 @@ var map = window.map = new mapboxgl.Map({
 const r = 255 * 0.75;
 
 let animationIndex = 0;
-let animationTime = 0.0;
+let cameraAnimationTime = 0.0;
+let skyAnimationTime = 0.0;
 let first = true;
 
 map.on('style.load', function() {
@@ -260,20 +263,25 @@ map.on('style.load', function() {
     }];
 
     setInterval(() => {
-        if (!demo3d.animateCamera) return;
+        if (demo3d.animateCamera) {
+            animationIndex %= animations.length - 1;
+            const current = animations[animationIndex];
 
-        animationIndex %= animations.length - 1;
-        const current = animations[animationIndex];
+            if (cameraAnimationTime < current.duration) {
+                current.animate(cameraAnimationTime / current.duration);
+            }
 
-        if (animationTime < current.duration) {
-            current.animate(animationTime / current.duration);
+            cameraAnimationTime += 1.0 / 60;
+
+            if (cameraAnimationTime > current.duration) {
+                animationIndex++;
+                cameraAnimationTime = 0.0;
+            }
         }
-
-        animationTime += 1.0 / 60;
-
-        if (animationTime > current.duration) {
-            animationIndex++;
-            animationTime = 0.0;
+        if (demo3d.animateSky) {
+            const altitude = Math.cos(skyAnimationTime + Math.PI) * 0.5 + 0.5;
+            map.setPaintProperty('sky', 'sky-sun-direction', [demo3d.sunAzimuth, easeInCubic(altitude) * 90.0]);
+            skyAnimationTime += 1.0 / 60;
         }
     }, 1000.0 / 60.0);
 
