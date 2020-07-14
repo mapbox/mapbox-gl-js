@@ -19,11 +19,10 @@
 
 var map = new mapboxgl.Map({
     container: "map",
-    center: [-122.42978873524737, 37.78794361993374],
+    center: [-122.42983194637827, 37.78455485886424],
     zoom: 15.899575291423961,
     style: "mapbox://styles/mapbox/streets-v11",
     pitch: 85,
-    bearing: 70
 });
 
 map.on('load', function() {
@@ -45,8 +44,18 @@ map.on('load', function() {
         'id': 'sky',
         'type': 'sky',
         'paint': {
-            'sky-type': 'atmosphere',
-            'sky-sun-direction': [90, 8],
+            'sky-type': 'gradient',
+            'sky-gradient': [
+                'interpolate',
+                ['linear'],
+                ['sky-radial-progress'],
+                0.8,
+                'rgba(135, 206, 235, 1.0)',
+                1,
+                'rgba(0,0,0,0.1)'
+            ],
+            'sky-sun-direction': [0, 90],
+            'sky-gradient-radius': 90,
             'sky-opacity': [
                 'interpolate',
                 ['exponential', 0.1],
@@ -58,14 +67,6 @@ map.on('load', function() {
             ]
         }
     });
-
-    let animationTime = 0.0;
-    const easeInCubic = (t) => t * t * t;
-    setInterval(() => {
-        const altitude = Math.cos(animationTime + Math.PI) * 0.5 + 0.5;
-        map.setPaintProperty('sky', 'sky-sun-direction', [90, easeInCubic(altitude) * 90.0]);
-        animationTime += 1.0 / 60;
-    }, 1000.0 / 60.0);
 });
 
 </script>
