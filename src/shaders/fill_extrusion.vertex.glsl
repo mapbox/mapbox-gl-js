@@ -38,10 +38,11 @@ void main() {
 #ifdef TERRAIN
     bool flat_roof = a_centroid_pos.x != 0.0;
     float ele = elevation(pos_nx.xy);
-    float c_ele = flat_roof ? flatElevation(a_centroid_pos, height) : ele;
+    float hidden = float(a_centroid_pos.x == 0.0 && a_centroid_pos.y == 1.0);
+    float c_ele = flat_roof ? a_centroid_pos.y == 0.0 ? elevationFromUint16(a_centroid_pos.x) : flatElevation(a_centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
     float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
-    gl_Position = u_matrix * vec4(pos_nx.xy, h, 1);
+    gl_Position = mix(u_matrix * vec4(pos_nx.xy, h, 1), AWAY, hidden);
 #else
     gl_Position = u_matrix * vec4(pos_nx.xy, t > 0.0 ? height : base, 1);
 #endif

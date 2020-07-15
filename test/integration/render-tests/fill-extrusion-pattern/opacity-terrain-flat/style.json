@@ -1,7 +1,7 @@
 {
   "version": 8,
   "metadata": {
-    "description": "Flat roof centroid attribute array is uploaded after terrain gets enabled. Sleep to wait bucket update.",
+    "description": "Flat roof centroid attribute array is uploaded after terrain gets enabled.",
     "test": {
       "height": 256,
       "operations": [
