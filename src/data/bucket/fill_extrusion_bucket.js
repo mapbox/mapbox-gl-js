@@ -19,6 +19,7 @@ import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Point from '@mapbox/point-geometry';
+import {number as interpolate} from '../../style-spec/util/interpolate';
 
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {
@@ -51,48 +52,111 @@ function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
     );
 }
 
-class Centroid {
+class PartMetadata {
     acc: Point;
-    invalid: ?boolean; // If building cuts tile borders, flat roofs are not done using this approach.
     min: Point;
     max: Point;
+    polyCount: Array<{edges: number, top: number}>;
+    currentPolyCount: {edges: number, top: number};
+    borders: Array<[number, number]>; // Array<[min, max]>
+    vertexArrayOffset: number;
 
     constructor() {
         this.acc = new Point(0, 0);
-        this.min = new Point(EXTENT, EXTENT);
-        this.max = new Point(-EXTENT, -EXTENT);
+        this.polyCount = [];
+    }
+
+    startRing(p: Point) {
+        this.currentPolyCount = {edges: 0, top: 0};
+        this.polyCount.push(this.currentPolyCount);
+        if (this.min) return;
+        this.min = new Point(p.x, p.y);
+        this.max = new Point(p.x, p.y);
     }
 
     append(p: Point, prev: Point) {
+        this.currentPolyCount.edges++;
+
         this.acc._add(p);
+        let checkBorders = !!this.borders;
+
         const min = this.min, max = this.max;
         if (p.x < min.x) {
-            if (p.x < 0) { return (this.invalid = true); }
             min.x = p.x;
+            checkBorders = true;
         } else if (p.x > max.x) {
-            if (p.x > EXTENT) { return (this.invalid = true); }
             max.x = p.x;
+            checkBorders = true;
         }
         if (p.y < min.y) {
-            if (p.y < 0) { return (this.invalid = true); }
             min.y = p.y;
+            checkBorders = true;
         } else if (p.y > max.y) {
-            if (p.y > EXTENT) { return (this.invalid = true); }
             max.y = p.y;
+            checkBorders = true;
         }
-        if (((p.x === 0 || p.x === EXTENT) && p.x === prev.x) || ((p.y === 0 || p.y === EXTENT) && p.y === prev.y)) {
-            // Custom defined geojson buildings are cut on borders. Don't use centroid
-            // flat roof technique.
-            return (this.invalid = true);
+        if (((p.x === 0 || p.x === EXTENT) && p.x === prev.x) !== ((p.y === 0 || p.y === EXTENT) && p.y === prev.y)) {
+            // Custom defined geojson buildings are cut on borders. Points are
+            // repeated when edge cuts tile corner (reason for using xor).
+            this.processBorderOverlap(p, prev);
+        }
+        if (checkBorders) this.checkBorderIntersection(p, prev);
+    }
+
+    checkBorderIntersection(p: Point, prev: Point) {
+        if ((prev.x < 0) !== (p.x < 0)) {
+            this.addBorderIntersection(0, interpolate(prev.y, p.y, (0 - prev.x) / (p.x - prev.x)));
+        }
+        if ((prev.x > EXTENT) !== (p.x > EXTENT)) {
+            this.addBorderIntersection(1, interpolate(prev.y, p.y, (EXTENT - prev.x) / (p.x - prev.x)));
+        }
+        if ((prev.y < 0) !== (p.y < 0)) {
+            this.addBorderIntersection(2, interpolate(prev.x, p.x, (0 - prev.y) / (p.y - prev.y)));
+        }
+        if ((prev.y > EXTENT) !== (p.y > EXTENT)) {
+            this.addBorderIntersection(3, interpolate(prev.x, p.x, (EXTENT - prev.y) / (p.y - prev.y)));
         }
     }
 
-    value(count: number): Point {
-        return this.acc.div(count)._round();
+    addBorderIntersection(index: 0 | 1 | 2 | 3, i: number) {
+        if (!this.borders) {
+            this.borders = [
+                [Number.MAX_VALUE, -Number.MAX_VALUE],
+                [Number.MAX_VALUE, -Number.MAX_VALUE],
+                [Number.MAX_VALUE, -Number.MAX_VALUE],
+                [Number.MAX_VALUE, -Number.MAX_VALUE]
+            ];
+        }
+        const b = this.borders[index];
+        if (i < b[0]) b[0] = i;
+        if (i > b[1]) b[1] = i;
+    }
+
+    processBorderOverlap(p: Point, prev: Point) {
+        if (p.x === prev.x) {
+            if (p.y === prev.y) return; // custom defined geojson could have points repeated.
+            const index = p.x === 0 ? 0 : 1;
+            this.addBorderIntersection(index, prev.y);
+            this.addBorderIntersection(index, p.y);
+        } else {
+            assert(p.y === prev.y);
+            const index = p.y === 0 ? 2 : 3;
+            this.addBorderIntersection(index, prev.x);
+            this.addBorderIntersection(index, p.x);
+        }
+    }
+
+    centroid(): Point {
+        const count = this.polyCount.reduce((acc, p) => acc + p.edges, 0);
+        return count !== 0 ? this.acc.div(count)._round() : new Point(0, 0);
     }
 
     span(): Point {
-        return this.max.sub(this.min);
+        return new Point(this.max.x - this.min.x, this.max.y - this.min.y);
+    }
+
+    intersectsCount(): number {
+        return this.borders.reduce((acc, p) => acc + +(p[0] !== Number.MAX_VALUE), 0);
     }
 }
 
@@ -121,6 +185,13 @@ class FillExtrusionBucket implements Bucket {
     uploaded: boolean;
     features: Array<BucketFeature>;
 
+    featuresOnBorder: Array<PartMetadata>;
+    // borders / borderDone: 0 - left, 1, right, 2 - top, 3 - bottom
+    borders: Array<Array<number>>; // For each side, indices into featuresOnBorder array.
+    borderDone: Array<boolean>;
+    needsCentroidUpdate: boolean;
+    tileToMeter: number; // cache conversion.
+
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
@@ -141,6 +212,10 @@ class FillExtrusionBucket implements Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID) {
         this.features = [];
         this.hasPattern = hasPattern('fill-extrusion', this.layers, options);
+        this.featuresOnBorder = [];
+        this.borders = [[], [], [], []];
+        this.borderDone = [false, false, false, false];
+        this.tileToMeter = tileToMeter(canonical);
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
@@ -166,6 +241,7 @@ class FillExtrusionBucket implements Bucket {
 
             options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, true);
         }
+        this.sortBorders();
     }
 
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
@@ -173,6 +249,7 @@ class FillExtrusionBucket implements Bucket {
             const {geometry} = feature;
             this.addFeature(feature, geometry, feature.index, canonical, imagePositions);
         }
+        this.sortBorders();
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[_: string]: ImagePosition}) {
@@ -191,14 +268,20 @@ class FillExtrusionBucket implements Bucket {
     upload(context: Context) {
         if (!this.uploaded) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-            if (this.centroidVertexArray.length > 0) {
-                this.centroidVertexBuffer = context.createVertexBuffer(this.centroidVertexArray, centroidAttributes.members);
-                assert(this.centroidVertexArray.length === this.layoutVertexArray.length);
-            }
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
         }
         this.programConfigurations.upload(context);
         this.uploaded = true;
+    }
+
+    uploadCentroid(context: Context) {
+        if (this.centroidVertexArray.length === 0) return;
+        if (!this.centroidVertexBuffer) {
+            this.centroidVertexBuffer = context.createVertexBuffer(this.centroidVertexArray, centroidAttributes.members, true);
+        } else if (this.needsCentroidUpdate) {
+            this.centroidVertexBuffer.updateData(this.centroidVertexArray);
+        }
+        this.needsCentroidUpdate = false;
     }
 
     destroy() {
@@ -211,25 +294,16 @@ class FillExtrusionBucket implements Bucket {
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: {[_: string]: ImagePosition}) {
-        const appendRepeatedCentroids = (count, x, y, x1, y1) => {
-            for (let i = 0; i < count; i++) {
-                this.centroidVertexArray.emplaceBack(x, y);
-                if (x1 != null && y1 != null) this.centroidVertexArray.emplaceBack(x1, y1);
-            }
-        };
         const flatRoof = this.enableTerrain && feature.properties && feature.properties.hasOwnProperty('type') &&
             feature.properties.hasOwnProperty('height') && vectorTileFeatureTypes[feature.type] === 'Polygon';
 
-        const centroid = new Centroid();
-        const polyCount = [];
+        const metadata = flatRoof ? new PartMetadata() : null;
 
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
             const isRingOutside = {};
-            const polyInfo = {edges: 0, top: 0};
-            polyCount.push(polyInfo);
 
             for (let i = 0; i < polygon.length; i++) {
                 const ring = polygon[i];
@@ -244,6 +318,7 @@ class FillExtrusionBucket implements Bucket {
                 numVertices += ring.length;
 
                 let edgeDistance = 0;
+                if (metadata) metadata.startRing(ring[0]);
 
                 for (let p = 0; p < ring.length; p++) {
                     const p1 = ring[p];
@@ -252,7 +327,7 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
-                            if (flatRoof) centroid.append(p1, p2);
+                            if (metadata) metadata.append(p1, p2);
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                             }
@@ -285,7 +360,6 @@ class FillExtrusionBucket implements Bucket {
 
                             segment.vertexLength += 4;
                             segment.primitiveLength += 2;
-                            polyInfo.edges++;
                         }
                     }
                 }
@@ -324,7 +398,7 @@ class FillExtrusionBucket implements Bucket {
 
                     flattened.push(p.x);
                     flattened.push(p.y);
-                    polyInfo.top++;
+                    if (metadata) metadata.currentPolyCount.top++;
                 }
             }
 
@@ -343,30 +417,78 @@ class FillExtrusionBucket implements Bucket {
             segment.vertexLength += numVertices;
         }
 
-        if (flatRoof) {
-            const count = polyCount.reduce((acc, p) => acc + p.edges, 0);
-            if (count > 0) {
-                // When building is split between tiles, don't use flat roofs.
-                let x = 0, y = 0;
-                if (!centroid.invalid) {
-                    const toMeter = tileToMeter(canonical);
-                    const span = centroid.span()._mult(toMeter);
-                    const c = centroid.value(count);
-                    x = (Math.max(c.x, 1) << 3) + Math.min(7, Math.round(span.x / 10));
-                    y = (Math.max(c.y, 1) << 3) + Math.min(7, Math.round(span.y / 10));
-                }
-                for (const polyInfo of polyCount) {
-                    appendRepeatedCentroids(polyInfo.edges * 2, 0, 0, x, y);
-                    appendRepeatedCentroids(polyInfo.top, x, y);
+        if (metadata && metadata.polyCount.length > 0) {
+            // When building is split between tiles, don't handle flat roofs here.
+            if (metadata.borders) {
+                // Store to the bucket. Flat roofs are handled in flatRoofsUpdate,
+                // after joining parts that lay in different buckets.
+                metadata.vertexArrayOffset = this.centroidVertexArray.length;
+                const borders = metadata.borders;
+                const index = this.featuresOnBorder.push(metadata) - 1;
+                for (let i = 0; i < 4; i++) {
+                    if (borders[i][0] !== Number.MAX_VALUE) { this.borders[i].push(index); }
                 }
             }
+            this.encodeCentroid(metadata.borders ? undefined : metadata.centroid(), metadata);
+            assert(!this.centroidVertexArray.length || this.centroidVertexArray.length === this.layoutVertexArray.length);
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, canonical);
     }
+
+    sortBorders() {
+        for (let i = 0; i < 4; i++) {
+            // Sort by border intersection area minimums, ascending.
+            this.borders[i].sort((a, b) => this.featuresOnBorder[a].borders[i][0] - this.featuresOnBorder[b].borders[i][0]);
+        }
+    }
+
+    encodeCentroid(c: Point, metadata: PartMetadata, append: boolean = true) {
+        let x, y;
+        // Encoded centroid x and y:
+        //     x     y
+        // ---------------------------------------------
+        //     0     0    Default, no flat roof.
+        //     0     1    Hide, used to hide parts of buildings on border while expecting the other side to get loaded
+        //    >0     0    Elevation encoded to uint16 word
+        //    >0    >0    Encoded centroid position and x & y span
+        if (c) {
+            if (c.y !== 0) {
+                const span = metadata.span()._mult(this.tileToMeter);
+                x = (Math.max(c.x, 1) << 3) + Math.min(7, Math.round(span.x / 10));
+                y = (Math.max(c.y, 1) << 3) + Math.min(7, Math.round(span.y / 10));
+            } else { // encode height:
+                x = Math.ceil(c.x * 7.3);
+                y = 0;
+            }
+        } else {
+            // Use the impossible situation (building that has width and doesn't cross border cannot have centroid
+            // at border) to encode unprocessed border building: it is initially (append === true) hidden until
+            // computing centroid for joined building parts in rendering thread (flatRoofsUpdate). If it intersects more than
+            // two borders, flat roof approach is not applied.
+            x = 0;
+            y = +append; // Hide (1) initially when creating - visibility is changed in draw_fill_extrusion as soon as neighbor tile gets loaded.
+        }
+
+        assert(append || metadata.vertexArrayOffset !== undefined);
+        let offset = append ? this.centroidVertexArray.length : metadata.vertexArrayOffset;
+        for (const polyInfo of metadata.polyCount) {
+            if (append) {
+                this.centroidVertexArray.resize(this.centroidVertexArray.length + polyInfo.edges * 4 + polyInfo.top);
+            }
+            for (let i = 0; i < polyInfo.edges * 2; i++) {
+                this.centroidVertexArray.emplace(offset++, 0, y);
+                this.centroidVertexArray.emplace(offset++, x, y);
+            }
+            for (let i = 0; i < polyInfo.top; i++) {
+                this.centroidVertexArray.emplace(offset++, x, y);
+            }
+        }
+    }
 }
 
 register('FillExtrusionBucket', FillExtrusionBucket, {omit: ['layers', 'features']});
+register('PartMetadata', PartMetadata);
 
 export default FillExtrusionBucket;
 
@@ -377,9 +499,9 @@ function isBoundaryEdge(p1, p2) {
 
 function isEntirelyOutside(ring) {
     return ring.every(p => p.x < 0) ||
-        ring.every(p => p.x > EXTENT) ||
+        ring.every(p => p.x >= EXTENT) ||
         ring.every(p => p.y < 0) ||
-        ring.every(p => p.y > EXTENT);
+        ring.every(p => p.y >= EXTENT);
 }
 
 function tileToMeter(canonical: CanonicalTileID) {

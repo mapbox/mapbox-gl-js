@@ -69,8 +69,8 @@ export class Elevation {
      * If a DEM tile that covers tileID is loaded, true is returned, otherwise false.
      * Nearest filter sampling on dem data is done (no interpolation).
      */
-    getForTilePoints(tileID: OverscaledTileID, points: Array<vec3>): boolean {
-        const demTile = this.findDEMTileFor(tileID);
+    getForTilePoints(tileID: OverscaledTileID, points: Array<vec3>, interpolated: ?boolean, useDemTile: ?Tile): boolean {
+        const demTile = useDemTile || this.findDEMTileFor(tileID);
         if (!(demTile && demTile.dem)) { return false; }
         const dem: DEMData = demTile.dem;
         const demTileID = demTile.tileID;
@@ -80,9 +80,15 @@ export class Elevation {
         const k = demTile.tileSize / EXTENT / scale;
 
         points.forEach(p => {
-            const i = Math.floor(p[0] * k + xOffset);
-            const j = Math.floor(p[1] * k + yOffset);
-            p[2] = this.exaggeration() * dem.get(i, j);
+            const x = p[0] * k + xOffset;
+            const y = p[1] * k + yOffset;
+            const i = Math.floor(x);
+            const j = Math.floor(y);
+            p[2] = this.exaggeration() * (interpolated ? interpolate(
+                interpolate(dem.get(i, j), dem.get(i, j + 1), y - j),
+                interpolate(dem.get(i + 1, j), dem.get(i + 1, j + 1), y - j),
+                x - i) :
+                dem.get(i, j));
         });
         return true;
     }
