@@ -770,12 +770,13 @@ export class Terrain extends Elevation {
         const gl = context.gl;
         const data = new Uint8Array(4);
         const fboHeight = this.painter.height;
+        const pixelRatio = fboHeight / transform.height;
 
         context.bindFramebuffer.set(this._depthFBO.framebuffer);
 
         gl.readPixels(
-            screenPoint.x,
-            fboHeight - screenPoint.y / transform.height * fboHeight,
+            screenPoint.x * pixelRatio,
+            fboHeight - screenPoint.y * pixelRatio,
             1, 1,
             gl.RGBA,
             gl.UNSIGNED_BYTE,
