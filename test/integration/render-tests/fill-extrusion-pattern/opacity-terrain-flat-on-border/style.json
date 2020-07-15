@@ -1,0 +1,170 @@
+{
+  "version": 8,
+  "metadata": {
+    "description": "Tests various cases of flatRoofsUpdate().",
+    "test": {
+      "height": 256,
+      "operations": [
+        ["wait"],
+        ["setTerrain", {
+          "source": "rgbterrain",
+          "exaggeration": 0.03
+        }],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/11-378-804.terrain.png"
+      ],
+      "maxzoom": 11,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "buffer": 0,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+         {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 10
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [ -0.0010,     0      ],
+                  [ -0.0007,     0.0003 ],
+                  [ -0.0003999,  0      ],
+                  [ -0.0007,    -0.0003 ],
+                  [ -0.0010,     0      ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 10
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [ -0.0004,  0      ],
+                  [ -0.0002,  0.0002 ],
+                  [ 0,        0      ],
+                  [ -0.0002, -0.0002 ],
+                  [ -0.0004,  0      ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 5
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [ -0.0001,  0.00035 ],
+                  [ -0.0001,  0.0004  ],
+                  [  0.0001,  0.0004  ],
+                  [  0.0001,  0.00035 ],
+                  [ -0.0001,  0.00035 ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 10
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [ -0.00003,  0.00036 ],
+                  [ -0.00003,  0.00039 ],
+                  [  0.00003,  0.00039 ],
+                  [  0.00003,  0.00036 ],
+                  [ -0.00003,  0.00036 ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 5
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [ -0.0002,  0.0002 ],
+                  [ -0.0002,  0.0003 ],
+                  [  0.0002,  0.0003 ],
+                  [  0.0002,  0.0002 ],
+                  [ -0.0002,  0.0002 ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 5
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [ -0.0002,  0.0005 ],
+                  [ -0.0002,  0.0007 ],
+                  [  0.0002,  0.0007 ],
+                  [  0.0002,  0.0005 ],
+                  [ -0.0002,  0.0005 ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "pitch": 62.5,
+  "zoom": 18,
+  "bearing": -45,
+  "center": [-0.0002, 0.00012],
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-pattern": "generic_icon",
+        "fill-extrusion-opacity": 0.5,
+        "fill-extrusion-height": {
+          "stops": [[0, 0], [100, 100]],
+          "property": "height"
+        }
+      }
+    }
+  ]
+}

@@ -92,11 +92,11 @@ vec4 fourSample(vec2 pos, vec2 off) {
     return vec4(tl, tr, bl, br);
 }
 
-float flatElevation(vec2 pack, float height) {
+float flatElevation(vec2 pack) {
     vec2 apos = floor(pack / 8.0);
     vec2 span = 10.0 * (pack - apos * 8.0);
 
-    vec2 uvTex = apos / 8192.0;
+    vec2 uvTex = (apos - vec2(1.0, 1.0)) / 8190.0;
     float size = u_dem_size + 2.0;
     float dd = 1.0 / size;
 
@@ -112,10 +112,7 @@ float flatElevation(vec2 pack, float height) {
     vec2 d = dd * w;
     vec4 bounds = vec4(d, vec2(1.0) - d);
     
-    // Get building wide sample, if there is space, to get better slope estimate.
-    vec2 wider = vec2(pos.x > bounds.r && pos.x < bounds.b, pos.y > bounds.g && pos.y < bounds.a);
-    w *= wider;
-    d *= wider;
+    // Get building wide sample, to get better slope estimate.
     h = fourSample(pos - d, 2.0 * d + vec2(dd));
 
     vec4 diff = abs(h.xzxy - h.ywzw);
@@ -123,6 +120,10 @@ float flatElevation(vec2 pack, float height) {
     vec2 fix = slope * span;
     float base = z + max(fix.x, fix.y);
     return u_exaggeration * base;
+}
+
+float elevationFromUint16(float word) {
+    return u_exaggeration * word / 7.3;
 }
 
 #else

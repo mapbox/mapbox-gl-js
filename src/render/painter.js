@@ -521,7 +521,7 @@ class Painter {
 
         if (this.options.showTileBoundaries) {
             //Use source with highest maxzoom
-            let selectedSource = this.terrain ? this.terrain.proxySourceCache : null;
+            let selectedSource = null;
             let sourceCache;
             const layers = values(this.style._layers);
             layers.forEach((layer) => {
