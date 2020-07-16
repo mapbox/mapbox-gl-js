@@ -20,7 +20,7 @@
             params.getAll('compare').filter(Boolean) :
             fetch('https://api.github.com/repos/mapbox/mapbox-gl-js/releases/latest')
             .then(response => response.json())
-            .then(pkg => [pkg['tag_name'], 'master']))
+            .then(pkg => [pkg['tag_name'], 'main']))
             .then(versions => {
                 return versions
                     .map(v => `https://s3.amazonaws.com/mapbox-gl-js/${v}/benchmarks.js`)

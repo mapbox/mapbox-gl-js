@@ -623,13 +623,18 @@ class HandlerManager {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 
+    _requestFrame() {
+        this._map.triggerRepaint();
+        return this._map._renderTaskQueue.add(timeStamp => {
+            delete this._frameId;
+            this.handleEvent(new RenderFrameEvent('renderFrame', {timeStamp}));
+            this._applyChanges();
+        });
+    }
+
     _triggerRenderFrame() {
         if (this._frameId === undefined) {
-            this._frameId = this._map._requestRenderFrame(timeStamp => {
-                delete this._frameId;
-                this.handleEvent(new RenderFrameEvent('renderFrame', {timeStamp}));
-                this._applyChanges();
-            });
+            this._frameId = this._requestFrame();
         }
     }
 

@@ -99,11 +99,11 @@ Once those commands finish, you will have a standalone build at `dist/mapbox-gl.
 
 ## Writing & Running Tests
 
-See [`test/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/README.md).
+See [`test/README.md`](./test/README.md).
 
 ## Writing & Running Benchmarks
 
-See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench/README.md).
+See [`bench/README.md`](./bench/README.md).
 
 ## Code Conventions
 
@@ -142,7 +142,7 @@ Here is a recommended way to get setup:
 4. Add the Mapbox repository as an upstream repository: `git remote add upstream git@github.com:mapbox/mapbox-gl-js.git`
 5. Create a new branch `git checkout -b your-branch` for your contribution
 6. Write code, open a PR from your branch when you're ready
-7. If you need to rebase your fork's PR branch onto master to resolve conflicts: `git fetch upstream`, `git rebase upstream/master` and force push to Github `git push --force origin your-branch`
+7. If you need to rebase your fork's PR branch onto main to resolve conflicts: `git fetch upstream`, `git rebase upstream/main` and force push to Github `git push --force origin your-branch`
 
 ## Changelog Conventions
 

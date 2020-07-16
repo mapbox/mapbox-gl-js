@@ -365,31 +365,31 @@ class BenchmarkRow extends React.Component {
     render() {
         const endedCount = this.props.versions.filter(version => version.status === 'ended').length;
 
-        let master;
+        let main;
         let current;
-        if (/master/.test(this.props.versions[0].name)) {
-            [master, current] = this.props.versions;
+        if (/main/.test(this.props.versions[0].name)) {
+            [main, current] = this.props.versions;
         } else {
-            [current, master] = this.props.versions;
+            [current, main] = this.props.versions;
         }
 
         let change;
         let pInferiority;
         if (endedCount === 2) {
-            const delta = current.summary.trimmedMean - master.summary.trimmedMean;
+            const delta = current.summary.trimmedMean - main.summary.trimmedMean;
             // Use "Cohen's d" (modified to used the trimmed mean/sd) to decide
             // how much to emphasize difference between means
             // https://en.wikipedia.org/wiki/Effect_size#Cohen.27s_d
             const pooledDeviation = Math.sqrt(
                 (
-                    (master.samples.length - 1) * Math.pow(master.summary.windsorizedDeviation, 2) +
+                    (main.samples.length - 1) * Math.pow(main.summary.windsorizedDeviation, 2) +
                     (current.samples.length - 1) * Math.pow(current.summary.windsorizedDeviation, 2)
                 ) /
-                (master.samples.length + current.samples.length - 2)
+                (main.samples.length + current.samples.length - 2)
             );
             const d = delta / pooledDeviation;
 
-            const {superior, inferior} = probabilitiesOfSuperiority(master.samples, current.samples);
+            const {superior, inferior} = probabilitiesOfSuperiority(main.samples, current.samples);
 
             change = <span className={d < 0.2 ? 'quiet' : d < 1.5 ? '' : 'strong'}>(
                 {delta > 0 ? '+' : ''}{formatSample(delta)} ms / {d.toFixed(1)} std devs
@@ -400,7 +400,7 @@ class BenchmarkRow extends React.Component {
             pInferiority = <p className={`center ${probability > 0.90 ? 'strong' : 'quiet'}`}>
                 {(probability * 100).toFixed(0)}%
                 chance that a random <svg width={8} height={8}><circle fill={versionColor(current.name)} cx={4} cy={4} r={4} /></svg> sample is
-                {comparison} than a random <svg width={8} height={8}><circle fill={versionColor(master.name)} cx={4} cy={4} r={4} /></svg> sample.
+                {comparison} than a random <svg width={8} height={8}><circle fill={versionColor(main.name)} cx={4} cy={4} r={4} /></svg> sample.
             </p>;
         }
 
