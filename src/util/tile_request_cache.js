@@ -151,6 +151,7 @@ export function enforceCacheSizeLimit(limit: number) {
 
     sharedCache
         .then(cache => {
+         if (!сache) return;
             cache.keys().then(keys => {
                 for (let i = 0; i < keys.length - limit; i++) {
                     cache.delete(keys[i]);
