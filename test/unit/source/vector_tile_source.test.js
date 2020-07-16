@@ -22,7 +22,8 @@ function createSource(options, transformCallback) {
     source.onAdd({
         transform: {showCollisionBoxes: false},
         _getMapId: () => 1,
-        _requestManager: new RequestManager(transformCallback)
+        _requestManager: new RequestManager(transformCallback),
+        style: {sourceCaches: {id: {clearTiles: () => {}}}}
     });
 
     source.on('error', (e) => {
@@ -350,6 +351,36 @@ test('VectorTileSource', (t) => {
         const source = createSource({url: "/source.json"});
         source.onRemove();
         t.equal(window.server.lastRequest.aborted, true);
+        t.end();
+    });
+
+    t.test('supports url property updates', (t) => {
+        const source = createSource({
+            url: "http://localhost:2900/source.json"
+        });
+        source.setUrl("http://localhost:2900/source2.json");
+        t.deepEqual(source.serialize(), {
+            type: 'vector',
+            url: "http://localhost:2900/source2.json"
+        });
+        t.end();
+    });
+
+    t.test('supports tiles property updates', (t) => {
+        const source = createSource({
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"]
+        });
+        source.setTiles(["http://example2.com/{z}/{x}/{y}.png"]);
+        t.deepEqual(source.serialize(), {
+            type: 'vector',
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: "Mapbox",
+            tiles: ["http://example2.com/{z}/{x}/{y}.png"]
+        });
         t.end();
     });
 
