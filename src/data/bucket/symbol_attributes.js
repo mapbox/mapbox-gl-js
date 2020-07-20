@@ -47,7 +47,7 @@ export const collisionBoxLayout = createLayout([ // used to render collision box
 ], 4);
 
 export const collisionCircleLayout = createLayout([ // used to render collision circles for debugging purposes
-    {name: 'a_pos',        components: 2, type: 'Float32'},
+    {name: 'a_pos_2f',     components: 2, type: 'Float32'},
     {name: 'a_radius',     components: 1, type: 'Float32'},
     {name: 'a_flags',      components: 2, type: 'Int16'}
 ], 4);
