@@ -1,4 +1,4 @@
-attribute vec2 a_pos;
+attribute vec2 a_pos_2f;
 attribute float a_radius;
 attribute vec2 a_flags;
 
@@ -25,7 +25,7 @@ vec3 toTilePosition(vec2 screenPos) {
 }
 
 void main() {
-    vec2 quadCenterPos = a_pos;
+    vec2 quadCenterPos = a_pos_2f;
     float radius = a_radius;
     float collision = a_flags.x;
     float vertexIdx = a_flags.y;
