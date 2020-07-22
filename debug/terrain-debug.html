@@ -63,6 +63,7 @@ map.addControl(new mapboxgl.ScaleControl());
 const r = 255 * 0.75;
 
 let buildingsLayerId = '3d-buildings';
+const hillshadeId = 'mapbox-dem-hillshade';
 
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
@@ -206,13 +207,12 @@ document.getElementById('buildings-checkbox').onclick = function() {
 };
 
 document.getElementById('hillshade-checkbox').onclick = function() {
-    const hillshadeId = 'mapbox-dem-hillshade';
     if (!map.getLayer(hillshadeId)) {
         // Inject hillshade from terrain layer
-        const addHillshadeBefore = map.style._order.find(id => id.includes('hillshade'));
+        const addHillshadeBefore = map.style._order.find(id => id.includes('hillshade') || id.includes('water'));
         map.addLayer({
             "id": 'mapbox-dem-hillshade',
-            "source": "mapbox-dem",
+            "source": 'mapbox-dem',
             "type": "hillshade"
         }, addHillshadeBefore);
     }
