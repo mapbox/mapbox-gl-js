@@ -284,6 +284,7 @@ class SourceCache extends Evented {
         }
 
         function fillBorder(tile, borderTile) {
+            if (!tile.dem || tile.dem.borderReady) return;
             tile.needsHillshadePrepare = true;
             tile.needsDEMTextureUpload = true;
             let dx = borderTile.tileID.canonical.x - tile.tileID.canonical.x;

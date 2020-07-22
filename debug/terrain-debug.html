@@ -32,6 +32,7 @@
     <label><input id='circles-checkbox' type='checkbox'> circles</label><br />
     <label><input id='hillshade-checkbox' type='checkbox'> hillshade using terrain</label><br />
     <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
+    <label><input id='padded-checkbox' type='checkbox'> padded DEM</label><br />
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -63,6 +64,10 @@ map.addControl(new mapboxgl.ScaleControl());
 const r = 255 * 0.75;
 
 let buildingsLayerId = '3d-buildings';
+let paddedDem = false;
+const hillshadeId = 'mapbox-dem-hillshade';
+
+let stagingURL;
 
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
@@ -189,7 +194,7 @@ document.getElementById('freeze-tile-coverage-checkbox').onclick = function() {
 };
 
 document.getElementById('terrain-checkbox').onclick = function() {
-    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
+    map.setTerrain(this.checked ? {"source": paddedDem ? 'mapbox-dem-padded' : "mapbox-dem"} : null);
 };
 
 document.getElementById('satellite-checkbox').onclick = function() {
@@ -206,13 +211,12 @@ document.getElementById('buildings-checkbox').onclick = function() {
 };
 
 document.getElementById('hillshade-checkbox').onclick = function() {
-    const hillshadeId = 'mapbox-dem-hillshade';
     if (!map.getLayer(hillshadeId)) {
         // Inject hillshade from terrain layer
-        const addHillshadeBefore = map.style._order.find(id => id.includes('hillshade'));
+        const addHillshadeBefore = map.style._order.find(id => id.includes('hillshade') || id.includes('water'));
         map.addLayer({
             "id": 'mapbox-dem-hillshade',
-            "source": "mapbox-dem",
+            "source": `mapbox-dem${paddedDem ? '-padded' : ''}`,
             "type": "hillshade"
         }, addHillshadeBefore);
     }
@@ -241,6 +245,36 @@ document.getElementById('repaint-checkbox').onclick = function() {
 
 document.getElementById('circles-checkbox').onclick = function() {
     map.setLayoutProperty('population', 'visibility', this.checked ? 'visible' : 'none');
+};
+
+document.getElementById('padded-checkbox').onclick = function() {
+    if (!stagingURL) {
+        stagingURL = prompt("Enter staging URL to use for padded DEM tiles. Get example URLs from https://github.com/mapbox/mapbox-gl-js-internal/pull/53:", localStorage.getItem('staging-url'));
+        // `https://api-terrain-staging.tilestream.net/terrain/v1/mapbox.terrain-rgb/{z}/{x}/{y}.png?size=512&buffer=1&access_token=pk.eyJ1IjoiZGVlbm9tYWRiZWUiLCJhIjoiY2lqZDZ4cWY3MDAwMXNia215cnk3YzBrOCJ9.p8bIdOWpz4ZaHvg6Ya0SEg`
+        if (stagingURL) {
+            localStorage.setItem('staging-url', stagingURL);
+        } else {
+            console.error(`Buffered DEM data is not available as URL is not defined. Check https://github.com/mapbox/mapbox-gl-js-internal/pull/53 for details.'`);
+            this.checked = false;
+        }
+    }
+
+    if (!map.getSource("mapbox-dem-padded")) {
+        const size = (stagingURL.match(/size=[0-9]+/g)[0] || '512').replace('size=', '');
+        map.addSource('mapbox-dem-padded', {
+            "type": "raster-dem",
+            "tiles": [
+                `${stagingURL}`
+            ],
+            "tileSize": `${size}`,
+            "maxzoom": 14
+        });
+    }
+    paddedDem = this.checked;
+    document.getElementById('terrain-checkbox').onclick();
+    // If there's hillshade layer, remove it and add again if needed.
+    if (map.getLayer(hillshadeId)) map.removeLayer(hillshadeId);
+    document.getElementById('hillshade-checkbox').onclick();
 };
 
 // keyboard shortcut for comparing rendering with Mapbox GL native

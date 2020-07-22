@@ -141,7 +141,8 @@ test('DEMData#backfillBorder', (t) => {
             dim: 4,
             stride: 6,
             data: dem0.data,
-            encoding: 'mapbox'
+            encoding: 'mapbox',
+            borderReady: false
         }, 'serializes DEM');
 
         const transferrables = [];

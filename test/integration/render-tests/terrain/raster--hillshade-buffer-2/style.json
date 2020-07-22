@@ -1,0 +1,52 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "description": "Shared source for hillshade and terrain."
+    }
+  },
+  "center": [-113.26903, 35.9954],
+  "zoom": 10.9,
+  "pitch": 45,
+  "terrain": {
+    "source": "hillshade"
+  },
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "hillshade": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/terrain-buffer-2/{z}-{x}-{y}-2.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "hillshade-translucent",
+      "type": "hillshade",
+      "source": "hillshade",
+      "paint": {
+        "hillshade-exaggeration": 1
+      }
+    }
+  ]
+}
