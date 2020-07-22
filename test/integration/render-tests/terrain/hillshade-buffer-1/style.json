@@ -7,25 +7,17 @@
       "description": "Separate sources for hillshade and terrain make full resolution hillshade."
     }
   },
-  "center": [-113.26903, 35.9954],
-  "zoom": 11,
-  "pitch": 45,
+  "center": [-113.2935, 35.9529],
+  "zoom": 11.2,
+  "pitch": 30,
   "terrain": {
     "source": "terrain"
   },
   "sources": {
-    "satellite": {
-      "type": "raster",
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}.satellite.png"
-      ],
-      "maxzoom": 17,
-      "tileSize": 256
-    },
     "hillshade": {
       "type": "raster-dem",
       "tiles": [
-        "local://tiles/{z}-{x}-{y}.terrain.png"
+        "local://tiles/terrain-buffer-1/{z}-{x}-{y}-1.png"
       ],
       "maxzoom": 15,
       "tileSize": 256
@@ -33,7 +25,7 @@
     "terrain": {
       "type": "raster-dem",
       "tiles": [
-        "local://tiles/{z}-{x}-{y}.terrain.png"
+        "local://tiles/terrain-buffer-1/{z}-{x}-{y}-1.png"
       ],
       "maxzoom": 15,
       "tileSize": 256
@@ -46,14 +38,6 @@
       "source": "hillshade",
       "paint": {
         "hillshade-exaggeration": 1
-      }
-    },
-    {
-      "id": "raster",
-      "type": "raster",
-      "source": "satellite",
-      "paint": {
-        "raster-fade-duration": 0
       }
     }
   ]

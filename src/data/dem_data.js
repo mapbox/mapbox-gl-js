@@ -20,10 +20,11 @@ export default class DEMData {
     stride: number;
     dim: number;
     encoding: "mapbox" | "terrarium";
+    borderReady: boolean;
 
     // RGBAImage data has uniform 1px padding on all sides: square tile edge size defines stride
     // and dim is calculated as stride - 2.
-    constructor(uid: string, data: RGBAImage, encoding: "mapbox" | "terrarium") {
+    constructor(uid: string, data: RGBAImage, encoding: "mapbox" | "terrarium", borderReady: boolean = false) {
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return warnOnce(
@@ -33,6 +34,9 @@ export default class DEMData {
         const dim = this.dim = data.height - 2;
         this.data = new Uint32Array(data.data.buffer);
         this.encoding = encoding || 'mapbox';
+        this.borderReady = borderReady;
+
+        if (borderReady) return;
 
         // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
         // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring

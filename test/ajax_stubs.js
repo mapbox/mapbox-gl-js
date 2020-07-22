@@ -100,11 +100,14 @@ browser.getImageData = function({width, height, data}, padding = 0) {
     const source = new Uint8Array(data);
     const dest = new Uint8Array((2 * padding + width) * (2 * padding + height) * 4);
 
-    const offset = (2 * padding + width) * padding + padding;
-    for (let i = 0; i < height; i++) {
-        dest.set(source.slice(i * width * 4, (i + 1) * width * 4), 4 * (offset + (width + 2 * padding) * i));
+    const dstPad = padding > 0 ? padding : 0;
+    const srcPad = padding >= 0 ? 0 : -padding;
+    const dstWidth = width + 2 * padding;
+    for (let i = srcPad; i < height - srcPad; i++) {
+        const dstRow = i - srcPad + dstPad;
+        dest.set(source.slice((i * width + srcPad) * 4, ((i + 1) * width - srcPad) * 4), 4 * (dstRow * dstWidth + dstPad));
     }
-    return {width: width + 2 * padding, height: height + 2 * padding, data: dest};
+    return {width: dstWidth, height: height + 2 * padding, data: dest};
 };
 
 // Hack: since node doesn't have any good video codec modules, just grab a png with

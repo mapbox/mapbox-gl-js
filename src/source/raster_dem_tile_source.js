@@ -43,7 +43,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.tileSize);
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
-        tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
         function imageLoaded(err, img) {
             delete tile.request;
             if (tile.aborted) {
@@ -57,13 +56,23 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
                 const transfer = window.ImageBitmap && img instanceof window.ImageBitmap && offscreenCanvasSupported();
-                const rawImageData = transfer ? img : browser.getImageData(img, 1);
+                // DEMData uses 1px padding. Handle cases with image buffer of 1 and 2 pxs, the rest assume default buffer 0
+                // in order to keep the previous implementation working (no validation against tileSize).
+                const buffer = (img.width - this.tileSize) <= 4 && (img.width & 1) === 0 ? Math.max(0, img.width - this.tileSize) / 2 : 0;
+                // padding is used in getImageData. As DEMData has 1px padding, if DEM tile buffer is 2px, discard outermost pixels.
+                const padding = 1 - buffer;
+                const borderReady = padding < 1;
+                if (!borderReady && !tile.neighboringTiles) {
+                    tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
+                }
+                const rawImageData = transfer ? img : browser.getImageData(img, padding);
                 const params = {
                     uid: tile.uid,
                     coord: tile.tileID,
                     source: this.id,
                     rawImageData,
-                    encoding: this.encoding
+                    encoding: this.encoding,
+                    padding
                 };
 
                 if (!tile.actor || tile.state === 'expired') {
