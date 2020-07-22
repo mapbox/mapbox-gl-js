@@ -54,8 +54,6 @@ const exported = {
         return linkEl.href;
     },
 
-    hardwareConcurrency: window.navigator && window.navigator.hardwareConcurrency || 4,
-
     get devicePixelRatio() { return window.devicePixelRatio; },
     get prefersReducedMotion(): boolean {
         if (!window.matchMedia) return false;
