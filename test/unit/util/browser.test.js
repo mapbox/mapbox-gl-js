@@ -28,10 +28,5 @@ test('browser', (t) => {
         t.end();
     });
 
-    t.test('hardwareConcurrency', (t) => {
-        t.equal(typeof browser.hardwareConcurrency, 'number');
-        t.end();
-    });
-
     t.end();
 });

@@ -2,7 +2,6 @@
 
 import WebWorker from './web_worker';
 import type {WorkerInterface} from './web_worker';
-import browser from './browser';
 
 export const PRELOAD_POOL_ID = 'mapboxgl_preloaded_worker_pool';
 
@@ -53,5 +52,6 @@ export default class WorkerPool {
     }
 }
 
-const availableLogicalProcessors = Math.floor(browser.hardwareConcurrency / 2);
-WorkerPool.workerCount = Math.max(Math.min(availableLogicalProcessors, 6), 1);
+// extensive benchmarking showed 2 to be the best default for both desktop and mobile devices;
+// we can't rely on hardwareConcurrency because of wild inconsistency of reported numbers between browsers
+WorkerPool.workerCount = 2;
