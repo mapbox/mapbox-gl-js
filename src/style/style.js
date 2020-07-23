@@ -177,7 +177,11 @@ class Style extends Evented {
                     const allComplete = results.every((elem) => elem);
                     if (allComplete) {
                         for (const id in self.sourceCaches) {
-                            self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
+                            const sourceCache = self.sourceCaches[id];
+                            const sourceCacheType = sourceCache.getSource().type;
+                            if (sourceCacheType === 'vector' || sourceCacheType === 'geojson') {
+                                sourceCache.reload(); // Should be a no-op if the plugin loads before any tiles load
+                            }
                         }
                     }
                 }
