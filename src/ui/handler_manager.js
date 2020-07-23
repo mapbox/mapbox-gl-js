@@ -473,11 +473,20 @@ class HandlerManager {
             tr.constantCameraHeight = false;
         }
 
+        const eventEnded = (type) => {
+            const event = this._eventsInProgress[type];
+            return event && !this._handlersById[event.handlerName].isActive();
+        };
+
+        if (eventEnded("drag") && !hasChange(combinedResult)) {
+            const preZoom = tr.zoom;
+            tr.recenterOnTerrain();
+            // Map zoom might change during the pan operation due to terrain elevation.
+            if (preZoom !== tr.zoom) this._map._update(true);
+            tr.constantCameraHeight = true;
+        }
+
         if (!hasChange(combinedResult)) {
-            if (isMoving(this._eventsInProgress)) {
-                tr.recenterOnTerrain();
-                tr.constantCameraHeight = true;
-            }
             return this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
         }
 
@@ -504,7 +513,6 @@ class HandlerManager {
         // stop any ongoing camera animations (easeTo, flyTo)
         map._stop(true);
 
-        const preZoom = tr.zoom;
         around = around || map.transform.centerPoint;
         const loc = tr.pointLocation(panDelta ? around.sub(panDelta) : around);
         if (bearingDelta) tr.bearing += bearingDelta;
@@ -531,13 +539,7 @@ class HandlerManager {
             tr.setLocationAtPoint(loc, around);
         }
 
-        if (panDelta)
-            tr.recenterOnTerrain();
-
-        // Map zoom might change during the pan operation due to terrain elevation.
-        const updateStyle = preZoom !== tr.zoom;
-
-        this._map._update(updateStyle);
+        this._map._update();
         if (!combinedResult.noInertia) this._inertia.record(combinedResult);
         this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
 
