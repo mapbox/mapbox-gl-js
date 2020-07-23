@@ -499,9 +499,9 @@ function isBoundaryEdge(p1, p2) {
 
 function isEntirelyOutside(ring) {
     return ring.every(p => p.x < 0) ||
-        ring.every(p => p.x >= EXTENT) ||
+        ring.every(p => p.x > EXTENT) ||
         ring.every(p => p.y < 0) ||
-        ring.every(p => p.y >= EXTENT);
+        ring.every(p => p.y > EXTENT);
 }
 
 function tileToMeter(canonical: CanonicalTileID) {

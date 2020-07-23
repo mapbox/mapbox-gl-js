@@ -401,14 +401,16 @@ function placeGlyphAlongLine(offsetX: number,
     const pathVertices = [];
     const tilePath = [];
     let currentVertex = tileAnchorPoint;
-    let prevVertex = tileAnchorPoint;
 
-    const getTruncatedLineSegment = () => {
+    const previousTilePoint = () => {
         const previousLineVertexIndex = currentIndex - dir;
-        const previousTilePoint = distanceToPrev === 0 ?
+        return distanceToPrev === 0 ?
             tileAnchorPoint :
             new Point(lineVertexArray.getx(previousLineVertexIndex), lineVertexArray.gety(previousLineVertexIndex));
-        return projectTruncatedLineSegment(previousTilePoint, currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, getElevation);
+    };
+
+    const getTruncatedLineSegment = () => {
+        return projectTruncatedLineSegment(previousTilePoint(), currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, getElevation);
     };
 
     while (distanceToPrev + currentSegmentDistance <= absOffsetX) {
@@ -419,9 +421,8 @@ function placeGlyphAlongLine(offsetX: number,
             return null;
 
         prev = current;
-        prevVertex = currentVertex;
         pathVertices.push(current);
-        if (returnPathInTileCoords) tilePath.push(currentVertex);
+        if (returnPathInTileCoords) tilePath.push(currentVertex || previousTilePoint());
 
         current = projectionCache[currentIndex];
         if (current === undefined) {
@@ -435,8 +436,8 @@ function placeGlyphAlongLine(offsetX: number,
                 // Don't cache because the new vertex might not be far enough out for future glyphs on the same segment
                 current = getTruncatedLineSegment();
             }
-        } else if (returnPathInTileCoords) {
-            currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
+        } else {
+            currentVertex = null; // null stale data
         }
 
         distanceToPrev += currentSegmentDistance;
@@ -447,6 +448,7 @@ function placeGlyphAlongLine(offsetX: number,
         // For terrain, always truncate end points in order to handle terrain curvature.
         // If previously truncated, on signedDistanceFromCamera < 0, don't do it.
         // Cache as end point. The cache is cleared if there is need for flipping in updateLineLabels.
+        currentVertex = currentVertex || new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
         projectionCache[currentIndex] = current = (projectionCache[currentIndex] === undefined) ? current : getTruncatedLineSegment();
         currentSegmentDistance = prev.dist(current);
     }
@@ -463,6 +465,8 @@ function placeGlyphAlongLine(offsetX: number,
 
     pathVertices.push(p);
     if (returnPathInTileCoords) {
+        currentVertex = currentVertex || new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
+        const prevVertex = tilePath.length > 0 ? tilePath[tilePath.length - 1] : currentVertex;
         tilePath.push(interpolate(prevVertex, currentVertex, segmentInterpolationT));
     }
 
