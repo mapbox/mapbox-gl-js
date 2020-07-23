@@ -597,7 +597,7 @@ export default class Marker extends Evented {
 
     /**
      * Sets the `rotation` property of the marker.
-     * @param {number} [rotation=0] The rotation angle of the marker (clockwise, in degrees), relative to its respective {@link Marker#rotationAlignment} setting.
+     * @param {number} [rotation=0] The rotation angle of the marker (clockwise, in degrees), relative to its respective {@link Marker#setRotationAlignment} setting.
      * @returns {Marker} `this`
      */
     setRotation(rotation: number) {
