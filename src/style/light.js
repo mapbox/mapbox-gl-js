@@ -2,7 +2,7 @@
 
 import styleSpec from '../style-spec/reference/latest';
 
-import {endsWith, extend, sphericalToCartesian} from '../util/util';
+import {endsWith, extend, degToRad} from '../util/util';
 import {Evented} from '../util/evented';
 import {
     validateStyle,
@@ -25,11 +25,33 @@ import type {
 
 import type {LightSpecification} from '../style-spec/types';
 
-type LightPosition = {
+export type LightPosition = {
     x: number,
     y: number,
-    z: number
+    z: number,
+    azimuthal: number,
+    polar: number,
 };
+
+/**
+ * Converts spherical coordinates to cartesian LightPosition coordinates.
+ *
+ * @private
+ * @param spherical Spherical coordinates, in [radial, azimuthal, polar]
+ * @return LightPosition cartesian coordinates
+ */
+export function sphericalToCartesian([r, azimuthal, polar]: [number, number, number]): LightPosition {
+    // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
+    // correct for that here
+    const a = degToRad(azimuthal + 90), p = degToRad(polar);
+
+    return {
+        x: r * Math.cos(a) * Math.sin(p),
+        y: r * Math.sin(a) * Math.sin(p),
+        z: r * Math.cos(p),
+        azimuthal, polar
+    };
+}
 
 class LightPositionProperty implements Property<[number, number, number], LightPosition> {
     specification: StylePropertySpecification;
@@ -47,6 +69,8 @@ class LightPositionProperty implements Property<[number, number, number], LightP
             x: interpolate(a.x, b.x, t),
             y: interpolate(a.y, b.y, t),
             z: interpolate(a.z, b.z, t),
+            azimuthal: interpolate(a.azimuthal, b.azimuthal, t),
+            polar: interpolate(a.polar, b.polar, t),
         };
     }
 }

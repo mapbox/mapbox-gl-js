@@ -54,7 +54,7 @@
       "type": "sky",
       "paint": {
         "sky-type": "atmosphere",
-        "sky-sun-direction": [0, 90]
+        "sky-atmosphere-sun": [0, 0]
       }
     }
   ]

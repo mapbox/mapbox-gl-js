@@ -8,8 +8,8 @@
         [
           "setPaintProperty",
           "sky",
-          "sky-sun-direction",
-          [20, 20]
+          "sky-gradient-center",
+          [20, 70]
         ],
         [
           "wait"
@@ -26,7 +26,7 @@
       "type": "sky",
       "paint": {
         "sky-type": "gradient",
-        "sky-sun-direction": [0, 0],
+        "sky-gradient-center": [0, 90],
         "sky-gradient-radius": 30,
         "sky-gradient": [
           "interpolate",

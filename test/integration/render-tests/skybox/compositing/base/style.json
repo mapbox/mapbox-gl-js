@@ -15,7 +15,7 @@
       "type": "sky",
       "paint": {
         "sky-type": "atmosphere",
-        "sky-sun-direction": [0, 90]
+        "sky-atmosphere-sun": [0, 0]
       }
     },
     {
@@ -23,7 +23,7 @@
       "type": "sky",
       "paint": {
         "sky-type": "gradient",
-        "sky-sun-direction": [0, 0],
+        "sky-gradient-center": [0, 90],
         "sky-gradient": [
           "interpolate",
           ["linear"],

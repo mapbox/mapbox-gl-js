@@ -1,7 +1,6 @@
 // [1] Banding in games http://loopit.dk/banding_in_games.pdf
 
 varying lowp vec3 v_uv;
-varying highp vec3 v_sun_direction;
 
 uniform lowp samplerCube u_cubemap;
 uniform lowp float u_opacity;
@@ -58,7 +57,7 @@ void main() {
     // Dither [1]
     sky_color.rgb = dither(sky_color.rgb, gl_FragCoord.xy + u_temporal_offset);
     // Add sun disk
-    sky_color += 0.1 * sun_disk(v_sun_direction, u_sun_direction);
+    sky_color += 0.1 * sun_disk(v_uv, u_sun_direction);
 
     gl_FragColor = vec4(sky_color * u_opacity, u_opacity);
 

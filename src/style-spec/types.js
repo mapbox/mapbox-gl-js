@@ -436,7 +436,8 @@ export type SkyLayerSpecification = {|
     |},
     "paint"?: {|
         "sky-type"?: PropertyValueSpecification<"gradient" | "atmosphere">,
-        "sky-sun-direction"?: PropertyValueSpecification<[number, number]>,
+        "sky-atmosphere-sun"?: PropertyValueSpecification<[number, number]>,
+        "sky-gradient-center"?: PropertyValueSpecification<[number, number]>,
         "sky-gradient-radius"?: PropertyValueSpecification<number>,
         "sky-gradient"?: ExpressionSpecification,
         "sky-atmosphere-halo-color"?: ColorSpecification,

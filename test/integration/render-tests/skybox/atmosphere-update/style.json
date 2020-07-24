@@ -8,8 +8,8 @@
         [
           "setPaintProperty",
           "sky",
-          "sky-sun-direction",
-          [0, 0]
+          "sky-atmosphere-halo-color",
+          "rgba(0,0,0,0)"
         ],
         [
           "wait"
@@ -26,7 +26,7 @@
       "type": "sky",
       "paint": {
         "sky-type": "atmosphere",
-        "sky-sun-direction": [0, 90]
+        "sky-atmosphere-sun": [0, 90]
       }
     },
     {

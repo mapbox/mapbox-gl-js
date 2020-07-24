@@ -46,7 +46,6 @@ map.on('load', function() {
         'type': 'sky',
         'paint': {
             'sky-type': 'atmosphere',
-            'sky-sun-direction': [90, 8],
             'sky-opacity': [
                 'interpolate',
                 ['exponential', 0.1],
@@ -63,9 +62,9 @@ map.on('load', function() {
     const easeInCubic = (t) => t * t * t;
     setInterval(() => {
         const altitude = Math.cos(animationTime + Math.PI) * 0.5 + 0.5;
-        map.setPaintProperty('sky', 'sky-sun-direction', [90, easeInCubic(altitude) * 90.0]);
+        map.setLight({'position': [1, 90, easeInCubic(altitude) * 90.0], 'anchor': 'map'});
         animationTime += 1.0 / 60;
-    }, 1000.0 / 60.0);
+    }, 1000.0 / 30.0);
 });
 
 </script>
