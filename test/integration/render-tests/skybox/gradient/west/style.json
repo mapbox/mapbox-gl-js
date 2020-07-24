@@ -15,7 +15,7 @@
       "type": "sky",
       "paint": {
         "sky-type": "gradient",
-        "sky-sun-direction": [340, 0],
+        "sky-gradient-center": [340, 90],
         "sky-gradient-radius": 30,
         "sky-gradient": [
           "interpolate",

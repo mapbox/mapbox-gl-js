@@ -13,22 +13,10 @@ import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox
 import {skyboxCaptureUniformValues} from './program/skybox_capture_program';
 import SkyLayer from '../style/style_layer/sky_style_layer';
 import type Painter from './painter';
-import {vec3, quat, mat3, mat4} from 'gl-matrix';
-import {degToRad} from '../util/util';
+import {vec3, mat3, mat4} from 'gl-matrix';
 import assert from 'assert';
 
 export default drawSky;
-
-function getSunDirection(azimuth: number, altitude: number, leftHanded: boolean): vec3 {
-    const up = vec3.fromValues(0, 0, 1);
-    const rotation = quat.identity(quat.create());
-
-    quat.rotateY(rotation, rotation, leftHanded ? -degToRad(azimuth) + Math.PI : degToRad(azimuth));
-    quat.rotateX(rotation, rotation, -degToRad(altitude));
-    vec3.transformQuat(up, up, rotation);
-
-    return vec3.normalize(up, up);
-}
 
 function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     const opacity = layer.paint.get('sky-opacity');
@@ -37,31 +25,29 @@ function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     }
 
     const context = painter.context;
-    const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
-    const direction = layer.paint.get('sky-sun-direction');
-    const sunDirection = getSunDirection(direction[0], direction[1], false);
     const type = layer.paint.get('sky-type');
+    const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
 
     if (type === 'atmosphere') {
         if (painter.renderPass === 'offscreen') {
-            if (layer.needsSkyboxCapture()) {
+            if (layer.needsSkyboxCapture(painter)) {
                 captureSkybox(painter, layer, 32, 32);
-                layer.markSkyboxValid();
+                layer.markSkyboxValid(painter);
             }
         } else if (painter.renderPass === 'sky') {
-            drawSkyboxFromCapture(painter, layer, sunDirection, depthMode, opacity, temporalOffset);
+            drawSkyboxFromCapture(painter, layer, depthMode, opacity, temporalOffset);
         }
     } else if (type === 'gradient') {
         if (painter.renderPass === 'sky') {
-            drawSkyboxGradient(painter, layer, sunDirection, depthMode, opacity, temporalOffset);
+            drawSkyboxGradient(painter, layer, depthMode, opacity, temporalOffset);
         }
     } else {
         assert(false, `${type} is unsupported sky-type`);
     }
 }
 
-function drawSkyboxGradient(painter: Painter, layer: SkyLayer, sunDirection: vec3, depthMode: DepthMode, opacity: number, temporalOffset: number) {
+function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthMode, opacity: number, temporalOffset: number) {
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
@@ -79,7 +65,7 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, sunDirection: vec
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     const uniformValues = skyboxGradientUniformValues(
         transform.skyboxMatrix,
-        sunDirection,
+        layer.getCenter(painter, false),
         layer.paint.get('sky-gradient-radius'),
         opacity,
         temporalOffset
@@ -91,7 +77,7 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, sunDirection: vec
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, sunDirection: vec3, depthMode: DepthMode, opacity: number, temporalOffset: number) {
+function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: DepthMode, opacity: number, temporalOffset: number) {
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
@@ -101,7 +87,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, sunDirection: 
 
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
 
-    const uniformValues = skyboxUniformValues(transform.skyboxMatrix, sunDirection, 0, opacity, temporalOffset);
+    const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
 
     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
@@ -153,9 +139,8 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
     context.bindFramebuffer.set(fbo.framebuffer);
     context.viewport.set([0, 0, width, height]);
 
+    const sunDirection = layer.getCenter(painter, true);
     const program = painter.useProgram('skyboxCapture');
-    const direction = layer.paint.get('sky-sun-direction');
-    const sunDirection = getSunDirection(direction[0], direction[1], true);
     const faceRotate = new Float64Array(16);
 
     // +x;

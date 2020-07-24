@@ -81,10 +81,11 @@ const fillExtrusionUniformValues = (
     const _lp = light.properties.get('position');
     const lightPos = [_lp.x, _lp.y, _lp.z];
     const lightMat = mat3.create();
-    if (light.properties.get('anchor') === 'viewport') {
+    const anchor = light.properties.get('anchor');
+    if (anchor === 'viewport') {
         mat3.fromRotation(lightMat, -painter.transform.angle);
+        vec3.transformMat3(lightPos, lightPos, lightMat);
     }
-    vec3.transformMat3(lightPos, lightPos, lightMat);
 
     const lightColor = light.properties.get('color');
 

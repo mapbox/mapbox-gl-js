@@ -5944,7 +5944,7 @@
           "doc": "Renders the sky with a gradient that can be configured with `sky-gradient-radius` and `sky-gradient`."
         },
         "atmosphere": {
-          "doc": "Renders the sky with a simulated atmospheric scattering algorithm, which automatically changes colors based on the `sky-sun-direction` property."
+          "doc": "Renders the sky with a simulated atmospheric scattering algorithm, the sun direction can be attached to the light position or explicitly set through `sky-atmosphere-sun`."
         }
       },
       "default": "atmosphere",
@@ -5962,7 +5962,26 @@
       },
       "property-type": "data-constant"
     },
-    "sky-sun-direction": {
+    "sky-atmosphere-sun": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "transition": false,
+      "doc": "Position of the sun center [a azimuthal angle, p polar angle]. The azimuthal angle indicates the position of the sun relative to 0° north, where degrees proceed clockwise. The polar angle indicates the height of the sun, where 0° is directly above, at zenith, and 90° at the horizon. When this property is ommitted, the sun center is directly inherited from the light position.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "sky-gradient-center": {
       "type": "array",
       "value": "number",
       "default": [
@@ -5971,7 +5990,7 @@
       ],
       "length": 2,
       "transition": false,
-      "doc": "Position of the sun [azimuthal angle, altitude angle]. The azimuthal angle indicates the position of the sun relative to 0° north, where degrees proceed clockwise. The altitude indicates the height of the sun, where 0° is at the horizon and 90° directly above, at zenith.",
+      "doc": "Position of the gradient center [a azimuthal angle, p polar angle]. The azimuthal angle indicates the position of the gradient center relative to 0° north, where degrees proceed clockwise. The polar angle indicates the height of the gradient center, where 0° is directly above, at zenith, and 90° at the horizon.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.0.0"
