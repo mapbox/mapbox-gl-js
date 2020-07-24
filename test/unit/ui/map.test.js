@@ -1272,6 +1272,10 @@ test('Map', (t) => {
                         "type": "sky",
                         "layout": {
                             "visibility": "none"
+                        },
+                        "paint": {
+                            "sky-type": "atmosphere",
+                            "sky-atmosphere-sun": [0, 0]
                         }
                     }]
                 }

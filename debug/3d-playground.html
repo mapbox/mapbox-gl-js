@@ -73,11 +73,11 @@ window.onload = function() {
     sky.add(demo3d, 'animateSky');
     var sunAltitude = sky.add(demo3d, 'sunAltitude', 0.0, 90.0);
     sunAltitude.onFinishChange((value) => {
-        map.setPaintProperty('sky', 'sky-sun-direction', [demo3d.sunAzimuth, value]);
+        map.setLight({'position': [1, demo3d.sunAzimuth, value], 'anchor': 'map'});
     });
     var sunAzimuth = sky.add(demo3d, 'sunAzimuth', 0.0, 360.0);
     sunAzimuth.onFinishChange((value) => {
-        map.setPaintProperty('sky', 'sky-sun-direction', [value, demo3d.sunAltitude]);
+        map.setLight({'position': [1, value, demo3d.sunAltitude], 'anchor': 'map'});
     });
     var sunHaloIntensity = sky.add(demo3d, 'sunHaloIntensity', 0.0, 1.0);
     sunHaloIntensity.onFinishChange((value) => {
@@ -119,7 +119,6 @@ let skyAnimationTime = 0.0;
 let first = true;
 
 map.on('style.load', function() {
-
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
         "url": "mapbox://mapbox.terrain-rgb",
@@ -179,7 +178,6 @@ map.on('style.load', function() {
         'type': 'sky',
         'paint': {
             'sky-type': 'atmosphere',
-            'sky-sun-direction': [90, 2],
             'sky-opacity': [
                 'interpolate',
                 ['exponential', 0.1],
@@ -280,7 +278,7 @@ map.on('style.load', function() {
         }
         if (demo3d.animateSky) {
             const altitude = Math.cos(skyAnimationTime + Math.PI) * 0.5 + 0.5;
-            map.setPaintProperty('sky', 'sky-sun-direction', [demo3d.sunAzimuth, easeInCubic(altitude) * 90.0]);
+            map.setLight({'position': [1, demo3d.sunAzimuth, easeInCubic(altitude) * 90.0], 'anchor': 'map'});
             skyAnimationTime += 1.0 / 60;
         }
     }, 1000.0 / 60.0);

@@ -16,9 +16,9 @@
       "type": "sky",
       "paint": {
         "sky-type": "atmosphere",
-        "sky-sun-direction": [0, 0],
         "sky-atmosphere-color": "rgba(200,150,100,0.5)",
-        "sky-atmosphere-halo-color": "rgba(255,255,0,0.5)"
+        "sky-atmosphere-halo-color": "rgba(255,255,0,0.5)",
+        "sky-atmosphere-sun": [0, 90]
       }
     },
     {

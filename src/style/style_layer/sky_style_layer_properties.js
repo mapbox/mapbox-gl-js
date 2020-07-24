@@ -22,7 +22,8 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 
 export type PaintProps = {|
     "sky-type": DataConstantProperty<"gradient" | "atmosphere">,
-    "sky-sun-direction": DataConstantProperty<[number, number]>,
+    "sky-atmosphere-sun": DataConstantProperty<[number, number]>,
+    "sky-gradient-center": DataConstantProperty<[number, number]>,
     "sky-gradient-radius": DataConstantProperty<number>,
     "sky-gradient": ColorRampProperty,
     "sky-atmosphere-halo-color": DataConstantProperty<Color>,
@@ -32,7 +33,8 @@ export type PaintProps = {|
 
 const paint: Properties<PaintProps> = new Properties({
     "sky-type": new DataConstantProperty(styleSpec["paint_sky"]["sky-type"]),
-    "sky-sun-direction": new DataConstantProperty(styleSpec["paint_sky"]["sky-sun-direction"]),
+    "sky-atmosphere-sun": new DataConstantProperty(styleSpec["paint_sky"]["sky-atmosphere-sun"]),
+    "sky-gradient-center": new DataConstantProperty(styleSpec["paint_sky"]["sky-gradient-center"]),
     "sky-gradient-radius": new DataConstantProperty(styleSpec["paint_sky"]["sky-gradient-radius"]),
     "sky-gradient": new ColorRampProperty(styleSpec["paint_sky"]["sky-gradient"]),
     "sky-atmosphere-halo-color": new DataConstantProperty(styleSpec["paint_sky"]["sky-atmosphere-halo-color"]),

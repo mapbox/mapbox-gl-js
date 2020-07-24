@@ -1,4 +1,4 @@
-varying highp vec3 v_sun_direction;
+varying highp vec3 v_uv;
 
 uniform lowp sampler2D u_color_ramp;
 uniform lowp vec3 u_center_direction;
@@ -19,7 +19,7 @@ vec3 dither(vec3 color, highp vec2 seed) {
 }
 
 void main() {
-    float progress = acos(dot(normalize(v_sun_direction), u_center_direction)) / u_radius;
+    float progress = acos(dot(normalize(v_uv), u_center_direction)) / u_radius;
     vec4 color = texture2D(u_color_ramp, vec2(progress, 0.5)) * u_opacity;
 
     // Dither

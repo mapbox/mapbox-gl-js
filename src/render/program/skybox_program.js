@@ -64,7 +64,7 @@ const skyboxGradientUniforms = (context: Context, locations: UniformLocations): 
 
 const skyboxGradientUniformValues = (
     matrix: Float32Array,
-    sunDirection: vec3,
+    centerDirection: vec3,
     radius: number, //degrees
     opacity: number,
     temporalOffset: number
@@ -72,7 +72,7 @@ const skyboxGradientUniformValues = (
     return {
         'u_matrix': matrix,
         'u_color_ramp': 0,
-        'u_center_direction': sunDirection,
+        'u_center_direction': centerDirection,
         'u_radius': degToRad(radius),
         'u_opacity': opacity,
         'u_temporal_offset': temporalOffset

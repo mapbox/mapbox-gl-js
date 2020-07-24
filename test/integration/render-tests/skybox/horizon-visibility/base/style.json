@@ -16,7 +16,7 @@
       "type": "sky",
       "paint": {
         "sky-type": "gradient",
-        "sky-sun-direction": [0, 0],
+        "sky-gradient-center": [0, 0],
         "sky-gradient": "green"
       }
     },

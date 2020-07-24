@@ -436,30 +436,6 @@ export function isClosedPolygon(points: Array<Point>): boolean {
     return Math.abs(calculateSignedArea(points)) > 0.01;
 }
 
-/**
- * Converts spherical coordinates to cartesian coordinates.
- *
- * @private
- * @param spherical Spherical coordinates, in [radial, azimuthal, polar]
- * @return cartesian coordinates in [x, y, z]
- */
-
-export function sphericalToCartesian([r, azimuthal, polar]: [number, number, number]): {x: number, y: number, z: number} {
-    // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
-    // correct for that here
-    azimuthal += 90;
-
-    // Convert azimuthal and polar angles to radians
-    azimuthal *= Math.PI / 180;
-    polar *= Math.PI / 180;
-
-    return {
-        x: r * Math.cos(azimuthal) * Math.sin(polar),
-        y: r * Math.sin(azimuthal) * Math.sin(polar),
-        z: r * Math.cos(polar)
-    };
-}
-
 /* global self, WorkerGlobalScope */
 /**
  *  Retuns true if the when run in the web-worker context.
