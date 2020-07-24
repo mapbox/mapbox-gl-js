@@ -564,7 +564,7 @@ class Style extends Evented {
         }
 
         if (!source.type) {
-            throw new Error(`The type property must be defined, but the only the following properties were given: ${Object.keys(source).join(', ')}.`);
+            throw new Error(`The type property must be defined, but only the following properties were given: ${Object.keys(source).join(', ')}.`);
         }
 
         const builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];

@@ -122,7 +122,6 @@ class Camera extends Evented {
     _padding: boolean;
 
     _bearingSnap: number;
-    _easeEndTimeoutID: TimeoutID;
     _easeStart: number;
     _easeOptions: {duration: number, easing: (_: number) => number};
     _easeId: string | void;
@@ -909,8 +908,6 @@ class Camera extends Evented {
 
         this._easeId = options.easeId;
         this._prepareEase(eventData, options.noMoveStart, currently);
-
-        clearTimeout(this._easeEndTimeoutID);
 
         this._ease((k) => {
             if (this._zooming) {

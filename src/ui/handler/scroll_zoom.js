@@ -70,12 +70,7 @@ class ScrollZoomHandler {
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
 
-        bindAll([
-            '_onWheel',
-            '_onTimeout',
-            '_onScrollFrame',
-            '_onScrollFinished'
-        ], this);
+        bindAll(['_onTimeout'], this);
     }
 
     /**
@@ -241,10 +236,6 @@ class ScrollZoomHandler {
     }
 
     renderFrame() {
-        return this._onScrollFrame();
-    }
-
-    _onScrollFrame() {
         if (!this._frameId) return;
         this._frameId = null;
 
