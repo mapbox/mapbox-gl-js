@@ -236,10 +236,6 @@ class ScrollZoomHandler {
     }
 
     renderFrame() {
-        return this._onScrollFrame();
-    }
-
-    _onScrollFrame() {
         if (!this._frameId) return;
         this._frameId = null;
 
