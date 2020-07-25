@@ -329,41 +329,6 @@ test('Popup anchors around default Marker', (t) => {
     t.end();
 });
 
-test('Marker#getClickTolerance gets clickTolerance set via options', (t)  => {
-    const marker = new Marker({clickTolerance: 5});
-    t.equal(marker.getClickTolerance(), 5);
-    t.end();
-});
-
-test('Marker#getClickTolerance gets map clickTolerance if clickTolerance has not been set', (t)  => {
-    const map = createMap(t, {clickTolerance: 4});
-    const marker = new Marker()
-        .setLngLat([0, 0])
-        .addTo(map);
-    t.equal(marker.getClickTolerance(), 4);
-
-    map.remove();
-    t.end();
-});
-
-test('Marker#getClickTolerance uses Marker clickTolerance in favor of Map Click Tolerance if both specified', (t)  => {
-    const map = createMap(t, {clickTolerance: 4});
-    const marker = new Marker({clickTolerance: 5})
-        .setLngLat([0, 0])
-        .addTo(map);
-    t.equal(marker.getClickTolerance(), 5);
-
-    map.remove();
-    t.end();
-});
-
-test('Marker#setClickTolerance sets the click tolerance', (t)  => {
-    const marker = new Marker({clickTolerance: 5});
-    marker.setClickTolerance(10);
-    t.equal(marker.getClickTolerance(), 10);
-    t.end();
-});
-
 test('Marker drag functionality can be added with drag option', (t) => {
     const map = createMap(t);
     const marker = new Marker({draggable: true})
@@ -405,7 +370,7 @@ test('Marker#setDraggable turns off drag functionality', (t) => {
     t.end();
 });
 
-test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to a mouse-triggered drag and cancels element pointer events.', (t) => {
+test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to mouse-triggered drag with map-inherited clickTolerance', (t) => {
     const map = createMap(t);
     const marker = new Marker({draggable: true})
         .setLngLat([0, 0])
@@ -426,16 +391,28 @@ test('Marker with draggable:true fires dragstart, drag, and dragend events at ap
     t.equal(dragend.callCount, 0);
     t.equal(el.style.pointerEvents, '');
 
-    t.equal(marker.getClickTolerance(), 3, 'subsequent movement exceeds than clickTolerance');
-    simulate.mousemove(el, {clientX: 3, clientY: 1});
-    t.equal(dragstart.callCount, 1);
-    t.equal(drag.callCount, 1);
+    simulate.mousemove(el, {clientX: 2.9, clientY: 0});
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0, "drag not called yet, movement below marker's map-inherited click tolerance");
     t.equal(dragend.callCount, 0);
-    t.equal(el.style.pointerEvents, 'none');
+    t.equal(el.style.pointerEvents, '');
+
+    // above map's click tolerance
+    simulate.mousemove(el, {clientX: 3.1, clientY: 0});
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1, 'drag fired once click tolerance exceeded');
+    t.equal(dragend.callCount, 0);
+    t.equal(el.style.pointerEvents, 'none', 'cancels pointer events while dragging');
+
+    simulate.mousemove(el, {clientX: 0, clientY: 0});
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2, 'drag fired when moving back within clickTolerance of mousedown');
+    t.equal(dragend.callCount, 0);
+    t.equal(el.style.pointerEvents, 'none', 'cancels pointer events while dragging');
 
     simulate.mouseup(el);
     t.equal(dragstart.callCount, 1);
-    t.equal(drag.callCount, 1);
+    t.equal(drag.callCount, 2);
     t.equal(dragend.callCount, 1);
     t.equal(el.style.pointerEvents, 'auto');
 
@@ -443,9 +420,9 @@ test('Marker with draggable:true fires dragstart, drag, and dragend events at ap
     t.end();
 });
 
-test('Marker with draggable:true does NOT fire drag events if mouse movement is below clickTolerance and allows element pointer events', (t) => {
+test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to mouse-triggered drag with marker-specific clickTolerance', (t) => {
     const map = createMap(t);
-    const marker = new Marker({draggable: true})
+    const marker = new Marker({draggable: true, clickTolerance: 4})
         .setLngLat([0, 0])
         .addTo(map);
     const el = marker.getElement();
@@ -464,14 +441,29 @@ test('Marker with draggable:true does NOT fire drag events if mouse movement is 
     t.equal(dragend.callCount, 0);
     t.equal(el.style.pointerEvents, '');
 
-    t.equal(marker.getClickTolerance(), 3, 'subsequent movement is below clickTolerance');
-    simulate.mousemove(el, {clientX: 1, clientY: 1});
+    simulate.mousemove(el, {clientX: 3.9, clientY: 0});
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0, "drag not called yet, movement below marker's map-inherited click tolerance");
+    t.equal(dragend.callCount, 0);
     t.equal(el.style.pointerEvents, '');
 
-    simulate.mouseup(el);
-    t.equal(dragstart.callCount, 0);
-    t.equal(drag.callCount, 0);
+    // above map's click tolerance
+    simulate.mousemove(el, {clientX: 4.1, clientY: 0});
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1, 'drag fired once click tolerance exceeded');
     t.equal(dragend.callCount, 0);
+    t.equal(el.style.pointerEvents, 'none', 'cancels pointer events while dragging');
+
+    simulate.mousemove(el, {clientX: 0, clientY: 0});
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2, 'drag fired when moving back within clickTolerance of mousedown');
+    t.equal(dragend.callCount, 0);
+    t.equal(el.style.pointerEvents, 'none', 'cancels pointer events while dragging');
+
+    simulate.mouseup(el);
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2);
+    t.equal(dragend.callCount, 1);
     t.equal(el.style.pointerEvents, 'auto');
 
     map.remove();
@@ -498,7 +490,6 @@ test('Marker with draggable:false does not fire dragstart, drag, and dragend eve
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    t.equal(marker.getClickTolerance(), 3, 'subsequent movement exceeds than clickTolerance');
     simulate.mousemove(el, {clientX: 3, clientY: 1});
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
@@ -513,7 +504,7 @@ test('Marker with draggable:false does not fire dragstart, drag, and dragend eve
     t.end();
 });
 
-test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to a touch-triggered drag and cancels element pointer events.', (t) => {
+test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to a touch-triggered drag with map-inherited clickTolerance', (t) => {
     const map = createMap(t);
     const marker = new Marker({draggable: true})
         .setLngLat([0, 0])
@@ -534,16 +525,28 @@ test('Marker with draggable:true fires dragstart, drag, and dragend events at ap
     t.equal(dragend.callCount, 0);
     t.equal(el.style.pointerEvents, '');
 
-    t.equal(marker.getClickTolerance(), 3, 'subsequent movement exceeds than clickTolerance');
-    simulate.touchmove(el, {touches: [{clientX: 3, clientY: 1}]});
-    t.equal(dragstart.callCount, 1);
-    t.equal(drag.callCount, 1);
+    simulate.touchmove(el, {touches: [{clientX: 2.9, clientY: 0}]});
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0, "drag not called yet, movement below marker's map-inherited click tolerance");
     t.equal(dragend.callCount, 0);
-    t.equal(el.style.pointerEvents, 'none');
+    t.equal(el.style.pointerEvents, '');
+
+    // above map's click tolerance
+    simulate.touchmove(el, {touches: [{clientX: 3.1, clientY: 0}]});
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1, 'drag fired once click tolerance exceeded');
+    t.equal(dragend.callCount, 0);
+    t.equal(el.style.pointerEvents, 'none', 'cancels pointer events while dragging');
+
+    simulate.touchmove(el, {touches: [{clientX: 0, clientY: 0}]});
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2, 'drag fired when moving back within clickTolerance of touchstart');
+    t.equal(dragend.callCount, 0);
+    t.equal(el.style.pointerEvents, 'none', 'cancels pointer events while dragging');
 
     simulate.touchend(el);
     t.equal(dragstart.callCount, 1);
-    t.equal(drag.callCount, 1);
+    t.equal(drag.callCount, 2);
     t.equal(dragend.callCount, 1);
     t.equal(el.style.pointerEvents, 'auto');
 
@@ -551,9 +554,9 @@ test('Marker with draggable:true fires dragstart, drag, and dragend events at ap
     t.end();
 });
 
-test('Marker with draggable:true does NOT fire drag events if touch movement is below clickTolerance and allows element pointer events', (t) => {
+test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to a touch-triggered drag with marker-specific clickTolerance', (t) => {
     const map = createMap(t);
-    const marker = new Marker({draggable: true})
+    const marker = new Marker({draggable: true, clickTolerance: 4})
         .setLngLat([0, 0])
         .addTo(map);
     const el = marker.getElement();
@@ -572,14 +575,29 @@ test('Marker with draggable:true does NOT fire drag events if touch movement is 
     t.equal(dragend.callCount, 0);
     t.equal(el.style.pointerEvents, '');
 
-    t.equal(marker.getClickTolerance(), 3, 'subsequent movement is below clickTolerance');
-    simulate.touchmove(el, {touches: [{clientX: 1, clientY: 1}]});
+    simulate.touchmove(el, {touches: [{clientX: 3.9, clientY: 0}]});
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0, "drag not called yet, movement below marker's map-inherited click tolerance");
+    t.equal(dragend.callCount, 0);
     t.equal(el.style.pointerEvents, '');
 
-    simulate.touchend(el);
-    t.equal(dragstart.callCount, 0);
-    t.equal(drag.callCount, 0);
+    // above map's click tolerance
+    simulate.touchmove(el, {touches: [{clientX: 4.1, clientY: 0}]});
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1, 'drag fired once click tolerance exceeded');
     t.equal(dragend.callCount, 0);
+    t.equal(el.style.pointerEvents, 'none', 'cancels pointer events while dragging');
+
+    simulate.touchmove(el, {touches: [{clientX: 0, clientY: 0}]});
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2, 'drag fired when moving back within clickTolerance of touchstart');
+    t.equal(dragend.callCount, 0);
+    t.equal(el.style.pointerEvents, 'none', 'cancels pointer events while dragging');
+
+    simulate.touchend(el);
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2);
+    t.equal(dragend.callCount, 1);
     t.equal(el.style.pointerEvents, 'auto');
 
     map.remove();
@@ -601,13 +619,12 @@ test('Marker with draggable:false does not fire dragstart, drag, and dragend eve
     marker.on('drag',      drag);
     marker.on('dragend',   dragend);
 
-    simulate.touchstart(el, {clientX: 0, clientY: 0});
+    simulate.touchstart(el, {touches: [{clientX: 0, clientY: 0}]});
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    t.equal(marker.getClickTolerance(), 3, 'subsequent movement exceeds than clickTolerance');
-    simulate.touchmove(el, {clientX: 3, clientY: 1});
+    simulate.touchmove(el, {touches: [{clientX: 0, clientY: 0}]});
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
