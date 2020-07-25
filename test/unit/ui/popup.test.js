@@ -732,3 +732,16 @@ test('If popup content contains a disabled input followed by a focusable element
     t.equal(window.document.activeElement, focusableEl);
     t.end();
 });
+
+test('Popup with disabled focusing does not change the active element', (t) => {
+    const dummyFocusedEl = window.document.createElement('button');
+    dummyFocusedEl.focus();
+
+    new Popup({closeButton: false, focusAfterOpen: false})
+        .setHTML('<span tabindex="0" data-testid="abc">Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    t.equal(window.document.activeElement, dummyFocusedEl);
+    t.end();
+});

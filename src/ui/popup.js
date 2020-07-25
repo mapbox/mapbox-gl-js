@@ -17,6 +17,7 @@ import type {PointLike} from '@mapbox/point-geometry';
 const defaultOptions = {
     closeButton: true,
     closeOnClick: true,
+    focusAfterOpen: true,
     className: '',
     maxWidth: "240px"
 };
@@ -27,11 +28,22 @@ export type PopupOptions = {
     closeButton?: boolean,
     closeOnClick?: boolean,
     closeOnMove?: boolean,
+    focusAfterOpen?: boolean,
     anchor?: Anchor,
     offset?: Offset,
     className?: string,
     maxWidth?: string
 };
+
+const focusQuerySelector = [
+    "a[href]",
+    "[tabindex]:not([tabindex='-1'])",
+    "contenteditable",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+].join(", ");
 
 /**
  * A popup component.
@@ -43,6 +55,8 @@ export type PopupOptions = {
  *   map is clicked.
  * @param {boolean} [options.closeOnMove=false] If `true`, the popup will closed when the
  *   map moves.
+ * @param {boolean} [options.focusAfterOpen=true] If `true`, the popup will try to focus the
+ *   first focusable element inside the popup.
  * @param {string} [options.anchor] - A string indicating the part of the Popup that should
  *   be positioned closest to the coordinate set via {@link Popup#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
@@ -549,23 +563,9 @@ export default class Popup extends Evented {
     }
 
     _focusFirstElement() {
-        if (!this._container) return;
+        if (!this.options.focusAfterOpen || !this._container) return;
 
-        // This approach isn't covering all the quirks and cases but it should be good enough.
-        // If we would want to be really thorough we would need much more code, see e.g.:
-        // https://github.com/angular/components/blob/master/src/cdk/a11y/interactivity-checker/interactivity-checker.ts
-        const selectors = [
-            "a[href]",
-            "[tabindex]:not([tabindex='-1'])",
-            "contenteditable",
-            "button:not([disabled])",
-            "input:not([disabled])",
-            "select:not([disabled])",
-            "textarea:not([disabled])",
-        ];
-        const firstFocusable = this._container.querySelector(
-            selectors.join(", ")
-        );
+        const firstFocusable = this._container.querySelector(focusQuerySelector);
 
         if (firstFocusable) firstFocusable.focus();
     }
