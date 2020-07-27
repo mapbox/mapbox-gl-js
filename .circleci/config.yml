@@ -286,13 +286,18 @@ jobs:
 
             # Build new package
             yarn run build-dev
-
+            yarn run build-prod-min
             git checkout hey-pages
 
             # Update version number and deploy
             sed -i 's|\(MAPBOX_GL_JS_V2_VERSION = \)\(.*\)|\1'"'`git describe --tags $(git rev-list --tags --max-count=1)`'|" index.js
+
             cp dist/mapbox-gl-dev.js mapbox-gl-dev.js
-            git commit mapbox-gl-dev.js index.js -m "Automated update deployment of hey-pages `date`"
+            cp dist/mapbox-gl.js mapbox-gl.js
+            cp dist/mapbox-gl.css mapbox-gl.css
+            cp dist/mapbox-gl.js.map mapbox-gl.js.map
+
+            git commit mapbox-gl-dev.js mapbox-gl.js mapbox-gl.js.map mapbox-gl.css index.js -m "Automated update deployment of hey-pages `date`"
             git push origin hey-pages
 
   deploy-release:
