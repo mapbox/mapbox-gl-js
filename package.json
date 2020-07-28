@@ -67,7 +67,7 @@
     "eslint-plugin-react": "^7.12.4",
     "esm": "~3.0.84",
     "flow-bin": "^0.100.0",
-    "gl": "~4.3.3",
+    "gl": "^4.5.3",
     "glob": "^7.1.4",
     "is-builtin-module": "^3.0.0",
     "jsdom": "^13.0.0",
