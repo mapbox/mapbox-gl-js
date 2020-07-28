@@ -375,7 +375,7 @@
     },
     "clusterMaxZoom": {
       "type": "number",
-      "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
+      "doc": "Max zoom on which to cluster points if clustering is enabled.  Defaults to one zoom less than maxzoom (so that last zoom features are not clustered). Because the clustering algorithm is evaluated at integer zoom levels, setting clusterMaxZoom to 14, for example, means the clusters will show until z15."
     },
     "clusterProperties": {
       "type": "*",
