@@ -350,7 +350,6 @@ export class Terrain extends Elevation {
         const sourceCaches = this.painter.style.sourceCaches;
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
-            if (!sourceCache.getSource().loaded()) continue;
             if (!sourceCache.used) continue;
             if (sourceCache !== this.sourceCache) this._findCoveringTileCache[sourceCache.id] = {};
             this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[id], previousProxyToSource);
@@ -883,6 +882,7 @@ export class Terrain extends Elevation {
     }
 
     _setupProxiedCoordsForImageSource(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[string]: {[string]: Array<ProxiedTileID>}}) {
+        if (!sourceCache.getSource().loaded()) return;
         const coords = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
         const imageSource: ImageSource = ((sourceCache.getSource(): any): ImageSource);
