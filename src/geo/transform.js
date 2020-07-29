@@ -651,7 +651,7 @@ class Transform {
         const cover = result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
         // Relax the assertion on terrain, on high zoom we use distance to center of tile
         // while camera might be closer to selected center of map.
-        assert(!cover.length || useElevationData || cover[0].overscaledZ === overscaledZ);
+        assert(!cover.length || this.elevation || cover[0].overscaledZ === overscaledZ);
         return cover;
     }
 
