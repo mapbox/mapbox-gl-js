@@ -94,10 +94,11 @@ void main() {
     z = elevation(tile_pos.xy);
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
-    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projectedPoint.w <= 0.0 || isOccluded(projectedPoint)));
+    float occlusion_fade = occlusionFade(projectedPoint);
+    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projectedPoint.w <= 0.0 || occlusion_fade == 0.0));
 
     v_tex = a_tex / u_texsize;
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
-    v_fade_opacity = max(0.0, min(1.0, fade_opacity[0] + fade_change));
+    v_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
 }

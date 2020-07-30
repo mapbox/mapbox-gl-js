@@ -15,6 +15,7 @@ uniform float u_meter_to_dem;
 uniform mat4 u_label_plane_matrix_inv;
 
 uniform sampler2D u_depth;
+uniform vec2 u_depth_size_inv;
 
 vec4 tileUvToDemSample(vec2 uv, float dem_size, float dem_scale, vec2 dem_tl) {
     vec2 pos = dem_size * (uv * dem_scale + dem_tl) + 1.0;
@@ -71,13 +72,27 @@ float elevation(vec2 apos) {
 float unpack_depth(vec4 rgba_depth)
 {
     const vec4 bit_shift = vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
-    return dot(rgba_depth, bit_shift);
+    return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
 }
 
 bool isOccluded(vec4 frag) {
     vec3 coord = frag.xyz / frag.w;
     float depth = unpack_depth(texture2D(u_depth, (coord.xy + 1.0) * 0.5));
-    return depth * (coord.z - depth) > 0.0005; // === coord.z > depth + 0.0005 / depth;
+    return coord.z > depth + 0.0005;
+}
+
+float occlusionFade(vec4 frag) {
+    vec3 coord = frag.xyz / frag.w;
+
+    vec3 df = vec3(5.0 * u_depth_size_inv, 0.0);
+    vec2 uv = 0.5 * coord.xy + 0.5;
+    vec4 depth = vec4(
+        unpack_depth(texture2D(u_depth, uv - df.xz)),
+        unpack_depth(texture2D(u_depth, uv + df.xz)),
+        unpack_depth(texture2D(u_depth, uv - df.zy)),
+        unpack_depth(texture2D(u_depth, uv + df.zy))
+    );
+    return dot(vec4(0.25), vec4(1.0) - clamp(300.0 * (vec4(coord.z - 0.001) - depth), 0.0, 1.0));
 }
 
 vec4 fourSample(vec2 pos, vec2 off) {
@@ -130,5 +145,6 @@ float elevationFromUint16(float word) {
 
 float elevation(vec2 pos) { return 0.0; }
 bool isOccluded(vec4 frag) { return false; }
+float occlusionFade(vec4 frag) { return 1.0; }
 
 #endif
