@@ -469,6 +469,7 @@ export class Terrain extends Elevation {
         if (options && options.useDepthForOcclusion) {
             context.activeTexture.set(gl.TEXTURE3);
             this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+            uniforms['u_depth_size_inv'] = [1 / this._depthFBO.width, 1 / this._depthFBO.height];
         }
 
         if (options && options.useMeterToDem && demTile) {
@@ -768,7 +769,7 @@ export class Terrain extends Elevation {
         const context = this.painter.context;
         const gl = context.gl;
         const data = new Uint8Array(4);
-        const fboHeight = this.painter.height;
+        const fboHeight = this._depthFBO.height;
         const pixelRatio = fboHeight / transform.height;
 
         context.bindFramebuffer.set(this._depthFBO.framebuffer);
@@ -782,7 +783,7 @@ export class Terrain extends Elevation {
             data);
 
         const unpackDepth = (pixel: Uint8Array): number => {
-            return (pixel[0] / 16777216.0 + pixel[1] / 65536.0 + pixel[2] / 256.0 + pixel[3]) / 255.0;
+            return (pixel[0] / 16777216.0 + pixel[1] / 65536.0 + pixel[2] / 256.0 + pixel[3]) / 255.0 * 2.0 - 1.0;
         };
 
         const depth = unpackDepth(data);
@@ -1135,6 +1136,7 @@ export type TerrainUniformsType = {|
     'u_dem_lerp': Uniform1f,
     "u_exaggeration": Uniform1f,
     'u_depth': Uniform1i,
+    'u_depth_size_inv': Uniform2f,
     'u_meter_to_dem'?: Uniform1f,
     'u_label_plane_matrix_inv'?: UniformMatrix4f
 |};
@@ -1152,6 +1154,7 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_dem_lerp': new Uniform1f(context, locations.u_dem_lerp),
     'u_exaggeration': new Uniform1f(context, locations.u_exaggeration),
     'u_depth': new Uniform1i(context, locations.u_depth),
+    'u_depth_size_inv': new Uniform2f(context, locations.u_depth_size_inv),
     'u_meter_to_dem': new Uniform1f(context, locations.u_meter_to_dem),
     'u_label_plane_matrix_inv': new UniformMatrix4f(context, locations.u_label_plane_matrix_inv)
 });
@@ -1169,6 +1172,7 @@ function defaultTerrainUniforms(): UniformValues<TerrainUniformsType> {
         'u_dem_size': 0,
         'u_dem_lerp': 1.0,
         'u_depth': 3,
+        'u_depth_size_inv': [0, 0],
         'u_exaggeration': 0
     };
 }
