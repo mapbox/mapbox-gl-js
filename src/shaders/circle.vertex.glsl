@@ -11,7 +11,9 @@ uniform bool u_pitch_with_map;
 uniform vec2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
+#ifdef TERRAIN
 uniform vec2 u_sample_pattern[NUM_SAMPLES_PER_RING];
+#endif
 
 attribute vec2 a_pos;
 
