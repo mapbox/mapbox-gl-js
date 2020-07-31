@@ -500,10 +500,13 @@ function isBoundaryEdge(p1, p2) {
 }
 
 function isEntirelyOutside(ring) {
-    return ring.every(p => p.x < 0) ||
-        ring.every(p => p.x > EXTENT) ||
-        ring.every(p => p.y < 0) ||
-        ring.every(p => p.y > EXTENT);
+    // Discard rings with corners on border if all other vertices are outside: they get defined
+    // also in the tile across the border. Eventual zero area rings at border are discarded by classifyRings
+    // and there is no need to handle that case here.
+    return ring.every(p => p.x <= 0) ||
+        ring.every(p => p.x >= EXTENT) ||
+        ring.every(p => p.y <= 0) ||
+        ring.every(p => p.y >= EXTENT);
 }
 
 function tileToMeter(canonical: CanonicalTileID) {
