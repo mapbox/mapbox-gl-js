@@ -613,7 +613,7 @@ export class Terrain extends Elevation {
         if (!this.drapeFirst || this.painter.style._order.some(id => {
             // Disable render caches on dynamic events due to fading.
             const layer = this.painter.style._layers[id];
-            return !layer.isHidden(this.painter.transform.zoom) && layer.getCrossfadeParameters().t !== 1;
+            return layer.type !== 'custom' && !layer.isHidden(this.painter.transform.zoom) && layer.getCrossfadeParameters().t !== 1;
         })) {
             if (psc.renderCache.length > psc.renderCachePool.length) {
                 const used = ((Object.values(psc.proxyCachedFBO): any): Array<number>);
