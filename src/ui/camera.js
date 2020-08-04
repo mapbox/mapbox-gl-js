@@ -1182,7 +1182,7 @@ class Camera extends Evented {
         }
         if (!allowGestures) {
             const handlers = (this: any).handlers;
-            if (handlers) handlers.stop();
+            if (handlers) handlers.stop(false);
         }
         return this;
     }
