@@ -75,11 +75,16 @@ class CollisionIndex {
         const tlY = collisionBox.y1 * tileToViewport + projectedPoint.point.y;
         const brX = collisionBox.x2 * tileToViewport + projectedPoint.point.x;
         const brY = collisionBox.y2 * tileToViewport + projectedPoint.point.y;
-        const isBehindCamera = projectedPoint.perspectiveRatio <= 0.5;
+        // Clip at 10 times the distance of the map center or, said otherwise, when the label
+        // would be drawn at 10% the size of the features around it without scaling. Refer:
+        // https://github.com/mapbox/mapbox-gl-native/wiki/Text-Rendering#perspective-scaling
+        // 0.55 === projection.getPerspectiveRatio(camera_to_center, camera_to_center * 10)
+        const minPerspectiveRatio = 0.55;
+        const isClipped = projectedPoint.perspectiveRatio <= minPerspectiveRatio;
 
         if (!this.isInsideGrid(tlX, tlY, brX, brY) ||
             (!allowOverlap && this.grid.hitTest(tlX, tlY, brX, brY, collisionGroupPredicate)) ||
-            isBehindCamera) {
+            isClipped) {
             return {
                 box: [],
                 offscreen: false
