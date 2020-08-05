@@ -180,7 +180,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                         if (compiled.result === 'error')
                             throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
 
-                        data.features = data.features.filter(feature => compiled.value.evaluate({zoom: 0}, feature));
+                        const features = data.features.filter(feature => compiled.value.evaluate({zoom: 0}, feature));
+                        data = {type: 'FeatureCollection', features};
                     }
 
                     this._geoJSONIndex = params.cluster ?
