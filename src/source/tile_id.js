@@ -4,7 +4,7 @@ import {getTileBBox} from '@mapbox/whoots-js';
 import EXTENT from '../data/extent';
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../geo/mercator_coordinate';
-
+import {MAX_SAFE_INTEGER} from '../util/util';
 import assert from 'assert';
 import {register} from '../util/web_worker_transfer';
 
@@ -12,7 +12,7 @@ export class CanonicalTileID {
     z: number;
     x: number;
     y: number;
-    key: string;
+    key: number;
 
     constructor(z: number, x: number, y: number) {
         assert(z >= 0 && z <= 25);
@@ -57,7 +57,7 @@ export class CanonicalTileID {
 export class UnwrappedTileID {
     wrap: number;
     canonical: CanonicalTileID;
-    key: string;
+    key: number;
 
     constructor(wrap: number, canonical: CanonicalTileID) {
         this.wrap = wrap;
@@ -70,7 +70,7 @@ export class OverscaledTileID {
     overscaledZ: number;
     wrap: number;
     canonical: CanonicalTileID;
-    key: string;
+    key: number;
     posMatrix: Float32Array;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {
@@ -100,7 +100,7 @@ export class OverscaledTileID {
      * when withWrap == true, implements the same as this.scaledTo(z).key,
      * when withWrap == false, implements the same as this.scaledTo(z).wrapped().key.
      */
-    calculateScaledKey(targetZ: number, withWrap: boolean = true): string {
+    calculateScaledKey(targetZ: number, withWrap: boolean = true): number {
         if (this.overscaledZ === targetZ && withWrap) return this.key;
         if (targetZ > this.canonical.z) {
             return calculateKey(this.wrap * +withWrap, targetZ, this.canonical.z, this.canonical.x, this.canonical.y);
@@ -179,11 +179,22 @@ export class OverscaledTileID {
     }
 }
 
-function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): string {
-    wrap *= 2;
-    if (wrap < 0) wrap = wrap * -1 - 1;
-    const dim = 1 << z;
-    return (dim * dim * wrap + dim * y + x).toString(36) + z.toString(36) + overscaledZ.toString(36);
+function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): number {
+    // only use 22 bits for x & y so that the key fits into MAX_SAFE_INTEGER
+    const dim = 1 << Math.min(z, 22);
+    let xy = dim * (y % dim) + (x % dim);
+
+    // zigzag-encode wrap if we have the room for it
+    if (wrap && z < 22) {
+        const bitsAvailable = 2 * (22 - z);
+        xy += dim * dim * ((wrap < 0 ? -2 * wrap - 1 : 2 * wrap) % (1 << bitsAvailable));
+    }
+
+    // encode z into 5 bits (24 max) and overscaledZ into 4 bits (10 max)
+    const key = ((xy * 32) + z) * 16 + (overscaledZ - z);
+    assert(key >= 0 && key <= MAX_SAFE_INTEGER);
+
+    return key;
 }
 
 function getQuadkey(z, x, y) {

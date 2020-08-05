@@ -112,7 +112,7 @@ class Painter {
     viewportSegments: SegmentVector;
     quadTriangleIndexBuffer: IndexBuffer;
     tileBorderIndexBuffer: IndexBuffer;
-    _tileClippingMaskIDs: {[_: string]: number };
+    _tileClippingMaskIDs: {[_: number]: number };
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;

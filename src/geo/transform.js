@@ -65,8 +65,8 @@ class Transform {
     _center: LngLat;
     _edgeInsets: EdgeInsets;
     _constraining: boolean;
-    _posMatrixCache: {[_: string]: Float32Array};
-    _alignedPosMatrixCache: {[_: string]: Float32Array};
+    _posMatrixCache: {[_: number]: Float32Array};
+    _alignedPosMatrixCache: {[_: number]: Float32Array};
     _camera: FreeCamera;
     _centerAltitude: number;
 
