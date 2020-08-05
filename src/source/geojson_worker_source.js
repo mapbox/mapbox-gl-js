@@ -32,7 +32,8 @@ export type LoadGeoJSONParameters = {
     cluster: boolean,
     superclusterOptions?: Object,
     geojsonVtOptions?: Object,
-    clusterProperties?: Object
+    clusterProperties?: Object,
+    filter?: Array<mixed>
 };
 
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<Object>) => void;
@@ -174,6 +175,15 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                 rewind(data, true);
 
                 try {
+                    if (params.filter) {
+                        const compiled = createExpression(params.filter, {type: 'boolean', 'property-type': 'data-driven', overridable: false, transition: false});
+                        if (compiled.result === 'error')
+                            throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
+
+                        const features = data.features.filter(feature => compiled.value.evaluate({zoom: 0}, feature));
+                        data = {type: 'FeatureCollection', features};
+                    }
+
                     this._geoJSONIndex = params.cluster ?
                         new Supercluster(getSuperclusterOptions(params)).load(data.features) :
                         geojsonvt(data, params.geojsonVtOptions);
