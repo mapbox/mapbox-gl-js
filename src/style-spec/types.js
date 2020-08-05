@@ -122,7 +122,7 @@ export type GeoJSONSourceSpecification = {|
     "maxzoom"?: number,
     "attribution"?: string,
     "buffer"?: number,
-    "filter"?: ExpressionSpecification,
+    "filter"?: mixed,
     "tolerance"?: number,
     "cluster"?: boolean,
     "clusterRadius"?: number,
