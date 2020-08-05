@@ -12,8 +12,8 @@ import type Tile from './tile';
  */
 class TileCache {
     max: number;
-    data: {[key: string]: Array<{ value: Tile, timeout: ?TimeoutID}>};
-    order: Array<string>;
+    data: {[key: string | number]: Array<{ value: Tile, timeout: ?TimeoutID}>};
+    order: Array<number>;
     onRemove: (element: Tile) => void;
     /**
      * @param {number} max number of permitted values
@@ -110,7 +110,7 @@ class TileCache {
     /*
      * Get and remove the value with the specified key.
      */
-    _getAndRemoveByKey(key: string): ?Tile {
+    _getAndRemoveByKey(key: number): ?Tile {
         const data = this.data[key].shift();
         if (data.timeout) clearTimeout(data.timeout);
 
@@ -125,7 +125,7 @@ class TileCache {
     /*
      * Get the value with the specified (wrapped tile) key.
      */
-    getByKey(key: string): ?Tile {
+    getByKey(key: number): ?Tile {
         const data = this.data[key];
         return data ? data[0].value : null;
     }

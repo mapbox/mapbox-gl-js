@@ -90,7 +90,7 @@ test('RasterTileSource', (t) => {
         const source = createSource({url: "/source.json"});
 
         t.test('getNeighboringTiles', (t) => {
-            t.deepEqual(Object.keys(source._getNeighboringTiles(new OverscaledTileID(10, 0, 10, 5, 5))), [
+            t.deepEqual(Uint32Array.from(Object.keys(source._getNeighboringTiles(new OverscaledTileID(10, 0, 10, 5, 5)))).sort(), Uint32Array.from([
                 new OverscaledTileID(10, 0, 10, 4, 5).key,
                 new OverscaledTileID(10, 0, 10, 6, 5).key,
                 new OverscaledTileID(10, 0, 10, 4, 4).key,
@@ -99,12 +99,12 @@ test('RasterTileSource', (t) => {
                 new OverscaledTileID(10, 0, 10, 4, 6).key,
                 new OverscaledTileID(10, 0, 10, 5, 6).key,
                 new OverscaledTileID(10, 0, 10, 6, 6).key
-            ]);
+            ]).sort());
             t.end();
         });
 
         t.test('getNeighboringTiles with wrapped tiles', (t) => {
-            t.deepEqual(Object.keys(source._getNeighboringTiles(new OverscaledTileID(5, 0, 5, 31, 5))), [
+            t.deepEqual(Uint32Array.from(Object.keys(source._getNeighboringTiles(new OverscaledTileID(5, 0, 5, 31, 5)))).sort(), Uint32Array.from([
                 new OverscaledTileID(5, 0, 5, 30, 6).key,
                 new OverscaledTileID(5, 0, 5, 31, 6).key,
                 new OverscaledTileID(5, 0, 5, 30, 5).key,
@@ -113,7 +113,7 @@ test('RasterTileSource', (t) => {
                 new OverscaledTileID(5, 0, 5, 31, 4).key,
                 new OverscaledTileID(5, 1, 5, 0,  4).key,
                 new OverscaledTileID(5, 1, 5, 0,  6).key
-            ]);
+            ]).sort());
             t.end();
         });
         t.end();

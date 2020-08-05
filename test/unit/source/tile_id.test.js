@@ -23,10 +23,10 @@ test('CanonicalTileID', (t) => {
     });
 
     t.test('.key', (t) => {
-        t.deepEqual(new CanonicalTileID(0, 0, 0).key, "000");
-        t.deepEqual(new CanonicalTileID(1, 0, 0).key, "011");
-        t.deepEqual(new CanonicalTileID(1, 1, 0).key, "111");
-        t.deepEqual(new CanonicalTileID(1, 1, 1).key, "311");
+        t.deepEqual(new CanonicalTileID(0, 0, 0).key, 0);
+        t.deepEqual(new CanonicalTileID(1, 0, 0).key, 16);
+        t.deepEqual(new CanonicalTileID(1, 1, 0).key, 528);
+        t.deepEqual(new CanonicalTileID(1, 1, 1).key, 1552);
         t.end();
     });
 
@@ -77,11 +77,11 @@ test('OverscaledTileID', (t) => {
     });
 
     t.test('.key', (t) => {
-        t.deepEqual(new OverscaledTileID(0, 0, 0, 0, 0).key, "000");
-        t.deepEqual(new OverscaledTileID(1, 0, 1, 0, 0).key, "011");
-        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 0).key, "111");
-        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 1).key, "311");
-        t.deepEqual(new OverscaledTileID(1, -1, 1, 1, 1).key, "711");
+        t.deepEqual(new OverscaledTileID(0, 0, 0, 0, 0).key, 0);
+        t.deepEqual(new OverscaledTileID(1, 0, 1, 0, 0).key, 16);
+        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 0).key, 528);
+        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 1).key, 1552);
+        t.deepEqual(new OverscaledTileID(1, -1, 1, 1, 1).key, 3600);
         t.end();
     });
 

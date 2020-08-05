@@ -64,7 +64,7 @@ const drapedLayers = {'fill': true, 'line': true, 'background': true, "hillshade
 class ProxySourceCache extends SourceCache {
     renderCache: Array<FBO>;
     renderCachePool: Array<number>;
-    proxyCachedFBO: {[string]: number};
+    proxyCachedFBO: {[string | number]: number};
 
     constructor(map: Map) {
         super('proxy', {
@@ -138,9 +138,9 @@ class ProxySourceCache extends SourceCache {
  * or sub-rectangle of the original tile.
  */
 class ProxiedTileID extends OverscaledTileID {
-    proxyTileKey: string;
+    proxyTileKey: number;
 
-    constructor(tileID: OverscaledTileID, proxyTileKey: string, posMatrix: Float32Array) {
+    constructor(tileID: OverscaledTileID, proxyTileKey: number, posMatrix: Float32Array) {
         super(tileID.overscaledZ, tileID.wrap, tileID.canonical.z, tileID.canonical.x, tileID.canonical.y);
         this.proxyTileKey = proxyTileKey;
         this.posMatrix = posMatrix;
@@ -151,8 +151,8 @@ type OverlapStencilType = false | 'Clip' | 'Mask';
 type FBO = {fb: Framebuffer, tex: Texture, dirty: boolean, ref: number};
 
 export class Terrain extends Elevation {
-    terrainTileForTile: {[string]: Tile};
-    prevTerrainTileForTile: {[string]: Tile};
+    terrainTileForTile: {[number | string]: Tile};
+    prevTerrainTileForTile: {[number | string]: Tile};
     painter: Painter;
     sourceCache: SourceCache;
     gridBuffer: VertexBuffer;
@@ -161,7 +161,7 @@ export class Terrain extends Elevation {
     gridNoSkirtSegments: SegmentVector;
     proxiedCoords: {[string]: Array<ProxiedTileID>};
     proxyCoords: Array<OverscaledTileID>;
-    proxyToSource: {[string]: {[string]: Array<ProxiedTileID>}};
+    proxyToSource: {[number]: {[string]: Array<ProxiedTileID>}};
     proxySourceCache: ProxySourceCache;
     renderingToTexture: boolean;
     style: Style;
@@ -186,9 +186,9 @@ export class Terrain extends Elevation {
     currentFBO: FBO;
     renderedToTile: boolean;
 
-    _findCoveringTileCache: {[string]: {[string]: ?string}};
+    _findCoveringTileCache: {[string]: {[number]: ?number}};
 
-    _tilesDirty: {[string]: {[string]: boolean}};
+    _tilesDirty: {[string]: {[number]: boolean}};
     _invalidateRenderCache: boolean;
 
     constructor(painter: Painter, style: Style) {
@@ -608,7 +608,7 @@ export class Terrain extends Elevation {
         }
     }
 
-    _setupRenderCache(previousProxyToSource: {[string]: {[string]: Array<ProxiedTileID>}}) {
+    _setupRenderCache(previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
         const psc = this.proxySourceCache;
         if (!this.drapeFirst || this.painter.style._order.some(id => {
             // Disable render caches on dynamic events due to fading.
@@ -842,7 +842,7 @@ export class Terrain extends Elevation {
         return drapedLayers.hasOwnProperty(styleLayer.type);
     }
 
-    _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[string]: {[string]: Array<ProxiedTileID>}}) {
+    _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
         if (sourceCache.getSource() instanceof ImageSource) {
             return this._setupProxiedCoordsForImageSource(sourceCache, sourceCoords, previousProxyToSource);
         }
@@ -882,8 +882,9 @@ export class Terrain extends Elevation {
         this._sourceTilesOverlap[sourceCache.id] = hasOverlap;
     }
 
-    _setupProxiedCoordsForImageSource(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[string]: {[string]: Array<ProxiedTileID>}}) {
+    _setupProxiedCoordsForImageSource(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
         if (!sourceCache.getSource().loaded()) return;
+
         const coords = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
         const imageSource: ImageSource = ((sourceCache.getSource(): any): ImageSource);

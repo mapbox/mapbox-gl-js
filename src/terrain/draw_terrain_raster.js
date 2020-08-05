@@ -29,13 +29,13 @@ type DEMChain = {
 };
 
 class VertexMorphing {
-    operations: {[string]: DEMChain };
+    operations: {[string | number]: DEMChain };
 
     constructor() {
         this.operations = {};
     }
 
-    newMorphing(key: string, from: Tile, to: Tile, now: number, duration: number) {
+    newMorphing(key: number, from: Tile, to: Tile, now: number, duration: number) {
         assert(from.demTexture && to.demTexture);
         assert(from.tileID.key !== to.tileID.key);
 
@@ -57,7 +57,7 @@ class VertexMorphing {
         }
     }
 
-    getMorphValuesForProxy(key: string): ?{from: Tile, to: Tile, phase: number} {
+    getMorphValuesForProxy(key: number): ?{from: Tile, to: Tile, phase: number} {
         if (!(key in this.operations))
             return null;
 
