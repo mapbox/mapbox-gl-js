@@ -44,7 +44,7 @@ class SourceCache extends Evented {
     _source: Source;
     _sourceLoaded: boolean;
     _sourceErrored: boolean;
-    _tiles: {[_: string]: Tile};
+    _tiles: {[_: string | number]: Tile};
     _prevLng: number | void;
     _cache: TileCache;
     _timers: {[_: any]: TimeoutID};
@@ -52,13 +52,13 @@ class SourceCache extends Evented {
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
-    _coveredTiles: {[_: string]: boolean};
+    _coveredTiles: {[_: number | string]: boolean};
     transform: Transform;
-    _isIdRenderable: (id: string, symbolLayer?: boolean) => boolean;
+    _isIdRenderable: (id: number, symbolLayer?: boolean) => boolean;
     used: boolean;
     usedForTerrain: boolean;
     _state: SourceFeatureState;
-    _loadedParentTiles: {[_: string]: ?Tile};
+    _loadedParentTiles: {[_: number | string]: ?Tile};
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
@@ -184,14 +184,14 @@ class SourceCache extends Evented {
      * Return all tile ids ordered with z-order, and cast to numbers
      * @private
      */
-    getIds(): Array<string> {
-        return (values(this._tiles): any).map((tile: Tile) => tile.tileID).sort(compareTileId).map(id => id.key);
+    getIds(): Array<number> {
+        return values((this._tiles: any)).map((tile: Tile) => tile.tileID).sort(compareTileId).map(id => id.key);
     }
 
-    getRenderableIds(symbolLayer?: boolean): Array<string> {
+    getRenderableIds(symbolLayer?: boolean): Array<number> {
         const renderables: Array<Tile> = [];
         for (const id in this._tiles) {
-            if (this._isIdRenderable(id, symbolLayer)) renderables.push(this._tiles[id]);
+            if (this._isIdRenderable(+id, symbolLayer)) renderables.push(this._tiles[id]);
         }
         if (symbolLayer) {
             return renderables.sort((a_: Tile, b_: Tile) => {
@@ -213,7 +213,7 @@ class SourceCache extends Evented {
         return false;
     }
 
-    _isIdRenderable(id: string, symbolLayer?: boolean) {
+    _isIdRenderable(id: number, symbolLayer?: boolean) {
         return this._tiles[id] && this._tiles[id].hasData() &&
             !this._coveredTiles[id] && (symbolLayer || !this._tiles[id].holdingForFade());
     }
@@ -227,11 +227,11 @@ class SourceCache extends Evented {
         this._cache.reset();
 
         for (const i in this._tiles) {
-            if (this._tiles[i].state !== "errored") this._reloadTile(i, 'reloading');
+            if (this._tiles[i].state !== "errored") this._reloadTile(+i, 'reloading');
         }
     }
 
-    _reloadTile(id: string, state: TileState) {
+    _reloadTile(id: number, state: TileState) {
         const tile = this._tiles[id];
 
         // this potentially does not address all underlying
@@ -250,7 +250,7 @@ class SourceCache extends Evented {
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile: Tile, id: string, previousState: TileState, err: ?Error) {
+    _tileLoaded(tile: Tile, id: number, previousState: TileState, err: ?Error) {
         if (err) {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
@@ -322,7 +322,7 @@ class SourceCache extends Evented {
      * Get a specific tile by id
      * @private
      */
-    getTileByID(id: string): Tile {
+    getTileByID(id: number): Tile {
         return this._tiles[id];
     }
 
@@ -449,7 +449,7 @@ class SourceCache extends Evented {
         this._prevLng = lng;
 
         if (wrapDelta) {
-            const tiles: {[_: string]: Tile} = {};
+            const tiles: {[_: string | number]: Tile} = {};
             for (const key in this._tiles) {
                 const tile = this._tiles[key];
                 tile.tileID = tile.tileID.unwrapTo(tile.tileID.wrap + wrapDelta);
@@ -464,7 +464,7 @@ class SourceCache extends Evented {
             }
             for (const id in this._tiles) {
                 const tile = this._tiles[id];
-                this._setTileReloadTimer(id, tile);
+                this._setTileReloadTimer(+id, tile);
             }
         }
     }
@@ -521,12 +521,12 @@ class SourceCache extends Evented {
         const retain = this._updateRetainedTiles(idealTileIDs);
 
         if (isRasterType(this._source.type) && idealTileIDs.length !== 0) {
-            const parentsForFading: {[_: string]: OverscaledTileID} = {};
+            const parentsForFading: {[_: string | number]: OverscaledTileID} = {};
             const fadingTiles = {};
             const ids = Object.keys(retain);
             for (const id of ids) {
                 const tileID = retain[id];
-                assert(tileID.key === id);
+                assert(tileID.key === +id);
 
                 const tile = this._tiles[id];
                 if (!tile || tile.fadeEndTime && tile.fadeEndTime <= browser.now()) continue;
@@ -563,13 +563,13 @@ class SourceCache extends Evented {
         }
 
         // Remove the tiles we don't need anymore.
-        const remove = keysDifference(this._tiles, retain);
+        const remove = keysDifference((this._tiles: any), (retain: any));
         for (const tileID of remove) {
             const tile = this._tiles[tileID];
             if (tile.hasSymbolBuckets && !tile.holdingForFade()) {
                 tile.setHoldDuration(this.map._fadeDuration);
             } else if (!tile.hasSymbolBuckets || tile.symbolFadeFinished()) {
-                this._removeTile(tileID);
+                this._removeTile(+tileID);
             }
         }
 
@@ -580,16 +580,16 @@ class SourceCache extends Evented {
     releaseSymbolFadeTiles() {
         for (const id in this._tiles) {
             if (this._tiles[id].holdingForFade()) {
-                this._removeTile(id);
+                this._removeTile(+id);
             }
         }
     }
 
-    _updateRetainedTiles(idealTileIDs: Array<OverscaledTileID>): {[_: string]: OverscaledTileID} {
-        const retain: {[_: string]: OverscaledTileID} = {};
+    _updateRetainedTiles(idealTileIDs: Array<OverscaledTileID>): {[_: number | string]: OverscaledTileID} {
+        const retain: {[_: number | string]: OverscaledTileID} = {};
         if (idealTileIDs.length === 0) { return retain; }
 
-        const checked: {[_: string]: boolean } = {};
+        const checked: {[_: number | string]: boolean } = {};
         const minZoom = idealTileIDs[idealTileIDs.length - 1].overscaledZ;
         const maxZoom = idealTileIDs[0].overscaledZ;
         assert(minZoom <= maxZoom);
@@ -746,7 +746,7 @@ class SourceCache extends Evented {
         return tile;
     }
 
-    _setTileReloadTimer(id: string, tile: Tile) {
+    _setTileReloadTimer(id: number, tile: Tile) {
         if (id in this._timers) {
             clearTimeout(this._timers[id]);
             delete this._timers[id];
@@ -765,7 +765,7 @@ class SourceCache extends Evented {
      * Remove a tile, given its id, from the pyramid
      * @private
      */
-    _removeTile(id: string) {
+    _removeTile(id: number) {
         const tile = this._tiles[id];
         if (!tile)
             return;
@@ -797,7 +797,7 @@ class SourceCache extends Evented {
         this._paused = false;
 
         for (const id in this._tiles)
-            this._removeTile(id);
+            this._removeTile(+id);
 
         this._cache.reset();
     }
@@ -928,7 +928,7 @@ class SourceCache extends Evented {
      * be reloaded when their dependencies change.
      * @private
      */
-    setDependencies(tileKey: string, namespace: string, dependencies: Array<string>) {
+    setDependencies(tileKey: number, namespace: string, dependencies: Array<string>) {
         const tile = this._tiles[tileKey];
         if (tile) {
             tile.setDependencies(namespace, dependencies);
@@ -943,7 +943,7 @@ class SourceCache extends Evented {
         for (const id in this._tiles) {
             const tile = this._tiles[id];
             if (tile.hasDependency(namespaces, keys)) {
-                this._reloadTile(id, 'reloading');
+                this._reloadTile(+id, 'reloading');
             }
         }
         this._cache.filter(tile => !tile.hasDependency(namespaces, keys));
