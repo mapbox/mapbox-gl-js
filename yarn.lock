@@ -4909,16 +4909,17 @@ gl-matrix@^3.2.1:
   resolved "https://registry.yarnpkg.com/gl-matrix/-/gl-matrix-3.2.1.tgz#2d8e35125bf854f49abded8a0c8350b1a4907a26"
   integrity sha512-YYVO8jUSf6+SakL4AJmx9Jc7zAZhkJQ+WhdtX3VQe5PJdCOX6/ybY4x1vk+h94ePnjRn6uml68+QxTAJneUpvA==
 
-gl@~4.3.3:
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/gl/-/gl-4.3.3.tgz#b8b91f4718397e67803b4d95a0c4c443425dd462"
-  integrity sha512-a16acSGmSLoyX4s6QjzIWI4LYsxztvr7aR8vt8anZpA4RboTrQ21ZQCQ8WcKWnQp/dn+nSYnw1fn5rHH9D85jQ==
+gl@^4.5.3:
+  version "4.5.3"
+  resolved "https://registry.yarnpkg.com/gl/-/gl-4.5.3.tgz#230c96ce59755a986eb343c371239c67ae511d79"
+  integrity sha512-W1Dfdx5DHAiRBAXxDW7nVT8N+gqcZ14+s8yKeNAqLiXZI+3ohb5/4J+EJrABgtug0tPlaYmRp1y0n3k91CYQ6w==
   dependencies:
     bindings "^1.5.0"
     bit-twiddle "^1.0.2"
     glsl-tokenizer "^2.0.2"
-    nan "^2.14.0"
-    node-gyp "^4.0.0"
+    nan "^2.14.1"
+    node-abi "^2.16.0"
+    node-gyp "^6.1.0"
     prebuild-install "^5.1.0"
 
 glob-parent@^3.1.0:
