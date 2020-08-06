@@ -71,6 +71,9 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
     if (options.showPadding) map.showPadding = true;
     if (options.collisionDebug) map.showCollisionBoxes = true;
 
+    // Disable anisotropic filtering on render tests
+    map.painter.context.extTextureFilterAnisotropicForceOff = true;
+
     const gl = map.painter.context.gl;
 
     map.once('load', () => {

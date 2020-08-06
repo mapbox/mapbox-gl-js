@@ -599,6 +599,13 @@ export class Terrain extends Elevation {
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         const fb = context.createFramebuffer(tileSize, tileSize, false);
         fb.colorAttachment.set(tex.texture);
+
+        if (context.extTextureFilterAnisotropic && !context.extTextureFilterAnisotropicForceOff) {
+            gl.texParameterf(gl.TEXTURE_2D,
+                context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT,
+                context.extTextureFilterAnisotropicMax);
+        }
+
         return {fb, tex, dirty: false, ref: 1};
     }
 
