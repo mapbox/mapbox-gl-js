@@ -144,7 +144,8 @@ class GeoJSONSource extends Evented implements Source {
                 log: false,
                 generateId: options.generateId || false
             },
-            clusterProperties: options.clusterProperties
+            clusterProperties: options.clusterProperties,
+            filter: options.filter
         }, options.workerOptions);
     }
 

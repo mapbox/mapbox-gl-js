@@ -477,7 +477,7 @@ export type MapEvent =
      * Fired when a pointing device (usually a mouse) enters a visible portion of a specified layer from
      * outside that layer or outside the map canvas.
      *
-     * **Important:** This event can only be listened for when {@link Map#on} includes three arguements,
+     * **Important:** This event can only be listened for when {@link Map#on} includes three arguments,
      * where the second argument specifies the desired layer.
      *
      * @event mouseenter

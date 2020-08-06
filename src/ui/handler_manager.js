@@ -150,7 +150,6 @@ class HandlerManager {
     _updatingCamera: boolean;
     _changes: Array<[HandlerResult, Object, any]>;
     _previousActiveHandlers: { [string]: Handler };
-    _bearingChanged: boolean;
     _listeners: Array<[HTMLElement, string, void | {passive?: boolean, capture?: boolean}]>;
     _trackingEllipsoid: TrackingEllipsoid;
     _dragOrigin: ?vec3;
@@ -285,7 +284,7 @@ class HandlerManager {
         this._handlersById[handlerName] = handler;
     }
 
-    stop() {
+    stop(allowEndAnimation: boolean) {
         // do nothing if this method was triggered by a gesture update
         if (this._updatingCamera) return;
 
@@ -293,7 +292,7 @@ class HandlerManager {
             handler.reset();
         }
         this._inertia.clear();
-        this._fireEvents({}, {});
+        this._fireEvents({}, {}, allowEndAnimation);
         this._changes = [];
     }
 
@@ -343,7 +342,7 @@ class HandlerManager {
     handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
 
         if (e.type === 'blur') {
-            this.stop();
+            this.stop(true);
             return;
         }
 
@@ -408,7 +407,7 @@ class HandlerManager {
         const {cameraAnimation} = mergedHandlerResult;
         if (cameraAnimation) {
             this._inertia.clear();
-            this._fireEvents({}, {});
+            this._fireEvents({}, {}, true);
             this._changes = [];
             cameraAnimation(this._map);
         }
@@ -488,7 +487,7 @@ class HandlerManager {
         }
 
         if (!hasChange(combinedResult)) {
-            return this._fireEvents(combinedEventsInProgress, deactivatedHandlers);
+            return this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
         }
 
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, pinchAround} = combinedResult;
@@ -542,11 +541,11 @@ class HandlerManager {
 
         this._map._update();
         if (!combinedResult.noInertia) this._inertia.record(combinedResult);
-        this._fireEvents(combinedEventsInProgress, deactivatedHandlers);
+        this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
 
     }
 
-    _fireEvents(newEventsInProgress: { [string]: Object }, deactivatedHandlers: Object) {
+    _fireEvents(newEventsInProgress: { [string]: Object }, deactivatedHandlers: Object, allowEndAnimation: boolean) {
 
         const wasMoving = isMoving(this._eventsInProgress);
         const nowMoving = isMoving(newEventsInProgress);
@@ -569,8 +568,6 @@ class HandlerManager {
         for (const name in startEvents) {
             this._fireEvent(name, startEvents[name]);
         }
-
-        if (newEventsInProgress.rotate) this._bearingChanged = true;
 
         if (nowMoving) {
             this._fireEvent('move', nowMoving.originalEvent);
@@ -598,7 +595,7 @@ class HandlerManager {
         }
 
         const stillMoving = isMoving(this._eventsInProgress);
-        if ((wasMoving || nowMoving) && !stillMoving) {
+        if (allowEndAnimation && (wasMoving || nowMoving) && !stillMoving) {
             this._updatingCamera = true;
             const inertialEase = this._inertia._onMoveEnd(this._map.dragPan._inertiaOptions);
 
@@ -615,7 +612,6 @@ class HandlerManager {
                     this._map.resetNorth();
                 }
             }
-            this._bearingChanged = false;
             this._updatingCamera = false;
         }
 

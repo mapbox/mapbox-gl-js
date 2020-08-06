@@ -394,6 +394,10 @@
       "minimum": 0,
       "doc": "Size of the tile buffer on each side. A value of 0 produces no buffer. A value of 512 produces a buffer as wide as the tile itself. Larger values produce fewer rendering artifacts near tile edges and slower performance."
     },
+    "filter": {
+      "type": "*",
+      "doc": "An expression for filtering features prior to processing them for rendering."
+    },
     "tolerance": {
       "type": "number",
       "default": 0.375,
@@ -412,7 +416,7 @@
     },
     "clusterMaxZoom": {
       "type": "number",
-      "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
+      "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered). Clusters are re-evaluated at integer zoom levels so setting clusterMaxZoom to 14 means the clusters will be displayed until z15."
     },
     "clusterMinPoints": {
       "type": "number",
