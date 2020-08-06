@@ -6,8 +6,6 @@
 #define NUM_SAMPLES_PER_RING 16
 
 uniform mat4 u_matrix;
-uniform bool u_scale_with_map;
-uniform bool u_pitch_with_map;
 uniform vec2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
