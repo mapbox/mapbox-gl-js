@@ -322,6 +322,7 @@ class SymbolBucket implements Bucket {
     fadeStartTime: number;
     sortFeaturesByKey: boolean;
     sortFeaturesByY: boolean;
+    canOverlap: boolean;
     sortedAngle: number;
     featureSortOrder: Array<number>;
 
@@ -367,10 +368,14 @@ class SymbolBucket implements Bucket {
         const layout = this.layers[0].layout;
         const sortKey = layout.get('symbol-sort-key');
         const zOrder = layout.get('symbol-z-order');
+        this.canOverlap =
+            layout.get('text-allow-overlap') ||
+            layout.get('icon-allow-overlap') ||
+            layout.get('text-ignore-placement') ||
+            layout.get('icon-ignore-placement');
         this.sortFeaturesByKey = zOrder !== 'viewport-y' && sortKey.constantOr(1) !== undefined;
         const zOrderByViewportY = zOrder === 'viewport-y' || (zOrder === 'auto' && !this.sortFeaturesByKey);
-        this.sortFeaturesByY = zOrderByViewportY && (layout.get('text-allow-overlap') || layout.get('icon-allow-overlap') ||
-            layout.get('text-ignore-placement') || layout.get('icon-ignore-placement'));
+        this.sortFeaturesByY = zOrderByViewportY && this.canOverlap;
 
         if (layout.get('symbol-placement') === 'point') {
             this.writingModes = layout.get('text-writing-mode').map(wm => WritingMode[wm]);
@@ -619,12 +624,7 @@ class SymbolBucket implements Bucket {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
-        const canOverlap = layer.layout.get('icon-ignore-placement') ||
-            layer.layout.get('icon-allow-overlap') ||
-            layer.layout.get('text-ignore-placement') ||
-            layer.layout.get('text-allow-overlap');
-
-        const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, indexArray, canOverlap ? feature.sortKey : undefined);
+        const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, indexArray, this.canOverlap ? feature.sortKey : undefined);
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
         const vertexStartIndex = segment.vertexLength;
 
