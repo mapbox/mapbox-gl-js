@@ -627,7 +627,7 @@ class Transform {
             if (distanceSqr > distToSplitSqr && it.zoom >= minZoom) {
                 result.push({
                     tileID: it.tileID ? it.tileID : new OverscaledTileID(it.zoom, it.wrap, it.zoom, x, y),
-                    distanceSq: vec2.sqrLen([centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) << (z - it.zoom)), centerPoint[1] - 0.5 - y])
+                    distanceSq: vec2.sqrLen([centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) * (1 << (z - it.zoom))), centerPoint[1] - 0.5 - y])
                 });
                 continue;
             }
