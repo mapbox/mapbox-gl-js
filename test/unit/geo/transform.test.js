@@ -258,6 +258,28 @@ test('transform', (t) => {
             t.end();
         });
 
+        t.test('mapbox-gl-js-internal#86', (t) => {
+            transform.renderWorldCopies = true;
+            transform.maxPitch = 85;
+            transform.zoom = 1.28;
+            transform.bearing = -81.6;
+            transform.pitch = 81;
+            transform.center = {lng: -153.3, lat: 0.0};
+            transform.resize(2759, 1242);
+            t.deepEqual(transform.coveringTiles({tileSize: 512}), [
+                new OverscaledTileID(1, 0, 1, 0, 1),
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(0, -1, 0, 0, 0),
+                new OverscaledTileID(1, 0, 1, 1, 1),
+                new OverscaledTileID(1, 0, 1, 1, 0),
+                new OverscaledTileID(1, 1, 1, 0, 1),
+                new OverscaledTileID(1, 1, 1, 0, 0),
+                new OverscaledTileID(0, -2, 0, 0, 0),
+                new OverscaledTileID(0, -3, 0, 0, 0)
+            ]);
+            t.end();
+        });
+
         t.end();
     });
 
