@@ -24,15 +24,20 @@ export default function(lngLat: LngLat, priorPos: ?Point, transform: Transform):
     lngLat = new LngLat(lngLat.lng, lngLat.lat);
 
     // First, try shifting one world in either direction, and see if either is closer to the
-    // prior position. This preserves object constancy when the map center is auto-wrapped
-    // during animations.
+    // prior position. Don't shift away if it new position is further from center.
+    // This preserves object constancy when the map center is auto-wrapped during animations,
+    // but don't allow it to run away on horizon (points towards horizon get closer and closer).
     if (priorPos) {
         const left  = new LngLat(lngLat.lng - 360, lngLat.lat);
         const right = new LngLat(lngLat.lng + 360, lngLat.lat);
+        // Unless offscreen, keep the marker within same wrap distance to center. This is to prevent
+        // running it to infinity `lng` near horizon when bearing is ~90°.
+        const withinWrap =  Math.ceil(Math.abs(lngLat.lng - transform.center.lng) / 360) * 360;
         const delta = transform.locationPoint(lngLat).distSqr(priorPos);
-        if (transform.locationPoint(left).distSqr(priorPos) < delta) {
+        const offscreen = priorPos.x < 0 || priorPos.y < 0 || priorPos.x > transform.width || priorPos.y > transform.height;
+        if (transform.locationPoint(left).distSqr(priorPos) < delta && (offscreen || Math.abs(left.lng - transform.center.lng) < withinWrap)) {
             lngLat = left;
-        } else if (transform.locationPoint(right).distSqr(priorPos) < delta) {
+        } else if (transform.locationPoint(right).distSqr(priorPos) < delta && (offscreen || Math.abs(right.lng - transform.center.lng) < withinWrap)) {
             lngLat = right;
         }
     }
