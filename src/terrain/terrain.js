@@ -762,7 +762,8 @@ export class Terrain extends Elevation {
      * a potential stall (few frames) due to it reading pixel information from the gpu.
      * Depth buffer will also be generated if it doesn't already exist.
      */
-    pickWorldPosition(screenPoint: Point, transform: Transform): ?vec3 {
+    pointCoordinate(screenPoint: Point): ?vec3 {
+        const transform = this.painter.transform;
         if (screenPoint.x < 0 || screenPoint.x >= transform.width ||
             screenPoint.y < 0 || screenPoint.y >= transform.height) {
             return null;
@@ -795,8 +796,8 @@ export class Terrain extends Elevation {
 
         const depth = unpackDepth(data);
 
-        // The depth buffer is zero-initialized => no depth information if the value is 0
-        if (depth === 0)
+        // The depth buffer is zero-initialized => no depth information if the value is -1
+        if (depth === -1)
             return null;
 
         const worldPosition = [screenPoint.x, screenPoint.y, depth, 1];

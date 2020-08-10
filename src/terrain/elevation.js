@@ -93,11 +93,16 @@ export class Elevation {
         return true;
     }
 
-    /*
+    /**
      * Find an intersection between the elevation surface and a line segment.
      * Uses a binary-search approach for sampling the heightmap. This function is not
-     * guaranteed to return a correct result if the provided segment has multiple intersction
+     * guaranteed to return a correct result if the provided segment has multiple intersection
      * points with the terrain.
+     * @param {MercatorCoordinate} start 3D mercator coordinate of the start, start.z is elevation in mercator coordinates.
+     * @param {MercatorCoordinate} end 3D mercator coordinate of the end, end.z is elevation in mercator coordinates.
+     * @param {number} samples How many samples to iterate.
+     * @param {number} threshold When to stop enumeration.
+     * @returns {MercatorCoordinate} If there is intersection with terrain, returns 3D mercator coordinate of intersection, otherwise null.
      */
     raycast(start: MercatorCoordinate, end: MercatorCoordinate, samples: number = 20, threshold: number = 0.01): ?MercatorCoordinate {
         let newCenter: ?MercatorCoordinate = null;
@@ -118,6 +123,20 @@ export class Elevation {
         }
 
         return null;
+    }
+
+    /**
+     * Given a point on screen, returns 3D MercatorCoordinate on terrain.
+     * Reconstructs a picked world position by casting a ray from screen coordinates
+     * and sampling depth from the custom depth buffer. This function (currently) introduces
+     * a potential stall (few frames) due to it reading pixel information from the gpu.
+     * Depth buffer will also be generated if it doesn't already exist.
+     * @param {Point} screenPoint Screen point in pixels in top-left origin coordinate system.
+     * @returns {vec3} If there is intersection with terrain, returns 3D MercatorCoordinate's of
+     * intersection, as vec3(x, y, z), otherwise null.
+     */ /* eslint no-unused-vars: ["error", { "args": "none" }] */
+    pointCoordinate(screenPoint: Point): ?vec3 {
+        throw new Error('Pure virtual method called.');
     }
 
     /*

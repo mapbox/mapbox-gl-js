@@ -446,7 +446,7 @@ export default class Marker extends Evented {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
         }
 
-        this._pos = this._map.project(this._lngLat)._add(this._offset);
+        this._pos = this._map.transform.locationPoint3D(this._lngLat)._add(this._transformedOffset());
 
         let rotation = "";
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
@@ -470,6 +470,20 @@ export default class Marker extends Evented {
         }
 
         DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px) ${pitch} ${rotation}`);
+    }
+
+    /**
+     * This is initially added to fix the behavior of default symbols only, in order
+     * to prevent any regression for custom symbols in client code.
+     * @private
+     */
+    _transformedOffset() {
+        if (!this._defaultMarker) return this._offset;
+        const tr = this._map.transform;
+        const offset = this._offset.mult(this._scale);
+        if (this._rotationAlignment === "map") offset._rotate(tr.angle);
+        if (this._pitchAlignment === "map") offset.y *= Math.cos(tr._pitch);
+        return offset;
     }
 
     /**
@@ -499,7 +513,7 @@ export default class Marker extends Evented {
         if (!this._isDragging) return;
 
         this._pos = e.point.sub(this._positionDelta);
-        this._lngLat = this._map.unproject(this._pos);
+        this._lngLat = this._map.transform.pointLocation3D(this._pos);
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
         this._element.style.pointerEvents = 'none';
@@ -570,7 +584,7 @@ export default class Marker extends Evented {
             // to calculate the new marker position.
             // If we don't do this, the marker 'jumps' to the click position
             // creating a jarring UX effect.
-            this._positionDelta = e.point.sub(this._pos).add(this._offset);
+            this._positionDelta = e.point.sub(this._pos).add(this._transformedOffset());
 
             this._pointerdownPos = e.point;
 

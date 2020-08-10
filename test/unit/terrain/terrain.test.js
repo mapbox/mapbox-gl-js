@@ -10,6 +10,9 @@ import styleSpec from '../../../src/style-spec/reference/latest';
 import Terrain from '../../../src/style/terrain';
 import Tile from '../../../src/source/tile';
 import {VertexMorphing} from '../../../src/terrain/draw_terrain_raster';
+import {fixedLngLat, fixedCoord, fixedPoint} from '../../util/fixed';
+import Point from '@mapbox/point-geometry';
+import LngLat from '../../../src/geo/lng_lat';
 
 function createStyle() {
     return {
@@ -351,7 +354,6 @@ test('Elevation', (t) => {
                         }
                     } else {
                         // Previous trace data should be rendered while loading update.
-                        t.equal(map.getSource('trace').loaded(), false);
                         t.ok(isCenterRendered);
                         setTimeout(() => map.remove(), 0); // avoids re-triggering render after t.end. Don't remove while in render().
                         t.end();
@@ -457,6 +459,73 @@ test('Terrain style', (t) => {
     });
 
     t.end();
+});
+
+function nearlyEquals(a, b, eps = 0.000000001) {
+    return Object.keys(a).length >= 2 && Object.keys(a).every(key => Math.abs(a[key] - b[key]) < eps);
+}
+
+test('Raycast projection 2D/3D', t => {
+    const map = createMap(t, {
+        style: {
+            version: 8,
+            center: [0, 0],
+            zoom: 14,
+            sources: {},
+            layers: [],
+            pitch: 80
+        }
+    });
+    map.once('style.load', () => {
+        setZeroElevationTerrain(map);
+        map.once('render', () => {
+            map.painter.updateTerrain(map.style);
+
+            const transform = map.transform;
+            const cx = transform.width / 2;
+            const cy = transform.height / 2;
+            t.deepEqual(fixedLngLat(transform.pointLocation(new Point(cx, cy))), {lng: 0, lat: 0});
+            t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0});
+            t.ok(nearlyEquals(fixedPoint(transform.locationPoint(new LngLat(0, 0))), {x: cx, y: cy}));
+            // Lower precision as we are raycasting using GPU depth render.
+            t.ok(nearlyEquals(fixedLngLat(transform.pointLocation3D(new Point(cx, cy))), {lng: 0, lat: 0}, 0.00006));
+            t.ok(nearlyEquals(fixedCoord(transform.pointCoordinate3D(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0}, 0.000001));
+            t.ok(nearlyEquals(fixedPoint(transform.locationPoint3D(new LngLat(0, 0))), {x: cx, y: cy}));
+
+            // above horizon:
+            // raycast implementation returns null as there is no point at the top.
+            t.equal(transform.elevation.pointCoordinate(new Point(cx, 0)), null);
+
+            const latLng3D = transform.pointLocation3D(new Point(cx, 0));
+            const latLng2D = transform.pointLocation(new Point(cx, 0));
+            // Project and get horizon line.
+
+            const horizonPoint3D = transform.locationPoint3D(latLng3D);
+            const horizonPoint2D = transform.locationPoint(latLng2D);
+            t.ok(Math.abs(horizonPoint3D.x - cx) < 0.0000001);
+            t.ok(Math.abs(transform.horizonLineFromTop() - 48.68884861327036) < 0.000000001);
+            t.ok(Math.abs(horizonPoint3D.y - 48.68884861327036) < 0.000000001);
+            t.deepEqual(horizonPoint2D, horizonPoint3D); // Using the same code path for horizon.
+
+            // disable terrain.
+            map.setTerrain(null);
+            map.once('render', () => {
+                t.notOk(map.painter.terrain);
+                const latLng = transform.pointLocation3D(new Point(cx, 0));
+                t.deepEqual(latLng, latLng2D);
+
+                t.deepEqual(fixedLngLat(transform.pointLocation(new Point(cx, cy))), {lng: 0, lat: 0});
+                t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0});
+                t.ok(nearlyEquals(fixedPoint(transform.locationPoint(new LngLat(0, 0))), {x: cx, y: cy}));
+                // Higher precision as we are using the same as for 2D, given there is no terrain.
+                t.ok(nearlyEquals(fixedLngLat(transform.pointLocation3D(new Point(cx, cy))), {lng: 0, lat: 0}));
+                t.ok(nearlyEquals(fixedCoord(transform.pointCoordinate3D(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0}));
+                t.ok(nearlyEquals(fixedPoint(transform.locationPoint3D(new LngLat(0, 0))), {x: cx, y: cy}));
+
+                t.end();
+            });
+        });
+    });
 });
 
 test('Vertex morphing', (t) => {
