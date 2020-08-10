@@ -44,6 +44,9 @@ test('transform', (t) => {
         t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), {x: 0.5, y: 0.5, z: 0});
         t.deepEqual(fixedPoint(transform.locationPoint(new LngLat(0, 0))), {x: 250, y: 250});
         t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), {x: 0.5, y: 0.5, z: 0});
+        t.deepEqual(fixedLngLat(transform.pointLocation3D(new Point(250, 250))), {lng: 0, lat: 0});
+        t.deepEqual(fixedCoord(transform.pointCoordinate3D(new Point(250, 250))), {x: 0.5, y: 0.5, z: 0});
+        t.deepEqual(fixedPoint(transform.locationPoint3D(new LngLat(0, 0))), {x: 250, y: 250});
         t.end();
     });
 

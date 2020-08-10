@@ -323,6 +323,31 @@ test('Popup preserves object constancy of position after auto-wrapping center (r
     t.end();
 });
 
+test('Popup preserves object constancy of position after auto-wrapping center with horizon', (t) => {
+    const map = createMap(t, {width: 1024});
+    map.setCenter([-175, 0]); // longitude bounds: [-535, 185]
+    map.setPitch(69);
+    map.setBearing(90);
+
+    const popup = new Popup()
+        .setLngLat([-720, 0])
+        .setText('Test')
+        .addTo(map);
+    // invoke smart wrap multiple times.
+    map.setCenter([0, 0]);
+    map.setCenter([300, 0]);
+    map.setPitch(72);
+    map.setCenter([600, 0]);
+    map.setPitch(75);
+    map.setCenter([900, 0]);
+    map.setPitch(80);
+    map.setCenter([175, 0]);
+
+    t.deepEqual(popup._pos, map.project([720, 0]));
+
+    t.end();
+});
+
 test('Popup wraps position after map move if it would otherwise go offscreen (right)', (t) => {
     const map = createMap(t, {width: 1024}); // longitude bounds: [-360, 360]
 

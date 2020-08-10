@@ -703,13 +703,28 @@ class Transform {
     }
 
     /**
-     * Given a location, return the screen point that corresponds to it
+     * Given a location, return the screen point that corresponds to it. In 3D mode
+     * (with terrain) this behaves the same as in 2D mode.
+     * This method is coupled with {@see pointLocation} in 3D mode to model map manipulation
+     * using flat plane approach to keep constant elevation above ground.
      * @param {LngLat} lnglat location
      * @returns {Point} screen point
      * @private
      */
     locationPoint(lnglat: LngLat) {
-        return this.coordinatePoint(this.locationCoordinate(lnglat));
+        return this._coordinatePoint(this.locationCoordinate(lnglat), false);
+    }
+
+    /**
+     * Given a location, return the screen point that corresponds to it
+     * In 3D mode (when terrain is enabled) elevation is sampled for the point before
+     * projecting it. In 2D mode, behaves the same locationPoint.
+     * @param {LngLat} lnglat location
+     * @returns {Point} screen point
+     * @private
+     */
+    locationPoint3D(lnglat: LngLat) {
+        return this._coordinatePoint(this.locationCoordinate(lnglat), true);
     }
 
     /**
@@ -720,6 +735,18 @@ class Transform {
      */
     pointLocation(p: Point) {
         return this.coordinateLocation(this.pointCoordinate(p));
+    }
+
+    /**
+     * Given a point on screen, return its lnglat
+     * In 3D mode (map with terrain) returns location of terrain raycast point.
+     * In 2D mode, behaves the same as {@see pointLocation}.
+     * @param {Point} p screen point
+     * @returns {LngLat} lnglat location
+     * @private
+     */
+    pointLocation3D(p: Point) {
+        return this.coordinateLocation(this.pointCoordinate3D(p));
     }
 
     /**
@@ -812,20 +839,42 @@ class Transform {
             interpolate(p0[1], p1[1], t) / this.worldSize);
     }
 
-    pointCoordinate(p: Point) {
-        return this.rayIntersectionCoordinate(this.pointRayIntersection(p));
+    /**
+     * Given a point on screen, returns MercatorCoordinate.
+     * @param {Point} p top left origin screen point, in pixels.
+     * @private
+     */
+    pointCoordinate(p: Point): MercatorCoordinate {
+        // For p above horizon, don't return point behind camera but clamp p.y at horizon line.
+        const horizonOffset = this.horizonLineFromTop();
+        const clamped = horizonOffset > p.y ? new Point(p.x, horizonOffset) : p;
+        return this.rayIntersectionCoordinate(this.pointRayIntersection(clamped));
+    }
+
+    /**
+     * Given a point on screen, returns MercatorCoordinate.
+     * In 3D mode, raycast to terrain. In 2D mode, behaves the same as {@see pointCoordinate}.
+     * @param {Point} p top left origin screen point, in pixels.
+     * @private
+     */
+    pointCoordinate3D(p: Point): MercatorCoordinate {
+        const raycast = this.elevation ? this.elevation.pointCoordinate(p) : null;
+        return raycast ? new MercatorCoordinate(raycast[0], raycast[1], raycast[2]) : this.pointCoordinate(p);
     }
 
     /**
      * Given a coordinate, return the screen point that corresponds to it
      * @param {Coordinate} coord
+     * @param {boolean} sampleTerrainIn3D in 3D mode (terrain enabled), sample elevation for the point.
+     * If false, do the same as in 2D mode, assume flat camera elevation plane for all points.
      * @returns {Point} screen point
      * @private
      */
-    coordinatePoint(coord: MercatorCoordinate) {
-        const p = [coord.x * this.worldSize, coord.y * this.worldSize, this._centerAltitude + coord.toAltitude(), 1];
+    _coordinatePoint(coord: MercatorCoordinate, sampleTerrainIn3D: boolean) {
+        const elevation = sampleTerrainIn3D && this.elevation ? this.elevation.getAtPoint(coord, this._centerAltitude) : this._centerAltitude;
+        const p = [coord.x * this.worldSize, coord.y * this.worldSize, elevation + coord.toAltitude(), 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
-        return new Point(p[0] / p[3], p[1] / p[3]);
+        return new Point(p[0] / p[3], p[3] > 0 ? p[1] / p[3] : Number.MAX_VALUE);
     }
 
     /**
@@ -839,6 +888,20 @@ class Transform {
             .extend(this.pointLocation(new Point(this.width, 0)))
             .extend(this.pointLocation(new Point(this.width, this.height)))
             .extend(this.pointLocation(new Point(0, this.height)));
+    }
+
+    /**
+     * Returns position oh horizon line, from the top, in pixels. If horizon is not
+     * visible, returns 0.
+     * @private
+     */
+    horizonLineFromTop(): number {
+        // h is height of space above map center to horizon.
+        const h = this.height / 2 / Math.tan(this._fov / 2) / Math.tan(Math.max(this._pitch, 0.1)) + this.centerOffset.y;
+        // incorporate 3% of the area above center to account for reduced precision.
+        const horizonEpsilon = 0.03;
+        const offset = this.height / 2 - h * (1 - horizonEpsilon);
+        return Math.max(0, offset);
     }
 
     /**

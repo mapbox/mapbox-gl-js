@@ -8,13 +8,16 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-        #animate { position: absolute; top: 0; left: 0; }
+        #controls { position: absolute; top: 0; left: 0; }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
-<button id="animate">Animate</button>
+<div id='controls'>
+    <button id="animate">Animate</button><br />
+    <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
+</div>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script>
@@ -85,6 +88,20 @@ function spinMarkers() {
 window.requestAnimationFrame(spinMarkers);
 
 map.addControl(new mapboxgl.NavigationControl());
+
+map.on('load', function() {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.terrain-rgb",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+    document.getElementById('terrain-checkbox').onclick();
+});
+
+document.getElementById('terrain-checkbox').onclick = function() {
+    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
+};
 
 </script>
 

@@ -823,6 +823,8 @@ class Map extends Camera {
      * Returns a {@link Point} representing pixel coordinates, relative to the map's `container`,
      * that correspond to the specified geographical location.
      *
+     * If location `lnglat` is behind camera plane, `y` component of returned {@link Point} is set to Number.MAX_VALUE;
+     *
      * @param {LngLatLike} lnglat The geographical location to project.
      * @returns {Point} The {@link Point} corresponding to `lnglat`, relative to the map's `container`.
      * @example
@@ -835,7 +837,9 @@ class Map extends Camera {
 
     /**
      * Returns a {@link LngLat} representing geographical coordinates that correspond
-     * to the specified pixel coordinates.
+     * to the specified pixel coordinates. If horizon is visible, and specified pixel is
+     * above horizon, returns a {@link LngLat} corresponding to point on horizon, nearest
+     * to the point.
      *
      * @param {PointLike} point The pixel coordinates to unproject.
      * @returns {LngLat} The {@link LngLat} corresponding to `point`.
