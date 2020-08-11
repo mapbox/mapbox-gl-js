@@ -14,7 +14,7 @@
     "center": [-74.7546, 39.1667],
     "pitch": 35,
     "zoom": 9.1,
-    "bearing": -90,
+    "bearing": -80,
     "terrain": {
         "source": "rgbterrain",
         "exaggeration": 33

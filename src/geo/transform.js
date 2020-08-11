@@ -519,7 +519,7 @@ class Transform {
             const max = maxRange;
             const min = -maxRange;
             return {
-                // With elevation, this._elevation (to do) provides z coordinate values. For 2D:
+                // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
                 aabb: new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]),
                 zoom: 0,
@@ -536,21 +536,14 @@ class Transform {
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
 
-        const samples: Array<vec3> = [[0, 0, 0], [0, EXTENT - 1, 0], [EXTENT / 2 - 1, EXTENT / 2 - 1, 0], [EXTENT - 1, 0, 0], [EXTENT - 1, EXTENT - 1, 0]];
         const getAABBFromElevation = (aabb, tileID) => {
-            // Extreme ruggedness > 900m for 1km tile is rare: https://download.osgeo.org/qgis/doc/reference-docs/Terrain_Ruggedness_Index.pdf
-            // We could use e.g. const maxRuggedness = 0.1 / meterToTile as additional buffer.
-            // For now, sampling tile corners and center with no additional buffer: the idea is to
-            // identify cases and amount of maxRuggedness buffer needed in follow up patches.
-            assert(this._elevation); // Checked to silence flow.
-            if (this._elevation && this._elevation.getForTilePoints(tileID, samples)) {
-                aabb.min[2] = aabb.max[2] = samples[0][2];
-                for (let i = 1; i < samples.length; i++) {
-                    const val = samples[i];
-                    aabb.min[2] = Math.min(val[2], aabb.min[2]);
-                    aabb.max[2] = Math.max(val[2], aabb.max[2]);
-                }
-                aabb.center[2] = interpolate(aabb.min[2], aabb.max[2], 0.5);
+            assert(this._elevation);
+            if (!this._elevation) return;  // To silence flow.
+            const minmax = this._elevation.getMinMaxForTile(tileID);
+            if (minmax) {
+                aabb.min[2] = minmax.min;
+                aabb.max[2] = minmax.max;
+                aabb.center[2] = (aabb.min[2] + aabb.max[2]) / 2;
             }
         };
         const square = a => a * a;
@@ -640,8 +633,8 @@ class Transform {
                 let tileID = null;
                 if (useElevationData && it.zoom > maxZoom - 6) {
                     // Using elevation data for tiles helps clipping out tiles that are not visible and
-                    // precise distance calculation. This is an optimization - tiles with it.zoom <= maxZoom - 6 are always
-                    // considered slightly closer: aabb.distanceZ() there evaluates to 0 as min/max[3] = -/+ maxRange.
+                    // precise distance calculation. it.zoom > maxZoom - 6 is an optimization as those before get subdivided
+                    // or they are so far at horizon that it doesn't matter.
                     tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
                     getAABBFromElevation(aabb, tileID);
                 }
