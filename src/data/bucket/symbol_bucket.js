@@ -614,7 +614,6 @@ class SymbolBucket implements Bucket {
                lineOffset: [number, number],
                alongLine: boolean,
                feature: SymbolFeature,
-               layer: SymbolStyleLayer,
                writingMode: any,
                labelAnchor: Anchor,
                lineStartIndex: number,
