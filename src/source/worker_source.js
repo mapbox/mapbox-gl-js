@@ -38,7 +38,8 @@ export type WorkerDEMTileParameters = TileParameters & {
     coord: { z: number, x: number, y: number, w: number },
     rawImageData: RGBAImage | ImageBitmap,
     encoding: "mapbox" | "terrarium",
-    padding: number
+    padding: number,
+    buildQuadTree?: boolean
 };
 
 export type WorkerTileResult = {

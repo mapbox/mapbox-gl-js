@@ -110,7 +110,8 @@ export default class Worker {
     }
 
     loadDEMTile(mapId: string, params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
-        this.getDEMWorkerSource(mapId, params.source).loadTile(params, callback);
+        const p = this.enableTerrain ? extend({buildQuadTree: this.terrain}, params) : params;
+        this.getDEMWorkerSource(mapId, params.source).loadTile(p, callback);
     }
 
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {

@@ -430,13 +430,10 @@ test('transform', (t) => {
             getAtPoint(_) {
                 return this.exaggeration() * centerElevation;
             },
-            getForTilePoints(tileID, points) {
-                for (const p of points) {
-                    const elevation = tileElevation[tileID.key] !== undefined ?
-                        tileElevation[tileID.key] : tilesDefaultElevation;
-                    p[2] = this.exaggeration() * elevation;
-                }
-                return true;
+            getMinMaxForTile(tileID) {
+                const ele = tileElevation[tileID.key] !== undefined ? tileElevation[tileID.key] : tilesDefaultElevation;
+                if (ele === null) return null;
+                return {min: this.exaggeration() * ele, max: this.exaggeration() * ele};
             },
             exaggeration() {
                 return 10; // Low tile zoom used, exaggerate elevation to make impact.
@@ -520,6 +517,9 @@ test('transform', (t) => {
         }
         const coverLowSide = transform.coveringTiles(options);
         t.true(coverLowSide.filter(t => lowTiles.includes(t.key)).length === 0);
+
+        tileElevation[lowTiles[0]] = null; // missing elevation information gets to cover.
+        t.ok(transform.coveringTiles(options).find(t => t.key === lowTiles[0]));
 
         transform.zoom = 2;
         transform.pitch = 0;

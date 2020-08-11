@@ -3,6 +3,8 @@ import {RGBAImage} from '../util/image';
 
 import {warnOnce} from '../util/util';
 import {register} from '../util/web_worker_transfer';
+import DemMinMaxQuadTree from './dem_tree';
+import assert from 'assert';
 
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
 // data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially
@@ -21,10 +23,15 @@ export default class DEMData {
     dim: number;
     encoding: "mapbox" | "terrarium";
     borderReady: boolean;
+    _tree: DemMinMaxQuadTree;
+    get tree(): DemMinMaxQuadTree {
+        if (!this._tree) this._buildQuadTree();
+        return this._tree;
+    }
 
     // RGBAImage data has uniform 1px padding on all sides: square tile edge size defines stride
     // and dim is calculated as stride - 2.
-    constructor(uid: string, data: RGBAImage, encoding: "mapbox" | "terrarium", borderReady: boolean = false) {
+    constructor(uid: string, data: RGBAImage, encoding: "mapbox" | "terrarium", borderReady: boolean = false, buildQuadTree: boolean = false) {
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return warnOnce(
@@ -56,6 +63,13 @@ export default class DEMData {
         this.data[this._idx(dim, -1)] = this.data[this._idx(dim - 1, 0)];
         this.data[this._idx(-1, dim)] = this.data[this._idx(0, dim - 1)];
         this.data[this._idx(dim, dim)] = this.data[this._idx(dim - 1, dim - 1)];
+        if (buildQuadTree) this._buildQuadTree();
+    }
+
+    _buildQuadTree() {
+        assert(!this._tree);
+        // Construct the implicit sparse quad tree by traversing mips from top to down
+        this._tree = new DemMinMaxQuadTree(this);
     }
 
     get(x: number, y: number) {
@@ -124,6 +138,11 @@ export default class DEMData {
             }
         }
     }
+
+    onDeserialize() {
+        if (this._tree) this._tree.dem = this;
+    }
 }
 
 register('DEMData', DEMData);
+register('DemMinMaxQuadTree', DemMinMaxQuadTree, {omit: ['dem']});
