@@ -172,6 +172,7 @@ export class Terrain extends Elevation {
     drapeFirstPending: boolean;
     forceDrapeFirst: boolean; // debugging purpose.
 
+    _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {[string]: boolean};
     _overlapStencilMode: StencilMode;
     _overlapStencilType: OverlapStencilType;
@@ -210,7 +211,7 @@ export class Terrain extends Elevation {
         this.gridNoSkirtSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, skirtIndicesOffset);
         this.proxyCoords = [];
         this.proxiedCoords = {};
-
+        this._visibleDemTiles = [];
         this._sourceTilesOverlap = {};
         this.proxySourceCache = new ProxySourceCache(style.map);
         this.orthoMatrix = mat4.create();
@@ -372,8 +373,22 @@ export class Terrain extends Elevation {
         this.drapeFirstPending = this.drapeFirst;
         this.renderingToTexture = false;
         this._initFBOPool();
-
         this._updateTimestamp = browser.now();
+
+        // Gather all dem tiles that are assigned to proxy tiles
+        const visibleKeys = {};
+        this._visibleDemTiles = [];
+
+        for (const id of this.proxyCoords) {
+            const demTile = this.terrainTileForTile[id.key];
+            if (!demTile)
+                continue;
+            const key = demTile.tileID.key;
+            if (key in visibleKeys)
+                continue;
+            this._visibleDemTiles.push(demTile);
+            visibleKeys[key] = key;
+        }
     }
 
     _assignTerrainTiles(coords: Array<OverscaledTileID>) {
@@ -587,6 +602,55 @@ export class Terrain extends Elevation {
         if (drawAsRasterCoords.length > 0) drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
         painter.currentLayer = this.drapeFirst ? -1 : end;
         assert(!this.drapeFirst || (start === 0 && painter.currentLayer === -1));
+    }
+
+    // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
+    // x & y components of the position are expected to be in normalized mercator coordinates [0, 1] and z in meters.
+    _raycast(pos: vec3, dir: vec3): ?number {
+        if (!this._visibleDemTiles)
+            return null;
+
+        // Perform initial raycasts against root nodes of the available dem tiles
+        // and use this information to sort them from closest to furthest.
+        const preparedTiles = this._visibleDemTiles.filter(tile => tile.dem).map(tile => {
+            const id = tile.tileID;
+            const tiles = Math.pow(2.0, id.overscaledZ);
+            const {x, y} = id.canonical;
+
+            // Compute tile boundaries in mercator coordinates
+            const minx = x / tiles;
+            const maxx = (x + 1) / tiles;
+            const miny = y / tiles;
+            const maxy = (y + 1) / tiles;
+            const tree = (tile.dem: any).tree;
+
+            return {
+                minx, miny, maxx, maxy,
+                t: tree.raycastRoot(minx, miny, maxx, maxy, pos, dir),
+                tile
+            };
+        });
+
+        preparedTiles.sort((a, b) => {
+            const at = a.t ? a.t : Number.MAX_VALUE;
+            const bt = b.t ? b.t : Number.MAX_VALUE;
+            return at - bt;
+        });
+
+        for (const obj of preparedTiles) {
+            if (obj.t == null)
+                return null;
+
+            // Perform more accurate raycast against the dem tree. First intersection is the closest on
+            // as all tiles are sorted from closest to furthest
+            const tree = (obj.tile.dem: any).tree;
+            const t = tree.raycast(obj.minx, obj.miny, obj.maxx, obj.maxy, pos, dir);
+
+            if (t != null)
+                return t;
+        }
+
+        return null;
     }
 
     _createFBO(): FBO {

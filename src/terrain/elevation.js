@@ -94,6 +94,32 @@ export class Elevation {
     }
 
     /**
+     * Get elevation minimum and maximum for tile identified by `tileID`.
+     * @param {*} tileID is a sub tile (or covers the same space) of the DEM tile we read the information from.
+     */
+    getMinMaxForTile(tileID: OverscaledTileID): ?{min: number, max: number} {
+        const demTile = this.findDEMTileFor(tileID);
+        if (!(demTile && demTile.dem)) { return null; }
+        const dem: DEMData = demTile.dem;
+        const tree = dem.tree;
+        const demTileID = demTile.tileID;
+        const scale = 1 << tileID.canonical.z - demTileID.canonical.z;
+        let xOffset = tileID.canonical.x / scale - demTileID.canonical.x;
+        let yOffset = tileID.canonical.y / scale - demTileID.canonical.y;
+        let index = 0; // Start from DEM tree root.
+        for (let i = 0; i < tileID.canonical.z - demTileID.canonical.z; i++) {
+            if (tree.leaves[index]) break;
+            xOffset *= 2;
+            yOffset *= 2;
+            const childOffset = 2 * Math.floor(yOffset) + Math.floor(xOffset);
+            index = tree.childOffsets[index] + childOffset;
+            xOffset = xOffset % 1;
+            yOffset = yOffset % 1;
+        }
+        return {min: this.exaggeration() * tree.minimums[index], max: this.exaggeration() * tree.maximums[index]};
+    }
+
+    /**
      * Find an intersection between the elevation surface and a line segment.
      * Uses a binary-search approach for sampling the heightmap. This function is not
      * guaranteed to return a correct result if the provided segment has multiple intersection
