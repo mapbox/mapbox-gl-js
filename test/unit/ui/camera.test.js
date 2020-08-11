@@ -1893,6 +1893,15 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('bearing, asymmetrical padding, and offset', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, offset: [0, 100], duration: 0});
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -103.3761, lat: 43.0929}, 'correctly calculates coordinates for bounds with bearing, padding option as object, and offset applied');
+            t.end();
+        });
+
         t.end();
     });
 

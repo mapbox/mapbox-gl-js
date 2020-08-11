@@ -573,12 +573,11 @@ class Camera extends Evented {
 
         // Calculate center: apply the zoom, the configured offset, as well as offset that exists as a result of padding.
         const offset = (typeof options.offset.x === 'number') ? new Point(options.offset.x, options.offset.y) : Point.convert(options.offset);
-        const rotatedOffset = offset.rotate(bearing * Math.PI / 180);
         const paddingOffsetX = (options.padding.left - options.padding.right) / 2;
         const paddingOffsetY = (options.padding.top - options.padding.bottom) / 2;
         const paddingOffset = new Point(paddingOffsetX, paddingOffsetY);
         const rotatedPaddingOffset = paddingOffset.rotate(bearing * Math.PI / 180);
-        const offsetAtInitialZoom = rotatedOffset.add(rotatedPaddingOffset);
+        const offsetAtInitialZoom = offset.add(rotatedPaddingOffset);
         const offsetAtFinalZoom = offsetAtInitialZoom.mult(tr.scale / tr.zoomScale(zoom));
 
         const center =  tr.unproject(p0world.add(p1world).div(2).sub(offsetAtFinalZoom));
