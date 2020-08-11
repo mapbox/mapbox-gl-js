@@ -236,7 +236,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     // Unpitched point labels need to have their rotation applied after projection
     const rotateInShader = rotateWithMap && !pitchWithMap && !alongLine;
 
-    const sortFeaturesByKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
+    const hasSortKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
+    let sortFeaturesByKey = false;
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
 
@@ -333,7 +334,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             hasHalo
         };
 
-        if (sortFeaturesByKey) {
+        if (hasSortKey && bucket.canOverlap) {
+            sortFeaturesByKey = true;
             const oldSegments = buffers.segments.get();
             for (const segment of oldSegments) {
                 tileRenderState.push({
