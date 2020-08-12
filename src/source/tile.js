@@ -9,6 +9,7 @@ import SymbolBucket from '../data/bucket/symbol_bucket';
 import {CollisionBoxArray} from '../data/array_types';
 import Texture from '../render/texture';
 import browser from '../util/browser';
+import loadGeometry from '../data/load_geometry';
 import EvaluationParameters from '../style/evaluation_parameters';
 import SourceFeatureState from '../source/source_state';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin';
@@ -307,7 +308,18 @@ class Tile {
 
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i);
-            if (filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
+            if (filter.needGeometry) {
+                const id = featureIndex.getId(feature, sourceLayer);
+                const evaluationFeature = {type: feature.type,
+                    id,
+                    properties: feature.properties,
+                    geometry: loadGeometry(feature)};
+                if (filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
+                    const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
+                    (geojsonFeature: any).tile = coord;
+                    result.push(geojsonFeature);
+                }
+            } else if (filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature, this.tileID.canonical)) {
                 const id = featureIndex.getId(feature, sourceLayer);
                 const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
                 (geojsonFeature: any).tile = coord;
