@@ -76,20 +76,21 @@ void main(void) {
     vec2 circle_center = floor(a_pos * 0.5);
     vec4 projection = u_matrix * vec4(circle_center, 0, 1);
 
+    float view_scale = 0.0;
     #ifdef PITCH_WITH_MAP
         #ifdef SCALE_WITH_MAP
-            float view_scale = 1.0;
+            view_scale = 1.0;
         #else
             // Pitching the circle with the map effectively scales it with the map
             // To counteract the effect for pitch-scale: viewport, we rescale the
             // whole circle based on the pitch scaling effect at its central point
-            float view_scale = projection.w / u_camera_to_center_distance;
+            view_scale = projection.w / u_camera_to_center_distance;
         #endif
     #else
         #ifdef SCALE_WITH_MAP
-            float view_scale = u_camera_to_center_distance;
+            view_scale = u_camera_to_center_distance;
         #else
-            float view_scale = projection.w;
+            view_scale = projection.w;
         #endif
     #endif
 
