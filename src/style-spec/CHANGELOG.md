@@ -1,3 +1,8 @@
+## 13.17.0
+
+### ✨ Features and improvements
+* Add a `filter` option for GeoJSON sources to filter out features prior to processing (e.g. before clustering). [#9864](https://github.com/mapbox/mapbox-gl-js/pull/9864)
+
 ## 13.16.0
 
 ### ✨ Features and improvements
