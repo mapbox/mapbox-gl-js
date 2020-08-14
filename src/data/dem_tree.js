@@ -225,19 +225,21 @@ export default class DemMinMaxQuadTree {
                 const cz = sampleElevation(maxxUv, maxyUv, this.dem);
                 const dz = sampleElevation(minxUv, maxyUv, this.dem);
 
-                const t0 = triangleRayIntersect(
+                const t0: any = triangleRayIntersect(
                     boundsMin[0], boundsMin[1], az,     // A
                     boundsMax[0], boundsMin[1], bz,     // B
                     boundsMax[0], boundsMax[1], cz,     // C
-                    p, d) || Number.MAX_VALUE;
+                    p, d);
 
-                const t1 = triangleRayIntersect(
+                const t1: any = triangleRayIntersect(
                     boundsMax[0], boundsMax[1], cz,
                     boundsMin[0], boundsMax[1], dz,
                     boundsMin[0], boundsMin[1], az,
-                    p, d) || Number.MAX_VALUE;
+                    p, d);
 
-                const tMin = Math.min(t0, t1);
+                const tMin = Math.min(
+                    t0 !== null ? t0 : Number.MAX_VALUE,
+                    t1 !== null ? t1 : Number.MAX_VALUE);
 
                 // The ray might go below the two surface triangles but hit one of the sides.
                 // This covers the case of skirt geometry between two dem tiles of different zoom level
