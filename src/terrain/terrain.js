@@ -632,8 +632,8 @@ export class Terrain extends Elevation {
         });
 
         preparedTiles.sort((a, b) => {
-            const at = a.t ? a.t : Number.MAX_VALUE;
-            const bt = b.t ? b.t : Number.MAX_VALUE;
+            const at = a.t !== null ? a.t : Number.MAX_VALUE;
+            const bt = b.t !== null ? b.t : Number.MAX_VALUE;
             return at - bt;
         });
 
