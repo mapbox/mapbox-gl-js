@@ -309,22 +309,18 @@ class Tile {
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i);
             if (filter.needGeometry) {
-                const id = featureIndex.getId(feature, sourceLayer);
                 const evaluationFeature = {type: feature.type,
-                    id,
+                    id: feature.id,
                     properties: feature.properties,
                     geometry: loadGeometry(feature)};
-                if (filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
-                    const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
-                    (geojsonFeature: any).tile = coord;
-                    result.push(geojsonFeature);
-                }
-            } else if (filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature, this.tileID.canonical)) {
-                const id = featureIndex.getId(feature, sourceLayer);
-                const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
-                (geojsonFeature: any).tile = coord;
-                result.push(geojsonFeature);
+                if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) continue;
+            } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
+                continue;
             }
+            const id = featureIndex.getId(feature, sourceLayer);
+            const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
+            (geojsonFeature: any).tile = coord;
+            result.push(geojsonFeature);
         }
     }
 

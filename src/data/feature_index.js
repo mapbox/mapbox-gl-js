@@ -185,8 +185,17 @@ class FeatureIndex {
         const sourceLayer = this.vtLayers[sourceLayerName];
         const feature = sourceLayer.feature(featureIndex);
 
-        if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature))
+        if (filter.needGeometry) {
+            const evaluationFeature = {type: feature.type,
+                id: feature.id,
+                properties: feature.properties,
+                geometry: loadGeometry(feature)};
+            if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
+                return;
+            }
+        } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
             return;
+        }
 
         const id = this.getId(feature, sourceLayerName);
 
