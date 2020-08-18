@@ -784,3 +784,47 @@ test('Marker pitchAlignment when set to auto defaults to rotationAlignment (sett
     map.remove();
     t.end();
 });
+
+test('Drag above horizon clamps', (t) => {
+    const map = createMap(t);
+    map.setPitch(85);
+    const marker = new Marker({draggable: true})
+        .setLngLat(map.unproject([map.transform.width / 2, map.transform.horizonLineFromTop() + 20]))
+        .addTo(map);
+    const el = marker.getElement();
+    const startPos = map.project(marker.getLngLat());
+    const atHorizon = map.project(map.unproject([map.transform.width / 2, map.transform.horizonLineFromTop()]));
+    t.true(atHorizon.y < startPos.y + 5);
+
+    simulate.mousedown(el);
+    simulate.mousemove(el, {clientX: 0, clientY: -40});
+    simulate.mouseup(el);
+
+    const endPos = map.project(marker.getLngLat());
+    t.true(Math.abs(endPos.x - startPos.x) < 0.00000000001);
+    t.equal(endPos.y, atHorizon.y);
+
+    map.remove();
+    t.end();
+});
+
+test('Drag below / behind camera', (t) => {
+    const map = createMap(t);
+    map.setPitch(85);
+    const marker = new Marker({draggable: true})
+        .setLngLat(map.unproject([map.transform.width / 2, map.transform.height - 20]))
+        .addTo(map);
+    const el = marker.getElement();
+    const startPos = map.project(marker.getLngLat());
+
+    simulate.mousedown(el);
+    simulate.mousemove(el, {clientX: 0, clientY: 40});
+    simulate.mouseup(el);
+
+    const endPos = map.project(marker.getLngLat());
+    t.true(Math.abs(endPos.x - startPos.x) < 0.00000000001);
+    t.equal(Math.round(endPos.y), Math.round(startPos.y) + 40);
+
+    map.remove();
+    t.end();
+});

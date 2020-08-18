@@ -847,11 +847,31 @@ class Transform {
     /**
      * Given a point on screen, returns MercatorCoordinate.
      * In 3D mode, raycast to terrain. In 2D mode, behaves the same as {@see pointCoordinate}.
+     * For p above terrain, don't return point behind camera but clamp p.y at the top of terrain.
      * @param {Point} p top left origin screen point, in pixels.
      * @private
      */
     pointCoordinate3D(p: Point): MercatorCoordinate {
-        const raycast = this.elevation ? this.elevation.pointCoordinate(p) : null;
+        if (!this.elevation) return this.pointCoordinate(p);
+        const elevation = this.elevation;
+        let raycast = this.elevation.pointCoordinate(p);
+        if (raycast) return new MercatorCoordinate(raycast[0], raycast[1], raycast[2]);
+        let start = 0, end = this.horizonLineFromTop();
+        if (p.y > end) return this.pointCoordinate(p); // holes between tiles below horizon line or below bottom.
+        const samples = 10;
+        const threshold = 0.02 * end;
+        const r = p.clone();
+
+        for (let i = 0; i < samples && end - start > threshold; i++) {
+            r.y = interpolate(start, end, 0.66); // non uniform binary search favoring points closer to horizon.
+            const rCast = elevation.pointCoordinate(r);
+            if (rCast) {
+                end = r.y;
+                raycast = rCast;
+            } else {
+                start = r.y;
+            }
+        }
         return raycast ? new MercatorCoordinate(raycast[0], raycast[1], raycast[2]) : this.pointCoordinate(p);
     }
 

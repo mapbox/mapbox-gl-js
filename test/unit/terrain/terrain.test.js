@@ -13,6 +13,9 @@ import {VertexMorphing} from '../../../src/terrain/draw_terrain_raster';
 import {fixedLngLat, fixedCoord, fixedPoint} from '../../util/fixed';
 import Point from '@mapbox/point-geometry';
 import LngLat from '../../../src/geo/lng_lat';
+import Marker from '../../../src/ui/marker';
+import Popup from '../../../src/ui/popup';
+import simulate from '../../util/simulate_interaction';
 
 function createStyle() {
     return {
@@ -26,17 +29,27 @@ function createStyle() {
 
 const TILE_SIZE = 128;
 
-// Dem texture with 0m elevation
-const pixelCount = (TILE_SIZE + 2) * (TILE_SIZE + 2);
-const pixelData = new Uint8Array(pixelCount * 4);
+const createConstElevationDEM = (elevation, tileSize = TILE_SIZE) => {
+    const pixelCount = (tileSize + 2) * (tileSize + 2);
+    const pixelData = new Uint8Array(pixelCount * 4);
+    let v = Math.floor((elevation + 10000) * 10);
+    pixelData[3] = 0;
+    pixelData[2] = v % 256;
+    v = Math.floor(v / 256);
+    pixelData[1] = v % 256;
+    v = Math.floor(v / 256);
+    pixelData[0] = v;
 
-for (let i = 0; i < pixelCount * 4; i += 4) {
-    pixelData[i + 0] = 1;
-    pixelData[i + 1] = 134;
-    pixelData[i + 2] = 160;
-    pixelData[i + 3] = 0;
-}
-const zeroDem = new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixelData));
+    for (let i = 0; i < pixelCount * 4; i += 4) {
+        pixelData[i + 0] = pixelData[0];
+        pixelData[i + 1] = pixelData[1];
+        pixelData[i + 2] = pixelData[2];
+        pixelData[i + 3] = pixelData[3];
+    }
+    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixelData, "mapbox", false, true));
+};
+
+const zeroDem = createConstElevationDEM(0);
 
 const setZeroElevationTerrain = (map) => {
     map.addSource('mapbox-dem', {
@@ -57,8 +70,7 @@ const setZeroElevationTerrain = (map) => {
     map.setTerrain({"source": "mapbox-dem"});
 };
 
-test('Elevation', (t) => {
-
+const createGradientDEM = () => {
     const pixels = new Uint8Array((TILE_SIZE + 2) * (TILE_SIZE + 2) * 4);
     // 1, 134, 160 encodes 0m.
     const word = [1, 134, 160];
@@ -80,7 +92,11 @@ test('Elevation', (t) => {
             }
         }
     }
-    const dem = new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels));
+    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox", false, true);
+};
+
+test('Elevation', (t) => {
+    const dem = createGradientDEM();
 
     t.beforeEach((callback) => {
         window.useFakeXMLHttpRequest();
@@ -472,10 +488,17 @@ test('Raycast projection 2D/3D', t => {
             center: [0, 0],
             zoom: 14,
             sources: {},
-            layers: [],
+            layers: [{
+                "id": "background",
+                "type": "background",
+                "paint": {
+                    "background-color": "black"
+                }
+            }],
             pitch: 80
         }
     });
+
     map.once('style.load', () => {
         setZeroElevationTerrain(map);
         map.once('render', () => {
@@ -680,4 +703,112 @@ test('Vertex morphing', (t) => {
     });
 
     t.end();
+});
+
+test('Marker interaction and raycast', (t) => {
+    const map = createMap(t, {
+        style: extend(createStyle(), {
+            layers: [{
+                "id": "background",
+                "type": "background",
+                "paint": {
+                    "background-color": "black"
+                }
+            }]
+        })
+    });
+    map.setPitch(85);
+    map.setZoom(13);
+
+    const tr = map.transform;
+    const marker = new Marker({draggable: true})
+        .setLngLat(tr.center)
+        .addTo(map)
+        .setPopup(new Popup().setHTML(`a popup content`))
+        .togglePopup();
+    t.equal(map.project(marker.getLngLat()).y, tr.height / 2);
+    t.equal(tr.locationPoint3D(marker.getLngLat()).y, tr.height / 2);
+    t.deepEqual(marker.getPopup()._pos, new Point(tr.width / 2, tr.height / 2));
+
+    map.once('style.load', () => {
+        map.addSource('mapbox-dem', {
+            "type": "raster-dem",
+            "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+            "tileSize": TILE_SIZE,
+            "maxzoom": 14
+        });
+        const cache = map.style.sourceCaches['mapbox-dem'];
+        cache.used = cache._sourceLoaded = true;
+        cache._loadTile = (tile, callback) => {
+            // Elevate tiles above center.
+            tile.dem = createConstElevationDEM(300 * (tr.zoom - tile.tileID.overscaledZ));
+            tile.needsHillshadePrepare = true;
+            tile.needsDEMTextureUpload = true;
+            tile.state = 'loaded';
+            callback(null);
+        };
+        map.setTerrain({"source": "mapbox-dem"});
+        map.once('render', () => {
+            map.painter.updateTerrain(map.style);
+            // expect no changes at center
+            t.equal(map.project(marker.getLngLat()).y, tr.height / 2);
+            t.equal(tr.locationPoint3D(marker.getLngLat()).y, tr.height / 2);
+            t.deepEqual(marker.getPopup()._pos, new Point(tr.width / 2, tr.height / 2));
+
+            const terrainTopLngLat = tr.pointLocation3D(new Point(tr.width / 2, 0)); // gets clamped at the top of terrain
+            const terrainTop = tr.locationPoint3D(terrainTopLngLat);
+            // With a bit of tweaking (given that const terrain planes are used), terrain is above horizon line.
+            t.ok(terrainTop.y < tr.horizonLineFromTop() - 3);
+
+            t.test('Drag above clamps at horizon', (t) => {
+                // Offset marker down, 2 pixels under terrain top above horizon.
+                const startPos = new Point(0, 2)._add(terrainTop);
+                marker.setLngLat(tr.pointLocation3D(startPos));
+                t.ok(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001);
+                const el = marker.getElement();
+
+                simulate.mousedown(el);
+                simulate.mousemove(el, {clientX: 0, clientY: -40});
+                simulate.mouseup(el);
+
+                const endPos = tr.locationPoint3D(marker.getLngLat());
+                t.true(Math.abs(endPos.x - startPos.x) < 0.00000000001);
+                t.equal(endPos.y, terrainTop.y);
+                t.deepEqual(marker.getPopup()._pos, endPos);
+
+                t.end();
+            });
+
+            t.test('Drag below / behind camera', (t) => {
+                const startPos = new Point(terrainTop.x, tr.height - 20);
+                marker.setLngLat(tr.pointLocation3D(startPos));
+                t.ok(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001);
+                const el = marker.getElement();
+
+                simulate.mousedown(el);
+                simulate.mousemove(el, {clientX: 0, clientY: 40});
+                simulate.mouseup(el);
+
+                const endPos = tr.locationPoint3D(marker.getLngLat());
+                t.equal(Math.round(endPos.y), Math.round(startPos.y) + 40);
+                t.deepEqual(marker.getPopup()._pos, endPos);
+                t.end();
+            });
+
+            t.test('Occluded', (t) => {
+                marker._occlusionTimer = null;
+                marker.setLngLat(terrainTopLngLat);
+                const bottomLngLat = tr.pointLocation3D(new Point(terrainTop.x, tr.height));
+                // Raycast returns distance to closer point evaluates to occluded marker.
+                t.stub(tr, 'pointLocation3D').returns(bottomLngLat);
+                setTimeout(() => {
+                    t.ok(marker.getElement().classList.contains('mapboxgl-marker-occluded'));
+                    t.end();
+                }, 100);
+            });
+
+            map.remove();
+            t.end();
+        });
+    });
 });

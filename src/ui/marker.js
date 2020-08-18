@@ -76,6 +76,7 @@ export default class Marker extends Evented {
     _pitchAlignment: string;
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
+    _occlusionTimer: ?TimeoutID;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -439,6 +440,30 @@ export default class Marker extends Evented {
         return this;
     }
 
+    _updateOcclusion() {
+        if (!this._occlusionTimer) {
+            this._occlusionTimer = setTimeout(this._onOcclusionTimer.bind(this), 60);
+        }
+    }
+
+    _onOcclusionTimer() {
+        const tr = this._map.transform;
+        const pos = this._pos ? this._pos.sub(this._transformedOffset()) : null;
+        if (pos && pos.x >= 0 && pos.x < tr.width && pos.y >= 0 && pos.y < tr.height) {
+            // calculate if occluded.
+            const raycastLoc = this._map.transform.pointLocation3D(pos);
+            const camera = this._map.getFreeCameraOptions();
+            if (camera.position) {
+                const cameraPos = camera.position.toLngLat();
+                const raycastDistance = cameraPos.distanceTo(raycastLoc);
+                const posDistance = cameraPos.distanceTo(this._lngLat);
+                const occluded = raycastDistance < posDistance * 0.9;
+                this._element.classList.toggle('mapboxgl-marker-occluded', occluded);
+            }
+        }
+        this._occlusionTimer = null;
+    }
+
     _update(e?: {type: 'move' | 'moveend'}) {
         if (!this._map) return;
 
@@ -447,6 +472,8 @@ export default class Marker extends Evented {
         }
 
         this._pos = this._map.transform.locationPoint3D(this._lngLat)._add(this._transformedOffset());
+
+        if (this._map.transform.elevation) this._updateOcclusion();
 
         let rotation = "";
         if (this._rotationAlignment === "viewport" || this._rotationAlignment === "auto") {
