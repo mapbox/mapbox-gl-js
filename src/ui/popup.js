@@ -506,7 +506,7 @@ export default class Popup extends Evented {
 
         if (this._trackPointer && !cursor) return;
 
-        const pos = this._pos = this._trackPointer && cursor ? cursor : this._map.project(this._lngLat);
+        const pos = this._pos = this._trackPointer && cursor ? cursor : this._map.transform.locationPoint3D(this._lngLat);
 
         let anchor: ?Anchor = this.options.anchor;
         const offset = normalizeOffset(this.options.offset);
