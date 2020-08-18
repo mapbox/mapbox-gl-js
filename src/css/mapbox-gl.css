@@ -719,6 +719,12 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     top: 0;
     left: 0;
     will-change: transform;
+    opacity: 1;
+    transition: opacity 0.2s;
+}
+
+.mapboxgl-marker-occluded {
+    opacity: 0.2;
 }
 
 .mapboxgl-user-location-dot {

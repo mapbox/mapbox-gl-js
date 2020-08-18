@@ -833,47 +833,23 @@ export class Terrain extends Elevation {
             return null;
         }
 
-        // Generate a depth map if one doesn't exist yet
-        if (!this._depthDone)
-            this.drawDepth();
-
-        // Reconstruct world position from the depth information
-        const context = this.painter.context;
-        const gl = context.gl;
-        const data = new Uint8Array(4);
-        const fboHeight = this._depthFBO.height;
-        const pixelRatio = fboHeight / transform.height;
-
-        context.bindFramebuffer.set(this._depthFBO.framebuffer);
-
-        gl.readPixels(
-            screenPoint.x * pixelRatio,
-            fboHeight - screenPoint.y * pixelRatio,
-            1, 1,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            data);
-
-        const unpackDepth = (pixel: Uint8Array): number => {
-            return (pixel[0] / 16777216.0 + pixel[1] / 65536.0 + pixel[2] / 256.0 + pixel[3]) / 255.0 * 2.0 - 1.0;
-        };
-
-        const depth = unpackDepth(data);
-
-        // The depth buffer is zero-initialized => no depth information if the value is -1
-        if (depth === -1)
-            return null;
-
-        const worldPosition = [screenPoint.x, screenPoint.y, depth, 1];
-        vec4.transformMat4(worldPosition, worldPosition, transform.pixelMatrixInverse);
-        vec4.scale(worldPosition, worldPosition, 1.0 / worldPosition[3]);
-
+        const far = [screenPoint.x, screenPoint.y, 1, 1];
+        vec4.transformMat4(far, far, transform.pixelMatrixInverse);
+        vec4.scale(far, far, 1.0 / far[3]);
         // x & y in pixel coordinates, z is altitude in meters
-        worldPosition[0] /= transform.worldSize;
-        worldPosition[1] /= transform.worldSize;
-        worldPosition[2] = mercatorZfromAltitude(worldPosition[2], transform.center.lat);
+        far[0] /= transform.worldSize;
+        far[1] /= transform.worldSize;
+        const camera = transform._camera.position;
+        const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
+        const p = [camera[0], camera[1], camera[2] / mercatorZScale];
+        const dir = vec3.subtract([], far.slice(0, 3), p);
+        vec3.normalize(dir, dir);
+        const distanceAlongRay = this._raycast(p, dir);
 
-        return worldPosition;
+        if (distanceAlongRay === null) return null;
+        vec3.scaleAndAdd(p, p, dir, distanceAlongRay);
+        p[2] *= mercatorZScale;
+        return p;
     }
 
     drawDepth() {
