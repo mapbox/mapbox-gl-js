@@ -496,16 +496,19 @@ class HandlerManager {
             around = pinchAround;
         }
 
-        if (eventStarted("drag") && tr.elevation && around) {
-            // Elevation information has to be used to find the picked position on the terrain when the user starts to drag the map.
-            // This position can be used as the movement origin instead of the sea-level position
-            this._dragOrigin = tr.elevation.pointCoordinate(around);
-
-            if (this._dragOrigin) {
-                // Construct the tracking ellipsoid every time user changes the drag origin.
-                // Direction of the ray will define size of the shape and hence defining the available range of movement
-                this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
+        if (eventStarted("drag") && around) {
+            if (tr.elevation) {
+                // Elevation information has to be used to find the picked position on the terrain when the user starts to drag the map.
+                // This position can be used as the movement origin instead of the sea-level position
+                this._dragOrigin = tr.elevation.pointCoordinate(around);
+            } else {
+                const coord = tr.pointCoordinate(around);
+                this._dragOrigin = [coord.x, coord.y, coord.z];
             }
+
+            // Construct the tracking ellipsoid every time user changes the drag origin.
+            // Direction of the ray will define size of the shape and hence defining the available range of movement
+            this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
         }
 
         // stop any ongoing camera animations (easeTo, flyTo)
