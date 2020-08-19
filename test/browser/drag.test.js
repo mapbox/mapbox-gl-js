@@ -23,7 +23,7 @@ test("dragging", async t => {
             /* eslint-disable no-undef */
             return map.getCenter();
         });
-        equalWithPrecision(t, center.lng, -35.15625, 0.001);
-        equalWithPrecision(t, center.lat, 0, 0.0000001);
+        equalWithPrecision(t, center.lng, -35.15625, 0.01);
+        equalWithPrecision(t, center.lat, 0, 0.01);
     });
 });
