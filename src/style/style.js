@@ -412,8 +412,12 @@ class Style extends Evented {
             this._resetUpdates();
         }
 
+        const sourcesUsedBefore = {};
+
         for (const sourceId in this.sourceCaches) {
-            this.sourceCaches[sourceId].used = false;
+            const sourceCache = this.sourceCaches[sourceId];
+            sourcesUsedBefore[sourceId] = sourceCache.used;
+            sourceCache.used = false;
         }
 
         for (const layerId of this._order) {
@@ -422,6 +426,13 @@ class Style extends Evented {
             layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
+            }
+        }
+
+        for (const sourceId in sourcesUsedBefore) {
+            const sourceCache = this.sourceCaches[sourceId];
+            if (sourcesUsedBefore[sourceId] !== sourceCache.used) {
+                sourceCache.fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId}));
             }
         }
 
