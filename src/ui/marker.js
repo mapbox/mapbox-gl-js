@@ -43,6 +43,13 @@ type Options = {
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
  *   .addTo(map);
+ * @example
+ * // Set options
+ * var marker = new mapboxgl.Marker({
+ *     color: "#FFFFFF",
+ *     draggable: true
+ *   }).setLngLat([30.5, 50.5])
+ *   .addTo(map);
  * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  * @see [Create a draggable Marker](https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
  */
