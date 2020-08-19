@@ -13,7 +13,7 @@
       }, {
         "geometry": {
           "type": "Polygon",
-          "coordinates": [[[3, 3], [6, 6], [3, 3]]]
+          "coordinates": [[[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]]]
         }
       }]],
   "expected": {
