@@ -480,6 +480,22 @@ test('Popup is offset via an incomplete object offset option', (t) => {
     t.end();
 });
 
+test('Popup offset can be set via setOffset', (t) => {
+    const map = createMap(t);
+
+    const popup = new Popup({offset: 5})
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+
+    t.equal(popup.options.offset, 5);
+
+    popup.setOffset(10);
+
+    t.equal(popup.options.offset, 10);
+    t.end();
+});
+
 test('Popup can be removed and added again (#1477)', (t) => {
     const map = createMap(t);
 
