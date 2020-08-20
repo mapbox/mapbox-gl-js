@@ -433,6 +433,18 @@ export default class Popup extends Evented {
     }
 
     /**
+     * Sets the popup's offset.
+     *
+     * @param offset Sets the popup's offset.
+     * @returns {Popup} `this`
+     */
+    setOffset (offset?: Offset) {
+        this.options.offset = offset;
+        this._update();
+        return this;
+    }
+
+    /**
      * Add or remove the given CSS class on the popup container, depending on whether the container currently has that class.
      *
      * @param {string} className Non-empty string with CSS class name to add/remove
