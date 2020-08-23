@@ -505,11 +505,12 @@ class Map extends Camera {
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
     addControl(control: IControl, position?: ControlPosition) {
-        if (position === undefined && control.getDefaultPosition) {
-            position = control.getDefaultPosition();
-        }
         if (position === undefined) {
-            position = 'top-right';
+            if (control.getDefaultPosition) {
+                position = control.getDefaultPosition();
+            } else {
+                position = 'top-right';
+            }
         }
         if (!control || !control.onAdd) {
             return this.fire(new ErrorEvent(new Error(
