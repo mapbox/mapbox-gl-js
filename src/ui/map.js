@@ -506,9 +506,9 @@ class Map extends Camera {
      */
     addControl(control: IControl, position?: ControlPosition) {
         if (position === undefined) {
-            if(control.getDefaultPosition){
+            if (control.getDefaultPosition) {
                 position = control.getDefaultPosition();
-            }else{
+            } else {
                 position = 'top-right';
             }
         }
