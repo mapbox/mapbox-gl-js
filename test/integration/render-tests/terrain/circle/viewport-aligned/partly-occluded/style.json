@@ -67,7 +67,7 @@
       "type": "circle",
       "source": "geojson",
       "paint": {
-        "circle-radius": 5,
+        "circle-radius": 15,
         "circle-color": "#ff0000",
         "circle-pitch-alignment": "viewport"
       }
