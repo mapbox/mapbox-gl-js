@@ -2,16 +2,12 @@
 #define INV_SQRT2 0.70710678
 #define ELEVATION_BIAS 0.0001
 
-//sync with program/circle_program.js
 #define NUM_SAMPLES_PER_RING 16
 
 uniform mat4 u_matrix;
 uniform vec2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
-#ifdef TERRAIN
-uniform vec2 u_sample_pattern[NUM_SAMPLES_PER_RING];
-#endif
 
 attribute vec2 a_pos;
 
@@ -59,6 +55,16 @@ vec4 project_vertex(vec2 extrusion, vec4 world_center, vec4 projected_center, fl
 #endif
 }
 
+float get_sample_step() {
+#ifdef PITCH_WITH_MAP
+    return 2.0 * PI / float(NUM_SAMPLES_PER_RING);
+#else
+    // We want to only sample the top half of the circle when it is viewport-aligned.
+    // This is to prevent the circle from intersecting with the ground plane below it at high pitch.
+    return PI / float(NUM_SAMPLES_PER_RING);
+#endif
+}
+
 void main(void) {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize mediump float radius
@@ -101,19 +107,20 @@ void main(void) {
 
     gl_Position = project_vertex(extrude, world_center, projected_center, radius, stroke_width, view_scale);
 
+    float visibility = 0.0;
     #ifdef TERRAIN
-        float visibility = 0.0;
+        float step = get_sample_step();
         for(int ring = 0; ring < NUM_VISIBILITY_RINGS; ring++) {
             float scale = (float(ring) + 1.0)/float(NUM_VISIBILITY_RINGS);
-            for(int s = 0; s < NUM_SAMPLES_PER_RING; s++) {
-                vec2 extrusion = u_sample_pattern[s] * scale;
+            for(int i = 0; i < NUM_SAMPLES_PER_RING; i++) {
+                vec2 extrusion = vec2(cos(step * float(i)), -sin(step * float(i))) * scale;
                 vec4 frag_pos = project_vertex(extrusion, world_center, projected_center, radius, stroke_width, view_scale);
                 visibility += float(!isOccluded(frag_pos));
             }
         }
         visibility /= float(NUM_VISIBILITY_RINGS) * float(NUM_SAMPLES_PER_RING);
     #else
-        float visibility = 1.0;
+        visibility = 1.0;
     #endif
     v_visibility = visibility;
 
