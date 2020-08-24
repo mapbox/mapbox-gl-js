@@ -178,17 +178,17 @@ export default class DemMinMaxQuadTree {
     }
 
     // Performs raycast against the tree root only. Min and max coordinates defines the size of the root node
-    raycastRoot(minx: number, miny: number, maxx: number, maxy: number, p: vec3Like, d: vec3Like): ?number {
+    raycastRoot(minx: number, miny: number, maxx: number, maxy: number, p: vec3Like, d: vec3Like, exaggeration: number = 1): ?number {
         const min = [minx, miny, -aabbSkirtPadding];
-        const max = [maxx, maxy, this.maximums[0]];
+        const max = [maxx, maxy, this.maximums[0] * exaggeration];
         return aabbRayIntersect(min, max, p, d);
     }
 
-    raycast(rootMinx: number, rootMiny: number, rootMaxx: number, rootMaxy: number, p: vec3Like, d: vec3Like): ?number {
+    raycast(rootMinx: number, rootMiny: number, rootMaxx: number, rootMaxy: number, p: vec3Like, d: vec3Like, exaggeration: number = 1): ?number {
         if (!this.nodeCount)
             return null;
 
-        const t = this.raycastRoot(rootMinx, rootMiny, rootMaxx, rootMaxy, p, d);
+        const t = this.raycastRoot(rootMinx, rootMiny, rootMaxx, rootMaxy, p, d, exaggeration);
         if (t == null)
             return null;
 
@@ -220,10 +220,10 @@ export default class DemMinMaxQuadTree {
                 const maxyUv = (nodey + 1) / scale;
 
                 // 4 corner points A, B, C and D defines the (quad) area covered by this node
-                const az = sampleElevation(minxUv, minyUv, this.dem);
-                const bz = sampleElevation(maxxUv, minyUv, this.dem);
-                const cz = sampleElevation(maxxUv, maxyUv, this.dem);
-                const dz = sampleElevation(minxUv, maxyUv, this.dem);
+                const az = sampleElevation(minxUv, minyUv, this.dem) * exaggeration;
+                const bz = sampleElevation(maxxUv, minyUv, this.dem) * exaggeration;
+                const cz = sampleElevation(maxxUv, maxyUv, this.dem) * exaggeration;
+                const dz = sampleElevation(minxUv, maxyUv, this.dem) * exaggeration;
 
                 const t0: any = triangleRayIntersect(
                     boundsMin[0], boundsMin[1], az,     // A
@@ -269,7 +269,7 @@ export default class DemMinMaxQuadTree {
                 decodeBounds(childNodeX, childNodeY, depth + 1, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin, boundsMax);
 
                 boundsMin[2] = -aabbSkirtPadding;
-                boundsMax[2] = this.maximums[this.childOffsets[idx] + i];
+                boundsMax[2] = this.maximums[this.childOffsets[idx] + i] * exaggeration;
 
                 const result = aabbRayIntersect(boundsMin, boundsMax, p, d);
                 if (result != null) {
@@ -362,6 +362,7 @@ function bilinearLerp(p00: any, p10: any, p01: any, p11: any, x: number, y: numb
 }
 
 // Sample elevation in normalized uv-space ([0, 0] is the top left)
+// This function does not account for exaggeration
 export function sampleElevation(fx: number, fy: number, dem: DEMData): number {
     // Sample position in texels
     const demSize = dem.dim;
