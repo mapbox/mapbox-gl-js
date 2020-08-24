@@ -606,7 +606,7 @@ export class Terrain extends Elevation {
 
     // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
     // x & y components of the position are expected to be in normalized mercator coordinates [0, 1] and z in meters.
-    _raycast(pos: vec3, dir: vec3): ?number {
+    _raycast(pos: vec3, dir: vec3, exaggeration: number): ?number {
         if (!this._visibleDemTiles)
             return null;
 
@@ -626,7 +626,7 @@ export class Terrain extends Elevation {
 
             return {
                 minx, miny, maxx, maxy,
-                t: tree.raycastRoot(minx, miny, maxx, maxy, pos, dir),
+                t: tree.raycastRoot(minx, miny, maxx, maxy, pos, dir, exaggeration),
                 tile
             };
         });
@@ -644,7 +644,7 @@ export class Terrain extends Elevation {
             // Perform more accurate raycast against the dem tree. First intersection is the closest on
             // as all tiles are sorted from closest to furthest
             const tree = (obj.tile.dem: any).tree;
-            const t = tree.raycast(obj.minx, obj.miny, obj.maxx, obj.maxy, pos, dir);
+            const t = tree.raycast(obj.minx, obj.miny, obj.maxx, obj.maxy, pos, dir, exaggeration);
 
             if (t != null)
                 return t;
@@ -844,9 +844,9 @@ export class Terrain extends Elevation {
         const p = [camera[0], camera[1], camera[2] / mercatorZScale];
         const dir = vec3.subtract([], far.slice(0, 3), p);
         vec3.normalize(dir, dir);
-        const distanceAlongRay = this._raycast(p, dir);
+        const distanceAlongRay = this._raycast(p, dir, this._exaggeration);
 
-        if (distanceAlongRay === null) return null;
+        if (distanceAlongRay === null || !distanceAlongRay) return null;
         vec3.scaleAndAdd(p, p, dir, distanceAlongRay);
         p[2] *= mercatorZScale;
         return p;

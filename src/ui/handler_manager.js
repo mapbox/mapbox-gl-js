@@ -501,7 +501,9 @@ class HandlerManager {
                 // Elevation information has to be used to find the picked position on the terrain when the user starts to drag the map.
                 // This position can be used as the movement origin instead of the sea-level position
                 this._dragOrigin = tr.elevation.pointCoordinate(around);
-            } else {
+            }
+
+            if (!this._dragOrigin) {
                 const coord = tr.pointCoordinate(around);
                 this._dragOrigin = [coord.x, coord.y, coord.z];
             }
