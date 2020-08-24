@@ -354,6 +354,63 @@ test('DemMinMaxQuadTree', (t) => {
             t.end();
         });
 
+        t.test('Flat plane with exaggeration', (t) => {
+            const size = 32;
+            const padding = 1;
+            const elevation = fillElevation(size, padding, 10);
+            const dem = mockDEMfromElevation(size, padding, elevation);
+            const tree = new DemMinMaxQuadTree(dem);
+
+            const minx = -1;
+            const maxx = 1;
+            const miny = -1;
+            const maxy = 1;
+
+            let dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 11], [0, 0, -1], 0.5);
+            t.ok(dist);
+            t.equal(dist, 6.0);
+
+            dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 11], [0, 0, -1], 0.1);
+            t.ok(dist);
+            t.equal(dist, 10.0);
+
+            t.end();
+        });
+
+        t.test('Gradient with 0.5 exaggeration', (t) => {
+            const size = 32;
+            const padding = 1;
+            const elevation = fillElevation(size, padding, 0);
+
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    elevation[idx(x, y, size, padding)] = x;
+                }
+            }
+
+            const dem = mockDEMfromElevation(size, padding, elevation);
+            const tree = new DemMinMaxQuadTree(dem);
+            const minx = -16;
+            const maxx = 16;
+            const miny = -16;
+            const maxy = 16;
+
+            let dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 50], [0, 0, -1], 0.5);
+            t.ok(dist);
+            t.equal(dist, 42.25);
+            t.true(dist > tree.raycast(minx, miny, maxx, maxy,  [0, 0, 50], [0, 0, -1]), 1);
+
+            dist = tree.raycast(minx, miny, maxx, maxy, [-32, 0, 32], [0.707, 0, -0.707], 0.5);
+            t.ok(dist);
+            t.equal(fixedNum(dist, 3), 37.954);
+            t.true(dist > tree.raycast(minx, miny, maxx, maxy, [-32, 0, 32], [0.707, 0, -0.707]), 1);
+
+            dist = tree.raycast(minx, miny, maxx, maxy, [16, 0, 32.01], [-0.707, 0, -0.707], 0.5);
+            t.notOk(dist);
+
+            t.end();
+        });
+
         t.end();
     });
 
