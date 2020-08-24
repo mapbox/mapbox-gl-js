@@ -12,7 +12,6 @@ uniform highp vec4 u_color_tint_m;
 
 precision highp float;
 
-#define PI                      3.141592
 // [1] equation (1) section 2.1. for λ = (680, 550, 440) nm,
 // which corresponds to scattering coefficients at sea level
 #define BETA_R                  vec3(5.5e-6, 13.0e-6, 22.4e-6)

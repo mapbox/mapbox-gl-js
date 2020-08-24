@@ -1,7 +1,6 @@
 // @flow
 
 import Color from '../style-spec/util/color';
-import assert from 'assert';
 
 import type Context from '../gl/context';
 
@@ -152,25 +151,6 @@ class UniformMatrix3f extends Uniform<Float32Array> {
     }
 }
 
-class Uniform2fv extends Uniform<Float32Array> {
-    numElements: number;
-
-    constructor(context: Context, location: WebGLUniformLocation, numElements: number) {
-        super(context, location);
-        this.current = new Float32Array(2 * numElements);
-        this.numElements = numElements;
-    }
-
-    set(v: Float32Array): void {
-        assert(v.length / 2 === this.numElements);
-
-        if (v !== this.current) {
-            this.current = v;
-            this.gl.uniform2fv(this.location, v);
-        }
-    }
-}
-
 export {
     Uniform,
     Uniform1i,
@@ -180,8 +160,7 @@ export {
     Uniform4f,
     UniformColor,
     UniformMatrix3f,
-    UniformMatrix4f,
-    Uniform2fv
+    UniformMatrix4f
 };
 
 export type UniformBindings = {[_: string]: Uniform<any>};

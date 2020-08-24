@@ -1,5 +1,3 @@
-const float PI = 3.141592653589793;
-
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 attribute vec4 a_pixeloffset;

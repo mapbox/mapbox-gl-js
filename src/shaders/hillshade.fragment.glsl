@@ -7,8 +7,6 @@ uniform vec4 u_shadow;
 uniform vec4 u_highlight;
 uniform vec4 u_accent;
 
-#define PI 3.141592653589793
-
 void main() {
     vec4 pixel = texture2D(u_image, v_pos);
 
