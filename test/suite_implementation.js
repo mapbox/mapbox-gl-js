@@ -86,7 +86,6 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
 
             if (options.output === "terrainDepth") {
                 const pixels = drawTerrainDepth(map, w, h);
-                //console.log(data.length);
                 data = new Buffer(pixels);
             }
 
@@ -284,7 +283,7 @@ function drawTerrainDepth(map, width, height) {
             const startPoint = vec3.add([], nearTL, vec3.add([], vec3.scale([], nearRight, u), vec3.scale([], nearDown, v)));
             const endPoint = vec3.add([], farTL, vec3.add([], vec3.scale([], farRight, u), vec3.scale([], farDown, v)));
             const dir = vec3.normalize([], vec3.sub([], endPoint, startPoint));
-            const t = terrain._raycast(startPoint, dir, terrain.exaggeration());
+            const t = terrain.raycast(startPoint, dir, terrain.exaggeration());
 
             if (t !== null) {
                 // The ray hit the terrain. Compute distance in world space and store to an intermediate array

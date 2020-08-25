@@ -606,7 +606,7 @@ export class Terrain extends Elevation {
 
     // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
     // x & y components of the position are expected to be in normalized mercator coordinates [0, 1] and z in meters.
-    _raycast(pos: vec3, dir: vec3, exaggeration: number): ?number {
+    raycast(pos: vec3, dir: vec3, exaggeration: number): ?number {
         if (!this._visibleDemTiles)
             return null;
 
@@ -820,12 +820,8 @@ export class Terrain extends Elevation {
         }
     }
 
-    /*
-     * Reconstructs a picked world position by casting a ray from screen coordinates
-     * and sampling depth from the custom depth buffer. This function introduces
-     * a potential stall (few frames) due to it reading pixel information from the gpu.
-     * Depth buffer will also be generated if it doesn't already exist.
-     */
+    // Casts a ray from a point on screen and returns the intersection point with the terrain.
+    // The returned point is in mercator coordinates
     pointCoordinate(screenPoint: Point): ?vec3 {
         const transform = this.painter.transform;
         if (screenPoint.x < 0 || screenPoint.x >= transform.width ||
@@ -844,7 +840,7 @@ export class Terrain extends Elevation {
         const p = [camera[0], camera[1], camera[2] / mercatorZScale];
         const dir = vec3.subtract([], far.slice(0, 3), p);
         vec3.normalize(dir, dir);
-        const distanceAlongRay = this._raycast(p, dir, this._exaggeration);
+        const distanceAlongRay = this.raycast(p, dir, this._exaggeration);
 
         if (distanceAlongRay === null || !distanceAlongRay) return null;
         vec3.scaleAndAdd(p, p, dir, distanceAlongRay);

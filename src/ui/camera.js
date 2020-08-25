@@ -945,6 +945,7 @@ class Camera extends Evented {
             this._fireMoveEvents(eventData);
 
         }, (interruptingEaseId?: string) => {
+            tr.recenterOnTerrain();
             this._afterEase(eventData, interruptingEaseId);
         }, options);
 
@@ -953,7 +954,7 @@ class Camera extends Evented {
 
     _prepareEase(eventData?: Object, noMoveStart: boolean, currently: Object = {}) {
         this._moving = true;
-        this.transform.constantCameraHeight = false;
+        this.transform.cameraElevationReference = "sea";
 
         if (!noMoveStart && !currently.moving) {
             this.fire(new Event('movestart', eventData));
@@ -989,8 +990,7 @@ class Camera extends Evented {
             return;
         }
         delete this._easeId;
-        this.transform.recenterOnTerrain();
-        this.transform.constantCameraHeight = true;
+        this.transform.cameraElevationReference = "ground";
 
         const wasZooming = this._zooming;
         const wasRotating = this._rotating;
@@ -1222,6 +1222,7 @@ class Camera extends Evented {
 
             const newCenter = k === 1 ? center : tr.unproject(from.add(delta.mult(u(s))).mult(scale));
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
+            tr._updateCenterElevation();
 
             this._fireMoveEvents(eventData);
 
