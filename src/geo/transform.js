@@ -288,8 +288,11 @@ class Transform {
         this._center = center;
         if (this._terrainEnabled()) {
             if (this.cameraElevationReference === "ground") {
-                this._updateCenterElevation();
-                this._updateCameraOnTerrain();
+                // Check that the elevation data is available at the new location.
+                if (this._updateCenterElevation())
+                    this._updateCameraOnTerrain();
+                else
+                    this._cameraZoom = null;
             } else {
                 this._updateZoomFromElevation();
             }

@@ -274,8 +274,8 @@ export class Terrain extends Elevation {
             updateSourceCache();
         }
 
-        transform.updateElevation();
         updateSourceCache();
+        transform.updateElevation();
 
         // Reset tile lookup cache and update draped tiles coordinates.
         this._findCoveringTileCache[this.proxySourceCache.id] = {};
