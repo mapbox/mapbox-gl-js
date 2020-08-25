@@ -23,6 +23,7 @@ import window from '../util/window';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import {vec3} from 'gl-matrix';
+import MercatorCoordinate, {altitudeFromMercatorZ} from '../geo/mercator_coordinate';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
@@ -468,11 +469,6 @@ class HandlerManager {
             return newEvent && !this._eventsInProgress[type];
         };
 
-        // Camera should keep constant altitude to the sea level user is transforming the map
-        if (eventStarted("drag") || isMoving(this._eventsInProgress)) {
-            tr.constantCameraHeight = false;
-        }
-
         const eventEnded = (type) => {
             const event = this._eventsInProgress[type];
             return event && !this._handlersById[event.handlerName].isActive();
@@ -480,10 +476,11 @@ class HandlerManager {
 
         if (eventEnded("drag") && !hasChange(combinedResult)) {
             const preZoom = tr.zoom;
+            tr.cameraElevationReference = "sea";
             tr.recenterOnTerrain();
+            tr.cameraElevationReference = "ground";
             // Map zoom might change during the pan operation due to terrain elevation.
             if (preZoom !== tr.zoom) this._map._update(true);
-            tr.constantCameraHeight = true;
         }
 
         if (!hasChange(combinedResult)) {
@@ -513,14 +510,46 @@ class HandlerManager {
             this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
         }
 
+        // All movement of the camera is done relative to the sea level
+        tr.cameraElevationReference = "sea";
+
         // stop any ongoing camera animations (easeTo, flyTo)
         map._stop(true);
 
         around = around || map.transform.centerPoint;
+
         const loc = tr.pointLocation(panDelta ? around.sub(panDelta) : around);
         if (bearingDelta) tr.bearing += bearingDelta;
         if (pitchDelta) tr.pitch += pitchDelta;
-        if (zoomDelta) tr.zoom += zoomDelta;
+
+        if (zoomDelta) {
+            // Zoom value has to be computed relative to a secondary map plane that is created from the terrain position below the cursor.
+            // This way the zoom interpolation can be kept linear and independent of the (possible) terrain elevation
+            tr._updateCameraState();
+
+            const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
+            const pickedPosition: any = tr._elevation ? tr._elevation.pointCoordinate(around) : toVec3(tr.pointCoordinate(around));
+            const aroundRay = tr.screenPointToMercatorRay(around);
+            const centerRay = tr.screenPointToMercatorRay(tr.centerPoint);
+
+            if (aroundRay.dir[2] < 0) {
+                // Compute center point on the elevated map plane by casting a ray from the center of the screen.
+                // ZoomDelta is then subtracted from the relative zoom value and converted to a movement vector
+                const pickedAltitude = pickedPosition !== null ? altitudeFromMercatorZ(pickedPosition[2], pickedPosition[1]) : 0;
+                const centerOnTargetPlane = tr.rayIntersectionCoordinate(tr.pointRayIntersection(tr.centerPoint, pickedAltitude));
+                const movement = tr.zoomDeltaToMovement(toVec3(centerOnTargetPlane), zoomDelta) * (centerRay.dir[2] / aroundRay.dir[2]);
+
+                tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, aroundRay.dir, movement);
+            } else if (tr._terrainEnabled() && pickedPosition !== null) {
+                // Special handling is required if the ray created from the cursor is heading up.
+                // This scenario is possible if user is trying to zoom towards e.g. a hill or a mountain.
+                // Convert zoomDelta to a movement vector as if the camera would be orbiting around the picked point
+                const movement = tr.zoomDeltaToMovement(pickedPosition, zoomDelta);
+                tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, aroundRay.dir, movement);
+            }
+
+            tr._updateStateFromCamera();
+        }
 
         if (this._dragOrigin && panDelta) {
             // Use tracking ellipsoid instead of a plane when terrain is enabled.
@@ -539,8 +568,14 @@ class HandlerManager {
             newCenter.y += deltaY;
             tr.setLocation(newCenter);
         } else {
-            tr.setLocationAtPoint(loc, around);
+            if (zoomDelta) {
+                tr.recenterOnTerrain();
+            } else {
+                tr.setLocationAtPoint(loc, around);
+            }
         }
+
+        tr.cameraElevationReference = "ground";
 
         this._map._update();
         if (!combinedResult.noInertia) this._inertia.record(combinedResult);
@@ -638,7 +673,6 @@ class HandlerManager {
             this._frameId = this._requestFrame();
         }
     }
-
 }
 
 export default HandlerManager;

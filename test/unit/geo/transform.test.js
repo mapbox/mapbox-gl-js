@@ -347,7 +347,7 @@ test('transform', (t) => {
         const updatedAltitude = transform.cameraToCenterDistance / pixelsPerMeter * Math.cos(degToRad(transform.pitch));
 
         t.true(updatedAltitude > 10);
-        t.equal(transform.zoom, zoom);
+        t.equal(fixedNum(transform.zoom), fixedNum(zoom));
         t.equal(transform.bearing, -45);
 
         t.end();
@@ -365,7 +365,7 @@ test('transform', (t) => {
         t.equal(transform._cameraZoom, 16);
 
         // zoom should remain unchanged
-        transform.constantCameraHeight = true;
+        transform.cameraElevationReference = "ground";
         transform.center = new LngLat(180, 0);
         t.equal(transform.zoom, 16);
 
@@ -373,7 +373,7 @@ test('transform', (t) => {
         t.equal(transform.zoom, 16);
 
         // zoom should change so that the altitude remains constant
-        transform.constantCameraHeight = false;
+        transform.cameraElevationReference = "sea";
         transform.center = new LngLat(180, 0);
         t.equal(transform._cameraZoom, 16);
 
@@ -977,6 +977,56 @@ test('transform', (t) => {
 
             t.end();
         });
+
+        t.end();
+    });
+
+    t.test("pointRayIntersection with custom altitude", (t) => {
+        const transform = new Transform();
+        transform.resize(100, 100);
+        transform.pitch = 45;
+
+        let result = transform.rayIntersectionCoordinate(transform.pointRayIntersection(transform.centerPoint));
+        t.deepEqual(fixedCoord(result), new MercatorCoordinate(0.5, 0.5, 0.0));
+
+        result = transform.rayIntersectionCoordinate(transform.pointRayIntersection(transform.centerPoint, 1000));
+        const diff = mercatorZfromAltitude(1000, 0);
+        t.deepEqual(fixedCoord(result), fixedCoord(new MercatorCoordinate(0.5, 0.5 + diff, diff)));
+
+        t.end();
+    });
+
+    t.test("ZoomDeltaToMovement", (t) => {
+        const transform = new Transform();
+        transform.resize(100, 100);
+
+        // Incrementing zoom by 1 is expected reduce distance by half
+        let foundMovement = transform.zoomDeltaToMovement([0.5, 0.5, 0.0], 1.0);
+        let expectedMovement = transform.cameraToCenterDistance / transform.worldSize * 0.5;
+        t.equal(foundMovement, expectedMovement);
+
+        foundMovement = transform.zoomDeltaToMovement([0.5, 0.5, 0.0], 2.0);
+        expectedMovement = transform.cameraToCenterDistance / transform.worldSize * 0.75;
+        t.equal(foundMovement, expectedMovement);
+
+        t.end();
+    });
+
+    t.test("ComputeZoomRelativeTo", (t) => {
+        const transform = new Transform();
+        transform.resize(100, 100);
+        transform.zoom = 0;
+
+        const height = transform._camera.position[2];
+        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, 0.0)), 0);
+        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.0, 0.0, 0.0)), 0);
+        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.5)), 1);
+        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.75)), 2);
+
+        transform.zoom += 1;
+        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, 0.0)), 1);
+        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.25)), 2);
+        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.375)), 3);
 
         t.end();
     });

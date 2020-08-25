@@ -120,35 +120,11 @@ export class Elevation {
     }
 
     /**
-     * Find an intersection between the elevation surface and a line segment.
-     * Uses a binary-search approach for sampling the heightmap. This function is not
-     * guaranteed to return a correct result if the provided segment has multiple intersection
-     * points with the terrain.
-     * @param {MercatorCoordinate} start 3D mercator coordinate of the start, start.z is elevation in mercator coordinates.
-     * @param {MercatorCoordinate} end 3D mercator coordinate of the end, end.z is elevation in mercator coordinates.
-     * @param {number} samples How many samples to iterate.
-     * @param {number} threshold When to stop enumeration.
-     * @returns {MercatorCoordinate} If there is intersection with terrain, returns 3D mercator coordinate of intersection, otherwise null.
-     */
-    raycast(start: MercatorCoordinate, end: MercatorCoordinate, samples: number = 20, threshold: number = 0.01): ?MercatorCoordinate {
-        let newCenter: ?MercatorCoordinate = null;
-
-        for (let i = 0; i < samples; i++) {
-            newCenter = new MercatorCoordinate(0.5 * (start.x + end.x), 0.5 * (start.y + end.y), 0.5 * (start.z + end.z));
-            const terrainElevation = this.getAtPoint(newCenter);
-            const sampleElevation = newCenter.toAltitude();
-            const diff = terrainElevation - sampleElevation;
-
-            if (Math.abs(diff) < threshold) {
-                return newCenter;
-            } if (diff > 0) {
-                end = newCenter;
-            } else {
-                start = newCenter;
-            }
-        }
-
-        return null;
+     * Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
+     * x & y components of the position are expected to be in normalized mercator coordinates [0, 1] and z in meters.
+    */
+    raycast(position: vec3, dir: vec3, exaggeration: number): ?number {
+        throw new Error('Pure virtual method called.');
     }
 
     /**

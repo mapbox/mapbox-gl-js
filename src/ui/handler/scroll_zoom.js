@@ -7,11 +7,10 @@ import {ease as _ease, bindAll, bezier} from '../../util/util';
 import browser from '../../util/browser';
 import window from '../../util/window';
 import {number as interpolate} from '../../style-spec/util/interpolate';
-import LngLat from '../../geo/lng_lat';
+import Point from '@mapbox/point-geometry';
 
 import type Map from '../map';
 import type HandlerManager from '../handler_manager';
-import type Point from '@mapbox/point-geometry';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
@@ -227,8 +226,14 @@ class ScrollZoomHandler {
 
         const pos = DOM.mousePos(this._el, e);
 
-        this._around = LngLat.convert(this._aroundCenter ? this._map.getCenter() : this._map.unproject(pos));
-        this._aroundPoint = this._map.transform.locationPoint(this._around);
+        const prevPoint = this._aroundPoint;
+        this._around = this._aroundCenter ? this._map.getCenter() : this._map.transform.pointLocation3D(Point.convert(pos));
+        this._aroundPoint = this._aroundCenter ? this._map.transform.centerPoint : pos;
+
+        if (this._map.transform._terrainEnabled() && prevPoint && (prevPoint.x !== this._aroundPoint.x || prevPoint.y !== this._aroundPoint.y)) {
+            this._targetZoom = undefined;
+        }
+
         if (!this._frameId) {
             this._frameId = true;
             this._handler._triggerRenderFrame();
@@ -242,6 +247,13 @@ class ScrollZoomHandler {
         if (!this.isActive()) return;
         const tr = this._map.transform;
 
+        const startingZoom = () => {
+            if (tr._terrainEnabled())
+                return tr.computeZoomRelativeTo(tr.pointCoordinate3D(this._aroundPoint));
+            else
+                return tr.zoom;
+        };
+
         // if we've had scroll events since the last render frame, consume the
         // accumulated delta, and update the target zoom level accordingly
         if (this._delta !== 0) {
@@ -254,22 +266,24 @@ class ScrollZoomHandler {
                 scale = 1 / scale;
             }
 
-            const fromScale = typeof this._targetZoom === 'number' ? tr.zoomScale(this._targetZoom) : tr.scale;
+            const startZoom = startingZoom();
+            const startScale = Math.pow(2.0, startZoom);
+
+            const fromScale = typeof this._targetZoom === 'number' ? tr.zoomScale(this._targetZoom) : startScale;
             this._targetZoom = Math.min(tr.maxZoom, Math.max(tr.minZoom, tr.scaleZoom(fromScale * scale)));
 
             // if this is a mouse wheel, refresh the starting zoom and easing
             // function we're using to smooth out the zooming between wheel
             // events
             if (this._type === 'wheel') {
-                this._startZoom = tr.zoom;
+                this._startZoom = startingZoom();
                 this._easing = this._smoothOutEasing(200);
             }
 
             this._delta = 0;
         }
-
         const targetZoom = typeof this._targetZoom === 'number' ?
-            this._targetZoom : tr.zoom;
+            this._targetZoom : startingZoom();
         const startZoom = this._startZoom;
         const easing = this._easing;
 
@@ -308,7 +322,7 @@ class ScrollZoomHandler {
         return {
             noInertia: true,
             needsRenderFrame: !finished,
-            zoomDelta: zoom - tr.zoom,
+            zoomDelta: zoom - startingZoom(),
             around: this._aroundPoint,
             originalEvent: this._lastWheelEvent
         };
