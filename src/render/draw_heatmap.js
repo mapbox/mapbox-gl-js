@@ -75,7 +75,7 @@ function bindFramebuffer(context, painter, layer) {
     context.activeTexture.set(gl.TEXTURE1);
 
     // Use a 4x downscaled screen texture for better performance
-    context.viewport.set([0, 0, painter.width / 4, painter.height / 4]);
+    context.viewport.set([0, 0, painter.width, painter.height]);
 
     let fbo = layer.heatmapFbo;
 
@@ -87,7 +87,7 @@ function bindFramebuffer(context, painter, layer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        fbo = layer.heatmapFbo = context.createFramebuffer(painter.width / 4, painter.height / 4, false);
+        fbo = layer.heatmapFbo = context.createFramebuffer(painter.width, painter.height, false);
 
         bindTextureToFramebuffer(context, painter, texture, fbo);
 
@@ -102,7 +102,7 @@ function bindTextureToFramebuffer(context, painter, texture, fbo) {
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
     // Otherwise, fall back to a low precision texture
     const internalFormat = context.extRenderToTextureHalfFloat ? context.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE;
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA, internalFormat, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA, internalFormat, null);
     fbo.colorAttachment.set(texture);
 }
 
