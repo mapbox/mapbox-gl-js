@@ -479,6 +479,7 @@ class Camera extends Evented {
      *      in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
      * @param options Options object
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+     * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
@@ -491,7 +492,8 @@ class Camera extends Evented {
      */
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         bounds = LngLatBounds.convert(bounds);
-        return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), 0, options);
+        const bearing = options && options.bearing || 0;
+        return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
     }
 
     /**
@@ -569,10 +571,12 @@ class Camera extends Evented {
         const zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
 
         // Calculate center: apply the zoom, the configured offset, as well as offset that exists as a result of padding.
-        const offset = Point.convert(options.offset);
+        const offset = (typeof options.offset.x === 'number') ? new Point(options.offset.x, options.offset.y) : Point.convert(options.offset);
         const paddingOffsetX = (options.padding.left - options.padding.right) / 2;
         const paddingOffsetY = (options.padding.top - options.padding.bottom) / 2;
-        const offsetAtInitialZoom = new Point(offset.x + paddingOffsetX, offset.y + paddingOffsetY);
+        const paddingOffset = new Point(paddingOffsetX, paddingOffsetY);
+        const rotatedPaddingOffset = paddingOffset.rotate(bearing * Math.PI / 180);
+        const offsetAtInitialZoom = offset.add(rotatedPaddingOffset);
         const offsetAtFinalZoom = offsetAtInitialZoom.mult(tr.scale / tr.zoomScale(zoom));
 
         const center =  tr.unproject(p0world.add(p1world).div(2).sub(offsetAtFinalZoom));
