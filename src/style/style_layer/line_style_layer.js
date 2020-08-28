@@ -12,11 +12,13 @@ import EvaluationParameters from '../evaluation_parameters';
 import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties';
 
 import Step from '../../style-spec/expression/definitions/step';
+import type Painter from '../../render/painter';
 import type {FeatureState, ZoomConstantExpression} from '../../style-spec/expression';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
+import ProgramConfiguration from '../../data/program_configuration';
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: true;
@@ -77,6 +79,23 @@ class LineStyleLayer extends StyleLayer {
 
     createBucket(parameters: BucketParameters<*>) {
         return new LineBucket(parameters);
+    }
+
+    getProgramId(painter: ?Painter): string {
+        if (!painter) return '';
+        const dasharray = this.paint.get('line-dasharray');
+        const patternProperty = this.paint.get('line-pattern');
+        const image = patternProperty.constantOr((1: any));
+        const gradient = this.paint.get('line-gradient');
+        const programId =
+            image ? 'linePattern' :
+            dasharray ? 'lineSDF' :
+            gradient ? 'lineGradient' : 'line';
+        return programId;
+    }
+
+    getProgramConfiguration(zoom: number): ProgramConfiguration {
+        return new ProgramConfiguration(this, zoom);
     }
 
     queryRadius(bucket: Bucket): number {

@@ -30,12 +30,14 @@ import type {LayerSpecification} from '../../style-spec/types';
 import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression';
 import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
+import type Painter from '../../render/painter';
 import {FormattedType} from '../../style-spec/expression/types';
 import {typeOf} from '../../style-spec/expression/values';
 import Formatted from '../../style-spec/expression/types/formatted';
 import FormatSectionOverride from '../format_section_override';
 import FormatExpression from '../../style-spec/expression/definitions/format';
 import Literal from '../../style-spec/expression/definitions/literal';
+import ProgramConfiguration from '../../data/program_configuration';
 
 class SymbolStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -184,6 +186,15 @@ class SymbolStyleLayer extends StyleLayer {
         }
 
         return hasOverrides;
+    }
+
+    getProgramId(painter: ?Painter): string {
+        if (!painter) return '';
+        return 'symbolTextAndIcon/symbolSDF/symbolIcon';
+    }
+
+    getProgramConfiguration(zoom: number): ProgramConfiguration {
+        return new ProgramConfiguration(this, zoom);
     }
 }
 

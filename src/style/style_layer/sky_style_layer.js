@@ -6,6 +6,7 @@ import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import {renderColorRamp} from '../../util/color_ramp';
 import type {PaintProps} from './sky_style_layer_properties';
 import type Texture from '../../render/texture';
+import type Painter from '../../render/painter';
 import type {LayerSpecification} from '../../style-spec/types';
 import type Framebuffer from '../../gl/framebuffer';
 import type {RGBAImage} from '../../util/image';
@@ -114,6 +115,23 @@ class SkyLayer extends StyleLayer {
 
     hasOffscreenPass() {
         return true;
+    }
+
+    getProgramId(painter: ?Painter): string {
+        if (!painter) return '';
+        const type = this.paint.get('sky-type');
+        if (type === 'atmosphere') {
+            if (painter.renderPass === 'offscreen') {
+                return 'skyboxCapture';
+            } else if (painter.renderPass === 'sky') {
+                return 'skybox';
+            }
+        } else if (type === 'gradient') {
+            if (painter.renderPass === 'sky') {
+                return 'skyboxGradient';
+            }
+        }
+        return '';
     }
 }
 
