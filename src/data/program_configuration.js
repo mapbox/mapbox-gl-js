@@ -401,7 +401,7 @@ export default class ProgramConfiguration {
 
     _buffers: Array<VertexBuffer>;
 
-    constructor(layer: TypedStyleLayer, zoom: number, filterProperties: (_: string) => boolean) {
+    constructor(layer: TypedStyleLayer, zoom: number, filterProperties: (_: string) => boolean = () => true) {
         this.binders = {};
         this._buffers = [];
 

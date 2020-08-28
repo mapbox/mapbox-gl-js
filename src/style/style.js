@@ -432,6 +432,23 @@ class Style extends Evented {
             if (!layer.isHidden(parameters.zoom) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
+
+            const programIds = layer.getProgramId(this.map.painter);
+
+            if (programIds === undefined || this.map.painter === undefined) {
+                continue;
+            }
+            const programIdTokens = programIds.split('/');
+            if (programIdTokens[0] === '') continue;
+            const programConfiguration = layer.getProgramConfiguration(parameters.zoom);
+
+            for (let i = 0; i < programIdTokens.length; i++) {
+                if (programConfiguration) {
+                    this.map.painter.useProgram(programIdTokens[i], programConfiguration);
+                } else {
+                    this.map.painter.useProgram(programIdTokens[i]);
+                }
+            }
         }
 
         this.light.recalculate(parameters);

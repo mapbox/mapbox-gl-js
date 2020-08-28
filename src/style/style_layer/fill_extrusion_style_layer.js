@@ -15,6 +15,7 @@ import type {BucketParameters} from '../../data/bucket';
 import type {PaintProps} from './fill_extrusion_style_layer_properties';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
+import ProgramConfiguration from '../../data/program_configuration';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -35,6 +36,16 @@ class FillExtrusionStyleLayer extends StyleLayer {
 
     is3D(): boolean {
         return true;
+    }
+
+    getProgramId(): string {
+        const patternProperty = this.paint.get('fill-extrusion-pattern');
+        const image = patternProperty.constantOr((1: any));
+        return image ? 'fillExtrusionPattern' : 'fillExtrusion';
+    }
+
+    getProgramConfiguration(zoom: number): ProgramConfiguration {
+        return new ProgramConfiguration(this, zoom);
     }
 
     queryIntersectsFeature(queryGeometry: Array<Point>,

@@ -15,6 +15,7 @@ import type Transform from '../../geo/transform';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './circle_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
+import ProgramConfiguration from '../../data/program_configuration';
 
 class CircleStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -81,6 +82,14 @@ class CircleStyleLayer extends StyleLayer {
         }
 
         return false;
+    }
+
+    getProgramId(): string {
+        return 'circle';
+    }
+
+    getProgramConfiguration(zoom: number): ProgramConfiguration {
+        return new ProgramConfiguration(this, zoom);
     }
 }
 
