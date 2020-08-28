@@ -87,6 +87,18 @@ map.on('style.load', function() {
         "url": "mapbox://mapbox.satellite",
         "tileSize": 512
     });
+
+    map.addLayer({
+        "id": "satellite-background",
+        "type": "background",
+        "layout": {
+            "visibility": "none"
+        },
+        "paint": {
+            "background-color": "rgb(128,128,128)",
+            "background-opacity": 0.01
+        }
+    });
     map.addLayer({
         "id": "satellite",
         "type": "raster",
@@ -199,10 +211,11 @@ document.getElementById('terrain-checkbox').onclick = function() {
 
 document.getElementById('satellite-checkbox').onclick = function() {
     for (const layerId in map.style._layers) {
-        if (layerId === 'satellite' || layerId === buildingsLayerId) continue;
+        if (layerId.startsWith('satellite') || layerId === buildingsLayerId) continue;
         map.setLayoutProperty(layerId, 'visibility', !this.checked ? 'visible' : 'none');
     }
     map.setLayoutProperty('satellite', 'visibility', this.checked ? 'visible' : 'none');
+    map.setLayoutProperty('satellite-background', 'visibility', this.checked ? 'visible' : 'none');
     document.getElementById('road-label-checkbox').onclick();
 };
 

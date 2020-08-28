@@ -740,6 +740,9 @@ class Painter {
     }
 
     destroy() {
+        if (this._terrain) {
+            this._terrain.destroy();
+        }
         this.emptyTexture.destroy();
         if (this.debugOverlayTexture) {
             this.debugOverlayTexture.destroy();

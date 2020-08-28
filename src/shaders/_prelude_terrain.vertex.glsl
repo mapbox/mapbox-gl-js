@@ -3,7 +3,6 @@
 uniform sampler2D u_dem;
 uniform sampler2D u_dem_prev;
 uniform vec4 u_dem_unpack;
-uniform vec4 u_dem_unpack_prev;
 uniform vec2 u_dem_tl;
 uniform vec2 u_dem_tl_prev;
 uniform float u_dem_scale;
@@ -23,8 +22,8 @@ vec4 tileUvToDemSample(vec2 uv, float dem_size, float dem_scale, vec2 dem_tl) {
     return vec4((pos - f + 0.5) / (dem_size + 2.0), f);
 }
 
-float decodeElevation(vec4 v, vec4 unpackVector) {
-    return dot(vec4(v.xyz * 255.0, -1.0), unpackVector);
+float decodeElevation(vec4 v) {
+    return dot(vec4(v.xyz * 255.0, -1.0), u_dem_unpack);
 }
 
 float currentElevation(vec2 apos) {
@@ -33,10 +32,10 @@ float currentElevation(vec2 apos) {
     vec2 pos = r.xy;
     vec2 f = r.zw;
 
-    float tl = decodeElevation(texture2D(u_dem, pos), u_dem_unpack);
-    float tr = decodeElevation(texture2D(u_dem, pos + vec2(dd, 0.0)), u_dem_unpack);
-    float bl = decodeElevation(texture2D(u_dem, pos + vec2(0.0, dd)), u_dem_unpack);
-    float br = decodeElevation(texture2D(u_dem, pos + vec2(dd, dd)), u_dem_unpack);
+    float tl = decodeElevation(texture2D(u_dem, pos));
+    float tr = decodeElevation(texture2D(u_dem, pos + vec2(dd, 0.0)));
+    float bl = decodeElevation(texture2D(u_dem, pos + vec2(0.0, dd)));
+    float br = decodeElevation(texture2D(u_dem, pos + vec2(dd, dd)));
 
     return u_exaggeration * mix(mix(tl, tr, f.x), mix(bl, br, f.x), f.y);
 }
@@ -47,10 +46,10 @@ float prevElevation(vec2 apos) {
     vec2 pos = r.xy;
     vec2 f = r.zw;
 
-    float tl = decodeElevation(texture2D(u_dem_prev, pos), u_dem_unpack_prev);
-    float tr = decodeElevation(texture2D(u_dem_prev, pos + vec2(dd, 0.0)), u_dem_unpack_prev);
-    float bl = decodeElevation(texture2D(u_dem_prev, pos + vec2(0.0, dd)), u_dem_unpack_prev);
-    float br = decodeElevation(texture2D(u_dem_prev, pos + vec2(dd, dd)), u_dem_unpack_prev);
+    float tl = decodeElevation(texture2D(u_dem_prev, pos));
+    float tr = decodeElevation(texture2D(u_dem_prev, pos + vec2(dd, 0.0)));
+    float bl = decodeElevation(texture2D(u_dem_prev, pos + vec2(0.0, dd)));
+    float br = decodeElevation(texture2D(u_dem_prev, pos + vec2(dd, dd)));
 
     return u_exaggeration * mix(mix(tl, tr, f.x), mix(bl, br, f.x), f.y);
 }

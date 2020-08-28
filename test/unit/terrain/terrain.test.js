@@ -32,19 +32,13 @@ const TILE_SIZE = 128;
 const createConstElevationDEM = (elevation, tileSize = TILE_SIZE) => {
     const pixelCount = (tileSize + 2) * (tileSize + 2);
     const pixelData = new Uint8Array(pixelCount * 4);
-    let v = Math.floor((elevation + 10000) * 10);
-    pixelData[3] = 0;
-    pixelData[2] = v % 256;
-    v = Math.floor(v / 256);
-    pixelData[1] = v % 256;
-    v = Math.floor(v / 256);
-    pixelData[0] = v;
+    const encoded = DEMData.pack(elevation, "mapbox");
 
     for (let i = 0; i < pixelCount * 4; i += 4) {
-        pixelData[i + 0] = pixelData[0];
-        pixelData[i + 1] = pixelData[1];
-        pixelData[i + 2] = pixelData[2];
-        pixelData[i + 3] = pixelData[3];
+        pixelData[i + 0] = encoded[0];
+        pixelData[i + 1] = encoded[1];
+        pixelData[i + 2] = encoded[2];
+        pixelData[i + 3] = encoded[3];
     }
     return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixelData, "mapbox", false, true));
 };

@@ -10,7 +10,7 @@ import {easeCubicInOut} from '../util/util';
 
 import type Painter from '../render/painter';
 import type SourceCache from '../source/source_cache';
-import type {OverscaledTileID} from '../source/tile_id';
+import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 
@@ -139,6 +139,8 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
     const colorMode = painter.colorModeForRenderPass();
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     vertexMorphing.update(now);
+    const tr = painter.transform;
+    const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
 
     for (const coord of tileIDs) {
         const tile = sourceCache.getTile(coord);
@@ -162,8 +164,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         if (morph) {
             elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
         }
-
-        const uniformValues = terrainRasterUniformValues(coord.posMatrix, painter.transform.zoom);
+        const uniformValues = terrainRasterUniformValues(coord.posMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
 
         setShaderMode(shaderMode);
         terrain.setupElevationDraw(tile, program, elevationOptions);
@@ -181,11 +182,22 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
 
     for (const coord of tileIDs) {
         const tile = sourceCache.getTile(coord);
-        const uniformValues = terrainRasterUniformValues(coord.posMatrix, painter.transform.zoom);
+        const uniformValues = terrainRasterUniformValues(coord.posMatrix, 0);
         terrain.setupElevationDraw(tile, program);
         program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
             uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
     }
+}
+
+function skirtHeight(zoom) {
+    // Skirt height calculation is heuristic: provided value hides
+    // seams between tiles and it is not too large: 9 at zoom 22, ~20000m at zoom 0.
+    return 6 * Math.pow(1.5, 22 - zoom);
+}
+
+function isEdgeTile(cid: CanonicalTileID, renderWorldCopies: boolean): boolean {
+    const numTiles = 1 << cid.z;
+    return (!renderWorldCopies && (cid.x === 0 || cid.x === numTiles - 1)) || cid.y === 0 || cid.y === numTiles - 1;
 }
 
 export {

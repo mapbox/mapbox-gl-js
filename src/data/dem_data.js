@@ -16,12 +16,19 @@ import assert from 'assert';
 // surrounding pixel values to compute the slope at that pixel, and we cannot accurately calculate the slope at pixels on a
 // tile's edge without backfilling from neighboring tiles.
 
+export type DEMEncoding = "mapbox" | "terrarium";
+
+const unpackVectors = {
+    mapbox: [6553.6, 25.6, 0.1, 10000.0],
+    terrarium: [256.0, 1.0, 1.0 / 256.0, 32768.0]
+};
+
 export default class DEMData {
     uid: string;
     data: Uint32Array;
     stride: number;
     dim: number;
-    encoding: "mapbox" | "terrarium";
+    encoding: DEMEncoding;
     borderReady: boolean;
     _tree: DemMinMaxQuadTree;
     get tree(): DemMinMaxQuadTree {
@@ -31,7 +38,7 @@ export default class DEMData {
 
     // RGBAImage data has uniform 1px padding on all sides: square tile edge size defines stride
     // and dim is calculated as stride - 2.
-    constructor(uid: string, data: RGBAImage, encoding: "mapbox" | "terrarium", borderReady: boolean = false, buildQuadTree: boolean = false) {
+    constructor(uid: string, data: RGBAImage, encoding: DEMEncoding, borderReady: boolean = false, buildQuadTree: boolean = false) {
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return warnOnce(
@@ -79,8 +86,12 @@ export default class DEMData {
         return unpack(pixels[index], pixels[index + 1], pixels[index + 2]);
     }
 
-    getUnpackVector() {
-        return this.encoding === "terrarium" ? [256.0, 1.0, 1.0 / 256.0, 32768.0] : [6553.6, 25.6, 0.1, 10000.0];
+    static getUnpackVector(encoding: DEMEncoding): [number, number, number, number] {
+        return unpackVectors[encoding];
+    }
+
+    get unpackVector(): [number, number, number, number] {
+        return unpackVectors[this.encoding];
     }
 
     _idx(x: number, y: number) {
@@ -98,6 +109,18 @@ export default class DEMData {
         // unpacking formula for mapzen terrarium:
         // https://aws.amazon.com/public-datasets/terrain/
         return ((r * 256 + g + b / 256) - 32768.0);
+    }
+
+    static pack(altitude: number, encoding: DEMEncoding): [number, number, number, number] {
+        const color = [0, 0, 0, 0];
+        const vector = DEMData.getUnpackVector(encoding);
+        let v = Math.floor((altitude + vector[3]) / vector[2]);
+        color[2] = v % 256;
+        v = Math.floor(v / 256);
+        color[1] = v % 256;
+        v = Math.floor(v / 256);
+        color[0] = v;
+        return color;
     }
 
     getPixels() {
