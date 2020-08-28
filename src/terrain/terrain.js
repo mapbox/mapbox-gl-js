@@ -19,6 +19,7 @@ import getWorkerPool from '../util/global_worker_pool';
 import Dispatcher from '../util/dispatcher';
 import GeoJSONSource from '../source/geojson_source';
 import ImageSource from '../source/image_source';
+import RasterDEMTileSource from '../source/raster_dem_tile_source';
 import Color from '../style-spec/util/color';
 import StencilMode from '../gl/stencil_mode';
 import {DepthStencilAttachment} from '../gl/value';
@@ -31,6 +32,7 @@ import CullFaceMode from '../gl/cull_face_mode';
 import {clippingMaskUniformValues} from '../render/program/clipping_mask_program';
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 import browser from '../util/browser';
+import DEMData from '../data/dem_data';
 
 import type Map from '../ui/map';
 import type Painter from '../render/painter';
@@ -39,9 +41,9 @@ import type StyleLayer from '../style/style_layer';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type Context from '../gl/context';
-import type DEMData from '../data/dem_data';
 import type {UniformLocations, UniformValues} from '../render/uniform_binding';
 import type Transform from '../geo/transform';
+import type {DEMEncoding} from '../data/dem_data';
 
 export const GRID_DIM = 128;
 
@@ -192,6 +194,10 @@ export class Terrain extends Elevation {
     _tilesDirty: {[string]: {[number]: boolean}};
     _invalidateRenderCache: boolean;
 
+    _emptyDEMTexture: ?Texture;
+    _initializing: ?boolean;
+    _emptyDEMTextureDirty: ?boolean;
+
     constructor(painter: Painter, style: Style) {
         super();
         this.painter = painter;
@@ -272,6 +278,7 @@ export class Terrain extends Elevation {
             // before reading elevation at center.
             this.sourceCache.usedForTerrain = true;
             updateSourceCache();
+            this._initializing = true;
         }
 
         updateSourceCache();
@@ -282,6 +289,7 @@ export class Terrain extends Elevation {
         this.proxySourceCache.update(transform);
 
         this._depthDone = false;
+        this._emptyDEMTextureDirty = true;
     }
 
     _onStyleDataEvent(event: any) {
@@ -300,6 +308,18 @@ export class Terrain extends Elevation {
             for (const id in this.painter.style.sourceCaches) {
                 this.painter.style.sourceCaches[id].usedForTerrain = false;
             }
+        }
+    }
+
+    destroy() {
+        this._disable();
+        if (this._emptyDEMTexture) this._emptyDEMTexture.destroy();
+        this.pool.forEach(fbo => fbo.fb.destroy());
+        this.pool = [];
+        if (this._depthFBO) {
+            this._depthFBO.destroy();
+            delete this._depthFBO;
+            delete this._depthTexture;
         }
     }
 
@@ -330,6 +350,12 @@ export class Terrain extends Elevation {
 
         const psc = this.proxySourceCache;
         const tr = this.painter.transform;
+        if (this._initializing) {
+            // Don't activate terrain until center tile gets loaded.
+            this._initializing = tr._centerAltitude === 0 && this.getAtPoint(MercatorCoordinate.fromLngLat(tr.center), -1) === -1;
+            this._emptyDEMTextureDirty = !this._initializing;
+        }
+
         const options = this.painter.options;
         this.drapeFirst = (options.zooming || options.moving || options.rotating || this.forceDrapeFirst) && !this._invalidateRenderCache;
         this._invalidateRenderCache = false;
@@ -389,17 +415,15 @@ export class Terrain extends Elevation {
             this._visibleDemTiles.push(demTile);
             visibleKeys[key] = key;
         }
+
     }
 
     _assignTerrainTiles(coords: Array<OverscaledTileID>) {
+        if (this._initializing) return;
         coords.forEach((tileID) => {
             if (this.terrainTileForTile[tileID.key]) return;
-            let demTile = this.sourceCache.getTile(tileID) || this._findTileCoveringTileID(tileID, this.sourceCache);
-            while (demTile && !demTile.dem) {
-                demTile = this._findTileCoveringTileID(tileID, this.sourceCache);
-            }
-            if (!demTile || !demTile.dem) return;
-            this.terrainTileForTile[tileID.key] = demTile;
+            const demTile = this._findTileCoveringTileID(tileID, this.sourceCache);
+            if (demTile) this.terrainTileForTile[tileID.key] = demTile;
         });
     }
 
@@ -425,10 +449,47 @@ export class Terrain extends Elevation {
         const demId = demTile.tileID.canonical;
         const demScaleBy = Math.pow(2, demId.z - proxyId.z);
         const suffix = uniformSuffix || "";
-        uniforms[`u_dem_unpack${suffix}`] = ((demTile.dem: any): DEMData).getUnpackVector();
         uniforms[`u_dem_tl${suffix}`] = [proxyId.x * demScaleBy % 1, proxyId.y * demScaleBy % 1];
         uniforms[`u_dem_scale${suffix}`] = demScaleBy;
         return true;
+    }
+
+    get emptyDEMTexture(): Texture {
+        return !this._emptyDEMTextureDirty && this._emptyDEMTexture ?
+            this._emptyDEMTexture : this._updateEmptyDEMTexture();
+    }
+
+    _getLoadedAreaMinimum(): number {
+        let nonzero = 0;
+        const min = this._visibleDemTiles.reduce((acc, tile) => {
+            if (!tile.dem) return acc;
+            const m = tile.dem.tree.minimums[0];
+            acc += m;
+            if (m > 0) nonzero++;
+            return acc;
+        }, 0);
+        return nonzero ? min / nonzero : 0;
+    }
+
+    _updateEmptyDEMTexture(): Texture {
+        const context = this.painter.context;
+        const gl = context.gl;
+        context.activeTexture.set(gl.TEXTURE2);
+
+        const min = this._getLoadedAreaMinimum();
+        const image = {
+            width: 1, height: 1,
+            data: new Uint8Array(DEMData.pack(min, ((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding))
+        };
+
+        this._emptyDEMTextureDirty = false;
+        let texture = this._emptyDEMTexture;
+        if (!texture) {
+            texture = this._emptyDEMTexture = new Texture(context, image, gl.RGBA, {premultiply: false});
+        } else {
+            texture.update(image, {premultiply: false});
+        }
+        return texture;
     }
 
     // useDepthForOcclusion: Pre-rendered depth to texture (this._depthTexture) is
@@ -444,7 +505,7 @@ export class Terrain extends Elevation {
         }) {
         const context = this.painter.context;
         const gl = context.gl;
-        const uniforms = defaultTerrainUniforms();
+        const uniforms = defaultTerrainUniforms(((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding);
         uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
         uniforms['u_exaggeration'] = this.exaggeration();
 
@@ -475,9 +536,8 @@ export class Terrain extends Elevation {
         } else {
             demTile = this.terrainTileForTile[tile.tileID.key];
             context.activeTexture.set(gl.TEXTURE2);
-            let demTexture: Texture = this.painter.emptyTexture;
-            if (this._prepareDemTileUniforms(tile, demTile, uniforms))
-                demTexture = (demTile.demTexture: any);
+            const demTexture = this._prepareDemTileUniforms(tile, demTile, uniforms) ?
+                (demTile.demTexture: any) : this.emptyDEMTexture;
             demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
         }
 
@@ -1174,7 +1234,6 @@ export type TerrainUniformsType = {|
     'u_dem_unpack': Uniform4f,
     'u_dem_tl': Uniform2f,
     'u_dem_scale': Uniform1f,
-    'u_dem_unpack_prev': Uniform4f,
     'u_dem_tl_prev': Uniform2f,
     'u_dem_scale_prev': Uniform1f,
     'u_dem_size': Uniform1f,
@@ -1192,7 +1251,6 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_dem_unpack': new Uniform4f(context, locations.u_dem_unpack),
     'u_dem_tl': new Uniform2f(context, locations.u_dem_tl),
     'u_dem_scale': new Uniform1f(context, locations.u_dem_scale),
-    'u_dem_unpack_prev': new Uniform4f(context, locations.u_dem_unpack_prev),
     'u_dem_tl_prev': new Uniform2f(context, locations.u_dem_tl_prev),
     'u_dem_scale_prev': new Uniform1f(context, locations.u_dem_scale_prev),
     'u_dem_size': new Uniform1f(context, locations.u_dem_size),
@@ -1204,12 +1262,11 @@ export const terrainUniforms = (context: Context, locations: UniformLocations): 
     'u_label_plane_matrix_inv': new UniformMatrix4f(context, locations.u_label_plane_matrix_inv)
 });
 
-function defaultTerrainUniforms(): UniformValues<TerrainUniformsType> {
+function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUniformsType> {
     return {
         'u_dem': 2,
         'u_dem_prev': 4,
-        'u_dem_unpack': [0, 0, 0, 0],
-        'u_dem_unpack_prev': [0, 0, 0, 0],
+        'u_dem_unpack': DEMData.getUnpackVector(encoding),
         'u_dem_tl': [0, 0],
         'u_dem_tl_prev': [0, 0],
         'u_dem_scale': 0,
