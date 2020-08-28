@@ -370,7 +370,6 @@ class Transform {
 
         if (changed) {
             this._updateStateFromCamera();
-            this._calcMatrices();
         }
     }
 
@@ -1057,7 +1056,10 @@ class Transform {
             // Camera zoom has to be updated as the orbit distance might have changed
             this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
             this._centerAltitude = newCenter.toAltitude();
-            this.center = newCenter.toLngLat();
+            this._center = newCenter.toLngLat();
+            this._updateZoomFromElevation();
+            this._constrain();
+            this._calcMatrices();
         }
     }
 
@@ -1298,20 +1300,24 @@ class Transform {
 
         // Compute zoom from the distance between camera and terrain
         const centerAltitude = mercatorZfromAltitude(this._centerAltitude, this.center.lat);
-        const height = (position[2] - centerAltitude) / Math.cos(pitch);
         const minHeight = this.cameraToCenterDistance / this._worldSizeFromZoom(this._maxZoom) * Math.cos(degToRad(this._maxPitch));
-        const zoom = this._zoomFromMercatorZ(Math.max(height, minHeight));
+        const height = Math.max((position[2] - centerAltitude) / Math.cos(pitch), minHeight);
+        const zoom = this._zoomFromMercatorZ(height);
 
         // Cast a ray towards the ground to find the center point
-        vec3.scaleAndAdd(position, position, dir, -height * Math.cos(pitch) / dir[2]);
+        vec3.scaleAndAdd(position, position, dir, height);
 
-        this.pitch = radToDeg(pitch);
-        this.bearing = radToDeg(-bearing);
+        this._pitch = clamp(pitch, degToRad(this.minPitch), degToRad(this.maxPitch));
+        this.angle = wrap(bearing, -Math.PI, Math.PI);
         this._setZoom(clamp(zoom, this._minZoom, this._maxZoom));
 
         if (this._terrainEnabled())
             this._updateCameraOnTerrain();
-        this.center = new MercatorCoordinate(position[0], position[1], position[2]).toLngLat();
+
+        this._center = new MercatorCoordinate(position[0], position[1], position[2]).toLngLat();
+        this._unmodified = false;
+        this._constrain();
+        this._calcMatrices();
     }
 
     _worldSizeFromZoom(zoom: number): number {
