@@ -348,7 +348,7 @@ test('transform', (t) => {
 
         t.true(updatedAltitude > 10);
         t.equal(fixedNum(transform.zoom), fixedNum(zoom));
-        t.equal(transform.bearing, -45);
+        t.equal(fixedNum(transform.bearing), -45);
 
         t.end();
     });
@@ -974,6 +974,35 @@ test('transform', (t) => {
             t.deepEqual(fixedVec3(frame.right, 5), [1, 0, 0]);
             t.deepEqual(fixedVec3(frame.up, 5), [0, -0.5, 0.86603]);
             t.deepEqual(fixedVec3(frame.forward, 5), [0, -0.86603, -0.5]);
+
+            t.end();
+        });
+
+        t.test('Position should ignore the camera elevation reference mode', (t) => {
+            let groundElevation = 200;
+            const transform = new Transform(0, 22, 0, 85);
+            transform.resize(100, 100);
+            transform._elevation = {
+                getAtPoint: () => groundElevation
+            };
+
+            const expected = new FreeCameraOptions();
+            expected.position = new MercatorCoordinate(0.1596528750412326, 0.3865452936454495, 0.00007817578881907832);
+            expected.orientation = [-0.35818916989938915, -0.3581891698993891, 0.6096724682702889, 0.609672468270289];
+
+            transform.cameraElevationReference = "sea";
+            transform.setFreeCameraOptions(expected);
+            let actual = transform.getFreeCameraOptions();
+            t.deepEqual(fixedCoord(actual.position), fixedCoord(expected.position));
+            t.deepEqual(fixedVec4(actual.orientation), fixedVec4(expected.orientation));
+
+            transform.cameraElevationReference = "ground";
+            groundElevation = 300;
+            expected.position = new MercatorCoordinate(0.16, 0.39, 0.000078);
+            transform.setFreeCameraOptions(expected);
+            actual = transform.getFreeCameraOptions();
+            t.deepEqual(fixedCoord(actual.position), fixedCoord(expected.position));
+            t.deepEqual(fixedVec4(actual.orientation), fixedVec4(expected.orientation));
 
             t.end();
         });
