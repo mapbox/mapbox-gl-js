@@ -205,6 +205,8 @@ jobs:
       - attach_workspace:
           at: .
       - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 

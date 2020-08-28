@@ -1,14 +1,16 @@
 import {plugins} from '../../build/rollup_plugins';
 
+const suiteName = process.env.SUITE_NAME;
+
 export default {
-    input: 'test/integration/lib/query-browser.js',
+    input: `test/integration/lib/${suiteName}.js`,
     output: {
-        name: 'queryTests',
+        name: `${suiteName}Tests`,
         format: 'iife',
         sourcemap: 'inline',
         indent: false,
-        file: 'test/integration/dist/query-test.js'
+        file: `test/integration/dist/integration-test.js`
     },
-    plugins: plugins(false, false),
+    plugins: plugins(false, false, true),
     external: [ 'tape', 'mapboxgl' ]
 };

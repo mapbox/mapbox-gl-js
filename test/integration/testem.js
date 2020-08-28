@@ -13,7 +13,10 @@ const rollupDevConfig = require('../../rollup.config').default;
 const rollupTestConfig = require('./rollup.config.test').default;
 
 const rootFixturePath = 'test/integration/';
-const suitePath = 'query-tests';
+const outputPath = `${rootFixturePath}dist`;
+const suiteName = process.env.SUITE_NAME;
+const suitePath = `${suiteName}-tests`;
+const ciOutputFile = `${rootFixturePath}${suitePath}/test-results.xml`;
 const fixtureBuildInterval = 2000;
 
 let beforeHookInvoked = false;
@@ -22,21 +25,32 @@ let server;
 let fixtureWatcher;
 const rollupWatchers = {};
 
-module.exports =  {
-    "test_page": "test/integration/testem_page.html",
-    "src_files": [
-        "dist/mapbox-gl-dev.js",
-        "test/integration/dist/query-test.js"
-    ],
-    "launch_in_dev": [],
-    "launch_in_ci": [ "Chrome" ],
-    "browser_args": {
-        "Chrome": {
-            "mode": "ci",
-            "args": [ "--headless", "--disable-gpu", "--remote-debugging-port=9222" ]
+function getQueryParams() {
+    const params = process.argv.slice(2).filter((value, index, self) => { return self.indexOf(value) === index; }) || [];
+    const filterIndex = params.findIndex((elem) => { return String(elem).startsWith("tests="); });
+    const queryParams = {};
+    if (filterIndex !== -1) {
+        const split = String(params.splice(filterIndex, 1)).split('=');
+        if (split.length === 2) {
+            queryParams.filter = split[1];
         }
-    },
+    }
+    return queryParams;
+}
+
+const defaultTestemConfig = {
+    "test_page": "test/integration/testem_page.html",
+    "query_params": getQueryParams(),
     "proxies": {
+        "/image":{
+            "target": "http://localhost:2900"
+        },
+        "/geojson":{
+            "target": "http://localhost:2900"
+        },
+        "/video":{
+            "target": "http://localhost:2900"
+        },
         "/tiles":{
             "target": "http://localhost:2900"
         },
@@ -53,6 +67,9 @@ module.exports =  {
             "target": "http://localhost:2900"
         },
         "/write-file":{
+            "target": "http://localhost:2900"
+        },
+        "/mvt-fixtures":{
             "target": "http://localhost:2900"
         }
     },
@@ -76,15 +93,31 @@ module.exports =  {
     }
 };
 
+const ciTestemConfig = {
+    "launch_in_ci": [ "Chrome" ],
+    "reporter": "xunit",
+    "report_file": ciOutputFile,
+    "xunit_intermediate_output": true,
+    "browser_args": {
+        "Chrome": {
+            "ci": [ "--disable-backgrounding-occluded-windows" ]
+        }
+    }
+};
+
+const testemConfig = process.env.CI ? Object.assign({}, defaultTestemConfig, ciTestemConfig) : defaultTestemConfig;
+
+module.exports = testemConfig;
+
 // helper method that builds test artifacts when in CI mode.
 // Retuns a promise that resolves when all artifacts are built
 function buildArtifactsCi() {
     //1. Compile fixture data into a json file, so it can be bundled
-    generateFixtureJson(rootFixturePath, suitePath);
+    generateFixtureJson(rootFixturePath, suitePath, outputPath, suitePath === 'render-tests');
     //2. Build tape
     const tapePromise = buildTape();
     //3. Build test artifacts in parallel
-    const rollupPromise = runAll(['build-query-suite', 'build-dev'], {parallel: true});
+    const rollupPromise = runAll([`build-test-suite`, 'build-dev'], {parallel: true});
 
     return Promise.all([tapePromise, rollupPromise]);
 }
@@ -95,21 +128,21 @@ function buildArtifactsDev() {
     return buildTape().then(() => {
         // A promise that resolves on the first build of fixtures.json
         return new Promise((resolve, reject) => {
-            fixtureWatcher = chokidar.watch(getAllFixtureGlobs(rootFixturePath, suitePath));
+            fixtureWatcher = chokidar.watch(getAllFixtureGlobs(rootFixturePath, suitePath), {ignored: (path) => path.includes('actual.png') || path.includes('actual.json') || path.includes('diff.png')});
             let needsRebuild = false;
             fixtureWatcher.on('ready', () => {
-                generateFixtureJson(rootFixturePath, suitePath);
+                generateFixtureJson(rootFixturePath, suitePath, outputPath, suitePath === 'render-tests');
 
                 //Throttle calls to `generateFixtureJson` to run every 2s
                 setInterval(() => {
                     if (needsRebuild) {
-                        generateFixtureJson(rootFixturePath, suitePath);
+                        generateFixtureJson(rootFixturePath, suitePath, outputPath, suitePath === 'render-tests');
                         needsRebuild = false;
                     }
                 }, fixtureBuildInterval);
 
                 //Flag needs rebuild when anything changes
-                fixtureWatcher.on('all', () => {
+                fixtureWatcher.on('change', () => {
                     needsRebuild = true;
                 });
                 // Resolve promise once chokidar has finished first scan of fixtures
@@ -144,7 +177,7 @@ function buildArtifactsDev() {
 
         return Promise.all([
             startRollupWatcher('mapbox-gl', rollupDevConfig),
-            startRollupWatcher('query-suite', rollupTestConfig),
+            startRollupWatcher(suitePath, rollupTestConfig)
         ]);
     });
 }
