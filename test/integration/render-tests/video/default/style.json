@@ -34,7 +34,8 @@
         ]
       ],
       "urls": [
-        "local://video/0.png"
+        "https://static-assets.mapbox.com/mapbox-gl-js/drone.mp4",
+        "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm"
       ]
     }
   },

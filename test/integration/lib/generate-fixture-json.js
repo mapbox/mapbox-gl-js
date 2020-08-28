@@ -4,8 +4,6 @@ const fs = require('fs');
 const glob = require('glob');
 const localizeURLs = require('./localize-urls');
 
-const OUTPUT_FILE = 'fixtures.json';
-
 exports.generateFixtureJson = generateFixtureJson;
 exports.getAllFixtureGlobs = getAllFixtureGlobs;
 
@@ -47,7 +45,7 @@ function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 't
 
                 allFiles[fixturePath] = json;
             } else if (extension === '.png') {
-                allFiles[fixturePath] = pngToBase64Str(fixturePath);
+                allFiles[fixturePath] = true;
             } else {
                 throw new Error(`${extension} is incompatible , file path ${fixturePath}`);
             }
@@ -64,7 +62,7 @@ function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 't
         //Skip if test is malformed
         if (malformedTests[testName]) { continue; }
 
-        //Lazily initaialize an object to store each file wihin a particular testName
+        //Lazily initialize an object to store each file wihin a particular testName
         if (result[testName] == null) {
             result[testName] = {};
         }
@@ -74,7 +72,8 @@ function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 't
     }
 
     const outputStr = JSON.stringify(result, null, 4);
-    const outputPath = path.join(outputDirectory, OUTPUT_FILE);
+    const outputFile = `${suiteDirectory.split('-')[0]}-fixtures.json`;
+    const outputPath = path.join(outputDirectory, outputFile);
 
     return new Promise((resolve, reject) => {
         fs.writeFile(outputPath, outputStr, {encoding: 'utf8'}, (err) => {
@@ -87,7 +86,7 @@ function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 't
 
 function getAllFixtureGlobs(rootDirectory, suiteDirectory) {
     const basePath = path.join(rootDirectory, suiteDirectory);
-    const jsonPaths = path.join(basePath, '/**/*.json');
+    const jsonPaths = path.join(basePath, '/**/[!actual]*.json');
     const imagePaths = path.join(basePath, '/**/*.png');
 
     return [jsonPaths, imagePaths];
@@ -95,10 +94,6 @@ function getAllFixtureGlobs(rootDirectory, suiteDirectory) {
 
 function parseJsonFromFile(filePath) {
     return JSON.parse(fs.readFileSync(filePath, {encoding: 'utf8'}));
-}
-
-function pngToBase64Str(filePath) {
-    return fs.readFileSync(filePath).toString('base64');
 }
 
 function processStyle(testName, style) {

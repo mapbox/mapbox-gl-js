@@ -27,6 +27,7 @@ import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
 import {PerformanceUtils} from './util/performance';
 import {FreeCameraOptions} from './ui/free_camera';
+import browser from './util/browser';
 
 const exported = {
     version,
@@ -176,7 +177,7 @@ const exported = {
 };
 
 //This gets automatically stripped out in production builds.
-Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics});
+Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics, setNow: browser.setNow, restoreNow: browser.restoreNow});
 
 /**
  * The version of Mapbox GL JS in use as specified in `package.json`,
