@@ -13,7 +13,6 @@ import type {RGBAImage} from '../../util/image';
 import type SkyboxGeometry from '../../render/skybox_geometry';
 import type {LightPosition} from '../light';
 import {warnOnce, degToRad} from '../../util/util';
-import type Painter from '../../render/painter';
 import {vec3, quat} from 'gl-matrix';
 
 function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean): vec3 {
