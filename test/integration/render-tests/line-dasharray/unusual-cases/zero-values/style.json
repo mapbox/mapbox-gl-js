@@ -1,0 +1,42 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            0
+          ],
+          [
+            10,
+            0
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-width": 8,
+        "line-dasharray": [0, 0, 0, 0],
+        "line-color": "blue"
+      }
+    }
+  ]
+}
