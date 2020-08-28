@@ -31,6 +31,14 @@ const exported = {
      */
     now,
 
+    setNow(time: number) {
+        exported.now = () => time;
+    },
+
+    restoreNow() {
+        exported.now = now;
+    },
+
     frame(fn: (paintStartTimestamp: number) => void): Cancelable {
         const frame = raf(fn);
         return {cancel: () => cancel(frame)};

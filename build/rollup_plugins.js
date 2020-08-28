@@ -9,11 +9,12 @@ import {terser} from 'rollup-plugin-terser';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import {createFilter} from 'rollup-pluginutils';
 import strip from '@rollup/plugin-strip';
+import replace from 'rollup-plugin-replace';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
-export const plugins = (minified, production) => [
+export const plugins = (minified, production, test) => [
     flow(),
     minifyStyleSpec(),
     json(),
@@ -21,8 +22,12 @@ export const plugins = (minified, production) => [
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'Debug.*']
     }) : false,
+    test ? replace({
+        'process.env.CI': JSON.stringify(process.env.CI),
+        'process.env.UPDATE': JSON.stringify(process.env.UPDATE)
+    }) : false,
     glsl('./src/shaders/*.glsl', production),
-    buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
+    buble({transforms: {dangerousForOf: true, asyncAwait: !test}, objectAssign: "Object.assign"}),
     minified ? terser({
         compress: {
             pure_getters: true,

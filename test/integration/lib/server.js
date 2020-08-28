@@ -20,7 +20,12 @@ module.exports = function () {
 
                 //Write data to disk
                 const {filePath, data} = JSON.parse(body);
-                fs.writeFile(path.join(process.cwd(), filePath), data, 'base64', () => {
+
+                let encoding;
+                if (filePath.split('.')[1] !== 'json') {
+                    encoding = 'base64';
+                }
+                fs.writeFile(path.join(process.cwd(), filePath), data, encoding, () => {
                     res.writeHead(200, {'Content-Type': 'text/html'});
                     res.end('ok');
                 });
