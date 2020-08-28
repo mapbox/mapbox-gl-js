@@ -1,0 +1,91 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "description": "Single world copy verifies also that there are no tile skirts visible",
+      "operations": [
+        ["wait"],
+        ["setRenderWorldCopies", false],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 0.99,
+  "center": [-180, 0],
+  "pitch": 85,
+  "bearing": 45,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "image": {
+      "type": "image",
+      "coordinates": [
+        [
+          -210,
+          70
+        ],
+        [
+          190,
+          80
+        ],
+        [
+          210,
+          -70
+        ],
+        [
+          -190,
+          -80
+        ]
+      ],
+      "url": "local://image/1.png"
+    },
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}-terrain-512.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 512
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "brown"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "purple"
+      }
+    },
+    {
+      "id": "image",
+      "type": "raster",
+      "source": "image",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-opacity": 0.3
+      }
+    }
+  ]
+}

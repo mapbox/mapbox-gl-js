@@ -5,8 +5,6 @@ import {
     Uniform1f,
     UniformMatrix4f
 } from '../render/uniform_binding';
-import EXTENT from '../data/extent';
-import {GRID_DIM} from './terrain';
 
 import type Context from '../gl/context';
 import type {UniformValues, UniformLocations} from '../render/uniform_binding';
@@ -25,13 +23,11 @@ const terrainRasterUniforms = (context: Context, locations: UniformLocations): T
 
 const terrainRasterUniformValues = (
     matrix: Float32Array,
-    zoom: number
+    skirtHeight: number
 ): UniformValues<TerrainRasterUniformsType> => ({
     'u_matrix': matrix,
     'u_image0': 0,
-    // Skirt height calculation is heuristic: provided value hides
-    // seams between tiles and it is not too large.
-    'u_skirt_height': Math.pow(2, 16 - zoom) * EXTENT / GRID_DIM
+    'u_skirt_height': skirtHeight
 });
 
 export {terrainRasterUniforms, terrainRasterUniformValues};
