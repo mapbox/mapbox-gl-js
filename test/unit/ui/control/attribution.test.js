@@ -239,3 +239,27 @@ test('AttributionControl hides attributions for sources that are not currently v
         }
     });
 });
+
+test('AttributionControl toggles attributions for sources whose visibility changes when zooming', (t) => {
+    const map = createMap(t);
+    const attribution = new AttributionControl();
+    map.addControl(attribution);
+
+    map.on('load', () => {
+        map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Used'});
+        map.addLayer({id: '1', type: 'fill', source: '1', minzoom: 12});
+    });
+
+    map.on('data', (e) => {
+        if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+            t.equal(attribution._innerContainer.innerHTML, '');
+            map.setZoom(13);
+        }
+        if (e.dataType === 'source' && e.sourceDataType === 'visibility') {
+            if (map.getZoom() === 13) {
+                t.equal(attribution._innerContainer.innerHTML, 'Used');
+                t.end();
+            }
+        }
+    });
+});
