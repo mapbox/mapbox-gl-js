@@ -132,7 +132,7 @@ class Hash {
     }
 
     _updateHashUnthrottled() {
-        // Replace if already present else append the updated hash string
+        // Replace if already present, else append the updated hash string
         const location = window.location.href.replace(/(#.+)?$/, this.getHashString());
         try {
             window.history.replaceState(window.history.state, document.title, location);
