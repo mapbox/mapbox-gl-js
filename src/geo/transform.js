@@ -864,7 +864,7 @@ class Transform {
     }
 
     /**
-     *  Helper method to convert the ray intersectsection with the map plane to MercatorCoordinate
+     *  Helper method to convert the ray intersection with the map plane to MercatorCoordinate
      *
      * @param {RayIntersectionResult} rayIntersection
      * @returns {MercatorCoordinate}
@@ -1347,7 +1347,42 @@ class Transform {
         return topPoint[3] / this.cameraToCenterDistance;
     }
 
-    //Checks the four corners of the frustum to see if they lie in the map's quad.
+    isHorizonVisibleForPoints(p0: Point, p1: Point): boolean {
+        const minX = Math.min(p0.x, p1.x);
+        const maxX = Math.max(p0.x, p1.x);
+        const minY = Math.min(p0.y, p1.y);
+        const maxY = Math.max(p0.y, p1.y);
+
+        const min = new Point(minX, minY);
+        const max = new Point(minX, minY);
+
+        const corners = [
+            min, max,
+            new Point(minX, maxY),
+            new Point(maxX, minY),
+        ];
+
+        const minWX = (this._renderWorldCopies) ? -NUM_WORLD_COPIES : 0;
+        const maxWX = (this._renderWorldCopies) ? 1 + NUM_WORLD_COPIES : 1;
+        const minWY = 0;
+        const maxWY = 1;
+
+        for (const corner of corners) {
+            const rayIntersection = this.pointRayIntersection(corner);
+            if (rayIntersection.t < 0) {
+                return true;
+            }
+            const coordinate = this.rayIntersectionCoordinate(rayIntersection);
+            if (coordinate.x < minWX || coordinate.y < minWY ||
+                coordinate.x > maxWX || coordinate.y > maxWY) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Checks the four corners of the frustum to see if they lie in the map's quad.
     isHorizonVisible(): boolean {
         // we consider the horizon as visible if the angle between
         // a the top plane of the frustum and the map plane is smaller than this threshold.
@@ -1356,32 +1391,7 @@ class Transform {
             return true;
         }
 
-        const corners = [
-            new Point(0, 0),
-            new Point(this.width, 0),
-            new Point(this.width, this.height),
-            new Point(0, this.height)
-        ];
-
-        const minX = (this._renderWorldCopies) ? -NUM_WORLD_COPIES : 0;
-        const maxX = (this._renderWorldCopies) ? 1 + NUM_WORLD_COPIES : 1;
-        const minY = 0;
-        const maxY = 1;
-
-        for (const corner of corners) {
-            const rayIntersection = this.pointRayIntersection(corner);
-            if (rayIntersection.t < 0) {
-                return true;
-            }
-
-            const coordinate = this.rayIntersectionCoordinate(rayIntersection);
-            if (coordinate.x < minX || coordinate.y < minY ||
-                coordinate.x > maxX || coordinate.y > maxY) {
-                return true;
-            }
-        }
-
-        return false;
+        return this.isHorizonVisibleForPoints(new Point(0, 0), new Point(this.width, this.height));
     }
 
     /**

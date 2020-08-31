@@ -7,7 +7,8 @@ import {
     clamp,
     wrap,
     ease as defaultEasing,
-    pick
+    pick,
+    degToRad
 } from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import browser from '../util/browser';
@@ -17,13 +18,15 @@ import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented';
 import assert from 'assert';
 import {Debug} from '../util/debug';
-
+import MercatorCoordinate from '../geo/mercator_coordinate';
+import {vec3} from 'gl-matrix';
 import type {FreeCameraOptions} from './free_camera';
 import type Transform from '../geo/transform';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {TaskID} from '../util/task_queue';
 import type {PointLike} from '@mapbox/point-geometry';
+import {Aabb, Frustum} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets';
 
 /**
@@ -497,6 +500,32 @@ class Camera extends Evented {
         return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
     }
 
+    _extendCameraOptions(options?: CameraOptions) {
+        const defaultPadding = {
+            top: 0,
+            bottom: 0,
+            right: 0,
+            left: 0
+        };
+        options = extend({
+            padding: defaultPadding,
+            offset: [0, 0],
+            maxZoom: this.transform.maxZoom
+        }, options);
+
+        if (typeof options.padding === 'number') {
+            const p = options.padding;
+            options.padding = {
+                top: p,
+                bottom: p,
+                right: p,
+                left: p
+            };
+        }
+        options.padding = extend(defaultPadding, options.padding);
+        return options;
+    }
+
     /**
      * Calculate the center of these two points in the viewport and use
      * the highest zoom level up to and including `Map#getMaxZoom()` that fits
@@ -521,29 +550,7 @@ class Camera extends Evented {
      * });
      */
     _cameraForBoxAndBearing(p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
-        const defaultPadding = {
-            top: 0,
-            bottom: 0,
-            right: 0,
-            left: 0
-        };
-        options = extend({
-            padding: defaultPadding,
-            offset: [0, 0],
-            maxZoom: this.transform.maxZoom
-        }, options);
-
-        if (typeof options.padding === 'number') {
-            const p = options.padding;
-            options.padding = {
-                top: p,
-                bottom: p,
-                right: p,
-                left: p
-            };
-        }
-
-        options.padding = extend(defaultPadding, options.padding);
+        const eOptions = this._extendCameraOptions(options);
         const tr = this.transform;
         const edgePadding = tr.padding;
 
@@ -551,16 +558,16 @@ class Camera extends Evented {
         // in a coordinate system rotate to match the destination bearing.
         const p0world = tr.project(LngLat.convert(p0));
         const p1world = tr.project(LngLat.convert(p1));
-        const p0rotated = p0world.rotate(-bearing * Math.PI / 180);
-        const p1rotated = p1world.rotate(-bearing * Math.PI / 180);
+        const p0rotated = p0world.rotate(-degToRad(bearing));
+        const p1rotated = p1world.rotate(-degToRad(bearing));
 
         const upperRight = new Point(Math.max(p0rotated.x, p1rotated.x), Math.max(p0rotated.y, p1rotated.y));
         const lowerLeft = new Point(Math.min(p0rotated.x, p1rotated.x), Math.min(p0rotated.y, p1rotated.y));
 
         // Calculate zoom: consider the original bbox and padding.
         const size = upperRight.sub(lowerLeft);
-        const scaleX = (tr.width - (edgePadding.left + edgePadding.right + options.padding.left + options.padding.right)) / size.x;
-        const scaleY = (tr.height - (edgePadding.top + edgePadding.bottom + options.padding.top + options.padding.bottom)) / size.y;
+        const scaleX = (tr.width - (edgePadding.left + edgePadding.right + eOptions.padding.left + eOptions.padding.right)) / size.x;
+        const scaleY = (tr.height - (edgePadding.top + edgePadding.bottom + eOptions.padding.top + eOptions.padding.bottom)) / size.y;
 
         if (scaleY < 0 || scaleX < 0) {
             warnOnce(
@@ -568,13 +575,12 @@ class Camera extends Evented {
             );
             return;
         }
-
-        const zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+        const zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), eOptions.maxZoom);
 
         // Calculate center: apply the zoom, the configured offset, as well as offset that exists as a result of padding.
-        const offset = (typeof options.offset.x === 'number') ? new Point(options.offset.x, options.offset.y) : Point.convert(options.offset);
-        const paddingOffsetX = (options.padding.left - options.padding.right) / 2;
-        const paddingOffsetY = (options.padding.top - options.padding.bottom) / 2;
+        const offset = (typeof eOptions.offset.x === 'number') ? new Point(eOptions.offset.x, eOptions.offset.y) : Point.convert(eOptions.offset);
+        const paddingOffsetX = (eOptions.padding.left - eOptions.padding.right) / 2;
+        const paddingOffsetY = (eOptions.padding.top - eOptions.padding.bottom) / 2;
         const paddingOffset = new Point(paddingOffsetX, paddingOffsetY);
         const rotatedPaddingOffset = paddingOffset.rotate(bearing * Math.PI / 180);
         const offsetAtInitialZoom = offset.add(rotatedPaddingOffset);
@@ -586,6 +592,86 @@ class Camera extends Evented {
             center,
             zoom,
             bearing
+        };
+    }
+
+    /**
+     * Finds the best camera fit for two given viewport point coordinates.
+     * The method will iteratively ray march towards the target and stops
+     * when any of the given input points collides with the view frustum.
+     * @memberof Map#
+     * @param {LngLatLike} p0 First point
+     * @param {LngLatLike} p1 Second point
+     * @param options
+     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+     * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
+     *      `center`, `zoom`, `bearing` and `pitch`. If map is unable to fit, method will warn and return undefined.
+     * @private
+     */
+    _cameraForBox(p0: LngLatLike, p1: LngLatLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+        const eOptions = this._extendCameraOptions(options);
+
+        p0 = LngLat.convert(p0);
+        p1 = LngLat.convert(p1);
+
+        const tr = this.transform.clone();
+        tr.padding = eOptions.padding;
+
+        const camera = this.getFreeCameraOptions();
+
+        camera.lookAtPoint(new LngLat((p0.lng + p1.lng) * 0.5, (p0.lat + p1.lat) * 0.5));
+
+        tr.setFreeCameraOptions(camera);
+
+        const coord0 = MercatorCoordinate.fromLngLat(p0);
+        const coord1 = MercatorCoordinate.fromLngLat(p1);
+
+        const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
+
+        const centerIntersectionPoint = tr.pointRayIntersection(tr.centerPoint);
+        const centerIntersectionCoord = toVec3(tr.rayIntersectionCoordinate(centerIntersectionPoint));
+        const centerMercatorRay = tr.screenPointToMercatorRay(tr.centerPoint);
+
+        const maxMarchingSteps = 10;
+
+        let steps = 0;
+        do {
+            const z = Math.floor(tr.zoom);
+            const z2 = 1 << z;
+
+            const minX = Math.min(z2 * coord0.x, z2 * coord1.x);
+            const minY = Math.min(z2 * coord0.y, z2 * coord1.y);
+            const maxX = Math.max(z2 * coord0.x, z2 * coord1.x);
+            const maxY = Math.max(z2 * coord0.y, z2 * coord1.y);
+
+            const aabb = new Aabb([minX, minY, 0], [maxX, maxY, 0]);
+
+            const frustum = Frustum.fromInvProjectionMatrix(tr.invProjMatrix, tr.worldSize, z);
+
+            // Stop marching when frustum intersection
+            // reports any aabb point not fully inside
+            if (aabb.intersects(frustum) !== 2) {
+                break;
+            }
+
+            const cameraPositionToGround = vec3.sub([], tr._camera.position, centerIntersectionCoord);
+            const halfDistanceToGround = 0.5 * vec3.length(cameraPositionToGround);
+
+            // March the camera position forward by half the distance to the ground
+            tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, centerMercatorRay.dir, halfDistanceToGround);
+            try {
+                tr._updateStateFromCamera();
+            } catch (e) {
+                warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
+                return;
+            }
+        } while (++steps < maxMarchingSteps);
+
+        return {
+            center: tr.center,
+            zoom: tr.zoom,
+            bearing: tr.bearing,
+            pitch: tr.pitch
         };
     }
 
@@ -630,7 +716,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param p0 First point on screen, in pixel coordinates
      * @param p1 Second point on screen, in pixel coordinates
-     * @param bearing Desired map bearing at end of animation, in degrees
+     * @param bearing Desired map bearing at end of animation, in degrees. This value is ignored if the map has non-zero pitch.
      * @param options Options object
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
@@ -652,14 +738,33 @@ class Camera extends Evented {
      * @see Used by {@link BoxZoomHandler}
      */
     fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: AnimationOptions & CameraOptions, eventData?: Object) {
+        const point0 = Point.convert(p0);
+        const point1 = Point.convert(p1);
+
+        if (this.transform.isHorizonVisibleForPoints(point0, point1)) {
+            return this;
+        }
+
+        if (this.transform.pitch === 0 || this.transform.elevation) {
+            return this._fitInternal(
+                this._cameraForBoxAndBearing(
+                    this.transform.pointLocation(Point.convert(p0)),
+                    this.transform.pointLocation(Point.convert(p1)),
+                    bearing,
+                    options),
+                options,
+                eventData);
+        }
+
+        const lngLat0 = this.transform.pointLocation(point0);
+        const lngLat1 = this.transform.pointLocation(point1);
+
         return this._fitInternal(
-            this._cameraForBoxAndBearing(
-                this.transform.pointLocation(Point.convert(p0)),
-                this.transform.pointLocation(Point.convert(p1)),
-                bearing,
+            this._cameraForBox(
+                lngLat0,
+                lngLat1,
                 options),
-            options,
-            eventData);
+            options, eventData);
     }
 
     _fitInternal(calculatedOptions?: CameraOptions & AnimationOptions, options?: AnimationOptions & CameraOptions, eventData?: Object) {

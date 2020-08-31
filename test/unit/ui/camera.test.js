@@ -22,7 +22,7 @@ test('camera', (t) => {
     function createCamera(options) {
         options = options || {};
 
-        const transform = new Transform(0, 20, 0, 60, options.renderWorldCopies);
+        const transform = new Transform(0, 20, 0, 85, options.renderWorldCopies);
         transform.resize(512, 512);
 
         const camera = attachSimulateFrame(new Camera(transform, {}))
@@ -1968,6 +1968,38 @@ test('camera', (t) => {
             t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -45, lat: 40.9799}, 'centers, rotates 225 degrees, and zooms based on screen coordinates');
             t.equal(fixedNum(camera.getZoom(), 3), 1.5);
             t.equal(camera.getBearing(), -135);
+            t.equal(camera.getPitch(), 0);
+            t.end();
+        });
+
+        t.test('bearing 225, pitch 30', (t) => {
+            const pitch = 30;
+            const camera = createCamera({pitch});
+            const p0 = [200, 500];
+            const p1 = [210, 510];
+            const bearing = 225;
+
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -30.215, lat: -19.8767}, 'centers, rotates 225 degrees, pitch 30 degrees, and zooms based on screen coordinates');
+            t.equal(fixedNum(camera.getZoom(), 3), 1.173);
+            t.equal(camera.getBearing(), -16.844931165335765);
+            t.end();
+        });
+
+        t.test('bearing 225, pitch 80, over horizon', (t) => {
+            const pitch = 80;
+            const camera = createCamera({pitch});
+            const p0 = [128, 0];
+            const p1 = [256, 10];
+            const bearing = 225;
+
+            const zoom = camera.getZoom();
+            const center = camera.getCenter();
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), center, 'centers, rotates 225 degrees, pitch 80 degrees, and zooms based on screen coordinates');
+            t.equal(fixedNum(camera.getZoom(), 3), zoom);
+            t.equal(camera.getBearing(), 0);
+            t.equal(camera.getPitch(), pitch);
             t.end();
         });
 
