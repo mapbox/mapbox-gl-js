@@ -168,7 +168,7 @@ export class Terrain extends Elevation {
     renderingToTexture: boolean;
     style: Style;
     orthoMatrix: mat4;
-    valid: boolean;
+    enabled: boolean;
 
     drapeFirst: boolean;
     drapeFirstPending: boolean;
@@ -238,23 +238,16 @@ export class Terrain extends Elevation {
      * before using transform for source cache update.
      */
     update(style: Style, transform: Transform) {
+        const enabled = style && style.terrain && style.terrain.isEnabled();
+        if (!enabled) return this._disable();
+
         if (this.style !== style) {
             style.on('data', this._onStyleDataEvent.bind(this));
             this.style = style;
         }
-        const sourceId = style.terrain.properties.get('source');
-        const sourceCaches = style.sourceCaches;
-        this.sourceCache = sourceCaches[sourceId];
-        if (!this.sourceCache) {
-            this._disable();
-            return console.warn(`Terrain source "${sourceId}" is not defined.`);
-        }
-        if (this.sourceCache.getSource().type !== 'raster-dem') {
-            this._disable();
-            return console.warn(`Terrain cannot use source "${sourceId}" for terrain. Only 'raster-dem' source type is supported.`);
-        }
+        this.enabled = enabled;
+        this.sourceCache = style.sourceCaches[style.terrain.properties.get('source')];
         this._exaggeration = style.terrain.properties.get('exaggeration');
-        this.valid = true;
 
         const updateSourceCache = () => {
             if (this.sourceCache.used) {
@@ -302,7 +295,8 @@ export class Terrain extends Elevation {
 
     // Terrain
     _disable() {
-        this.valid = false;
+        if (!this.enabled) return;
+        this.enabled = false;
         this.proxySourceCache.deallocRenderCache();
         if (this.painter.style) {
             for (const id in this.painter.style.sourceCaches) {
@@ -325,7 +319,7 @@ export class Terrain extends Elevation {
 
     // Implements Elevation::_source.
     _source(): ?SourceCache {
-        return this.valid ? this.sourceCache : null;
+        return this.enabled ? this.sourceCache : null;
     }
 
     // Implements Elevation::exaggeration.
@@ -345,7 +339,7 @@ export class Terrain extends Elevation {
     // terrain tile provides elevation data when rendering (draping) proxy tile
     // texture over terrain grid.
     updateTileBinding(sourcesCoords: {[string]: Array<OverscaledTileID>}) {
-        if (!this.valid) return;
+        if (!this.enabled) return;
         this.prevTerrainTileForTile = this.terrainTileForTile;
 
         const psc = this.proxySourceCache;
@@ -942,7 +936,7 @@ export class Terrain extends Elevation {
     }
 
     _isLayerDrapedOverTerrain(styleLayer: StyleLayer): boolean {
-        if (!this.valid) return false;
+        if (!this.enabled) return false;
         return drapedLayers.hasOwnProperty(styleLayer.type);
     }
 
@@ -1128,7 +1122,7 @@ export class Terrain extends Elevation {
     }
 
     findDEMTileFor(tileID: OverscaledTileID): ?Tile {
-        return this.valid ? this._findTileCoveringTileID(tileID, this.sourceCache) : null;
+        return this.enabled ? this._findTileCoveringTileID(tileID, this.sourceCache) : null;
     }
 
     /*

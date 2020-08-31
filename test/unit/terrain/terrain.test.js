@@ -119,12 +119,9 @@ test('Elevation', (t) => {
                     t.equal(elevation3, 0);
 
                     t.test('remove source', t => {
-                        t.stub(console, 'warn');
                         map.removeSource('mapbox-dem');
                         const elevation2 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
                         t.equal(elevation2, elevationError);
-                        t.ok(console.warn.calledOnce);
-                        t.ok(console.warn.getCall(0).calledWithMatch(/Terrain source "mapbox-dem" is not defined./));
 
                         setMockElevationTerrain(map, zeroDem, TILE_SIZE);
 
@@ -399,9 +396,10 @@ test('Elevation', (t) => {
 const spec = styleSpec.terrain;
 
 test('Terrain style', (t) => {
+    const style = createStyle();
 
     test('Terrain defaults', (t) => {
-        const terrain = new Terrain({});
+        const terrain = new Terrain(style, {});
         terrain.recalculate({zoom: 0, zoomHistory: {}});
 
         t.deepEqual(terrain.properties.get('source'), spec.source.default);
@@ -411,7 +409,7 @@ test('Terrain style', (t) => {
     });
 
     test('Exaggeration with stops function', (t) => {
-        const terrain = new Terrain({
+        const terrain = new Terrain(style, {
             source: "dem",
             exaggeration: {
                 stops: [[15, 0.2], [17, 0.8]]
