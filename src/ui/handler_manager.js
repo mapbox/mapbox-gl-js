@@ -123,6 +123,8 @@ export type HandlerResult = {|
     around?: Point | null,
     // same as above, except for pinch actions, which are given higher priority
     pinchAround?: Point | null,
+    // the point to not move when changing the camera in mercator coordinates
+    aroundCoord?: MercatorCoordinate | null,
     // A method that can fire a one-off easing by directly changing the map's camera.
     cameraAnimation?: (map: Map) => any;
 
@@ -448,6 +450,7 @@ class HandlerManager {
             if (change.bearingDelta) combined.bearingDelta = (combined.bearingDelta || 0) + change.bearingDelta;
             if (change.pitchDelta) combined.pitchDelta = (combined.pitchDelta || 0) + change.pitchDelta;
             if (change.around !== undefined) combined.around = change.around;
+            if (change.aroundCoord !== undefined) combined.aroundCoord = change.aroundCoord;
             if (change.pinchAround !== undefined) combined.pinchAround = change.pinchAround;
             if (change.noInertia) combined.noInertia = change.noInertia;
 
@@ -487,7 +490,7 @@ class HandlerManager {
             return this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
         }
 
-        let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, pinchAround} = combinedResult;
+        let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
 
         if (pinchAround !== undefined) {
             around = pinchAround;
@@ -528,19 +531,20 @@ class HandlerManager {
             tr._updateCameraState();
 
             const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
-            const pickedPosition: any = tr._elevation ? tr._elevation.pointCoordinate(around) : toVec3(tr.pointCoordinate(around));
-            const aroundRay = tr.screenPointToMercatorRay(around);
+            const pickedPosition: vec3 = aroundCoord ? toVec3(aroundCoord) : toVec3(tr.pointCoordinate3D(around));
+
+            const aroundRay = {dir: vec3.normalize([], vec3.sub([], pickedPosition, tr._camera.position))};
             const centerRay = tr.screenPointToMercatorRay(tr.centerPoint);
 
             if (aroundRay.dir[2] < 0) {
                 // Compute center point on the elevated map plane by casting a ray from the center of the screen.
                 // ZoomDelta is then subtracted from the relative zoom value and converted to a movement vector
-                const pickedAltitude = pickedPosition !== null ? altitudeFromMercatorZ(pickedPosition[2], pickedPosition[1]) : 0;
+                const pickedAltitude = altitudeFromMercatorZ(pickedPosition[2], pickedPosition[1]);
                 const centerOnTargetPlane = tr.rayIntersectionCoordinate(tr.pointRayIntersection(tr.centerPoint, pickedAltitude));
                 const movement = tr.zoomDeltaToMovement(toVec3(centerOnTargetPlane), zoomDelta) * (centerRay.dir[2] / aroundRay.dir[2]);
 
                 tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, aroundRay.dir, movement);
-            } else if (tr._terrainEnabled() && pickedPosition !== null) {
+            } else if (tr._terrainEnabled()) {
                 // Special handling is required if the ray created from the cursor is heading up.
                 // This scenario is possible if user is trying to zoom towards e.g. a hill or a mountain.
                 // Convert zoomDelta to a movement vector as if the camera would be orbiting around the picked point
