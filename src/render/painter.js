@@ -161,26 +161,18 @@ class Painter {
     }
 
     updateTerrain(style: Style) {
-        const enabled = style && style.terrain && style.terrain.properties && style.terrain.properties.get('source');
-        if (!enabled && (!this._terrain || !this._terrain.valid)) return;
-        if (!enabled) {
-            if (this._terrain) this._terrain._disable();
-            this.transform.elevation = null;
-            return;
-        }
+        const enabled = style && style.terrain && style.terrain.isEnabled();
+        if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
         if (!this._terrain) {
             this._terrain = new Terrain(this, style);
         }
         const terrain: Terrain = this._terrain;
-        this.transform.elevation = terrain;
+        this.transform.elevation = enabled ? terrain : null;
         terrain.update(style, this.transform);
-        if (!terrain.valid) {
-            this.transform.elevation = null;
-        }
     }
 
     get terrain(): ?Terrain {
-        return this._terrain && this._terrain.valid ? this._terrain : null;
+        return this._terrain && this._terrain.enabled ? this._terrain : null;
     }
 
     /*

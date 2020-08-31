@@ -259,7 +259,7 @@ class Style extends Evented {
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
         }
-        this.terrain = new Terrain(this.stylesheet.terrain);
+        this.terrain = new Terrain(this, this.stylesheet.terrain);
         this.dispatcher.broadcast('enableTerrain', !!this.stylesheet.terrain && !!this.stylesheet.terrain.source);
 
         if (json.sprite) {
