@@ -16,6 +16,7 @@ import LngLat from '../../../src/geo/lng_lat';
 import Marker from '../../../src/ui/marker';
 import Popup from '../../../src/ui/popup';
 import simulate from '../../util/simulate_interaction';
+import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock';
 
 function createStyle() {
     return {
@@ -28,41 +29,7 @@ function createStyle() {
 }
 
 const TILE_SIZE = 128;
-
-const createConstElevationDEM = (elevation, tileSize = TILE_SIZE) => {
-    const pixelCount = (tileSize + 2) * (tileSize + 2);
-    const pixelData = new Uint8Array(pixelCount * 4);
-    const encoded = DEMData.pack(elevation, "mapbox");
-
-    for (let i = 0; i < pixelCount * 4; i += 4) {
-        pixelData[i + 0] = encoded[0];
-        pixelData[i + 1] = encoded[1];
-        pixelData[i + 2] = encoded[2];
-        pixelData[i + 3] = encoded[3];
-    }
-    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixelData, "mapbox", false, true));
-};
-
-const zeroDem = createConstElevationDEM(0);
-
-const setZeroElevationTerrain = (map) => {
-    map.addSource('mapbox-dem', {
-        "type": "raster-dem",
-        "tiles": ['http://example.com/{z}/{x}/{y}.png'],
-        "tileSize": TILE_SIZE,
-        "maxzoom": 14
-    });
-    const cache = map.style.sourceCaches['mapbox-dem'];
-    cache.used = cache._sourceLoaded = true;
-    cache._loadTile = (tile, callback) => {
-        tile.dem = zeroDem;
-        tile.needsHillshadePrepare = true;
-        tile.needsDEMTextureUpload = true;
-        tile.state = 'loaded';
-        callback(null);
-    };
-    map.setTerrain({"source": "mapbox-dem"});
-};
+const zeroDem = createConstElevationDEM(0, TILE_SIZE);
 
 const createGradientDEM = () => {
     const pixels = new Uint8Array((TILE_SIZE + 2) * (TILE_SIZE + 2) * 4);
@@ -105,7 +72,7 @@ test('Elevation', (t) => {
     t.test('elevation sampling', t => {
         const map = createMap(t);
         map.on('style.load', () => {
-            setZeroElevationTerrain(map);
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
             map.once('render', () => {
                 const elevationError = -1;
                 t.test('Sample', t => {
@@ -129,7 +96,7 @@ test('Elevation', (t) => {
     t.test('style diff / remove dem source cache', t => {
         const map = createMap(t);
         map.on('style.load', () => {
-            setZeroElevationTerrain(map);
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
             map.once('render', () => {
                 const elevationError = -1;
                 t.test('Disabled if style update removes terrain DEM source', t => {
@@ -145,7 +112,7 @@ test('Elevation', (t) => {
                     t.equal(elevation2, elevationError);
 
                     // Add terrain back.
-                    setZeroElevationTerrain(map);
+                    setMockElevationTerrain(map, zeroDem, TILE_SIZE);
 
                     map.painter.updateTerrain(map.style);
                     const elevation3 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
@@ -159,7 +126,7 @@ test('Elevation', (t) => {
                         t.ok(console.warn.calledOnce);
                         t.ok(console.warn.getCall(0).calledWithMatch(/Terrain source "mapbox-dem" is not defined./));
 
-                        setZeroElevationTerrain(map);
+                        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
 
                         map.painter.updateTerrain(map.style);
                         const elevation3 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
@@ -177,7 +144,7 @@ test('Elevation', (t) => {
     t.test('style diff=false removes dem source', t => {
         const map = createMap(t);
         map.once('style.load', () => {
-            setZeroElevationTerrain(map);
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
             map.once('render', () => {
                 map.painter.updateTerrain(map.style);
                 const elevationError = -1;
@@ -339,7 +306,7 @@ test('Elevation', (t) => {
             })
         });
         map.on('style.load', () => {
-            setZeroElevationTerrain(map);
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
             const source = map.getSource('trace');
             data.features[0].geometry.coordinates = [
                 [180, 0],
@@ -494,7 +461,7 @@ test('Raycast projection 2D/3D', t => {
     });
 
     map.once('style.load', () => {
-        setZeroElevationTerrain(map);
+        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
         map.once('render', () => {
             map.painter.updateTerrain(map.style);
 
@@ -735,7 +702,7 @@ test('Marker interaction and raycast', (t) => {
         cache.used = cache._sourceLoaded = true;
         cache._loadTile = (tile, callback) => {
             // Elevate tiles above center.
-            tile.dem = createConstElevationDEM(300 * (tr.zoom - tile.tileID.overscaledZ));
+            tile.dem = createConstElevationDEM(300 * (tr.zoom - tile.tileID.overscaledZ), TILE_SIZE);
             tile.needsHillshadePrepare = true;
             tile.needsDEMTextureUpload = true;
             tile.state = 'loaded';

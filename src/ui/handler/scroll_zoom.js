@@ -11,6 +11,7 @@ import Point from '@mapbox/point-geometry';
 
 import type Map from '../map';
 import type HandlerManager from '../handler_manager';
+import MercatorCoordinate from '../../geo/mercator_coordinate';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
@@ -34,8 +35,8 @@ class ScrollZoomHandler {
     _active: boolean;
     _zooming: boolean;
     _aroundCenter: boolean;
-    _around: Point;
     _aroundPoint: Point;
+    _aroundCoord: MercatorCoordinate;
     _type: 'wheel' | 'trackpad' | null;
     _lastValue: number;
     _timeout: ?TimeoutID; // used for delayed-handling of a single wheel movement
@@ -225,14 +226,9 @@ class ScrollZoomHandler {
         }
 
         const pos = DOM.mousePos(this._el, e);
-
-        const prevPoint = this._aroundPoint;
-        this._around = this._aroundCenter ? this._map.getCenter() : this._map.transform.pointLocation3D(Point.convert(pos));
         this._aroundPoint = this._aroundCenter ? this._map.transform.centerPoint : pos;
-
-        if (this._map.transform._terrainEnabled() && prevPoint && (prevPoint.x !== this._aroundPoint.x || prevPoint.y !== this._aroundPoint.y)) {
-            this._targetZoom = undefined;
-        }
+        this._aroundCoord = this._map.transform.pointCoordinate3D(this._aroundPoint);
+        this._targetZoom = undefined;
 
         if (!this._frameId) {
             this._frameId = true;
@@ -248,10 +244,7 @@ class ScrollZoomHandler {
         const tr = this._map.transform;
 
         const startingZoom = () => {
-            if (tr._terrainEnabled())
-                return tr.computeZoomRelativeTo(tr.pointCoordinate3D(this._aroundPoint));
-            else
-                return tr.zoom;
+            return tr._terrainEnabled() ? tr.computeZoomRelativeTo(this._aroundCoord) : tr.zoom;
         };
 
         // if we've had scroll events since the last render frame, consume the
@@ -324,6 +317,7 @@ class ScrollZoomHandler {
             needsRenderFrame: !finished,
             zoomDelta: zoom - startingZoom(),
             around: this._aroundPoint,
+            aroundCoord: this._aroundCoord,
             originalEvent: this._lastWheelEvent
         };
     }
