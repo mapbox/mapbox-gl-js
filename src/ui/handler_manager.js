@@ -555,7 +555,7 @@ class HandlerManager {
             tr._updateStateFromCamera();
         }
 
-        if (this._dragOrigin && panDelta) {
+        if (this._dragOrigin && panDelta && tr._terrainEnabled()) {
             // Use tracking ellipsoid instead of a plane when terrain is enabled.
             // Find screen point rays on the ellipsoid surface and use the delta vector projected
             // to xy-plane for map translation.
