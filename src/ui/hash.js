@@ -135,7 +135,7 @@ class Hash {
         // Replace if already present, else append the updated hash string
         const location = window.location.href.replace(/(#.+)?$/, this.getHashString());
         try {
-            window.history.replaceState(window.history.state, document.title, location);
+            window.history.replaceState(window.history.state, null, location);
         } catch (SecurityError) {
             // IE11 does not allow this if the page is within an iframe created
             // with iframe.contentWindow.document.write(...).
