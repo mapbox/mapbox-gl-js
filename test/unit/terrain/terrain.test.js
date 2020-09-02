@@ -478,6 +478,9 @@ test('Raycast projection 2D/3D', t => {
             // raycast implementation returns null as there is no point at the top.
             t.equal(transform.elevation.pointCoordinate(new Point(cx, 0)), null);
 
+            t.ok(transform.elevation.pointCoordinate(new Point(transform.width, transform.height)));
+            t.deepEqual(transform.elevation.pointCoordinate(new Point(transform.width, transform.height))[2].toFixed(10), 0);
+
             const latLng3D = transform.pointLocation3D(new Point(cx, 0));
             const latLng2D = transform.pointLocation(new Point(cx, 0));
             // Project and get horizon line.
@@ -768,6 +771,61 @@ test('Marker interaction and raycast', (t) => {
 
             map.remove();
             t.end();
+        });
+    });
+});
+
+test('terrain getBounds', (t) => {
+    const map = createMap(t, {
+        style: extend(createStyle(), {
+            layers: [{
+                "id": "background",
+                "type": "background",
+                "paint": {
+                    "background-color": "black"
+                }
+            }]
+        })
+    });
+    map.setPitch(85);
+    map.setZoom(13);
+
+    const tr = map.transform;
+    map.once('style.load', () => {
+        map.addSource('mapbox-dem', {
+            "type": "raster-dem",
+            "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+            "tileSize": TILE_SIZE,
+            "maxzoom": 14
+        });
+        const cache = map.style.sourceCaches['mapbox-dem'];
+        cache.used = cache._sourceLoaded = true;
+        cache._loadTile = (tile, callback) => {
+            // Elevate tiles above center.
+            tile.dem = createConstElevationDEM(300 * (tr.zoom - tile.tileID.overscaledZ), TILE_SIZE);
+            tile.needsHillshadePrepare = true;
+            tile.needsDEMTextureUpload = true;
+            tile.state = 'loaded';
+            callback(null);
+        };
+
+        t.deepEqual(map.getBounds().getCenter().lng.toFixed(10), 0, 'horizon, no terrain getBounds');
+        t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), 0.4076172064, 'horizon, no terrain getBounds');
+
+        map.setTerrain({"source": "mapbox-dem"});
+        map.once('render', () => {
+            map.painter.updateTerrain(map.style);
+
+            // As tiles above center are elevated, center of bounds is closer to camera.
+            t.deepEqual(map.getBounds().getCenter().lng.toFixed(10), 0, 'horizon terrain getBounds');
+            t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), -1.2344797596, 'horizon terrain getBounds');
+
+            map.setPitch(0);
+            map.once('render', () => {
+                t.deepEqual(map.getBounds().getCenter().lng.toFixed(10), 0, 'terrain 0 getBounds');
+                t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), 0, 'terrain 0 getBounds');
+                t.end();
+            });
         });
     });
 });

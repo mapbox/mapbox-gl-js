@@ -327,6 +327,10 @@ export class Terrain extends Elevation {
         return this._exaggeration;
     }
 
+    get visibleDemTiles(): Array<Tile> {
+        return this._visibleDemTiles;
+    }
+
     // For every renderable coordinate in every source cache, assign one proxy
     // tile (see _setupProxiedCoordsForOrtho). Mapping of source tile to proxy
     // tile is modeled by ProxiedTileID. In general case, source and proxy tile
@@ -878,8 +882,8 @@ export class Terrain extends Elevation {
     // The returned point is in mercator coordinates
     pointCoordinate(screenPoint: Point): ?vec3 {
         const transform = this.painter.transform;
-        if (screenPoint.x < 0 || screenPoint.x >= transform.width ||
-            screenPoint.y < 0 || screenPoint.y >= transform.height) {
+        if (screenPoint.x < 0 || screenPoint.x > transform.width ||
+            screenPoint.y < 0 || screenPoint.y > transform.height) {
             return null;
         }
 
