@@ -947,11 +947,38 @@ class Transform {
      * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
      */
     getBounds(): LngLatBounds {
+        if (this._terrainEnabled()) return this._getBounds3D();
         return new LngLatBounds()
             .extend(this.pointLocation(new Point(0, 0)))
             .extend(this.pointLocation(new Point(this.width, 0)))
             .extend(this.pointLocation(new Point(this.width, this.height)))
             .extend(this.pointLocation(new Point(0, this.height)));
+    }
+
+    _getBounds3D(): LngLatBounds {
+        assert(this.elevation);
+        const elevation = ((this.elevation: any): Elevation);
+        const minmax = elevation.visibleDemTiles.reduce((acc, t) => {
+            if (t.dem) {
+                const tree = t.dem.tree;
+                acc.min = Math.min(acc.min, tree.minimums[0]);
+                acc.max = Math.max(acc.max, tree.maximums[0]);
+            }
+            return acc;
+        }, {min: Number.MAX_VALUE, max: 0});
+        minmax.min *= elevation.exaggeration();
+        minmax.max *= elevation.exaggeration();
+        const top = this.horizonLineFromTop();
+        return [
+            new Point(0, top),
+            new Point(this.width, top),
+            new Point(this.width, this.height),
+            new Point(0, this.height)
+        ].reduce((acc, p) => {
+            return acc
+                .extend(this.coordinateLocation(this.rayIntersectionCoordinate(this.pointRayIntersection(p, minmax.min))))
+                .extend(this.coordinateLocation(this.rayIntersectionCoordinate(this.pointRayIntersection(p, minmax.max))));
+        }, new LngLatBounds());
     }
 
     /**
