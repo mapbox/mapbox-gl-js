@@ -164,4 +164,12 @@ export class Elevation {
     findDEMTileFor(_: OverscaledTileID): ?Tile {
         throw new Error('Pure virtual method called.');
     }
+
+    /**
+     * Get list of DEM tiles used to render current frame.
+     * @private
+     */
+    get visibleDemTiles(): Array<Tile> {
+        throw new Error('Getter must be implemented in subclass.');
+    }
 }
