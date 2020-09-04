@@ -14,7 +14,7 @@ import replace from 'rollup-plugin-replace';
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
-export const plugins = (minified, production, test) => [
+export const plugins = (minified, production, test, bench) => [
     flow(),
     minifyStyleSpec(),
     json(),
@@ -22,6 +22,7 @@ export const plugins = (minified, production, test) => [
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'Debug.*']
     }) : false,
+    production || bench ? unassert() : false,
     test ? replace({
         'process.env.CI': JSON.stringify(process.env.CI),
         'process.env.UPDATE': JSON.stringify(process.env.UPDATE)
@@ -34,7 +35,6 @@ export const plugins = (minified, production, test) => [
             passes: 3
         }
     }) : false,
-    production ? unassert() : false,
     resolve({
         browser: true,
         preferBuiltins: false

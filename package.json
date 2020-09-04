@@ -122,6 +122,7 @@
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
+    "build-bench": "rollup -c --environment BUILD:bench,MINIFY:true",
     "build-prod": "rollup -c --environment BUILD:production",
     "build-prod-min": "rollup -c --environment BUILD:production,MINIFY:true",
     "build-csp": "rollup -c rollup.config.csp.js",
