@@ -310,6 +310,7 @@ class Map extends Camera {
     _locale: Object;
     _removed: boolean;
     _speedIndexTiming: boolean;
+    _clickTolerance: number;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -400,6 +401,7 @@ class Map extends Camera {
         this._controls = [];
         this._mapId = uniqueId();
         this._locale = extend({}, defaultLocale, options.locale);
+        this._clickTolerance = options.clickTolerance;
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken);
 
