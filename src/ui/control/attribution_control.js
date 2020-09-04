@@ -111,7 +111,7 @@ class AttributionControl {
     }
 
     _updateData(e: any) {
-        if (e && (e.sourceDataType === 'metadata' || e.dataType === 'style')) {
+        if (e && (e.sourceDataType === 'metadata' || e.sourceDataType === 'visibility' || e.dataType === 'style')) {
             this._updateAttributions();
             this._updateEditLink();
         }

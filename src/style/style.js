@@ -421,8 +421,12 @@ class Style extends Evented {
             this._resetUpdates();
         }
 
+        const sourcesUsedBefore = {};
+
         for (const sourceId in this.sourceCaches) {
-            this.sourceCaches[sourceId].used = false;
+            const sourceCache = this.sourceCaches[sourceId];
+            sourcesUsedBefore[sourceId] = sourceCache.used;
+            sourceCache.used = false;
         }
 
         for (const layerId of this._order) {
@@ -448,6 +452,13 @@ class Style extends Evented {
                 } else {
                     this.map.painter.useProgram(programIdTokens[i]);
                 }
+            }
+        }
+
+        for (const sourceId in sourcesUsedBefore) {
+            const sourceCache = this.sourceCaches[sourceId];
+            if (sourcesUsedBefore[sourceId] !== sourceCache.used) {
+                sourceCache.fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId}));
             }
         }
 
