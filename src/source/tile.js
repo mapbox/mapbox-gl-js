@@ -9,7 +9,7 @@ import SymbolBucket from '../data/bucket/symbol_bucket';
 import {CollisionBoxArray} from '../data/array_types';
 import Texture from '../render/texture';
 import browser from '../util/browser';
-import loadGeometry from '../data/load_geometry';
+import toEvaluationFeature from '../data/evaluation_feature';
 import EvaluationParameters from '../style/evaluation_parameters';
 import SourceFeatureState from '../source/source_state';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin';
@@ -309,10 +309,7 @@ class Tile {
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i);
             if (filter.needGeometry) {
-                const evaluationFeature = {type: feature.type,
-                    id: feature.id,
-                    properties: feature.properties,
-                    geometry: loadGeometry(feature)};
+                const evaluationFeature = toEvaluationFeature(feature, true);
                 if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) continue;
             } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
                 continue;

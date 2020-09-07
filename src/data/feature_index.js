@@ -3,6 +3,7 @@
 import Point from '@mapbox/point-geometry';
 
 import loadGeometry from './load_geometry';
+import toEvaluationFeature from './evaluation_feature';
 import EXTENT from './extent';
 import featureFilter from '../style-spec/feature_filter';
 import Grid from 'grid-index';
@@ -186,10 +187,7 @@ class FeatureIndex {
         const feature = sourceLayer.feature(featureIndex);
 
         if (filter.needGeometry) {
-            const evaluationFeature = {type: feature.type,
-                id: feature.id,
-                properties: feature.properties,
-                geometry: loadGeometry(feature)};
+            const evaluationFeature = toEvaluationFeature(feature, true);
             if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
                 return;
             }
