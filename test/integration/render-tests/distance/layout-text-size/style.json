@@ -1,0 +1,75 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+          "height": 128,
+          "width": 128
+        }
+    },
+    "center": [ 0.0005, 0 ],
+    "zoom": 15,
+    "sources": {
+      "point": {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {
+                "name": "Near"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [ 0, 0 ]
+              }
+            },
+            {
+                "type": "Feature",
+                "properties": {
+                  "name": "Far"
+                },
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [ 0.001, 0 ]
+                }
+              }
+          ]
+        }
+      }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+      {
+        "id": "text",
+        "type": "symbol",
+        "source": "point",
+        "layout": {
+          "text-field": ["get", "name"],
+          "text-font": [
+            "Open Sans Semibold",
+            "Arial Unicode MS Bold"
+          ],
+          "text-size": [
+            "case",
+            [
+              ">",
+              [
+                "distance",
+                {
+                  "type": "Point",
+                  "coordinates": [
+                    0,
+                    0
+                  ]
+                }
+              ],
+              100
+            ],
+            16,
+            24
+          ]
+        }
+      }
+    ]
+  }
