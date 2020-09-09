@@ -52,7 +52,7 @@ const repo = 'mapbox-gl-js-internal';
         base = pull.data.base.sha;
     }
     console.log(`Using ${base} as prior comparison point.`)
-    execSync(`git checkout ${base}`);
+    execSync(`git reset --hard && git checkout ${base}`);
     execSync('yarn run build-prod-min');
     const priorSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(priorSizes);
