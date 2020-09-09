@@ -44,5 +44,6 @@
   "render-tests/text-variable-anchor/remember-last-placement": "skip - not sure this is correct behavior",
   "render-tests/text-size/zero": "https://github.com/mapbox/mapbox-gl-js/issues/9161",
   "render-tests/tile-mode/streets-v11": "skip - mapbox-gl-js does not support tile-mode",
-  "render-tests/within/paint-line": "https://github.com/mapbox/mapbox-gl-js/issues/7023"
+  "render-tests/within/paint-line": "https://github.com/mapbox/mapbox-gl-js/issues/7023",
+  "render-tests/distance/layout-text-size": "skip - distance expression is not implemented"
 }
