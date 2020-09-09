@@ -26,6 +26,7 @@ import mergeLines from '../../symbol/mergelines';
 import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/script_detection';
 import {WritingMode} from '../../symbol/shaping';
 import loadGeometry from '../load_geometry';
+import toEvaluationFeature from '../evaluation_feature';
 import mvt from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
@@ -440,11 +441,7 @@ class SymbolBucket implements Bucket {
         for (const {feature, id, index, sourceLayerIndex} of features) {
 
             const needGeometry = layer._featureFilter.needGeometry;
-            const evaluationFeature = {type: feature.type,
-                id,
-                properties: feature.properties,
-                geometry: needGeometry ? loadGeometry(feature) : []};
-
+            const evaluationFeature = toEvaluationFeature(feature, needGeometry);
             if (!layer._featureFilter.filter(globalProperties, evaluationFeature, canonical)) {
                 continue;
             }
@@ -496,7 +493,7 @@ class SymbolBucket implements Bucket {
                 icon,
                 index,
                 sourceLayerIndex,
-                geometry: loadGeometry(feature),
+                geometry: evaluationFeature.geometry,
                 properties: feature.properties,
                 type: vectorTileFeatureTypes[feature.type],
                 sortKey
