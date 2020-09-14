@@ -511,9 +511,11 @@ export class Placement {
                         }
                     }
 
+                    const doubleTextPadding = layout.get('text-padding') * 2 / textPixelRatio;
+
                     const placeBoxForVariableAnchors = (collisionTextBox, collisionIconBox, orientation) => {
-                        const width = collisionTextBox.x2 - collisionTextBox.x1;
-                        const height = collisionTextBox.y2 - collisionTextBox.y1;
+                        const width = collisionTextBox.x2 - collisionTextBox.x1 - doubleTextPadding;
+                        const height = collisionTextBox.y2 - collisionTextBox.y1 - doubleTextPadding;
                         const textBoxScale = symbolInstance.textBoxScale;
 
                         const variableIconBox = hasIconTextFit && !iconAllowOverlap ? collisionIconBox : null;
