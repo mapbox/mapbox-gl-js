@@ -6031,6 +6031,19 @@
     },
     "sky-gradient": {
       "type": "color",
+      "default": [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "sky-radial-progress"
+        ],
+        0,
+        "yellow",
+        1,
+        "white"
+      ],
       "doc": "Defines a color gradient with which to color the sky. The color values can be interpolated with an expression using `sky-radial-progress`.",
       "transition": false,
       "requires": [

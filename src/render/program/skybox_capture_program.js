@@ -16,7 +16,7 @@ import type {
 import type Context from '../../gl/context';
 
 export type SkyboxCaptureUniformsType = {|
-    'u_matrix': UniformMatrix3f,
+    'u_matrix_3f': UniformMatrix3f,
     'u_sun_direction': Uniform3f,
     'u_sun_intensity': Uniform1f,
     'u_color_tint_r': Uniform4f,
@@ -25,7 +25,7 @@ export type SkyboxCaptureUniformsType = {|
 |};
 
 const skyboxCaptureUniforms = (context: Context, locations: UniformLocations): SkyboxCaptureUniformsType => ({
-    'u_matrix': new UniformMatrix3f(context, locations.u_matrix),
+    'u_matrix_3f': new UniformMatrix3f(context, locations.u_matrix_3f),
     'u_sun_direction': new Uniform3f(context, locations.u_sun_direction),
     'u_sun_intensity': new Uniform1f(context, locations.u_sun_intensity),
     'u_color_tint_r': new Uniform4f(context, locations.u_color_tint_r),
@@ -39,7 +39,7 @@ const skyboxCaptureUniformValues = (
     atmosphereColor: Color,
     atmosphereHaloColor: Color
 ): UniformValues<SkyboxCaptureUniformsType> => ({
-    'u_matrix': matrix,
+    'u_matrix_3f': matrix,
     'u_sun_direction': sunDirection,
     'u_sun_intensity': 30.0,
     'u_color_tint_r': [
