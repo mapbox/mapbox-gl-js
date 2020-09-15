@@ -167,8 +167,5 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
     mat4.rotateY(faceRotate, faceRotate, Math.PI);
     drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 5);
 
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
-    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-
     context.viewport.set([0, 0, painter.width, painter.height]);
 }
