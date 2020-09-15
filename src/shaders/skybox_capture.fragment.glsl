@@ -10,7 +10,9 @@ uniform lowp vec3 u_sun_direction;
 uniform highp vec4 u_color_tint_r;
 uniform highp vec4 u_color_tint_m;
 
+#ifdef GL_ES
 precision highp float;
+#endif
 
 // [1] equation (1) section 2.1. for λ = (680, 550, 440) nm,
 // which corresponds to scattering coefficients at sea level

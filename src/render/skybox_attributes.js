@@ -2,7 +2,7 @@
 import {createLayout} from '../util/struct_array';
 
 export const skyboxAttributes = createLayout([
-    {name: 'a_pos',  components: 3, type: 'Float32'}
+    {name: 'a_pos_3f',  components: 3, type: 'Float32'}
 ]);
 
 export default skyboxAttributes;
