@@ -370,6 +370,7 @@ class Transform {
 
         if (changed) {
             this._updateStateFromCamera();
+            this.recenterOnTerrain();
         }
     }
 
@@ -379,6 +380,7 @@ class Transform {
         const options = new FreeCameraOptions();
         options.position = new MercatorCoordinate(pos[0], pos[1], pos[2]);
         options.orientation = this._camera.orientation;
+        options._elevation = this.elevation;
 
         return options;
     }
