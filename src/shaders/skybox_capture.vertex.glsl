@@ -1,6 +1,6 @@
-attribute highp vec3 a_pos;
+attribute highp vec3 a_pos_3f;
 
-uniform mat3 u_matrix;
+uniform mat3 u_matrix_3f;
 
 varying highp vec3 v_position;
 
@@ -9,7 +9,7 @@ float map(float value, float start, float end, float new_start, float new_end) {
 }
 
 void main() {
-    vec4 pos = vec4(u_matrix * a_pos, 1.0);
+    vec4 pos = vec4(u_matrix_3f * a_pos_3f, 1.0);
 
     v_position = pos.xyz;
     v_position.y *= -1.0;
@@ -19,5 +19,5 @@ void main() {
     // (-1.0,1.0) to (0.0,1.0) on y. The inverse operation is applied when sampling.
     v_position.y = map(v_position.y, -1.0, 1.0, 0.0, 1.0);
 
-    gl_Position = vec4(a_pos.xy, 0.0, 1.0);
+    gl_Position = vec4(a_pos_3f.xy, 0.0, 1.0);
 }
