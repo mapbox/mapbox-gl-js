@@ -18,7 +18,7 @@ import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented';
 import assert from 'assert';
 import {Debug} from '../util/debug';
-import MercatorCoordinate from '../geo/mercator_coordinate';
+import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 import {vec3} from 'gl-matrix';
 import type {FreeCameraOptions} from './free_camera';
 import type Transform from '../geo/transform';
@@ -89,6 +89,13 @@ export type AnimationOptions = {
     offset?: PointLike,
     animate?: boolean,
     essential?: boolean
+};
+
+export type ElevationBoxRaycast = {
+    minLngLat: LngLat,
+    maxLngLat: LngLat,
+    minAltitude: number,
+    maxAltitude: number
 };
 
 /**
@@ -602,14 +609,19 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {LngLatLike} p0 First point
      * @param {LngLatLike} p1 Second point
+     * @param {number} minAltitude Optional min altitude in meters
+     * @param {number} maxAltitude Optional max altitude in meters
      * @param options
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
      *      `center`, `zoom`, `bearing` and `pitch`. If map is unable to fit, method will warn and return undefined.
      * @private
      */
-    _cameraForBox(p0: LngLatLike, p1: LngLatLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+    _cameraForBox(p0: LngLatLike, p1: LngLatLike, minAltitude?: number, maxAltitude?: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         const eOptions = this._extendCameraOptions(options);
+
+        minAltitude = minAltitude || 0;
+        maxAltitude = maxAltitude || 0;
 
         p0 = LngLat.convert(p0);
         p1 = LngLat.convert(p1);
@@ -618,8 +630,15 @@ class Camera extends Evented {
         tr.padding = eOptions.padding;
 
         const camera = this.getFreeCameraOptions();
+        const focus = new LngLat((p0.lng + p1.lng) * 0.5, (p0.lat + p1.lat) * 0.5);
+        const focusAltitude = (minAltitude + maxAltitude) * 0.5;
 
-        camera.lookAtPoint(new LngLat((p0.lng + p1.lng) * 0.5, (p0.lat + p1.lat) * 0.5));
+        if (tr._camera.position[2] < mercatorZfromAltitude(focusAltitude, focus.lat)) {
+            warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
+            return;
+        }
+
+        camera.lookAtPoint(focus);
 
         tr.setFreeCameraOptions(camera);
 
@@ -628,13 +647,14 @@ class Camera extends Evented {
 
         const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
 
-        const centerIntersectionPoint = tr.pointRayIntersection(tr.centerPoint);
+        const centerIntersectionPoint = tr.pointRayIntersection(tr.centerPoint, focusAltitude);
         const centerIntersectionCoord = toVec3(tr.rayIntersectionCoordinate(centerIntersectionPoint));
         const centerMercatorRay = tr.screenPointToMercatorRay(tr.centerPoint);
 
         const maxMarchingSteps = 10;
 
         let steps = 0;
+        let halfDistanceToGround;
         do {
             const z = Math.floor(tr.zoom);
             const z2 = 1 << z;
@@ -644,18 +664,23 @@ class Camera extends Evented {
             const maxX = Math.max(z2 * coord0.x, z2 * coord1.x);
             const maxY = Math.max(z2 * coord0.y, z2 * coord1.y);
 
-            const aabb = new Aabb([minX, minY, 0], [maxX, maxY, 0]);
+            const aabb = new Aabb([minX, minY, minAltitude], [maxX, maxY, maxAltitude]);
 
             const frustum = Frustum.fromInvProjectionMatrix(tr.invProjMatrix, tr.worldSize, z);
 
             // Stop marching when frustum intersection
             // reports any aabb point not fully inside
             if (aabb.intersects(frustum) !== 2) {
+                // Went too far, step one iteration back
+                if (halfDistanceToGround) {
+                    tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, centerMercatorRay.dir, -halfDistanceToGround);
+                    tr._updateStateFromCamera();
+                }
                 break;
             }
 
             const cameraPositionToGround = vec3.sub([], tr._camera.position, centerIntersectionCoord);
-            const halfDistanceToGround = 0.5 * vec3.length(cameraPositionToGround);
+            halfDistanceToGround = 0.5 * vec3.length(cameraPositionToGround);
 
             // March the camera position forward by half the distance to the ground
             tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, centerMercatorRay.dir, halfDistanceToGround);
@@ -708,6 +733,43 @@ class Camera extends Evented {
             eventData);
     }
 
+    _raycastElevationBox(point0: Point, point1: Point): ?ElevationBoxRaycast {
+        const elevation = this.transform.elevation;
+
+        if (!elevation) return;
+
+        const point2 = new Point(point0.x, point1.y);
+        const point3 = new Point(point1.x, point0.y);
+
+        const r0 = elevation.pointCoordinate(point0);
+        if (!r0) return;
+        const r1 = elevation.pointCoordinate(point1);
+        if (!r1) return;
+        const r2 = elevation.pointCoordinate(point2);
+        if (!r2) return;
+        const r3 = elevation.pointCoordinate(point3);
+        if (!r3) return;
+
+        const m0 = new MercatorCoordinate(r0[0], r0[1]).toLngLat();
+        const m1 = new MercatorCoordinate(r1[0], r1[1]).toLngLat();
+        const m2 = new MercatorCoordinate(r2[0], r2[1]).toLngLat();
+        const m3 = new MercatorCoordinate(r3[0], r3[1]).toLngLat();
+
+        const minLng = Math.min(m0.lng, Math.min(m1.lng, Math.min(m2.lng, m3.lng)));
+        const minLat = Math.min(m0.lat, Math.min(m1.lat, Math.min(m2.lat, m3.lat)));
+
+        const maxLng = Math.max(m0.lng, Math.max(m1.lng, Math.max(m2.lng, m3.lng)));
+        const maxLat = Math.max(m0.lat, Math.max(m1.lat, Math.max(m2.lat, m3.lat)));
+
+        const minAltitude = Math.min(r0[3], Math.min(r1[3], Math.min(r2[3], r3[3])));
+        const maxAltitude = Math.max(r0[3], Math.max(r1[3], Math.max(r2[3], r3[3])));
+
+        const minLngLat = new LngLat(minLng, minLat);
+        const maxLngLat = new LngLat(maxLng, maxLat);
+
+        return {minLngLat, maxLngLat, minAltitude, maxAltitude};
+    }
+
     /**
      * Pans, rotates and zooms the map to to fit the box made by points p0 and p1
      * once the map is rotated to the specified bearing. To zoom without rotating,
@@ -738,14 +800,27 @@ class Camera extends Evented {
      * @see Used by {@link BoxZoomHandler}
      */
     fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: AnimationOptions & CameraOptions, eventData?: Object) {
+        let lngLat0, lngLat1, minAltitude, maxAltitude;
         const point0 = Point.convert(p0);
         const point1 = Point.convert(p1);
 
-        if (this.transform.isHorizonVisibleForPoints(point0, point1)) {
-            return this;
+        const raycast = this._raycastElevationBox(point0, point1);
+
+        if (!raycast) {
+            if (this.transform.isHorizonVisibleForPoints(point0, point1)) {
+                return this;
+            }
+
+            lngLat0 = this.transform.pointLocation(point0);
+            lngLat1 = this.transform.pointLocation(point1);
+        } else {
+            lngLat0 = raycast.minLngLat;
+            lngLat1 = raycast.maxLngLat;
+            minAltitude = raycast.minAltitude;
+            maxAltitude = raycast.maxAltitude;
         }
 
-        if (this.transform.pitch === 0 || this.transform.elevation) {
+        if (this.transform.pitch === 0) {
             return this._fitInternal(
                 this._cameraForBoxAndBearing(
                     this.transform.pointLocation(Point.convert(p0)),
@@ -756,13 +831,12 @@ class Camera extends Evented {
                 eventData);
         }
 
-        const lngLat0 = this.transform.pointLocation(point0);
-        const lngLat1 = this.transform.pointLocation(point1);
-
         return this._fitInternal(
             this._cameraForBox(
                 lngLat0,
                 lngLat1,
+                minAltitude,
+                maxAltitude,
                 options),
             options, eventData);
     }
@@ -882,7 +956,8 @@ class Camera extends Evented {
      * For backwards compatibility the state set using this API must be representable with
      * `CameraOptions` as well. Parameters are clamped into a valid range or discarded as invalid
      * if the conversion to the pitch and bearing presentation is ambiguous. For example orientation
-     * can be invalid if it leads to the camera being upside down or the quaternion has zero length.
+     * can be invalid if it leads to the camera being upside down, the quaternion has zero length,
+     * or the pitch is over the maximum pitch limit.
      *
      * @memberof Map#
      * @param {FreeCameraOptions} options FreeCameraOptions object

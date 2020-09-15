@@ -3,6 +3,7 @@
 import MercatorCoordinate from '../geo/mercator_coordinate';
 import {degToRad} from '../util/util';
 import {vec3, vec4, quat, mat4} from 'gl-matrix';
+import type {Elevation} from '../terrain/elevation';
 
 import type {LngLatLike} from '../geo/lng_lat';
 
@@ -93,6 +94,7 @@ export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
 class FreeCameraOptions {
     position: ?MercatorCoordinate;
     orientation: ?quat;
+    _elevation: ?Elevation;
 
     constructor(position: ?MercatorCoordinate, orientation: ?quat) {
         this.position = position;
@@ -113,8 +115,9 @@ class FreeCameraOptions {
             return;
         }
 
+        const altitude = this._elevation ? this._elevation.getAtPoint(MercatorCoordinate.fromLngLat(location)) : 0;
         const pos: MercatorCoordinate = this.position;
-        const target = MercatorCoordinate.fromLngLat(location);
+        const target = MercatorCoordinate.fromLngLat(location, altitude);
         const forward = [target.x - pos.x, target.y - pos.y, target.z - pos.z];
         if (!up)
             up = [0, 0, 1];

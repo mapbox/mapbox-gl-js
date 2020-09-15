@@ -1981,7 +1981,7 @@ test('camera', (t) => {
 
             camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
             t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -30.215, lat: -19.8767}, 'centers, rotates 225 degrees, pitch 30 degrees, and zooms based on screen coordinates');
-            t.equal(fixedNum(camera.getZoom(), 3), 1.173);
+            t.equal(fixedNum(camera.getZoom(), 3), 0.173);
             t.equal(camera.getBearing(), -16.844931165335765);
             t.end();
         });
