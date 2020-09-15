@@ -983,7 +983,9 @@ test('transform', (t) => {
             const transform = new Transform(0, 22, 0, 85);
             transform.resize(100, 100);
             transform._elevation = {
-                getAtPoint: () => groundElevation
+                getAtPoint: () => groundElevation,
+                exaggeration: () => 1.0,
+                raycast: () => undefined
             };
 
             const expected = new FreeCameraOptions();

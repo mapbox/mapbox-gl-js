@@ -879,8 +879,9 @@ export class Terrain extends Elevation {
     }
 
     // Casts a ray from a point on screen and returns the intersection point with the terrain.
-    // The returned point is in mercator coordinates
-    pointCoordinate(screenPoint: Point): ?vec3 {
+    // The returned point contains the mercator coordinates in its first 3 components, and elevation
+    // in meter in its 4th coordinate.
+    pointCoordinate(screenPoint: Point): ?vec4 {
         const transform = this.painter.transform;
         if (screenPoint.x < 0 || screenPoint.x > transform.width ||
             screenPoint.y < 0 || screenPoint.y > transform.height) {
@@ -895,13 +896,14 @@ export class Terrain extends Elevation {
         far[1] /= transform.worldSize;
         const camera = transform._camera.position;
         const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
-        const p = [camera[0], camera[1], camera[2] / mercatorZScale];
+        const p = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
         const dir = vec3.subtract([], far.slice(0, 3), p);
         vec3.normalize(dir, dir);
         const distanceAlongRay = this.raycast(p, dir, this._exaggeration);
 
         if (distanceAlongRay === null || !distanceAlongRay) return null;
         vec3.scaleAndAdd(p, p, dir, distanceAlongRay);
+        p[3] = p[2];
         p[2] *= mercatorZScale;
         return p;
     }
