@@ -835,7 +835,7 @@ class Map extends Camera {
      * var point = map.project(coordinate);
      */
     project(lnglat: LngLatLike) {
-        return this.transform.locationPoint(LngLat.convert(lnglat));
+        return this.transform.locationPoint3D(LngLat.convert(lnglat));
     }
 
     /**
@@ -853,7 +853,7 @@ class Map extends Camera {
      * });
      */
     unproject(point: PointLike) {
-        return this.transform.pointLocation(Point.convert(point));
+        return this.transform.pointLocation3D(Point.convert(point));
     }
 
     /**
