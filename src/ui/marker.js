@@ -451,7 +451,7 @@ export default class Marker extends Evented {
         const pos = this._pos ? this._pos.sub(this._transformedOffset()) : null;
         if (pos && pos.x >= 0 && pos.x < tr.width && pos.y >= 0 && pos.y < tr.height) {
             // calculate if occluded.
-            const raycastLoc = this._map.transform.pointLocation3D(pos);
+            const raycastLoc = this._map.unproject(pos);
             const camera = this._map.getFreeCameraOptions();
             if (camera.position) {
                 const cameraPos = camera.position.toLngLat();
@@ -471,7 +471,7 @@ export default class Marker extends Evented {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
         }
 
-        this._pos = this._map.transform.locationPoint3D(this._lngLat)._add(this._transformedOffset());
+        this._pos = this._map.project(this._lngLat)._add(this._transformedOffset());
 
         if (this._map.transform.elevation) this._updateOcclusion();
 
@@ -540,7 +540,7 @@ export default class Marker extends Evented {
         if (!this._isDragging) return;
 
         this._pos = e.point.sub(this._positionDelta);
-        this._lngLat = this._map.transform.pointLocation3D(this._pos);
+        this._lngLat = this._map.unproject(this._pos);
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
         this._element.style.pointerEvents = 'none';
