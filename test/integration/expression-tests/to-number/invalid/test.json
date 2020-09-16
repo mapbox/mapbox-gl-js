@@ -1,0 +1,15 @@
+{
+  "expression": ["to-number", "zoom", 5],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "\"to-number\" expression expects an array argument."
+        }
+      ]
+    }
+  }
+}

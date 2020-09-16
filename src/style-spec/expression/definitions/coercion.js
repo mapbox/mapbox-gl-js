@@ -48,6 +48,10 @@ class Coercion implements Expression {
         if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
             return context.error(`Expected one argument.`);
 
+        if (name === 'to-number' && !Array.isArray(args[1])) {
+            return context.error('"to-number" expression expects an array argument.');
+        }
+
         const type = types[name];
 
         const parsed = [];
