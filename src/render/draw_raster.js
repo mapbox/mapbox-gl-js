@@ -16,7 +16,7 @@ import type {OverscaledTileID} from '../source/tile_id';
 
 export default drawRaster;
 
-function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>) {
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, shouldFade: boolean) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
     if (!tileIDs.length) return;
@@ -53,10 +53,12 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const stencilMode = painter.terrain && renderingToTexture ?
             painter.terrain.stencilModeForRTTOverlap(coord) :
             stencilModes[coord.overscaledZ];
-        tile.registerFadeDuration(layer.paint.get('raster-fade-duration'));
+
+        const rasterFadeDuration = shouldFade ? layer.paint.get('raster-fade-duration') : 0;
+        tile.registerFadeDuration(rasterFadeDuration);
 
         const parentTile = sourceCache.findLoadedParent(coord, 0),
-            fade = getFadeValues(tile, parentTile, sourceCache, layer, painter.transform);
+            fade = getFadeValues(tile, parentTile, sourceCache, layer, painter.transform, rasterFadeDuration);
 
         if (painter.terrain) painter.terrain.prepareDrawTile(coord, fade.opacity !== 1 || fade.mix !== 0); // Disable caching for the proxy during fade.
 
@@ -92,9 +94,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     }
 }
 
-function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
-    const fadeDuration = layer.paint.get('raster-fade-duration');
-
+function getFadeValues(tile, parentTile, sourceCache, layer, transform, fadeDuration) {
     if (fadeDuration > 0) {
         const now = browser.now();
         const sinceTile = (now - tile.timeAdded) / fadeDuration;

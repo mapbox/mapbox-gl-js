@@ -298,6 +298,7 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
+    _shouldFade: boolean;
     _fadeDuration: number;
     _crossSourceCollisions: boolean;
     _crossFadingFactor: number;
@@ -394,6 +395,7 @@ class Map extends Camera {
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
+        this._shouldFade = false;
         this._crossSourceCollisions = options.crossSourceCollisions;
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
@@ -881,7 +883,7 @@ class Map extends Camera {
      * var isMoving = map.isMoving();
      */
     isMoving(): boolean {
-        return this._moving || this.handlers.isMoving();
+        return this._moving || this.handlers && this.handlers.isMoving();
     }
 
     /**
@@ -2477,6 +2479,7 @@ class Map extends Camera {
         if (this._removed) return;
 
         let crossFading = false;
+        const fadeDuration = this._shouldFade ? this._fadeDuration : 0;
 
         // If the style has changed, the map is being zoomed, or a transition or fade is in progress:
         //  - Apply style changes (in a batch)
@@ -2490,7 +2493,7 @@ class Map extends Camera {
 
             const parameters = new EvaluationParameters(zoom, {
                 now,
-                fadeDuration: this._fadeDuration,
+                fadeDuration,
                 zoomHistory: this.style.zoomHistory,
                 transition: this.style.getTransition()
             });
@@ -2513,7 +2516,7 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
-        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration, this._crossSourceCollisions);
+        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
 
         // Actually draw
         this.painter.render(this.style, {
@@ -2522,7 +2525,8 @@ class Map extends Camera {
             rotating: this.isRotating(),
             zooming: this.isZooming(),
             moving: this.isMoving(),
-            fadeDuration: this._fadeDuration,
+            fadeDuration,
+            shouldFade: this._shouldFade,
             showPadding: this.showPadding,
             gpuTiming: !!this.listens('gpu-timing-layer'),
             speedIndexTiming: this.speedIndexTiming,
@@ -2584,6 +2588,7 @@ class Map extends Camera {
             this.triggerRepaint();
         } else if (!this.isMoving() && this.loaded()) {
             this.fire(new Event('idle'));
+            this._shouldFade = true;
             // check the options to see if need to calculate the speed index
             if (this.speedIndexTiming) {
                 const speedIndexNumber = this._calculateSpeedIndex();

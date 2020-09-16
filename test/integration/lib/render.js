@@ -121,6 +121,7 @@ async function testFunc(t) {
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
     if (options.showPadding) map.showPadding = true;
     if (options.collisionDebug) map.showCollisionBoxes = true;
+    if (options.fadeDuration) map._shouldFade = true;
 
     // Disable anisotropic filtering on render tests
     map.painter.context.extTextureFilterAnisotropicForceOff = true;
