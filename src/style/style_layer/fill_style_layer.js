@@ -9,14 +9,12 @@ import properties from './fill_style_layer_properties';
 import {Transitionable, Transitioning, Layout, PossiblyEvaluated} from '../properties';
 
 import type {FeatureState} from '../../style-spec/expression';
-import Color from '../../style-spec/util/color';
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {LayoutProps, PaintProps} from './fill_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
-import type Painter from '../../render/painter';
 import ProgramConfiguration from '../../data/program_configuration';
 
 class FillStyleLayer extends StyleLayer {
@@ -31,26 +29,17 @@ class FillStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    getProgramId(painter: ?Painter): string {
-        if (!painter) return '';
+    getProgramIds(): string[] {
         const pattern = this.paint.get('fill-pattern');
-        const color = this.paint.get('fill-color');
-        const opacity = this.paint.get('fill-opacity');
+        const image = pattern && pattern.constantOr((1: any));
 
-        const patternProperty = this.paint.get('fill-pattern');
-        const image = patternProperty && patternProperty.constantOr((1: any));
+        const ids = [image ? 'fillPattern' : 'fill'];
 
-        const pass = painter.opaquePassEnabledForLayer() &&
-        (!pattern.constantOr((1: any)) &&
-        color.constantOr(Color.transparent).a === 1 &&
-        opacity.constantOr(0) === 1) ? 'opaque' : 'translucent';
-
-        if (painter.renderPass === pass) {
-            return image ? 'fillPattern' : 'fill';
-        } else if (painter.renderPass === 'translucent' && this.paint.get('fill-antialias')) {
-            return image && !this.getPaintProperty('fill-outline-color') ? 'fillOutlinePattern' : 'fillOutline';
+        if (this.paint.get('fill-antialias')) {
+            ids.push(image && !this.getPaintProperty('fill-outline-color') ? 'fillOutlinePattern' : 'fillOutline');
         }
-        return '';
+
+        return ids;
     }
 
     getProgramConfiguration(zoom: number): ProgramConfiguration {

@@ -38,10 +38,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return true;
     }
 
-    getProgramId(): string {
+    getProgramIds(): string[] {
         const patternProperty = this.paint.get('fill-extrusion-pattern');
         const image = patternProperty.constantOr((1: any));
-        return image ? 'fillExtrusionPattern' : 'fillExtrusion';
+        return [image ? 'fillExtrusionPattern' : 'fillExtrusion'];
     }
 
     getProgramConfiguration(zoom: number): ProgramConfiguration {

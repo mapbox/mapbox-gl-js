@@ -27,7 +27,6 @@ import type {
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type Map from '../ui/map';
 import type {StyleSetterOptions} from './style';
-import type Painter from '../render/painter';
 import ProgramConfiguration from '../data/program_configuration';
 
 const TRANSITION_SUFFIX = '-transition';
@@ -177,9 +176,9 @@ class StyleLayer extends Evented {
         // No-op; can be overridden by derived classes.
     }
 
-    getProgramId(_: ?Painter): string {
+    getProgramIds(): string[] | null {
         // No-op; can be overridden by derived classes.
-        return '';
+        return null;
     }
 
     getProgramConfiguration(_: number): ProgramConfiguration | null {

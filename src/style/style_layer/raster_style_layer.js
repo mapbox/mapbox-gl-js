@@ -7,7 +7,6 @@ import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 
 import type {PaintProps} from './raster_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
-import type Painter from '../../render/painter';
 
 class RasterStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -18,9 +17,8 @@ class RasterStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    getProgramId(painter: ?Painter) {
-        if (!painter) return '';
-        return 'raster';
+    getProgramIds() {
+        return ['raster'];
     }
 }
 

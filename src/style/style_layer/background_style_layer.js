@@ -17,9 +17,9 @@ class BackgroundStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    getProgramId(): string {
+    getProgramIds() {
         const image = this.paint.get('background-pattern');
-        return image ? 'backgroundPattern' : 'background';
+        return [image ? 'backgroundPattern' : 'background'];
     }
 }
 
