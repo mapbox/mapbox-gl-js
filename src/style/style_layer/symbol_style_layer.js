@@ -30,7 +30,6 @@ import type {LayerSpecification} from '../../style-spec/types';
 import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression';
 import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
-import type Painter from '../../render/painter';
 import {FormattedType} from '../../style-spec/expression/types';
 import {typeOf} from '../../style-spec/expression/values';
 import Formatted from '../../style-spec/expression/types/formatted';
@@ -186,11 +185,6 @@ class SymbolStyleLayer extends StyleLayer {
         }
 
         return hasOverrides;
-    }
-
-    getProgramId(painter: ?Painter): string {
-        if (!painter) return '';
-        return 'symbolTextAndIcon/symbolSDF/symbolIcon';
     }
 
     getProgramConfiguration(zoom: number): ProgramConfiguration {

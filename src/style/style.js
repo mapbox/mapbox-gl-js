@@ -259,6 +259,7 @@ class Style extends Evented {
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
         }
+        this._changed = false; // avoid triggering redundant style update after adding initial sources
         this.terrain = new Terrain(this, this.stylesheet.terrain);
         this.dispatcher.broadcast('enableTerrain', !!this.stylesheet.terrain && !!this.stylesheet.terrain.source);
 
@@ -437,20 +438,15 @@ class Style extends Evented {
                 this.sourceCaches[layer.source].used = true;
             }
 
-            const programIds = layer.getProgramId(this.map.painter);
+            const painter = this.map.painter;
+            if (painter) {
+                const programIds = layer.getProgramIds();
+                if (!programIds) continue;
 
-            if (programIds === undefined || this.map.painter === undefined) {
-                continue;
-            }
-            const programIdTokens = programIds.split('/');
-            if (programIdTokens[0] === '') continue;
-            const programConfiguration = layer.getProgramConfiguration(parameters.zoom);
+                const programConfiguration = layer.getProgramConfiguration(parameters.zoom);
 
-            for (let i = 0; i < programIdTokens.length; i++) {
-                if (programConfiguration) {
-                    this.map.painter.useProgram(programIdTokens[i], programConfiguration);
-                } else {
-                    this.map.painter.useProgram(programIdTokens[i]);
+                for (const programId of programIds) {
+                    painter.useProgram(programId, programConfiguration);
                 }
             }
         }

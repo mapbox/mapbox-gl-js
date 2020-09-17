@@ -116,21 +116,14 @@ class SkyLayer extends StyleLayer {
         return true;
     }
 
-    getProgramId(painter: ?Painter): string {
-        if (!painter) return '';
+    getProgramIds(): string[] | null {
         const type = this.paint.get('sky-type');
         if (type === 'atmosphere') {
-            if (painter.renderPass === 'offscreen') {
-                return 'skyboxCapture';
-            } else if (painter.renderPass === 'sky') {
-                return 'skybox';
-            }
+            return ['skyboxCapture', 'skybox'];
         } else if (type === 'gradient') {
-            if (painter.renderPass === 'sky') {
-                return 'skyboxGradient';
-            }
+            return ['skyboxGradient'];
         }
-        return '';
+        return null;
     }
 }
 
