@@ -12,7 +12,6 @@ import EvaluationParameters from '../evaluation_parameters';
 import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties';
 
 import Step from '../../style-spec/expression/definitions/step';
-import type Painter from '../../render/painter';
 import type {FeatureState, ZoomConstantExpression} from '../../style-spec/expression';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
@@ -81,8 +80,7 @@ class LineStyleLayer extends StyleLayer {
         return new LineBucket(parameters);
     }
 
-    getProgramId(painter: ?Painter): string {
-        if (!painter) return '';
+    getProgramIds(): string[] {
         const dasharray = this.paint.get('line-dasharray');
         const patternProperty = this.paint.get('line-pattern');
         const image = patternProperty.constantOr((1: any));
@@ -91,7 +89,7 @@ class LineStyleLayer extends StyleLayer {
             image ? 'linePattern' :
             dasharray ? 'lineSDF' :
             gradient ? 'lineGradient' : 'line';
-        return programId;
+        return [programId];
     }
 
     getProgramConfiguration(zoom: number): ProgramConfiguration {

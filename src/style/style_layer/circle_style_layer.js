@@ -84,8 +84,8 @@ class CircleStyleLayer extends StyleLayer {
         return false;
     }
 
-    getProgramId(): string {
-        return 'circle';
+    getProgramIds() {
+        return ['circle'];
     }
 
     getProgramConfiguration(zoom: number): ProgramConfiguration {

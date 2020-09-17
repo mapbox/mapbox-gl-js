@@ -9,7 +9,6 @@ import {renderColorRamp} from '../../util/color_ramp';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 
 import type Texture from '../../render/texture';
-import type Painter from '../../render/painter';
 import type Framebuffer from '../../gl/framebuffer';
 import type {PaintProps} from './heatmap_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
@@ -71,14 +70,8 @@ class HeatmapStyleLayer extends StyleLayer {
         return this.paint.get('heatmap-opacity') !== 0 && this.visibility !== 'none';
     }
 
-    getProgramId(painter: ?Painter): string {
-        if (!painter) return '';
-        if (painter.renderPass === 'offscreen') {
-            return 'heatmap';
-        } else if (painter.renderPass === 'translucent') {
-            return 'heatmapTexture';
-        }
-        return '';
+    getProgramIds() {
+        return ['heatmap', 'heatmapTexture'];
     }
 
     getProgramConfiguration(zoom: number): ProgramConfiguration {
