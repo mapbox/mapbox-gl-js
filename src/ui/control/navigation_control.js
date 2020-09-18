@@ -77,8 +77,12 @@ class NavigationControl {
 
     _updateZoomButtons() {
         const zoom = this._map.getZoom();
-        this._zoomInButton.disabled = zoom === this._map.getMaxZoom();
-        this._zoomOutButton.disabled = zoom === this._map.getMinZoom();
+        const isMax = zoom === this._map.getMaxZoom();
+        const isMin = zoom === this._map.getMinZoom();
+        this._zoomInButton.disabled = isMax;
+        this._zoomOutButton.disabled = isMin;
+        this._zoomInButton.setAttribute('aria-disabled', isMax ? 'true' : 'false');
+        this._zoomOutButton.setAttribute('aria-disabled', isMin ? 'true' : 'false');
     }
 
     _rotateCompassArrow() {
@@ -129,6 +133,7 @@ class NavigationControl {
     _createButton(className: string, fn: () => mixed) {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';
+        a.setAttribute('role', 'button');
         a.addEventListener('click', fn);
         return a;
     }
