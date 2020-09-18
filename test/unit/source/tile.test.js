@@ -47,6 +47,10 @@ test('querySourceFeatures', (t) => {
         result = [];
         tile.querySourceFeatures(result, {filter: ['!=', 'oneway', true]});
         t.equal(result.length, 0);
+        result = [];
+        const polygon = {type: "Polygon",  coordinates: [[[-91, -1], [-89, -1], [-89, 1], [-91, 1], [-91, -1]]]};
+        tile.querySourceFeatures(result, {filter: ['within', polygon]});
+        t.equal(result.length, 1);
         t.end();
     });
 

@@ -7,6 +7,7 @@ import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray} from '../index_array_type';
 import loadGeometry from '../load_geometry';
+import toEvaluationFeature from '../evaluation_feature';
 import EXTENT from '../extent';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
@@ -88,14 +89,10 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
-            const evaluationFeature = {type: feature.type,
-                id,
-                properties: feature.properties,
-                geometry: needGeometry ? loadGeometry(feature) : []};
+            const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
             if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
 
-            if (!needGeometry)  evaluationFeature.geometry = loadGeometry(feature);
             const sortKey = circleSortKey ?
                 circleSortKey.evaluate(evaluationFeature, {}, canonical) :
                 undefined;
@@ -106,7 +103,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                geometry : evaluationFeature.geometry,
+                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature),
                 patterns: {},
                 sortKey
             };
