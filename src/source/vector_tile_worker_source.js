@@ -11,6 +11,7 @@ import {RequestPerformance} from '../util/performance';
 import type {
     WorkerSource,
     WorkerTileParameters,
+    RequestedTileParameters,
     WorkerTileCallback,
     TileParameters
 } from '../source/worker_source';
@@ -20,8 +21,8 @@ import type StyleLayerIndex from '../style/style_layer_index';
 import type {Callback} from '../types/callback';
 
 export type LoadVectorTileResult = {
-    vectorTile: VectorTile;
     rawData: ArrayBuffer;
+    vectorTile?: VectorTile;
     expires?: any;
     cacheControl?: any;
     resourceTiming?: Array<PerformanceResourceTiming>;
@@ -36,18 +37,22 @@ export type LoadVectorTileResult = {
 export type LoadVectorDataCallback = Callback<?LoadVectorTileResult>;
 
 export type AbortVectorData = () => void;
-export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVectorDataCallback) => ?AbortVectorData;
+export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => ?AbortVectorData;
 
 /**
  * @private
  */
-function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
+export function loadVectorTile(params: RequestedTileParameters, callback: LoadVectorDataCallback) {
+    if (params.data) {
+        // if we already got the result earlier (on the main thread), return it directly
+        callback(null, ((params.data: any): LoadVectorTileResult));
+        return () => { callback(); };
+    }
     const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
         if (err) {
             callback(err);
         } else if (data) {
             callback(null, {
-                vectorTile: new vt.VectorTile(new Protobuf(data)),
                 rawData: data,
                 cacheControl,
                 expires
@@ -74,8 +79,8 @@ class VectorTileWorkerSource implements WorkerSource {
     layerIndex: StyleLayerIndex;
     availableImages: Array<string>;
     loadVectorData: LoadVectorData;
-    loading: {[_: string]: WorkerTile };
-    loaded: {[_: string]: WorkerTile };
+    loading: {[_: number]: WorkerTile };
+    loaded: {[_: number]: WorkerTile };
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile
@@ -132,8 +137,11 @@ class VectorTileWorkerSource implements WorkerSource {
                     resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
             }
 
-            workerTile.vectorTile = response.vectorTile;
-            workerTile.parse(response.vectorTile, this.layerIndex, this.availableImages, this.actor, (err, result) => {
+            // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
+            // because we stub the vector tile interface around JSON data instead of parsing it directly
+            workerTile.vectorTile = response.vectorTile || new vt.VectorTile(new Protobuf(rawTileData));
+
+            workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, (err, result) => {
                 if (err || !result) return callback(err);
 
                 // Transferring a copy of rawTileData because the worker needs to retain its copy.

@@ -13,6 +13,7 @@ import VectorTileWorkerSource from './vector_tile_worker_source';
 import {createExpression} from '../style-spec/expression';
 
 import type {
+    RequestedTileParameters,
     WorkerTileParameters,
     WorkerTileCallback,
 } from '../source/worker_source';
@@ -47,7 +48,7 @@ export interface GeoJSONIndex {
     getLeaves(clusterId: number, limit: number, offset: number): Array<GeoJSONFeature>;
 }
 
-function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
+function loadGeoJSONTile(params: RequestedTileParameters, callback: LoadVectorDataCallback) {
     const canonical = params.tileID.canonical;
 
     if (!this._geoJSONIndex) {
