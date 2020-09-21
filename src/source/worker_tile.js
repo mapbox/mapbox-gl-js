@@ -30,7 +30,7 @@ import type {PromoteIdSpecification} from '../style-spec/types';
 
 class WorkerTile {
     tileID: OverscaledTileID;
-    uid: string;
+    uid: number;
     zoom: number;
     pixelRatio: number;
     tileSize: number;

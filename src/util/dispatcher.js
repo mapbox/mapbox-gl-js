@@ -17,6 +17,7 @@ class Dispatcher {
     actors: Array<Actor>;
     currentActor: number;
     id: number;
+    ready: boolean;
 
     // exposed to allow stubbing in unit tests
     static Actor: Class<Actor>;
@@ -34,6 +35,11 @@ class Dispatcher {
             this.actors.push(actor);
         }
         assert(this.actors.length);
+
+        // track whether all workers are instantiated and ready to receive messages;
+        // used for optimizations on initial map load
+        this.ready = false;
+        this.broadcast('checkIfReady', null, () => { this.ready = true; });
     }
 
     /**

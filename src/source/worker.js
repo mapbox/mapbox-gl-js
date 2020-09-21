@@ -73,6 +73,11 @@ export default class Worker {
         };
     }
 
+    checkIfReady(mapID: string, unused: mixed, callback: WorkerTileCallback) {
+        // noop, used to check if a worker is fully set up and ready to receive messages
+        callback();
+    }
+
     setReferrer(mapID: string, referrer: string) {
         this.referrer = referrer;
     }
