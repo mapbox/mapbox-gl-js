@@ -929,6 +929,22 @@ class Transform {
     }
 
     /**
+     * Returns true if a screenspace Point p, is above the horizon.
+     *
+     * @param {Point} p
+     * @returns {boolean}
+     * @private
+     */
+    isPointAboveHorizon(p: Point): boolean {
+        if (!this.elevation) {
+            const horizon = this.horizonLineFromTop();
+            return p.y < horizon;
+        } else {
+            return !this.elevation.pointCoordinate(p);
+        }
+    }
+
+    /**
      * Given a coordinate, return the screen point that corresponds to it
      * @param {Coordinate} coord
      * @param {boolean} sampleTerrainIn3D in 3D mode (terrain enabled), sample elevation for the point.
@@ -1366,16 +1382,6 @@ class Transform {
         return !!this._elevation;
     }
 
-    maxPitchScaleFactor() {
-        // calcMatrices hasn't run yet
-        if (!this.pixelMatrixInverse) return 1;
-
-        const coord = this.pointCoordinate(new Point(0, 0));
-        const p = [coord.x * this.worldSize, coord.y * this.worldSize, 0, 1];
-        const topPoint = vec4.transformMat4(p, p, this.pixelMatrix);
-        return topPoint[3] / this.cameraToCenterDistance;
-    }
-
     isHorizonVisibleForPoints(p0: Point, p1: Point): boolean {
         const minX = Math.min(p0.x, p1.x);
         const maxX = Math.max(p0.x, p1.x);
@@ -1450,42 +1456,6 @@ class Transform {
         const pitch = this._pitch;
         const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
         return this.centerPoint.add(new Point(0, yOffset));
-    }
-
-    /*
-     * When the map is pitched, some of the 3D features that intersect a query will not intersect
-     * the query at the surface of the earth. Instead the feature may be closer and only intersect
-     * the query because it extrudes into the air.
-     *
-     * This returns a geometry that includes all of the original query as well as all possible ares of the
-     * screen where the *base* of a visible extrusion could be.
-     *  - For point queries, the line from the query point to the "camera point"
-     *  - For other geometries, the envelope of the query geometry and the "camera point"
-     */
-    getCameraQueryGeometry(queryGeometry: Array<Point>): Array<Point> {
-        const c = this.getCameraPoint();
-
-        if (queryGeometry.length === 1) {
-            return [queryGeometry[0], c];
-        } else {
-            let minX = c.x;
-            let minY = c.y;
-            let maxX = c.x;
-            let maxY = c.y;
-            for (const p of queryGeometry) {
-                minX = Math.min(minX, p.x);
-                minY = Math.min(minY, p.y);
-                maxX = Math.max(maxX, p.x);
-                maxY = Math.max(maxY, p.y);
-            }
-            return [
-                new Point(minX, minY),
-                new Point(maxX, minY),
-                new Point(maxX, maxY),
-                new Point(minX, maxY),
-                new Point(minX, minY)
-            ];
-        }
     }
 }
 

@@ -30,6 +30,7 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
+const r = 255 * 0.65;
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 3,
@@ -37,7 +38,9 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v9',
     hash: true
 });
-
+map.showTileBoundaries = true;
+map._showQueryGeometry = true;
+map.repaint = true;
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
 
@@ -60,25 +63,10 @@ map.on('load', function() {
         "type": "circle",
         "source": "circles",
         "paint": {
-            "circle-radius": [
-                "interpolate",
-                ["exponential", 2.0],
-                ["zoom"],
-                0, 5,
-                5, ['*', ["get", "scalerank"], 20],
-            ],
-            "circle-color": [
-                "match",
-                ["get", "featureclass"],
-                "cape", "orange",
-                "island", "#0088ff",
-                "plain", "yellow",
-                "pole", "white",
-                "waterfall", "blue",
-                "red"
-            ],
-            "circle-pitch-scale": "map",
-            "circle-pitch-alignment": "map"
+            "circle-radius": 20,
+            "circle-color": ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+            "circle-pitch-scale": "viewport",
+            "circle-pitch-alignment": "viewport"
         }
     });
 
@@ -131,6 +119,37 @@ document.getElementById('repaint-checkbox').onclick = function() {
     }
     if (map.painter.terrain) map.painter.terrain.forceDrapeFirst = !!this.checked;
 };
+
+let hovered = [];
+window.addEventListener('mousemove', function(e) {
+    e.point = new mapboxgl.Point(e.clientX, e.clientY);
+    console.time('query');
+    const features = map.queryRenderedFeatures(e.point, {layers: ['circles']});
+    console.timeEnd('query');
+
+    for (const feature of hovered) {
+        map.setFeatureState(feature, {
+            'hover-r': r,
+            'hover-g': r,
+            'hover-b': r
+        });
+    }
+
+    const seen = {};
+    hovered = features;
+    let i = 0;
+    for (const feature of hovered) {
+        if (seen[feature.id]) continue;
+
+        seen[feature.id] = true;
+        map.setFeatureState(feature, {
+            'hover-r': i === 0 ? 255 : r,
+            'hover-g': i === 1 ? 255 : r,
+            'hover-b': i >= 2 ? 255 : r
+        });
+        i++;
+    }
+});
 
 </script>
 </body>

@@ -36,6 +36,12 @@ export function drawDebugPadding(painter: Painter) {
     drawCrosshair(painter, center.x, painter.transform.height - center.y, centerColor);
 }
 
+export function drawDebugQueryGeometry(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
+    for (let i = 0; i < coords.length; i++) {
+        drawTileQueryGeometry(painter, sourceCache, coords[i]);
+    }
+}
+
 function drawCrosshair(painter: Painter, x: number, y: number, color: Color) {
     const size = 20;
     const lineWidth = 2;
@@ -66,6 +72,49 @@ function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, 
 function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {
         drawDebugTile(painter, sourceCache, coords[i]);
+    }
+}
+
+function drawTileQueryGeometry(painter, sourceCache, coord: OverscaledTileID) {
+    const context = painter.context;
+    const gl = context.gl;
+
+    const posMatrix = coord.posMatrix;
+    const program = painter.useProgram('debug');
+    const tile = sourceCache.getTileByID(coord.key);
+    if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
+
+    const depthMode = DepthMode.disabled;
+    const stencilMode = StencilMode.disabled;
+    const colorMode = painter.colorModeForRenderPass();
+    const id = '$debug';
+
+    context.activeTexture.set(gl.TEXTURE0);
+    // Bind the empty texture for drawing outlines
+    painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+    if (tile.queryGeometryDebugViz && tile.queryGeometryDebugViz.vertices.length > 0) {
+        tile.queryGeometryDebugViz.lazyUpload(context);
+        const vertexBuffer = tile.queryGeometryDebugViz.vertexBuffer;
+        const indexBuffer = tile.queryGeometryDebugViz.indexBuffer;
+        const segments = tile.queryGeometryDebugViz.segments;
+        if (vertexBuffer != null && indexBuffer != null && segments != null) {
+            program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                debugUniformValues(posMatrix, tile.queryGeometryDebugViz.color), id,
+                vertexBuffer, indexBuffer, segments);
+        }
+    }
+
+    if (tile.queryBoundsDebugViz && tile.queryBoundsDebugViz.vertices.length > 0) {
+        tile.queryBoundsDebugViz.lazyUpload(context);
+        const vertexBuffer = tile.queryBoundsDebugViz.vertexBuffer;
+        const indexBuffer = tile.queryBoundsDebugViz.indexBuffer;
+        const segments = tile.queryBoundsDebugViz.segments;
+        if (vertexBuffer != null && indexBuffer != null && segments != null) {
+            program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                debugUniformValues(posMatrix, tile.queryBoundsDebugViz.color), id,
+                vertexBuffer, indexBuffer, segments);
+        }
     }
 }
 

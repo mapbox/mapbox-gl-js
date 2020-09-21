@@ -9,10 +9,13 @@ import SymbolBucket from '../data/bucket/symbol_bucket';
 import {CollisionBoxArray} from '../data/array_types';
 import Texture from '../render/texture';
 import browser from '../util/browser';
+import {Debug} from '../util/debug';
 import toEvaluationFeature from '../data/evaluation_feature';
 import EvaluationParameters from '../style/evaluation_parameters';
 import SourceFeatureState from '../source/source_state';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin';
+import {TileSpaceDebugBuffer} from '../data/debug_viz';
+import Color from '../style-spec/util/color';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -31,6 +34,7 @@ import type Transform from '../geo/transform';
 import type {LayerFeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
 import type {FilterSpecification} from '../style-spec/types';
+import type {TilespaceQueryGeometry} from '../style/query_geometry';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -90,6 +94,8 @@ class Tile {
     hasRTLText: boolean;
     dependencies: Object;
 
+    queryGeometryDebugViz: TileSpaceDebugBuffer;
+    queryBoundsDebugViz: TileSpaceDebugBuffer;
     /**
      * @param {OverscaledTileID} tileID
      * @param size
@@ -230,7 +236,16 @@ class Tile {
         if (this.glyphAtlasTexture) {
             this.glyphAtlasTexture.destroy();
         }
-
+        Debug.run(() => {
+            if (this.queryGeometryDebugViz) {
+                this.queryGeometryDebugViz.unload();
+                delete this.queryGeometryDebugViz;
+            }
+            if (this.queryBoundsDebugViz) {
+                this.queryBoundsDebugViz.unload();
+                delete this.queryBoundsDebugViz;
+            }
+        });
         this.latestFeatureIndex = null;
         this.state = 'unloaded';
     }
@@ -270,25 +285,33 @@ class Tile {
     queryRenderedFeatures(layers: {[_: string]: StyleLayer},
                           serializedLayers: {[string]: Object},
                           sourceFeatureState: SourceFeatureState,
-                          queryGeometry: Array<Point>,
-                          cameraQueryGeometry: Array<Point>,
-                          scale: number,
+                          tileResult: TilespaceQueryGeometry,
                           params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                           transform: Transform,
-                          maxPitchScaleFactor: number,
-                          pixelPosMatrix: Float32Array): {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          pixelPosMatrix: Float32Array,
+                          visualizeQueryGeometry: boolean): {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+        Debug.run(() => {
+            if (visualizeQueryGeometry) {
+                if (!this.queryGeometryDebugViz) {
+                    this.queryGeometryDebugViz = new TileSpaceDebugBuffer(this.tileSize);
+                }
+                if (!this.queryBoundsDebugViz) {
+                    this.queryBoundsDebugViz = new TileSpaceDebugBuffer(this.tileSize, Color.blue);
+                }
+
+                this.queryGeometryDebugViz.addPoints(tileResult.tilespaceGeometry);
+                this.queryBoundsDebugViz.addPoints(tileResult.bufferedTilespaceGeometry);
+            }
+        });
+
         if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData)
             return {};
 
         return this.latestFeatureIndex.query({
-            queryGeometry,
-            cameraQueryGeometry,
-            scale,
-            tileSize: this.tileSize,
+            tileResult,
             pixelPosMatrix,
             transform,
-            params,
-            queryPadding: this.queryPadding * maxPitchScaleFactor
+            params
         }, layers, serializedLayers, sourceFeatureState);
     }
 
@@ -453,6 +476,17 @@ class Tile {
             }
         }
         return false;
+    }
+
+    clearQueryDebugViz() {
+        Debug.run(() => {
+            if (this.queryGeometryDebugViz) {
+                this.queryGeometryDebugViz.clearPoints();
+            }
+            if (this.queryBoundsDebugViz) {
+                this.queryBoundsDebugViz.clearPoints();
+            }
+        });
     }
 }
 

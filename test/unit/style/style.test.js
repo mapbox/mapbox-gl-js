@@ -1811,7 +1811,7 @@ test('Style#queryRenderedFeatures', (t) => {
     const transform = new Transform();
     transform.resize(512, 512);
 
-    function queryMapboxFeatures(layers, serializedLayers, getFeatureState, queryGeom, cameraQueryGeom, scale, params) {
+    function queryMapboxFeatures(layers, serializedLayers, getFeatureState, queryGeom, params) {
         const features = {
             'land': [{
                 type: 'Feature',
@@ -1904,10 +1904,12 @@ test('Style#queryRenderedFeatures', (t) => {
     style.on('style.load', () => {
         style.sourceCaches.mapbox.tilesIn = () => {
             return [{
-                tile: {queryRenderedFeatures: queryMapboxFeatures},
-                tileID: new OverscaledTileID(0, 0, 0, 0, 0),
-                queryGeometry: [],
-                scale: 1
+                queryGeometry: {},
+                tilespaceGeometry: {},
+                bufferedTilespaceGeometry: {},
+                bufferedTilespaceBounds: {},
+                tile: {queryRenderedFeatures: queryMapboxFeatures, tileID: new OverscaledTileID(0, 0, 0, 0, 0)},
+                tileID: new OverscaledTileID(0, 0, 0, 0, 0)
             }];
         };
         style.sourceCaches.other.tilesIn = () => {
@@ -1921,13 +1923,13 @@ test('Style#queryRenderedFeatures', (t) => {
         style._updateSources(transform);
 
         t.test('returns feature type', (t) => {
-            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {}, transform);
+            const results = style.queryRenderedFeatures([0, 0], {}, transform);
             t.equal(results[0].geometry.type, 'Line');
             t.end();
         });
 
         t.test('filters by `layers` option', (t) => {
-            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {layers: ['land']}, transform);
+            const results = style.queryRenderedFeatures([0, 0], {layers: ['land']}, transform);
             t.equal(results.length, 2);
             t.end();
         });
@@ -1937,26 +1939,26 @@ test('Style#queryRenderedFeatures', (t) => {
             t.stub(style, 'fire').callsFake((event) => {
                 if (event.error && event.error.message.includes('parameters.layers must be an Array.')) errors++;
             });
-            style.queryRenderedFeatures([{x: 0, y: 0}], {layers:'string'}, transform);
+            style.queryRenderedFeatures([0, 0], {layers:'string'}, transform);
             t.equals(errors, 1);
             t.end();
         });
 
         t.test('includes layout properties', (t) => {
-            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {}, transform);
+            const results = style.queryRenderedFeatures([0, 0], {}, transform);
             const layout = results[0].layer.layout;
             t.deepEqual(layout['line-cap'], 'round');
             t.end();
         });
 
         t.test('includes paint properties', (t) => {
-            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {}, transform);
+            const results = style.queryRenderedFeatures([0, 0], {}, transform);
             t.deepEqual(results[2].layer.paint['line-color'], 'red');
             t.end();
         });
 
         t.test('includes metadata', (t) => {
-            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {}, transform);
+            const results = style.queryRenderedFeatures([0, 0], {}, transform);
 
             const layer = results[1].layer;
             t.equal(layer.metadata.something, 'else');
@@ -1965,14 +1967,14 @@ test('Style#queryRenderedFeatures', (t) => {
         });
 
         t.test('include multiple layers', (t) => {
-            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {layers: ['land', 'landref']}, transform);
+            const results = style.queryRenderedFeatures([0, 0], {layers: ['land', 'landref']}, transform);
             t.equals(results.length, 3);
             t.end();
         });
 
         t.test('does not query sources not implicated by `layers` parameter', (t) => {
             style.sourceCaches.mapbox.queryRenderedFeatures = function() { t.fail(); };
-            style.queryRenderedFeatures([{x: 0, y: 0}], {layers: ['land--other']}, transform);
+            style.queryRenderedFeatures([0, 0], {layers: ['land--other']}, transform);
             t.end();
         });
 
@@ -1981,7 +1983,7 @@ test('Style#queryRenderedFeatures', (t) => {
             t.stub(style, 'fire').callsFake((event) => {
                 if (event.error && event.error.message.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
             });
-            const results = style.queryRenderedFeatures([{x: 0, y: 0}], {layers:['merp']}, transform);
+            const results = style.queryRenderedFeatures([0, 0], {layers:['merp']}, transform);
             t.equals(errors, 1);
             t.equals(results.length, 0);
             t.end();
@@ -2075,7 +2077,7 @@ test('Style#query*Features', (t) => {
     });
 
     t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.queryRenderedFeatures([{x: 0, y: 0}], {filter: 7}, transform), []);
+        t.deepEqual(style.queryRenderedFeatures([0, 0], {filter: 7}, transform), []);
         t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
         t.end();
     });
@@ -2088,7 +2090,7 @@ test('Style#query*Features', (t) => {
                 errors++;
             }
         });
-        style.queryRenderedFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
+        style.queryRenderedFeatures([0, 0], {filter: "invalidFilter", validate: false}, transform);
         t.equals(errors, 0);
         t.end();
     });

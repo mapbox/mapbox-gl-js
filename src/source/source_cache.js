@@ -5,9 +5,7 @@ import {create as createSource} from './source';
 import Tile from './tile';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import TileCache from './tile_cache';
-import MercatorCoordinate from '../geo/mercator_coordinate';
 import {keysDifference, values} from '../util/util';
-import EXTENT from '../data/extent';
 import Context from '../gl/context';
 import Point from '@mapbox/point-geometry';
 import browser from '../util/browser';
@@ -23,6 +21,7 @@ import type Transform from '../geo/transform';
 import type {TileState} from './tile';
 import type {Callback} from '../types/callback';
 import type {SourceSpecification} from '../style-spec/types';
+import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
 
 /**
  * `SourceCache` is responsible for
@@ -803,71 +802,35 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Search through our current tiles and attempt to find the tiles that
-     * cover the given bounds.
-     * @param pointQueryGeometry coordinates of the corners of bounding rectangle
-     * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
+     * Search through our current tiles and attempt to find the tiles that cover the given `queryGeometry`.
+     *
+     * @param {QueryGeometry} queryGeometry
+     * @param {boolean} [visualizeQueryGeometry=false]
+     * @param {boolean} use3DQuery
+     * @returns
      * @private
      */
-    tilesIn(pointQueryGeometry: Array<Point>, maxPitchScaleFactor: number, has3DLayer: boolean) {
-
+    tilesIn(queryGeometry: QueryGeometry, use3DQuery: boolean, visualizeQueryGeometry: boolean): TilespaceQueryGeometry[] {
         const tileResults = [];
 
         const transform = this.transform;
         if (!transform) return tileResults;
 
-        const cameraPointQueryGeometry = has3DLayer ?
-            transform.getCameraQueryGeometry(pointQueryGeometry) :
-            pointQueryGeometry;
-
-        const queryGeometry = pointQueryGeometry.map((p) => transform.pointCoordinate(p));
-        const cameraQueryGeometry = cameraPointQueryGeometry.map((p) => transform.pointCoordinate(p));
-
-        const ids = this.getIds();
-
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-
-        for (const p of cameraQueryGeometry) {
-            minX = Math.min(minX, p.x);
-            minY = Math.min(minY, p.y);
-            maxX = Math.max(maxX, p.x);
-            maxY = Math.max(maxY, p.y);
-        }
-
-        for (let i = 0; i < ids.length; i++) {
-            const tile = this._tiles[ids[i]];
+        for (const tileID in this._tiles) {
+            const tile = this._tiles[tileID];
+            if (visualizeQueryGeometry) {
+                tile.clearQueryDebugViz();
+            }
             if (tile.holdingForFade()) {
                 // Tiles held for fading are covered by tiles that are closer to ideal
                 continue;
             }
-            const tileID = tile.tileID;
-            const scale = Math.pow(2, transform.zoom - tile.tileID.overscaledZ);
-            const queryPadding = maxPitchScaleFactor * tile.queryPadding * EXTENT / tile.tileSize / scale;
 
-            const tileSpaceBounds = [
-                tileID.getTilePoint(new MercatorCoordinate(minX, minY)),
-                tileID.getTilePoint(new MercatorCoordinate(maxX, maxY))
-            ];
-
-            if (tileSpaceBounds[0].x - queryPadding < EXTENT && tileSpaceBounds[0].y - queryPadding < EXTENT &&
-                tileSpaceBounds[1].x + queryPadding >= 0 && tileSpaceBounds[1].y + queryPadding >= 0) {
-
-                const tileSpaceQueryGeometry: Array<Point> = queryGeometry.map((c) => tileID.getTilePoint(c));
-                const tileSpaceCameraQueryGeometry = cameraQueryGeometry.map((c) => tileID.getTilePoint(c));
-
-                tileResults.push({
-                    tile,
-                    tileID,
-                    queryGeometry: tileSpaceQueryGeometry,
-                    cameraQueryGeometry: tileSpaceCameraQueryGeometry,
-                    scale
-                });
+            const tileResult = queryGeometry.containsTile(tile, transform, use3DQuery);
+            if (tileResult) {
+                tileResults.push(tileResult);
             }
         }
-
         return tileResults;
     }
 

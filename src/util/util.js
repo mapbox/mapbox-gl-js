@@ -4,6 +4,7 @@ import UnitBezier from '@mapbox/unitbezier';
 
 import Point from '@mapbox/point-geometry';
 import window from './window';
+import assert from 'assert';
 
 import type {Callback} from '../types/callback';
 
@@ -59,6 +60,74 @@ export function easeCubicInOut(t: number): number {
     const t2 = t * t,
         t3 = t2 * t;
     return 4 * (t < 0.5 ? t3 : 3 * (t - t2) + t3 - 0.75);
+}
+
+/**
+ * Computes an AABB for a set of points.
+ *
+ * @param {Point[]} points
+ * @returns {{ min: Point, max: Point}}
+ * @private
+ */
+export function getBounds(points: Point[]): { min: Point, max: Point} {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const p of points) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+    }
+
+    return {
+        min: new Point(minX, minY),
+        max: new Point(maxX, maxY),
+    };
+}
+
+/**
+ * Converts a AABB into a closed polygon with clockwise winding order.
+ *
+ * @param {Point} min
+ * @param {Point} max
+ * @param {number} [buffer=0]
+ * @returns {Point[]}
+ */
+export function polygonizeBounds(min: Point, max: Point, buffer: number = 0): Point[] {
+    const offset = new Point(buffer, buffer);
+    const minBuf = min.sub(offset);
+    const maxBuf = max.add(offset);
+    return [minBuf, new Point(maxBuf.x, minBuf.y), maxBuf, new Point(minBuf.x, maxBuf.y), minBuf];
+}
+
+/**
+ * Takes a convex ring and applies and expands it outward by applying a buffer around it.
+ * This function assumes that the ring is in clockwise winding order.
+ *
+ * @param {Point[]} ring
+ * @param {number} buffer
+ * @returns {Point[]}
+ */
+export function bufferConvexPolygon(ring: Point[], buffer: number): Point[] {
+    assert(ring.length > 2, 'bufferConvexPolygon requires the ring to have atleast 3 points');
+    const output = [];
+    for (let currIdx = 0; currIdx < ring.length; currIdx++) {
+        const prevIdx = wrap(currIdx - 1, -1, ring.length - 1);
+        const nextIdx = wrap(currIdx + 1, -1, ring.length - 1);
+        const prev = ring[prevIdx];
+        const curr = ring[currIdx];
+        const next = ring[nextIdx];
+        const p1 = prev.sub(curr).unit();
+        const p2 = next.sub(curr).unit();
+        const interiorAngle = p2.angleWithSep(p1.x, p1.y);
+        // Calcuate a vector that points in the direction of the angle bisector between two sides.
+        // Scale it based on a right angled triangle constructed at that corner.
+        const offset = p1.add(p2).unit().mult(-1 * buffer / Math.sin(interiorAngle / 2));
+        output.push(curr.add(offset));
+    }
+    return output;
 }
 
 /**
