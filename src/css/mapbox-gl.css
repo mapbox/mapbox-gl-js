@@ -479,6 +479,11 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         border: 0;
     }
 
+    .mapboxgl-ctrl-top-left .mapboxgl-ctrl-attrib-button,
+    .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib-button {
+        left: 0;
+    }
+
     .mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-button,
     .mapboxgl-ctrl-attrib.mapboxgl-compact-show .mapboxgl-ctrl-attrib-inner {
         display: block;
