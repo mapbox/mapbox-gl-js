@@ -202,7 +202,7 @@ class AttributionControl {
         if (this._map.getCanvasContainer().offsetWidth <= 640) {
             this._container.classList.add('mapboxgl-compact');
         } else {
-            this._container.classList.remove('mapboxgl-compact');
+            this._container.classList.remove('mapboxgl-compact', 'mapboxgl-compact-show');
         }
     }
 
