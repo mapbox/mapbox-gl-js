@@ -14,7 +14,7 @@ const {ImageBitmap} = window;
 
 class RasterDEMTileWorkerSource {
     actor: Actor;
-    loaded: {[_: string]: DEMData};
+    loaded: {[_: number]: DEMData};
     offscreenCanvas: OffscreenCanvas;
     offscreenCanvasContext: CanvasRenderingContext2D;
 

@@ -17,12 +17,16 @@ const {ImageBitmap} = window;
 
 export type TileParameters = {
     source: string,
-    uid: string,
+    uid: number,
 };
 
-export type WorkerTileParameters = TileParameters & {
+export type RequestedTileParameters = TileParameters & {
     tileID: OverscaledTileID,
     request: RequestParameters,
+    data?: mixed
+};
+
+export type WorkerTileParameters = RequestedTileParameters & {
     zoom: number,
     maxZoom: number,
     tileSize: number,

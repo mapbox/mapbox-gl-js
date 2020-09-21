@@ -121,7 +121,7 @@ export default class TileParser {
             overscaling: 1,
             showCollisionBoxes: false,
             source: this.sourceID,
-            uid: '0',
+            uid: 0,
             maxZoom: 22,
             pixelRatio: 1,
             request: {url: ''},

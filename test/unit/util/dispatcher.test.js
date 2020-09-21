@@ -30,6 +30,7 @@ test('Dispatcher', (t) => {
         const ids = [];
         function Actor (target, parent, mapId) { ids.push(mapId); }
         t.stub(Dispatcher, 'Actor').callsFake(Actor);
+        t.stub(Dispatcher.prototype, 'broadcast').callsFake(() => {});
         t.stub(WorkerPool, 'workerCount').value(1);
 
         const workerPool = new WorkerPool();
@@ -45,6 +46,7 @@ test('Dispatcher', (t) => {
             this.remove = function() { actorsRemoved.push(this); };
         }
         t.stub(Dispatcher, 'Actor').callsFake(Actor);
+        t.stub(Dispatcher.prototype, 'broadcast').callsFake(() => {});
         t.stub(WorkerPool, 'workerCount').value(4);
 
         const workerPool = new WorkerPool();

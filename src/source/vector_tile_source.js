@@ -9,6 +9,7 @@ import TileBounds from './tile_bounds';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
+import {loadVectorTile} from './vector_tile_worker_source';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -18,6 +19,7 @@ import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
+import type {LoadVectorTileResult} from './vector_tile_worker_source';
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
@@ -183,8 +185,11 @@ class VectorTileSource extends Evented implements Source {
 
     loadTile(tile: Tile, callback: Callback<void>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme));
+        const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
+
         const params = {
-            request: this.map._requestManager.transformRequest(url, ResourceType.Tile),
+            request,
+            data: undefined,
             uid: tile.uid,
             tileID: tile.tileID,
             zoom: tile.tileID.overscaledZ,
@@ -199,10 +204,29 @@ class VectorTileSource extends Evented implements Source {
 
         if (!tile.actor || tile.state === 'expired') {
             tile.actor = this.dispatcher.getActor();
-            tile.request = tile.actor.send('loadTile', params, done.bind(this));
+
+            // if workers are not ready to receive messages yet, use the idle time to preemptively
+            // load tiles on the main thread and pass the result instead of requesting a worker to do so
+            if (!this.dispatcher.ready) {
+                const cancel = loadVectorTile(params, (err: ?Error, data: ?LoadVectorTileResult) => {
+                    if (err) {
+                        done.call(this, err);
+                    } else {
+                        // the worker will skip the network request if the data is already there
+                        params.data = data;
+                        if (tile.actor) tile.actor.send('loadTile', params, done.bind(this));
+                    }
+                });
+                tile.request = {cancel};
+
+            } else {
+                tile.request = tile.actor.send('loadTile', params, done.bind(this));
+            }
+
         } else if (tile.state === 'loading') {
             // schedule tile reloading after it has been loaded
             tile.reloadCallback = callback;
+
         } else {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }

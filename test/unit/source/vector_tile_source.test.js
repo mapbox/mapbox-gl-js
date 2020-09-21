@@ -9,7 +9,8 @@ const wrapDispatcher = (dispatcher) => {
     return {
         getActor() {
             return dispatcher;
-        }
+        },
+        ready: true
     };
 };
 
