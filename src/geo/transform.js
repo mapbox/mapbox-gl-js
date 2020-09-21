@@ -1383,7 +1383,7 @@ class Transform {
         const maxY = Math.max(p0.y, p1.y);
 
         const min = new Point(minX, minY);
-        const max = new Point(minX, minY);
+        const max = new Point(maxX, maxY);
 
         const corners = [
             min, max,
