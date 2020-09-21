@@ -2,7 +2,6 @@ import {test} from '../../../util/test';
 import config from '../../../../src/util/config';
 import AttributionControl from '../../../../src/ui/control/attribution_control';
 import {createMap as globalCreateMap} from '../../../util';
-import window from '../../../../src/util/window';
 import simulate from '../../../util/simulate_interaction';
 
 function createMap(t) {
