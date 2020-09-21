@@ -29,6 +29,7 @@ class AttributionControl {
     _map: Map;
     _container: HTMLElement;
     _innerContainer: HTMLElement;
+    _compactButton: HTMLButtonElement;
     _editLink: ?HTMLAnchorElement;
     _attribHTML: string;
     styleId: string;
@@ -56,7 +57,7 @@ class AttributionControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
         this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
         this._compactButton.addEventListener('click', this._toggleAttribution);
-        this._setButtonTitle(this._compactButton, 'ToggleAttribution');
+        this._setElementTitle(this._compactButton, 'ToggleAttribution');
         this._innerContainer = DOM.create('div', 'mapboxgl-ctrl-attrib-inner', this._container);
         this._innerContainer.setAttribute('role', 'list');
 
@@ -91,10 +92,10 @@ class AttributionControl {
         this._attribHTML = (undefined: any);
     }
 
-    _setButtonTitle(button: HTMLButtonElement, title: string) {
+    _setElementTitle(element: HTMLElement, title: string) {
         const str = this._map._getUIString(`AttributionControl.${title}`);
-        button.title = str;
-        button.setAttribute('aria-label', str);
+        element.title = str;
+        element.setAttribute('aria-label', str);
     }
 
     _toggleAttribution() {
@@ -128,7 +129,7 @@ class AttributionControl {
             }, `?`);
             editLink.href = `${config.FEEDBACK_URL}/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
             editLink.rel = 'noopener nofollow';
-            this._setButtonTitle(editLink, 'MapFeedback');
+            this._setElementTitle(editLink, 'MapFeedback');
         }
     }
 
