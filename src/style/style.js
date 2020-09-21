@@ -17,6 +17,7 @@ import {isMapboxURL} from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
 import {validateStyle, emitValidationErrors as _emitValidationErrors} from './validate_style';
+import {QueryGeometry} from '../style/query_geometry';
 import {
     getType as getSourceType,
     setType as setSourceType,
@@ -67,6 +68,7 @@ import type {
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator} from './validate_style';
 import type {OverscaledTileID} from '../source/tile_id';
+import type {PointLike} from '@mapbox/point-geometry';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -117,6 +119,7 @@ class Style extends Evented {
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
     _layers: {[_: string]: StyleLayer};
+    _num3DLayers: number;
     _serializedLayers: {[_: string]: Object};
     _order: Array<string>;
     sourceCaches: {[_: string]: SourceCache};
@@ -154,6 +157,7 @@ class Style extends Evented {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this._layers = {};
+        this._num3DLayers = 0;
         this._serializedLayers = {};
         this._order  = [];
         this.sourceCaches = {};
@@ -282,6 +286,9 @@ class Style extends Evented {
             layer.setEventedParent(this, {layer: {id: layer.id}});
             this._layers[layer.id] = layer;
             this._serializedLayers[layer.id] = layer.serialize();
+            if (layer.is3D()) {
+                this._num3DLayers++;
+            }
         }
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
@@ -705,6 +712,9 @@ class Style extends Evented {
 
             layer.setEventedParent(this, {layer: {id}});
             this._serializedLayers[layer.id] = layer.serialize();
+            if (layer.is3D()) {
+                this._num3DLayers++;
+            }
         }
 
         const index = before ? this._order.indexOf(before) : this._order.length;
@@ -793,6 +803,10 @@ class Style extends Evented {
         }
 
         layer.setEventedParent(null);
+
+        if (layer.is3D()) {
+            this._num3DLayers--;
+        }
 
         const index = this._order.indexOf(id);
         this._order.splice(index, 1);
@@ -1117,7 +1131,7 @@ class Style extends Evented {
         return features;
     }
 
-    queryRenderedFeatures(queryGeometry: any, params: any, transform: Transform) {
+    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: any, transform: Transform) {
         if (params && params.filter) {
             this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
@@ -1143,6 +1157,14 @@ class Style extends Evented {
 
         params.availableImages = this._availableImages;
 
+        const has3DLayer = (params && params.layers) ?
+            params.layers.some((layerId) => {
+                const layer = this.getLayer(layerId);
+                return layer && layer.is3D();
+            }) :
+            this.has3DLayers();
+        const queryGeometryStruct = QueryGeometry.createFromScreenPoints(queryGeometry, transform);
+
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
             sourceResults.push(
@@ -1150,9 +1172,11 @@ class Style extends Evented {
                     this.sourceCaches[id],
                     this._layers,
                     this._serializedLayers,
-                    queryGeometry,
+                    queryGeometryStruct,
                     params,
-                    transform)
+                    transform,
+                    has3DLayer,
+                    !!this.map._showQueryGeometry)
             );
         }
 
@@ -1164,7 +1188,7 @@ class Style extends Evented {
                     this._layers,
                     this._serializedLayers,
                     this.sourceCaches,
-                    queryGeometry,
+                    queryGeometryStruct.screenGeometry,
                     params,
                     this.placement.collisionIndex,
                     this.placement.retainedQueryData)
@@ -1429,6 +1453,10 @@ class Style extends Evented {
 
     getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<any>): Cancelable {
         return makeRequest(params, callback);
+    }
+
+    has3DLayers(): boolean {
+        return this._num3DLayers > 0;
     }
 }
 

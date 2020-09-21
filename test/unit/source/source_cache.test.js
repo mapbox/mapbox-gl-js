@@ -2,6 +2,7 @@ import {test} from '../../util/test';
 import SourceCache from '../../../src/source/source_cache';
 import {setType} from '../../../src/source/source';
 import Tile from '../../../src/source/tile';
+import {QueryGeometry} from '../../../src/style/query_geometry';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';
@@ -1330,18 +1331,17 @@ test('SourceCache#tilesIn', (t) => {
         const sourceCache = createSourceCache({noLoad: true});
         sourceCache.transform = tr;
         sourceCache.onAdd();
-        t.same(sourceCache.tilesIn([
-            new Point(0, 0),
-            new Point(512, 256)
-        ], 10, tr), []);
+        const queryGeometry = QueryGeometry.createFromScreenPoints([new Point(0, 0), new Point(512, 256)], tr);
+        t.same(sourceCache.tilesIn(queryGeometry), []);
 
         t.end();
     });
 
     function round(queryGeometry) {
-        return queryGeometry.map((p) => {
-            return p.round();
-        });
+        return {
+            min: queryGeometry.min.round(),
+            max: queryGeometry.max.round()
+        };
     }
 
     t.test('regular tiles', (t) => {
@@ -1370,23 +1370,19 @@ test('SourceCache#tilesIn', (t) => {
                 ]);
 
                 transform._calcMatrices();
-                const tiles = sourceCache.tilesIn([
-                    new Point(0, 0),
-                    new Point(512, 256)
-                ], 1, transform);
+                const queryGeometry = QueryGeometry.createFromScreenPoints([new Point(0, 0), new Point(512, 256)], transform);
+                const tiles = sourceCache.tilesIn(queryGeometry, false, false);
 
                 tiles.sort((a, b) => { return a.tile.tileID.canonical.x - b.tile.tileID.canonical.x; });
                 tiles.forEach((result) => { delete result.tile.uid; });
 
                 t.equal(tiles[0].tile.tileID.key, 16);
                 t.equal(tiles[0].tile.tileSize, 512);
-                t.equal(tiles[0].scale, 1);
-                t.deepEqual(round(tiles[0].queryGeometry), [{x: 4096, y: 4050}, {x:12288, y: 8146}]);
+                t.deepEqual(round(tiles[0].bufferedTilespaceBounds), {min: {x: 4080, y: 4050}, max: {x:8192, y: 8162}});
 
                 t.equal(tiles[1].tile.tileID.key, 528);
                 t.equal(tiles[1].tile.tileSize, 512);
-                t.equal(tiles[1].scale, 1);
-                t.deepEqual(round(tiles[1].queryGeometry), [{x: -4096, y: 4050}, {x: 4096, y: 8146}]);
+                t.deepEqual(round(tiles[1].bufferedTilespaceBounds), {min: {x: 0, y: 4050}, max: {x: 4112, y: 8162}});
 
                 t.end();
             }
@@ -1422,23 +1418,20 @@ test('SourceCache#tilesIn', (t) => {
                     new OverscaledTileID(2, 0, 1, 0, 0).key
                 ]);
 
-                const tiles = sourceCache.tilesIn([
-                    new Point(0, 0),
-                    new Point(1024, 512)
-                ], 1, transform);
+                const queryGeometry = QueryGeometry.createFromScreenPoints([new Point(0, 0), new Point(1024, 512)], transform);
+
+                const tiles = sourceCache.tilesIn(queryGeometry);
 
                 tiles.sort((a, b) => { return a.tile.tileID.canonical.x - b.tile.tileID.canonical.x; });
                 tiles.forEach((result) => { delete result.tile.uid; });
 
                 t.equal(tiles[0].tile.tileID.key, 17);
                 t.equal(tiles[0].tile.tileSize, 1024);
-                t.equal(tiles[0].scale, 1);
-                t.deepEqual(round(tiles[0].queryGeometry), [{x: 4096, y: 4050}, {x:12288, y: 8146}]);
+                t.deepEqual(round(tiles[0].bufferedTilespaceBounds), {min: {x: 4088, y: 4050}, max: {x:8192, y: 8154}});
 
                 t.equal(tiles[1].tile.tileID.key, 529);
                 t.equal(tiles[1].tile.tileSize, 1024);
-                t.equal(tiles[1].scale, 1);
-                t.deepEqual(round(tiles[1].queryGeometry), [{x: -4096, y: 4050}, {x: 4096, y: 8146}]);
+                t.deepEqual(round(tiles[1].bufferedTilespaceBounds), {min: {x: 0, y: 4050}, max: {x: 4104, y: 8154}});
 
                 t.end();
             }

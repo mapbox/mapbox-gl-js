@@ -2,8 +2,20 @@
 
 import {test} from '../../util/test';
 
-import {degToRad, radToDeg, easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo} from '../../../src/util/util';
+import {degToRad, radToDeg, easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon} from '../../../src/util/util';
 import Point from '@mapbox/point-geometry';
+
+const EPSILON = 1e-8;
+
+function pointsetEqual(t, actual, expected) {
+    t.equal(actual.length, expected.length);
+    for (let i = 0; i < actual.length; i++) {
+        const p1 = actual[i];
+        const p2 = expected[i];
+        t.ok(Math.abs(p1.x - p2.x) < EPSILON);
+        t.ok(Math.abs(p1.y - p2.y) < EPSILON);
+    }
+}
 
 test('util', (t) => {
     t.equal(easeCubicInOut(0), 0, 'easeCubicInOut=0');
@@ -305,6 +317,33 @@ test('util', (t) => {
             const polygon = [new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, 1), new Point(0, 0)];
 
             t.equal(isClosedPolygon(polygon), true);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('bufferConvexPolygon', (t) => {
+        t.throws(() => {
+            bufferConvexPolygon([new Point(0, 0), new Point(1, 1)], 5);
+        });
+        t.throws(() => {
+            bufferConvexPolygon([new Point(0, 0)], 5);
+        });
+        t.ok(bufferConvexPolygon([new Point(0, 0), new Point(0, 1), new Point(1, 1)], 1));
+
+        t.test('numerical tests', (t) => {
+            t.test('box', (t) => {
+                const buffered = bufferConvexPolygon([new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, 1)], 1);
+                pointsetEqual(t, buffered, [new Point(-1, -1), new Point(2, -1), new Point(2, 2), new Point(-1, 2)]);
+                t.end();
+            });
+            t.test('triangle', (t) => {
+                const buffered = bufferConvexPolygon([new Point(0, 0), new Point(1, 0), new Point(0, 1)], 1);
+                pointsetEqual(t, buffered, [new Point(-1, -1), new Point(3.414213562373095, -1), new Point(-1, 3.414213562373095)]);
+                t.end();
+            });
+
             t.end();
         });
 

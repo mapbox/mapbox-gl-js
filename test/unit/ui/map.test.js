@@ -1116,7 +1116,7 @@ test('Map', (t) => {
                 const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
-                t.deepEqual(args[0], [{x: 100, y: 100}]); // query geometry
+                t.deepEqual(args[0], {x: 100, y: 100}); // query geometry
                 t.deepEqual(args[1], {availableImages: []}); // params
                 t.deepEqual(args[2], map.transform); // transform
                 t.deepEqual(output, []);
@@ -1164,7 +1164,7 @@ test('Map', (t) => {
 
                 map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
 
-                t.deepEqual(map.style.queryRenderedFeatures.getCall(0).args[0], [{x: 612, y: 100}]);
+                t.deepEqual(map.style.queryRenderedFeatures.getCall(0).args[0], {x: 612, y: 100});
                 t.end();
             });
         });
