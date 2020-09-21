@@ -57,7 +57,6 @@ class AttributionControl {
         this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
         this._compactButton.addEventListener('click', this._toggleAttribution);
         this._setButtonTitle(this._compactButton, 'ToggleAttribution');
-        this._compactButton.setAttribute('role', 'button');
         this._innerContainer = DOM.create('div', 'mapboxgl-ctrl-attrib-inner', this._container);
         this._innerContainer.setAttribute('role', 'list');
 

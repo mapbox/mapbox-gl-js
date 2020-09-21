@@ -133,7 +133,6 @@ class NavigationControl {
     _createButton(className: string, fn: () => mixed) {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';
-        a.setAttribute('role', 'button');
         a.addEventListener('click', fn);
         return a;
     }
