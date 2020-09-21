@@ -525,6 +525,7 @@ class HandlerManager {
         if (bearingDelta) tr.bearing += bearingDelta;
         if (pitchDelta) tr.pitch += pitchDelta;
 
+        const originalZoom = tr.zoom;
         if (zoomDelta) {
             // Zoom value has to be computed relative to a secondary map plane that is created from the terrain position below the cursor.
             // This way the zoom interpolation can be kept linear and independent of the (possible) terrain elevation
@@ -572,8 +573,12 @@ class HandlerManager {
             newCenter.y += deltaY;
             tr.setLocation(newCenter);
         } else {
-            if (zoomDelta) {
+            // When zoom is kept constant (constrained) don't recenter.
+            if (zoomDelta && Math.abs(tr.zoom - originalZoom) > 0.0001) {
                 tr.recenterOnTerrain();
+                if (tr.renderWorldCopies) {
+                    tr.center = tr.center.wrap();
+                }
             } else {
                 tr.setLocationAtPoint(loc, around);
             }
