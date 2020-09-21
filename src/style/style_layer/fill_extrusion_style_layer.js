@@ -4,18 +4,18 @@ import StyleLayer from '../style_layer';
 
 import FillExtrusionBucket from '../../data/bucket/fill_extrusion_bucket';
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
-import {translateDistance, translate} from '../query_utils';
+import {translateDistance, tilespaceTranslate} from '../query_utils';
 import properties from './fill_extrusion_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
-import {vec4} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
+import ProgramConfiguration from '../../data/program_configuration';
 
 import type {FeatureState} from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
 import type {PaintProps} from './fill_extrusion_style_layer_properties';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
-import ProgramConfiguration from '../../data/program_configuration';
+import type {TilespaceQueryGeometry} from '../query_geometry';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -48,26 +48,24 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new ProgramConfiguration(this, zoom);
     }
 
-    queryIntersectsFeature(queryGeometry: Array<Point>,
+    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
                            feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
                            transform: Transform,
-                           pixelsToTileUnits: number,
                            pixelPosMatrix: Float32Array): boolean | number {
 
-        const translatedPolygon = translate(queryGeometry,
-            this.paint.get('fill-extrusion-translate'),
-            this.paint.get('fill-extrusion-translate-anchor'),
-            transform.angle, pixelsToTileUnits);
-
+        const translation = tilespaceTranslate(this.paint.get('fill-extrusion-translate'),
+                                this.paint.get('fill-extrusion-translate-anchor'),
+                                transform.angle,
+                                queryGeometry.pixelToTileUnitsFactor);
         const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
         const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);
 
-        const projectedQueryGeometry = projectQueryGeometry(translatedPolygon, pixelPosMatrix, transform, 0);
+        const projectedQueryGeometry = queryGeometry.queryGeometry.screenGeometry;
 
-        const projected = projectExtrusion(geometry, base, height, pixelPosMatrix);
+        const projected = projectExtrusion(geometry, base, height, translation, pixelPosMatrix);
         const projectedBase = projected[0];
         const projectedTop = projected[1];
         return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
@@ -173,7 +171,7 @@ function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Poin
  * different points can only be done once. This produced a measurable
  * performance improvement.
  */
-function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, m: Float32Array) {
+function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array) {
     const projectedBase = [];
     const projectedTop = [];
 
@@ -190,8 +188,8 @@ function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: nu
         const ringBase = [];
         const ringTop = [];
         for (const p of r) {
-            const x = p.x;
-            const y = p.y;
+            const x = p.x + translation.x;
+            const y = p.y + translation.y;
 
             const sX = m[0] * x + m[4] * y + m[12];
             const sY = m[1] * x + m[5] * y + m[13];
@@ -220,16 +218,6 @@ function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: nu
         projectedTop.push(ringTop);
     }
     return [projectedBase, projectedTop];
-}
-
-function projectQueryGeometry(queryGeometry: Array<Point>, pixelPosMatrix: Float32Array, transform: Transform, z: number) {
-    const projectedQueryGeometry = [];
-    for (const p of queryGeometry) {
-        const v = [p.x, p.y, z, 1];
-        vec4.transformMat4(v, v, pixelPosMatrix);
-        projectedQueryGeometry.push(new Point(v[0] / v[3], v[1] / v[3]));
-    }
-    return projectedQueryGeometry;
 }
 
 export default FillExtrusionStyleLayer;

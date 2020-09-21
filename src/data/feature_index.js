@@ -23,17 +23,14 @@ import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
 import type Transform from '../geo/transform';
 import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
+import type {TilespaceQueryGeometry} from '../style/query_geometry';
 
 import {FeatureIndexArray} from './array_types';
 
 type QueryParameters = {
-    scale: number,
     pixelPosMatrix: Float32Array,
     transform: Transform,
-    tileSize: number,
-    queryGeometry: Array<Point>,
-    cameraQueryGeometry: Array<Point>,
-    queryPadding: number,
+    tileResult: TilespaceQueryGeometry,
     params: {
         filter: FilterSpecification,
         layers: Array<string>,
@@ -47,7 +44,6 @@ class FeatureIndex {
     y: number;
     z: number;
     grid: Grid;
-    grid3D: Grid;
     featureIndexArray: FeatureIndexArray;
     promoteId: ?PromoteIdSpecification;
 
@@ -63,16 +59,15 @@ class FeatureIndex {
         this.y = tileID.canonical.y;
         this.z = tileID.canonical.z;
         this.grid = new Grid(EXTENT, 16, 0);
-        this.grid3D = new Grid(EXTENT, 16, 0);
         this.featureIndexArray = new FeatureIndexArray();
         this.promoteId = promoteId;
     }
 
-    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, is3D?: boolean) {
+    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number) {
         const key = this.featureIndexArray.length;
         this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
 
-        const grid = is3D ? this.grid3D : this.grid;
+        const grid = this.grid;
 
         for (let r = 0; r < geometry.length; r++) {
             const ring = geometry[r];
@@ -106,28 +101,15 @@ class FeatureIndex {
     // Finds non-symbol features in this tile at a particular position.
     query(args: QueryParameters, styleLayers: {[_: string]: StyleLayer}, serializedLayers: {[_: string]: Object}, sourceFeatureState: SourceFeatureState): {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         this.loadVTLayers();
-
         const params = args.params || {},
-            pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
             filter = featureFilter(params.filter);
+        const tilespaceGeometry = args.tileResult;
 
-        const queryGeometry = args.queryGeometry;
-        const queryPadding = args.queryPadding * pixelsToTileUnits;
-
-        const bounds = getBounds(queryGeometry);
-        const matching = this.grid.query(bounds.minX - queryPadding, bounds.minY - queryPadding, bounds.maxX + queryPadding, bounds.maxY + queryPadding);
-
-        const cameraBounds = getBounds(args.cameraQueryGeometry);
-        const matching3D = this.grid3D.query(
-                cameraBounds.minX - queryPadding, cameraBounds.minY - queryPadding, cameraBounds.maxX + queryPadding, cameraBounds.maxY + queryPadding,
-                (bx1, by1, bx2, by2) => {
-                    return polygonIntersectsBox(args.cameraQueryGeometry, bx1 - queryPadding, by1 - queryPadding, bx2 + queryPadding, by2 + queryPadding);
-                });
-
-        for (const key of matching3D) {
-            matching.push(key);
-        }
-
+        const bounds = tilespaceGeometry.bufferedTilespaceBounds;
+        const queryPredicate = (bx1, by1, bx2, by2) => {
+            return polygonIntersectsBox(tilespaceGeometry.bufferedTilespaceGeometry, bx1, by1, bx2, by2);
+        };
+        const matching = this.grid.query(bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y, queryPredicate);
         matching.sort(topDownFeatureComparator);
 
         const result = {};
@@ -157,7 +139,7 @@ class FeatureIndex {
                         featureGeometry = loadGeometry(feature);
                     }
 
-                    return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.pixelPosMatrix);
+                    return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, args.transform, args.pixelPosMatrix);
                 }
             );
         }
@@ -301,20 +283,6 @@ function evaluateProperties(serializedProperties, styleLayerProperties, feature,
         const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(key) : null;
         return prop && prop.evaluate ? prop.evaluate(feature, featureState, availableImages) : prop;
     });
-}
-
-function getBounds(geometry: Array<Point>) {
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    for (const p of geometry) {
-        minX = Math.min(minX, p.x);
-        minY = Math.min(minY, p.y);
-        maxX = Math.max(maxX, p.x);
-        maxY = Math.max(maxY, p.y);
-    }
-    return {minX, minY, maxX, maxY};
 }
 
 function topDownFeatureComparator(a, b) {

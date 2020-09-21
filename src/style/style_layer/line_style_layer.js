@@ -10,6 +10,7 @@ import properties from './line_style_layer_properties';
 import {extend, MAX_SAFE_INTEGER} from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
 import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties';
+import ProgramConfiguration from '../../data/program_configuration';
 
 import Step from '../../style-spec/expression/definitions/step';
 import type {FeatureState, ZoomConstantExpression} from '../../style-spec/expression';
@@ -17,7 +18,7 @@ import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
-import ProgramConfiguration from '../../data/program_configuration';
+import type {TilespaceQueryGeometry} from '../query_geometry';
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: true;
@@ -105,23 +106,24 @@ class LineStyleLayer extends StyleLayer {
         return width / 2 + Math.abs(offset) + translateDistance(this.paint.get('line-translate'));
     }
 
-    queryIntersectsFeature(queryGeometry: Array<Point>,
+    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
                            feature: VectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
-                           transform: Transform,
-                           pixelsToTileUnits: number): boolean {
-        const translatedPolygon = translate(queryGeometry,
+                           transform: Transform): boolean {
+        if (queryGeometry.queryGeometry.isAboveHorizon) return false;
+
+        const translatedPolygon = translate(queryGeometry.tilespaceGeometry,
             this.paint.get('line-translate'),
             this.paint.get('line-translate-anchor'),
-            transform.angle, pixelsToTileUnits);
-        const halfWidth = pixelsToTileUnits / 2 * getLineWidth(
+            transform.angle, queryGeometry.pixelToTileUnitsFactor);
+        const halfWidth = queryGeometry.pixelToTileUnitsFactor / 2 * getLineWidth(
             this.paint.get('line-width').evaluate(feature, featureState),
             this.paint.get('line-gap-width').evaluate(feature, featureState));
         const lineOffset = this.paint.get('line-offset').evaluate(feature, featureState);
         if (lineOffset) {
-            geometry = offsetLine(geometry, lineOffset * pixelsToTileUnits);
+            geometry = offsetLine(geometry, lineOffset * queryGeometry.pixelToTileUnitsFactor);
         }
 
         return polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);

@@ -41,3 +41,16 @@ export function translate(queryGeometry: Array<Point>,
     }
     return translated;
 }
+
+export function tilespaceTranslate(translate: [number, number],
+                    translateAnchor: 'viewport' | 'map',
+                    bearing: number,
+                    pixelsToTileUnits: number): Point {
+    const pt = Point.convert(translate)._mult(pixelsToTileUnits);
+
+    if (translateAnchor === "viewport") {
+        pt._rotate(-bearing);
+    }
+
+    return pt;
+}

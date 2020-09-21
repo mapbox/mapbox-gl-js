@@ -277,6 +277,7 @@ class Map extends Camera {
     _controlPositions: {[_: string]: HTMLElement};
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
+    _showQueryGeometry: ?boolean;
     _showCollisionBoxes: ?boolean;
     _showPadding: ?boolean;
     _showOverdrawInspector: boolean;
@@ -1245,16 +1246,7 @@ class Map extends Camera {
         options = options || {};
         geometry = geometry || [[0, 0], [this.transform.width, this.transform.height]];
 
-        let queryGeometry;
-        if (geometry instanceof Point || typeof geometry[0] === 'number') {
-            queryGeometry = [Point.convert(geometry)];
-        } else {
-            const tl = Point.convert(geometry[0]);
-            const br = Point.convert(geometry[1]);
-            queryGeometry = [tl, new Point(br.x, tl.y), br, new Point(tl.x, br.y), tl];
-        }
-
-        return this.style.queryRenderedFeatures(queryGeometry, options, this.transform);
+        return this.style.queryRenderedFeatures(geometry, options, this.transform);
     }
 
     /**
@@ -2492,6 +2484,7 @@ class Map extends Camera {
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
+            showQueryGeometry: !!this._showQueryGeometry,
             rotating: this.isRotating(),
             zooming: this.isZooming(),
             moving: this.isMoving(),

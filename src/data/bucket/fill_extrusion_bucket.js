@@ -239,7 +239,7 @@ class FillExtrusionBucket implements Bucket {
                 this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {});
             }
 
-            options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, true);
+            options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index);
         }
         this.sortBorders();
     }

@@ -12,6 +12,7 @@ import {
 import {Evented} from '../util/evented';
 import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties';
 import {supportsPropertyExpression} from '../style-spec/util/properties';
+import ProgramConfiguration from '../data/program_configuration';
 
 import type {FeatureState} from '../style-spec/expression';
 import type {Bucket} from '../data/bucket';
@@ -27,7 +28,7 @@ import type {
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type Map from '../ui/map';
 import type {StyleSetterOptions} from './style';
-import ProgramConfiguration from '../data/program_configuration';
+import type {TilespaceQueryGeometry} from './query_geometry';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -53,13 +54,12 @@ class StyleLayer extends Evented {
     _featureFilter: FeatureFilter;
 
     +queryRadius: (bucket: Bucket) => number;
-    +queryIntersectsFeature: (queryGeometry: Array<Point>,
+    +queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
                               feature: VectorTileFeature,
                               featureState: FeatureState,
                               geometry: Array<Array<Point>>,
                               zoom: number,
                               transform: Transform,
-                              pixelsToTileUnits: number,
                               pixelPosMatrix: Float32Array) => boolean | number;
 
     +onAdd: ?(map: Map) => void;

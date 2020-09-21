@@ -34,10 +34,11 @@ import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
-import debug, {drawDebugPadding} from './draw_debug';
+import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug';
 import custom from './draw_custom';
 import sky from './draw_sky';
 import {Terrain} from '../terrain/terrain';
+import {Debug} from '../util/debug';
 
 const draw = {
     symbol,
@@ -78,6 +79,7 @@ export type CanvasCopyInstances = {
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
+    showQueryGeometry: boolean,
     showPadding: boolean,
     rotating: boolean,
     zooming: boolean,
@@ -512,7 +514,7 @@ class Painter {
             this.renderLayer(this, sourceCache, layer, coords);
         }
 
-        if (this.options.showTileBoundaries) {
+        if (this.options.showTileBoundaries || this.options.showQueryGeometry) {
             //Use source with highest maxzoom
             let selectedSource = null;
             let sourceCache;
@@ -528,7 +530,15 @@ class Painter {
                 }
             });
             if (selectedSource) {
-                draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
+                if (this.options.showTileBoundaries) {
+                    draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
+                }
+
+                Debug.run(() => {
+                    if (this.options.showQueryGeometry && selectedSource) {
+                        drawDebugQueryGeometry(this, selectedSource, selectedSource.getVisibleCoordinates());
+                    }
+                });
             }
         }
 
