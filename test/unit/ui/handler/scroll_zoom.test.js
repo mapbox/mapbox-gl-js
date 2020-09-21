@@ -142,6 +142,33 @@ test('ScrollZoomHandler', (t) => {
             });
         });
 
+        t.test('No movement when zoom is constrained', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                map.transform.zoom = 0;
+                setMockElevationTerrain(map, zeroElevationDem, tileSize);
+                map.once('render', () => {
+                    // zoom out to reach min zoom.
+                    for (let i = 0; i < 2; i++) {
+                        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 100});
+                        map._renderTaskQueue.run();
+                    }
+                    const tr = map.transform.clone();
+                    // zooming out further should keep the map center stabile.
+                    for (let i = 0; i < 5; i++) {
+                        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 0.0001});
+                        map._renderTaskQueue.run();
+                        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 100});
+                        map._renderTaskQueue.run();
+                    }
+                    t.equal(tr.center.lng.toFixed(10), map.transform.center.lng.toFixed(10));
+                    t.equal(tr.center.lat.toFixed(10), map.transform.center.lat.toFixed(10));
+                    map.remove();
+                    t.end();
+                });
+            });
+        });
+
         t.test('Consistent deltas if elevation changes', (t) => {
             const map = createMap(t);
             map.on('style.load', () => {

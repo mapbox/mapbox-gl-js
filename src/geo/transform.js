@@ -1080,7 +1080,7 @@ class Transform {
 
             const pos = this._camera.position;
             const camToNew = [newCenter.x - pos[0], newCenter.y - pos[1], newCenter.z - pos[2]];
-            const maxAltitude = mercatorZfromAltitude(newCenter.toAltitude(), newCenter.toLngLat().lat) + vec3.length(camToNew);
+            const maxAltitude = newCenter.z + vec3.length(camToNew);
 
             // Camera zoom has to be updated as the orbit distance might have changed
             this._cameraZoom = this._zoomFromMercatorZ(maxAltitude);
