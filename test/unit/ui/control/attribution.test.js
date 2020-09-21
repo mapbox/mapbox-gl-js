@@ -2,6 +2,8 @@ import {test} from '../../../util/test';
 import config from '../../../../src/util/config';
 import AttributionControl from '../../../../src/ui/control/attribution_control';
 import {createMap as globalCreateMap} from '../../../util';
+import window from '../../../../src/util/window';
+import simulate from '../../../util/simulate_interaction';
 
 function createMap(t) {
     config.ACCESS_TOKEN = 'pk.123';
@@ -72,6 +74,28 @@ test('AttributionControl appears in compact mode if container is less then 640 p
     map.resize();
 
     t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.mapboxgl-compact').length, 1);
+    t.end();
+});
+
+test('AttributionControl compact mode control toggles attribution', (t) => {
+    const map = createMap(t);
+    map.addControl(new AttributionControl({
+        compact: true
+    }));
+
+    const container = map.getContainer();
+    const toggle = container.querySelector('.mapboxgl-ctrl-attrib-button');
+
+    t.equal(container.querySelectorAll('.mapboxgl-compact-show').length, 0);
+
+    simulate.click(toggle);
+
+    t.equal(container.querySelectorAll('.mapboxgl-compact-show').length, 1);
+
+    simulate.click(toggle);
+
+    t.equal(container.querySelectorAll('.mapboxgl-compact-show').length, 0);
+
     t.end();
 });
 
