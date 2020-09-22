@@ -195,7 +195,8 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @example
  * // Show an alert if the browser does not support Mapbox GL
  * if (!mapboxgl.supported()) {
- * alert('Your browser does not support Mapbox GL');
+ *   alert('Your browser does not support Mapbox GL');
+ * }
  * @see [Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */
 
