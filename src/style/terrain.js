@@ -49,7 +49,7 @@ class Terrain extends Evented {
     isEnabled(): boolean {
         const sourceId = this.properties && this.properties.get('source');
         if (!sourceId) return false;
-        const sourceCache = this.style.sourceCaches[sourceId];
+        const sourceCache = this.style._getSourceCache(sourceId);
         if (!sourceCache) {
             warnOnce(`Terrain source "${sourceId}" is not defined.`);
             return false;

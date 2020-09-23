@@ -1474,12 +1474,13 @@ class Map extends Camera {
      * var sourceLoaded = map.isSourceLoaded('bathymetry-data');
      */
     isSourceLoaded(id: string) {
-        const source = this.style && this.style.sourceCaches[id];
-        if (source === undefined) {
+        const sourceCaches = this.style && this.style._getSourceCaches(id);
+        if (sourceCaches.length === 0) {
             this.fire(new ErrorEvent(new Error(`There is no source with ID '${id}'`)));
             return;
         }
-        return source.loaded();
+
+        return sourceCaches.every(sc => sc.loaded());
     }
 
     /**
@@ -1492,7 +1493,7 @@ class Map extends Camera {
      */
 
     areTilesLoaded() {
-        const sources = this.style && this.style.sourceCaches;
+        const sources = this.style && this.style._sourceCaches;
         for (const id in sources) {
             const source = sources[id];
             const tiles = source._tiles;

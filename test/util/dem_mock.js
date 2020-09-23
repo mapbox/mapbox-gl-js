@@ -22,7 +22,7 @@ export function setMockElevationTerrain(map, demData, tileSize) {
         tileSize,
         "maxzoom": 14
     });
-    const cache = map.style.sourceCaches['mapbox-dem'];
+    const cache = map.style._getSourceCache('mapbox-dem');
     cache.used = cache._sourceLoaded = true;
     cache._loadTile = (tile, callback) => {
         tile.dem = demData;

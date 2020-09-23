@@ -9,7 +9,7 @@ import TileBounds from './tile_bounds';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
-import {loadVectorTile} from './vector_tile_worker_source';
+import {DedupedRequest, loadVectorTile} from './vector_tile_worker_source';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -19,6 +19,7 @@ import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
+import type Actor from '../util/actor';
 import type {LoadVectorTileResult} from './vector_tile_worker_source';
 
 /**
@@ -68,6 +69,8 @@ class VectorTileSource extends Evented implements Source {
     isTileClipped: boolean;
     _tileJSONRequest: ?Cancelable;
     _loaded: boolean;
+    _tileWorkers: {[string]: Actor};
+    _deduped: DedupedRequest;
 
     constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -93,6 +96,9 @@ class VectorTileSource extends Evented implements Source {
         }
 
         this.setEventedParent(eventedParent);
+
+        this._tileWorkers = {};
+        this._deduped = new DedupedRequest();
     }
 
     load() {
@@ -138,8 +144,10 @@ class VectorTileSource extends Evented implements Source {
 
         callback();
 
-        const sourceCache = this.map.style.sourceCaches[this.id];
-        sourceCache.clearTiles();
+        const sourceCaches = this.map.style._getSourceCaches(this.id);
+        for (const sourceCache of sourceCaches) {
+            sourceCache.clearTiles();
+        }
         this.load();
     }
 
@@ -198,25 +206,30 @@ class VectorTileSource extends Evented implements Source {
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
-            promoteId: this.promoteId
+            promoteId: this.promoteId,
+            isSymbolTile: tile.isSymbolTile
         };
         params.request.collectResourceTiming = this._collectResourceTiming;
 
         if (!tile.actor || tile.state === 'expired') {
-            tile.actor = this.dispatcher.getActor();
+            tile.actor = this._tileWorkers[url] = this._tileWorkers[url] || this.dispatcher.getActor();
 
             // if workers are not ready to receive messages yet, use the idle time to preemptively
             // load tiles on the main thread and pass the result instead of requesting a worker to do so
             if (!this.dispatcher.ready) {
-                const cancel = loadVectorTile(params, (err: ?Error, data: ?LoadVectorTileResult) => {
-                    if (err) {
+                const cancel = loadVectorTile.call({deduped: this._deduped}, params, (err: ?Error, data: ?LoadVectorTileResult) => {
+                    if (err || !data) {
                         done.call(this, err);
                     } else {
                         // the worker will skip the network request if the data is already there
-                        params.data = data;
+                        params.data = {
+                            cacheControl: data.cacheControl,
+                            expires: data.expires,
+                            rawData: data.rawData.slice(0)
+                        };
                         if (tile.actor) tile.actor.send('loadTile', params, done.bind(this));
                     }
-                });
+                }, true);
                 tile.request = {cancel};
 
             } else {
@@ -277,6 +290,10 @@ class VectorTileSource extends Evented implements Source {
 
     hasTransition() {
         return false;
+    }
+
+    afterUpdate() {
+        this._tileWorkers = {};
     }
 }
 

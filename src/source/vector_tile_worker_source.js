@@ -19,6 +19,7 @@ import type {
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {Callback} from '../types/callback';
+import type Scheduler from '../util/scheduler';
 
 export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
@@ -39,30 +40,82 @@ export type LoadVectorDataCallback = Callback<?LoadVectorTileResult>;
 export type AbortVectorData = () => void;
 export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => ?AbortVectorData;
 
+export class DedupedRequest {
+    entries: { [string]: Object };
+    scheduler: ?Scheduler;
+    constructor(scheduler?: Scheduler) {
+        this.entries = {};
+        this.scheduler = scheduler;
+    }
+
+    request(key: string, request: any, callback: LoadVectorDataCallback) {
+        const entry = this.entries[key] = this.entries[key] || {callbacks: []};
+
+        if (entry.result) {
+            callback(entry.result[0], entry.result[1]);
+            return () => {};
+        }
+
+        entry.callbacks.push(callback);
+
+        if (!entry.cancel) {
+            entry.cancel = request((err, result) => {
+                entry.result = [err, result];
+                for (const cb of entry.callbacks) {
+                    if (this.scheduler) {
+                        this.scheduler.add(() => {
+                            cb(err, result);
+                        }, {type: "parseTile"});
+                    } else {
+                        cb(err, result);
+                    }
+                }
+                setTimeout(() => delete this.entries[key], 1000 * 3);
+            });
+        }
+
+        return () => {
+            if (entry.result) return;
+            entry.callbacks = entry.callbacks.filter(cb => cb !== callback);
+            if (!entry.callbacks.length) {
+                entry.cancel();
+                delete this.entries[key];
+            }
+        };
+    }
+}
+
 /**
  * @private
  */
-export function loadVectorTile(params: RequestedTileParameters, callback: LoadVectorDataCallback) {
+export function loadVectorTile(params: RequestedTileParameters, callback: LoadVectorDataCallback, skipParse?: boolean) {
     if (params.data) {
         // if we already got the result earlier (on the main thread), return it directly
         callback(null, ((params.data: any): LoadVectorTileResult));
         return () => { callback(); };
     }
-    const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
-        if (err) {
-            callback(err);
-        } else if (data) {
-            callback(null, {
-                rawData: data,
-                cacheControl,
-                expires
-            });
-        }
-    });
-    return () => {
-        request.cancel();
-        callback();
+    const key = JSON.stringify(params.request);
+
+    const makeRequest = (callback) => {
+        const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
+            if (err) {
+                callback(err);
+            } else if (data) {
+                callback(null, {
+                    vectorTile: skipParse ? undefined : new vt.VectorTile(new Protobuf(data)),
+                    rawData: data,
+                    cacheControl,
+                    expires
+                });
+            }
+        });
+        return () => {
+            request.cancel();
+            callback();
+        };
     };
+
+    return this.deduped.request(key, makeRequest, callback);
 }
 
 /**
@@ -81,6 +134,7 @@ class VectorTileWorkerSource implements WorkerSource {
     loadVectorData: LoadVectorData;
     loading: {[_: number]: WorkerTile };
     loaded: {[_: number]: WorkerTile };
+    deduped: DedupedRequest;
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile
@@ -96,6 +150,7 @@ class VectorTileWorkerSource implements WorkerSource {
         this.loadVectorData = loadVectorData || loadVectorTile;
         this.loading = {};
         this.loaded = {};
+        this.deduped = new DedupedRequest(actor.scheduler);
     }
 
     /**

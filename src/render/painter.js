@@ -280,10 +280,10 @@ class Painter {
             this.quadTriangleIndexBuffer, this.viewportSegments);
     }
 
-    _renderTileClippingMasks(layer: StyleLayer, tileIDs: Array<OverscaledTileID>) {
-        if (this.currentStencilSource === layer.source || !layer.isTileClipped() || !tileIDs || !tileIDs.length) return;
+    _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
+        if (!sourceCache || this.currentStencilSource === sourceCache.id || !layer.isTileClipped() || !tileIDs || !tileIDs.length) return;
 
-        this.currentStencilSource = layer.source;
+        this.currentStencilSource = sourceCache.id;
 
         const context = this.context;
         const gl = context.gl;
@@ -404,7 +404,7 @@ class Painter {
         this.imageManager.beginFrame();
 
         const layerIds = this.style._order;
-        const sourceCaches = this.style.sourceCaches;
+        const sourceCaches = this.style._sourceCaches;
 
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
@@ -448,12 +448,13 @@ class Painter {
 
         for (const layerId of layerIds) {
             const layer = this.style._layers[layerId];
+            const sourceCache = style._getLayerSourceCache(layer);
             if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
-            const coords = coordsDescending[layer.source];
-            if (!(layer.type === 'custom' || layer.isSky()) && !coords.length) continue;
+            const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
+            if (!(layer.type === 'custom' || layer.isSky()) && !(coords && coords.length)) continue;
 
-            this.renderLayer(this, sourceCaches[layer.source], layer, coords);
+            this.renderLayer(this, sourceCache, layer, coords);
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
@@ -472,11 +473,11 @@ class Painter {
 
         for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
-            const sourceCache = sourceCaches[layer.source];
+            const sourceCache = style._getLayerSourceCache(layer);
             if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
-            const coords = coordsAscending[layer.source];
+            const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
-            this._renderTileClippingMasks(layer, coords);
+            this._renderTileClippingMasks(layer, sourceCache, coords);
             this.renderLayer(this, sourceCache, layer, coords);
         }
 
@@ -488,9 +489,9 @@ class Painter {
         if (this.transform.isHorizonVisible()) {
             for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
                 const layer = this.style._layers[layerIds[this.currentLayer]];
-                const sourceCache = sourceCaches[layer.source];
+                const sourceCache = style._getLayerSourceCache(layer);
                 if (!layer.isSky()) continue;
-                const coords = coordsAscending[layer.source];
+                const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
                 this.renderLayer(this, sourceCache, layer, coords);
             }
@@ -502,28 +503,27 @@ class Painter {
 
         for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
-            const sourceCache = sourceCaches[layer.source];
+            const sourceCache = style._getLayerSourceCache(layer);
             if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
 
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
             // separate clipping masks
-            const coords = (layer.type === 'symbol' ? coordsDescendingSymbol : coordsDescending)[layer.source];
+            const coords = sourceCache ?
+                (layer.type === 'symbol' ? coordsDescendingSymbol : coordsDescending)[sourceCache.id] :
+                undefined;
 
-            this._renderTileClippingMasks(layer, coordsAscending[layer.source]);
+            this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             this.renderLayer(this, sourceCache, layer, coords);
         }
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry) {
             //Use source with highest maxzoom
             let selectedSource = null;
-            let sourceCache;
             const layers = values(this.style._layers);
             layers.forEach((layer) => {
-                if (layer.source && !layer.isHidden(this.transform.zoom)) {
-                    if (layer.source !== (sourceCache && sourceCache.id)) {
-                        sourceCache = this.style.sourceCaches[layer.source];
-                    }
+                const sourceCache = style._getLayerSourceCache(layer);
+                if (sourceCache && !layer.isHidden(this.transform.zoom)) {
                     if (!selectedSource || (selectedSource.getSource().maxzoom < sourceCache.getSource().maxzoom)) {
                         selectedSource = sourceCache;
                     }
@@ -557,9 +557,9 @@ class Painter {
         }
     }
 
-    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
+    renderLayer(painter: Painter, sourceCache?: SourceCache, layer: StyleLayer, coords?: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && !coords.length) return;
+        if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && !(coords && coords.length)) return;
         this.id = layer.id;
 
         this.gpuTimingStart(layer);

@@ -24,7 +24,11 @@ function createSource(options, transformCallback) {
         transform: {showCollisionBoxes: false},
         _getMapId: () => 1,
         _requestManager: new RequestManager(transformCallback),
-        style: {sourceCaches: {id: {clearTiles: () => {}}}}
+        style: {
+            _getSourceCaches: () => {
+                return [{clearTiles: () => {}}];
+            }
+        }
     });
 
     source.on('error', (e) => {

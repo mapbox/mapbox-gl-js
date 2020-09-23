@@ -74,6 +74,7 @@ class Tile {
     placementSource: any;
     actor: ?Actor;
     vtLayers: {[_: string]: VectorTileLayer};
+    isSymbolTile: ?boolean;
 
     neighboringTiles: ?Object;
     dem: ?DEMData;
