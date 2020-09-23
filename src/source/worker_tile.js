@@ -41,6 +41,7 @@ class WorkerTile {
     collectResourceTiming: boolean;
     returnDependencies: boolean;
     enableTerrain: boolean;
+    isSymbolTile: ?boolean;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -63,6 +64,7 @@ class WorkerTile {
         this.returnDependencies = !!params.returnDependencies;
         this.promoteId = params.promoteId;
         this.enableTerrain = !!params.enableTerrain;
+        this.isSymbolTile = params.isSymbolTile;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
@@ -92,6 +94,22 @@ class WorkerTile {
                 continue;
             }
 
+            let anySymbolLayers = false;
+            let anyOtherLayers = false;
+            for (const family of layerFamilies[sourceLayerId]) {
+                if (family[0].type === 'symbol') {
+                    anySymbolLayers = true;
+                } else {
+                    anyOtherLayers = true;
+                }
+            }
+
+            if (this.isSymbolTile === true && !anySymbolLayers) {
+                continue;
+            } else if (this.isSymbolTile === false && !anyOtherLayers) {
+                continue;
+            }
+
             if (sourceLayer.version === 1) {
                 warnOnce(`Vector tile source "${this.source}" layer "${sourceLayerId}" ` +
                     `does not use vector tile spec v2 and therefore may have some rendering errors.`);
@@ -107,6 +125,7 @@ class WorkerTile {
 
             for (const family of layerFamilies[sourceLayerId]) {
                 const layer = family[0];
+                if (this.isSymbolTile !== undefined && (layer.type === 'symbol') !== this.isSymbolTile) continue;
 
                 assert(layer.source === this.source);
                 if (layer.minzoom && this.zoom < Math.floor(layer.minzoom)) continue;
@@ -136,6 +155,7 @@ class WorkerTile {
         let glyphMap: ?{[_: string]: {[_: number]: ?StyleGlyph}};
         let iconMap: ?{[_: string]: StyleImage};
         let patternMap: ?{[_: string]: StyleImage};
+        const taskMetadata = {type: 'maybePrepare', isSymbolTile: this.isSymbolTile};
 
         const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
         if (Object.keys(stacks).length) {
@@ -145,7 +165,7 @@ class WorkerTile {
                     glyphMap = result;
                     maybePrepare.call(this);
                 }
-            });
+            }, undefined, undefined, taskMetadata);
         } else {
             glyphMap = {};
         }
@@ -158,7 +178,7 @@ class WorkerTile {
                     iconMap = result;
                     maybePrepare.call(this);
                 }
-            });
+            }, undefined, undefined, taskMetadata);
         } else {
             iconMap = {};
         }
@@ -171,7 +191,7 @@ class WorkerTile {
                     patternMap = result;
                     maybePrepare.call(this);
                 }
-            });
+            }, undefined, undefined, taskMetadata);
         } else {
             patternMap = {};
         }

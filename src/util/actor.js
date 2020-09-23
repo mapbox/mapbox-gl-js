@@ -3,7 +3,7 @@
 import {bindAll, isWorker, isSafari} from './util';
 import window from './window';
 import {serialize, deserialize} from './web_worker_transfer';
-import ThrottledInvoker from './throttled_invoker';
+import Scheduler from './scheduler';
 
 import type {Transferable} from '../types/transferable';
 import type {Cancelable} from '../types/cancelable';
@@ -25,24 +25,20 @@ class Actor {
     mapId: ?number;
     callbacks: { number: any };
     name: string;
-    tasks: { number: any };
-    taskQueue: Array<number>;
     cancelCallbacks: { number: Cancelable };
-    invoker: ThrottledInvoker;
     globalScope: any;
+    scheduler: Scheduler;
 
     constructor(target: any, parent: any, mapId: ?number) {
         this.target = target;
         this.parent = parent;
         this.mapId = mapId;
         this.callbacks = {};
-        this.tasks = {};
-        this.taskQueue = [];
         this.cancelCallbacks = {};
-        bindAll(['receive', 'process'], this);
-        this.invoker = new ThrottledInvoker(this.process);
+        bindAll(['receive'], this);
         this.target.addEventListener('message', this.receive, false);
         this.globalScope = isWorker() ? target : window;
+        this.scheduler = new Scheduler();
     }
 
     /**
@@ -53,13 +49,14 @@ class Actor {
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
-    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string, mustQueue: boolean = false): ?Cancelable {
+    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string, mustQueue: boolean = false, callbackMetadata?: Object): ?Cancelable {
         // We're using a string ID instead of numbers because they are being used as object keys
         // anyway, and thus stringified implicitly. We use random IDs because an actor may receive
         // message from multiple other actors which could run in different execution context. A
         // linearly increasing ID could produce collisions.
         const id = Math.round((Math.random() * 1e18)).toString(36).substring(0, 10);
         if (callback) {
+            callback.metadata = callbackMetadata;
             this.callbacks[id] = callback;
         }
         const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
@@ -104,11 +101,10 @@ class Actor {
             // Remove the original request from the queue. This is only possible if it
             // hasn't been kicked off yet. The id will remain in the queue, but because
             // there is no associated task, it will be dropped once it's time to execute it.
-            delete this.tasks[id];
             const cancel = this.cancelCallbacks[id];
             delete this.cancelCallbacks[id];
             if (cancel) {
-                cancel();
+                cancel.cancel();
             }
         } else {
             if (isWorker() || data.mustQueue) {
@@ -118,36 +114,15 @@ class Actor {
                 // executing the next task in our queue, postMessage preempts this and <cancel>
                 // messages can be processed. We're using a MessageChannel object to get throttle the
                 // process() flow to one at a time.
-                this.tasks[id] = data;
-                this.taskQueue.push(id);
-                this.invoker.trigger();
+                const callback = this.callbacks[id];
+                const metadata = (callback && callback.metadata) || {type: "message"};
+                this.cancelCallbacks[id] = this.scheduler.add(() => this.processTask(id, data), metadata);
             } else {
                 // In the main thread, process messages immediately so that other work does not slip in
                 // between getting partial data back from workers.
                 this.processTask(id, data);
             }
         }
-    }
-
-    process() {
-        if (!this.taskQueue.length) {
-            return;
-        }
-        const id = this.taskQueue.shift();
-        const task = this.tasks[id];
-        delete this.tasks[id];
-        // Schedule another process call if we know there's more to process _before_ invoking the
-        // current task. This is necessary so that processing continues even if the current task
-        // doesn't execute successfully.
-        if (this.taskQueue.length) {
-            this.invoker.trigger();
-        }
-        if (!task) {
-            // If the task ID doesn't have associated task data anymore, it was canceled.
-            return;
-        }
-
-        this.processTask(id, task);
     }
 
     processTask(id: number, task: any) {
@@ -165,10 +140,8 @@ class Actor {
                 }
             }
         } else {
-            let completed = false;
             const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
             const done = task.hasCallback ? (err, data) => {
-                completed = true;
                 delete this.cancelCallbacks[id];
                 this.target.postMessage({
                     id,
@@ -178,33 +151,26 @@ class Actor {
                     data: serialize(data, buffers)
                 }, buffers);
             } : (_) => {
-                completed = true;
             };
 
-            let callback = null;
             const params = (deserialize(task.data): any);
             if (this.parent[task.type]) {
                 // task.type == 'loadTile', 'removeTile', etc.
-                callback = this.parent[task.type](task.sourceMapId, params, done);
+                this.parent[task.type](task.sourceMapId, params, done);
             } else if (this.parent.getWorkerSource) {
                 // task.type == sourcetype.method
                 const keys = task.type.split('.');
                 const scope = (this.parent: any).getWorkerSource(task.sourceMapId, keys[0], params.source);
-                callback = scope[keys[1]](params, done);
+                scope[keys[1]](params, done);
             } else {
                 // No function was found.
                 done(new Error(`Could not find function ${task.type}`));
-            }
-
-            if (!completed && callback && callback.cancel) {
-                // Allows canceling the task as long as it hasn't been completed yet.
-                this.cancelCallbacks[id] = callback.cancel;
             }
         }
     }
 
     remove() {
-        this.invoker.remove();
+        this.scheduler.remove();
         this.target.removeEventListener('message', this.receive, false);
     }
 }

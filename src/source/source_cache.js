@@ -1,7 +1,5 @@
 // @flow
 
-import {create as createSource} from './source';
-
 import Tile from './tile';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import TileCache from './tile_cache';
@@ -16,11 +14,9 @@ import SourceFeatureState from './source_state';
 import type {Source} from './source';
 import type Map from '../ui/map';
 import type Style from '../style/style';
-import type Dispatcher from '../util/dispatcher';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
 import type {Callback} from '../types/callback';
-import type {SourceSpecification} from '../style-spec/types';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
 
 /**
@@ -36,7 +32,6 @@ import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometr
  */
 class SourceCache extends Evented {
     id: string;
-    dispatcher: Dispatcher;
     map: Map;
     style: Style;
 
@@ -58,16 +53,17 @@ class SourceCache extends Evented {
     usedForTerrain: boolean;
     _state: SourceFeatureState;
     _loadedParentTiles: {[_: number | string]: ?Tile};
+    _onlySymbols: ?boolean;
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
 
-    constructor(id: string, options: SourceSpecification, dispatcher: Dispatcher) {
+    constructor(id: string, source: Source, onlySymbols?: boolean) {
         super();
         this.id = id;
-        this.dispatcher = dispatcher;
+        this._onlySymbols = onlySymbols;
 
-        this.on('data', (e) => {
+        source.on('data', (e) => {
             // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
             // if the source type does not come with a TileJSON, the flag signifies the
             // source data has loaded (i.e geojson has been tiled on the worker and is ready)
@@ -83,12 +79,11 @@ class SourceCache extends Evented {
             }
         });
 
-        this.on('error', () => {
+        source.on('error', () => {
             this._sourceErrored = true;
         });
 
-        this._source = createSource(id, options, dispatcher, this);
-
+        this._source = source;
         this._tiles = {};
         this._cache = new TileCache(0, this._unloadTile.bind(this));
         this._timers = {};
@@ -103,15 +98,6 @@ class SourceCache extends Evented {
     onAdd(map: Map) {
         this.map = map;
         this._maxTileCacheSize = map ? map._maxTileCacheSize : null;
-        if (this._source && this._source.onAdd) {
-            this._source.onAdd(map);
-        }
-    }
-
-    onRemove(map: Map) {
-        if (this._source && this._source.onRemove) {
-            this._source.onRemove(map);
-        }
     }
 
     /**
@@ -149,6 +135,7 @@ class SourceCache extends Evented {
     }
 
     _loadTile(tile: Tile, callback: Callback<void>) {
+        tile.isSymbolTile = this._onlySymbols;
         return this._source.loadTile(tile, callback);
     }
 
@@ -574,6 +561,10 @@ class SourceCache extends Evented {
 
         // Construct a cache of loaded parents
         this._updateLoadedParentTileCache();
+
+        if (this._onlySymbols && this._source.afterUpdate) {
+            this._source.afterUpdate();
+        }
     }
 
     releaseSymbolFadeTiles() {

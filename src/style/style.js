@@ -11,7 +11,7 @@ import GlyphManager from '../render/glyph_manager';
 import Light from './light';
 import Terrain from './terrain';
 import LineAtlas from '../render/line_atlas';
-import {pick, clone, extend, deepEqual, filterObject, mapObject} from '../util/util';
+import {pick, clone, extend, deepEqual, filterObject} from '../util/util';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox';
 import browser from '../util/browser';
@@ -19,6 +19,7 @@ import Dispatcher from '../util/dispatcher';
 import {validateStyle, emitValidationErrors as _emitValidationErrors} from './validate_style';
 import {QueryGeometry} from '../style/query_geometry';
 import {
+    create as createSource,
     getType as getSourceType,
     setType as setSourceType,
     type SourceClass
@@ -122,7 +123,9 @@ class Style extends Evented {
     _num3DLayers: number;
     _serializedLayers: {[_: string]: Object};
     _order: Array<string>;
-    sourceCaches: {[_: string]: SourceCache};
+    _sourceCaches: {[_: string]: SourceCache};
+    _otherSourceCaches: {[_: string]: SourceCache};
+    _symbolSourceCaches: {[_: string]: SourceCache};
     zoomHistory: ZoomHistory;
     _loaded: boolean;
     _rtlTextPluginCallback: Function;
@@ -160,7 +163,9 @@ class Style extends Evented {
         this._num3DLayers = 0;
         this._serializedLayers = {};
         this._order  = [];
-        this.sourceCaches = {};
+        this._sourceCaches = {};
+        this._otherSourceCaches = {};
+        this._symbolSourceCaches = {};
         this.zoomHistory = new ZoomHistory();
         this._loaded = false;
         this._availableImages = [];
@@ -180,8 +185,8 @@ class Style extends Evented {
                 if (results) {
                     const allComplete = results.every((elem) => elem);
                     if (allComplete) {
-                        for (const id in self.sourceCaches) {
-                            const sourceCache = self.sourceCaches[id];
+                        for (const id in self._sourceCaches) {
+                            const sourceCache = self._sourceCaches[id];
                             const sourceCacheType = sourceCache.getSource().type;
                             if (sourceCacheType === 'vector' || sourceCacheType === 'geojson') {
                                 sourceCache.reload(); // Should be a no-op if the plugin loads before any tiles load
@@ -198,12 +203,7 @@ class Style extends Evented {
                 return;
             }
 
-            const sourceCache = this.sourceCaches[event.sourceId];
-            if (!sourceCache) {
-                return;
-            }
-
-            const source = sourceCache.getSource();
+            const source = this.getSource(event.sourceId);
             if (!source || !source.vectorLayerIds) {
                 return;
             }
@@ -317,8 +317,8 @@ class Style extends Evented {
     }
 
     _validateLayer(layer: StyleLayer) {
-        const sourceCache = this.sourceCaches[layer.source];
-        if (!sourceCache) {
+        const source = this.getSource(layer.source);
+        if (!source) {
             return;
         }
 
@@ -327,7 +327,6 @@ class Style extends Evented {
             return;
         }
 
-        const source = sourceCache.getSource();
         if (source.type === 'geojson' || (source.vectorLayerIds && source.vectorLayerIds.indexOf(sourceLayer) === -1)) {
             this.fire(new ErrorEvent(new Error(
                 `Source layer "${sourceLayer}" ` +
@@ -344,8 +343,8 @@ class Style extends Evented {
         if (Object.keys(this._updatedSources).length)
             return false;
 
-        for (const id in this.sourceCaches)
-            if (!this.sourceCaches[id].loaded())
+        for (const id in this._sourceCaches)
+            if (!this._sourceCaches[id].loaded())
                 return false;
 
         if (!this.imageManager.isLoaded())
@@ -370,8 +369,8 @@ class Style extends Evented {
             return true;
         }
 
-        for (const id in this.sourceCaches) {
-            if (this.sourceCaches[id].hasTransition()) {
+        for (const id in this._sourceCaches) {
+            if (this._sourceCaches[id].hasTransition()) {
                 return true;
             }
         }
@@ -431,8 +430,8 @@ class Style extends Evented {
 
         const sourcesUsedBefore = {};
 
-        for (const sourceId in this.sourceCaches) {
-            const sourceCache = this.sourceCaches[sourceId];
+        for (const sourceId in this._sourceCaches) {
+            const sourceCache = this._sourceCaches[sourceId];
             sourcesUsedBefore[sourceId] = sourceCache.used;
             sourceCache.used = false;
         }
@@ -441,8 +440,9 @@ class Style extends Evented {
             const layer = this._layers[layerId];
 
             layer.recalculate(parameters, this._availableImages);
-            if (!layer.isHidden(parameters.zoom) && layer.source) {
-                this.sourceCaches[layer.source].used = true;
+            if (!layer.isHidden(parameters.zoom)) {
+                const sourceCache = this._getLayerSourceCache(layer);
+                if (sourceCache) sourceCache.used = true;
             }
 
             const painter = this.map.painter;
@@ -459,9 +459,9 @@ class Style extends Evented {
         }
 
         for (const sourceId in sourcesUsedBefore) {
-            const sourceCache = this.sourceCaches[sourceId];
+            const sourceCache = this._sourceCaches[sourceId];
             if (sourcesUsedBefore[sourceId] !== sourceCache.used) {
-                sourceCache.fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId}));
+                sourceCache.getSource().fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId: sourceCache.getSource().id}));
             }
         }
 
@@ -481,8 +481,8 @@ class Style extends Evented {
     _updateTilesForChangedImages() {
         const changedImages = Object.keys(this._changedImages);
         if (changedImages.length) {
-            for (const name in this.sourceCaches) {
-                this.sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], changedImages);
+            for (const name in this._sourceCaches) {
+                this._sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], changedImages);
             }
             this._changedImages = {};
         }
@@ -592,7 +592,7 @@ class Style extends Evented {
     addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
-        if (this.sourceCaches[id] !== undefined) {
+        if (this.getSource(id) !== undefined) {
             throw new Error('There is already a source with this ID');
         }
 
@@ -605,15 +605,31 @@ class Style extends Evented {
         if (shouldValidate && this._validate(validateStyle.source, `sources.${id}`, source, null, options)) return;
 
         if (this.map && this.map._collectResourceTiming) (source: any).collectResourceTiming = true;
-        const sourceCache = this.sourceCaches[id] = new SourceCache(id, source, this.dispatcher);
-        sourceCache.style = this;
-        sourceCache.setEventedParent(this, () => ({
+
+        const sourceInstance = createSource(id, source, this.dispatcher, this);
+
+        sourceInstance.setEventedParent(this, () => ({
             isSourceLoaded: this.loaded(),
-            source: sourceCache.serialize(),
+            source: sourceInstance.serialize(),
             sourceId: id
         }));
 
-        sourceCache.onAdd(this.map);
+        const addSourceCache = (onlySymbols) => {
+            const sourceCacheId = (onlySymbols ? 'symbol:' : 'other:') + id;
+            const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheId, sourceInstance, onlySymbols);
+            (onlySymbols ? this._symbolSourceCaches : this._otherSourceCaches)[id] = sourceCache;
+            sourceCache.style = this;
+
+            sourceCache.onAdd(this.map);
+        };
+
+        addSourceCache(false);
+        if (source.type === 'vector' || source.type === 'geojson') {
+            addSourceCache(true);
+        }
+
+        if (sourceInstance.onAdd) sourceInstance.onAdd(this.map);
+
         this._changed = true;
     }
 
@@ -626,7 +642,8 @@ class Style extends Evented {
     removeSource(id: string) {
         this._checkLoaded();
 
-        if (this.sourceCaches[id] === undefined) {
+        const source = this.getSource(id);
+        if (source === undefined) {
             throw new Error('There is no source with this ID');
         }
         for (const layerId in this._layers) {
@@ -635,14 +652,21 @@ class Style extends Evented {
             }
         }
 
-        const sourceCache = this.sourceCaches[id];
-        delete this.sourceCaches[id];
-        delete this._updatedSources[id];
-        sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType:'source', sourceId: id}));
-        sourceCache.setEventedParent(null);
-        sourceCache.clearTiles();
+        const sourceCaches = this._getSourceCaches(id);
+        for (const sourceCache of sourceCaches) {
+            delete this._sourceCaches[sourceCache.id];
+            delete this._updatedSources[sourceCache.id];
+            sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType:'source', sourceId: sourceCache.getSource().id}));
+            sourceCache.setEventedParent(null);
+            sourceCache.clearTiles();
+        }
+        delete this._otherSourceCaches[id];
+        delete this._symbolSourceCaches[id];
 
-        if (sourceCache.onRemove) sourceCache.onRemove(this.map);
+        source.setEventedParent(null);
+        if (source.onRemove) {
+            source.onRemove(this.map);
+        }
         this._changed = true;
     }
 
@@ -654,8 +678,8 @@ class Style extends Evented {
     setGeoJSONSourceData(id: string, data: GeoJSON | string) {
         this._checkLoaded();
 
-        assert(this.sourceCaches[id] !== undefined, 'There is no source with this ID');
-        const geojsonSource: GeoJSONSource = (this.sourceCaches[id].getSource(): any);
+        assert(this.getSource(id) !== undefined, 'There is no source with this ID');
+        const geojsonSource: GeoJSONSource = (this.getSource(id): any);
         assert(geojsonSource.type === 'geojson');
 
         geojsonSource.setData(data);
@@ -668,7 +692,8 @@ class Style extends Evented {
      * @returns {Object} source
      */
     getSource(id: string): Object {
-        return this.sourceCaches[id] && this.sourceCaches[id].getSource();
+        const sourceCache = this._getSourceCache(id);
+        return sourceCache && sourceCache.getSource();
     }
 
     /**
@@ -728,7 +753,8 @@ class Style extends Evented {
 
         this._layers[id] = layer;
 
-        if (this._removedLayers[id] && layer.source && layer.type !== 'custom') {
+        const sourceCache = this._getLayerSourceCache(layer);
+        if (this._removedLayers[id] && layer.source && sourceCache && layer.type !== 'custom') {
             // If, in the current batch, we have already removed this layer
             // and we are now re-adding it with a different `type`, then we
             // need to clear (rather than just reload) the underyling source's
@@ -742,7 +768,7 @@ class Style extends Evented {
                 this._updatedSources[layer.source] = 'clear';
             } else {
                 this._updatedSources[layer.source] = 'reload';
-                this.sourceCaches[layer.source].pause();
+                sourceCache.pause();
             }
         }
         this._updateLayer(layer);
@@ -959,13 +985,13 @@ class Style extends Evented {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
-        const sourceCache = this.sourceCaches[sourceId];
+        const source = this.getSource(sourceId);
 
-        if (sourceCache === undefined) {
+        if (source === undefined) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
-        const sourceType = sourceCache.getSource().type;
+        const sourceType = source.type;
         if (sourceType === 'geojson' && sourceLayer) {
             this.fire(new ErrorEvent(new Error(`GeoJSON sources cannot have a sourceLayer parameter.`)));
             return;
@@ -978,20 +1004,23 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided.`)));
         }
 
-        sourceCache.setFeatureState(sourceLayer, target.id, state);
+        const sourceCaches = this._getSourceCaches(sourceId);
+        for (const sourceCache of sourceCaches) {
+            sourceCache.setFeatureState(sourceLayer, target.id, state);
+        }
     }
 
     removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
         this._checkLoaded();
         const sourceId = target.source;
-        const sourceCache = this.sourceCaches[sourceId];
+        const source = this.getSource(sourceId);
 
-        if (sourceCache === undefined) {
+        if (source === undefined) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
 
-        const sourceType = sourceCache.getSource().type;
+        const sourceType = source.type;
         const sourceLayer = sourceType === 'vector' ? target.sourceLayer : undefined;
 
         if (sourceType === 'vector' && !sourceLayer) {
@@ -1004,20 +1033,23 @@ class Style extends Evented {
             return;
         }
 
-        sourceCache.removeFeatureState(sourceLayer, target.id, key);
+        const sourceCaches = this._getSourceCaches(sourceId);
+        for (const sourceCache of sourceCaches) {
+            sourceCache.removeFeatureState(sourceLayer, target.id, key);
+        }
     }
 
     getFeatureState(target: { source: string; sourceLayer?: string; id: string | number; }) {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
-        const sourceCache = this.sourceCaches[sourceId];
+        const source = this.getSource(sourceId);
 
-        if (sourceCache === undefined) {
+        if (source === undefined) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
             return;
         }
-        const sourceType = sourceCache.getSource().type;
+        const sourceType = source.type;
         if (sourceType === 'vector' && !sourceLayer) {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
@@ -1026,7 +1058,8 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided.`)));
         }
 
-        return sourceCache.getFeatureState(sourceLayer, target.id);
+        const sourceCaches = this._getSourceCaches(sourceId);
+        return sourceCaches[0].getFeatureState(sourceLayer, target.id);
     }
 
     getTransition() {
@@ -1034,6 +1067,13 @@ class Style extends Evented {
     }
 
     serialize() {
+        const sources = {};
+        for (const cacheId in this._sourceCaches) {
+            const source = this._sourceCaches[cacheId].getSource();
+            if (!sources[source.id]) {
+                sources[source.id] = source.serialize();
+            }
+        }
         return filterObject({
             version: this.stylesheet.version,
             name: this.stylesheet.name,
@@ -1047,18 +1087,20 @@ class Style extends Evented {
             sprite: this.stylesheet.sprite,
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
-            sources: mapObject(this.sourceCaches, (source) => source.serialize()),
+            sources,
             layers: this._serializeLayers(this._order)
         }, (value) => { return value !== undefined; });
     }
 
     _updateLayer(layer: StyleLayer) {
         this._updatedLayers[layer.id] = true;
+        const sourceCache = this._getLayerSourceCache(layer);
         if (layer.source && !this._updatedSources[layer.source] &&
             //Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
-            this.sourceCaches[layer.source].getSource().type !== 'raster') {
+            sourceCache &&
+            sourceCache.getSource().type !== 'raster') {
             this._updatedSources[layer.source] = 'reload';
-            this.sourceCaches[layer.source].pause();
+            sourceCache.pause();
         }
         this._changed = true;
     }
@@ -1165,11 +1207,12 @@ class Style extends Evented {
             this.has3DLayers();
         const queryGeometryStruct = QueryGeometry.createFromScreenPoints(queryGeometry, transform);
 
-        for (const id in this.sourceCaches) {
-            if (params.layers && !includedSources[id]) continue;
+        for (const id in this._sourceCaches) {
+            const sourceId = this._sourceCaches[id].getSource().id;
+            if (params.layers && !includedSources[sourceId]) continue;
             sourceResults.push(
                 queryRenderedFeatures(
-                    this.sourceCaches[id],
+                    this._sourceCaches[id],
                     this._layers,
                     this._serializedLayers,
                     queryGeometryStruct,
@@ -1187,7 +1230,7 @@ class Style extends Evented {
                 queryRenderedSymbols(
                     this._layers,
                     this._serializedLayers,
-                    this.sourceCaches,
+                    this._getLayerSourceCache.bind(this),
                     queryGeometryStruct.screenGeometry,
                     params,
                     this.placement.collisionIndex,
@@ -1202,8 +1245,12 @@ class Style extends Evented {
         if (params && params.filter) {
             this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter, null, params);
         }
-        const sourceCache = this.sourceCaches[sourceID];
-        return sourceCache ? querySourceFeatures(sourceCache, params) : [];
+        const sourceCaches = this._getSourceCaches(sourceID);
+        let results = [];
+        for (const sourceCache of sourceCaches) {
+            results = results.concat(querySourceFeatures(sourceCache, params));
+        }
+        return results;
     }
 
     addSourceType(name: string, SourceType: SourceClass, callback: Callback<void>) {
@@ -1319,9 +1366,9 @@ class Style extends Evented {
             const layer: StyleLayer = this._layers[layerId];
             layer.setEventedParent(null);
         }
-        for (const id in this.sourceCaches) {
-            this.sourceCaches[id].clearTiles();
-            this.sourceCaches[id].setEventedParent(null);
+        for (const id in this._sourceCaches) {
+            this._sourceCaches[id].clearTiles();
+            this._sourceCaches[id].setEventedParent(null);
         }
         this.imageManager.setEventedParent(null);
         this.setEventedParent(null);
@@ -1329,23 +1376,31 @@ class Style extends Evented {
     }
 
     _clearSource(id: string) {
-        this.sourceCaches[id].clearTiles();
+        const sourceCaches = this._getSourceCaches(id);
+        for (const sourceCache of sourceCaches) {
+            sourceCache.clearTiles();
+        }
     }
 
     _reloadSource(id: string) {
-        this.sourceCaches[id].resume();
-        this.sourceCaches[id].reload();
+        const sourceCaches = this._getSourceCaches(id);
+        for (const sourceCache of sourceCaches) {
+            sourceCache.resume();
+            sourceCache.reload();
+        }
     }
 
     _updateSources(transform: Transform) {
-        for (const id in this.sourceCaches) {
-            this.sourceCaches[id].update(transform);
+        for (const id in this._sourceCaches) {
+            this._sourceCaches[id].update(transform);
         }
     }
 
     _generateCollisionBoxes() {
-        for (const id in this.sourceCaches) {
-            this._reloadSource(id);
+        for (const id in this._sourceCaches) {
+            const sourceCache = this._sourceCaches[id];
+            sourceCache.resume();
+            sourceCache.reload();
         }
     }
 
@@ -1360,7 +1415,8 @@ class Style extends Evented {
             if (styleLayer.type !== 'symbol') continue;
 
             if (!layerTiles[styleLayer.source]) {
-                const sourceCache = this.sourceCaches[styleLayer.source];
+                const sourceCache = this._getLayerSourceCache(styleLayer);
+                if (!sourceCache) continue;
                 layerTiles[styleLayer.source] = sourceCache.getRenderableIds(true)
                     .map((id) => sourceCache.getTileByID(id))
                     .sort((a, b) => (b.tileID.overscaledZ - a.tileID.overscaledZ) || (a.tileID.isLessThan(b.tileID) ? -1 : 1));
@@ -1420,8 +1476,8 @@ class Style extends Evented {
     }
 
     _releaseSymbolFadeTiles() {
-        for (const id in this.sourceCaches) {
-            this.sourceCaches[id].releaseSymbolFadeTiles();
+        for (const id in this._sourceCaches) {
+            this._sourceCaches[id].releaseSymbolFadeTiles();
         }
     }
 
@@ -1441,10 +1497,13 @@ class Style extends Evented {
         // - the next frame triggers a reload of this tile even though it already has the latest version
         this._updateTilesForChangedImages();
 
-        const sourceCache = this.sourceCaches[params.source];
-        if (sourceCache) {
-            sourceCache.setDependencies(params.tileID.key, params.type, params.icons);
-        }
+        const setDependencies = (sourceCache: SourceCache) => {
+            if (sourceCache) {
+                sourceCache.setDependencies(params.tileID.key, params.type, params.icons);
+            }
+        };
+        setDependencies(this._otherSourceCaches[params.source]);
+        setDependencies(this._symbolSourceCaches[params.source]);
     }
 
     getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {[_: number]: ?StyleGlyph}}>) {
@@ -1453,6 +1512,27 @@ class Style extends Evented {
 
     getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<any>): Cancelable {
         return makeRequest(params, callback);
+    }
+
+    _getSourceCache(source: string): SourceCache | void {
+        return this._otherSourceCaches[source];
+    }
+
+    _getLayerSourceCache(layer: StyleLayer): SourceCache | void {
+        return layer.type === 'symbol' ?
+            this._symbolSourceCaches[layer.source] :
+            this._otherSourceCaches[layer.source];
+    }
+
+    _getSourceCaches(source: string): Array<SourceCache> {
+        const sourceCaches = [];
+        if (this._otherSourceCaches[source]) {
+            sourceCaches.push(this._otherSourceCaches[source]);
+        }
+        if (this._symbolSourceCaches[source]) {
+            sourceCaches.push(this._symbolSourceCaches[source]);
+        }
+        return sourceCaches;
     }
 
     has3DLayers(): boolean {
