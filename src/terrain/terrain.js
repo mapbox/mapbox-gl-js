@@ -33,6 +33,7 @@ import {clippingMaskUniformValues} from '../render/program/clipping_mask_program
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 import browser from '../util/browser';
 import DEMData from '../data/dem_data';
+import {create as createSource} from '../source/source';
 
 import type Map from '../ui/map';
 import type Painter from '../render/painter';
@@ -69,10 +70,15 @@ class ProxySourceCache extends SourceCache {
     proxyCachedFBO: {[string | number]: number};
 
     constructor(map: Map) {
-        super('proxy', {
+
+        const source = createSource('proxy', {
             type: 'geojson',
             maxzoom: map.transform.maxZoom
-        }, new Dispatcher(getWorkerPool(), null));
+        }, new Dispatcher(getWorkerPool(), null), map.style);
+
+        super('proxy', source, false);
+
+        source.setEventedParent(this);
 
         // This source is not to be added as a map source: we use it's tile management.
         // For that, initialize internal structures used for tile cover update.
@@ -246,12 +252,12 @@ export class Terrain extends Elevation {
             this.style = style;
         }
         this.enabled = enabled;
-        this.sourceCache = style.sourceCaches[style.terrain.properties.get('source')];
+        this.sourceCache = ((style._getSourceCache(style.terrain.properties.get('source')): any): SourceCache);
         this._exaggeration = style.terrain.properties.get('exaggeration');
 
         const updateSourceCache = () => {
             if (this.sourceCache.used) {
-                warnOnce(`Raster DEM source '${this.sourceCache.id}' is used both for terrain and as layer source.\n` +
+                warnOnce(`Raster DEM source '${this.sourceCache.getSource().id}' is used both for terrain and as layer source.\n` +
                     'This leads to lower resolution of hillshade. For full hillshade resolution but higher memory consumption, define another raster DEM source.');
             }
             // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
@@ -299,8 +305,8 @@ export class Terrain extends Elevation {
         this.enabled = false;
         this.proxySourceCache.deallocRenderCache();
         if (this.painter.style) {
-            for (const id in this.painter.style.sourceCaches) {
-                this.painter.style.sourceCaches[id].usedForTerrain = false;
+            for (const id in this.painter.style._sourceCaches) {
+                this.painter.style._sourceCaches[id].usedForTerrain = false;
             }
         }
     }
@@ -372,7 +378,7 @@ export class Terrain extends Elevation {
         });
 
         this.terrainTileForTile = {};
-        const sourceCaches = this.painter.style.sourceCaches;
+        const sourceCaches = this.painter.style._sourceCaches;
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (!sourceCache.used) continue;
@@ -556,7 +562,7 @@ export class Terrain extends Elevation {
     }
 
     // If terrain handles layer rendering (rasterize it), return true.
-    renderLayer(layer: StyleLayer, _: SourceCache): boolean {
+    renderLayer(layer: StyleLayer, _?: SourceCache): boolean {
         const painter = this.painter;
         if (painter.renderPass !== 'translucent') {
             // Depth texture is used only for POI symbols and circles, to skip render of symbols occluded by e.g. hill.
@@ -586,7 +592,6 @@ export class Terrain extends Elevation {
         this.renderingToTexture = true;
         const painter = this.painter;
         const context = this.painter.context;
-        const sourceCaches = this.painter.style.sourceCaches;
         const psc = this.proxySourceCache;
         const proxies = this.proxiedCoords[psc.id];
         const setupRenderToScreen = () => {
@@ -632,14 +637,14 @@ export class Terrain extends Elevation {
                     if (!this._isLayerDrapedOverTerrain(layer)) break;
                     end++;
                 }
-                const sourceCache = sourceCaches[layer.source];
+                const sourceCache = this.painter.style._getLayerSourceCache(layer);
                 const proxiedCoords = sourceCache ? this.proxyToSource[proxy.key][sourceCache.id] : [proxy];
                 if (!proxiedCoords) continue; // when tile is not loaded yet for the source cache.
                 const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
                 context.viewport.set([0, 0, fbo.fb.width, fbo.fb.height]);
-                if (currentStencilSource !== layer.source) {
-                    this._setupStencil(proxiedCoords, layer);
-                    currentStencilSource = layer.source;
+                if (currentStencilSource !== (sourceCache ? sourceCache.id : null)) {
+                    this._setupStencil(proxiedCoords, layer, sourceCache);
+                    currentStencilSource = sourceCache ? sourceCache.id : null;
                 }
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
@@ -795,8 +800,8 @@ export class Terrain extends Elevation {
         this._tilesDirty = {};
     }
 
-    _setupStencil(proxiedCoords: Array<ProxiedTileID>, layer: StyleLayer) {
-        if (!this._sourceTilesOverlap[layer.source]) {
+    _setupStencil(proxiedCoords: Array<ProxiedTileID>, layer: StyleLayer, sourceCache?: SourceCache) {
+        if (!sourceCache || !this._sourceTilesOverlap[sourceCache.id]) {
             if (this._overlapStencilType) this._overlapStencilType = false;
             return;
         }

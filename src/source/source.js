@@ -53,11 +53,12 @@ export interface Source {
     loaded(): boolean;
 
     fire(event: Event): mixed;
+    on(type: *, listener: (Object) => any): Evented;
 
     +onAdd?: (map: Map) => void;
     +onRemove?: (map: Map) => void;
 
-    loadTile(tile: Tile, callback: Callback<void>): void;
+    loadTile(tile: Tile, callback: Callback<void>, tileWorkers?: {[string]: Actor}): void;
     +hasTile?: (tileID: OverscaledTileID) => boolean;
     +abortTile?: (tile: Tile, callback: Callback<void>) => void;
     +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
@@ -71,6 +72,8 @@ export interface Source {
     serialize(): Object;
 
     +prepare?: () => void;
+
+    +afterUpdate?: () => void;
 }
 
 type SourceStatics = {

@@ -90,7 +90,9 @@ export const operationHandlers = {
         doneCb();
     },
     pauseSource(map, params, doneCb) {
-        map.style.sourceCaches[params[0]].pause();
+        for (const sourceCache of map.style._getSourceCaches(params[0])) {
+            sourceCache.pause();
+        }
         doneCb();
     },
     setCameraPosition(map, params, doneCb) {

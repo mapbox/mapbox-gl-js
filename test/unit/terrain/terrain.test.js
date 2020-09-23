@@ -184,7 +184,7 @@ test('Elevation', (t) => {
                 "tileSize": TILE_SIZE,
                 "maxzoom": 14
             });
-            const cache = map.style.sourceCaches['mapbox-dem'];
+            const cache = map.style._getSourceCache('mapbox-dem');
             cache.used = cache._sourceLoaded = true;
             cache._loadTile = (tile, callback) => {
                 tile.dem = dem;
@@ -195,7 +195,7 @@ test('Elevation', (t) => {
             };
             map.setTerrain({"source": "mapbox-dem"});
             map.once('render', () => {
-                const cache = map.style.sourceCaches['mapbox-dem'];
+                const cache = map.style._getSourceCache('mapbox-dem');
 
                 t.test('terrain tiles loaded wrap', t => {
                     const tile = cache.getTile(new OverscaledTileID(14, 1, 14, 0, 8192));
@@ -312,7 +312,9 @@ test('Elevation', (t) => {
             ];
             source.setData(data);
             t.equal(source.loaded(), false);
-            source.once('data', (_) => {
+            const onLoaded = (e) => {
+                if (e.sourceDataType === 'visibility') return;
+                source.off('data', onLoaded);
                 t.equal(map.getSource('trace').loaded(), true);
                 let beganRenderingContent = false;
                 map.on('render', () => {
@@ -333,7 +335,8 @@ test('Elevation', (t) => {
                         t.end();
                     }
                 });
-            });
+            };
+            source.on('data', onLoaded);
         });
     });
 
@@ -367,7 +370,7 @@ test('Elevation', (t) => {
         });
 
         map.on('style.load', () => {
-            const cache = map.style.sourceCaches['mapbox-dem'];
+            const cache = map.style._getSourceCache('mapbox-dem');
             cache._loadTile = (tile, callback) => {
                 const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
                 tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
@@ -699,7 +702,7 @@ test('Marker interaction and raycast', (t) => {
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
-        const cache = map.style.sourceCaches['mapbox-dem'];
+        const cache = map.style._getSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
         cache._loadTile = (tile, callback) => {
             // Elevate tiles above center.
@@ -798,7 +801,7 @@ test('terrain getBounds', (t) => {
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
-        const cache = map.style.sourceCaches['mapbox-dem'];
+        const cache = map.style._getSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
         cache._loadTile = (tile, callback) => {
             // Elevate tiles above center.

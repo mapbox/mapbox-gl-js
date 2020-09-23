@@ -64,7 +64,7 @@ class LogoControl {
     _logoRequired() {
         if (!this._map.style) return;
 
-        const sourceCaches = this._map.style.sourceCaches;
+        const sourceCaches = this._map.style._sourceCaches;
         for (const id in sourceCaches) {
             const source = sourceCaches[id].getSource();
             if (source.mapbox_logo) {
