@@ -118,7 +118,7 @@ function project(point: Point, matrix: mat4, elevation: number = 0) {
 }
 
 function getPerspectiveRatio(cameraToCenterDistance: number, signedDistanceFromCamera: number): number {
-    return 0.5 + 0.5 * (cameraToCenterDistance / signedDistanceFromCamera);
+    return Math.min(0.5 + 0.5 * (cameraToCenterDistance / signedDistanceFromCamera), 1.5);
 }
 
 function isVisible(anchorPos: [number, number, number, number],
