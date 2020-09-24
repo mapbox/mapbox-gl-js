@@ -63,7 +63,7 @@ void main() {
     highp float perspective_ratio = clamp(
             0.5 + 0.5 * distance_ratio,
             0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
-            4.0);
+            1.5);
 
     size *= perspective_ratio;
 
