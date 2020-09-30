@@ -1,7 +1,8 @@
 // @flow
 
 import ThrottledInvoker from './throttled_invoker';
-import {bindAll} from './util';
+import {bindAll, isWorker} from './util';
+import {PerformanceUtils} from './performance';
 
 class Scheduler {
 
@@ -32,28 +33,33 @@ class Scheduler {
     }
 
     process() {
-        this.taskQueue = this.taskQueue.filter(id => !!this.tasks[id]);
+        const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
+        try {
+            this.taskQueue = this.taskQueue.filter(id => !!this.tasks[id]);
 
-        if (!this.taskQueue.length) {
-            return;
-        }
-        const id = this.pick();
-        if (id === null) return;
+            if (!this.taskQueue.length) {
+                return;
+            }
+            const id = this.pick();
+            if (id === null) return;
 
-        const task = this.tasks[id];
-        delete this.tasks[id];
-        // Schedule another process call if we know there's more to process _before_ invoking the
-        // current task. This is necessary so that processing continues even if the current task
-        // doesn't execute successfully.
-        if (this.taskQueue.length) {
-            this.invoker.trigger();
-        }
-        if (!task) {
-            // If the task ID doesn't have associated task data anymore, it was canceled.
-            return;
-        }
+            const task = this.tasks[id];
+            delete this.tasks[id];
+            // Schedule another process call if we know there's more to process _before_ invoking the
+            // current task. This is necessary so that processing continues even if the current task
+            // doesn't execute successfully.
+            if (this.taskQueue.length) {
+                this.invoker.trigger();
+            }
+            if (!task) {
+                // If the task ID doesn't have associated task data anymore, it was canceled.
+                return;
+            }
 
-        task.fn();
+            task.fn();
+        } finally {
+            if (m) PerformanceUtils.endMeasure(m);
+        }
     }
 
     pick() {

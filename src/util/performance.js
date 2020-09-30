@@ -9,8 +9,16 @@ export type PerformanceMetrics = {
     loadTime: number,
     fullLoadTime: number,
     fps: number,
-    percentDroppedFrames: number
-}
+    percentDroppedFrames: number,
+    parseTile: number,
+    parseTile1: number,
+    parseTile2: number,
+    workerTask: number,
+    workerInitialization: number,
+    workerEvaluateScript: number,
+    workerIdle: number,
+    workerIdlePercent: number
+};
 
 export const PerformanceMarkers = {
     create: 'create',
@@ -20,6 +28,7 @@ export const PerformanceMarkers = {
 
 let lastFrameTime = null;
 let frameTimes = [];
+let i = 0;
 
 const minFramerateTarget = 30;
 const frameTimeTarget = 1000 / minFramerateTarget;
@@ -27,6 +36,20 @@ const frameTimeTarget = 1000 / minFramerateTarget;
 export const PerformanceUtils = {
     mark(marker: $Keys<typeof PerformanceMarkers>) {
         performance.mark(marker);
+    },
+    measure(name: string, begin?: string, end?: string) {
+        performance.measure(name, begin, end);
+    },
+    beginMeasure(name: string) {
+        const mark = name + i++;
+        performance.mark(mark);
+        return {
+            mark,
+            name
+        };
+    },
+    endMeasure(m: { name: string, mark: string }) {
+        performance.measure(m.name, m.mark);
     },
     frame(timestamp: number) {
         const currTimestamp = timestamp;
@@ -46,15 +69,22 @@ export const PerformanceUtils = {
             performance.clearMarks(PerformanceMarkers[marker]);
         }
     },
+
     getPerformanceMetrics(): PerformanceMetrics {
+        const metrics = {};
+
         performance.measure('loadTime', PerformanceMarkers.create, PerformanceMarkers.load);
         performance.measure('fullLoadTime', PerformanceMarkers.create, PerformanceMarkers.fullLoad);
-        const loadTime = performance.getEntriesByName('loadTime', 'measure')[0].duration;
-        const fullLoadTime = performance.getEntriesByName('fullLoadTime', 'measure')[0].duration;
+
+        const measures = performance.getEntriesByType('measure');
+        for (const measure of measures) {
+            metrics[measure.name] = (metrics[measure.name] || 0) + measure.duration;
+        }
+
         const totalFrames = frameTimes.length;
 
         const avgFrameTime = frameTimes.reduce((prev, curr) => prev + curr, 0) / totalFrames / 1000;
-        const fps = 1 / avgFrameTime;
+        metrics.fps = 1 / avgFrameTime;
 
         // count frames that missed our framerate target
         const droppedFrames = frameTimes
@@ -62,14 +92,16 @@ export const PerformanceUtils = {
             .reduce((acc, curr) => {
                 return acc + (curr -  frameTimeTarget) / frameTimeTarget;
             }, 0);
-        const percentDroppedFrames = (droppedFrames / (totalFrames + droppedFrames)) * 100;
+        metrics.percentDroppedFrames = (droppedFrames / (totalFrames + droppedFrames)) * 100;
 
-        return {
-            loadTime,
-            fullLoadTime,
-            fps,
-            percentDroppedFrames
-        };
+        return metrics;
+    },
+
+    getWorkerPerformanceMetrics() {
+        return JSON.parse(JSON.stringify({
+            timeOrigin: performance.timeOrigin,
+            measures: performance.getEntriesByType("measure")
+        }));
     }
 };
 
