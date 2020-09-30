@@ -318,7 +318,9 @@ test('Elevation', (t) => {
                 t.equal(map.getSource('trace').loaded(), true);
                 let beganRenderingContent = false;
                 map.on('render', () => {
-                    const pixels = map.painter.canvasCopy();
+                    const gl = map.painter.context.gl;
+                    const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
+                    gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
                     const centerOffset = map.getContainer().clientWidth / 2 * (map.getContainer().clientHeight + 1) * 4;
                     const isCenterRendered = pixels[centerOffset] === 255;
                     if (!beganRenderingContent) {
