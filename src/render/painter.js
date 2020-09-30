@@ -72,7 +72,7 @@ import type {DynamicDefinesType} from './program/program_uniforms';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
 export type CanvasCopyInstances = {
-    canvasCopies: Uint8Array[],
+    canvasCopies: WebGLTexture[],
     timeStamps: number[]
 }
 
@@ -140,14 +140,14 @@ class Painter {
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
     tileLoaded: boolean;
-    pixelArrays: Array<Uint8Array>;
+    frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
-        this.pixelArrays = [];
+        this.frameCopies = [];
         this.loadTimeStamps = [];
 
         this.setup();
@@ -763,20 +763,21 @@ class Painter {
     }
 
     saveCanvasCopy() {
-        this.pixelArrays.push(this.canvasCopy());
+        this.frameCopies.push(this.canvasCopy());
         this.tileLoaded = false;
     }
 
-    canvasCopy(): Uint8Array {
+    canvasCopy() {
         const gl = this.context.gl;
-        const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
-        gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-        return pixels;
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, 0);
+        return texture;
     }
 
     getCanvasCopiesAndTimestamps(): CanvasCopyInstances {
         return {
-            canvasCopies: this.pixelArrays,
+            canvasCopies: this.frameCopies,
             timeStamps: this.loadTimeStamps
         };
     }
