@@ -20,7 +20,7 @@ export const plugins = (minified, production, test, bench) => [
     json(),
     production ? strip({
         sourceMap: true,
-        functions: ['PerformanceUtils.*', 'Debug.*']
+        functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*']
     }) : false,
     production || bench ? unassert() : false,
     test ? replace({

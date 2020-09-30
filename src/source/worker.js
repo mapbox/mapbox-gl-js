@@ -10,6 +10,7 @@ import assert from 'assert';
 import {plugin as globalRTLTextPlugin} from './rtl_text_plugin';
 import {enforceCacheSizeLimit} from '../util/tile_request_cache';
 import {extend} from '../util/util';
+import {PerformanceUtils} from '../util/performance';
 
 import type {
     WorkerSource,
@@ -40,6 +41,7 @@ export default class Worker {
     terrain: ?boolean;
 
     constructor(self: WorkerGlobalScopeInterface) {
+        PerformanceUtils.measure('workerEvaluateScript');
         this.self = self;
         this.actor = new Actor(self, this);
 
@@ -245,6 +247,10 @@ export default class Worker {
 
     enforceCacheSizeLimit(mapId: string, limit: number) {
         enforceCacheSizeLimit(limit);
+    }
+
+    getWorkerPerformanceMetrics(mapId: string, params: any, callback: (error: ?Error, result: ?Object) => void) {
+        callback(undefined, PerformanceUtils.getWorkerPerformanceMetrics());
     }
 }
 

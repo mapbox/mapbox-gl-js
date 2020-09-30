@@ -2433,6 +2433,8 @@ class Map extends Camera {
             frameStartTime = browser.now();
         }
 
+        const m = PerformanceUtils.beginMeasure('render');
+
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
         this.painter.setBaseState();
@@ -2527,6 +2529,8 @@ class Map extends Camera {
                 }));
             }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
         }
+
+        PerformanceUtils.endMeasure(m);
 
         if (this.listens('gpu-timing-layer')) {
             // Resetting the Painter's per-layer timing queries here allows us to isolate

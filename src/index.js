@@ -25,6 +25,7 @@ import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin
 import WorkerPool from './util/worker_pool';
 import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
+import {WorkerPerformanceUtils} from './util/worker_performance_utils';
 import {PerformanceUtils} from './util/performance';
 import {FreeCameraOptions} from './ui/free_camera';
 import browser from './util/browser';
@@ -177,7 +178,7 @@ const exported = {
 };
 
 //This gets automatically stripped out in production builds.
-Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics, setNow: browser.setNow, restoreNow: browser.restoreNow});
+Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics, getPerformanceMetricsAsync: WorkerPerformanceUtils.getPerformanceMetricsAsync, setNow: browser.setNow, restoreNow: browser.restoreNow});
 
 /**
  * The version of Mapbox GL JS in use as specified in `package.json`,
