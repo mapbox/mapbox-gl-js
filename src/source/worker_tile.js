@@ -15,6 +15,7 @@ import ImageAtlas from '../render/image_atlas';
 import GlyphAtlas from '../render/glyph_atlas';
 import EvaluationParameters from '../style/evaluation_parameters';
 import {OverscaledTileID} from './tile_id';
+import {PerformanceUtils} from '../util/performance';
 
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
@@ -68,6 +69,7 @@ class WorkerTile {
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
+        const m = PerformanceUtils.beginMeasure('parseTile1');
         this.status = 'parsing';
         this.data = data;
 
@@ -196,12 +198,15 @@ class WorkerTile {
             patternMap = {};
         }
 
+        PerformanceUtils.endMeasure(m);
+
         maybePrepare.call(this);
 
         function maybePrepare() {
             if (error) {
                 return callback(error);
             } else if (glyphMap && iconMap && patternMap) {
+                const m = PerformanceUtils.beginMeasure('parseTile2');
                 const glyphAtlas = new GlyphAtlas(glyphMap);
                 const imageAtlas = new ImageAtlas(iconMap, patternMap);
 
@@ -231,6 +236,7 @@ class WorkerTile {
                     iconMap: this.returnDependencies ? iconMap : null,
                     glyphPositions: this.returnDependencies ? glyphAtlas.positions : null
                 });
+                PerformanceUtils.endMeasure(m);
             }
         }
     }
