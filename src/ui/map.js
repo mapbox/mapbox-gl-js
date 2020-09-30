@@ -2609,7 +2609,19 @@ class Map extends Camera {
         const finalFrame = this.painter.canvasCopy();
         const canvasCopyInstances = this.painter.getCanvasCopiesAndTimestamps();
         canvasCopyInstances.timeStamps.push(performance.now());
-        return this._canvasPixelComparison(finalFrame, canvasCopyInstances.canvasCopies, canvasCopyInstances.timeStamps);
+
+        const gl = this.painter.context.gl;
+        const framebuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+        function read(texture) {
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
+            gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+            return pixels;
+        }
+
+        return this._canvasPixelComparison(read(finalFrame), canvasCopyInstances.canvasCopies.map(read), canvasCopyInstances.timeStamps);
     }
 
     _canvasPixelComparison(finalFrame: Uint8Array, allFrames: Uint8Array[], timeStamps: number[]): number {
