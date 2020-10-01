@@ -99,6 +99,20 @@ const exported = {
     },
 
     /**
+     * Sets a custom load tile function for url that starts with custom://
+     *
+     * @var {Function} loadFn - a function that receives
+     * (requestParameters: RequestParameters, callback: ResponseCallback<any>) and calls the callback with the tile buffer
+     * or with a Error instance
+     * @example
+     * mapboxgl.loadTilesFunction = (requestParameters, callback) => callback(null, tileBuffer, null, null);
+     */
+
+    set loadTilesFunction(loadFn: Function) {
+        config.LOAD_TILES_FUNCTION = loadFn;
+    },
+
+    /**
      * Gets and sets the map's default API URL for requesting tiles, styles, sprites, and glyphs
      *
      * @var {string} baseApiUrl
