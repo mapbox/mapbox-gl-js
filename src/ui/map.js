@@ -286,6 +286,7 @@ class Map extends Camera {
     _canvas: HTMLCanvasElement;
     _maxTileCacheSize: number;
     _frame: ?Cancelable;
+    _renderNextFrame: ?boolean;
     _styleDirty: ?boolean;
     _sourcesDirty: ?boolean;
     _placementDirty: ?boolean;
@@ -2584,14 +2585,17 @@ class Map extends Camera {
         const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty;
         if (somethingDirty || this._repaint) {
             this.triggerRepaint();
-        } else if (!this.isMoving() && this.loaded()) {
-            this.fire(new Event('idle'));
-            this._shouldFade = true;
-            // check the options to see if need to calculate the speed index
-            if (this.speedIndexTiming) {
-                const speedIndexNumber = this._calculateSpeedIndex();
-                this.fire(new Event('speedindexcompleted', {speedIndex: speedIndexNumber}));
-                this.speedIndexTiming = false;
+        } else {
+            this._triggerFrame(false);
+            if (!this.isMoving() && this.loaded()) {
+                this.fire(new Event('idle'));
+                this._shouldFade = true;
+                // check the options to see if need to calculate the speed index
+                if (this.speedIndexTiming) {
+                    const speedIndexNumber = this._calculateSpeedIndex();
+                    this.fire(new Event('speedindexcompleted', {speedIndex: speedIndexNumber}));
+                    this.speedIndexTiming = false;
+                }
             }
         }
 
@@ -2704,11 +2708,20 @@ class Map extends Camera {
      * @see [Add an animated icon to the map](https://docs.mapbox.com/mapbox-gl-js/example/add-image-animated/)
      */
     triggerRepaint() {
+        this._triggerFrame(true);
+    }
+
+    _triggerFrame(render: boolean) {
+        this._renderNextFrame = this._renderNextFrame || render;
         if (this.style && !this._frame) {
             this._frame = browser.frame((paintStartTimeStamp: number) => {
-                PerformanceUtils.frame(paintStartTimeStamp);
+                const isRenderFrame = !!this._renderNextFrame;
+                PerformanceUtils.frame(paintStartTimeStamp, isRenderFrame);
                 this._frame = null;
-                this._render(paintStartTimeStamp);
+                this._renderNextFrame = null;
+                if (isRenderFrame) {
+                    this._render(paintStartTimeStamp);
+                }
             });
         }
     }
