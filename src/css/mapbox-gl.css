@@ -449,13 +449,13 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     }
 
     .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
-        padding: 2px 24px 2px 8px;
+        padding: 2px 28px 2px 8px;
         visibility: visible;
     }
 
     .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show,
     .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
-        padding: 2px 8px 2px 24px;
+        padding: 2px 8px 2px 28px;
         border-radius: 12px;
     }
 
