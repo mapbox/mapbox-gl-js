@@ -1,14 +1,15 @@
 
 import ValidationError from '../error/validation_error';
-import getType from '../util/get_type';
 import validate from './validate';
+import getType from '../util/get_type';
+import {unbundle} from '../util/unbundle_jsonlint';
 
 export default function validateTerrain(options) {
     const terrain = options.value;
+    const key = options.key;
+    const style = options.style;
     const styleSpec = options.styleSpec;
     const terrainSpec = styleSpec.terrain;
-    const style = options.style;
-
     let errors = [];
 
     const rootType = getType(terrain);
@@ -40,6 +41,18 @@ export default function validateTerrain(options) {
             }));
         } else {
             errors = errors.concat([new ValidationError(key, terrain[key], `unknown property "${key}"`)]);
+        }
+    }
+
+    if (!terrain.source) {
+        errors.push(new ValidationError(key, terrain, `terrain is missing required property "source"`));
+    } else {
+        const source = style.sources && style.sources[terrain.source];
+        const sourceType = source && unbundle(source.type);
+        if (!source) {
+            errors.push(new ValidationError(key, terrain.source, `source "${terrain.source}" not found`));
+        } else if (sourceType !== 'raster-dem') {
+            errors.push(new ValidationError(key, terrain.source, `terrain cannot be used with a source of type ${sourceType}, it only be used with a "raster-dem" source type`));
         }
     }
 
