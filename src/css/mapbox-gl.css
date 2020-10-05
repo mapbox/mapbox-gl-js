@@ -135,6 +135,7 @@
     padding: 0;
 }
 
+.mapboxgl-ctrl-attrib-button:focus,
 .mapboxgl-ctrl-group button:focus {
     box-shadow: 0 0 2px 2px rgba(0, 150, 255, 1);
 }
@@ -440,35 +441,30 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 @media screen {
     .mapboxgl-ctrl-attrib.mapboxgl-compact {
         min-height: 20px;
-        padding: 0;
+        padding: 2px 24px 2px 0;
         margin: 10px;
         position: relative;
         background-color: #fff;
-        border-radius: 3px 12px 12px 3px;
+        border-radius: 12px;
     }
 
-    .mapboxgl-ctrl-attrib.mapboxgl-compact:hover {
-        padding: 2px 24px 2px 4px;
+    .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
+        padding: 2px 28px 2px 8px;
         visibility: visible;
-        margin-top: 6px;
     }
 
-    .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact:hover,
-    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact:hover {
-        padding: 2px 4px 2px 24px;
-        border-radius: 12px 3px 3px 12px;
+    .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show,
+    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
+        padding: 2px 8px 2px 28px;
+        border-radius: 12px;
     }
 
     .mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-inner {
         display: none;
     }
 
-    .mapboxgl-ctrl-attrib.mapboxgl-compact:hover .mapboxgl-ctrl-attrib-inner {
-        display: block;
-    }
-
-    .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
-        content: '';
+    .mapboxgl-ctrl-attrib-button {
+        display: none;
         cursor: pointer;
         position: absolute;
         background-image: svg-load('svg/mapboxgl-ctrl-attrib.svg');
@@ -477,6 +473,24 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         height: 24px;
         box-sizing: border-box;
         border-radius: 12px;
+        outline: none;
+        top: 0;
+        right: 0;
+        border: 0;
+    }
+
+    .mapboxgl-ctrl-top-left .mapboxgl-ctrl-attrib-button,
+    .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib-button {
+        left: 0;
+    }
+
+    .mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-button,
+    .mapboxgl-ctrl-attrib.mapboxgl-compact-show .mapboxgl-ctrl-attrib-inner {
+        display: block;
+    }
+
+    .mapboxgl-ctrl-attrib.mapboxgl-compact-show .mapboxgl-ctrl-attrib-button {
+        background-color: rgba(0, 0, 0, 0.05);
     }
 
     .mapboxgl-ctrl-bottom-right > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
