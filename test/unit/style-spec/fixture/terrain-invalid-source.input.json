@@ -1,0 +1,13 @@
+{
+    "version": 8,
+    "sources": {
+        "mapbox-dem": {
+            "type": "vector",
+            "url": "mapbox://mapbox.streets-v11"
+        }
+    },
+    "terrain": {
+        "source": "mapbox-dem"
+    },
+    "layers": []
+}

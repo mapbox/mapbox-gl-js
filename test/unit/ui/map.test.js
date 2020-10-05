@@ -285,6 +285,31 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('updating terrain triggers style diffing using setTerrain operation', (t) => {
+            const style = createStyle();
+            style['sources']["mapbox-dem"] = {
+                "type": "raster-dem",
+                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                "tileSize": 256,
+                "maxzoom": 14
+            };
+            style['terrain'] = {
+                "source": "mapbox-dem"
+            };
+            const map = createMap(t, {style});
+            const initStyleObj = map.style;
+            t.spy(initStyleObj, 'setTerrain');
+            t.spy(initStyleObj, 'setState');
+            map.on('style.load', () => {
+                map.setStyle(createStyle());
+                t.equal(initStyleObj, map.style);
+                t.equal(initStyleObj.setState.callCount, 1);
+                t.equal(initStyleObj.setTerrain.callCount, 1);
+                t.ok(map.style.terrain == null);
+                t.end();
+            });
+        });
+
         t.end();
     });
 

@@ -96,7 +96,12 @@ const operations = {
     /*
      * { command: 'setLighting', args: [lightProperties] }
      */
-    setLight: 'setLight'
+    setLight: 'setLight',
+
+    /*
+     * { command: 'setTerrain', args: [terrainProperties] }
+     */
+    setTerrain: 'setTerrain'
 
 };
 
@@ -349,6 +354,9 @@ function diffStyles(before, after) {
         }
         if (!isEqual(before.light, after.light)) {
             commands.push({command: operations.setLight, args: [after.light]});
+        }
+        if (!isEqual(before.terrain, after.terrain)) {
+            commands.push({command: operations.setTerrain, args: [after.terrain]});
         }
 
         // Handle changes to `sources`

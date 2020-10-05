@@ -1,0 +1,6 @@
+[
+  {
+    "message": "terrain: terrain cannot be used with a source of type vector, it only be used with a \"raster-dem\" source type",
+    "line": 10
+  }
+]

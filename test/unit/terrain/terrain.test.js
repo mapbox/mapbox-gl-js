@@ -98,39 +98,13 @@ test('Elevation', (t) => {
         map.on('style.load', () => {
             setMockElevationTerrain(map, zeroDem, TILE_SIZE);
             map.once('render', () => {
-                const elevationError = -1;
-                t.test('Disabled if style update removes terrain DEM source', t => {
-                    const terrain = map.painter.terrain;
-                    const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
-                    t.equal(elevation1, 0);
-
-                    t.stub(console, 'warn');
-                    map.setStyle(createStyle());
-                    const elevation2 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
-                    t.ok(console.warn.calledOnce);
-                    t.ok(console.warn.getCall(0).calledWithMatch(/Terrain source "mapbox-dem" is not defined./));
-                    t.equal(elevation2, elevationError);
-
-                    // Add terrain back.
-                    setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-
-                    map.painter.updateTerrain(map.style);
-                    const elevation3 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
-                    t.equal(elevation3, 0);
-
+                t.test('Throws error if style update tries to remove terrain DEM source', t => {
                     t.test('remove source', t => {
+                        const stub = t.stub(console, 'error');
                         map.removeSource('mapbox-dem');
-                        const elevation2 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
-                        t.equal(elevation2, elevationError);
-
-                        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-
-                        map.painter.updateTerrain(map.style);
-                        const elevation3 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
-                        t.equal(elevation3, 0);
+                        t.ok(stub.calledOnce);
                         t.end();
                     });
-
                     t.end();
                 });
                 t.end();
@@ -384,8 +358,8 @@ test('Elevation', (t) => {
             cache.used = cache._sourceLoaded = true;
             const tr = map.painter.transform.clone();
             map.setTerrain({"source": "mapbox-dem"});
-            map.painter.updateTerrain(map.style);
             map.once('render', () => {
+                map.painter.updateTerrain(map.style);
                 t.test('center is not further constrained', t => {
                     t.deepEqual(tr.center, map.painter.transform.center);
                     t.end();
@@ -401,10 +375,8 @@ test('Elevation', (t) => {
 const spec = styleSpec.terrain;
 
 test('Terrain style', (t) => {
-    const style = createStyle();
-
     test('Terrain defaults', (t) => {
-        const terrain = new Terrain(style, {});
+        const terrain = new Terrain({});
         terrain.recalculate({zoom: 0, zoomHistory: {}});
 
         t.deepEqual(terrain.properties.get('source'), spec.source.default);
@@ -414,7 +386,7 @@ test('Terrain style', (t) => {
     });
 
     test('Exaggeration with stops function', (t) => {
-        const terrain = new Terrain(style, {
+        const terrain = new Terrain({
             source: "dem",
             exaggeration: {
                 stops: [[15, 0.2], [17, 0.8]]
@@ -423,18 +395,6 @@ test('Terrain style', (t) => {
         terrain.recalculate({zoom: 16, zoomHistory: {}});
 
         t.deepEqual(terrain.properties.get('exaggeration'), 0.5);
-        t.end();
-    });
-
-    t.test('Validate exaggeration', (t) => {
-        const terrain = new Terrain({});
-        const spy = t.spy(terrain, '_validate');
-        t.stub(console, 'error');
-        terrain.set({exaggeration: -1000});
-        terrain.updateTransitions({transition: false}, {});
-        terrain.recalculate({zoom: 16, zoomHistory: {}, now: 10});
-        t.ok(spy.calledOnce);
-        t.ok(console.error.calledOnce);
         t.end();
     });
 
