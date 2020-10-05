@@ -2208,3 +2208,60 @@ test('Style#hasTransitions', (t) => {
 
     t.end();
 });
+
+test('Style#setTerrain', (t) => {
+    t.test('rolls up inline source into style', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('style.load', () => {
+            style.setTerrain({
+                "source": {
+                    "type": "raster-dem",
+                    "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                    "tileSize": 256,
+                    "maxzoom": 14
+                }
+            });
+            t.ok(style.getSource('terrain-dem-src'));
+            t.equal(style.getSource('terrain-dem-src').type, 'raster-dem');
+            t.end();
+        });
+    });
+
+    t.test('setTerrain(undefined) removes terrain', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "mapbox-dem": {
+                    "type": "raster-dem",
+                    "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                    "tileSize": 256,
+                    "maxzoom": 14
+                }
+            },
+            "terrain": {"source": "mapbox-dem"},
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('style.load', () => {
+            style.setTerrain(undefined);
+            t.ok(style.terrain == null);
+            const serialized = style.serialize();
+            t.ok(serialized.terrain == null);
+            t.end();
+        });
+    });
+    t.end();
+});

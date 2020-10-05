@@ -3784,7 +3784,8 @@
   "terrain" : {
     "source": {
       "type": "string",
-      "doc": "A property name of global sources object. The source (property value) should be of type raster_dem source."
+      "doc": "A property name of global sources object. The source (property value) should be of type raster_dem source.",
+      "required": true
     },
     "exaggeration": {
       "type": "number",

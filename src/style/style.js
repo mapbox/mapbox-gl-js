@@ -82,7 +82,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setLayerZoomRange',
     'setLight',
     'setTransition',
-    'setGeoJSONSourceData'
+    'setGeoJSONSourceData',
+    'setTerrain'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -115,7 +116,7 @@ class Style extends Evented {
     glyphManager: GlyphManager;
     lineAtlas: LineAtlas;
     light: Light;
-    terrain: Terrain;
+    terrain: ?Terrain;
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
@@ -264,9 +265,6 @@ class Style extends Evented {
             this.addSource(id, json.sources[id], {validate: false});
         }
         this._changed = false; // avoid triggering redundant style update after adding initial sources
-        this.terrain = new Terrain(this, this.stylesheet.terrain);
-        this.dispatcher.broadcast('enableTerrain', !!this.stylesheet.terrain && !!this.stylesheet.terrain.source);
-
         if (json.sprite) {
             this._loadSprite(json.sprite);
         } else {
@@ -293,6 +291,9 @@ class Style extends Evented {
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
+        if (this.stylesheet.terrain) {
+            this._createTerrain(this.stylesheet.terrain);
+        }
 
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
@@ -466,7 +467,9 @@ class Style extends Evented {
         }
 
         this.light.recalculate(parameters);
-        this.terrain.recalculate(parameters);
+        if (this.terrain) {
+            this.terrain.recalculate(parameters);
+        }
         this.z = parameters.zoom;
 
         if (changed) {
@@ -650,6 +653,9 @@ class Style extends Evented {
             if (this._layers[layerId].source === id) {
                 return this.fire(new ErrorEvent(new Error(`Source "${id}" cannot be removed while layer "${layerId}" is using it.`)));
             }
+        }
+        if (this.terrain && this.terrain.get().source === id) {
+            return this.fire(new ErrorEvent(new Error(`Source "${id}" cannot be removed while terrain is using it.`)));
         }
 
         const sourceCaches = this._getSourceCaches(id);
@@ -1305,16 +1311,53 @@ class Style extends Evented {
     setTerrain(terrainOptions: TerrainSpecification) {
         this._checkLoaded();
 
-        const terrain = this.terrain.get();
-        let _update = !terrainOptions; // terrainOptions null deactivates.
-        for (const key in terrainOptions) {
-            if (!deepEqual(terrainOptions[key], terrain[key])) {
-                _update = true;
-                break;
+        //Disabling
+        if (!terrainOptions) {
+            delete this.terrain;
+            delete this.stylesheet.terrain;
+            this.dispatcher.broadcast('enableTerrain', false);
+            this._force3DLayerUpdate();
+            return;
+        }
+
+        // Input validation and source object unrolling
+        if (typeof terrainOptions.source === 'object') {
+            const id = 'terrain-dem-src';
+            this.addSource(id, ((terrainOptions.source): any));
+            terrainOptions = clone(terrainOptions);
+            terrainOptions = (extend(terrainOptions, {source: id}): any);
+        }
+        if (this._validate(validateStyle.terrain, 'terrain', terrainOptions)) return;
+
+        // Enabling
+        if (!this.terrain) {
+            this._createTerrain(terrainOptions);
+        } else { // Updating
+            const terrain = this.terrain;
+            const currSpec = terrain.get();
+            for (const key in terrainOptions) {
+                if (!deepEqual(terrainOptions[key], currSpec[key])) {
+                    terrain.set(terrainOptions);
+                    this.stylesheet.terrain = terrainOptions;
+                    const parameters = {
+                        now: browser.now(),
+                        transition: extend({
+                            duration: 0
+                        }, this.stylesheet.transition)
+                    };
+
+                    terrain.updateTransitions(parameters);
+                    break;
+                }
             }
         }
-        if (!_update) return;
+    }
 
+    _createTerrain(terrainOptions: TerrainSpecification) {
+        const terrain = this.terrain = new Terrain(terrainOptions);
+        this.stylesheet.terrain = terrainOptions;
+        this.dispatcher.broadcast('enableTerrain', true);
+        this._force3DLayerUpdate();
         const parameters = {
             now: browser.now(),
             transition: extend({
@@ -1322,16 +1365,10 @@ class Style extends Evented {
             }, this.stylesheet.transition)
         };
 
-        this.terrain.set(terrainOptions);
-        const hadTerrainSupport = !!this.stylesheet.terrain && !!this.stylesheet.terrain.source;
-        this.stylesheet.terrain = terrainOptions;
-        this.terrain.updateTransitions(parameters);
+        terrain.updateTransitions(parameters);
+    }
 
-        // Update fill extrusions layers to compute flat roofs.
-        const terrainSupport = !!terrainOptions && !!terrainOptions.source;
-        if (terrainSupport === hadTerrainSupport) return;
-
-        this.dispatcher.broadcast('enableTerrain', terrainSupport);
+    _force3DLayerUpdate() {
         for (const layerId in this._layers) {
             const layer = this._layers[layerId];
             if (layer.type === 'fill-extrusion') {

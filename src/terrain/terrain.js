@@ -244,51 +244,53 @@ export class Terrain extends Elevation {
      * before using transform for source cache update.
      */
     update(style: Style, transform: Transform) {
-        const enabled = style && style.terrain && style.terrain.isEnabled();
-        if (!enabled) return this._disable();
-
-        if (this.style !== style) {
-            style.on('data', this._onStyleDataEvent.bind(this));
-            this.style = style;
-        }
-        this.enabled = enabled;
-        this.sourceCache = ((style._getSourceCache(style.terrain.properties.get('source')): any): SourceCache);
-        this._exaggeration = style.terrain.properties.get('exaggeration');
-
-        const updateSourceCache = () => {
-            if (this.sourceCache.used) {
-                warnOnce(`Raster DEM source '${this.sourceCache.getSource().id}' is used both for terrain and as layer source.\n` +
-                    'This leads to lower resolution of hillshade. For full hillshade resolution but higher memory consumption, define another raster DEM source.');
+        if (style && style.terrain) {
+            if (this.style !== style) {
+                style.on('data', this._onStyleDataEvent.bind(this));
+                this.style = style;
             }
-            // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
-            const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
-            const proxyTileSize = this.proxySourceCache.getSource().tileSize;
-            // Dem tile needs to be parent or at least of the same zoom level as proxy tile.
-            // Tile cover roundZoom behavior is set to the same as for proxy (false) in SourceCache.update().
-            this.sourceCache.update(transform, demScale * proxyTileSize, true);
-            // As a result of update, we get new set of tiles: reset lookup cache.
-            this._findCoveringTileCache[this.sourceCache.id] = {};
-        };
+            this.enabled = true;
+            const terrainProps = style.terrain.properties;
+            this.sourceCache = ((style._getSourceCache(terrainProps.get('source')): any): SourceCache);
+            this._exaggeration = terrainProps.get('exaggeration');
 
-        if (!this.sourceCache.usedForTerrain) {
-            // Init cache entry.
-            this._findCoveringTileCache[this.sourceCache.id] = {};
-            // When toggling terrain on/off load available terrain tiles from cache
-            // before reading elevation at center.
-            this.sourceCache.usedForTerrain = true;
+            const updateSourceCache = () => {
+                if (this.sourceCache.used) {
+                    warnOnce(`Raster DEM source '${this.sourceCache.id}' is used both for terrain and as layer source.\n` +
+                        'This leads to lower resolution of hillshade. For full hillshade resolution but higher memory consumption, define another raster DEM source.');
+                }
+                // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
+                const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
+                const proxyTileSize = this.proxySourceCache.getSource().tileSize;
+                // Dem tile needs to be parent or at least of the same zoom level as proxy tile.
+                // Tile cover roundZoom behavior is set to the same as for proxy (false) in SourceCache.update().
+                this.sourceCache.update(transform, demScale * proxyTileSize, true);
+                // As a result of update, we get new set of tiles: reset lookup cache.
+                this._findCoveringTileCache[this.sourceCache.id] = {};
+            };
+
+            if (!this.sourceCache.usedForTerrain) {
+                // Init cache entry.
+                this._findCoveringTileCache[this.sourceCache.id] = {};
+                // When toggling terrain on/off load available terrain tiles from cache
+                // before reading elevation at center.
+                this.sourceCache.usedForTerrain = true;
+                updateSourceCache();
+                this._initializing = true;
+            }
+
             updateSourceCache();
-            this._initializing = true;
+            transform.updateElevation();
+
+            // Reset tile lookup cache and update draped tiles coordinates.
+            this._findCoveringTileCache[this.proxySourceCache.id] = {};
+            this.proxySourceCache.update(transform);
+
+            this._depthDone = false;
+            this._emptyDEMTextureDirty = true;
+        } else {
+            this._disable();
         }
-
-        updateSourceCache();
-        transform.updateElevation();
-
-        // Reset tile lookup cache and update draped tiles coordinates.
-        this._findCoveringTileCache[this.proxySourceCache.id] = {};
-        this.proxySourceCache.update(transform);
-
-        this._depthDone = false;
-        this._emptyDEMTextureDirty = true;
     }
 
     _onStyleDataEvent(event: any) {
