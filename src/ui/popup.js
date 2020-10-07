@@ -38,7 +38,7 @@ export type PopupOptions = {
 const focusQuerySelector = [
     "a[href]",
     "[tabindex]:not([tabindex='-1'])",
-    "contenteditable",
+    "[contenteditable]:not([contenteditable='false'])",
     "button:not([disabled])",
     "input:not([disabled])",
     "select:not([disabled])",

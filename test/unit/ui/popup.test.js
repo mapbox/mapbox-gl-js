@@ -712,17 +712,22 @@ test('Element with tabindex="-1" is not focused', (t) => {
         .setLngLat([0, 0])
         .addTo(createMap(t));
 
-    const focusableEl = popup._container.querySelector("[data-testid='abc']");
+    const nonFocusableEl = popup._container.querySelector("[data-testid='abc']");
+    const closeButton = popup._container.querySelector("button[aria-label='Close popup']");
 
-    t.notEqual(window.document.activeElement, focusableEl);
+    t.notEqual(window.document.activeElement, nonFocusableEl);
+    t.equal(window.document.activeElement, closeButton);
     t.end();
 });
 
-test('If popup content contains a disabled input followed by a focusable element then the latter is focused', (t) => {
+test('If popup contains a disabled button and a focusable element then the latter is focused', (t) => {
     const popup = new Popup({closeButton: true})
         .setHTML(`
             <button disabled>No focus here</button>
-            <span tabindex="0" data-testid="abc">Test</span>
+            <select data-testid="abc">
+                <option value="1">1</option>
+                <option value="2">2</option>
+            </select>
         `)
         .setLngLat([0, 0])
         .addTo(createMap(t));
