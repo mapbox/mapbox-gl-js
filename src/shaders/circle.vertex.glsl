@@ -26,10 +26,7 @@ vec2 calc_offset(vec2 extrusion, float radius, float stroke_width,  float view_s
     return extrusion * (radius + stroke_width) * u_extrude_scale * view_scale;
 }
 
-float circle_elevation(vec2 pos, float radius, float stroke_width, float view_scale) {
-#if defined(TERRAIN) && defined(PITCH_WITH_MAP)
-    // to prevent the circle from self-intersecting with the terrain underneath on a sloped hill,
-    // we calculate the elevation at each corner and pick the highest one.
+float cantilevered_elevation(vec2 pos, float radius, float stroke_width, float view_scale) {
     vec2 c1 = pos + calc_offset(vec2(-1,-1), radius, stroke_width, view_scale);
     vec2 c2 = pos + calc_offset(vec2(1,-1), radius, stroke_width, view_scale);
     vec2 c3 = pos + calc_offset(vec2(1,1), radius, stroke_width, view_scale);
@@ -39,7 +36,10 @@ float circle_elevation(vec2 pos, float radius, float stroke_width, float view_sc
     float h3 = elevation(c3) + ELEVATION_BIAS;
     float h4 = elevation(c4) + ELEVATION_BIAS;
     return max(h4, max(h3, max(h1,h2)));
-#elif defined(TERRAIN)
+}
+
+float circle_elevation(vec2 pos) {
+#if defined(TERRAIN)
     return elevation(pos) + ELEVATION_BIAS;
 #else
     return 0.0;
@@ -80,7 +80,10 @@ void main(void) {
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     vec2 circle_center = floor(a_pos * 0.5);
-    vec4 projection = u_matrix * vec4(circle_center, 0, 1);
+    // extract height offset for terrain, this returns 0 if terrain is not active
+    float height = circle_elevation(circle_center);
+    vec4 world_center = vec4(circle_center, height, 1);
+    vec4 projected_center = u_matrix * world_center;
 
     float view_scale = 0.0;
     #ifdef PITCH_WITH_MAP
@@ -90,31 +93,35 @@ void main(void) {
             // Pitching the circle with the map effectively scales it with the map
             // To counteract the effect for pitch-scale: viewport, we rescale the
             // whole circle based on the pitch scaling effect at its central point
-            view_scale = projection.w / u_camera_to_center_distance;
+            view_scale = projected_center.w / u_camera_to_center_distance;
         #endif
     #else
         #ifdef SCALE_WITH_MAP
             view_scale = u_camera_to_center_distance;
         #else
-            view_scale = projection.w;
+            view_scale = projected_center.w;
         #endif
     #endif
-
-    // extract height offset for terrain, this returns 0 if terrain is not active
-    float height = circle_elevation(circle_center, radius, stroke_width, view_scale);
-    vec4 world_center = vec4(circle_center, height, 1);
-    vec4 projected_center = u_matrix * world_center;
-
     gl_Position = project_vertex(extrude, world_center, projected_center, radius, stroke_width, view_scale);
 
     float visibility = 0.0;
     #ifdef TERRAIN
         float step = get_sample_step();
+        #ifdef PITCH_WITH_MAP
+            // to prevent the circle from self-intersecting with the terrain underneath on a sloped hill,
+            // we calculate the elevation at each corner and pick the highest one when computing visibility.
+            float cantilevered_height = cantilevered_elevation(circle_center, radius, stroke_width, view_scale);
+            vec4 occlusion_world_center = vec4(circle_center, cantilevered_height, 1);
+            vec4 occlusion_projected_center = u_matrix * occlusion_world_center;
+        #else
+            vec4 occlusion_world_center = world_center;
+            vec4 occlusion_projected_center = projected_center;
+        #endif
         for(int ring = 0; ring < NUM_VISIBILITY_RINGS; ring++) {
             float scale = (float(ring) + 1.0)/float(NUM_VISIBILITY_RINGS);
             for(int i = 0; i < NUM_SAMPLES_PER_RING; i++) {
                 vec2 extrusion = vec2(cos(step * float(i)), -sin(step * float(i))) * scale;
-                vec4 frag_pos = project_vertex(extrusion, world_center, projected_center, radius, stroke_width, view_scale);
+                vec4 frag_pos = project_vertex(extrusion, occlusion_world_center, occlusion_projected_center, radius, stroke_width, view_scale);
                 visibility += float(!isOccluded(frag_pos));
             }
         }
