@@ -17,6 +17,7 @@ import type {PointLike} from '@mapbox/point-geometry';
 const defaultOptions = {
     closeButton: true,
     closeOnClick: true,
+    focusAfterOpen: true,
     className: '',
     maxWidth: "240px"
 };
@@ -27,11 +28,22 @@ export type PopupOptions = {
     closeButton?: boolean,
     closeOnClick?: boolean,
     closeOnMove?: boolean,
+    focusAfterOpen?: boolean,
     anchor?: Anchor,
     offset?: Offset,
     className?: string,
     maxWidth?: string
 };
+
+const focusQuerySelector = [
+    "a[href]",
+    "[tabindex]:not([tabindex='-1'])",
+    "[contenteditable]:not([contenteditable='false'])",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+].join(", ");
 
 /**
  * A popup component.
@@ -43,6 +55,8 @@ export type PopupOptions = {
  *   map is clicked.
  * @param {boolean} [options.closeOnMove=false] If `true`, the popup will closed when the
  *   map moves.
+ * @param {boolean} [options.focusAfterOpen=true] If `true`, the popup will try to focus the
+ *   first focusable element inside the popup.
  * @param {string} [options.anchor] - A string indicating the part of the Popup that should
  *   be positioned closest to the coordinate set via {@link Popup#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
@@ -128,6 +142,7 @@ export default class Popup extends Evented {
 
         this._map.on('remove', this.remove);
         this._update();
+        this._focusFirstElement();
 
         if (this._trackPointer) {
             this._map.on('mousemove', this._onMouseMove);
@@ -397,8 +412,11 @@ export default class Popup extends Evented {
      */
     setDOMContent(htmlNode: Node) {
         this._createContent();
+        // The close button should be the last tabbable element inside the popup for a good keyboard UX.
         this._content.appendChild(htmlNode);
+        this._createCloseButton();
         this._update();
+        this._focusFirstElement();
         return this;
     }
 
@@ -467,6 +485,9 @@ export default class Popup extends Evented {
         }
 
         this._content = DOM.create('div', 'mapboxgl-popup-content', this._container);
+    }
+
+    _createCloseButton() {
         if (this.options.closeButton) {
             this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', this._content);
             this._closeButton.type = 'button';
@@ -474,7 +495,6 @@ export default class Popup extends Evented {
             this._closeButton.innerHTML = '&#215;';
             this._closeButton.addEventListener('click', this._onClose);
         }
-
     }
 
     _onMouseUp(event: MapMouseEvent) {
@@ -489,7 +509,7 @@ export default class Popup extends Evented {
         this._update(event.point);
     }
 
-    _update(cursor: PointLike) {
+    _update(cursor: ?PointLike) {
         const hasPosition = this._lngLat || this._trackPointer;
 
         if (!this._map || !hasPosition || !this._content) { return; }
@@ -552,6 +572,14 @@ export default class Popup extends Evented {
         const offsetedPos = pos.add(offset[anchor]).round();
         DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
         applyAnchorClass(this._container, anchor, 'popup');
+    }
+
+    _focusFirstElement() {
+        if (!this.options.focusAfterOpen || !this._container) return;
+
+        const firstFocusable = this._container.querySelector(focusQuerySelector);
+
+        if (firstFocusable) firstFocusable.focus();
     }
 
     _onClose() {

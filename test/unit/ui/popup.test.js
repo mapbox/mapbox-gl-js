@@ -667,3 +667,102 @@ test('Popup closes on Map#remove', (t) => {
     t.ok(!popup.isOpen());
     t.end();
 });
+
+test('Adding popup with no focusable content (Popup#setText) does not change the active element', (t) => {
+    const dummyFocusedEl = window.document.createElement('button');
+    dummyFocusedEl.focus();
+
+    new Popup({closeButton: false})
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    t.equal(window.document.activeElement, dummyFocusedEl);
+    t.end();
+});
+
+test('Adding popup with no focusable content (Popup#setHTML) does not change the active element', (t) => {
+    const dummyFocusedEl = window.document.createElement('button');
+    dummyFocusedEl.focus();
+
+    new Popup({closeButton: false})
+        .setHTML('<span>Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    t.equal(window.document.activeElement, dummyFocusedEl);
+    t.end();
+});
+
+test('Close button is focused if it is the only focusable element', (t) => {
+    const dummyFocusedEl = window.document.createElement('button');
+    dummyFocusedEl.focus();
+
+    const popup = new Popup({closeButton: true})
+        .setHTML('<span>Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    // Suboptimal because the string matching is case-sensitive
+    const closeButton = popup._container.querySelector("[aria-label^='Close']");
+
+    t.equal(window.document.activeElement, closeButton);
+    t.end();
+});
+
+test('If popup content contains a focusable element it is focused', (t) => {
+    const popup = new Popup({closeButton: true})
+        .setHTML('<span tabindex="0" data-testid="abc">Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    const focusableEl = popup._container.querySelector("[data-testid='abc']");
+
+    t.equal(window.document.activeElement, focusableEl);
+    t.end();
+});
+
+test('Element with tabindex="-1" is not focused', (t) => {
+    const popup = new Popup({closeButton: true})
+        .setHTML('<span tabindex="-1" data-testid="abc">Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    const nonFocusableEl = popup._container.querySelector("[data-testid='abc']");
+    const closeButton = popup._container.querySelector("button[aria-label='Close popup']");
+
+    t.notEqual(window.document.activeElement, nonFocusableEl);
+    t.equal(window.document.activeElement, closeButton);
+    t.end();
+});
+
+test('If popup contains a disabled button and a focusable element then the latter is focused', (t) => {
+    const popup = new Popup({closeButton: true})
+        .setHTML(`
+            <button disabled>No focus here</button>
+            <select data-testid="abc">
+                <option value="1">1</option>
+                <option value="2">2</option>
+            </select>
+        `)
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    const focusableEl = popup._container.querySelector("[data-testid='abc']");
+
+    t.equal(window.document.activeElement, focusableEl);
+    t.end();
+});
+
+test('Popup with disabled focusing does not change the active element', (t) => {
+    const dummyFocusedEl = window.document.createElement('button');
+    dummyFocusedEl.focus();
+
+    new Popup({closeButton: false, focusAfterOpen: false})
+        .setHTML('<span tabindex="0" data-testid="abc">Test</span>')
+        .setLngLat([0, 0])
+        .addTo(createMap(t));
+
+    t.equal(window.document.activeElement, dummyFocusedEl);
+    t.end();
+});
