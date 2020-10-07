@@ -18,6 +18,7 @@ const defaultOptions = {
     closeButton: true,
     closeOnClick: true,
     className: '',
+    contentClassName: '',
     maxWidth: "240px"
 };
 
@@ -30,6 +31,7 @@ export type PopupOptions = {
     anchor?: Anchor,
     offset?: Offset,
     className?: string,
+    contentClassName?: string,
     maxWidth?: string
 };
 
@@ -56,6 +58,7 @@ export type PopupOptions = {
  *   - an object of {@link Point}s specifing an offset for each anchor position
  *  Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container
+ * @param {string} [options.contentClassName] Space-separated CSS class names to add to popup content container
  * @param {string} [options.maxWidth='240px'] -
  *  A string that sets the CSS property of the popup's maximum width, eg `'300px'`.
  *  To ensure the popup resizes to fit its content, set this property to `'none'`.
@@ -467,6 +470,10 @@ export default class Popup extends Evented {
         }
 
         this._content = DOM.create('div', 'mapboxgl-popup-content', this._container);
+        if (this.options.contentClassName) {
+            this.options.contentClassName.split(' ').forEach(name =>
+                this._content.classList.add(name));
+        }
         if (this.options.closeButton) {
             this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', this._content);
             this._closeButton.type = 'button';

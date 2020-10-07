@@ -571,6 +571,19 @@ test('Popup adds classes from className option, methods for class manipulations 
     t.end();
 });
 
+test('Popup adds classes from contentClassName option', (t) => {
+    const map = createMap(t);
+    const popup = new Popup({contentClassName: 'some classes'})
+        .setText('Test')
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    const popupContentContainer = popup.getElement().querySelector('.mapboxgl-popup-content');
+    t.ok(popupContentContainer.classList.contains('some'));
+    t.ok(popupContentContainer.classList.contains('classes'));
+    t.end();
+});
+
 test('Cursor-tracked popup disappears on mouseout', (t) => {
     const map = createMap(t);
 
