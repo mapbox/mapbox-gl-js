@@ -36,12 +36,13 @@ const skyboxCaptureUniforms = (context: Context, locations: UniformLocations): S
 const skyboxCaptureUniformValues = (
     matrix: Float32Array,
     sunDirection: vec3,
+    sunIntensity: number,
     atmosphereColor: Color,
     atmosphereHaloColor: Color
 ): UniformValues<SkyboxCaptureUniformsType> => ({
     'u_matrix_3f': matrix,
     'u_sun_direction': sunDirection,
-    'u_sun_intensity': 30.0,
+    'u_sun_intensity': sunIntensity,
     'u_color_tint_r': [
         atmosphereColor.r,
         atmosphereColor.g,

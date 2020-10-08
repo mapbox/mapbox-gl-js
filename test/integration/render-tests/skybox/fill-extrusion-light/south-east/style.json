@@ -69,7 +69,8 @@
       "id": "sky",
       "type": "sky",
       "paint": {
-        "sky-type": "atmosphere"
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun-intensity": 30
       }
     },
     {
