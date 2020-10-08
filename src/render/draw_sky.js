@@ -100,8 +100,14 @@ function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<*>, 
 
     const atmosphereColor = layer.paint.get('sky-atmosphere-color');
     const atmosphereHaloColor = layer.paint.get('sky-atmosphere-halo-color');
+    const sunIntensity = layer.paint.get('sky-atmosphere-sun-intensity');
 
-    const uniformValues = skyboxCaptureUniformValues(mat3.fromMat4([], faceRotate), sunDirection, atmosphereColor, atmosphereHaloColor);
+    const uniformValues = skyboxCaptureUniformValues(
+        mat3.fromMat4([], faceRotate),
+        sunDirection,
+        sunIntensity,
+        atmosphereColor,
+        atmosphereHaloColor);
 
     const glFace = gl.TEXTURE_CUBE_MAP_POSITIVE_X + i;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, glFace, layer.skyboxTexture, 0);

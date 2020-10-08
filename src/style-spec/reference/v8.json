@@ -5974,11 +5974,35 @@
           "js": "2.0.0"
         }
       },
+      "requires": [
+        {
+          "sky-type": "atmosphere"
+        }
+      ],
       "expression": {
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
+      },
+      "property-type": "data-constant"
+    },
+    "sky-atmosphere-sun-intensity": {
+      "type": "number",
+      "requires": [
+        {
+          "sky-type": "atmosphere"
+        }
+      ],
+      "default": 10,
+      "minimum": 0,
+      "maximum": 100,
+      "transition": false,
+      "doc": "Intensity of the sun as a light source in the atmosphere (on a scale from 0 to a 100). Setting higher values will brighten up the sky.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.0.0"
+        }
       },
       "property-type": "data-constant"
     },

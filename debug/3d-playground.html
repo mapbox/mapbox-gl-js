@@ -42,6 +42,7 @@ var Demo3D = function() {
     this.animateSky = false;
     this.sunHaloColor = [ 255, 255, 255 ];
     this.skyColor = [ 255, 255, 255 ];
+    this.sunIntensity = 30.0;
 };
 
 var demo3d = new Demo3D();
@@ -78,6 +79,10 @@ window.onload = function() {
     var sunAzimuth = sky.add(demo3d, 'sunAzimuth', 0.0, 360.0);
     sunAzimuth.onFinishChange((value) => {
         map.setLight({'position': [1, value, demo3d.sunAltitude], 'anchor': 'map'});
+    });
+    var sunIntensity = sky.add(demo3d, 'sunIntensity', 0.0, 100.0);
+    sunIntensity.onFinishChange((value) => {
+        map.setPaintProperty('sky', 'sky-atmosphere-sun-intensity', value);
     });
     var sunHaloIntensity = sky.add(demo3d, 'sunHaloIntensity', 0.0, 1.0);
     sunHaloIntensity.onFinishChange((value) => {

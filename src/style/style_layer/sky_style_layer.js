@@ -50,7 +50,8 @@ class SkyLayer extends StyleLayer {
             this._updateColorRamp();
         } else if (name === 'sky-atmosphere-sun' ||
                    name === 'sky-atmosphere-halo-color' ||
-                   name === 'sky-atmosphere-color') {
+                   name === 'sky-atmosphere-color' ||
+                   name === 'sky-atmosphere-sun-intensity') {
             this._skyboxInvalidated = true;
         }
     }

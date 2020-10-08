@@ -15,9 +15,15 @@
       "type": "sky",
       "paint": {
         "sky-type": "atmosphere",
-        "sky-atmosphere-halo-color": "rgba(0,0,0,0)",
-        "sky-atmosphere-sun": [0, 90],
-        "sky-atmosphere-sun-intensity": 30
+        "sky-atmosphere-sun": [0, 0],
+        "sky-atmosphere-sun-intensity": 15
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
       }
     }
   ]
