@@ -40,25 +40,13 @@ const repo = 'mapbox-gl-js-internal';
     //get current sizes
     const currentSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(currentSizes);
-
-    // compute sizes for merge base
-    const pr = process.env['CIRCLE_PULL_REQUEST'];
-    let base = 'main';
-    // If the commit is created before the PR is opened, CIRCLE_PULL_REQUEST will be null.
-    // Since the job's don't re-run when the PR is opened, it would show a failed check if we didnt account for pr being null.
-    if (pr) {
-        const pull_number = +pr.match(/\/(\d+)\/?$/)[1];
-        const pull = await github.pulls.get({owner, repo, pull_number});
-        base = pull.data.base.sha;
-    }
-    console.log(`Using ${base} as prior comparison point.`)
     // Why we need to add GitHub's public key to known_hosts:
     // https://circleci.com/docs/2.0/gh-bb-integration/#establishing-the-authenticity-of-an-ssh-host
     execSync(`mkdir -p ~/.ssh`);
     execSync(`echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
     bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
     ' >> ~/.ssh/known_hosts`);
-    execSync(`git reset --hard && git fetch && git checkout ${base}`);
+    execSync(`git reset --hard && git checkout origin/main`);
     execSync('yarn run build-prod-min');
     const priorSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(priorSizes);
