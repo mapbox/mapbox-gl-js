@@ -18,7 +18,8 @@
         "sky-type": "atmosphere",
         "sky-atmosphere-color": "rgba(200,150,100,0.5)",
         "sky-atmosphere-halo-color": "rgba(255,255,0,0.5)",
-        "sky-atmosphere-sun": [0, 90]
+        "sky-atmosphere-sun": [0, 90],
+        "sky-atmosphere-sun-intensity": 30
       }
     },
     {
