@@ -56,6 +56,7 @@ class Tile {
     uid: number;
     uses: number;
     tileSize: number;
+    tileZoom: number;
     buckets: {[_: string]: Bucket};
     latestFeatureIndex: ?FeatureIndex;
     latestRawTileData: ?ArrayBuffer;
@@ -102,11 +103,12 @@ class Tile {
      * @param size
      * @private
      */
-    constructor(tileID: OverscaledTileID, size: number) {
+    constructor(tileID: OverscaledTileID, size: number, tileZoom: number) {
         this.tileID = tileID;
         this.uid = uniqueId();
         this.uses = 0;
         this.tileSize = size;
+        this.tileZoom = tileZoom;
         this.buckets = {};
         this.expirationTime = null;
         this.queryPadding = 0;

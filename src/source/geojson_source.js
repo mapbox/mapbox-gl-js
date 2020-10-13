@@ -310,6 +310,7 @@ class GeoJSONSource extends Evented implements Source {
             type: this.type,
             uid: tile.uid,
             tileID: tile.tileID,
+            tileZoom: tile.tileZoom,
             zoom: tile.tileID.overscaledZ,
             maxZoom: this.maxzoom,
             tileSize: this.tileSize,

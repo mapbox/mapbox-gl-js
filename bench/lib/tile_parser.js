@@ -116,6 +116,7 @@ export default class TileParser {
     parseTile(tile: {tileID: OverscaledTileID, buffer: ArrayBuffer}, returnDependencies?: boolean): Promise<?WorkerTileResult> {
         const workerTile = new WorkerTile({
             tileID: tile.tileID,
+            tileZoom: tile.tileID.overscaledZ,
             zoom: tile.tileID.overscaledZ,
             tileSize: 512,
             overscaling: 1,
