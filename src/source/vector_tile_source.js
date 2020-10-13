@@ -200,6 +200,7 @@ class VectorTileSource extends Evented implements Source {
             data: undefined,
             uid: tile.uid,
             tileID: tile.tileID,
+            tileZoom: tile.tileZoom,
             zoom: tile.tileID.overscaledZ,
             tileSize: this.tileSize * tile.tileID.overscaleFactor(),
             type: this.type,

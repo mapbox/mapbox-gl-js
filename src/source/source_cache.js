@@ -722,7 +722,7 @@ class SourceCache extends Evented {
 
         const cached = Boolean(tile);
         if (!cached) {
-            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor());
+            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom);
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 

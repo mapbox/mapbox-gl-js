@@ -156,6 +156,7 @@ const {
     collisionBoxLayout,
     collisionCircleLayout,
     collisionVertexAttributes,
+    collisionVertexAttributesExt,
     quadTriangle,
     placement,
     symbolInstance,
@@ -170,6 +171,7 @@ createStructArrayType('collision_box', collisionBox, true);
 createStructArrayType(`collision_box_layout`, collisionBoxLayout);
 createStructArrayType(`collision_circle_layout`, collisionCircleLayout);
 createStructArrayType(`collision_vertex`, collisionVertexAttributes);
+createStructArrayType(`collision_vertex_ext`, collisionVertexAttributesExt);
 createStructArrayType(`quad_triangle`, quadTriangle);
 createStructArrayType('placed_symbol', placement, true);
 createStructArrayType('symbol_instance', symbolInstance, true);
