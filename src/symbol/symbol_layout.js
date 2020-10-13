@@ -6,8 +6,7 @@ import {getAnchors, getCenterAnchor} from './get_anchors';
 import clipLine from './clip_line';
 import {shapeText, shapeIcon, WritingMode, fitIconToText} from './shaping';
 import {getGlyphQuads, getIconQuads} from './quads';
-import CollisionFeature from './collision_feature';
-import {warnOnce} from '../util/util';
+import {warnOnce, degToRad} from '../util/util';
 import {
     allowsVerticalWritingMode,
     allowsLetterSpacing
@@ -153,7 +152,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              imageMap: {[_: string]: StyleImage},
                              imagePositions: {[_: string]: ImagePosition},
                              showCollisionBoxes: boolean,
-                             canonical: CanonicalTileID) {
+                             canonical: CanonicalTileID,
+                             tileZoom: number) {
     bucket.createArrays();
 
     const tileSize = 512 * bucket.overscaling;
@@ -182,8 +182,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
         ];
     }
 
-    sizes.layoutTextSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(bucket.zoom + 1), canonical);
-    sizes.layoutIconSize = unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(bucket.zoom + 1), canonical);
+    sizes.layoutTextSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(tileZoom + 1), canonical);
+    sizes.layoutIconSize = unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(tileZoom + 1), canonical);
     sizes.textMaxSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(18), canonical);
 
     const lineHeight = layout.get('text-line-height') * ONE_EM;
@@ -322,7 +322,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
     }
 
     if (showCollisionBoxes) {
-        bucket.generateCollisionDebugBuffers();
+        bucket.generateCollisionDebugBuffers(tileZoom, bucket.collisionBoxArray);
     }
 }
 
@@ -369,7 +369,7 @@ function addFeature(bucket: SymbolBucket,
     const layout = bucket.layers[0].layout;
     const iconOffset = layout.get('icon-offset').evaluate(feature, {}, canonical);
     const defaultHorizontalShaping = getDefaultHorizontalShaping(shapedTextOrientations.horizontal);
-    const glyphSize = 24,
+    const glyphSize = ONE_EM,
         fontScale = layoutTextSize / glyphSize,
         textBoxScale = bucket.tilePixelRatio * fontScale,
         textMaxBoxScale = bucket.tilePixelRatio * textMaxSize / glyphSize,
@@ -377,7 +377,7 @@ function addFeature(bucket: SymbolBucket,
         symbolMinDistance = bucket.tilePixelRatio * layout.get('symbol-spacing'),
         textPadding = layout.get('text-padding') * bucket.tilePixelRatio,
         iconPadding = layout.get('icon-padding') * bucket.tilePixelRatio,
-        textMaxAngle = layout.get('text-max-angle') / 180 * Math.PI,
+        textMaxAngle = degToRad(layout.get('text-max-angle')),
         textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point',
         iconAlongLine = layout.get('icon-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point',
         symbolPlacement = layout.get('symbol-placement'),
@@ -543,6 +543,72 @@ function getDefaultHorizontalShaping(horizontalShaping: {[_: TextJustify]: Shapi
     return null;
 }
 
+export function evaluateBoxCollisionFeature(collisionBoxArray: CollisionBoxArray,
+                                     anchor: Anchor,
+                                     featureIndex: number,
+                                     sourceLayerIndex: number,
+                                     bucketIndex: number,
+                                     shaped: Object,
+                                     boxScale: number,
+                                     padding: number,
+                                     rotate: number): number {
+    let y1 = shaped.top;
+    let y2 = shaped.bottom;
+    let x1 = shaped.left;
+    let x2 = shaped.right;
+
+    const collisionPadding = shaped.collisionPadding;
+    if (collisionPadding) {
+        x1 -= collisionPadding[0];
+        y1 -= collisionPadding[1];
+        x2 += collisionPadding[2];
+        y2 += collisionPadding[3];
+    }
+
+    if (rotate) {
+        // Account for *-rotate in point collision boxes
+        // See https://github.com/mapbox/mapbox-gl-js/issues/6075
+        // Doesn't account for icon-text-fit
+
+        const tl = new Point(x1, y1);
+        const tr = new Point(x2, y1);
+        const bl = new Point(x1, y2);
+        const br = new Point(x2, y2);
+
+        const rotateRadians = degToRad(rotate);
+
+        tl._rotate(rotateRadians);
+        tr._rotate(rotateRadians);
+        bl._rotate(rotateRadians);
+        br._rotate(rotateRadians);
+
+        // Collision features require an "on-axis" geometry,
+        // so take the envelope of the rotated geometry
+        // (may be quite large for wide labels rotated 45 degrees)
+        x1 = Math.min(tl.x, tr.x, bl.x, br.x);
+        x2 = Math.max(tl.x, tr.x, bl.x, br.x);
+        y1 = Math.min(tl.y, tr.y, bl.y, br.y);
+        y2 = Math.max(tl.y, tr.y, bl.y, br.y);
+    }
+
+    collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, padding, featureIndex, sourceLayerIndex, bucketIndex);
+
+    return collisionBoxArray.length - 1;
+}
+
+export function evaluateCircleCollisionFeature(shaped: Object): number | null {
+    if (shaped.collisionPadding) {
+        // Compute height of the shape in glyph metrics and apply padding.
+        // Note that the pixel based 'text-padding' is applied at runtime
+        shaped.top -= shaped.collisionPadding[1];
+        shaped.bottom += shaped.collisionPadding[3];
+    }
+
+    // Set minimum box height to avoid very many small labels
+    const height = shaped.bottom - shaped.top;
+    return height > 0 ? Math.max(10, height) : null;
+}
+
 /**
  * Add a single label & icon placement.
  *
@@ -575,7 +641,8 @@ function addSymbol(bucket: SymbolBucket,
                    layoutTextSize: number) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
-    let textCollisionFeature, iconCollisionFeature, verticalTextCollisionFeature, verticalIconCollisionFeature;
+    let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;
+    let textCircle, verticalTextCircle, verticalIconCircle;
 
     let numIconVertices = 0;
     let numVerticalIconVertices = 0;
@@ -596,13 +663,19 @@ function addSymbol(bucket: SymbolBucket,
     }
 
     if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
-        const textRotation = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
-        const verticalTextRotation = textRotation + 90.0;
         const verticalShaping = shapedTextOrientations.vertical;
-        verticalTextCollisionFeature = new CollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, textAlongLine, verticalTextRotation);
-
-        if (verticallyShapedIcon) {
-            verticalIconCollisionFeature = new CollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconBoxScale, iconPadding, textAlongLine, verticalTextRotation);
+        if (textAlongLine) {
+            verticalTextCircle = evaluateCircleCollisionFeature(verticalShaping);
+            if (verticallyShapedIcon) {
+                verticalIconCircle = evaluateCircleCollisionFeature(verticallyShapedIcon);
+            }
+        } else {
+            const textRotation = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
+            const verticalTextRotation = textRotation + 90.0;
+            verticalTextBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textBoxScale, textPadding, verticalTextRotation);
+            if (verticallyShapedIcon) {
+                verticalIconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconBoxScale, iconPadding, verticalTextRotation);
+            }
         }
     }
 
@@ -615,8 +688,7 @@ function addSymbol(bucket: SymbolBucket,
         const hasIconTextFit = layer.layout.get('icon-text-fit') !== 'none';
         const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit);
         const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit) : undefined;
-        iconCollisionFeature = new CollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, /*align boxes to line*/false, iconRotate);
-
+        iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconRotate);
         numIconVertices = iconQuads.length * 4;
 
         const sizeData = bucket.iconSizeData;
@@ -679,12 +751,16 @@ function addSymbol(bucket: SymbolBucket,
     for (const justification: any in shapedTextOrientations.horizontal) {
         const shaping = shapedTextOrientations.horizontal[justification];
 
-        if (!textCollisionFeature) {
+        if (!textBoxIndex) {
             key = murmur3(shaping.text);
-            const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
             // As a collision approximation, we can use either the vertical or any of the horizontal versions of the feature
             // We're counting on all versions having similar dimensions
-            textCollisionFeature = new CollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textBoxScale, textPadding, textAlongLine, textRotate);
+            if (textAlongLine) {
+                textCircle = evaluateCircleCollisionFeature(shaping);
+            } else {
+                const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
+                textBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textBoxScale, textPadding, textRotate);
+            }
         }
 
         const singleLine = shaping.positionedLines.length === 1;
@@ -705,33 +781,18 @@ function addSymbol(bucket: SymbolBucket,
             textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices, verticalPlacedIconSymbolIndex, sizes, canonical);
     }
 
-    const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
-    const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
-
-    const verticalTextBoxStartIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
-    const verticalTextBoxEndIndex = verticalTextCollisionFeature ? verticalTextCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
-
-    const iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
-    const iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
-
-    const verticalIconBoxStartIndex = verticalIconCollisionFeature ? verticalIconCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
-    const verticalIconBoxEndIndex = verticalIconCollisionFeature ? verticalIconCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
-
     // Check if runtime collision circles should be used for any of the collision features.
     // It is enough to choose the tallest feature shape as circles are always placed on a line.
     // All measurements are in glyph metrics and later converted into pixels using proper font size "layoutTextSize"
     let collisionCircleDiameter = -1;
 
-    const getCollisionCircleHeight = (feature: ?CollisionFeature, prevHeight: number): number => {
-        if (feature && feature.circleDiameter)
-            return Math.max(feature.circleDiameter, prevHeight);
-        return prevHeight;
+    const getCollisionCircleHeight = (diameter: ?number, prevHeight: number): number => {
+        return diameter ? Math.max(diameter, prevHeight) : prevHeight;
     };
 
-    collisionCircleDiameter = getCollisionCircleHeight(textCollisionFeature, collisionCircleDiameter);
-    collisionCircleDiameter = getCollisionCircleHeight(verticalTextCollisionFeature, collisionCircleDiameter);
-    collisionCircleDiameter = getCollisionCircleHeight(iconCollisionFeature, collisionCircleDiameter);
-    collisionCircleDiameter = getCollisionCircleHeight(verticalIconCollisionFeature, collisionCircleDiameter);
+    collisionCircleDiameter = getCollisionCircleHeight(textCircle, collisionCircleDiameter);
+    collisionCircleDiameter = getCollisionCircleHeight(verticalTextCircle, collisionCircleDiameter);
+    collisionCircleDiameter = getCollisionCircleHeight(verticalIconCircle, collisionCircleDiameter);
     const useRuntimeCollisionCircles = (collisionCircleDiameter > -1) ? 1 : 0;
 
     // Convert circle collision height into pixels
@@ -756,14 +817,14 @@ function addSymbol(bucket: SymbolBucket,
         placedIconSymbolIndex,
         verticalPlacedIconSymbolIndex,
         key,
-        textBoxStartIndex,
-        textBoxEndIndex,
-        verticalTextBoxStartIndex,
-        verticalTextBoxEndIndex,
-        iconBoxStartIndex,
-        iconBoxEndIndex,
-        verticalIconBoxStartIndex,
-        verticalIconBoxEndIndex,
+        textBoxIndex !== undefined ? textBoxIndex : bucket.collisionBoxArray.length,
+        textBoxIndex !== undefined ? textBoxIndex + 1 : bucket.collisionBoxArray.length,
+        verticalTextBoxIndex !== undefined ? verticalTextBoxIndex : bucket.collisionBoxArray.length,
+        verticalTextBoxIndex !== undefined ? verticalTextBoxIndex + 1 : bucket.collisionBoxArray.length,
+        iconBoxIndex !== undefined ? iconBoxIndex : bucket.collisionBoxArray.length,
+        iconBoxIndex !== undefined ? iconBoxIndex + 1 : bucket.collisionBoxArray.length,
+        verticalIconBoxIndex ? verticalIconBoxIndex : bucket.collisionBoxArray.length,
+        verticalIconBoxIndex ? verticalIconBoxIndex + 1 : bucket.collisionBoxArray.length,
         featureIndex,
         numHorizontalGlyphVertices,
         numVerticalGlyphVertices,

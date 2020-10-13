@@ -106,7 +106,7 @@ class ProxySourceCache extends SourceCache {
         const incoming: {[string]: string} = idealTileIDs.reduce((acc, tileID) => {
             acc[tileID.key] = '';
             if (!this._tiles[tileID.key]) {
-                const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor());
+                const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), transform.tileZoom);
                 tile.state = 'loaded';
                 this._tiles[tileID.key] = tile;
             }

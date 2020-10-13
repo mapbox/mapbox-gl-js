@@ -22,6 +22,7 @@ export type TileParameters = {
 
 export type RequestedTileParameters = TileParameters & {
     tileID: OverscaledTileID,
+    tileZoom: number,
     request: RequestParameters,
     data?: mixed
 };

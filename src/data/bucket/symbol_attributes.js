@@ -18,7 +18,12 @@ export const placementOpacityAttributes = createLayout([
 
 export const collisionVertexAttributes = createLayout([
     {name: 'a_placed', components: 2, type: 'Uint8'},
-    {name: 'a_shift', components: 2, type: 'Float32'}
+    {name: 'a_shift', components: 2, type: 'Float32'},
+]);
+
+export const collisionVertexAttributesExt = createLayout([
+    {name: 'a_size_scale', components: 1, type: 'Float32'},
+    {name: 'a_padding', components: 2, type: 'Float32'},
 ]);
 
 export const collisionBox = createLayout([
@@ -27,10 +32,12 @@ export const collisionBox = createLayout([
     {type: 'Int16', name: 'anchorPointY'},
 
     // distances to the edges from the anchor
-    {type: 'Int16', name: 'x1'},
-    {type: 'Int16', name: 'y1'},
-    {type: 'Int16', name: 'x2'},
-    {type: 'Int16', name: 'y2'},
+    {type: 'Float32', name: 'x1'},
+    {type: 'Float32', name: 'y1'},
+    {type: 'Float32', name: 'x2'},
+    {type: 'Float32', name: 'y2'},
+
+    {type: 'Int16', name: 'padding'},
 
     // the index of the feature in the original vectortile
     {type: 'Uint32', name: 'featureIndex'},

@@ -33,6 +33,7 @@ class WorkerTile {
     tileID: OverscaledTileID;
     uid: number;
     zoom: number;
+    tileZoom: number;
     pixelRatio: number;
     tileSize: number;
     source: string;
@@ -54,6 +55,7 @@ class WorkerTile {
 
     constructor(params: WorkerTileParameters) {
         this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
+        this.tileZoom = params.tileZoom;
         this.uid = params.uid;
         this.zoom = params.zoom;
         this.pixelRatio = params.pixelRatio;
@@ -214,7 +216,14 @@ class WorkerTile {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
-                        performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, iconMap, imageAtlas.iconPositions, this.showCollisionBoxes, this.tileID.canonical);
+                        performSymbolLayout(bucket,
+                            glyphMap,
+                            glyphAtlas.positions,
+                            iconMap,
+                            imageAtlas.iconPositions,
+                            this.showCollisionBoxes,
+                            this.tileID.canonical,
+                            this.tileZoom);
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||
