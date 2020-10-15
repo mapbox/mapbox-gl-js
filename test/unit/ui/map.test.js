@@ -1019,6 +1019,34 @@ test('Map', (t) => {
 
     });
 
+    t.test('#hasControl errors on invalid arguments', (t) => {
+        const map = createMap(t);
+        const control = 'control';
+        const stub = t.stub(console, 'error');
+
+        map.addControl(control);
+        map.hasControl(control);
+        t.ok(stub.calledTwice);
+        t.end();
+
+    });
+
+    t.test('#hasControl', (t) => {
+        const map = createMap(t);
+        function Ctrl() {};
+        Ctrl.prototype = {
+            onAdd(_) {
+                return window.document.createElement('div');
+            }
+        };
+
+        const control = new Ctrl();
+        t.equal(map.hasControl(control), false, 'Reference to control is not found');
+        map.addControl(control);
+        t.equal(map.hasControl(control), true, 'Reference to control is found');
+        t.end();
+    });
+
     t.test('#project', (t) => {
         const map = createMap(t);
         t.deepEqual(map.project([0, 0]), {x: 100, y: 100});
