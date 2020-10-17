@@ -1033,7 +1033,7 @@ test('Map', (t) => {
 
     t.test('#hasControl', (t) => {
         const map = createMap(t);
-        function Ctrl() {};
+        function Ctrl() {}
         Ctrl.prototype = {
             onAdd(_) {
                 return window.document.createElement('div');
