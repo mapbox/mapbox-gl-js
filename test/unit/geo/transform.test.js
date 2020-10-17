@@ -889,6 +889,33 @@ test('transform', (t) => {
             t.end();
         });
 
+        t.test('wraps coordinates when renderWorldCopies is true', (t) => {
+            const transform = new Transform();
+            transform.resize(100, 100);
+            const options = new FreeCameraOptions();
+            options._renderWorldCopies = true;
+
+            const lngLatLike = [-482.44, 37.83];
+            options.position = MercatorCoordinate.fromLngLat(lngLatLike);
+            transform.setFreeCameraOptions(options);
+
+            t.equal(parseFloat(options.position.toLngLat().lng.toFixed(2)), -122.44);
+            t.end();
+        });
+
+        t.test('does not wrap coordinates when renderWorldCopies is falsey', (t) => {
+            const transform = new Transform();
+            transform.resize(100, 100);
+            const options = new FreeCameraOptions();
+
+            const lngLatLike = [-482.44, 37.83];
+            options.position = MercatorCoordinate.fromLngLat(lngLatLike);
+            transform.setFreeCameraOptions(options);
+
+            t.equal(parseFloat(options.position.toLngLat().lng.toFixed(2)), lngLatLike[0]);
+            t.end();
+        });
+
         t.test('clamp pitch', (t) => {
             const transform = new Transform();
             transform.resize(100, 100);

@@ -576,9 +576,6 @@ class HandlerManager {
             // When zoom is kept constant (constrained) don't recenter.
             if (zoomDelta && Math.abs(tr.zoom - originalZoom) > 0.0001) {
                 tr.recenterOnTerrain();
-                if (tr.renderWorldCopies) {
-                    tr.center = tr.center.wrap();
-                }
             } else {
                 tr.setLocationAtPoint(loc, around);
             }
