@@ -1,7 +1,7 @@
 // @flow
 
 import MercatorCoordinate from '../geo/mercator_coordinate';
-import {degToRad} from '../util/util';
+import {degToRad, wrap} from '../util/util';
 import {vec3, vec4, quat, mat4} from 'gl-matrix';
 import type {Elevation} from '../terrain/elevation';
 
@@ -29,6 +29,13 @@ function updateTransformOrientation(matrix: mat4, orientation: quat) {
 
 function updateTransformPosition(matrix: mat4, position: vec3) {
     setColumn(matrix, 3, [position[0], position[1], position[2], 1.0]);
+}
+
+function wrapCameraPosition(position: vec3 | MercatorCoordinate) {
+    if (!position) return;
+    const mercatorCoordinate = Array.isArray(position) ? new MercatorCoordinate(position[0], position[1], position[2]) : position;
+    mercatorCoordinate.x = wrap(mercatorCoordinate.x, 0, 1);
+    return mercatorCoordinate;
 }
 
 function orientationFromPitchBearing(pitch: number, bearing: number): quat {
@@ -92,13 +99,22 @@ export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
          - Pitch has an upper limit
  */
 class FreeCameraOptions {
-    position: ?MercatorCoordinate;
     orientation: ?quat;
+    _position: ?MercatorCoordinate;
     _elevation: ?Elevation;
+    _renderWorldCopies: boolean;
 
     constructor(position: ?MercatorCoordinate, orientation: ?quat) {
         this.position = position;
         this.orientation = orientation;
+    }
+
+    get position(): ?MercatorCoordinate {
+        return this._position;
+    }
+
+    set position(position: ?MercatorCoordinate) {
+        this._position = this._renderWorldCopies ? wrapCameraPosition(position) : position;
     }
 
     /**
@@ -166,6 +182,7 @@ class FreeCamera {
         const col: vec4 = getColumn(this._transform, 3);
         return [col[0], col[1], col[2]];
     }
+
     set position(value: vec3) {
         updateTransformPosition(this._transform, value);
     }
