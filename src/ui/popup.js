@@ -413,7 +413,11 @@ export default class Popup extends Evented {
     setDOMContent(htmlNode: Node) {
         if (this._content) {
             // Clear out children first.
-            while (this._content.firstChild) this._content.firstChild.remove();
+            while (this._content.hasChildNodes()) {
+                if (this._content.firstChild) {
+                    this._content.removeChild(this._content.firstChild);
+                }
+            }
         } else {
             this._content = DOM.create('div', 'mapboxgl-popup-content', this._container);
         }
