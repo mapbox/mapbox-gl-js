@@ -569,10 +569,6 @@ class Map extends Camera {
      * map.hasControl(navigation);
      */
     hasControl(control: IControl) {
-        if (!control || typeof control !== 'object') {
-            return this.fire(new ErrorEvent(new Error(
-                'Invalid argument to map.hasControl(). Argument must be a control.')));
-        }
         return this._controls.indexOf(control) > -1;
     }
 

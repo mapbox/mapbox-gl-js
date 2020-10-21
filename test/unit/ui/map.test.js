@@ -1019,18 +1019,6 @@ test('Map', (t) => {
 
     });
 
-    t.test('#hasControl errors on invalid arguments', (t) => {
-        const map = createMap(t);
-        const control = 'control';
-        const stub = t.stub(console, 'error');
-
-        map.addControl(control);
-        map.hasControl(control);
-        t.ok(stub.calledTwice);
-        t.end();
-
-    });
-
     t.test('#hasControl', (t) => {
         const map = createMap(t);
         function Ctrl() {}
