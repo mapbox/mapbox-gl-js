@@ -8,6 +8,9 @@ import type {PointLike} from '@mapbox/point-geometry';
 import type Transform from '../geo/transform';
 import type Tile from '../source/tile';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
+import {vec3} from 'gl-matrix';
+import {Ray} from '../util/primitives';
+import MercatorCoordinate from '../geo/mercator_coordinate';
 import type {OverscaledTileID} from '../source/tile_id';
 
 /**
@@ -21,16 +24,23 @@ export class QueryGeometry {
     screenBounds: Point[];
     cameraPoint: Point;
     screenGeometry: Point[];
+    screenGeometryMercator: MercatorCoordinate[];
     cameraGeometry: Point[];
+
+    _screenRaycastCache: { [_: number]: MercatorCoordinate[]};
+    _cameraRaycastCache: { [_: number]: MercatorCoordinate[]};
 
     isAboveHorizon: boolean;
 
-    constructor(screenBounds: Point[], cameraPoint: Point, aboveHorizon: boolean) {
+    constructor(screenBounds: Point[], cameraPoint: Point, aboveHorizon: boolean, transform: Transform) {
         this.screenBounds = screenBounds;
         this.cameraPoint = cameraPoint;
+        this._screenRaycastCache = {};
+        this._cameraRaycastCache = {};
         this.isAboveHorizon = aboveHorizon;
 
         this.screenGeometry = this.bufferedScreenGeometry(0);
+        this.screenGeometryMercator = this.screenGeometry.map((p) => transform.pointCoordinate3D(p));
         this.cameraGeometry = this.bufferedCameraGeometry(0);
     }
 
@@ -56,7 +66,7 @@ export class QueryGeometry {
             aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p));
         }
 
-        return new QueryGeometry(screenGeometry, transform.getCameraPoint(), aboveHorizon);
+        return new QueryGeometry(screenGeometry, transform.getCameraPoint(), aboveHorizon, transform);
     }
 
     /**
@@ -115,14 +125,25 @@ export class QueryGeometry {
         const padding = tile.queryPadding + bias;
 
         const geometryForTileCheck = use3D ?
-            this.bufferedCameraGeometry(padding).map((p) => tile.tileID.getTilePoint((transform.pointCoordinate3D(p)))) :
-            this.bufferedScreenGeometry(padding).map((p) => tile.tileID.getTilePoint((transform.pointCoordinate3D(p))));
+            this._bufferedCameraMercator(padding, transform).map((p) => tile.tileID.getTilePoint(p)) :
+            this._bufferedScreenMercator(padding, transform).map((p) => tile.tileID.getTilePoint(p));
+        const tilespaceVec3s = this.screenGeometryMercator.map((p) => tile.tileID.getTileVec3(p));
+        const tilespaceGeometry = tilespaceVec3s.map((v) => new Point(v[0], v[1]));
+
+        const cameraMercator = transform.getFreeCameraOptions().position || new MercatorCoordinate(0, 0, 0);
+        const tilespaceCameraPosition = tile.tileID.getTileVec3(cameraMercator);
+        const tilespaceRays = tilespaceVec3s.map((tileVec) => {
+            const dir = vec3.sub(tileVec, tileVec, tilespaceCameraPosition);
+            vec3.normalize(dir, dir);
+            return new Ray(tilespaceCameraPosition, dir);
+        });
         const pixelToTileUnitsFactor = pixelsToTileUnits(tile, 1, transform.zoom);
 
         if (polygonIntersectsBox(geometryForTileCheck, 0, 0, EXTENT, EXTENT)) {
             return {
                 queryGeometry: this,
-                tilespaceGeometry: this.screenGeometry.map((p) => tile.tileID.getTilePoint(transform.pointCoordinate3D(p))),
+                tilespaceGeometry,
+                tilespaceRays,
                 bufferedTilespaceGeometry: geometryForTileCheck,
                 bufferedTilespaceBounds: clampBoundsToTileExtents(getBounds(geometryForTileCheck)),
                 tile,
@@ -131,11 +152,45 @@ export class QueryGeometry {
             };
         }
     }
+
+    /**
+     * These methods add caching on top of the terrain raycasting provided by `Transform#pointCoordinate3d`.
+     * Tiles come with different values of padding, however its very likely that multiple tiles share the same value of padding
+     * based on the style. In that case we want to reuse the result from a previously computed terrain raycast.
+     */
+
+    _bufferedScreenMercator(padding: number, transform: Transform): MercatorCoordinate[] {
+        const key = cacheKey(padding);
+        if (this._screenRaycastCache[key]) {
+            return this._screenRaycastCache[key];
+        } else {
+            const poly = this.bufferedScreenGeometry(padding).map((p) => transform.pointCoordinate3D(p));
+            this._screenRaycastCache[key] = poly;
+            return poly;
+        }
+    }
+
+    _bufferedCameraMercator(padding: number, transform: Transform): MercatorCoordinate[] {
+        const key = cacheKey(padding);
+        if (this._cameraRaycastCache[key]) {
+            return this._cameraRaycastCache[key];
+        } else {
+            const poly = this.bufferedCameraGeometry(padding).map((p) => transform.pointCoordinate3D(p));
+            this._cameraRaycastCache[key] = poly;
+            return poly;
+        }
+    }
+}
+
+//Padding is in screen pixels and is only used as a coarse check, so 2 decimal places of precision should be good enough for a cache.
+function cacheKey(padding: number): number  {
+    return (padding * 100) | 0;
 }
 
 export type TilespaceQueryGeometry = {
     queryGeometry: QueryGeometry,
     tilespaceGeometry: Point[],
+    tilespaceRays: Ray[],
     bufferedTilespaceGeometry: Point[],
     bufferedTilespaceBounds: { min: Point, max: Point},
     tile: Tile,

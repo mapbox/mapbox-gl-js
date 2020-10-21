@@ -3,10 +3,11 @@
 import {getTileBBox} from '@mapbox/whoots-js';
 import EXTENT from '../data/extent';
 import Point from '@mapbox/point-geometry';
-import MercatorCoordinate from '../geo/mercator_coordinate';
+import MercatorCoordinate, {altitudeFromMercatorZ} from '../geo/mercator_coordinate';
 import {MAX_SAFE_INTEGER} from '../util/util';
 import assert from 'assert';
 import {register} from '../util/web_worker_transfer';
+import {vec3} from 'gl-matrix';
 
 export class CanonicalTileID {
     z: number;
@@ -47,6 +48,13 @@ export class CanonicalTileID {
         return new Point(
             (coord.x * tilesAtZoom - this.x) * EXTENT,
             (coord.y * tilesAtZoom - this.y) * EXTENT);
+    }
+
+    getTileVec3(coord: MercatorCoordinate): vec3 {
+        const tilesAtZoom = Math.pow(2, this.z);
+        const x = (coord.x * tilesAtZoom - this.x) * EXTENT;
+        const y = (coord.y * tilesAtZoom - this.y) * EXTENT;
+        return vec3.fromValues(x, y, altitudeFromMercatorZ(coord.z, coord.y));
     }
 
     toString() {
@@ -176,6 +184,10 @@ export class OverscaledTileID {
 
     getTilePoint(coord: MercatorCoordinate) {
         return this.canonical.getTilePoint(new MercatorCoordinate(coord.x - this.wrap, coord.y));
+    }
+
+    getTileVec3(coord: MercatorCoordinate) {
+        return this.canonical.getTileVec3(new MercatorCoordinate(coord.x - this.wrap, coord.y, coord.z));
     }
 }
 
