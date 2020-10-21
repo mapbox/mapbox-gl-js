@@ -411,7 +411,17 @@ export default class Popup extends Evented {
      *   .addTo(map);
      */
     setDOMContent(htmlNode: Node) {
-        this._createContent();
+        if (this._content) {
+            // Clear out children first.
+            while (this._content.hasChildNodes()) {
+                if (this._content.firstChild) {
+                    this._content.removeChild(this._content.firstChild);
+                }
+            }
+        } else {
+            this._content = DOM.create('div', 'mapboxgl-popup-content', this._container);
+        }
+
         // The close button should be the last tabbable element inside the popup for a good keyboard UX.
         this._content.appendChild(htmlNode);
         this._createCloseButton();
@@ -477,14 +487,6 @@ export default class Popup extends Evented {
         if (this._container) {
             return this._container.classList.toggle(className);
         }
-    }
-
-    _createContent() {
-        if (this._content) {
-            DOM.remove(this._content);
-        }
-
-        this._content = DOM.create('div', 'mapboxgl-popup-content', this._container);
     }
 
     _createCloseButton() {
