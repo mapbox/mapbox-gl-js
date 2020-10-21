@@ -10,6 +10,18 @@ class Ray {
         this.pos = pos_;
         this.dir = dir_;
     }
+
+    intersectsPlane(pt: vec3, normal: vec3, out: vec3): boolean {
+        const D = vec3.dot(normal, this.dir);
+
+        // ray is parallel to plane, so it misses
+        if (Math.abs(D) < 1e-6) { return false; }
+
+        const t = vec3.dot(vec3.sub(vec3.create(), pt, this.pos), normal) / D;
+        const intersection = vec3.scaleAndAdd(vec3.create(), this.pos, this.dir, t);
+        vec3.copy(out, intersection);
+        return true;
+    }
 }
 
 class Frustum {

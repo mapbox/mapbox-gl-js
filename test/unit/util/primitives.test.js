@@ -1,5 +1,5 @@
 import {test} from '../../util/test';
-import {Aabb, Frustum} from '../../../src/util/primitives';
+import {Aabb, Frustum, Ray} from '../../../src/util/primitives';
 import {mat4, vec3} from 'gl-matrix';
 
 test('primitives', (t) => {
@@ -150,5 +150,52 @@ test('primitives', (t) => {
         });
         t.end();
     });
+
+    t.test('ray', (t) => {
+        t.test('intersectsPlane', (t) => {
+            t.test('parallel', (t) => {
+                const r = new Ray(vec3.fromValues(0, 0, 1), vec3.fromValues(1, 1, 0));
+                t.notOk(r.intersectsPlane(vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, 1), vec3.create()));
+                t.end();
+            });
+
+            t.test('orthogonal', (t) => {
+                const r = new Ray(vec3.fromValues(10, 20, 50), vec3.fromValues(0, 0, -1));
+                const out = vec3.create();
+                t.ok(r.intersectsPlane(vec3.fromValues(0, 0, 5), vec3.fromValues(0, 0, 1), out));
+                assertAlmostEqual(t, out[0], 10);
+                assertAlmostEqual(t, out[1], 20);
+                assertAlmostEqual(t, out[2], 5);
+                t.end();
+            });
+
+            t.test('angled down', (t) => {
+                const r = new Ray(vec3.fromValues(-10, -10, 20), vec3.fromValues(0.5773, 0.5773, -0.5773));
+                const out = vec3.create();
+                t.ok(r.intersectsPlane(vec3.fromValues(0, 0, 10), vec3.fromValues(0, 0, 1), out));
+                assertAlmostEqual(t, out[0], 0);
+                assertAlmostEqual(t, out[1], 0);
+                assertAlmostEqual(t, out[2], 10);
+                t.end();
+            });
+
+            t.test('angled up', (t) => {
+                const r = new Ray(vec3.fromValues(-10, -10, 20), vec3.fromValues(0.5773, 0.5773, 0.5773));
+                const out = vec3.create();
+                t.ok(r.intersectsPlane(vec3.fromValues(0, 0, 10), vec3.fromValues(0, 0, 1), out));
+                assertAlmostEqual(t, out[0], -20);
+                assertAlmostEqual(t, out[1], -20);
+                assertAlmostEqual(t, out[2], 10);
+                t.end();
+            });
+
+            t.end();
+        });
+        t.end();
+    });
     t.end();
 });
+
+function assertAlmostEqual(t, actual, expected, epsilon = 1e-6) {
+    t.ok(Math.abs(actual - expected) < epsilon);
+}

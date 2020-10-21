@@ -70,25 +70,11 @@ export class Elevation {
      * Nearest filter sampling on dem data is done (no interpolation).
      */
     getForTilePoints(tileID: OverscaledTileID, points: Array<vec3>, interpolated: ?boolean, useDemTile: ?Tile): boolean {
-        const demTile = useDemTile || this.findDEMTileFor(tileID);
-        if (!(demTile && demTile.dem)) { return false; }
-        const dem: DEMData = demTile.dem;
-        const demTileID = demTile.tileID;
-        const scale = 1 << tileID.canonical.z - demTileID.canonical.z;
-        const xOffset = (tileID.canonical.x / scale - demTileID.canonical.x) * demTile.tileSize;
-        const yOffset = (tileID.canonical.y / scale - demTileID.canonical.y) * demTile.tileSize;
-        const k = demTile.tileSize / EXTENT / scale;
+        const helper = DEMSampler.create(this, tileID, useDemTile);
+        if (!helper) { return false; }
 
         points.forEach(p => {
-            const x = p[0] * k + xOffset;
-            const y = p[1] * k + yOffset;
-            const i = Math.floor(x);
-            const j = Math.floor(y);
-            p[2] = this.exaggeration() * (interpolated ? interpolate(
-                interpolate(dem.get(i, j), dem.get(i, j + 1), y - j),
-                interpolate(dem.get(i + 1, j), dem.get(i + 1, j + 1), y - j),
-                x - i) :
-                dem.get(i, j));
+            p[2] = this.exaggeration() * helper.getElevationAt(p[0], p[1], interpolated);
         });
         return true;
     }
@@ -171,5 +157,47 @@ export class Elevation {
      */
     get visibleDemTiles(): Array<Tile> {
         throw new Error('Getter must be implemented in subclass.');
+    }
+}
+
+/**
+ * Helper class computes and caches data required to lookup elevation offsets at the tile level.
+ */
+export class DEMSampler {
+    _dem: DEMData;
+    _scale: number;
+    _offset: [number, number];
+
+    constructor(dem: DEMData, scale: number, offset: [number, number]) {
+        this._dem = dem;
+        this._scale = scale;
+        this._offset = offset;
+    }
+
+    static create(elevation: Elevation, tileID: OverscaledTileID, useDemTile: ?Tile): ?DEMSampler {
+        const demTile = useDemTile || elevation.findDEMTileFor(tileID);
+        if (!(demTile && demTile.dem)) { return; }
+        const dem: DEMData = demTile.dem;
+        const demTileID = demTile.tileID;
+        const scale = 1 << tileID.canonical.z - demTileID.canonical.z;
+        const xOffset = (tileID.canonical.x / scale - demTileID.canonical.x) * demTile.tileSize;
+        const yOffset = (tileID.canonical.y / scale - demTileID.canonical.y) * demTile.tileSize;
+        const k = demTile.tileSize / EXTENT / scale;
+
+        return new DEMSampler(dem, k, [xOffset, yOffset]);
+    }
+
+    getElevationAt(x: number, y: number, interpolated: ?boolean): number {
+        const px = x * this._scale + this._offset[0];
+        const py = y * this._scale + this._offset[1];
+        const i = Math.floor(px);
+        const j = Math.floor(py);
+        const dem = this._dem;
+
+        return interpolated ? interpolate(
+            interpolate(dem.get(i, j), dem.get(i, j + 1), py - j),
+            interpolate(dem.get(i + 1, j), dem.get(i + 1, j + 1), py - j),
+            px - i) :
+            dem.get(i, j);
     }
 }

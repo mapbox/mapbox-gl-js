@@ -29,6 +29,7 @@ import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type Map from '../ui/map';
 import type {StyleSetterOptions} from './style';
 import type {TilespaceQueryGeometry} from './query_geometry';
+import type {DEMSampler} from '../terrain/elevation';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -60,7 +61,8 @@ class StyleLayer extends Evented {
                               geometry: Array<Array<Point>>,
                               zoom: number,
                               transform: Transform,
-                              pixelPosMatrix: Float32Array) => boolean | number;
+                              pixelPosMatrix: Float32Array,
+                              elevationHelper: ?DEMSampler) => boolean | number;
 
     +onAdd: ?(map: Map) => void;
     +onRemove: ?(map: Map) => void;
