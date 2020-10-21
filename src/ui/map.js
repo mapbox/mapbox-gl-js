@@ -556,6 +556,23 @@ class Map extends Camera {
     }
 
     /**
+     * Checks if a control exists on the map.
+     *
+     * @param {IControl} control The {@link IControl} to check.
+     * @returns {boolean} True if map contains control.
+     * @example
+     * // Define a new navigation control.
+     * var navigation = new mapboxgl.NavigationControl();
+     * // Add zoom and rotation controls to the map.
+     * map.addControl(navigation);
+     * // Check that the navigation control exists on the map.
+     * map.hasControl(navigation);
+     */
+    hasControl(control: IControl) {
+        return this._controls.indexOf(control) > -1;
+    }
+
+    /**
      * Resizes the map according to the dimensions of its
      * `container` element.
      *
