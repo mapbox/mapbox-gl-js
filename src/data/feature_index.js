@@ -18,14 +18,14 @@ import EvaluationParameters from '../style/evaluation_parameters';
 import SourceFeatureState from '../source/source_state';
 import {polygonIntersectsBox} from '../util/intersection_tests';
 import {PossiblyEvaluated} from '../style/properties';
+import {FeatureIndexArray} from './array_types';
+import {DEMSampler} from '../terrain/elevation';
 
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
 import type Transform from '../geo/transform';
 import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
 import type {TilespaceQueryGeometry} from '../style/query_geometry';
-
-import {FeatureIndexArray} from './array_types';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array,
@@ -104,6 +104,7 @@ class FeatureIndex {
         const params = args.params || {},
             filter = featureFilter(params.filter);
         const tilespaceGeometry = args.tileResult;
+        const transform = args.transform;
 
         const bounds = tilespaceGeometry.bufferedTilespaceBounds;
         const queryPredicate = (bx1, by1, bx2, by2) => {
@@ -111,6 +112,11 @@ class FeatureIndex {
         };
         const matching = this.grid.query(bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y, queryPredicate);
         matching.sort(topDownFeatureComparator);
+
+        let elevationHelper = null;
+        if (transform.elevation && matching.length > 0) {
+            elevationHelper = DEMSampler.create(transform.elevation, this.tileID);
+        }
 
         const result = {};
         let previousIndex;
@@ -139,7 +145,7 @@ class FeatureIndex {
                         featureGeometry = loadGeometry(feature);
                     }
 
-                    return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, args.transform, args.pixelPosMatrix);
+                    return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, args.transform, args.pixelPosMatrix, elevationHelper);
                 }
             );
         }
