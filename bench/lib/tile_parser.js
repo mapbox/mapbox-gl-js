@@ -131,7 +131,8 @@ export default class TileParser {
             cameraToCenterDistance: 0,
             cameraToTileDistance: 0,
             returnDependencies,
-            promoteId: undefined
+            promoteId: undefined,
+            isSymbolTile: false
         });
 
         const vectorTile = new VT.VectorTile(new Protobuf(tile.buffer));

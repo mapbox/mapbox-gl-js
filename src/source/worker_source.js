@@ -24,7 +24,8 @@ export type RequestedTileParameters = TileParameters & {
     tileID: OverscaledTileID,
     tileZoom: number,
     request: RequestParameters,
-    data?: mixed
+    data?: mixed,
+    isSymbolTile: ?boolean
 };
 
 export type WorkerTileParameters = RequestedTileParameters & {
@@ -36,8 +37,7 @@ export type WorkerTileParameters = RequestedTileParameters & {
     showCollisionBoxes: boolean,
     collectResourceTiming?: boolean,
     returnDependencies?: boolean,
-    enableTerrain?: boolean,
-    isSymbolTile?: boolean
+    enableTerrain?: boolean
 };
 
 export type WorkerDEMTileParameters = TileParameters & {

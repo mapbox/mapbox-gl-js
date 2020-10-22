@@ -159,7 +159,7 @@ class WorkerTile {
         let glyphMap: ?{[_: string]: {[_: number]: ?StyleGlyph}};
         let iconMap: ?{[_: string]: StyleImage};
         let patternMap: ?{[_: string]: StyleImage};
-        const taskMetadata = {type: 'maybePrepare', isSymbolTile: this.isSymbolTile};
+        const taskMetadata = {type: 'maybePrepare', isSymbolTile: this.isSymbolTile, zoom: this.zoom};
 
         const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
         if (Object.keys(stacks).length) {
