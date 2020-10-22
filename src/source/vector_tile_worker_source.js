@@ -48,11 +48,18 @@ export class DedupedRequest {
         this.scheduler = scheduler;
     }
 
-    request(key: string, request: any, callback: LoadVectorDataCallback) {
+    request(key: string, metadata: Object, request: any, callback: LoadVectorDataCallback) {
         const entry = this.entries[key] = this.entries[key] || {callbacks: []};
 
         if (entry.result) {
-            callback(entry.result[0], entry.result[1]);
+            const [err, result] = entry.result;
+            if (this.scheduler) {
+                this.scheduler.add(() => {
+                    callback(err, result);
+                }, metadata);
+            } else {
+                callback(err, result);
+            }
             return () => {};
         }
 
@@ -65,7 +72,7 @@ export class DedupedRequest {
                     if (this.scheduler) {
                         this.scheduler.add(() => {
                             cb(err, result);
-                        }, {type: "parseTile"});
+                        }, metadata);
                     } else {
                         cb(err, result);
                     }
@@ -89,11 +96,6 @@ export class DedupedRequest {
  * @private
  */
 export function loadVectorTile(params: RequestedTileParameters, callback: LoadVectorDataCallback, skipParse?: boolean) {
-    if (params.data) {
-        // if we already got the result earlier (on the main thread), return it directly
-        callback(null, ((params.data: any): LoadVectorTileResult));
-        return () => { callback(); };
-    }
     const key = JSON.stringify(params.request);
 
     const makeRequest = (callback) => {
@@ -115,7 +117,13 @@ export function loadVectorTile(params: RequestedTileParameters, callback: LoadVe
         };
     };
 
-    return this.deduped.request(key, makeRequest, callback);
+    if (params.data) {
+        // if we already got the result earlier (on the main thread), return it directly
+        this.deduped.entries[key] = {result: [null, params.data]};
+    }
+
+    const callbackMetadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
+    return this.deduped.request(key, callbackMetadata, makeRequest, callback);
 }
 
 /**

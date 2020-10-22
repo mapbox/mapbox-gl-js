@@ -84,12 +84,14 @@ class Scheduler {
     }
 }
 
-function getPriority(metadata: Object) {
-    if (metadata.type === 'message') return 0;
-    if (metadata.type === 'maybePrepare' && !metadata.isSymbolTile) return 1;
-    if (metadata.type === 'parseTile') return 2;
-    if (metadata.type === 'maybePrepare' && metadata.isSymbolTile) return 3;
-    return 10;
+function getPriority({type, isSymbolTile, zoom}: Object) {
+    zoom = zoom || 0;
+    if (type === 'message') return 0;
+    if (type === 'maybePrepare' && !isSymbolTile) return 100 - zoom;
+    if (type === 'parseTile' && !isSymbolTile) return 200 - zoom;
+    if (type === 'parseTile' && isSymbolTile) return 300 - zoom;
+    if (type === 'maybePrepare' && isSymbolTile) return 400 - zoom;
+    return 500;
 }
 
 export default Scheduler;
