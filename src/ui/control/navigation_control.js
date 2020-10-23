@@ -77,8 +77,12 @@ class NavigationControl {
 
     _updateZoomButtons() {
         const zoom = this._map.getZoom();
-        this._zoomInButton.disabled = zoom === this._map.getMaxZoom();
-        this._zoomOutButton.disabled = zoom === this._map.getMinZoom();
+        const isMax = zoom === this._map.getMaxZoom();
+        const isMin = zoom === this._map.getMinZoom();
+        this._zoomInButton.disabled = isMax;
+        this._zoomOutButton.disabled = isMin;
+        this._zoomInButton.setAttribute('aria-disabled', isMax.toString());
+        this._zoomOutButton.setAttribute('aria-disabled', isMin.toString());
     }
 
     _rotateCompassArrow() {

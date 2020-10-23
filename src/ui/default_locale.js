@@ -1,6 +1,8 @@
 // @flow
 
 const defaultLocale = {
+    'AttributionControl.ToggleAttribution': 'Toggle attribution',
+    'AttributionControl.MapFeedback': 'Map feedback',
     'FullscreenControl.Enter': 'Enter fullscreen',
     'FullscreenControl.Exit': 'Exit fullscreen',
     'GeolocateControl.FindMyLocation': 'Find my location',
