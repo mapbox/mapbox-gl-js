@@ -29,6 +29,7 @@ class AttributionControl {
     _map: Map;
     _container: HTMLElement;
     _innerContainer: HTMLElement;
+    _compactButton: HTMLButtonElement;
     _editLink: ?HTMLAnchorElement;
     _attribHTML: string;
     styleId: string;
@@ -38,6 +39,7 @@ class AttributionControl {
         this.options = options;
 
         bindAll([
+            '_toggleAttribution',
             '_updateEditLink',
             '_updateData',
             '_updateCompact'
@@ -53,7 +55,11 @@ class AttributionControl {
 
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
+        this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
+        this._compactButton.addEventListener('click', this._toggleAttribution);
+        this._setElementTitle(this._compactButton, 'ToggleAttribution');
         this._innerContainer = DOM.create('div', 'mapboxgl-ctrl-attrib-inner', this._container);
+        this._innerContainer.setAttribute('role', 'list');
 
         if (compact) {
             this._container.classList.add('mapboxgl-compact');
@@ -86,6 +92,22 @@ class AttributionControl {
         this._attribHTML = (undefined: any);
     }
 
+    _setElementTitle(element: HTMLElement, title: string) {
+        const str = this._map._getUIString(`AttributionControl.${title}`);
+        element.title = str;
+        element.setAttribute('aria-label', str);
+    }
+
+    _toggleAttribution() {
+        if (this._container.classList.contains('mapboxgl-compact-show')) {
+            this._container.classList.remove('mapboxgl-compact-show');
+            this._compactButton.setAttribute('aria-pressed', 'false');
+        } else {
+            this._container.classList.add('mapboxgl-compact-show');
+            this._compactButton.setAttribute('aria-pressed', 'true');
+        }
+    }
+
     _updateEditLink() {
         let editLink = this._editLink;
         if (!editLink) {
@@ -93,9 +115,9 @@ class AttributionControl {
         }
 
         const params = [
-            {key: "owner", value: this.styleOwner},
-            {key: "id", value: this.styleId},
-            {key: "access_token", value: this._map._requestManager._customAccessToken || config.ACCESS_TOKEN}
+            {key: 'owner', value: this.styleOwner},
+            {key: 'id', value: this.styleId},
+            {key: 'access_token', value: this._map._requestManager._customAccessToken || config.ACCESS_TOKEN}
         ];
 
         if (editLink) {
@@ -106,7 +128,8 @@ class AttributionControl {
                 return acc;
             }, `?`);
             editLink.href = `${config.FEEDBACK_URL}/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
-            editLink.rel = "noopener nofollow";
+            editLink.rel = 'noopener nofollow';
+            this._setElementTitle(editLink, 'MapFeedback');
         }
     }
 
@@ -180,7 +203,7 @@ class AttributionControl {
         if (this._map.getCanvasContainer().offsetWidth <= 640) {
             this._container.classList.add('mapboxgl-compact');
         } else {
-            this._container.classList.remove('mapboxgl-compact');
+            this._container.classList.remove('mapboxgl-compact', 'mapboxgl-compact-show');
         }
     }
 
