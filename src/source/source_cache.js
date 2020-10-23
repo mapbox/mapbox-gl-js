@@ -400,9 +400,10 @@ class SourceCache extends Evented {
      * the map is more important.
      * @private
      */
-    updateCacheSize(transform: Transform) {
-        const widthInTiles = Math.ceil(transform.width / this._source.tileSize) + 1;
-        const heightInTiles = Math.ceil(transform.height / this._source.tileSize) + 1;
+    updateCacheSize(transform: Transform, tileSize?: number) {
+        tileSize = tileSize || this._source.tileSize;
+        const widthInTiles = Math.ceil(transform.width / tileSize) + 1;
+        const heightInTiles = Math.ceil(transform.height / tileSize) + 1;
         const approxTilesInView = widthInTiles * heightInTiles;
         const commonZoomRange = 5;
 
@@ -473,7 +474,7 @@ class SourceCache extends Evented {
             return;
         }
 
-        this.updateCacheSize(transform);
+        this.updateCacheSize(transform, tileSize);
         this.handleWrapJump(this.transform.center.lng);
 
         // Covered is a list of retained tiles who's areas are fully covered by other,
