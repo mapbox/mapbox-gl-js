@@ -1678,7 +1678,7 @@ test('SourceCache reloads expiring tiles', (t) => {
 });
 
 test('SourceCache sets max cache size correctly', (t) => {
-    t.test('sets cache size based on 512 tiles', (t) => {
+    t.test('sets cache size based on 256 tiles', (t) => {
         const {sourceCache} = createSourceCache({
             tileSize: 256
         });
@@ -1693,7 +1693,22 @@ test('SourceCache sets max cache size correctly', (t) => {
         t.end();
     });
 
-    t.test('sets cache size based on 256 tiles', (t) => {
+    t.test('sets cache size given optional tileSize', (t) => {
+        const {sourceCache} = createSourceCache({
+            tileSize: 256
+        });
+
+        const tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        sourceCache.updateCacheSize(tr, 2048);
+
+        // Expect max size to be ((512 / tileSize + 1) ^ 2) * 5 => 3 * 3 * 5
+        t.equal(sourceCache._cache.max, 20);
+        t.end();
+    });
+
+    t.test('sets cache size based on 512 tiles', (t) => {
         const {sourceCache} = createSourceCache({
             tileSize: 512
         });
