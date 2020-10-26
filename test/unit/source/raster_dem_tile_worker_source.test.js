@@ -14,31 +14,9 @@ test('loadTile', (t) => {
             dim: 256
         }, (err, data) => {
             if (err) t.fail();
-            t.deepEqual(Object.keys(source.loaded), [0]);
             t.ok(data instanceof DEMData, 'returns DEM data');
-
             t.end();
         });
-    });
-
-    t.end();
-});
-
-test('removeTile', (t) => {
-    t.test('removes loaded tile', (t) => {
-        const source = new RasterDEMTileWorkerSource(null, new StyleLayerIndex());
-
-        source.loaded = {
-            '0': {}
-        };
-
-        source.removeTile({
-            source: 'source',
-            uid: 0
-        });
-
-        t.deepEqual(source.loaded, {});
-        t.end();
     });
 
     t.end();
