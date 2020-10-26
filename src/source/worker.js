@@ -137,10 +137,6 @@ export default class Worker {
         this.getWorkerSource(mapId, params.type, params.source).removeTile(params, callback);
     }
 
-    removeDEMTile(mapId: string, params: TileParameters) {
-        this.getDEMWorkerSource(mapId, params.source).removeTile(params);
-    }
-
     removeSource(mapId: string, params: {source: string} & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         assert(params.source);
