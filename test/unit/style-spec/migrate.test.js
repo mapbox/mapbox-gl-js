@@ -88,7 +88,7 @@ test('converts stop functions to expressions', (t) => {
     t.end();
 });
 
-test('converts categorical functions to valid expressions', (t) => {
+test('converts categorical function on resolvedImage type to valid expression', (t) => {
     const migrated = migrate({
         version: 8,
         sources: {
@@ -112,6 +112,13 @@ test('converts categorical functions to valid expressions', (t) => {
             }
         }]
     }, spec.latest.$version);
+    t.deepEqual(migrated.layers[0].layout['icon-image'], [
+        "match",
+        ["get", "type" ],
+        "park",
+        "some-icon",
+        ""
+    ]);
     t.deepEqual(validate.parsed(migrated, v8), []);
     t.end();
 });
