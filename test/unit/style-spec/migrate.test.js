@@ -88,6 +88,34 @@ test('converts stop functions to expressions', (t) => {
     t.end();
 });
 
+test('converts categorical functions to valid expressions', (t) => {
+    const migrated = migrate({
+        version: 8,
+        sources: {
+            streets: {
+                url: 'mapbox://mapbox.streets',
+                type: 'vector'
+            }
+        },
+        layers: [{
+            id: '1',
+            source: 'streets',
+            'source-layer': 'labels',
+            type: 'symbol',
+            layout: {
+                'icon-image': {
+                    base: 1,
+                    type: 'categorical',
+                    property: 'type',
+                    stops: [['park', 'some-icon']]
+                }
+            }
+        }]
+    }, spec.latest.$version);
+    t.deepEqual(validate.parsed(migrated, v8), []);
+    t.end();
+});
+
 glob.sync(`${__dirname}/fixture/v7-migrate/*.input.json`).forEach((file) => {
     test(path.basename(file), (t) => {
         const outputfile = file.replace('.input', '.output');
