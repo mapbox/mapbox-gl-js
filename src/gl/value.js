@@ -1,6 +1,7 @@
 // @flow
 
 import Color from '../style-spec/util/color';
+import assert from 'assert';
 
 import type Context from './context';
 import type {
@@ -140,6 +141,9 @@ export class StencilFunc extends BaseValue<StencilFuncType> {
     set(v: StencilFuncType): void {
         const c = this.current;
         if (v.func === c.func && v.ref === c.ref && v.mask === c.mask && !this.dirty) return;
+        // Assume UNSIGNED_INT_24_8 storage, with 8 bits dedicated to stencil.
+        // Please revise your stencil values if this threshold is triggered.
+        assert(v.ref >= 0 && v.ref <= 255);
         this.gl.stencilFunc(v.func, v.ref, v.mask);
         this.current = v;
         this.dirty = false;
