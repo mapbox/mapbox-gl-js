@@ -835,7 +835,7 @@ export class Terrain extends Elevation {
             fb.depthAttachment.set(renderbuffer);
             context.clear({stencil: 0});
         }
-        if (fbo.ref + stencilRange > 256) {
+        if (fbo.ref + stencilRange > 255) {
             context.clear({stencil: 0});
             fbo.ref = 0;
         }
