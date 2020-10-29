@@ -339,6 +339,11 @@ export class Terrain extends Elevation {
         return this._visibleDemTiles;
     }
 
+    get drapeBufferSize(): [number, number] {
+        const extent = this.proxySourceCache.getSource().tileSize * 2; // *2 is to avoid upscaling bitmap on zoom.
+        return [extent, extent];
+    }
+
     // For every renderable coordinate in every source cache, assign one proxy
     // tile (see _setupProxiedCoordsForOrtho). Mapping of source tile to proxy
     // tile is modeled by ProxiedTileID. In general case, source and proxy tile
@@ -722,11 +727,11 @@ export class Terrain extends Elevation {
         const painter = this.painter;
         const context = painter.context;
         const gl = context.gl;
-        const tileSize = this.proxySourceCache.getSource().tileSize * 2; // *2 is to avoid upscaling bitmap on zoom.
+        const bufferSize = this.drapeBufferSize;
         context.activeTexture.set(gl.TEXTURE0);
-        const tex = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
+        const tex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, gl.RGBA);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        const fb = context.createFramebuffer(tileSize, tileSize, false);
+        const fb = context.createFramebuffer(bufferSize[0], bufferSize[1], false);
         fb.colorAttachment.set(tex.texture);
 
         if (context.extTextureFilterAnisotropic && !context.extTextureFilterAnisotropicForceOff) {
