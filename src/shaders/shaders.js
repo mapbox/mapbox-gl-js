@@ -102,12 +102,13 @@ function compile(fragmentSource, vertexSource) {
 varying ${precision} ${type} ${name};
 #else
 uniform ${precision} ${type} u_${name};
+${precision} ${type} ${name};
 #endif
 `;
         } else /* if (operation === 'initialize') */ {
             return `
 #ifdef HAS_UNIFORM_u_${name}
-    ${precision} ${type} ${name} = u_${name};
+    ${name} = u_${name};
 #endif
 `;
         }
@@ -126,6 +127,7 @@ attribute ${precision} ${attrType} a_${name};
 varying ${precision} ${type} ${name};
 #else
 uniform ${precision} ${type} u_${name};
+${precision} ${type} ${name};
 #endif
 `;
             } else /* if (operation === 'initialize') */ {
@@ -135,7 +137,7 @@ uniform ${precision} ${type} u_${name};
 #ifndef HAS_UNIFORM_u_${name}
     ${name} = a_${name};
 #else
-    ${precision} ${type} ${name} = u_${name};
+    ${name} = u_${name};
 #endif
 `;
                 } else {
@@ -143,7 +145,7 @@ uniform ${precision} ${type} u_${name};
 #ifndef HAS_UNIFORM_u_${name}
     ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
 #else
-    ${precision} ${type} ${name} = u_${name};
+    ${name} = u_${name};
 #endif
 `;
                 }
@@ -157,23 +159,24 @@ attribute ${precision} ${attrType} a_${name};
 #else
 uniform ${precision} ${type} u_${name};
 #endif
+${precision} ${type} ${name};
 `;
             } else /* if (operation === 'initialize') */ {
                 if (unpackType === 'vec4') {
                     // vec4 attributes are only used for cross-faded properties, and are not packed
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${precision} ${type} ${name} = a_${name};
+    ${name} = a_${name};
 #else
-    ${precision} ${type} ${name} = u_${name};
+    ${name} = u_${name};
 #endif
 `;
                 } else /* */{
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
+    ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
 #else
-    ${precision} ${type} ${name} = u_${name};
+    ${name} = u_${name};
 #endif
 `;
                 }
