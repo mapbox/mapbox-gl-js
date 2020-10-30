@@ -637,13 +637,18 @@ export class Terrain extends Elevation {
             let currentStencilSource; // There is no need to setup stencil for the same source for consecutive layers.
             for (painter.currentLayer = start; painter.currentLayer < layerIds.length; painter.currentLayer++) {
                 const layer = painter.style._layers[layerIds[painter.currentLayer]];
-                if (layer.isHidden(painter.transform.zoom)) continue;
+                const hidden = layer.isHidden(painter.transform.zoom);
+                const draped = this._isLayerDrapedOverTerrain(layer);
 
-                if (this.drapeFirst && !this._isLayerDrapedOverTerrain(layer)) continue;
+                if (this.drapeFirst && !draped) continue;
                 if (painter.currentLayer > end) {
-                    if (!this._isLayerDrapedOverTerrain(layer)) break;
+                    if (!hidden && !draped) {
+                        break;
+                    }
                     end++;
                 }
+                if (hidden) continue;
+
                 const sourceCache = this.painter.style._getLayerSourceCache(layer);
                 const proxiedCoords = sourceCache ? this.proxyToSource[proxy.key][sourceCache.id] : [proxy];
                 if (!proxiedCoords) continue; // when tile is not loaded yet for the source cache.
