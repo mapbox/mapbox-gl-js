@@ -28,6 +28,7 @@ class KeyboardHandler {
     _panStep: number;
     _bearingStep: number;
     _pitchStep: number;
+    _rotationDisabled: boolean;
 
     /**
     * @private
@@ -37,6 +38,7 @@ class KeyboardHandler {
         this._panStep = stepOptions.panStep;
         this._bearingStep = stepOptions.bearingStep;
         this._pitchStep = stepOptions.pitchStep;
+        this._rotationDisabled = false;
     }
 
     reset() {
@@ -106,6 +108,11 @@ class KeyboardHandler {
             return;
         }
 
+        if (this._rotationDisabled) {
+            bearingDir = 0;
+            pitchDir = 0;
+        }
+
         return {
             cameraAnimation: (map: Map) => {
                 const zoom = map.getZoom();
@@ -139,6 +146,14 @@ class KeyboardHandler {
 
     isActive() {
         return this._active;
+    }
+
+    disableRotation() {
+        this._rotationDisabled = true;
+    }
+
+    enableRotation() {
+        this._rotationDisabled = false;
     }
 }
 
