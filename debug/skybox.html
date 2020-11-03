@@ -1,73 +1,135 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta charset='utf-8' />
-    <title>cubemap demo</title>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='../dist/mapbox-gl-dev.js'></script>
+    <title>Mapbox GL JS Sky Demo</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link href='main.css' rel='stylesheet' type="text/css" />
     <style>
-        body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
+        body {
+            margin: 0;
+            padding: 0
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+
+        #inputs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <div id='map'></div>
+    <div id='inputs'>
+        <label>Local Time and date</label>
+        <input type="datetime-local" id="sky-date-time" name="sky-date-time">
+        <input type="button" id="sunriseEnd" value="sunrise">
+        <input type="button" id="goldenHourEnd" value="morning">
+        <input type="button" id="solarNoon" value="afternoon">
+        <input type="button" id="goldenHour" value="evening">
+        <input type="button" id="sunsetStart" value="sunset">
+    </div>
+    <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js'></script>
+    <script>
+        var map = window.map = new mapboxgl.Map({
+            container: 'map',
+            zoom: 14.1,
+            center: [-114.34411, 32.6141],
+            pitch: 85,
+            bearing: 70,
+            style: 'mapbox://styles/mapbox/satellite-v9',
+            hash: true,
+        });
 
-<div id='map'></div>
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
-<script>
+        const sunTimeLabels = [ 'sunriseEnd', 'goldenHourEnd', 'solarNoon', 'goldenHour', 'sunsetStart'];
+        const element = document.getElementById('sky-date-time');
+        let sunTimes = [];
 
-var map = new mapboxgl.Map({
-    container: "map",
-    center: [-122.42978873524737, 37.78794361993374],
-    zoom: 15.899575291423961,
-    style: "mapbox://styles/mapbox/streets-v11",
-    pitch: 85,
-    bearing: 70
-});
+        initialize();
 
-map.on('load', function() {
-    map.addLayer({
-        'id': '3d-buildings',
-        'source': 'composite',
-        'source-layer': 'building',
-        'filter': ['==', 'extrude', 'true'],
-        'type': 'fill-extrusion',
-        'minzoom': 13,
-        'paint': {
-            'fill-extrusion-color': '#DDD',
-            'fill-extrusion-height': ['*', ['get', 'height'], 2],
-            'fill-extrusion-opacity': 0.7
+        map.on('style.load', function () {
+            getSunTimes();
+
+            map.addSource('mapbox-dem', {
+                "type": "raster-dem",
+                "url": "mapbox://mapbox.terrain-rgb",
+                "tileSize": 512,
+                "maxzoom": 14
+            });
+
+            map.setTerrain({"source": "mapbox-dem", "exaggeration": 1.5});
+
+            map.addLayer({
+                'id': 'sky',
+                'type': 'sky',
+                'paint': {
+                    'sky-opacity': ['interpolate', ['linear'],
+                        ['zoom'],
+                        0, 0,
+                        5, 0.3,
+                        8, 1],
+                    'sky-type': 'atmosphere',
+                    'sky-atmosphere-sun': getSunPosition(Date.now()),
+                    'sky-atmosphere-sun-intensity': 5,
+                }
+            });
+
+            element.addEventListener('change', updateSunPosition);
+        });
+        map.on('moveend', () => {
+            getSunTimes();
+            updateSunPosition();
+        });
+
+        function initialize() {
+            //Set local time
+            element.valueAsNumber = Date.now() - (new Date()).getTimezoneOffset() * 60000;
+
+            sunTimeLabels.forEach((btnId) => {
+                document.getElementById(btnId).addEventListener('click', updateSunPosition);
+            });
         }
-    });
 
-    map.addLayer({
-        'id': 'sky',
-        'type': 'sky',
-        'paint': {
-            'sky-type': 'atmosphere',
-            'sky-opacity': [
-                'interpolate',
-                ['exponential', 0.1],
-                ['zoom'],
-                5,
-                0,
-                22,
-                1
-            ]
+        function updateSunPosition() {
+            const btnId = this.id;
+            let sunTime = sunTimes[btnId];
+            if (sunTime) {
+                //When called from button click handler, update datetime input field
+                element.valueAsNumber = sunTime - (new Date()).getTimezoneOffset() * 60000;
+            } else {
+                sunTime = new Date(element.valueAsNumber + (new Date()).getTimezoneOffset() * 60000);
+            }
+            var sunPos = getSunPosition(sunTime);
+            map.setPaintProperty('sky', 'sky-atmosphere-sun', sunPos);
         }
-    });
 
-    let animationTime = 0.0;
-    const easeInCubic = (t) => t * t * t;
-    setInterval(() => {
-        const altitude = Math.cos(animationTime + Math.PI) * 0.5 + 0.5;
-        map.setLight({'position': [1, 90, easeInCubic(altitude) * 90.0], 'anchor': 'map'});
-        animationTime += 1.0 / 60;
-    }, 1000.0 / 30.0);
-});
+        function getSunTimes() {
+            const sunLightDate = new Date(element.valueAsNumber);
+            const center = map.getCenter();
+            // eslint-disable-next-line no-undef
+            sunTimes = SunCalc.getTimes(sunLightDate, center.lat, center.lng);
+        }
 
-</script>
+        function getSunPosition(newDateTime) {
+            const center = map.getCenter();
+            // eslint-disable-next-line no-undef
+            var sunPos = SunCalc.getPosition(newDateTime, center.lat, center.lng);
+            var sunAzimuth = 180 + sunPos.azimuth * 180 / Math.PI;
+            var sunAltitude = 90 - sunPos.altitude * 180 / Math.PI;
+            return [sunAzimuth, sunAltitude];
+        }
 
+    </script>
 </body>
+
 </html>
