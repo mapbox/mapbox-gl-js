@@ -303,16 +303,13 @@ class FillExtrusionBucket implements Bucket {
             let numVertices = 0;
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
-            const isRingOutside = {};
+            if (polygon.length === 0 || isEntirelyOutside(polygon[0])) {
+                continue;
+            }
 
             for (let i = 0; i < polygon.length; i++) {
                 const ring = polygon[i];
                 if (ring.length === 0) {
-                    continue;
-                }
-
-                if (isEntirelyOutside(ring)) {
-                    isRingOutside[i] = true;
                     continue;
                 }
                 numVertices += ring.length;
@@ -383,9 +380,6 @@ class FillExtrusionBucket implements Bucket {
                 if (ring.length === 0) {
                     continue;
                 }
-
-                if (isRingOutside.hasOwnProperty(i) && isRingOutside[i])
-                    continue; // isEntirelyOutside
 
                 if (ring !== polygon[0]) {
                     holeIndices.push(flattened.length / 2);
