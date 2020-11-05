@@ -34,6 +34,24 @@ test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
     t.end();
 });
 
+test('VectorTileWorkerSource#abortTile aborts pending async request', (t) => {
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], (params, cb) => {
+        setTimeout(() => {
+            cb(null, {});
+        }, 0);
+    });
+
+    source.loadTile({
+        uid: 0,
+        tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}}
+    }, (err, res) => {
+        t.false(err);
+        t.false(res);
+        t.end();
+    });
+    source.abortTile({uid: 0}, () => {});
+});
+
 test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
     const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), []);
 

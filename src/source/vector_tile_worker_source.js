@@ -170,19 +170,19 @@ class VectorTileWorkerSource implements WorkerSource {
     loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
         const uid = params.uid;
 
-        if (!this.loading)
-            this.loading = {};
-
         const perf = (params && params.request && params.request.collectResourceTiming) ?
             new RequestPerformance(params.request) : false;
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.abort = this.loadVectorData(params, (err, response) => {
+
+            const aborted = !this.loading[uid];
+
             delete this.loading[uid];
 
-            if (err || !response) {
+            if (aborted || err || !response) {
                 workerTile.status = 'done';
-                this.loaded[uid] = workerTile;
+                if (!aborted) this.loaded[uid] = workerTile;
                 return callback(err);
             }
 
@@ -259,11 +259,11 @@ class VectorTileWorkerSource implements WorkerSource {
      * @private
      */
     abortTile(params: TileParameters, callback: WorkerTileCallback) {
-        const loading = this.loading,
-            uid = params.uid;
-        if (loading && loading[uid] && loading[uid].abort) {
-            loading[uid].abort();
-            delete loading[uid];
+        const uid = params.uid;
+        const tile = this.loading[uid];
+        if (tile) {
+            if (tile.abort) tile.abort();
+            delete this.loading[uid];
         }
         callback();
     }
