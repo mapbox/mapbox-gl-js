@@ -316,6 +316,96 @@ test('Elevation', (t) => {
         });
     });
 
+    t.test('mapbox-gl-js-internal#281', t => {
+        const data = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": []
+                }
+            }]
+        };
+        const map = createMap(t, {
+            style: {
+                version: 8,
+                center: [85, 85],
+                zoom: 2.1,
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    },
+                    'mapbox-dem': {
+                        type: "raster-dem",
+                        tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                        tileSize: 512,
+                        maxzoom: 14
+                    }
+                },
+                layers: [{
+                    "id": "background",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "black"
+                    }
+                }]
+            }
+        });
+        map.on('style.load', () => {
+            map.addSource('trace', {type: 'geojson', data});
+            map.addLayer({
+                'id': 'trace',
+                'type': 'line',
+                'source': 'trace',
+                'paint': {
+                    'line-color': 'yellow',
+                    'line-opacity': 0.75,
+                    'line-width': 5
+                }
+            });
+            const cache = map.style._getSourceCache('mapbox-dem');
+            cache._loadTile = (tile, callback) => {
+                const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
+                tile.state = 'loaded';
+                callback(null);
+            };
+            cache.used = cache._sourceLoaded = true;
+            map.setTerrain({"source": "mapbox-dem"});
+            map.once('render', () => {
+                map.painter.updateTerrain(map.style);
+                map.painter.style.on('data', (event) => {
+                    if (event.sourceCacheId === 'other:trace') {
+                        t.test('Source other:trace is cleared from cache', t => {
+                            t.ok(map.painter.terrain._tilesDirty.hasOwnProperty('other:trace'));
+                            t.true(map.painter.terrain._tilesDirty['other:trace']['0']);
+                            t.end();
+                        });
+                        t.end();
+                    }
+                });
+                t.test('Source other:mapbox-dem is cleared from cache', t => {
+                    t.ok(map.painter.terrain._tilesDirty.hasOwnProperty('other:mapbox-dem'));
+                    t.true(map.painter.terrain._tilesDirty['other:mapbox-dem']['0']);
+                    t.end();
+                });
+                const cache = map.style._getSourceCache('trace');
+                cache.transform = map.painter.transform;
+                cache._addTile(new OverscaledTileID(0, 0, 0, 0, 0));
+                cache.onAdd();
+                cache.reload();
+                cache.used = cache._sourceLoaded = true;
+            });
+        });
+    });
+
     t.test('mapbox-gl-js-internal#32', t => {
         const map = createMap(t, {
             style: {
