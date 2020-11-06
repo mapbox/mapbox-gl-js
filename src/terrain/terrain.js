@@ -20,10 +20,12 @@ import Dispatcher from '../util/dispatcher';
 import GeoJSONSource from '../source/geojson_source';
 import ImageSource from '../source/image_source';
 import RasterDEMTileSource from '../source/raster_dem_tile_source';
+import RasterTileSource from '../source/raster_tile_source';
 import Color from '../style-spec/util/color';
 import StencilMode from '../gl/stencil_mode';
 import {DepthStencilAttachment} from '../gl/value';
 import {drawTerrainRaster, drawTerrainDepth} from './draw_terrain_raster';
+import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import {Elevation} from './elevation';
 import Framebuffer from '../gl/framebuffer';
 import ColorMode from '../gl/color_mode';
@@ -33,6 +35,7 @@ import {clippingMaskUniformValues} from '../render/program/clipping_mask_program
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 import browser from '../util/browser';
 import DEMData from '../data/dem_data';
+import rasterFade from '../render/raster_fade';
 import {create as createSource} from '../source/source';
 
 import type Map from '../ui/map';
@@ -295,7 +298,7 @@ export class Terrain extends Elevation {
 
     _onStyleDataEvent(event: any) {
         if (event.coord && event.dataType === 'source') {
-            this._clearRenderCacheForTile(event.sourceId, event.coord);
+            this._clearRenderCacheForTile(event.sourceCacheId, event.coord);
         } else if (event.dataType === 'style') {
             this._invalidateRenderCache = true;
         }
@@ -368,7 +371,7 @@ export class Terrain extends Elevation {
         }
 
         const options = this.painter.options;
-        this.drapeFirst = (options.zooming || options.moving || options.rotating || this.forceDrapeFirst) && !this._invalidateRenderCache;
+        this.drapeFirst = (options.zooming || options.moving || options.rotating || !!this.forceDrapeFirst) && !this._invalidateRenderCache;
         this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
@@ -754,13 +757,54 @@ export class Terrain extends Elevation {
         }
     }
 
+    _shouldDisableRenderCache(): boolean {
+        // Disable render caches on dynamic events due to fading.
+        const isCrossFading = id => {
+            const layer = this.painter.style._layers[id];
+            const isHidden = !layer.isHidden(this.painter.transform.zoom);
+            const isFading = layer.getCrossfadeParameters().t !== 1;
+            return layer.type !== 'custom' && !isHidden && isFading;
+        };
+        return !this.drapeFirst || this.painter.style._order.some(isCrossFading);
+    }
+
+    _clearRasterFadeFromRenderCache() {
+        for (const id in this.painter.style._sourceCaches) {
+            if (!(this.painter.style._sourceCaches[id]._source instanceof RasterTileSource)) {
+                return;
+            }
+        }
+
+        // Check if any raster tile is in a fading state
+        for (let i = 0; i < this.painter.style._order.length; ++i) {
+            const layer = this.painter.style._layers[this.painter.style._order[i]];
+            const isHidden = layer.isHidden(this.painter.transform.zoom);
+            const sourceCache = this.painter.style._getLayerSourceCache(layer);
+            if (layer.type !== 'raster' || isHidden || !sourceCache) { continue; }
+
+            const rasterLayer = ((layer: any): RasterStyleLayer);
+            const fadeDuration = rasterLayer.paint.get('raster-fade-duration');
+            for (const proxy of this.proxyCoords) {
+                const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
+                const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
+                if (!coords) { continue; }
+
+                for (const coord of coords) {
+                    const tile = sourceCache.getTile(coord);
+                    const parent = sourceCache.findLoadedParent(coord, 0);
+                    const fade = rasterFade(tile, parent, sourceCache, this.painter.transform, fadeDuration);
+                    const isFading = fade.opacity !== 1 || fade.mix !== 0;
+                    if (isFading) {
+                        this._clearRenderCacheForTile(sourceCache.id, coord);
+                    }
+                }
+            }
+        }
+    }
+
     _setupRenderCache(previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
         const psc = this.proxySourceCache;
-        if (!this.drapeFirst || this.painter.style._order.some(id => {
-            // Disable render caches on dynamic events due to fading.
-            const layer = this.painter.style._layers[id];
-            return layer.type !== 'custom' && !layer.isHidden(this.painter.transform.zoom) && layer.getCrossfadeParameters().t !== 1;
-        })) {
+        if (this._shouldDisableRenderCache()) {
             if (psc.renderCache.length > psc.renderCachePool.length) {
                 const used = ((Object.values(psc.proxyCachedFBO): any): Array<number>);
                 psc.proxyCachedFBO = {};
@@ -769,6 +813,9 @@ export class Terrain extends Elevation {
             }
             return;
         }
+
+        this._clearRasterFadeFromRenderCache();
+
         const coords = this.proxyCoords;
         const dirty = this._tilesDirty;
         for (let i = coords.length - 1; i >= 0; i--) {
@@ -1151,13 +1198,9 @@ export class Terrain extends Elevation {
     /*
      * Bookkeeping if something gets rendered to the tile.
      */
-    prepareDrawTile(coord: OverscaledTileID, disableRenderCache?: boolean) {
+    prepareDrawTile(coord: OverscaledTileID) {
         if (!this.renderedToTile) {
             this.renderedToTile = true;
-        }
-        if (disableRenderCache) {
-            const layer = this.painter.style._layers[this.painter.style._order[this.painter.currentLayer]];
-            this._clearRenderCacheForTile(layer.source, coord);
         }
     }
 

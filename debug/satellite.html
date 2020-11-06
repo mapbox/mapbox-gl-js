@@ -35,7 +35,6 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/satellite-v9',
     hash: true
 });
-
 map.on('load', function () {
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
