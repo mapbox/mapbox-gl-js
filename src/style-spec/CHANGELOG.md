@@ -1,3 +1,8 @@
+## 13.17.1
+
+### 🐛 Bug fixes
+* Fix a bug that resulted in some legacy functions being converted during style migration to invalid expressions on properties with the `resolvedImage`type. [#10060](https://github.com/mapbox/mapbox-gl-js/pull/10060)
+
 ## 13.17.0
 
 ### ✨ Features and improvements
