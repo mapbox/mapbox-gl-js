@@ -131,27 +131,67 @@ class KeyboardHandler {
         };
     }
 
+    /**
+     * Enables the "keyboard rotate and zoom" interaction.
+     *
+     * @example
+     *   map.keyboard.enable();
+     */
     enable() {
         this._enabled = true;
     }
 
+    /**
+     * Disables the "keyboard rotate and zoom" interaction.
+     *
+     * @example
+     *   map.keyboard.disable();
+     */
     disable() {
         this._enabled = false;
         this.reset();
     }
 
+    /**
+     * Returns a Boolean indicating whether the "keyboard rotate and zoom"
+     * interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "keyboard rotate and zoom"
+     * interaction is enabled.
+     */
     isEnabled() {
         return this._enabled;
     }
 
+    /**
+     * Returns true if the handler is enabled and has detected the start of a
+     * zoom/rotate gesture.
+     *
+     * @returns {boolean} `true` if the handler is enabled and has detected the
+     * start of a zoom/rotate gesture.
+     */
     isActive() {
         return this._active;
     }
 
+    /**
+     * Disables the "keyboard pan/rotate" interaction, leaving the
+     * "keyboard zoom" interaction enabled.
+     *
+     * @example
+     *   map.keyboard.disableRotation();
+     */
     disableRotation() {
         this._rotationDisabled = true;
     }
 
+    /**
+     * Enables the "keyboard pan/rotate" interaction.
+     *
+     * @example
+     *   map.keyboard.enable();
+     *   map.keyboard.enableRotation();
+     */
     enableRotation() {
         this._rotationDisabled = false;
     }
