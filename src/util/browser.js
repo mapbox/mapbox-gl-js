@@ -21,6 +21,8 @@ let linkEl;
 
 let reducedMotionQuery: MediaQueryList;
 
+let errorState = false;
+
 /**
  * @private
  */
@@ -31,6 +33,10 @@ const exported = {
      */
     now,
 
+    setErrorState() {
+        errorState = true;
+    },
+
     setNow(time: number) {
         exported.now = () => time;
     },
@@ -40,6 +46,7 @@ const exported = {
     },
 
     frame(fn: (paintStartTimestamp: number) => void): Cancelable {
+        if (errorState) return {cancel: () => {  }};
         const frame = raf(fn);
         return {cancel: () => cancel(frame)};
     },

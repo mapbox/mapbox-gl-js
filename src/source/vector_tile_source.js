@@ -4,7 +4,7 @@ import {Event, ErrorEvent, Evented} from '../util/evented';
 
 import {extend, pick} from '../util/util';
 import loadTileJSON from './load_tilejson';
-import {postTurnstileEvent, postMapLoadEvent} from '../util/mapbox';
+import {postTurnstileEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
@@ -113,7 +113,6 @@ class VectorTileSource extends Evented implements Source {
                 extend(this, tileJSON);
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
-                postMapLoadEvent(tileJSON.tiles, this.map._getMapId(), this.map._requestManager._skuToken, this.map._requestManager._customAccessToken);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives

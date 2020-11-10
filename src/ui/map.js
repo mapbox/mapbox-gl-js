@@ -7,7 +7,7 @@ import window from '../util/window';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
 import DOM from '../util/dom';
 import {getImage, getJSON, ResourceType} from '../util/ajax';
-import {RequestManager} from '../util/mapbox';
+import {RequestManager, postMapLoadEvent} from '../util/mapbox';
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
@@ -300,13 +300,15 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
-    _shouldFade: boolean;
+    _isInitialLoad: boolean;
+    _shouldCheckAccess: boolean;
     _fadeDuration: number;
     _crossSourceCollisions: boolean;
     _crossFadingFactor: number;
     _collectResourceTiming: boolean;
     _renderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
+    _logoControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
     _requestManager: RequestManager;
@@ -397,7 +399,7 @@ class Map extends Camera {
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
-        this._shouldFade = false;
+        this._isInitialLoad = true;
         this._crossSourceCollisions = options.crossSourceCollisions;
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
@@ -475,7 +477,8 @@ class Map extends Camera {
         if (options.attributionControl)
             this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
 
-        this.addControl(new LogoControl(), options.logoPosition);
+        this._logoControl = new LogoControl();
+        this.addControl(this._logoControl, options.logoPosition);
 
         this.on('style.load', () => {
             if (this.transform.unmodified) {
@@ -2475,7 +2478,7 @@ class Map extends Camera {
         if (this._removed) return;
 
         let crossFading = false;
-        const fadeDuration = this._shouldFade ? this._fadeDuration : 0;
+        const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;
 
         // If the style has changed, the map is being zoomed, or a transition or fade is in progress:
         //  - Apply style changes (in a batch)
@@ -2523,7 +2526,7 @@ class Map extends Camera {
             zooming: this.isZooming(),
             moving: this.isMoving(),
             fadeDuration,
-            shouldFade: this._shouldFade,
+            isInitialLoad: this._isInitialLoad,
             showPadding: this.showPadding,
             gpuTiming: !!this.listens('gpu-timing-layer'),
             speedIndexTiming: this.speedIndexTiming,
@@ -2589,7 +2592,10 @@ class Map extends Camera {
             this._triggerFrame(false);
             if (!this.isMoving() && this.loaded()) {
                 this.fire(new Event('idle'));
-                this._shouldFade = true;
+                if (this._isInitialLoad) {
+                    this._authenticate();
+                }
+                this._isInitialLoad = false;
                 // check the options to see if need to calculate the speed index
                 if (this.speedIndexTiming) {
                     const speedIndexNumber = this._calculateSpeedIndex();
@@ -2605,6 +2611,21 @@ class Map extends Camera {
         }
 
         return this;
+    }
+
+    _authenticate() {
+        postMapLoadEvent(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err) => {
+            if (err) {
+                // throwing an error here will cause the callback to be called again unnecessarily
+                console.error('Error: A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/');
+                browser.setErrorState();
+                const gl = this.painter.context.gl;
+                if (this._logoControl instanceof LogoControl) {
+                    this._logoControl._updateLogo();
+                }
+                if (gl) gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+            }
+        });
     }
 
     _updateTerrain() {
