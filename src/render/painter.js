@@ -163,7 +163,7 @@ class Painter {
         this.frameCounter = 0;
     }
 
-    updateTerrain(style: Style) {
+    updateTerrain(style: Style, cameraChanging: boolean) {
         const enabled = !!style && !!style.terrain;
         if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
         if (!this._terrain) {
@@ -171,7 +171,7 @@ class Painter {
         }
         const terrain: Terrain = this._terrain;
         this.transform.elevation = enabled ? terrain : null;
-        terrain.update(style, this.transform);
+        terrain.update(style, this.transform, cameraChanging);
     }
 
     get terrain(): ?Terrain {

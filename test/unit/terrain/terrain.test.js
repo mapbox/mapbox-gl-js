@@ -117,7 +117,7 @@ test('Elevation', (t) => {
         map.once('style.load', () => {
             setMockElevationTerrain(map, zeroDem, TILE_SIZE);
             map.once('render', () => {
-                map.painter.updateTerrain(map.style);
+                map._updateTerrain();
                 const elevationError = -1;
                 const terrain = map.painter.terrain;
                 const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
@@ -380,7 +380,7 @@ test('Elevation', (t) => {
             cache.used = cache._sourceLoaded = true;
             map.setTerrain({"source": "mapbox-dem"});
             map.once('render', () => {
-                map.painter.updateTerrain(map.style);
+                map._updateTerrain();
                 map.painter.style.on('data', (event) => {
                     if (event.sourceCacheId === 'other:trace') {
                         t.test('Source other:trace is cleared from cache', t => {
@@ -449,7 +449,7 @@ test('Elevation', (t) => {
             const tr = map.painter.transform.clone();
             map.setTerrain({"source": "mapbox-dem"});
             map.once('render', () => {
-                map.painter.updateTerrain(map.style);
+                map._updateTerrain();
                 t.test('center is not further constrained', t => {
                     t.deepEqual(tr.center, map.painter.transform.center);
                     t.end();
@@ -516,7 +516,7 @@ test('Raycast projection 2D/3D', t => {
     map.once('style.load', () => {
         setMockElevationTerrain(map, zeroDem, TILE_SIZE);
         map.once('render', () => {
-            map.painter.updateTerrain(map.style);
+            map._updateTerrain();
 
             const transform = map.transform;
             const cx = transform.width / 2;
@@ -766,7 +766,7 @@ test('Marker interaction and raycast', (t) => {
         };
         map.setTerrain({"source": "mapbox-dem"});
         map.once('render', () => {
-            map.painter.updateTerrain(map.style);
+            map._updateTerrain();
             // expect no changes at center
             t.equal(map.project(marker.getLngLat()).y, tr.height / 2);
             t.equal(tr.locationPoint3D(marker.getLngLat()).y, tr.height / 2);
@@ -869,7 +869,7 @@ test('terrain getBounds', (t) => {
 
         map.setTerrain({"source": "mapbox-dem"});
         map.once('render', () => {
-            map.painter.updateTerrain(map.style);
+            map._updateTerrain();
 
             // As tiles above center are elevated, center of bounds is closer to camera.
             t.deepEqual(map.getBounds().getCenter().lng.toFixed(10), 0, 'horizon terrain getBounds');
