@@ -14,7 +14,7 @@ import rasterFade from './raster_fade';
 
 export default drawRaster;
 
-function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, shouldFade: boolean) {
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, isInitialLoad: boolean) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
     if (!tileIDs.length) return;
@@ -52,7 +52,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             painter.terrain.stencilModeForRTTOverlap(coord) :
             stencilModes[coord.overscaledZ];
 
-        const rasterFadeDuration = shouldFade ? layer.paint.get('raster-fade-duration') : 0;
+        const rasterFadeDuration = isInitialLoad ? 0 : layer.paint.get('raster-fade-duration');
         tile.registerFadeDuration(rasterFadeDuration);
 
         const parentTile = sourceCache.findLoadedParent(coord, 0);

@@ -63,16 +63,16 @@ class LogoControl {
 
     _logoRequired() {
         if (!this._map.style) return;
-
         const sourceCaches = this._map.style._sourceCaches;
+        if (Object.entries(sourceCaches).length === 0) return true;
         for (const id in sourceCaches) {
             const source = sourceCaches[id].getSource();
-            if (source.mapbox_logo) {
-                return true;
+            if (source.hasOwnProperty('mapbox_logo') && !source.mapbox_logo) {
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     _updateCompact() {

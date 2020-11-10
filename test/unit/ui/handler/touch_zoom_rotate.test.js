@@ -7,6 +7,7 @@ import simulate from '../../../util/simulate_interaction';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
+    t.stub(Map.prototype, '_authenticate');
     return new Map({container: DOM.create('div', '', window.document.body)});
 }
 
@@ -283,4 +284,3 @@ test('TouchZoomRotateHandler does not zoom when touching an element not on the m
     map.remove();
     t.end();
 });
-
