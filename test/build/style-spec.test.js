@@ -1,11 +1,9 @@
 
 /* eslint-disable import/no-commonjs */
 
-const fs = require('fs');
 const path = require('path');
 const isBuiltin = require('is-builtin-module');
 
-const Linter = require('eslint').Linter;
 const rollup = require('rollup');
 
 import {test} from '../util/test';
@@ -14,22 +12,9 @@ import rollupConfig from '../../src/style-spec/rollup.config';
 // some paths
 const styleSpecDirectory = path.join(__dirname, '../../src/style-spec');
 const styleSpecPackage = require('../../src/style-spec/package.json');
-const styleSpecDistBundle = fs.readFileSync(path.join(__dirname, '../../dist/style-spec/index.js'), 'utf-8');
 
 test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
-    t.test('build plain ES5 bundle in prepublish', (t) => {
-        const linter = new Linter();
-        const messages = linter.verify(styleSpecDistBundle, {
-            parserOptions: {
-                ecmaVersion: 5
-            },
-            rules: {},
-            env: {
-                node: true
-            }
-        }).map(message => `${message.line}:${message.column}: ${message.message}`);
-        t.deepEqual(messages, [], 'distributed bundle is plain ES5 code');
-
+    t.test('builds self-contained bundle without undeclared dependencies', (t) => {
         t.stub(console, 'warn');
         rollup.rollup({
             input: `${styleSpecDirectory}/style-spec.js`,

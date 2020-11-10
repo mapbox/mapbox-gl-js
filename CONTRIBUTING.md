@@ -111,7 +111,7 @@ See [`bench/README.md`](./bench/README.md).
 * We use [`assert`](https://nodejs.org/api/assert.html) to check invariants that are not likely to be caused by user error. These `assert` statements are stripped out of production builds.
 * We use the following ES6 features:
   * `let`/`const`
-  * `for...of` loops (for arraylike iteration only, i.e. what is supported by [Bublé's `dangerousForOf` transform](https://buble.surge.sh/guide/#dangerous-transforms))
+  * `for...of` loops
   * Arrow functions
   * Classes
   * Template strings
@@ -120,8 +120,7 @@ See [`bench/README.md`](./bench/README.md).
   * Rest parameters
   * Destructuring
   * Modules
-* The following ES6 features are not to be used, in order to maintain support for IE 11 and older mobile browsers. This may change in the future.
-  * Spread (`...`) operator (because it requires Object.assign)
+  * Spread (`...`) operator
   * Iterators and generators
   * "Library" features such as `Map`, `Set`, `array.find`, etc.
 
