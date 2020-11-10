@@ -1,6 +1,5 @@
 import path from 'path';
 import replace from 'rollup-plugin-replace';
-import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
@@ -9,11 +8,6 @@ import {flow} from '../../build/rollup_plugins';
 
 // Build es modules?
 const esm = 'esm' in process.env;
-
-const transforms = {
-    dangerousForOf: true,
-    modules: esm ? false : undefined
-};
 
 const ROOT_DIR = __dirname;
 
@@ -53,7 +47,6 @@ const config = [{
         }),
         flow(),
         json(),
-        buble({transforms, objectAssign: "Object.assign"}),
         unassert(),
         resolve({
             browser: true,
