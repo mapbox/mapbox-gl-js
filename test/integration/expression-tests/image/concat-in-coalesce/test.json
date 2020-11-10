@@ -1,0 +1,37 @@
+{
+    "expression": [
+        "coalesce", 
+        ["image", ["concat", ["get", "shield_beta"], "-", ["to-string", ["get", "reflen"]]]], 
+        ["image", ["concat", "default-", ["to-string", ["get", "reflen"]]]]
+    ],
+    "propertySpec": {
+      "type": "resolvedImage"
+    },
+    "inputs": [
+      [
+          {"availableImages": ["default-3"]},
+          {
+              "properties": {
+                  "reflen": 3
+              }
+          }
+      ]
+    ],
+    "expected": {
+      "compiled": {
+        "result": "success",
+        "isFeatureConstant": false,
+        "isZoomConstant": true,
+        "type": "resolvedImage"
+      },
+      "outputs": [
+        {"name":"default-3","available":true}
+      ],
+      "serialized": [
+        "coalesce", 
+        ["image", ["concat", ["get", "shield_beta"], "-", ["to-string", ["get", "reflen"]]]], 
+        ["image", ["concat", "default-", ["to-string", ["get", "reflen"]]]]
+      ]
+    }
+  }
+  
