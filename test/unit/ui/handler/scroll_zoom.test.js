@@ -12,6 +12,7 @@ import MercatorCoordinate from '../../../../src/geo/mercator_coordinate';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
+    t.stub(Map.prototype, '_authenticate');
     return new Map({
         container: DOM.create('div', '', window.document.body),
         style: {

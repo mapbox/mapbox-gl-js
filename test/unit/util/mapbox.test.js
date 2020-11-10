@@ -763,7 +763,7 @@ test("mapbox", (t) => {
         });
 
         t.test('contains skuId and skuToken', (t) => {
-            event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+            event.postMapLoadEvent(1, skuToken);
             const reqBody = window.server.requests[0].requestBody;
             // reqBody is a string of an array containing the event object so pick out the stringified event object and convert to an object
             const mapLoadEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
@@ -776,14 +776,7 @@ test("mapbox", (t) => {
         t.test('does not POST when mapboxgl.ACCESS_TOKEN is not set', (t) => {
             config.ACCESS_TOKEN = null;
 
-            event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
-            t.equal(window.server.requests.length, 0);
-            t.end();
-        });
-
-        t.test('does not POST when url does not point to mapbox.com', (t) => {
-            event.postMapLoadEvent(nonMapboxTileURLs, 1, skuToken);
-
+            event.postMapLoadEvent(1, skuToken, null, () => {});
             t.equal(window.server.requests.length, 0);
             t.end();
         });
@@ -791,7 +784,7 @@ test("mapbox", (t) => {
         t.test('POSTs cn event when API_URL changes to cn endpoint', (t) => {
             config.API_URL = 'https://api.mapbox.cn';
 
-            event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+            event.postMapLoadEvent(1, skuToken);
 
             const req = window.server.requests[0];
             req.respond(200);
@@ -802,14 +795,14 @@ test("mapbox", (t) => {
 
         t.test('POSTs no event when API_URL unavailable', (t) => {
             config.API_URL = null;
-            event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+            event.postMapLoadEvent(1, skuToken);
             t.equal(window.server.requests.length, 0, 'no events posted');
             t.end();
         });
 
         t.test('POSTs no event when API_URL is non-standard', (t) => {
             config.API_URL = "https://api.example.com";
-            event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+            event.postMapLoadEvent(1, skuToken);
             t.equal(window.server.requests.length, 0, 'no events posted');
             t.end();
         });
@@ -843,7 +836,7 @@ test("mapbox", (t) => {
                     anonId: 'anonymous'
                 }));
 
-                event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+                event.postMapLoadEvent(1, skuToken);
                 const req = window.server.requests[0];
                 req.respond(200);
 
@@ -854,12 +847,12 @@ test("mapbox", (t) => {
 
             t.test('does not POST map.load event second time within same calendar day', (t) => {
                 let now = +Date.now();
-                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1, skuToken));
+                withFixedDate(t, now, () => event.postMapLoadEvent(1, skuToken));
 
                 //Post second event
                 const firstEvent = now;
                 now += (60 * 1000); // A bit later
-                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1, skuToken));
+                withFixedDate(t, now, () => event.postMapLoadEvent(1, skuToken));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -874,12 +867,12 @@ test("mapbox", (t) => {
 
             t.test('does not POST map.load event second time when clock goes backwards less than a day', (t) => {
                 let now = +Date.now();
-                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1, skuToken));
+                withFixedDate(t, now, () => event.postMapLoadEvent(1, skuToken));
 
                 //Post second event
                 const firstEvent = now;
                 now -= (60 * 1000); // A bit earlier
-                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1, skuToken));
+                withFixedDate(t, now, () => event.postMapLoadEvent(1, skuToken));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -895,7 +888,7 @@ test("mapbox", (t) => {
             t.test('POSTs map.load event when access token changes', (t) => {
                 config.ACCESS_TOKEN = 'pk.new.*';
 
-                event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+                event.postMapLoadEvent(1, skuToken);
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -909,7 +902,7 @@ test("mapbox", (t) => {
                 const anonId = uuid();
                 window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, anonId);
                 turnstileEvent.postTurnstileEvent(mapboxTileURLs);
-                event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+                event.postMapLoadEvent(1, skuToken);
 
                 const turnstileReq = window.server.requests[0];
                 turnstileReq.respond(200);
@@ -930,7 +923,7 @@ test("mapbox", (t) => {
 
         t.test('when LocalStorage is not available', (t) => {
             t.test('POSTs map.load event', (t) => {
-                event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+                event.postMapLoadEvent(1, skuToken);
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -947,8 +940,8 @@ test("mapbox", (t) => {
 
             t.test('does not POST map.load multiple times for the same map instance', (t) => {
                 const now = Date.now();
-                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1, skuToken));
-                withFixedDate(t, now + 5, () => event.postMapLoadEvent(mapboxTileURLs, 1, skuToken));
+                withFixedDate(t, now, () => event.postMapLoadEvent(1, skuToken));
+                withFixedDate(t, now + 5, () => event.postMapLoadEvent(1, skuToken));
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -964,7 +957,7 @@ test("mapbox", (t) => {
             t.test('POSTs map.load event when access token changes', (t) => {
                 config.ACCESS_TOKEN = 'pk.new.*';
 
-                event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+                event.postMapLoadEvent(1, skuToken);
 
                 const req = window.server.requests[0];
                 req.respond(200);
@@ -980,9 +973,9 @@ test("mapbox", (t) => {
             });
 
             t.test('POSTs distinct map.load for multiple maps', (t) => {
-                event.postMapLoadEvent(mapboxTileURLs, 1, skuToken);
+                event.postMapLoadEvent(1, skuToken);
                 const now = +Date.now();
-                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 2, skuToken));
+                withFixedDate(t, now, () => event.postMapLoadEvent(2, skuToken));
 
                 let req = window.server.requests[0];
                 req.respond(200);
@@ -1002,9 +995,9 @@ test("mapbox", (t) => {
 
             t.test('Queues and POSTs map.load events when triggerred in quick succession by different maps', (t) => {
                 const now = Date.now();
-                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 1, skuToken));
-                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 2, skuToken));
-                withFixedDate(t, now, () => event.postMapLoadEvent(mapboxTileURLs, 3, skuToken));
+                withFixedDate(t, now, () => event.postMapLoadEvent(1, skuToken));
+                withFixedDate(t, now, () => event.postMapLoadEvent(2, skuToken));
+                withFixedDate(t, now, () => event.postMapLoadEvent(3, skuToken));
 
                 const reqOne = window.server.requests[0];
                 reqOne.respond(200);

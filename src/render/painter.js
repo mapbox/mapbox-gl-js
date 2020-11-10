@@ -86,7 +86,7 @@ type PainterOptions = {
     moving: boolean,
     gpuTiming: boolean,
     fadeDuration: number,
-    shouldFade: boolean,
+    isInitialLoad: boolean,
     speedIndexTiming: boolean
 }
 
@@ -563,7 +563,7 @@ class Painter {
         this.id = layer.id;
 
         this.gpuTimingStart(layer);
-        draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.shouldFade);
+        draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
         this.gpuTimingEnd();
     }
 

@@ -372,6 +372,7 @@ class TelemetryEvent {
 export class MapLoadEvent extends TelemetryEvent {
     +success: {[_: number]: boolean};
     skuToken: string;
+    errorCb: (err: ?Error) => void;
 
     constructor() {
         super('map.load');
@@ -379,16 +380,16 @@ export class MapLoadEvent extends TelemetryEvent {
         this.skuToken = '';
     }
 
-    postMapLoadEvent(tileUrls: Array<string>, mapId: number, skuToken: string, customAccessToken: string) {
-        //Enabled only when Mapbox Access Token is set and a source uses
-        // mapbox tiles.
+    postMapLoadEvent(mapId: number, skuToken: string, customAccessToken: string, callback: (err: ?Error) => void) {
         this.skuToken = skuToken;
+        this.errorCb = callback;
 
-        if (config.EVENTS_URL &&
-            customAccessToken || config.ACCESS_TOKEN &&
-            Array.isArray(tileUrls) &&
-            tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
-            this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
+        if (config.EVENTS_URL) {
+            if (customAccessToken || config.ACCESS_TOKEN) {
+                this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
+            } else {
+                this.errorCb(new Error('A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/'));
+            }
         }
     }
 
@@ -408,9 +409,12 @@ export class MapLoadEvent extends TelemetryEvent {
         }
 
         this.postEvent(timestamp, {skuToken: this.skuToken}, (err) => {
-            if (!err) {
+            if (err) {
+                this.errorCb(err);
+            } else {
                 if (id) this.success[id] = true;
             }
+
         }, customAccessToken);
     }
 }
