@@ -898,7 +898,7 @@ class Map extends Camera {
      * var isZooming = map.isZooming();
      */
     isZooming(): boolean {
-        return this._zooming || this.handlers.isZooming();
+        return this._zooming || this.handlers && this.handlers.isZooming();
     }
 
     /**
@@ -908,7 +908,7 @@ class Map extends Camera {
      * map.isRotating();
      */
     isRotating(): boolean {
-        return this._rotating || this.handlers.isRotating();
+        return this._rotating || this.handlers && this.handlers.isRotating();
     }
 
     _createDelegatedListener(type: MapEvent, layerId: any, listener: any) {
@@ -2631,7 +2631,7 @@ class Map extends Camera {
     _updateTerrain() {
         // Recalculate if enabled/disabled and calculate elevation cover. As camera is using elevation tiles before
         // render (and deferred update after zoom recalculation), this needs to be called when removing terrain source.
-        this.painter.updateTerrain(this.style);
+        this.painter.updateTerrain(this.style, this.isMoving() || this.isRotating() || this.isZooming());
     }
 
     _calculateSpeedIndex(): number {

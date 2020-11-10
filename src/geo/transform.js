@@ -136,12 +136,14 @@ class Transform {
         }
         this._calcMatrices();
     }
-    updateElevation() { // On render, no need for higher granularity on update reasons.
-        if (this._terrainEnabled() && !this._cameraZoom) {
+    updateElevation(constrainCameraOverTerrain: boolean) { // On render, no need for higher granularity on update reasons.
+        if (this._terrainEnabled() && this._cameraZoom == null) {
             if (this._updateCenterElevation())
                 this._updateCameraOnTerrain();
         }
-
+        if (constrainCameraOverTerrain) {
+            this._constrainCameraAltitude();
+        }
         this._calcMatrices();
     }
 
@@ -302,7 +304,7 @@ class Transform {
     }
 
     _updateZoomFromElevation() {
-        if (!this._cameraZoom || !this._elevation)
+        if (this._cameraZoom == null || !this._elevation)
             return;
 
         // Compute zoom level from the height of the camera relative to the terrain
@@ -1117,8 +1119,7 @@ class Transform {
         this._updateCameraState();
         const elevationAtCamera = elevation.getAtPoint(this._camera.mercatorPosition);
 
-        // Use maxZoom to determine minimum height for the camera over the terrain
-        const minHeight = this.cameraToCenterDistance / this._worldSizeFromZoom(this._maxZoom) * Math.cos(degToRad(this._maxPitch));
+        const minHeight = this._minimumHeightOverTerrain() *  Math.cos(degToRad(this._maxPitch));
         const terrainElevation = mercatorZfromAltitude(elevationAtCamera, this._center.lat);
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
@@ -1326,7 +1327,7 @@ class Transform {
 
         // Use camera zoom (if terrain is enabled) to maintain constant altitude to sea level
         const zoom = this._cameraZoom ? this._cameraZoom : this._zoom;
-        const altitude = this.cameraToCenterDistance / this._worldSizeFromZoom(zoom);
+        const altitude = this._mercatorZfromZoom(zoom);
         const height = altitude - mercatorZfromAltitude(this._centerAltitude, this.center.lat);
 
         // simplified version of: this._worldSizeFromZoom(this._zoomFromMercatorZ(height))
@@ -1346,7 +1347,7 @@ class Transform {
 
         // Compute zoom from the distance between camera and terrain
         const centerAltitude = mercatorZfromAltitude(this._centerAltitude, this.center.lat);
-        const minHeight = this.cameraToCenterDistance / this._worldSizeFromZoom(this._maxZoom) * Math.cos(degToRad(this._maxPitch));
+        const minHeight = this._mercatorZfromZoom(this._maxZoom) * Math.cos(degToRad(this._maxPitch));
         const height = Math.max((position[2] - centerAltitude) / Math.cos(pitch), minHeight);
         const zoom = this._zoomFromMercatorZ(height);
 
@@ -1370,9 +1371,18 @@ class Transform {
         return Math.pow(2.0, zoom) * this.tileSize;
     }
 
-    _mercatorZfromZoom(zoom: number, pitch: ?number): number {
-        const cosPitch = pitch ? Math.cos(pitch) : 1.0;
-        return this.cameraToCenterDistance / this._worldSizeFromZoom(zoom) * cosPitch;
+    _mercatorZfromZoom(zoom: number): number {
+        return this.cameraToCenterDistance / this._worldSizeFromZoom(zoom);
+    }
+
+    _minimumHeightOverTerrain() {
+        // Determine minimum height for the camera over the terrain related to current zoom.
+        // Values above than 2 allow max-pitch camera closer to e.g. top of the hill, exposing
+        // drape raster overscale artifacts or cut terrain (see under it) as it gets clipped on
+        // near plane. Returned value is in mercator coordinates.
+        const MAX_DRAPE_OVERZOOM = 2;
+        const zoom = Math.min((this._cameraZoom != null ? this._cameraZoom : this._zoom) + MAX_DRAPE_OVERZOOM, this._maxZoom);
+        return this._mercatorZfromZoom(zoom);
     }
 
     _zoomFromMercatorZ(z: number): number {
@@ -1438,8 +1448,7 @@ class Transform {
     zoomDeltaToMovement(center: vec3, zoomDelta: number): number {
         const distance = vec3.length(vec3.sub([], this._camera.position, center));
         const relativeZoom = this._zoomFromMercatorZ(distance) + zoomDelta;
-        const relativeWorldSize = this._worldSizeFromZoom(relativeZoom);
-        return distance - this.cameraToCenterDistance / relativeWorldSize;
+        return distance - this._mercatorZfromZoom(relativeZoom);
     }
 
     /*
