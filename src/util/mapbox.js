@@ -173,6 +173,11 @@ export class RequestManager {
         urlObject.protocol = apiUrlObject.protocol;
         urlObject.authority = apiUrlObject.authority;
 
+        if (urlObject.protocol === 'http') {
+            const i = urlObject.params.indexOf('secure');
+            if (i >= 0) urlObject.params.splice(i, 1);
+        }
+
         if (apiUrlObject.path !== '/') {
             urlObject.path = `${apiUrlObject.path}${urlObject.path}`;
         }
