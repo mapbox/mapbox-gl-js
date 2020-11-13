@@ -139,8 +139,9 @@ DOM.remove = function(node: HTMLElement) {
 function getScaledPoint(el: HTMLElement, rect: ClientRect, e: MouseEvent | WheelEvent | Touch) {
     // Until we get support for pointer events (https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent)
     // we use this dirty trick which would not work for the case of rotated transforms, but works well for
-    // the case of simple scaling:
-    const scaling = el.offsetWidth / rect.width;
+    // the case of simple scaling.
+    // Note: `el.offsetWidth === rect.width` eliminates the `0/0` case.
+    const scaling = el.offsetWidth === rect.width ? 1 : el.offsetWidth / rect.width;
     return new Point(
         (e.clientX - rect.left) * scaling,
         (e.clientY - rect.top) * scaling
