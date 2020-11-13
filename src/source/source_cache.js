@@ -528,11 +528,25 @@ class SourceCache extends Evented {
                 fadingTiles[id] = tileID;
             }
 
-            // for tiles that are still fading in, also find children to cross-fade with
+            // for children tiles with parent tiles still fading in,
+            // retain the children so the parent can fade on top
             const minZoom = idealTileIDs[idealTileIDs.length - 1].overscaledZ;
-            const maxZoom = idealTileIDs[0].overscaledZ;
-            const maxCoveringZoom = Math.max(maxZoom + SourceCache.maxUnderzooming,  this._source.minzoom);
-            this._retainLoadedChildren(fadingTiles, minZoom, maxCoveringZoom, retain);
+            for (const id in this._tiles) {
+                const childTile = this._tiles[id];
+                if (retain[id] || !childTile.hasData()) {
+                    continue;
+                }
+
+                let parentID = childTile.tileID;
+                while (parentID.overscaledZ > minZoom) {
+                    parentID = parentID.scaledTo(parentID.overscaledZ - 1);
+                    const tile = this._tiles[parentID.key];
+                    if (tile && tile.hasData() && fadingTiles[parentID.key]) {
+                        retain[id] = childTile.tileID;
+                        break;
+                    }
+                }
+            }
 
             for (const id in parentsForFading) {
                 if (!retain[id]) {
