@@ -299,7 +299,8 @@ class HandlerManager {
         this._updatingCamera = true;
         assert(e.timeStamp !== undefined);
 
-        const inputEvent = e.type === 'renderFrame' ? undefined : ((e: any): InputEvent);
+        const isRenderFrame = e.type === 'renderFrame';
+        const inputEvent = isRenderFrame ? undefined : ((e: any): InputEvent);
 
         /*
          * We don't call e.preventDefault() for any events by default.
@@ -311,7 +312,9 @@ class HandlerManager {
         const activeHandlers = {};
 
         const mapTouches = e.touches ? this._getMapTouches(((e: any): TouchEvent).touches) : undefined;
-        const points = mapTouches ? DOM.touchPos(this._el, mapTouches) : DOM.mousePos(this._el, ((e: any): MouseEvent));
+        const points = mapTouches ? DOM.touchPos(this._el, mapTouches) :
+            isRenderFrame ? undefined : // renderFrame event doesn't have any points
+            DOM.mousePos(this._el, ((e: any): MouseEvent));
 
         for (const {handlerName, handler, allowed} of this._handlers) {
             if (!handler.isEnabled()) continue;
