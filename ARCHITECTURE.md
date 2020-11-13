@@ -1,7 +1,5 @@
 # Architecture of Mapbox GL JS
 
-
-
 ## `Map` and its subsystems
 
 ## Main thread / worker split
