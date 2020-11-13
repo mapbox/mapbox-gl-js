@@ -765,7 +765,8 @@ export class Terrain extends Elevation {
         const isCrossFading = id => {
             const layer = this.painter.style._layers[id];
             const isHidden = !layer.isHidden(this.painter.transform.zoom);
-            const isFading = layer.getCrossfadeParameters().t !== 1;
+            const crossFade = layer.getCrossfadeParameters();
+            const isFading = !!crossFade && crossFade.t !== 1;
             return layer.type !== 'custom' && !isHidden && isFading;
         };
         return !this.drapeFirst || this.painter.style._order.some(isCrossFading);

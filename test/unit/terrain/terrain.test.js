@@ -406,6 +406,46 @@ test('Elevation', (t) => {
         });
     });
 
+    t.test('mapbox-gl-js-internal#349', t => {
+        const map = createMap(t, {
+            style: {
+                version: 8,
+                center: [85, 85],
+                zoom: 2.1,
+                sources: {
+                    'mapbox-dem': {
+                        type: "raster-dem",
+                        tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                        tileSize: 512,
+                        maxzoom: 14
+                    }
+                },
+                layers: [{
+                    "id": "background",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "black"
+                    }
+                }]
+            }
+        });
+        map.on('style.load', () => {
+            const customLayer = {
+                id: 'custom',
+                type: 'custom',
+                onAdd: () => {},
+                render: () => {}
+            };
+            map.addLayer(customLayer, 'background');
+            map.setTerrain({"source": "mapbox-dem"});
+            map.once('render', () => {
+                map.painter.terrain.drapeFirst = true;
+                t.false(map.painter.terrain._shouldDisableRenderCache());
+                t.end();
+            });
+        });
+    });
+
     t.test('mapbox-gl-js-internal#32', t => {
         const map = createMap(t, {
             style: {
