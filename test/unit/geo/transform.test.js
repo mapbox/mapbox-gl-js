@@ -117,6 +117,36 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('_minZoomForBounds respects latRange and lngRange', (t) => {
+        t.test('it returns 0 when latRange and lngRange are undefined', (t) => {
+            const transform = new Transform();
+            transform.center = new LngLat(0, 0);
+            transform.zoom = 10;
+            transform.resize(500, 500);
+
+            t.equal(transform._minZoomForBounds(), 0);
+            t.end();
+        });
+
+        t.test('it results in equivalent minZoom as _constrain()', (t) => {
+            const transform = new Transform();
+            transform.center = new LngLat(0, 0);
+            transform.zoom = 10;
+            transform.resize(500, 500);
+            transform.lngRange = [-5, 5];
+            transform.latRange = [-5, 5];
+
+            const preComputedMinZoom = transform._minZoomForBounds();
+            transform.zoom = 0;
+            const constrainedMinZoom = transform.zoom;
+
+            t.equal(preComputedMinZoom, constrainedMinZoom);
+            t.end();
+        });
+
+        t.end();
+    });
+
     test('coveringTiles', (t) => {
         const options = {
             minzoom: 1,
@@ -1063,6 +1093,61 @@ test('transform', (t) => {
             actual = transform.getFreeCameraOptions();
             t.deepEqual(fixedCoord(actual.position), fixedCoord(expected.position));
             t.deepEqual(fixedVec4(actual.orientation), fixedVec4(expected.orientation));
+
+            t.end();
+        });
+
+        t.test('_translateCameraConstrained', (t) => {
+            t.test('it clamps at zoom 0 when lngRange and latRange are not defined', (t) => {
+                const transform = new Transform();
+                transform.center = new LngLat(0, 0);
+                transform.zoom = 10;
+                transform.resize(500, 500);
+
+                transform._updateCameraState();
+                transform._translateCameraConstrained([0.2, 0.3, 1000]);
+
+                t.equal(transform.zoom, 0);
+                t.end();
+            });
+
+            t.test('it performs no clamping if camera z movementis not upwards', (t) => {
+                const transform = new Transform();
+                transform.center = new LngLat(0, 0);
+                transform.zoom = 10;
+                transform.resize(500, 500);
+
+                transform._updateCameraState();
+                const initialPos = transform._camera.position;
+                transform._translateCameraConstrained([0.2, 0.3, 0]);
+                const finalPos = transform._camera.position;
+
+                t.equal(initialPos[0] + 0.2, finalPos[0]);
+                t.equal(initialPos[1] + 0.3, finalPos[1]);
+                t.equal(initialPos[2], finalPos[2]);
+                t.end();
+            });
+
+            t.test('it clamps at a height equivalent to _constrain', (t) => {
+                const transform = new Transform();
+                transform.center = new LngLat(0, 0);
+                transform.zoom = 20;
+                transform.resize(500, 500);
+                transform.lngRange = [-5, 5];
+                transform.latRange = [-5, 5];
+
+                //record constrained zoom
+                transform.zoom = 0;
+                const minZoom = transform.zoom;
+
+                //zoom back in and update camera position
+                transform.zoom = 20;
+                transform._updateCameraState();
+                transform._translateCameraConstrained([0.1, 0.2, 1]);
+                t.equal(transform.zoom, minZoom);
+
+                t.end();
+            });
 
             t.end();
         });

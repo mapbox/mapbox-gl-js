@@ -18,6 +18,7 @@ import type {Elevation} from '../terrain/elevation';
 import type {PaddingOptions} from './edge_insets';
 
 const NUM_WORLD_COPIES = 3;
+const DEFAULT_MIN_ZOOM = 0;
 
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number };
 type ElevationReference = "sea" | "ground";
@@ -76,7 +77,7 @@ class Transform {
         this.maxValidLatitude = 85.051129; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
-        this._minZoom = minZoom || 0;
+        this._minZoom = minZoom || DEFAULT_MIN_ZOOM;
         this._maxZoom = maxZoom || 22;
 
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
@@ -286,6 +287,7 @@ class Transform {
     get center(): LngLat { return this._center; }
     set center(center: LngLat) {
         if (center.lat === this._center.lat && center.lng === this._center.lng) return;
+
         this._unmodified = false;
         this._center = center;
         if (this._terrainEnabled()) {
@@ -1215,6 +1217,41 @@ class Transform {
         this._constraining = false;
     }
 
+    /**
+     * Returns the minimum zoom at which `this.width` can fit `this.lngRange`
+     * and `this.height` can fit `this.latRange`
+     *
+     * @returns {number}
+     */
+    _minZoomForBounds(): number {
+        const minZoomForDim = (dim: number, range: [number, number]): number => {
+            return Math.log2(dim / (this.tileSize * Math.abs(range[1] - range[0])));
+        };
+        let minLatZoom = DEFAULT_MIN_ZOOM;
+        if (this.latRange) {
+            const latRange = this.latRange;
+            minLatZoom = minZoomForDim(this.height, [mercatorYfromLat(latRange[0]), mercatorYfromLat(latRange[1])]);
+        }
+        let minLngZoom = DEFAULT_MIN_ZOOM;
+        if (this.lngRange) {
+            const lngRange = this.lngRange;
+            minLngZoom = minZoomForDim(this.width, [mercatorXfromLng(lngRange[0]), mercatorXfromLng(lngRange[1])]);
+        }
+
+        return Math.max(minLatZoom, minLngZoom);
+    }
+
+    /**
+     * Returns the maximum distance of the camera from the center of the bounds, such that
+     * `this.width` can fit `this.lngRange` and `this.height` can fit `this.latRange`.
+     * In mercator units.
+     *
+     * @returns {number}
+     */
+    _maxCameraBoundsDistance(): number {
+        return this._mercatorZfromZoom(this._minZoomForBounds());
+    }
+
     _calcMatrices() {
         if (!this.height) return;
 
@@ -1338,6 +1375,28 @@ class Transform {
             center.y / this.worldSize - (dir[1] * distance) / updatedWorldSize,
             mercatorZfromAltitude(this._centerAltitude, this._center.lat) + (-dir[2] * distance) / updatedWorldSize
         ];
+    }
+
+    /**
+     * Apply a 3d translation to the camera position, but clamping it so that
+     * it respects the bounds set by `this.latRange` and `this.lngRange`.
+     *
+     * @param {vec3} translation
+     */
+    _translateCameraConstrained(translation: vec3) {
+        const maxDistance = this._maxCameraBoundsDistance();
+        // Define a ceiling in mercator Z
+        const maxZ = maxDistance * Math.cos(this._pitch);
+        const z = this._camera.position[2];
+        const deltaZ = translation[2];
+        let t = 1;
+        // we only need to clamp if the camera is moving upwards
+        if (deltaZ > 0) {
+            t = Math.min((maxZ - z) / deltaZ, 1);
+        }
+
+        this._camera.position = vec3.scaleAndAdd([], this._camera.position, translation, t);
+        this._updateStateFromCamera();
     }
 
     _updateStateFromCamera() {
