@@ -477,6 +477,8 @@ class HandlerManager {
             return event && !this._handlersById[event.handlerName].isActive();
         };
 
+        const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
+
         if (eventEnded("drag") && !hasChange(combinedResult)) {
             const preZoom = tr.zoom;
             tr.cameraElevationReference = "sea";
@@ -489,7 +491,6 @@ class HandlerManager {
         if (!hasChange(combinedResult)) {
             return this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
         }
-
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
 
         if (pinchAround !== undefined) {
@@ -497,17 +498,7 @@ class HandlerManager {
         }
 
         if (eventStarted("drag") && around) {
-            if (tr.elevation) {
-                // Elevation information has to be used to find the picked position on the terrain when the user starts to drag the map.
-                // This position can be used as the movement origin instead of the sea-level position
-                this._dragOrigin = tr.elevation.pointCoordinate(around);
-            }
-
-            if (!this._dragOrigin) {
-                const coord = tr.pointCoordinate(around);
-                this._dragOrigin = [coord.x, coord.y, coord.z];
-            }
-
+            this._dragOrigin = toVec3(tr.pointCoordinate3D(around));
             // Construct the tracking ellipsoid every time user changes the drag origin.
             // Direction of the ray will define size of the shape and hence defining the available range of movement
             this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
@@ -520,18 +511,29 @@ class HandlerManager {
         map._stop(true);
 
         around = around || map.transform.centerPoint;
-
-        const loc = tr.pointLocation(panDelta ? around.sub(panDelta) : around);
         if (bearingDelta) tr.bearing += bearingDelta;
         if (pitchDelta) tr.pitch += pitchDelta;
+        tr._updateCameraState();
+
+        // Compute Mercator 3D camera offset based on screenspace panDelta
+        const panVec = [0, 0, 0];
+        if (panDelta) {
+            assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
+            const startRay = tr.screenPointToMercatorRay(around);
+            const endRay = tr.screenPointToMercatorRay(around.sub(panDelta));
+
+            const startPoint = this._trackingEllipsoid.projectRay(startRay.dir);
+            const endPoint = this._trackingEllipsoid.projectRay(endRay.dir);
+            panVec[0] = endPoint[0] - startPoint[0];
+            panVec[1] = endPoint[1] - startPoint[1];
+        }
 
         const originalZoom = tr.zoom;
+        // Compute Mercator 3D camera offset based on screenspace requested ZoomDelta
+        const zoomVec = [0, 0, 0];
         if (zoomDelta) {
             // Zoom value has to be computed relative to a secondary map plane that is created from the terrain position below the cursor.
             // This way the zoom interpolation can be kept linear and independent of the (possible) terrain elevation
-            tr._updateCameraState();
-
-            const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
             const pickedPosition: vec3 = aroundCoord ? toVec3(aroundCoord) : toVec3(tr.pointCoordinate3D(around));
 
             const aroundRay = {dir: vec3.normalize([], vec3.sub([], pickedPosition, tr._camera.position))};
@@ -544,41 +546,22 @@ class HandlerManager {
                 const centerOnTargetPlane = tr.rayIntersectionCoordinate(tr.pointRayIntersection(tr.centerPoint, pickedAltitude));
                 const movement = tr.zoomDeltaToMovement(toVec3(centerOnTargetPlane), zoomDelta) * (centerRay.dir[2] / aroundRay.dir[2]);
 
-                tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, aroundRay.dir, movement);
+                vec3.scale(zoomVec, aroundRay.dir, movement);
             } else if (tr._terrainEnabled()) {
                 // Special handling is required if the ray created from the cursor is heading up.
                 // This scenario is possible if user is trying to zoom towards e.g. a hill or a mountain.
                 // Convert zoomDelta to a movement vector as if the camera would be orbiting around the picked point
                 const movement = tr.zoomDeltaToMovement(pickedPosition, zoomDelta);
-                tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, aroundRay.dir, movement);
+                vec3.scale(zoomVec, aroundRay.dir, movement);
             }
-
-            tr._updateStateFromCamera();
         }
 
-        if (this._dragOrigin && panDelta && tr._terrainEnabled()) {
-            // Use tracking ellipsoid instead of a plane when terrain is enabled.
-            // Find screen point rays on the ellipsoid surface and use the delta vector projected
-            // to xy-plane for map translation.
-            const startRay = tr.screenPointToMercatorRay(around);
-            const endRay = tr.screenPointToMercatorRay(around.sub(panDelta));
+        // Mutate camera state via CameraAPI
+        const translation = vec3.add(panVec, panVec, zoomVec);
+        tr._translateCameraConstrained(translation);
 
-            const startPoint = this._trackingEllipsoid.projectRay(startRay.dir);
-            const endPoint = this._trackingEllipsoid.projectRay(endRay.dir);
-            const deltaX = endPoint[0] - startPoint[0];
-            const deltaY = endPoint[1] - startPoint[1];
-
-            const newCenter = tr.locationCoordinate(tr.center);
-            newCenter.x += deltaX;
-            newCenter.y += deltaY;
-            tr.setLocation(newCenter);
-        } else {
-            // When zoom is kept constant (constrained) don't recenter.
-            if (zoomDelta && Math.abs(tr.zoom - originalZoom) > 0.0001) {
-                tr.recenterOnTerrain();
-            } else {
-                tr.setLocationAtPoint(loc, around);
-            }
+        if (zoomDelta && Math.abs(tr.zoom - originalZoom) > 0.0001) {
+            tr.recenterOnTerrain();
         }
 
         tr.cameraElevationReference = "ground";
