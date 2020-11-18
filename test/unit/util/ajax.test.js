@@ -110,7 +110,9 @@ test('ajax', (t) => {
         const jsdomImage = window.Image;
         window.Image = class {
             set src(src) {
-                setTimeout(() => this.onload());
+                setTimeout(() => {
+                    if (this.onload) this.onload();
+                });
             }
         };
 
@@ -200,7 +202,9 @@ test('ajax', (t) => {
         // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
         window.Image = class {
             set src(src) {
-                setTimeout(() => this.onload());
+                setTimeout(() => {
+                    if (this.onload) this.onload();
+                });
             }
         };
 
