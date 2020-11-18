@@ -20,7 +20,7 @@
 - Fix a bug where the `within` expression didn't work in `querySourceFeatures`. [#9933](https://github.com/mapbox/mapbox-gl-js/pull/9933)
 - Fix a bug where `Popup` content HTML element was removed on `setDOMContent`. [#10036](https://github.com/mapbox/mapbox-gl-js/pull/10036)
 - Fix a compatibility bug when `icon-image` is used as a legacy categorical function. [#10060](https://github.com/mapbox/mapbox-gl-js/pull/10060)
-- Reduce rapid memory growth in Safari by ensure `Image` dataURI's are released. [#10118](https://github.com/mapbox/mapbox-gl-js/pull/10118)
+- Reduce rapid memory growth in Safari by ensuring `Image` dataURI's are released. [#10118](https://github.com/mapbox/mapbox-gl-js/pull/10118)
 
 ### ⚠️ Note on IE11
 
