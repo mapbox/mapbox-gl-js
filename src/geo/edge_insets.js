@@ -5,7 +5,7 @@ import {clamp} from "../util/util";
 
 /**
  * An `EdgeInset` object represents screen space padding applied to the edges of the viewport.
- * This shifts the apprent center or the vanishing point of the map. This is useful for adding floating UI elements
+ * This shifts the apparent center or the vanishing point of the map. This is useful for adding floating UI elements
  * on top of the map and having the vanishing point shift as UI elements resize.
  *
  * @param {number} [top=0]
@@ -38,9 +38,10 @@ class EdgeInsets {
      * Interpolates the inset in-place.
      * This maintains the current inset value for any inset not present in `target`.
      *
-     * @param {PaddingOptions} target
-     * @param {number} t
-     * @returns {EdgeInsets}
+     * @param {PaddingOptions | EdgeInsets} start The initial padding options.
+     * @param {PaddingOptions} target The target padding options.
+     * @param {number} t The interpolation variable.
+     * @returns {EdgeInsets} The interpolated edge insets.
      * @memberof EdgeInsets
      */
     interpolate(start: PaddingOptions | EdgeInsets, target: PaddingOptions, t: number): EdgeInsets {
@@ -56,9 +57,9 @@ class EdgeInsets {
      * Utility method that computes the new apprent center or vanishing point after applying insets.
      * This is in pixels and with the top left being (0.0) and +y being downwards.
      *
-     * @param {number} width
-     * @param {number} height
-     * @returns {Point}
+     * @param {number} width The width of the map in pixels.
+     * @param {number} height The height of the map in pixels.
+     * @returns {Point} The apparent center or vanishing point of the map.
      * @memberof EdgeInsets
      */
     getCenter(width: number, height: number): Point {
@@ -81,10 +82,10 @@ class EdgeInsets {
     }
 
     /**
-     * Returns the current sdtate as json, useful when you want to have a
+     * Returns the current state as json, useful when you want to have a
      * read-only representation of the inset.
      *
-     * @returns {PaddingOptions}
+     * @returns {PaddingOptions} The current padding options.
      * @memberof EdgeInsets
      */
     toJSON(): PaddingOptions {

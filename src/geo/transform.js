@@ -447,10 +447,10 @@ class Transform {
     }
 
     /**
-     * Returns if the padding params match
+     * Returns true if the padding options are equal.
      *
-     * @param {PaddingOptions} padding
-     * @returns {boolean}
+     * @param {PaddingOptions} padding The padding options to compare.
+     * @returns {boolean} True if the padding options are equal.
      * @memberof Transform
      */
     isPaddingEqual(padding: PaddingOptions): boolean {
@@ -458,10 +458,11 @@ class Transform {
     }
 
     /**
-     * Helper method to upadte edge-insets inplace
+     * Helper method to update edge-insets inplace.
      *
-     * @param {PaddingOptions} target
-     * @param {number} t
+     * @param {PaddingOptions} start The initial padding options.
+     * @param {PaddingOptions} target The target padding options.
+     * @param {number} t The interpolation variable.
      * @memberof Transform
      */
     interpolatePadding(start: PaddingOptions, target: PaddingOptions, t: number) {
