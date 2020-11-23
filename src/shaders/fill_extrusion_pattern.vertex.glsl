@@ -62,10 +62,11 @@ void main() {
     float z = t > 0.0 ? height : base;
 
 #ifdef TERRAIN
-    bool flat_roof = a_centroid_pos.x != 0.0;
+    vec2 centroid_pos = a_centroid_pos;
+    bool flat_roof = centroid_pos.x != 0.0;
     float ele = elevation(pos_nx.xy);
-    float hidden = float(a_centroid_pos.x == 0.0 && a_centroid_pos.y == 1.0);
-    float c_ele = flat_roof ? a_centroid_pos.y == 0.0 ? elevationFromUint16(a_centroid_pos.x) : flatElevation(a_centroid_pos) : ele;
+    float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
+    float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
     float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
     gl_Position = mix(u_matrix * vec4(pos_nx.xy, h, 1), AWAY, hidden);
