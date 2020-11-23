@@ -406,6 +406,11 @@ test("mapbox", (t) => {
                 t.equal(manager.normalizeTileURL("mapbox://tiles/a.b,c.d/0/0/0.pbf"), `https://api.mapbox.com/v4/a.b,c.d/0/0/0.pbf?sku=${manager._skuToken}&access_token=key`);
                 t.equal(manager.normalizeTileURL("mapbox://tiles/raster/v1/a.b/0/0/0.png"), `https://api.mapbox.com/raster/v1/a.b/0/0/0.png?sku=${manager._skuToken}&access_token=key`);
 
+                // Does not add @2x to raster tiles
+                window.devicePixelRatio = 2;
+                t.equal(manager.normalizeTileURL("mapbox://tiles/raster/v1/a.b/0/0/0.png"), `https://api.mapbox.com/raster/v1/a.b/0/0/0.png?sku=${manager._skuToken}&access_token=key`);
+                window.devicePixelRatio = 1;
+
                 config.API_URL = 'https://api.example.com/';
                 t.equal(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.png"), `https://api.example.com/v4/a.b/0/0/0.png?sku=${manager._skuToken}&access_token=key`);
                 t.equal(manager.normalizeTileURL("http://path"), "http://path");

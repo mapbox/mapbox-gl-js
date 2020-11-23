@@ -111,15 +111,17 @@ export class RequestManager {
         const urlObject = parseUrl(tileURL);
         const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
         const tileURLAPIPrefixRe = /^.+\/v4\//;
-
-        // The v4 mapbox tile API supports 512x512 image tiles only when @2x
-        // is appended to the tile URL. If `tileSize: 512` is specified for
-        // a Mapbox raster source force the @2x suffix even if a non hidpi device.
-        const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
         const extension = webpSupported.supported ? '.webp' : '$1';
-        urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
-        // Do not add the v4 prefix in front of raster/v1 tiles URLs
-        if (!urlObject.path.match(/^(\/raster\/v1\/)/)) {
+
+        // Do not add the v4 prefix or @2x suffix in raster/v1 tiles URLs
+        if (urlObject.path.match(/^(\/raster\/v1\/)/)) {
+            urlObject.path = urlObject.path.replace(imageExtensionRe, `${extension}`);
+        } else {
+            // The v4 mapbox tile API supports 512x512 image tiles only when @2x
+            // is appended to the tile URL. If `tileSize: 512` is specified for
+            // a Mapbox raster source force the @2x suffix even if a non hidpi device.
+            const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
+            urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
             urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
             urlObject.path = `/v4${urlObject.path}`;
         }
