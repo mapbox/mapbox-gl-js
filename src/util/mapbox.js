@@ -118,8 +118,11 @@ export class RequestManager {
         const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
         const extension = webpSupported.supported ? '.webp' : '$1';
         urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
-        urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
-        urlObject.path = `/v4${urlObject.path}`;
+        // Do not add the v4 prefix in front of raster/v1 tiles URLs
+        if (!urlObject.path.match(/^(\/raster\/v1\/)/)) {
+            urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
+            urlObject.path = `/v4${urlObject.path}`;
+        }
 
         const accessToken = this._customAccessToken || getAccessToken(urlObject.params) || config.ACCESS_TOKEN;
         if (config.REQUIRE_ACCESS_TOKEN && accessToken && this._skuToken) {
@@ -130,19 +133,20 @@ export class RequestManager {
     }
 
     canonicalizeTileURL(url: string, removeAccessToken: boolean) {
-        const version = "/v4/";
         // matches any file extension specified by a dot and one or more alphanumeric characters
         const extensionRe = /\.[\w]+$/;
 
         const urlObject = parseUrl(url);
         // Make sure that we are dealing with a valid Mapbox tile URL.
-        // Has to begin with /v4/, with a valid filename + extension
-        if (!urlObject.path.match(/(^\/v4\/)/) || !urlObject.path.match(extensionRe)) {
+        // Has to begin with /v4/ or /raster/v1, with a valid filename + extension
+        if (!urlObject.path.match(/^(\/v4\/|\/raster\/v1\/)/) || !urlObject.path.match(extensionRe)) {
             // Not a proper Mapbox tile URL.
             return url;
         }
         // Reassemble the canonical URL from the parts we've parsed before.
-        let result = "mapbox://tiles/";
+        let result = "mapbox://tiles";
+        // If the tile url has /raster/v1/, make the final URL mapbox://tiles/raster/v1/....
+        const version = "/v4";
         result +=  urlObject.path.replace(version, '');
 
         // Append the query string, minus the access token parameter.
