@@ -194,7 +194,7 @@ function updateLineLabels(bucket: SymbolBucket,
         const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
             bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio);
 
-        useVertical = placeUnflipped.useVertical;
+        useVertical = placeUnflipped.useVertical || null;
 
         if (placeUnflipped.notEnoughRoom || useVertical ||
             (placeUnflipped.needsFlipping &&
@@ -319,7 +319,9 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
     }
 
     for (const glyph: any of placedGlyphs) {
-        addDynamicAttributes(dynamicLayoutVertexArray, glyph.point, glyph.angle);
+        if(!!glyph.point && glyph.angle) {
+            addDynamicAttributes(dynamicLayoutVertexArray, glyph.point, glyph.angle);
+        }
     }
     return {};
 }
