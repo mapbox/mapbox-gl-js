@@ -8,6 +8,7 @@ import loadTileJSON from './load_tilejson';
 import {postTurnstileEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
 import Texture from '../render/texture';
+import browser from '../util/browser';
 
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 
@@ -109,7 +110,8 @@ class RasterTileSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.tileSize);
+        const use2x = browser.devicePixelRatio >= 2 || this.tileSize === 512;
+        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), use2x);
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (err, img) => {
             delete tile.request;
 
