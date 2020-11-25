@@ -14,8 +14,6 @@
 ******************************************************************************/
 
 import config from './config';
-
-import browser from './browser';
 import window from './window';
 import webpSupported from './webp_supported';
 import {createSkuToken, SKU_ID} from './sku_token';
@@ -101,7 +99,7 @@ export class RequestManager {
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
-    normalizeTileURL(tileURL: string, tileSize?: ?number): string {
+    normalizeTileURL(tileURL: string, use2x: ?boolean = false): string {
         if (this._isSkuTokenExpired()) {
             this._createSkuToken();
         }
@@ -110,16 +108,19 @@ export class RequestManager {
 
         const urlObject = parseUrl(tileURL);
         const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
-        const tileURLAPIPrefixRe = /^.+\/v4\//;
-
-        // The v4 mapbox tile API supports 512x512 image tiles only when @2x
-        // is appended to the tile URL. If `tileSize: 512` is specified for
-        // a Mapbox raster source force the @2x suffix even if a non hidpi device.
-        const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
         const extension = webpSupported.supported ? '.webp' : '$1';
+
+        // The v4 mapbox tile API supports 512x512 image tiles.
+        // Based on the source-spec we may-or may not request those.
+        const suffix = use2x ? '@2x' : '';
         urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
-        urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
-        urlObject.path = `/v4${urlObject.path}`;
+        if (urlObject.authority === 'raster') {
+            urlObject.path = `/${config.RASTER_URL_PREFIX}${urlObject.path}`;
+        } else {
+            const tileURLAPIPrefixRe = /^.+\/v4\//;
+            urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
+            urlObject.path = `/${config.TILE_URL_VERSION}${urlObject.path}`;
+        }
 
         const accessToken = this._customAccessToken || getAccessToken(urlObject.params) || config.ACCESS_TOKEN;
         if (config.REQUIRE_ACCESS_TOKEN && accessToken && this._skuToken) {
@@ -130,20 +131,26 @@ export class RequestManager {
     }
 
     canonicalizeTileURL(url: string, removeAccessToken: boolean) {
-        const version = "/v4/";
         // matches any file extension specified by a dot and one or more alphanumeric characters
         const extensionRe = /\.[\w]+$/;
 
         const urlObject = parseUrl(url);
         // Make sure that we are dealing with a valid Mapbox tile URL.
-        // Has to begin with /v4/, with a valid filename + extension
-        if (!urlObject.path.match(/(^\/v4\/)/) || !urlObject.path.match(extensionRe)) {
+        // Has to begin with /v4/ or /raster/v1, with a valid filename + extension
+        if (!urlObject.path.match(/^(\/v4\/|\/raster\/v1\/)/) || !urlObject.path.match(extensionRe)) {
             // Not a proper Mapbox tile URL.
             return url;
         }
         // Reassemble the canonical URL from the parts we've parsed before.
-        let result = "mapbox://tiles/";
-        result +=  urlObject.path.replace(version, '');
+        let result = "mapbox://";
+        if (urlObject.path.match(/^\/raster\/v1\//)) {
+            // If the tile url has /raster/v1/, make the final URL mapbox://raster/....
+            const rasterPrefix = `/${config.RASTER_URL_PREFIX}/`;
+            result += `raster/${urlObject.path.replace(rasterPrefix, '')}`;
+        } else {
+            const tilesPrefix = `/${config.TILE_URL_VERSION}/`;
+            result += `tiles/${urlObject.path.replace(tilesPrefix, '')}`;
+        }
 
         // Append the query string, minus the access token parameter.
         let params = urlObject.params;
