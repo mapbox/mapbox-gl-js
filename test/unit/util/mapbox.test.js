@@ -338,6 +338,16 @@ test("mapbox", (t) => {
                 t.end();
             });
 
+            t.test('.normalizeTileURL inserts @2x for 512 raster tiles on v4 of the api', (t) => {
+                config.API_URL = 'http://path.png';
+                config.REQUIRE_ACCESS_TOKEN = false;
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png', false, 256), `http://path.png/v4/tile.png`);
+                t.equal(manager.normalizeTileURL('mapbox://path.png/tile.png', false, 512), `http://path.png/v4/tile@2x.png`);
+                t.equal(manager.normalizeTileURL("mapbox://raster/a.b/0/0/0.png", false, 256), `http://path.png/raster/v1/a.b/0/0/0.png`);
+                t.equal(manager.normalizeTileURL("mapbox://raster/a.b/0/0/0.png", false, 512), `http://path.png/raster/v1/a.b/0/0/0.png`);
+                t.end();
+            });
+
             t.test('.normalizeTileURL replaces img extension with webp on supporting devices', (t) => {
                 webpSupported.supported = true;
                 config.API_URL = 'http://path.png';
