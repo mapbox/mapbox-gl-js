@@ -99,7 +99,7 @@ export class RequestManager {
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
-    normalizeTileURL(tileURL: string, use2x: ?boolean = false): string {
+    normalizeTileURL(tileURL: string, use2x?: boolean, rasterTileSize?: number): string {
         if (this._isSkuTokenExpired()) {
             this._createSkuToken();
         }
@@ -110,10 +110,12 @@ export class RequestManager {
         const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
         const extension = webpSupported.supported ? '.webp' : '$1';
 
-        // The v4 mapbox tile API supports 512x512 image tiles.
-        // Based on the source-spec we may-or may not request those.
-        const suffix = use2x ? '@2x' : '';
+        // The v4 mapbox tile API supports 512x512 image tiles but they must be requested as '@2x' tiles.
+        const use2xAs512 = rasterTileSize && urlObject.authority !== 'raster' && rasterTileSize === 512;
+
+        const suffix = use2x || use2xAs512 ? '@2x' : '';
         urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
+
         if (urlObject.authority === 'raster') {
             urlObject.path = `/${config.RASTER_URL_PREFIX}${urlObject.path}`;
         } else {
