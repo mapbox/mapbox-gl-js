@@ -41,8 +41,8 @@ export class Elevation {
         if (!(demTile && demTile.dem)) { return defaultIfNotLoaded; }
         const dem: DEMData = demTile.dem;
         const tilesAtTileZoom = 1 << demTile.tileID.canonical.z;
-        const x = (px * tilesAtTileZoom - demTile.tileID.canonical.x) * demTile.tileSize;
-        const y = (point.y * tilesAtTileZoom - demTile.tileID.canonical.y) * demTile.tileSize;
+        const x = (px * tilesAtTileZoom - demTile.tileID.canonical.x) * dem.dim;
+        const y = (point.y * tilesAtTileZoom - demTile.tileID.canonical.y) * dem.dim;
         const i = Math.floor(x);
         const j = Math.floor(y);
 
@@ -180,8 +180,8 @@ export class DEMSampler {
         const dem: DEMData = demTile.dem;
         const demTileID = demTile.tileID;
         const scale = 1 << tileID.canonical.z - demTileID.canonical.z;
-        const xOffset = (tileID.canonical.x / scale - demTileID.canonical.x) * demTile.tileSize;
-        const yOffset = (tileID.canonical.y / scale - demTileID.canonical.y) * demTile.tileSize;
+        const xOffset = (tileID.canonical.x / scale - demTileID.canonical.x) * dem.dim;
+        const yOffset = (tileID.canonical.y / scale - demTileID.canonical.y) * dem.dim;
         const k = demTile.tileSize / EXTENT / scale;
 
         return new DEMSampler(dem, k, [xOffset, yOffset]);
