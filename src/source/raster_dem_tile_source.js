@@ -1,7 +1,7 @@
 // @flow
 
 import {getImage, ResourceType} from '../util/ajax';
-import {extend} from '../util/util';
+import {extend, prevPowerOfTwo} from '../util/util';
 import {Evented} from '../util/evented';
 import browser from '../util/browser';
 import window from '../util/window';
@@ -58,7 +58,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 const transfer = window.ImageBitmap && img instanceof window.ImageBitmap && offscreenCanvasSupported();
                 // DEMData uses 1px padding. Handle cases with image buffer of 1 and 2 pxs, the rest assume default buffer 0
                 // in order to keep the previous implementation working (no validation against tileSize).
-                const buffer = (img.width - this.tileSize) <= 4 && (img.width & 1) === 0 ? Math.max(0, img.width - this.tileSize) / 2 : 0;
+                const buffer = (img.width - prevPowerOfTwo(img.width)) / 2;
                 // padding is used in getImageData. As DEMData has 1px padding, if DEM tile buffer is 2px, discard outermost pixels.
                 const padding = 1 - buffer;
                 const borderReady = padding < 1;
