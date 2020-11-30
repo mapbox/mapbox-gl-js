@@ -155,6 +155,17 @@ class FreeCameraOptions {
     }
 }
 
+/**
+ * While using the free camera API the outcome value of isZooming, isMoving and isRotating
+ * is not a result of the free camera API.
+ * If the user sets the map.interactive to true, there will be conflicting behaviors while
+ * interacting with map via zooming or moving using mouse or/and keyboard which will result
+ * in isZooming, isMoving and isRotating to return true while using free camera API. In order
+ * to prevent the confilicting behavior please set map.interactive to false which will result
+ * in muting the following events: zoom, zoomend, zoomstart, rotate, rotateend, rotatestart,
+ * move, moveend, movestart, pitch, pitchend, pitchstart.
+ */
+
 class FreeCamera {
     _transform: mat4;
     _orientation: quat;
