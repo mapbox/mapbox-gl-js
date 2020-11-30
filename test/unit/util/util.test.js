@@ -2,7 +2,7 @@
 
 import {test} from '../../util/test';
 
-import {degToRad, radToDeg, easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon} from '../../../src/util/util';
+import {degToRad, radToDeg, easeCubicInOut, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo} from '../../../src/util/util';
 import Point from '@mapbox/point-geometry';
 
 const EPSILON = 1e-8;
@@ -110,6 +110,17 @@ test('util', (t) => {
         t.equal(nextPowerOfTwo(0), 1);
         t.equal(nextPowerOfTwo(-42), 1);
         t.equal(nextPowerOfTwo(42), 64);
+        t.end();
+    });
+
+    t.test('prevPowerOfTwo', (t) => {
+        t.equal(prevPowerOfTwo(1), 1);
+        t.equal(prevPowerOfTwo(2), 2);
+        t.equal(prevPowerOfTwo(256), 256);
+        t.equal(prevPowerOfTwo(258), 256);
+        t.equal(prevPowerOfTwo(514), 512);
+        t.equal(prevPowerOfTwo(512), 512);
+        t.equal(prevPowerOfTwo(98), 64);
         t.end();
     });
 
