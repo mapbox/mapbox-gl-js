@@ -1813,7 +1813,7 @@ test('camera', (t) => {
 
             const transform = camera.cameraForBounds(bb, {bearing: 175});
             t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.7171}, 'correctly calculates coordinates for new bounds');
-            t.equal(fixedNum(transform.zoom, 3), 2.558);
+            t.equal(fixedNum(transform.zoom, 3), 2.396);
             t.equal(transform.bearing, 175);
             t.end();
         });
@@ -1824,7 +1824,7 @@ test('camera', (t) => {
 
             const transform = camera.cameraForBounds(bb, {bearing: -30});
             t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.7171}, 'correctly calculates coordinates for new bounds');
-            t.equal(fixedNum(transform.zoom, 3), 2.392);
+            t.equal(fixedNum(transform.zoom, 3), 2.222);
             t.equal(transform.bearing, -30);
             t.end();
         });
@@ -1926,6 +1926,16 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('not zero padding', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            camera.fitBounds(bb, {bearing: 45, duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -100.5, lat: 34.7171}, 'pans to coordinates based on fitBounds with padding option as number applied');
+            t.equal(fixedNum(camera.getZoom(), 3), 2.254);
+            t.end();
+        });
+
         t.test('padding object', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
@@ -1957,12 +1967,12 @@ test('camera', (t) => {
         t.test('bearing 225', (t) => {
             const camera = createCamera();
             const p0 = [128, 128];
-            const p1 = [256, 256];
+            const p1 = [256, 384];
             const bearing = 225;
 
             camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
-            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -45, lat: 40.9799}, 'centers, rotates 225 degrees, and zooms based on screen coordinates');
-            t.equal(fixedNum(camera.getZoom(), 3), 1.5);
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -45, lat: 0}, 'centers, rotates 225 degrees, and zooms based on screen coordinates');
+            t.equal(fixedNum(camera.getZoom(), 3), 0.915); // 0.915 ~= log2(4*sqrt(2)/3)
             t.equal(camera.getBearing(), -135);
             t.end();
         });
@@ -1971,12 +1981,12 @@ test('camera', (t) => {
             const camera = createCamera();
 
             const p0 = [128, 128];
-            const p1 = [256, 256];
+            const p1 = [256, 384];
             const bearing = 0;
 
             camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
-            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -45, lat: 40.9799}, 'centers and zooms in based on screen coordinates');
-            t.equal(fixedNum(camera.getZoom(), 3), 2);
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -45, lat: 0}, 'centers and zooms in based on screen coordinates');
+            t.equal(fixedNum(camera.getZoom(), 3), 1);
             t.equal(camera.getBearing(), 0);
             t.end();
         });
@@ -1984,12 +1994,12 @@ test('camera', (t) => {
         t.test('inverted points', (t) => {
             const camera = createCamera();
             const p1 = [128, 128];
-            const p0 = [256, 256];
+            const p0 = [256, 384];
             const bearing = 0;
 
             camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
-            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -45, lat: 40.9799}, 'centers and zooms based on screen coordinates in opposite order');
-            t.equal(fixedNum(camera.getZoom(), 3), 2);
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -45, lat: 0}, 'centers and zooms based on screen coordinates in opposite order');
+            t.equal(fixedNum(camera.getZoom(), 3), 1);
             t.equal(camera.getBearing(), 0);
             t.end();
         });

@@ -548,13 +548,26 @@ class Camera extends Evented {
 
         // We want to calculate the upper right and lower left of the box defined by p0 and p1
         // in a coordinate system rotate to match the destination bearing.
-        const p0world = tr.project(LngLat.convert(p0));
-        const p1world = tr.project(LngLat.convert(p1));
+        // All four corners of the box must be taken into account because of camera rotation
+        const p0LatLng = LngLat.convert(p0);
+        const p1LatLng = LngLat.convert(p1);
+        const p0world = tr.project(p0LatLng);
+        const p1world = tr.project(p1LatLng);
+        const p2world = tr.project(new LngLat(p0LatLng.lng, p1LatLng.lat));
+        const p3world = tr.project(new LngLat(p1LatLng.lng, p0LatLng.lat));
         const p0rotated = p0world.rotate(-bearing * Math.PI / 180);
         const p1rotated = p1world.rotate(-bearing * Math.PI / 180);
+        const p2rotated = p2world.rotate(-bearing * Math.PI / 180);
+        const p3rotated = p3world.rotate(-bearing * Math.PI / 180);
 
-        const upperRight = new Point(Math.max(p0rotated.x, p1rotated.x), Math.max(p0rotated.y, p1rotated.y));
-        const lowerLeft = new Point(Math.min(p0rotated.x, p1rotated.x), Math.min(p0rotated.y, p1rotated.y));
+        const upperRight = new Point(
+            Math.max(p0rotated.x, p1rotated.x, p2rotated.x, p3rotated.x),
+            Math.max(p0rotated.y, p1rotated.y, p2rotated.y, p3rotated.y)
+        );
+        const lowerLeft = new Point(
+            Math.min(p0rotated.x, p1rotated.x, p2rotated.x, p3rotated.x),
+            Math.min(p0rotated.y, p1rotated.y, p2rotated.y, p3rotated.y)
+        );
 
         // Calculate zoom: consider the original bbox and padding.
         const size = upperRight.sub(lowerLeft);
