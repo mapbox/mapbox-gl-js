@@ -5,6 +5,7 @@ import UnitBezier from '@mapbox/unitbezier';
 import Point from '@mapbox/point-geometry';
 import window from './window';
 import assert from 'assert';
+import {vec3} from 'gl-matrix';
 
 import type {Callback} from '../types/callback';
 
@@ -145,6 +146,13 @@ export function bezier(p1x: number, p1y: number, p2x: number, p2y: number): (t: 
     return function(t: number) {
         return bezier.solve(t);
     };
+}
+
+export function distanceToLine(p0: vec3, p1: vec3, p: vec3): number {
+    const p0p1 = vec3.sub([], p1, p0);
+    const p0p = vec3.sub([], p, p0);
+
+    return vec3.length(vec3.cross(p0p, p0p, p0p1)) / vec3.length(p0p1);
 }
 
 /**
