@@ -106,11 +106,16 @@ export default class Popup extends Evented {
     _lngLat: LngLat;
     _trackPointer: boolean;
     _pos: ?Point;
+    _classList: DOMTokenList; // stores all user-defined classes
 
     constructor(options: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
         bindAll(['_update', '_onClose', 'remove', '_onMouseMove', '_onMouseUp', '_onDrag'], this);
+
+        const classListElem = DOM.create('div');
+        classListElem.className = this.options.className;
+        this._classList = classListElem.classList;
     }
 
     /**
@@ -440,6 +445,7 @@ export default class Popup extends Evented {
      * popup.addClassName('some-class')
      */
     addClassName(className: string) {
+        this._classList.add(className);
         if (this._container) {
             this._container.classList.add(className);
         }
@@ -455,21 +461,10 @@ export default class Popup extends Evented {
      * popup.removeClassName('some-class')
      */
     removeClassName(className: string) {
+        this._classList.remove(className);
         if (this._container) {
             this._container.classList.remove(className);
         }
-    }
-
-    /**
-     * Sets the popup's offset.
-     *
-     * @param offset Sets the popup's offset.
-     * @returns {Popup} `this`
-     */
-    setOffset (offset?: Offset) {
-        this.options.offset = offset;
-        this._update();
-        return this;
     }
 
     /**
@@ -484,9 +479,22 @@ export default class Popup extends Evented {
      * popup.toggleClassName('toggleClass')
      */
     toggleClassName(className: string) {
+        this._classList.toggle(className);
         if (this._container) {
             return this._container.classList.toggle(className);
         }
+    }
+
+    /**
+     * Sets the popup's offset.
+     *
+     * @param offset Sets the popup's offset.
+     * @returns {Popup} `this`
+     */
+    setOffset (offset?: Offset) {
+        this.options.offset = offset;
+        this._update();
+        return this;
     }
 
     _createCloseButton() {
@@ -520,9 +528,8 @@ export default class Popup extends Evented {
             this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
-            if (this.options.className) {
-                this.options.className.split(' ').forEach(name =>
-                    this._container.classList.add(name));
+            for (let idx = 0; idx < this._classList.length; idx++) {
+                this._container.classList.add(this._classList.item(idx));
             }
 
             if (this._trackPointer) {

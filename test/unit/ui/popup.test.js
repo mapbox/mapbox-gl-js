@@ -571,6 +571,30 @@ test('Popup adds classes from className option, methods for class manipulations 
     t.end();
 });
 
+test('Popup classes can be manipulated before the popup is on the map', (t) => {
+    const map = createMap(t);
+    const popup = new Popup({className: 'some classes'})
+        .setText('Test')
+        .setLngLat([0, 0]);
+
+    popup.addClassName('addedClass');
+    popup.removeClassName('some');
+    popup.toggleClassName('toggle');
+
+    t.throws(() => popup.addClassName('should throw exception'), window.DOMException);
+
+    popup.addTo(map);
+
+    const popupContainer = popup.getElement();
+
+    t.ok(!popupContainer.classList.contains('some'));
+    t.ok(popupContainer.classList.contains('classes'));
+    t.ok(popupContainer.classList.contains('addedClass'));
+    t.ok(popupContainer.classList.contains('toggle'));
+
+    t.end();
+});
+
 test('Cursor-tracked popup disappears on mouseout', (t) => {
     const map = createMap(t);
 
