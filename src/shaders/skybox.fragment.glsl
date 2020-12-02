@@ -5,7 +5,7 @@ varying lowp vec3 v_uv;
 uniform lowp samplerCube u_cubemap;
 uniform lowp float u_opacity;
 uniform highp float u_temporal_offset;
-uniform lowp vec3 u_sun_direction;
+uniform highp vec3 u_sun_direction;
 
 highp vec3 hash(highp vec2 p) {
     highp vec3 p3 = fract(vec3(p.xyx) * vec3(443.8975, 397.2973, 491.1871));
@@ -19,7 +19,7 @@ vec3 dither(vec3 color, highp vec2 seed) {
     return color;
 }
 
-float sun_disk(highp vec3 ray_direction, vec3 sun_direction) {
+float sun_disk(highp vec3 ray_direction, highp vec3 sun_direction) {
     highp float cos_angle = dot(normalize(ray_direction), sun_direction);
 
     // Sun angular angle is ~0.5°
