@@ -59,7 +59,7 @@
     },
     "terrain": {
       "type": "terrain",
-      "doc": "The global terrain source."
+      "doc": "A global modifier that elevates layers and markers based on a DEM data source."
     },
     "sources": {
       "required": true,
@@ -609,7 +609,7 @@
           }
         },
         "sky": {
-          "doc": "The background above the horizon when the map is pitched. Layers of this type always appear behind all other layer types.",
+          "doc": "A spherical dome around the map that is always rendered behind all other layers.",
           "sdk-support": {
             "basic functionality": {
               "js": "2.0.0"
@@ -3784,7 +3784,7 @@
   "terrain" : {
     "source": {
       "type": "string",
-      "doc": "A property name of global sources object. The source (property value) should be of type raster_dem source.",
+      "doc": "Name of a source description of `raster_dem` type to be used for terrain elevation.",
       "required": true
     },
     "exaggeration": {
@@ -3800,13 +3800,10 @@
         ]
       },
       "transition": true,
-      "doc": "Elevation multiplier.",
+      "doc": "Exaggerates the elevation from the DEM by multiplying it with this value.",
       "sdk-support": {
         "basic functionality": {
-          "js": "Not yet supported",
-          "android": "Not yet supported",
-          "ios": "Not yet supported",
-          "macos": "Not yet supported"
+          "js": "2.0.0"
         }
       }
     }
@@ -6040,7 +6037,7 @@
       "minimum": 0,
       "maximum": 180,
       "transition": false,
-      "doc": "The radius angle for a gradient. A value of 180 will make the gradient wrap around.",
+      "doc": "The angular distance (measured in degrees) from `sky-gradient-center` up to which the gradient extends.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.0.0"
@@ -6069,7 +6066,7 @@
         1,
         "white"
       ],
-      "doc": "Defines a color gradient with which to color the sky. The color values can be interpolated with an expression using `sky-radial-progress`.",
+      "doc": "Defines a radial color gradient with which to color the sky. The color values can be interpolated with an expression using `sky-radial-progress`. The range [0, 1] for the interpolant covers a radial distance (in degrees) of [0, `sky-gradient-radius`] centered at the position specified by `sky-gradient-center`.",
       "transition": false,
       "requires": [
         {
