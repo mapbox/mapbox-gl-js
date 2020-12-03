@@ -43,6 +43,7 @@ class SkyLayer extends StyleLayer {
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);
+        this._updateColorRamp();
     }
 
     _handleSpecialPaintPropertyUpdate(name: string) {
