@@ -6036,7 +6036,7 @@
           "sky-type": "gradient"
         }
       ],
-      "default": 180,
+      "default": 90,
       "minimum": 0,
       "maximum": 180,
       "transition": false,
@@ -6064,8 +6064,8 @@
         [
           "sky-radial-progress"
         ],
-        0,
-        "yellow",
+        0.8,
+        "#87ceeb",
         1,
         "white"
       ],
