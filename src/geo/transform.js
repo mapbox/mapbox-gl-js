@@ -7,7 +7,7 @@ import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
-import {vec4, mat4, mat2, vec2, vec3, quat} from 'gl-matrix';
+import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
 import {Aabb, Frustum, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
@@ -561,10 +561,7 @@ class Transform {
         const zoomSplitDistance = this.cameraToCenterDistance / options.tileSize * (options.roundZoom ? 1 : 0.502);
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
-        let minZoom = options.minzoom || 0;
-        // Use 0.1 as an epsilon to avoid for explicit == 0.0 floating point checks
-        if (this.pitch <= 60.0 && this._edgeInsets.top < 0.1 && !this._elevation)
-            minZoom = z;
+        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation ? z : 0;
 
         const maxRange = this.elevation ? this.elevation.exaggeration() * 10000 : 0;
         const newRootTile = (wrap: number): any => {
@@ -652,28 +649,36 @@ class Transform {
                 fullyVisible = intersectResult === 2;
             }
 
-            // Have we reached the target depth?
-            if (it.zoom === maxZoom) {
-                result.push({
-                    tileID: it.tileID ? it.tileID : new OverscaledTileID(overscaledZ, it.wrap, it.zoom, x, y),
-                    distanceSq: vec2.sqrLen([centerPoint[0] - 0.5 - x - (it.wrap << z), centerPoint[1] - 0.5 - y])
-                });
-                continue;
+            let shouldSplit = true;
+            if (minZoom <= it.zoom && it.zoom < maxZoom) {
+                const dx = it.aabb.distanceX(cameraPoint);
+                const dy = it.aabb.distanceY(cameraPoint);
+                let dzSqr = cameraHeightSqr;
+
+                if (useElevationData) {
+                    dzSqr = square(it.aabb.distanceZ(cameraPoint) * meterToTile);
+                }
+
+                const distanceSqr = dx * dx + dy * dy + dzSqr;
+                const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance;
+                const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
+
+                shouldSplit = distanceSqr < distToSplitSqr;
             }
 
-            const dx = it.aabb.distanceX(cameraPoint);
-            const dy = it.aabb.distanceY(cameraPoint);
-            const dzSqr = useElevationData ? square(it.aabb.distanceZ(cameraPoint) * meterToTile) : cameraHeightSqr;
-            const distanceSqr = dx * dx + dy * dy + dzSqr;
+            // Have we reached the target depth or is the tile too far away to be any split further?
+            if (it.zoom === maxZoom || !shouldSplit) {
+                const tileZoom = it.zoom === maxZoom ? overscaledZ : it.zoom;
+                if (!!options.minzoom && options.minzoom > tileZoom) {
+                    // Not within source tile range.
+                    continue;
+                }
 
-            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance;
-            const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
-            // Is the tile too far away to be any split further?
-            if (distanceSqr > distToSplitSqr && it.zoom >= minZoom) {
-                result.push({
-                    tileID: it.tileID ? it.tileID : new OverscaledTileID(it.zoom, it.wrap, it.zoom, x, y),
-                    distanceSq: vec2.sqrLen([centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) * (1 << (z - it.zoom))), centerPoint[1] - 0.5 - y])
-                });
+                const dx = centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) * (1 << (z - it.zoom)));
+                const dy = centerPoint[1] - 0.5 - y;
+                const id = it.tileID ? it.tileID : new OverscaledTileID(tileZoom, it.wrap, it.zoom, x, y);
+
+                result.push({tileID: id, distanceSq: dx * dx + dy * dy});
                 continue;
             }
 
