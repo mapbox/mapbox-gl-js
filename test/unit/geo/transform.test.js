@@ -147,6 +147,36 @@ test('transform', (t) => {
         t.end();
     });
 
+    test('mapbox-gl-js-internal#373', (t) => {
+        const options = {
+            minzoom: 3,
+            maxzoom: 22,
+            tileSize: 512
+        };
+
+        const transform = new Transform();
+        transform.resize(512, 512);
+        transform.center = {lng: -0.01, lat: 0.01};
+        transform.zoom = 3;
+        transform.pitch = 65;
+        transform.bearing = 45;
+
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(3, 0, 3, 3, 3),
+            new OverscaledTileID(3, 0, 3, 3, 4),
+            new OverscaledTileID(3, 0, 3, 4, 3),
+            new OverscaledTileID(3, 0, 3, 4, 4),
+            new OverscaledTileID(3, 0, 3, 4, 2),
+            new OverscaledTileID(3, 0, 3, 5, 3),
+            new OverscaledTileID(3, 0, 3, 5, 2),
+            new OverscaledTileID(3, 0, 3, 4, 1),
+            new OverscaledTileID(3, 0, 3, 6, 3),
+            new OverscaledTileID(3, 0, 3, 5, 1),
+            new OverscaledTileID(3, 0, 3, 6, 2)]);
+
+        t.end();
+    });
+
     test('coveringTiles', (t) => {
         const options = {
             minzoom: 1,
