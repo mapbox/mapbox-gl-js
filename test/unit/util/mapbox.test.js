@@ -151,6 +151,15 @@ test("mapbox", (t) => {
                 t.end();
             });
 
+            t.test('removes secure params if custom API_URL is http', (t) => {
+                config.API_URL = 'http://test.example.com/api.mapbox.com';
+                t.equal(
+                    manager.normalizeSourceURL('mapbox://one.a'),
+                    'http://test.example.com/api.mapbox.com/v4/one.a.json?access_token=key'
+                );
+                t.end();
+            });
+
             t.end();
         });
 
