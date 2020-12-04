@@ -2235,7 +2235,7 @@ class Map extends Camera {
      *   if (e.features.length > 0) {
      *     map.getFeatureState({
      *       source: 'my-source',
-     *       sourceLayer: 'my-source-layer'
+     *       sourceLayer: 'my-source-layer',
      *       id: e.features[0].id
      *     });
      *   }

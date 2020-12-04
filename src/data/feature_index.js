@@ -11,7 +11,7 @@ import DictionaryCoder from '../util/dictionary_coder';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import GeoJSONFeature from '../util/vectortile_to_geojson';
-import {arraysIntersect, mapObject} from '../util/util';
+import {arraysIntersect, mapObject, extend} from '../util/util';
 import {OverscaledTileID} from '../source/tile_id';
 import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from '../style/evaluation_parameters';
@@ -202,7 +202,7 @@ class FeatureIndex {
                 featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
             }
 
-            const serializedLayer = serializedLayers[layerID];
+            const serializedLayer = extend({}, serializedLayers[layerID]);
 
             serializedLayer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
             serializedLayer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
