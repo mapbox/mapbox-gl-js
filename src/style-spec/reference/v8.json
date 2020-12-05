@@ -3784,7 +3784,7 @@
   "terrain" : {
     "source": {
       "type": "string",
-      "doc": "Name of a source description of `raster_dem` type to be used for terrain elevation.",
+      "doc": "Name of a source of `raster_dem` type to be used for terrain elevation.",
       "required": true
     },
     "exaggeration": {
@@ -3800,7 +3800,7 @@
         ]
       },
       "transition": true,
-      "doc": "Exaggerates the elevation from the DEM by multiplying it with this value.",
+      "doc": "Exaggerates the elevation of the terrain by multiplying the data from the DEM with this value.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.0.0"
@@ -6005,6 +6005,11 @@
     },
     "sky-gradient-center": {
       "type": "array",
+      "requires": [
+        {
+          "sky-type": "gradient"
+        }
+      ],
       "value": "number",
       "default": [
         0,
@@ -6037,7 +6042,7 @@
       "minimum": 0,
       "maximum": 180,
       "transition": false,
-      "doc": "The angular distance (measured in degrees) from `sky-gradient-center` up to which the gradient extends.",
+      "doc": "The angular distance (measured in degrees) from `sky-gradient-center` up to which the gradient extends. A value of 180 causes the gradient to wrap around to the opposite direction from `sky-gradient-center`.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.0.0"
@@ -6107,7 +6112,7 @@
     "sky-atmosphere-color": {
       "type": "color",
       "default": "white",
-      "doc": "Color coefficients used to determine how color channels scatter throughout the atmosphere. Using white will apply the default coefficients giving a blue color to the atmosphere. Changing a color channel will affect how heavily this particular channel is affected by scattering. The alpha channel describes how strongly the atmosphere color is represented in the sky layer.",
+      "doc": "A color used to tweak the main atmospheric scattering coefficients. Using white applies the default coefficients giving the natural blue color to the atmosphere. This color affects how heavily the corresponding wavelength is represented during scattering. The alpha channel describes the density of the atmosphere, with 1 maximum density and 0 no density.",
       "transition": false,
       "requires": [
         {
