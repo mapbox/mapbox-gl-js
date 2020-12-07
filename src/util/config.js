@@ -3,6 +3,7 @@
 type Config = {|
   API_URL: string,
   EVENTS_URL: ?string,
+  SESSION_PATH: string,
   FEEDBACK_URL: string,
   REQUIRE_ACCESS_TOKEN: boolean,
   TILE_URL_VERSION: string,
@@ -23,6 +24,7 @@ const config: Config = {
             return null;
         }
     },
+    SESSION_PATH: '/map-sessions/v1',
     FEEDBACK_URL: 'https://apps.mapbox.com/feedback',
     TILE_URL_VERSION: 'v4',
     RASTER_URL_PREFIX: 'raster/v1',

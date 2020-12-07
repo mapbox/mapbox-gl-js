@@ -7,7 +7,7 @@ import window from '../util/window';
 const {HTMLImageElement, HTMLElement, ImageBitmap} = window;
 import DOM from '../util/dom';
 import {getImage, getJSON, ResourceType} from '../util/ajax';
-import {RequestManager, postMapLoadEvent} from '../util/mapbox';
+import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG} from '../util/mapbox';
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
@@ -2625,20 +2625,39 @@ class Map extends Camera {
         return this;
     }
 
+    /***** START WARNING - REMOVAL OR MODIFICATION OF THE
+    * FOLLOWING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******
+    * The following code is used to access Mapbox's APIs. Removal or modification
+    * of this code can result in higher fees and/or
+    * termination of your account with Mapbox.
+    *
+    * Under the Mapbox Terms of Service, you may not use this code to access Mapbox
+    * Mapping APIs other than through Mapbox SDKs.
+    *
+    * The Mapping APIs documentation is available at https://docs.mapbox.com/api/maps/#maps
+    * and the Mapbox Terms of Service are available at https://www.mapbox.com/tos/
+    ******************************************************************************/
+
     _authenticate() {
-        postMapLoadEvent(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err) => {
+        getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err) => {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
-                console.error('Error: A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/');
-                browser.setErrorState();
-                const gl = this.painter.context.gl;
-                if (this._logoControl instanceof LogoControl) {
-                    this._logoControl._updateLogo();
+                if (err.message === AUTH_ERR_MSG || err.status === 401) {
+                    console.error('Error: A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/');
+                    browser.setErrorState();
+                    const gl = this.painter.context.gl;
+                    if (this._logoControl instanceof LogoControl) {
+                        this._logoControl._updateLogo();
+                    }
+                    if (gl) gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
                 }
-                if (gl) gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
             }
         });
+        postMapLoadEvent(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, () => {});
     }
+
+    /***** END WARNING - REMOVAL OR MODIFICATION OF THE
+    PRECEDING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******/
 
     _updateTerrain() {
         // Recalculate if enabled/disabled and calculate elevation cover. As camera is using elevation tiles before

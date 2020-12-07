@@ -1033,5 +1033,55 @@ test("mapbox", (t) => {
         t.end();
     });
 
+    t.test('MapSessionAPI', (t) => {
+        let sessionAPI;
+        const skuToken = '1234567890123';
+        t.beforeEach((callback) => {
+            window.useFakeXMLHttpRequest();
+            sessionAPI = new mapbox.MapSessionAPI();
+            callback();
+        });
+
+        t.afterEach((callback) => {
+            window.restore();
+            callback();
+        });
+
+        t.test('mapbox.getMapSessionAPI', (t) => {
+            t.ok(mapbox.getMapSessionAPI);
+            t.end();
+        });
+
+        t.test('contains access token and skuToken', (t) => {
+            sessionAPI.getSession(1, skuToken);
+            const requestURL = new URL(window.server.requests[0].url);
+            const urlParam = new URLSearchParams(requestURL.search);
+            t.equals(urlParam.get('sku'), skuToken);
+            t.equals(urlParam.get('access_token'), config.ACCESS_TOKEN);
+            t.end();
+        });
+
+        t.test('no API is sent when API_URL unavailable', (t) => {
+            config.API_URL = null;
+            sessionAPI.getSession(1, skuToken);
+            t.equal(window.server.requests.length, 0, 'no request');
+
+            t.end();
+        });
+
+        t.test('send a new request when access token changes', (t) => {
+            config.ACCESS_TOKEN = 'pk.new.*';
+            sessionAPI.getSession(1, skuToken);
+
+            const req = window.server.requests[0];
+            t.equal(req.url, `${config.API_URL + config.SESSION_PATH}?sku=${skuToken}&access_token=pk.new.*`);
+            t.equal(req.method, 'GET');
+
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.end();
 });
