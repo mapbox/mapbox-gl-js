@@ -1,9 +1,9 @@
 // @flow
 
-/***** START WARNING - IF YOU USE THIS CODE WITH MAPBOX MAPPING APIS, REMOVAL OR
-* MODIFICATION OF THE FOLLOWING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******
-* The following code is used to access Mapbox's Mapping APIs. Removal or modification
-* of this code when used with Mapbox's Mapping APIs can result in higher fees and/or
+/***** START WARNING REMOVAL OR MODIFICATION OF THE
+* FOLLOWING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******
+* The following code is used to access Mapbox's APIs. Removal or modification
+* of this code can result in higher fees and/or
 * termination of your account with Mapbox.
 *
 * Under the Mapbox Terms of Service, you may not use this code to access Mapbox
@@ -19,7 +19,7 @@ import webpSupported from './webp_supported';
 import {createSkuToken, SKU_ID} from './sku_token';
 import {version as sdkVersion} from '../../package.json';
 import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util';
-import {postData, ResourceType} from './ajax';
+import {postData, ResourceType, getData} from './ajax';
 
 import type {RequestParameters} from './ajax';
 import type {Cancelable} from '../types/cancelable';
@@ -34,6 +34,8 @@ type UrlObject = {|
     path: string,
     params: Array<string>
 |};
+
+export const AUTH_ERR_MSG: string = 'NO_ACCESS_TOKEN';
 
 export class RequestManager {
     _skuToken: string;
@@ -270,7 +272,7 @@ function parseAccessToken(accessToken: ?string) {
     }
 }
 
-type TelemetryEventType = 'appUserTurnstile' | 'map.load';
+type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth';
 
 class TelemetryEvent {
     eventData: any;
@@ -433,6 +435,68 @@ export class MapLoadEvent extends TelemetryEvent {
     }
 }
 
+export class MapSessionAPI extends TelemetryEvent {
+    +success: {[_: number]: boolean};
+    skuToken: string;
+    errorCb: (err: ?Error) => void;
+
+    constructor() {
+        super('map.auth');
+        this.success = {};
+        this.skuToken = '';
+    }
+
+    getSession(timestamp: number, token: string, callback: (err: ?Error) => void, customAccessToken?: ?string) {
+        if (!config.API_URL || !config.SESSION_PATH) return;
+        const authUrlObject: UrlObject = parseUrl(config.API_URL + config.SESSION_PATH);
+        authUrlObject.params.push(`sku=${token || ''}`);
+        authUrlObject.params.push(`access_token=${customAccessToken || config.ACCESS_TOKEN || ''}`);
+
+        const request: RequestParameters = {
+            url: formatUrl(authUrlObject),
+            headers: {
+                'Content-Type': 'text/plain', //Skip the pre-flight OPTIONS request
+            }
+        };
+
+        this.pendingRequest = getData(request, (error) => {
+            this.pendingRequest = null;
+            callback(error);
+            this.saveEventData();
+            this.processRequests(customAccessToken);
+        });
+    }
+
+    getSessionAPI(mapId: number, skuToken: string, customAccessToken: string, callback: (err: ?Error) => void) {
+        this.skuToken = skuToken;
+        this.errorCb = callback;
+
+        if (config.SESSION_PATH && config.API_URL) {
+            if (customAccessToken || config.ACCESS_TOKEN) {
+                this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
+            } else {
+                this.errorCb(new Error(AUTH_ERR_MSG));
+            }
+        }
+    }
+
+    processRequests(customAccessToken?: ?string) {
+        if (this.pendingRequest || this.queue.length === 0) return;
+        const {id, timestamp} = this.queue.shift();
+
+        // Only one load event should fire per map
+        if (id && this.success[id]) return;
+
+        this.getSession(timestamp, this.skuToken, (err) => {
+            if (err) {
+                this.errorCb(err);
+            } else {
+                if (id) this.success[id] = true;
+            }
+        }, customAccessToken);
+    }
+}
+
 export class TurnstileEvent extends TelemetryEvent {
     constructor(customAccessToken?: ?string) {
         super('appUserTurnstile');
@@ -499,6 +563,9 @@ export const postTurnstileEvent = turnstileEvent_.postTurnstileEvent.bind(turnst
 
 const mapLoadEvent_ = new MapLoadEvent();
 export const postMapLoadEvent = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
+
+const mapSessionAPI_ = new MapSessionAPI();
+export const getMapSessionAPI = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);
 
 /***** END WARNING - REMOVAL OR MODIFICATION OF THE
 PRECEDING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******/

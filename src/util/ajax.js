@@ -261,6 +261,10 @@ export const postData = function(requestParameters: RequestParameters, callback:
     return makeRequest(extend(requestParameters, {method: 'POST'}), callback);
 };
 
+export const getData = function(requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
+    return makeRequest(extend(requestParameters, {method: 'GET'}), callback);
+};
+
 function sameOrigin(url) {
     const a: HTMLAnchorElement = window.document.createElement('a');
     a.href = url;
