@@ -1,9 +1,9 @@
 // @flow
 
-/***** START WARNING - IF YOU USE THIS CODE WITH MAPBOX MAPPING APIS, REMOVAL OR
-* MODIFICATION OF THE FOLLOWING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******
-* The following code is used to access Mapbox's Mapping APIs. Removal or modification
-* of this code when used with Mapbox's Mapping APIs can result in higher fees and/or
+/***** START WARNING REMOVAL OR MODIFICATION OF THE
+* FOLLOWING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******
+* The following code is used to access Mapbox's APIs. Removal or modification
+* of this code can result in higher fees and/or
 * termination of your account with Mapbox.
 *
 * Under the Mapbox Terms of Service, you may not use this code to access Mapbox
