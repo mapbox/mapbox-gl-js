@@ -966,7 +966,9 @@ class Transform {
         const elevation = sampleTerrainIn3D && this.elevation ? this.elevation.getAtPoint(coord, this._centerAltitude) : this._centerAltitude;
         const p = [coord.x * this.worldSize, coord.y * this.worldSize, elevation + coord.toAltitude(), 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
-        return new Point(p[0] / p[3], p[3] > 0 ? p[1] / p[3] : Number.MAX_VALUE);
+        return p[3] > 0 ?
+            new Point(p[0] / p[3], p[1] / p[3]) :
+            new Point(Number.MAX_VALUE, Number.MAX_VALUE);
     }
 
     /**

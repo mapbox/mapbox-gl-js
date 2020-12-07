@@ -565,7 +565,7 @@ class Map extends Camera {
     }
 
     /**
-     * Checks if a control exists on the map.
+     * Checks if a control is on the map.
      *
      * @param {IControl} control The {@link IControl} to check.
      * @returns {boolean} True if map contains control.
@@ -575,7 +575,8 @@ class Map extends Camera {
      * // Add zoom and rotation controls to the map.
      * map.addControl(navigation);
      * // Check that the navigation control exists on the map.
-     * map.hasControl(navigation);
+     * const added = map.hasControl(navigation);
+     * // added === true
      */
     hasControl(control: IControl) {
         return this._controls.indexOf(control) > -1;
@@ -851,7 +852,9 @@ class Map extends Camera {
      * Returns a {@link Point} representing pixel coordinates, relative to the map's `container`,
      * that correspond to the specified geographical location.
      *
-     * If location `lnglat` is behind camera plane, `y` component of returned {@link Point} is set to Number.MAX_VALUE;
+     * When the map is pitched and `lnglat` is completely behind the camera, there are no pixel
+     * coordinates corresponding to that location. In that case,
+     * the `x` and `y` components of the returned {@link Point} are set to Number.MAX_VALUE.
      *
      * @param {LngLatLike} lnglat The geographical location to project.
      * @returns {Point} The {@link Point} corresponding to `lnglat`, relative to the map's `container`.
@@ -2106,11 +2109,20 @@ class Map extends Camera {
 
     // eslint-disable-next-line jsdoc/require-returns
     /**
-     * Sets the terrain.
+     * Sets the terrain property of the style.
      *
      * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#terrain).
      * If `null` or `undefined` is provided, function removes terrain.
      * @returns {Map} `this`
+     * @example
+     * map.addSource('mapbox-dem', {
+     *     'type': 'raster-dem',
+     *     'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+     *     'tileSize': 512,
+     *     'maxzoom': 14
+     * });
+     * // add the DEM source as a terrain layer with exaggerated height
+     * map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
      */
     setTerrain(terrain: TerrainSpecification) {
         this._lazyInitEmptyStyle();
@@ -2788,6 +2800,7 @@ class Map extends Camera {
      * @memberof Map
      * @example
      * map.speedIndexTiming = true;
+     * @private
      */
     get speedIndexTiming(): boolean { return !!this._speedIndexTiming; }
     set speedIndexTiming(value: boolean) {
