@@ -15,16 +15,20 @@ process.on('unhandledRejection', error => {
     process.exit(1)
 });
 
-const SIZE_CHECK_APP_ID = 33080;
-const SIZE_CHECK_APP_INSTALLATION_ID = 1155310;
+const SIZE_CHECK_APP_ID = 14028;
+const SIZE_CHECK_APP_INSTALLATION_ID = 229425;
 
 const FILES = [
     ['JS', "dist/mapbox-gl.js"],
     ['CSS', "dist/mapbox-gl.css"]
 ];
 const PK = Buffer.from(process.env['SIZE_CHECK_APP_PRIVATE_KEY'], 'base64').toString('binary');
+if (!PK) {
+    console.log('Fork PR; not computing size.');
+    process.exit(0);
+}
 const owner = 'mapbox';
-const repo = 'mapbox-gl-js-internal';
+const repo = 'mapbox-gl-js';
 
 (async () => {
     // Initialize github client
