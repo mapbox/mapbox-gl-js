@@ -3,7 +3,7 @@
 ### ⚠️ Breaking changes
 
 - **mapbox-gl-js is no longer under the 3-Clause BSD license. By upgrading to this release, you are agreeing to [Mapbox terms of service](https://www.mapbox.com/legal/tos/).** Refer to LICENSE.txt for the new licensing terms and details. For questions, contact our team at [https://support.mapbox.com](https://support.mapbox.com).
-- Beginning with v2.0.0, a billable map load occurs whenever a Map object is initialized. Before updating an existing implementation from v1.x.x to v2.x.x, please review the pricing documentation to estimate expected costs.
+- Beginning with v2.0.0, a billable map load occurs whenever a Map object is initialized. Before updating an existing implementation from v1.x.x to v2.x.x, please review the [pricing documentation](https://docs.mapbox.com/accounts/guides/pricing/#mapbox-gl-js-v100-and-higher) to estimate expected costs.
 - Deprecate Internet Explorer 11, no longer supported from this release. ([#8283](https://github.com/mapbox/mapbox-gl-js/issues/8283), [#6391](https://github.com/mapbox/mapbox-gl-js/issues/6391))
 - Support for unlocked pitch up to 85°. The  default `maxPitch` is increased from 60° to 85° which can result in viewing above the horizon line. By default, this area will be drawn transparent but a new sky layer can be added to the map in order to fill this space. The legacy behavior can be achieved by simply adding `maxPitch: 60` to the map options when instantiating your map.
 
