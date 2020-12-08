@@ -22,14 +22,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - collect-stats:
-          requires:
-            - build
-          filters:
-            tags:
-              ignore: /.*/
-            branches:
-              only: main
       - test-flow:
           requires:
             - prepare
@@ -171,19 +163,6 @@ jobs:
           root: .
           paths:
             - dist
-
-  collect-stats:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Collect performance stats
-          command: node bench/gl-stats.js
-      - aws-cli/install
-      - run:
-          name: Upload performance stats
-          command: aws s3 cp data.json.gz s3://mapbox-loading-dock/raw/gl_js.perf_metrics_staging/ci/`git show -s --date=short --format=%cd-%h HEAD`.json.gz
 
   test-flow:
     <<: *defaults
