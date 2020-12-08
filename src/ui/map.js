@@ -2111,7 +2111,7 @@ class Map extends Camera {
     /**
      * Sets the terrain property of the style.
      *
-     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#terrain).
+     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/root/#terrain).
      * If `null` or `undefined` is provided, function removes terrain.
      * @returns {Map} `this`
      * @example
@@ -2812,14 +2812,14 @@ class Map extends Camera {
 
     /**
      * Gets and sets a Boolean indicating whether the speedindex metric calculation is on or off
-     *
+     *     
+     * @private
      * @name speedIndexTiming
      * @type {boolean}
      * @instance
      * @memberof Map
      * @example
      * map.speedIndexTiming = true;
-     * @private
      */
     get speedIndexTiming(): boolean { return !!this._speedIndexTiming; }
     set speedIndexTiming(value: boolean) {
