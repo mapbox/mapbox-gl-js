@@ -2111,7 +2111,7 @@ class Map extends Camera {
     /**
      * Sets the terrain property of the style.
      *
-     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/root/#terrain).
+     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#terrain).
      * If `null` or `undefined` is provided, function removes terrain.
      * @returns {Map} `this`
      * @example

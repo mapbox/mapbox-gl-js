@@ -80,7 +80,7 @@ export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
  * Various options for accessing physical properties of the underlying camera entity.
  * A direct access to these properties allows more flexible and precise controlling of the camera
  * while also being fully compatible and interchangeable with CameraOptions. All fields are optional.
- * See {@Link Camera#setFreeCameraOptions} and {@Link Camera#getFreeCameraOptions}
+ * See {@link Map#setFreeCameraOptions} and {@link Map#getFreeCameraOptions}
  *
  * @param {MercatorCoordinate} position Position of the camera in slightly modified web mercator coordinates
         - The size of 1 unit is the width of the projected world instead of the "mercator meter".
