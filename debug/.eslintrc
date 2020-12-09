@@ -6,7 +6,7 @@
     "ecmaFeatures": {
       "jsx": true
     },
-    "sourceType": "script"
+    "sourceType": "module"
   },
   "rules": {
     "flowtype/require-valid-file-annotation": [0],
@@ -15,7 +15,8 @@
     "strict": "off",
     "no-restricted-properties": "off",
     "no-unused-vars": "off",
-    "prefer-template": "off"
+    "prefer-template": "off",
+    "import/no-unresolved": "off"
   },
   "env": {
     "es6": true,
