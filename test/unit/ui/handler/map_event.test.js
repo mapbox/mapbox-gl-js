@@ -94,7 +94,6 @@ test('MapEvent handler fires touchmove even while drag handler is active', (t) =
 
 test('MapEvent handler fires mousemove even while scroll handler is active', (t) => {
     const map = createMap(t);
-    const target = map.getCanvas();
     map.scrollZoom.enable();
     map.dragPan.enable();
 
@@ -106,7 +105,7 @@ test('MapEvent handler fires mousemove even while scroll handler is active', (t)
     map.on('mousemove', mousemove);
     map.on('zoomstart', zoom);
 
-    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta})
+    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     t.equal(wheel.callCount, 1);
 
     simulate.mousemove(map.getCanvas(), {buttons: 0, clientX: 10, clientY: 10});
