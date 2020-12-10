@@ -355,9 +355,6 @@ function diffStyles(before, after) {
         if (!isEqual(before.light, after.light)) {
             commands.push({command: operations.setLight, args: [after.light]});
         }
-        if (!isEqual(before.terrain, after.terrain)) {
-            commands.push({command: operations.setTerrain, args: [after.terrain]});
-        }
 
         // Handle changes to `sources`
         // If a source is to be removed, we also--before the removeSource
@@ -383,7 +380,23 @@ function diffStyles(before, after) {
                 }
             });
         }
+
+        // Remove the terrain if the source for that terrain is being removed
+        let beforeTerrain = before.terrain;
+        if (beforeTerrain) {
+            if (sourcesRemoved[beforeTerrain.source]) {
+                commands.push({command: operations.setTerrain, args: [undefined]});
+                beforeTerrain = undefined;
+            }
+        }
+
         commands = commands.concat(removeOrAddSourceCommands);
+
+        // Even though terrain is a top-level property
+        // Its like a layer in the sense that it depends on a source being present.
+        if (!isEqual(beforeTerrain, after.terrain)) {
+            commands.push({command: operations.setTerrain, args: [after.terrain]});
+        }
 
         // Handle changes to `layers`
         diffLayers(beforeLayers, after.layers, commands);

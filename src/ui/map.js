@@ -1412,7 +1412,6 @@ class Map extends Camera {
         try {
             if (this.style.setState(style)) {
                 this._update(true);
-                this._updateTerrain();
             }
         } catch (e) {
             warnOnce(
