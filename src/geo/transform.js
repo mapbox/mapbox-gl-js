@@ -20,7 +20,7 @@ import type {PaddingOptions} from './edge_insets';
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
 
-type RayIntersectionResult = { p0: vec4, p1: vec4, t: number };
+type RayIntersectionResult = { p0: vec4, p1: vec4, t: number};
 type ElevationReference = "sea" | "ground";
 
 /**
@@ -1284,7 +1284,12 @@ class Transform {
         // Calculate z distance of the farthest fragment that should be rendered.
         const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + cameraToSeaLevelDistance;
         // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
-        const farZ = furthestDistance * 1.01;
+
+        // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
+        const horizonShift = 0.10;
+        const horizonDistance = cameraToSeaLevelDistance * (1 / horizonShift);
+
+        const farZ = Math.min(furthestDistance * 1.01, horizonDistance);
 
         // The larger the value of nearZ is
         // - the more depth precision is available for features (good)
@@ -1320,9 +1325,11 @@ class Transform {
         mat4.rotateZ(view, view, this.angle);
 
         const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, nearZ, farZ);
+        // The distance in pixels the skybox needs to be shifted down by to meet the shifted horizon.
+        const skyboxHorizonShift = (Math.PI / 2 - this._pitch) * (this.height / this._fov) * horizonShift;
         // Apply center of perspective offset to skybox projection
         projection[8] = -offset.x * 2 / this.width;
-        projection[9] = offset.y * 2 / this.height;
+        projection[9] = (offset.y + skyboxHorizonShift) * 2 / this.height;
         this.skyboxMatrix = mat4.multiply(view, projection, view);
 
         // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.
