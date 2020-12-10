@@ -1428,7 +1428,9 @@ class Map extends Camera {
      * @returns {Object} The map's style JSON object.
      *
      * @example
-     * var styleJson = map.getStyle();
+     * map.on('load', function() {
+     *   var styleJson = map.getStyle();
+     * });
      *
      */
     getStyle() {
