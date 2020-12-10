@@ -17,7 +17,7 @@
 <script src='../debug/access_token_generated.js'></script>
 
 <script type="module">
-import loadEncoder from 'https://unpkg.com/mp4-h264@1.0.6/build/mp4-encoder.js';
+import loadEncoder from 'https://unpkg.com/mp4-h264@1.0.7/build/mp4-encoder.js';
 import {simd} from "https://unpkg.com/wasm-feature-detect?module";
 
 const map = window.map = new mapboxgl.Map({
@@ -64,7 +64,7 @@ map.on('load', async () => {
         width,
         height,
         fps: 60,
-        quantizationParameter: 20,
+        kbps: 64000,
         rgbFlipY: true
     });
 
