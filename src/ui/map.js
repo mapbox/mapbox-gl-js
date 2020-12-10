@@ -2812,7 +2812,7 @@ class Map extends Camera {
 
     /**
      * Gets and sets a Boolean indicating whether the speedindex metric calculation is on or off
-     *     
+     *
      * @private
      * @name speedIndexTiming
      * @type {boolean}
