@@ -439,7 +439,7 @@ test('Elevation', (t) => {
             map.addLayer(customLayer, 'background');
             map.setTerrain({"source": "mapbox-dem"});
             map.once('render', () => {
-                map.painter.terrain.drapeFirst = true;
+                map.painter.terrain.renderCached = true;
                 t.false(map.painter.terrain._shouldDisableRenderCache());
                 t.end();
             });

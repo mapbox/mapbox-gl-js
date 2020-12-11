@@ -13,9 +13,9 @@ function handleOperation(map, options, opIndex, doneCb) {
         });
     } else {
         map[opName](...operation.slice(1));
-        // Render one more frame with forceDrapeFirst
+        // Render one more frame with forceRenderCached
         if (options.terrainDrapeFirst && map.painter.terrain) {
-            map.painter.terrain.forceDrapeFirst = true;
+            map.painter.terrain.forceRenderCached = true;
             map._render();
         }
         doneCb(opIndex);
@@ -117,8 +117,8 @@ export function applyOperations(map, options, doneCb) {
     // No operations specified, end immediately and invoke doneCb.
     if (!operations || operations.length === 0) {
         if (options.terrainDrapeFirst && map.painter.terrain) {
-            map.painter.terrain.forceDrapeFirst = true;
-            map._render(); // Render one more time with forceDrapeFirst.
+            map.painter.terrain.forceRenderCached = true;
+            map._render(); // Render one more time with forceRenderCached.
         }
         doneCb();
         return;

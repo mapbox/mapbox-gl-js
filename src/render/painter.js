@@ -27,6 +27,7 @@ import {clippingMaskUniformValues} from './program/clipping_mask_program';
 import Color from '../style-spec/util/color';
 import symbol from './draw_symbol';
 import circle from './draw_circle';
+import assert from 'assert';
 import heatmap from './draw_heatmap';
 import line from './draw_line';
 import fill from './draw_fill';
@@ -471,14 +472,23 @@ class Painter {
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
 
-        for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
-            const layer = this.style._layers[layerIds[this.currentLayer]];
-            const sourceCache = style._getLayerSourceCache(layer);
-            if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
-            const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
+        if (!this.terrain) {
+            for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
+                const layer = this.style._layers[layerIds[this.currentLayer]];
+                const sourceCache = style._getLayerSourceCache(layer);
+                if (layer.isSky()) continue;
+                const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
-            this._renderTileClippingMasks(layer, sourceCache, coords);
-            this.renderLayer(this, sourceCache, layer, coords);
+                this._renderTileClippingMasks(layer, sourceCache, coords);
+                this.renderLayer(this, sourceCache, layer, coords);
+            }
+        }
+
+        // Terrain depth render ==========================================
+        // With terrain on, renders the depth buffer into a texture.
+        // This texture is used for occlusion testing (labels)
+        if (this.terrain) {
+            this.terrain.drawDepth();
         }
 
         // Sky pass ======================================================
@@ -501,10 +511,35 @@ class Painter {
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
-        for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
+        // Terrain render cache pre-render ================================
+        // With terrain on, renders cached layers or cache it for sequential
+        // interactive frames, all layers are cached until the first non-draped
+        // layer is found.
+        if (this.terrain && this.terrain.renderCached) {
+            this.currentLayer = this.terrain.render(0);
+        } else {
+            this.currentLayer = 0;
+        }
+
+        while (this.currentLayer < layerIds.length) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
-            if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
+
+            // Nothing to draw in translucent pass for sky layers
+            if (layer.isSky()) {
+                ++this.currentLayer;
+                continue;
+            }
+
+            // With terrain on and for draped layers only, issue rendering and progress
+            // this.currentLayer until we the next non-draped layer.
+            // Otherwise we interleave terrain draped render with non-draped layers on top
+            if (this.terrain && this.terrain._isLayerDrapedOverTerrain(layer)) {
+                const prevLayer = this.currentLayer;
+                this.currentLayer = this.terrain.render(this.currentLayer);
+                assert(this.currentLayer > prevLayer);
+                continue;
+            }
 
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
@@ -515,6 +550,8 @@ class Painter {
 
             this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             this.renderLayer(this, sourceCache, layer, coords);
+
+            ++this.currentLayer;
         }
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry) {
