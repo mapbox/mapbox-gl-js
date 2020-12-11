@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat';
 import LngLatBounds from './lng_lat_bounds';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate';
+import MercatorCoordinate, {mercatorProjection, mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY} from './mercator_coordinate';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, radToDeg, degToRad} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
@@ -22,6 +22,91 @@ const DEFAULT_MIN_ZOOM = 0;
 
 type RayIntersectionResult = { p0: vec4, p1: vec4, t: number };
 type ElevationReference = "sea" | "ground";
+
+function idBounds(id) {
+    const s = Math.pow(2, -id.z);
+    const x1 = (id.x) * s;
+    const x2 = (id.x + 1) * s;
+    const y1 = (id.y) * s;
+    const y2 = (id.y + 1) * s;
+
+    const interp = (a, b, t) => a * (1 - t) + b * t;
+
+    const n = 2;
+    const locs = [];
+    for (let i = 0; i <= n; i++) {
+        const f = i / n;
+        locs.push(new MercatorCoordinate(interp(x1, x2, f), y1).toLngLat());
+        locs.push(new MercatorCoordinate(interp(x1, x2, f), y2).toLngLat());
+        locs.push(new MercatorCoordinate(x1, interp(y1, y2, f)).toLngLat());
+        locs.push(new MercatorCoordinate(x2, interp(y1, y2, f)).toLngLat());
+    }
+    return locs;
+}
+
+const sinusoidal = {
+    projectX: (lng, lat) => 0.5 + lng * Math.cos(lat / 180 * Math.PI) / 360 * 2,
+    projectY: (lng, lat) => 0.5 - lat / 360 * 2,
+    unproject: (x, y) => {
+        const lat = (0.5 - y) / 2 * 360;
+        const lng = (x - 0.5) / Math.cos(lat / 180 * Math.PI) / 2 * 360;
+        return new LngLat(lng, lat);
+    }
+};
+    
+function makeTileTransform(projection) {
+    return (id) => {
+        const locs = idBounds(id);
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        for (const l of locs) {
+            const x = projection.projectX(l.lng, l.lat);
+            const y = projection.projectY(l.lng, l.lat);
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        }
+
+        const max = Math.max(maxX - minX, maxY - minY);
+        const scale = 1 / max;
+        return {
+            scale,
+            x: minX * scale,
+            y: minY * scale,
+            x2: maxX * scale,
+            y2: maxY * scale
+        };
+    }
+}
+const albers = {
+    project: (lng, lat) => {
+        const p1r = 29.5;
+        const p2r = 45.5;
+        const p1 = p1r / 180 * Math.PI;
+        const p2 = p2r / 180 * Math.PI;
+        const n = 0.5 * (Math.sin(p1) + Math.sin(p2));
+        const theta = n * ((lng + 77) / 180 * Math.PI);
+        const c = Math.pow(Math.cos(p1), 2) + 2 * n * Math.sin(p1);
+        const r = 0.5;
+        const a = r / n * Math.sqrt(c - 2 * n * Math.sin(lat / 180 * Math.PI));
+        const b = r / n * Math.sqrt(c - 2 * n * Math.sin(0 / 180 * Math.PI));
+        const x = a * Math.sin(theta);
+        const y = b - a * Math.cos(theta);
+        return {x: 0.5 + 0.5 * x, y: 0.5 + 0.5 * -y};
+    },
+    projectX: (lng, lat) => albers.project(lng, lat).x + 0.5,
+    projectY: (lng, lat) => albers.project(lng, lat).y + 0.5,
+    unproject: (x, y) => mercatorProjection.unproject(x, y)
+};
+const wgs84 = {
+    projectX: (lng) => 0.5 + lng / 360,
+    projectY: (lng, lat) => 0.5 - lat / 360,
+    unproject: () => {
+    }
+};
 
 /**
  * A single transform, generally used for a single tile to be
@@ -99,6 +184,11 @@ class Transform {
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this.cameraElevationReference = "ground";
+        this.projection = mercatorProjection;
+        this.projection = sinusoidal;
+        this.projection = albers;
+
+        this.projection.tileTransform = makeTileTransform(this.projection);
     }
 
     clone(): Transform {
@@ -563,6 +653,21 @@ class Transform {
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
         const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation ? z : 0;
 
+        const aabbForTile = (z, x, y, wrap, min, max) => {
+            const tt = this.projection.tileTransform({z, x, y});
+            const tx = tt.x / tt.scale;
+            const ty = tt.y / tt.scale;
+            const tx2 = tt.x2 / tt.scale;
+            const ty2 = tt.y2 / tt.scale;
+            assert(!isNaN(tx));
+            assert(!isNaN(tx2));
+            assert(!isNaN(ty));
+            assert(!isNaN(ty2));
+            const ret = new Aabb(
+                [(wrap + tx) * numTiles, numTiles * ty, min],
+                [(wrap  + tx2) * numTiles, numTiles * ty2, max]);
+            return ret;
+        };
         const maxRange = this.elevation ? this.elevation.exaggeration() * 10000 : 0;
         const newRootTile = (wrap: number): any => {
             const max = maxRange;
@@ -570,7 +675,8 @@ class Transform {
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
-                aabb: new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]),
+                aabb1: new Aabb([wrap * numTiles, 0, min], [(wrap + 1) * numTiles, numTiles, max]),
+                aabb: aabbForTile(0, 0, 0, wrap, min, max),
                 zoom: 0,
                 x: 0,
                 y: 0,
@@ -686,7 +792,8 @@ class Transform {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
 
-                const aabb = it.aabb.quadrant(i);
+                //const aabb = it.aabb.ruadrant(i);
+                const aabb = aabbForTile(it.zoom + 1, childX, childY, it.wrap, 0, 0);
                 let tileID = null;
                 if (useElevationData && it.zoom > maxZoom - 6) {
                     // Using elevation data for tiles helps clipping out tiles that are not visible and
@@ -1533,6 +1640,38 @@ class Transform {
         const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
         return this.centerPoint.add(new Point(0, yOffset));
     }
+
+    calculateRasterMatrix(id) {
+        const posMatrix = mat4.identity(new Float64Array(16));
+        const s = Math.pow(2, 14);
+        const cs = this.projection.tileTransform(id.canonical);
+        mat4.scale(posMatrix, posMatrix, [1 /  cs.scale, 1 /  cs.scale, 1]);
+        mat4.translate(posMatrix, posMatrix, [cs.x, cs.y, 0]);
+        mat4.scale(posMatrix, posMatrix, [1 / s, 1 / s, 1]);
+        mat4.multiply(posMatrix, this.mercatorMatrix, posMatrix);
+        return new Float32Array(posMatrix);
+    }
+
+    tileTransform(id) {
+        let scale = Math.pow(2, id.z);
+        const tl = mercatorProjection.unproject(id.x / scale, id.y / scale);
+        const bl = mercatorProjection.unproject(id.x / scale, (id.y + 1) / scale);
+        const tr = mercatorProjection.unproject((id.x + 1) / scale, (id.y + 0) / scale);
+        const br = mercatorProjection.unproject((id.x + 1) / scale, (id.y + 1) / scale);
+        const pX = this.projection.projectX;
+        const pY = this.projection.projectY;
+        const minX = Math.min(pX(tl.lng, tl.lat), pX(bl.lng, bl.lat), pX(tr.lng, tr.lat), pX(br.lng, br.lat));
+        const maxX = Math.max(pX(tl.lng, tl.lat), pX(bl.lng, bl.lat), pX(tr.lng, tr.lat), pX(br.lng, br.lat));
+        const minY = Math.min(pY(tl.lng, tl.lat), pY(bl.lng, bl.lat), pY(tr.lng, tr.lat), pY(br.lng, br.lat));
+        const maxY = Math.max(pY(tl.lng, tl.lat), pY(bl.lng, bl.lat), pY(tr.lng, tr.lat), pY(br.lng, br.lat));
+        const size = Math.max(maxX - minX, maxY - minY);
+        const realScale = 1 / Math.pow(2, Math.ceil(Math.log(size) / Math.LN2));
+        const x = Math.floor(minX * realScale);
+        const y = Math.floor(minY * realScale);
+        return { scale: realScale, x, y };
+    }
 }
+
+
 
 export default Transform;

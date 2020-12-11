@@ -45,8 +45,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const tile = sourceCache.getTile(coord);
         if (renderingToTexture && !(tile && tile.hasData())) continue;
 
-        const posMatrix = (renderingToTexture) ? coord.posMatrix :
-            painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
+        //const posMatrix = (renderingToTexture) ? coord.posMatrix :
+            //painter.transform.calculatePosMatrix(coord.toUnwrapped(), align);
+        // TODO fix ignored case
+
+        const posMatrix = painter.transform.calculateRasterMatrix(coord.toUnwrapped(), align);
 
         const stencilMode = painter.terrain && renderingToTexture ?
             painter.terrain.stencilModeForRTTOverlap(coord) :
@@ -79,14 +82,16 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const uniformValues = rasterUniformValues(posMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
 
+        tile.makeRasterBoundsArray(context, painter.transform);
+
         if (source instanceof ImageSource) {
             program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, source.boundsBuffer,
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
         } else {
             program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                uniformValues, layer.id, painter.rasterBoundsBuffer,
-                painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
+                uniformValues, layer.id, tile.rasterBoundsBuffer,
+                tile.rasterBoundsIndexBuffer, tile.rasterBoundsSegments);
         }
     }
 }

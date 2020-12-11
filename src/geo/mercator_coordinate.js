@@ -3,6 +3,22 @@
 import LngLat, {earthRadius} from '../geo/lng_lat';
 import type {LngLatLike} from '../geo/lng_lat';
 
+export const mercatorProjection = {
+    projectX: (lng) => mercatorXfromLng(lng),
+    projectY: (lng, lat) => mercatorYfromLat(lat),
+    unproject: (x, y) => new MercatorCoordinate(x, y).toLngLat(),
+    tileTransform: (id) => {
+        const scale = Math.pow(2, id.z);
+        return {
+            x: id.x,
+            y: id.y,
+            x2: id.x + 1,
+            y2: id.y + 1,
+            scale
+        };
+    }
+}
+
 /*
  * The average circumference of the world in meters.
  */
