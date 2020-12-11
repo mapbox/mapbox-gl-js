@@ -474,11 +474,15 @@ class Painter {
         for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
-            if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
+            if (layer.isSky()) continue;
             const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
             this._renderTileClippingMasks(layer, sourceCache, coords);
             this.renderLayer(this, sourceCache, layer, coords);
+        }
+
+        if (this.terrain) {
+            this.terrain.drawDepth();
         }
 
         // Sky pass ======================================================
@@ -504,7 +508,7 @@ class Painter {
         for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
-            if ((this.terrain && this.terrain.renderLayer(layer, sourceCache)) || layer.isSky()) continue;
+            if ((this.terrain && this.terrain.renderLayer(layer)) || layer.isSky()) continue;
 
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render

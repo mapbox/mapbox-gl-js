@@ -179,9 +179,9 @@ export class Terrain extends Elevation {
     orthoMatrix: mat4;
     enabled: boolean;
 
-    drapeFirst: boolean;
-    drapeFirstPending: boolean;
-    forceDrapeFirst: boolean; // debugging purpose.
+    renderDrapedLayersFirst: boolean;
+    renderDrapedLayersFirstPending: boolean;
+    forcerenderDrapedLayersFirst: boolean; // debugging purpose.
 
     _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {[string]: boolean};
@@ -374,7 +374,7 @@ export class Terrain extends Elevation {
         }
 
         const options = this.painter.options;
-        this.drapeFirst = (options.zooming || options.moving || options.rotating || !!this.forceDrapeFirst) && !this._invalidateRenderCache;
+        this.renderDrapedLayersFirst = (options.zooming || options.moving || options.rotating || !!this.forcerenderDrapedLayersFirst) && !this._invalidateRenderCache;
         this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
@@ -413,7 +413,7 @@ export class Terrain extends Elevation {
 
         this._setupRenderCache(previousProxyToSource);
 
-        this.drapeFirstPending = this.drapeFirst;
+        this.renderDrapedLayersFirstPending = this.renderDrapedLayersFirst;
         this.renderingToTexture = false;
         this._initFBOPool();
         this._updateTimestamp = browser.now();
@@ -575,19 +575,13 @@ export class Terrain extends Elevation {
     }
 
     // If terrain handles layer rendering (rasterize it), return true.
-    renderLayer(layer: StyleLayer, _?: SourceCache): boolean {
-        const painter = this.painter;
-        if (painter.renderPass !== 'translucent') {
-            // Depth texture is used only for POI symbols and circles, to skip render of symbols occluded by e.g. hill.
-            if (!this._depthDone && (layer.type === 'symbol' || layer.type === 'circle')) this.drawDepth();
-            return true; // Early leave: all rendering is done in translucent pass.
-        }
-        if (this.drapeFirst && this.drapeFirstPending) {
+    renderLayer(layer: StyleLayer): boolean {
+        if (this.renderDrapedLayersFirst && this.renderDrapedLayersFirstPending) {
             this.render();
-            this.drapeFirstPending = false;
+            this.renderDrapedLayersFirstPending = false;
             return true;
         } else if (this._isLayerDrapedOverTerrain(layer)) {
-            if (this.drapeFirst && !this.renderingToTexture) {
+            if (this.renderDrapedLayersFirst) {
                 // It's done. nothing to do for this layer but to advance.
                 return true;
             }
@@ -646,7 +640,7 @@ export class Terrain extends Elevation {
                 const hidden = layer.isHidden(painter.transform.zoom);
                 const draped = this._isLayerDrapedOverTerrain(layer);
 
-                if (this.drapeFirst && !draped) continue;
+                if (this.renderDrapedLayersFirst && !draped) continue;
                 if (painter.currentLayer > end) {
                     if (!hidden && !draped) {
                         break;
@@ -681,8 +675,8 @@ export class Terrain extends Elevation {
         }
         setupRenderToScreen();
         if (drawAsRasterCoords.length > 0) drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
-        painter.currentLayer = this.drapeFirst ? -1 : end;
-        assert(!this.drapeFirst || (start === 0 && painter.currentLayer === -1));
+        painter.currentLayer = this.renderDrapedLayersFirst ? -1 : end;
+        // assert(!this.renderDrapedLayersFirst || (start === 0 && painter.currentLayer === -1));
     }
 
     // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
@@ -769,7 +763,7 @@ export class Terrain extends Elevation {
             const isFading = !!crossFade && crossFade.t !== 1;
             return layer.type !== 'custom' && !isHidden && isFading;
         };
-        return !this.drapeFirst || this.painter.style._order.some(isCrossFading);
+        return !this.renderDrapedLayersFirst || this.painter.style._order.some(isCrossFading);
     }
 
     _clearRasterFadeFromRenderCache() {
@@ -977,6 +971,9 @@ export class Terrain extends Elevation {
     }
 
     drawDepth() {
+        if (this._depthDone) {
+            return;
+        }
         const painter = this.painter;
         const context = painter.context;
         const psc = this.proxySourceCache;
