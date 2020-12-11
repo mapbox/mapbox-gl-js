@@ -59,6 +59,7 @@ class FillBucket implements Bucket {
 
     constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
+        this.canonical = options.canonical;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
@@ -96,7 +97,7 @@ class FillBucket implements Bucket {
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature),
+                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, this.canonical),
                 patterns: {},
                 sortKey
             };

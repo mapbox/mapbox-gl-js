@@ -3,6 +3,7 @@
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import Texture from './texture.js';
+import StencilMode from '../gl/stencil_mode.js';
 import {
     lineUniformValues,
     linePatternUniformValues,
@@ -127,7 +128,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 
         program.draw(context, gl.TRIANGLES, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+            StencilMode.disabled || painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
             layer.paint, painter.transform.zoom, programConfiguration, bucket.layoutVertexBuffer2);
     }

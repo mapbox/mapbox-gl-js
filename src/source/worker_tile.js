@@ -59,6 +59,7 @@ class WorkerTile {
         this.tileZoom = params.tileZoom;
         this.uid = params.uid;
         this.zoom = params.zoom;
+        this.canonical = params.tileID.canonical;
         this.pixelRatio = params.pixelRatio;
         this.tileSize = params.tileSize;
         this.source = params.source;
@@ -147,6 +148,7 @@ class WorkerTile {
                     index: featureIndex.bucketLayerIDs.length,
                     layers: family,
                     zoom: this.zoom,
+                    canonical: this.canonical,
                     pixelRatio: this.pixelRatio,
                     overscaling: this.overscaling,
                     collisionBoxArray: this.collisionBoxArray,

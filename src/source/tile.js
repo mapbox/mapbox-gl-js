@@ -16,6 +16,11 @@ import SourceFeatureState from '../source/source_state.js';
 import {lazyLoadRTLTextPlugin} from './rtl_text_plugin.js';
 import {TileSpaceDebugBuffer} from '../data/debug_viz.js';
 import Color from '../style-spec/util/color.js';
+import {RasterBoundsArray, TriangleIndexArray} from '../data/array_types.js';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes.js';
+import EXTENT from '../data/extent.js';
+import SegmentVector from '../data/segment.js';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -510,6 +515,53 @@ class Tile {
                 this.queryBoundsDebugViz.clearPoints();
             }
         });
+    }
+
+    makeRasterBoundsArray(context: Context, transform) {
+        if (this.rasterBoundsBuffer) return;
+
+        const s = Math.pow(2, -this.tileID.canonical.z);
+        const x1 = (this.tileID.canonical.x) * s;
+        const x2 = (this.tileID.canonical.x + 1) * s;
+        const y1 = (this.tileID.canonical.y) * s;
+        const y2 = (this.tileID.canonical.y + 1) * s;
+ 
+        const rasterBoundsArray = new RasterBoundsArray();
+        const quadTriangleIndices = new TriangleIndexArray();
+        const cs = transform.projection.tileTransform(this.tileID.canonical);
+        const emplace = (x, y, a, b) => {
+            const l = new MercatorCoordinate(x, y).toLngLat();
+            const x_ = ((transform.projection.projectX(l.lng, l.lat)) * cs.scale - cs.x) * EXTENT;
+            const y_ = ((transform.projection.projectY(l.lng, l.lat)) * cs.scale - cs.y) * EXTENT;
+            rasterBoundsArray.emplaceBack(x_, y_, a, b);
+        };
+        const n = 32;
+        const increment = s / n;
+        const add = (x, y) => {
+            emplace(
+                x1 + x * increment,
+                y1 + y * increment,
+                x / n * EXTENT,
+                y / n * EXTENT);
+        };
+
+
+        for (let xi = 0; xi < n; xi++) {
+            for (let yi = 0; yi < n; yi++) {
+                const offset = rasterBoundsArray.length;
+                add(xi, yi);
+                add(xi + 1, yi);
+                add(xi, yi + 1);
+                add(xi + 1, yi + 1);
+                quadTriangleIndices.emplaceBack(offset + 0, offset + 1, offset + 2);
+                quadTriangleIndices.emplaceBack(offset + 2, offset + 1, offset + 3);
+            }
+        }
+
+        this.rasterBoundsBuffer = context.createVertexBuffer(rasterBoundsArray, rasterBoundsAttributes.members);
+        this.rasterBoundsSegments = SegmentVector.simpleSegment(0, 0, 4 * n * n, 2 * n * n);
+
+        this.rasterBoundsIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
     }
 }
 

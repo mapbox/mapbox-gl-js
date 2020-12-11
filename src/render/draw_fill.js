@@ -3,6 +3,7 @@
 import Color from '../style-spec/util/color.js';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
+import StencilMode from '../gl/stencil_mode.js';
 import {
     fillUniformValues,
     fillPatternUniformValues,
@@ -120,7 +121,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         painter.prepareDrawProgram(painter.context, program, coord.toUnwrapped());
 
         program.draw(painter.context, drawMode, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+            StencilMode.disabled || painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, indexBuffer, segments,
             layer.paint, painter.transform.zoom, programConfiguration);
     }
