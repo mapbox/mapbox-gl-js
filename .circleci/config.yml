@@ -183,7 +183,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: yarn run build-token
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
