@@ -16,7 +16,8 @@ let stubTime;
  */
 const exported = {
     /**
-     * Returns either performance.now() or a value set by setNow
+     * Returns either performance.now() or a value set by setNow.
+     * @returns Time value in milliseconds.
      */
     now(): number {
         if (stubTime !== undefined) {
