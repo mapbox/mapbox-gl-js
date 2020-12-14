@@ -24,6 +24,12 @@ test('Evented', (t) => {
         t.end();
     });
 
+    t.test('"once" returns a promise if no listener provided', (t) => {
+        const evented = new Evented();
+        evented.once('a').then(() => t.end());
+        evented.fire(new Event('a'));
+    });
+
     t.test('passes data to listeners', (t) => {
         const evented = new Evented();
         evented.on('a', (data) => {

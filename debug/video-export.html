@@ -37,7 +37,7 @@ async function animate() {
         easing: t => t
     });
     // wait for animation to finish
-    await untilMapEvent('moveend');
+    await map.once('moveend');
 }
 
 map.on('load', async () => {
@@ -45,7 +45,7 @@ map.on('load', async () => {
     map.setTerrain({source: 'dem', exaggeration: 1.5});
 
     // wait until the map settles
-    await untilMapEvent('idle');
+    await map.once('idle');
 
     // uncomment to fine-tune animation without recording:
     // animate(); return;
@@ -101,10 +101,6 @@ map.on('load', async () => {
 
     // make sure to run `ffmpeg -i mapbox-gl.mp4 mapbox-gl-optimized.mp4` to compress the video
 });
-
-function untilMapEvent(type) {
-    return new Promise(resolve => map.once(type, resolve));
-}
 
 </script>
 </body>
