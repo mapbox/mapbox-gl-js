@@ -1320,6 +1320,9 @@ class Transform {
         mat4.rotateZ(view, view, this.angle);
 
         const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, nearZ, farZ);
+        // Apply center of perspective offset to skybox projection
+        projection[8] = -offset.x * 2 / this.width;
+        projection[9] = offset.y * 2 / this.height;
         this.skyboxMatrix = mat4.multiply(view, projection, view);
 
         // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.
