@@ -607,8 +607,8 @@ export class Terrain extends Elevation {
             this.renderingToTexture = false;
         };
 
-        const start = painter.currentLayer;
-        let end = start; // end is computed as the first next non draped layer. It is not used in drapeFirst mode.
+        let start = painter.currentLayer;
+        let end = start; // end is computed as the first next non draped layer. It is not used in renderAllDrapedLayersFirst mode.
 
         let drawAsRasterCoords = [];
         const layerIds = painter.style._order;
@@ -616,11 +616,14 @@ export class Terrain extends Elevation {
         let poolIndex = 0;
         for (let i = 0; i < proxies.length; i++) {
             const proxy = proxies[i];
+            if (proxy.key !== 184912) {
+                continue;
+            }
 
             // bind framebuffer and assign texture to the tile (texture used in drawTerrainRaster).
             const tile = psc.getTileByID(proxy.proxyTileKey);
             const renderCacheIndex = psc.proxyCachedFBO[proxy.key];
-            const fbo = this.currentFBO = renderCacheIndex !== undefined ? psc.renderCache[renderCacheIndex] : this.pool[poolIndex++];
+            let fbo = this.currentFBO = renderCacheIndex !== undefined ? psc.renderCache[renderCacheIndex] : this.pool[poolIndex++];
             tile.texture = fbo.tex;
             if (renderCacheIndex !== undefined && !fbo.dirty) {
                 drawAsRasterCoords.push(tile.tileID); // use cached render from previous pass, no need to render again.
@@ -648,6 +651,16 @@ export class Terrain extends Elevation {
                     end++;
                 }
                 if (hidden) continue;
+
+                // if (renderCacheIndex !== undefined && painter.currentLayer >= fbo.cachedRange) {
+                //     fbo = this.pool[poolIndex++];
+                //     tile.textureExt = fbo.tex;
+                //     if (fbo.dirty) {
+                //         // Clear on start.
+                //         context.clear({color: Color.transparent});
+                //         fbo.dirty = false;
+                //     }
+                // }
 
                 const sourceCache = this.painter.style._getLayerSourceCache(layer);
                 const proxiedCoords = sourceCache ? this.proxyToSource[proxy.key][sourceCache.id] : [proxy];
@@ -819,7 +832,11 @@ export class Terrain extends Elevation {
         for (let i = coords.length - 1; i >= 0; i--) {
             const proxy = coords[i];
             const tile = psc.getTileByID(proxy.key);
+            if (proxy.key !== 184912) {
+                continue;
+            }
 
+            let cachedFBO;
             if (psc.proxyCachedFBO[proxy.key] !== undefined) {
                 assert(tile.texture);
                 const prev = previousProxyToSource[proxy.key];
@@ -827,6 +844,7 @@ export class Terrain extends Elevation {
                 // Reuse previous render from cache if there was no change of
                 // content that was used to render proxy tile.
                 const current = this.proxyToSource[proxy.key];
+                // Count number of tiles that are similar to the previous tileset
                 let equal = 0;
                 for (const source in current) {
                     const tiles = current[source];
@@ -838,19 +856,34 @@ export class Terrain extends Elevation {
                     }
                     ++equal;
                 }
+                cachedFBO = psc.renderCache[psc.proxyCachedFBO[proxy.key]];
                 // dirty === false: doesn't need to be rendered to, just use cached render.
-                psc.renderCache[psc.proxyCachedFBO[proxy.key]].dirty = equal < 0 || equal !== Object.values(prev).length;
+                cachedFBO.dirty = equal < 0 || equal !== Object.values(prev).length;
             } else {
                 // Assign renderCache FBO if there are available FBOs in pool.
                 let index = psc.renderCachePool.pop();
                 if (index === undefined && psc.renderCache.length < RENDER_CACHE_MAX_SIZE) {
                     index = psc.renderCache.length;
-                    psc.renderCache.push(this._createFBO());
+                    cachedFBO = this._createFBO();
+                    psc.renderCache.push(cachedFBO);
                     assert(psc.renderCache.length <= coords.length);
                 }
                 if (index !== undefined) {
                     psc.proxyCachedFBO[proxy.key] = index;
-                    psc.renderCache[index].dirty = true; // needs to be rendered to.
+                    cachedFBO = psc.renderCache[index];
+                    cachedFBO.dirty = true;
+                }
+            }
+            assert(cachedFBO);
+            for (let i = 0; i < this.painter.style._order.length; ++i) {
+                const layer = this.painter.style._layers[this.painter.style._order[i]];
+                const isHidden = layer.isHidden(this.painter.transform.zoom);
+                const isDraped = this._isLayerDrapedOverTerrain(layer);
+                const sourceCache = this.painter.style._getLayerSourceCache(layer);
+
+                if (!isHidden && !isDraped) {
+                    cachedFBO.cachedRange = i;
+                    break;
                 }
             }
         }
