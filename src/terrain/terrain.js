@@ -179,9 +179,9 @@ export class Terrain extends Elevation {
     orthoMatrix: mat4;
     enabled: boolean;
 
-    renderDrapedLayersFirst: boolean;
-    renderDrapedLayersFirstPending: boolean;
-    forcerenderDrapedLayersFirst: boolean; // debugging purpose.
+    renderAllDrapedLayersFirst: boolean;
+    renderAllDrapedLayersFirstPending: boolean;
+    forceRenderAllDrapedLayersFirst: boolean; // debugging purpose.
 
     _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {[string]: boolean};
@@ -374,7 +374,7 @@ export class Terrain extends Elevation {
         }
 
         const options = this.painter.options;
-        this.renderDrapedLayersFirst = (options.zooming || options.moving || options.rotating || !!this.forcerenderDrapedLayersFirst) && !this._invalidateRenderCache;
+        this.renderAllDrapedLayersFirst = (options.zooming || options.moving || options.rotating || !!this.forceRenderAllDrapedLayersFirst) && !this._invalidateRenderCache;
         this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
@@ -413,7 +413,7 @@ export class Terrain extends Elevation {
 
         this._setupRenderCache(previousProxyToSource);
 
-        this.renderDrapedLayersFirstPending = this.renderDrapedLayersFirst;
+        this.renderAllDrapedLayersFirstPending = this.renderAllDrapedLayersFirst;
         this.renderingToTexture = false;
         this._initFBOPool();
         this._updateTimestamp = browser.now();
@@ -576,12 +576,12 @@ export class Terrain extends Elevation {
 
     // If terrain handles layer rendering (rasterize it), return true.
     renderLayer(layer: StyleLayer): boolean {
-        if (this.renderDrapedLayersFirst && this.renderDrapedLayersFirstPending) {
+        if (this.renderAllDrapedLayersFirst && this.renderAllDrapedLayersFirstPending) {
             this.render();
-            this.renderDrapedLayersFirstPending = false;
+            this.renderAllDrapedLayersFirstPending = false;
             return true;
         } else if (this._isLayerDrapedOverTerrain(layer)) {
-            if (this.renderDrapedLayersFirst) {
+            if (this.renderAllDrapedLayersFirst) {
                 // It's done. nothing to do for this layer but to advance.
                 return true;
             }
@@ -640,7 +640,7 @@ export class Terrain extends Elevation {
                 const hidden = layer.isHidden(painter.transform.zoom);
                 const draped = this._isLayerDrapedOverTerrain(layer);
 
-                if (this.renderDrapedLayersFirst && !draped) continue;
+                // if (this.renderAllDrapedLayersFirst && !draped) continue;
                 if (painter.currentLayer > end) {
                     if (!hidden && !draped) {
                         break;
@@ -675,8 +675,8 @@ export class Terrain extends Elevation {
         }
         setupRenderToScreen();
         if (drawAsRasterCoords.length > 0) drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
-        painter.currentLayer = this.renderDrapedLayersFirst ? -1 : end;
-        // assert(!this.renderDrapedLayersFirst || (start === 0 && painter.currentLayer === -1));
+        painter.currentLayer = this.renderAllDrapedLayersFirst ? -1 : end;
+        // assert(!this.renderAllDrapedLayersFirst || (start === 0 && painter.currentLayer === -1));
     }
 
     // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
@@ -763,7 +763,7 @@ export class Terrain extends Elevation {
             const isFading = !!crossFade && crossFade.t !== 1;
             return layer.type !== 'custom' && !isHidden && isFading;
         };
-        return !this.renderDrapedLayersFirst || this.painter.style._order.some(isCrossFading);
+        return !this.renderAllDrapedLayersFirst || this.painter.style._order.some(isCrossFading);
     }
 
     _clearRasterFadeFromRenderCache() {
