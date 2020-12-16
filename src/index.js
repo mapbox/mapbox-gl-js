@@ -177,6 +177,21 @@ const exported = {
     workerUrl: '',
 
     /**
+     * Provides an interface for external module bundlers such as Webpack or Rollup to package
+     * mapbox-gl's WebWorker into a separate class and integrate it with the library.
+     *
+     *
+     * @var {Object} workerClass
+     * @returns {Object|null} a Class object an instance of which exposes the `Worker` interface.
+     * @example
+     * import mapboxgl from 'mapbox-gl/mapbox-gl-csp.js'
+     * import MapboxGLWorker from 'mapbox-gl/mapbox-gl-csp-worker.js'
+     *
+     * mapboxgl.workerClass = MapboxGLWorker;
+     */
+    workerClass: null,
+
+    /**
      * Sets the time used by GL JS internally for all animations. Useful for generating videos from GL JS.
      * @var {number} time
      */
