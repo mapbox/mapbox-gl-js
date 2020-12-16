@@ -134,13 +134,7 @@ class Hash {
     _updateHashUnthrottled() {
         // Replace if already present, else append the updated hash string
         const location = window.location.href.replace(/(#.+)?$/, this.getHashString());
-        try {
-            window.history.replaceState(window.history.state, null, location);
-        } catch (SecurityError) {
-            // IE11 does not allow this if the page is within an iframe created
-            // with iframe.contentWindow.document.write(...).
-            // https://github.com/mapbox/mapbox-gl-js/issues/7410
-        }
+        window.history.replaceState(window.history.state, null, location);
     }
 
 }

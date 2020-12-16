@@ -21,18 +21,7 @@ DOM.createNS = function (namespaceURI: string, tagName: string) {
 };
 
 const docStyle = window.document && window.document.documentElement.style;
-
-function testProp(props) {
-    if (!docStyle) return props[0];
-    for (let i = 0; i < props.length; i++) {
-        if (props[i] in docStyle) {
-            return props[i];
-        }
-    }
-    return props[0];
-}
-
-const selectProp = testProp(['userSelect', 'MozUserSelect', 'WebkitUserSelect', 'msUserSelect']);
+const selectProp = docStyle && docStyle.userSelect !== undefined ? 'userSelect' : 'WebkitUserSelect';
 let userSelect;
 
 DOM.disableDrag = function () {
@@ -48,12 +37,8 @@ DOM.enableDrag = function () {
     }
 };
 
-const transformProp = testProp(['transform', 'WebkitTransform']);
-
 DOM.setTransform = function(el: HTMLElement, value: string) {
-    // https://github.com/facebook/flow/issues/7754
-    // $FlowFixMe
-    el.style[transformProp] = value;
+    el.style.transform = value;
 };
 
 // Feature detection for {passive: false} support in add/removeEventListener.

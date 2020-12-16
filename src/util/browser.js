@@ -3,16 +3,6 @@
 import window from './window';
 import type {Cancelable} from '../types/cancelable';
 
-const raf = window.requestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.msRequestAnimationFrame;
-
-const cancel = window.cancelAnimationFrame ||
-    window.mozCancelAnimationFrame ||
-    window.webkitCancelAnimationFrame ||
-    window.msCancelAnimationFrame;
-
 let linkEl;
 
 let reducedMotionQuery: MediaQueryList;
@@ -49,8 +39,8 @@ const exported = {
 
     frame(fn: (paintStartTimestamp: number) => void): Cancelable {
         if (errorState) return {cancel: () => {  }};
-        const frame = raf(fn);
-        return {cancel: () => cancel(frame)};
+        const frame = window.requestAnimationFrame(fn);
+        return {cancel: () => window.cancelAnimationFrame(frame)};
     },
 
     getImageData(img: CanvasImageSource, padding?: number = 0): ImageData {
