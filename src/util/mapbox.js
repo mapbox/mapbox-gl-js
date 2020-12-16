@@ -212,7 +212,7 @@ function isMapboxURL(url: string) {
 }
 
 function isMapboxHTTPURL(url: string): boolean {
-    return config.API_URL_REG_EXP.test(url);
+    return config.API_URL_REGEX.test(url);
 }
 
 function hasCacheDefeatingSku(url: string) {
