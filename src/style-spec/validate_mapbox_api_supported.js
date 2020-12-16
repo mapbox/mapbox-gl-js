@@ -37,11 +37,8 @@ function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<
 function getSourceErrors(source: Object, i: number): Array<?ValidationError> {
     const errors = [];
 
-    /*
-     * Inlined sources are not supported by the Mapbox Styles API, so only
-     * "type", "url", and "tileSize" properties are valid
-     */
-    const sourceKeys = ['type', 'url', 'tileSize'];
+    // Allowed list of source keys
+    const sourceKeys = ['type', 'url', 'data', 'tileSize'];
     errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
 
     /*
