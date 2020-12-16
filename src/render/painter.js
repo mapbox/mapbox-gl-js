@@ -505,7 +505,12 @@ class Painter {
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
-        for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
+        let layerStart = 0;
+        if (this.terrain) {
+            layerStart = this.terrain.renderCachedLayers();
+        }
+
+        for (this.currentLayer = layerStart; this.currentLayer < layerIds.length; this.currentLayer++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
             if ((this.terrain && this.terrain.renderLayer(layer)) || layer.isSky()) continue;
