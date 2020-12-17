@@ -216,7 +216,8 @@ jobs:
           command: |
             cd ./test/build/transpilation &&
             npm install &&
-            npm run build
+            npm run build &&
+            rm -rf node_modules
       - store_artifacts:
           path: "test/build/transpilation"
 
