@@ -58,6 +58,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-webpack:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
       - deploy-benchmarks:
           requires:
             - lint
@@ -199,6 +205,20 @@ jobs:
           path: test/integration/query-tests
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
+
+  test-webpack:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build Webpack
+          command: |
+            cd ./test/build/transpilation &&
+            npm install &&
+            npm run build
+      - store_artifacts:
+          path: "test/build/transpilation"
 
   test-browser:
     <<: *defaults
