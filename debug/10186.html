@@ -114,9 +114,6 @@ var map = window.map = new mapboxgl.Map({
     zoom: 0
 });
 
-map.repaint = true;
-
-// map.repaint = true;
 // map.showTileBoundaries = true;
 map.on('load', function () {
     map.addSource('mapbox-dem', {

@@ -191,7 +191,6 @@ export class Terrain extends Elevation {
     _exaggeration: number;
     _depthFBO: Framebuffer;
     _depthTexture: Texture;
-    _depthDone: boolean;
     _previousZoom: number;
     _updateTimestamp: number;
     pool: Array<FBO>;
@@ -292,7 +291,6 @@ export class Terrain extends Elevation {
             this._findCoveringTileCache[this.proxySourceCache.id] = {};
             this.proxySourceCache.update(transform);
 
-            this._depthDone = false;
             this._emptyDEMTextureDirty = true;
         } else {
             this._disable();
@@ -413,7 +411,6 @@ export class Terrain extends Elevation {
 
         this._setupRenderCache(previousProxyToSource);
 
-        this.renderCachedPending = this.renderCached;
         this.renderingToTexture = false;
         this._initFBOPool();
         this._updateTimestamp = browser.now();
@@ -574,29 +571,6 @@ export class Terrain extends Elevation {
         program.setTerrainUniformValues(context, uniforms);
     }
 
-    renderCachedLayers() {
-        // TODO: http://localhost:9966/debug/10186.html#5.98/45.243/-73.321
-        // this does not work well yet
-        let endLayer = 0;
-        if (this.renderCached && this.renderCachedPending) {
-            this.painter.currentLayer = 0;
-            endLayer = this.render();
-            this.renderCachedPending = false;
-            this.renderCached = false;
-        }
-        return endLayer;
-    }
-
-    // If terrain handles layer rendering (rasterize it), return true.
-    renderLayer(layer: StyleLayer): boolean {
-        assert(!this.renderCachedPending);
-        if (this._isLayerDrapedOverTerrain(layer)) {
-            this.render();
-            return true;
-        }
-        return false;
-    }
-
     // For each proxy tile, render all layers until the non-draped layer (and
     // render the tile to the screen) before advancing to the next proxy tile.
     // Apart to layer-by-layer rendering used in 2D, here we have proxy-tile-by-proxy-tile
@@ -622,20 +596,21 @@ export class Terrain extends Elevation {
         let poolIndex = 0;
         for (let i = 0; i < proxies.length; i++) {
             const proxy = proxies[i];
-            // if (proxy.key !== 184912) {
-            //     continue;
-            // }
-
             // bind framebuffer and assign texture to the tile (texture used in drawTerrainRaster).
             const tile = psc.getTileByID(proxy.proxyTileKey);
             const renderCacheIndex = psc.proxyCachedFBO[proxy.key];
-            let fbo = this.currentFBO = renderCacheIndex !== undefined && this.renderCached ? psc.renderCache[renderCacheIndex] : this.pool[poolIndex++];
+
+            const useCachedMode = renderCacheIndex !== undefined && this.renderCached;
+            let fbo = this.currentFBO = useCachedMode ? psc.renderCache[renderCacheIndex] : this.pool[poolIndex++];
             tile.texture = fbo.tex;
-            if (renderCacheIndex !== undefined && !fbo.dirty) {
-                drawAsRasterCoords.push(tile.tileID); // use cached render from previous pass, no need to render again.
+
+            if (useCachedMode && !fbo.dirty) {
+                // Use cached render from previous pass, no need to render again.
+                drawAsRasterCoords.push(tile.tileID);
                 end = fbo.cachedRange - 1;
                 continue;
             }
+
             context.bindFramebuffer.set(fbo.fb.framebuffer);
             this.renderedToTile = false; // reset flag.
             if (fbo.dirty) {
@@ -647,6 +622,9 @@ export class Terrain extends Elevation {
             let currentStencilSource; // There is no need to setup stencil for the same source for consecutive layers.
             for (painter.currentLayer = start; painter.currentLayer < layerIds.length; painter.currentLayer++) {
                 const layer = painter.style._layers[layerIds[painter.currentLayer]];
+                if (layer === undefined) {
+                    debugger;
+                }
                 const hidden = layer.isHidden(painter.transform.zoom);
                 const draped = this._isLayerDrapedOverTerrain(layer);
 
@@ -687,7 +665,6 @@ export class Terrain extends Elevation {
         if (drawAsRasterCoords.length > 0) drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
         painter.currentLayer = this.renderCached ? 0 : end;
         return end + 1;
-        // assert(!this.renderCached || (start === 0 && painter.currentLayer === -1));
     }
 
     // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
@@ -830,9 +807,6 @@ export class Terrain extends Elevation {
         for (let i = coords.length - 1; i >= 0; i--) {
             const proxy = coords[i];
             const tile = psc.getTileByID(proxy.key);
-            // if (proxy.key !== 184912) {
-            //     continue;
-            // }
 
             let cachedFBO;
             if (psc.proxyCachedFBO[proxy.key] !== undefined) {
@@ -872,6 +846,7 @@ export class Terrain extends Elevation {
                     cachedFBO.dirty = true;
                 }
             }
+
             assert(cachedFBO);
             for (let i = 0; i < this.painter.style._order.length; ++i) {
                 const layer = this.painter.style._layers[this.painter.style._order[i]];
@@ -1002,9 +977,6 @@ export class Terrain extends Elevation {
     }
 
     drawDepth() {
-        if (this._depthDone) {
-            return;
-        }
         const painter = this.painter;
         const context = painter.context;
         const psc = this.proxySourceCache;
@@ -1033,8 +1005,6 @@ export class Terrain extends Elevation {
         drawTerrainDepth(painter, this, psc, this.proxyCoords);
         context.bindFramebuffer.set(null);
         context.viewport.set([0, 0, painter.width, painter.height]);
-
-        this._depthDone = true;
     }
 
     _isLayerDrapedOverTerrain(styleLayer: StyleLayer): boolean {

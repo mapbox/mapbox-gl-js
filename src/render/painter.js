@@ -481,6 +481,9 @@ class Painter {
             this.renderLayer(this, sourceCache, layer, coords);
         }
 
+        // Terrain depth render ==========================================
+        // With terrain on, renders the depth buffer into a texture.
+        // This texture is used for occlusion testing (labels)
         if (this.terrain) {
             this.terrain.drawDepth();
         }
@@ -505,15 +508,31 @@ class Painter {
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
+        // Terrain render cache pre-render ================================
+        // With terrain on, renders cached layers or cache it for sequential
+        // interactive frames, all layers are cached until the first non-draped
+        // layer is found.
         let layerStart = 0;
-        if (this.terrain) {
-            layerStart = this.terrain.renderCachedLayers();
+        if (this.terrain && this.terrain.renderCached) {
+            this.currentLayer = 0;
+            layerStart = this.terrain.render();
+            this.terrain.renderCached = false;
         }
 
         for (this.currentLayer = layerStart; this.currentLayer < layerIds.length; this.currentLayer++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
-            if ((this.terrain && this.terrain.renderLayer(layer)) || layer.isSky()) continue;
+
+            // Nothing to draw in translucent pass for sky layers
+            if (layer.isSky()) continue;
+
+            // With terrain on and for draped layers only, issue rendering and progress
+            // this.currentLayer until we the next non-draped layer.
+            // Otherwise we interleave terrain draped render with non-draped layers on top
+            if (this.terrain && this.terrain._isLayerDrapedOverTerrain(layer)) {
+                this.terrain.render();
+                continue;
+            }
 
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
