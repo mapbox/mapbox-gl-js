@@ -812,7 +812,6 @@ export class Terrain extends Elevation {
                 // Reuse previous render from cache if there was no change of
                 // content that was used to render proxy tile.
                 const current = this.proxyToSource[proxy.key];
-                // Count number of tiles that are similar to the previous tileset
                 let equal = 0;
                 for (const source in current) {
                     const tiles = current[source];
@@ -836,7 +835,7 @@ export class Terrain extends Elevation {
                 }
                 if (index !== undefined) {
                     psc.proxyCachedFBO[proxy.key] = index;
-                    psc.renderCache[index].dirty = true;
+                    psc.renderCache[index].dirty = true; // needs to be rendered to.
                 }
             }
         }

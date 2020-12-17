@@ -84,7 +84,6 @@ class Tile {
     needsDEMTextureUpload: ?boolean;
     request: ?Cancelable;
     texture: any;
-    textureExt: any;
     fbo: ?Framebuffer;
     demTexture: ?Texture;
     refreshedUponExpiration: boolean;
