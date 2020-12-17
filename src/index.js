@@ -180,12 +180,13 @@ const exported = {
      * Provides an interface for external module bundlers such as Webpack or Rollup to package
      * mapbox-gl's WebWorker into a separate class and integrate it with the library.
      *
+     * Takes precedence over `mapboxgl.workerUrl`.
      *
      * @var {Object} workerClass
-     * @returns {Object|null} a Class object an instance of which exposes the `Worker` interface.
+     * @returns {Object|null} a Class object, an instance of which exposes the `Worker` interface.
      * @example
-     * import mapboxgl from 'mapbox-gl/mapbox-gl-csp.js'
-     * import MapboxGLWorker from 'mapbox-gl/mapbox-gl-csp-worker.js'
+     * import mapboxgl from 'mapbox-gl/dist/mapbox-gl-csp.js'
+     * import MapboxGLWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker.js'
      *
      * mapboxgl.workerClass = MapboxGLWorker;
      */
