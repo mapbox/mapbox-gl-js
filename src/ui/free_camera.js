@@ -122,10 +122,10 @@ class FreeCameraOptions {
      * on the map.
      *
      * @param {LngLatLike} location Location of the focus point on the map
-     * @param {vec3} up Up vector of the camera is required in certain scenarios where bearing can't be deduced
+     * @param {vec3?} up Up vector of the camera is necessary in certain scenarios where bearing can't be deduced
      *      from the viewing direction.
      */
-    lookAtPoint(location: LngLatLike, up: ?vec3) {
+    lookAtPoint(location: LngLatLike, up?: vec3) {
         this.orientation = null;
         if (!this.position) {
             return;
