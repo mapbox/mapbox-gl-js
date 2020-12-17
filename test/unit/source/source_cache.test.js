@@ -1435,11 +1435,11 @@ test('SourceCache#tilesIn', (t) => {
 
                 t.equal(tiles[0].tile.tileID.key, 16);
                 t.equal(tiles[0].tile.tileSize, 512);
-                t.deepEqual(round(tiles[0].bufferedTilespaceBounds), {min: {x: 4080, y: 4050}, max: {x:8192, y: 8162}});
+                t.deepEqual(round(tiles[0].bufferedTilespaceBounds), {min: {x: 4080, y: 4034}, max: {x:8192, y: 8162}});
 
                 t.equal(tiles[1].tile.tileID.key, 528);
                 t.equal(tiles[1].tile.tileSize, 512);
-                t.deepEqual(round(tiles[1].bufferedTilespaceBounds), {min: {x: 0, y: 4050}, max: {x: 4112, y: 8162}});
+                t.deepEqual(round(tiles[1].bufferedTilespaceBounds), {min: {x: 0, y: 4034}, max: {x: 4112, y: 8162}});
 
                 t.end();
             }
@@ -1484,11 +1484,11 @@ test('SourceCache#tilesIn', (t) => {
 
                 t.equal(tiles[0].tile.tileID.key, 17);
                 t.equal(tiles[0].tile.tileSize, 1024);
-                t.deepEqual(round(tiles[0].bufferedTilespaceBounds), {min: {x: 4088, y: 4050}, max: {x:8192, y: 8154}});
+                t.deepEqual(round(tiles[0].bufferedTilespaceBounds), {min: {x: 4088, y: 4042}, max: {x:8192, y: 8154}});
 
                 t.equal(tiles[1].tile.tileID.key, 529);
                 t.equal(tiles[1].tile.tileSize, 1024);
-                t.deepEqual(round(tiles[1].bufferedTilespaceBounds), {min: {x: 0, y: 4050}, max: {x: 4104, y: 8154}});
+                t.deepEqual(round(tiles[1].bufferedTilespaceBounds), {min: {x: 0, y: 4042}, max: {x: 4104, y: 8154}});
 
                 t.end();
             }
