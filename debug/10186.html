@@ -114,6 +114,7 @@ var map = window.map = new mapboxgl.Map({
     zoom: 0
 });
 
+// map.repaint = true;
 // map.showTileBoundaries = true;
 map.on('load', function () {
     map.addSource('mapbox-dem', {
@@ -129,7 +130,7 @@ document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
     map.showTileBoundaries = !!this.checked;
 };
 document.getElementById('drape-first').onclick = function() {
-    map.painter.terrain.forceRenderAllDrapedLayersFirst = !!this.checked;
+    map.painter.terrain.forceRenderCached = !!this.checked;
 };
 
 </script>

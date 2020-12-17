@@ -471,14 +471,16 @@ class Painter {
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
 
-        for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
-            const layer = this.style._layers[layerIds[this.currentLayer]];
-            const sourceCache = style._getLayerSourceCache(layer);
-            if (layer.isSky()) continue;
-            const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
+        if (!this.terrain) {
+            for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
+                const layer = this.style._layers[layerIds[this.currentLayer]];
+                const sourceCache = style._getLayerSourceCache(layer);
+                if (layer.isSky()) continue;
+                const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
-            this._renderTileClippingMasks(layer, sourceCache, coords);
-            this.renderLayer(this, sourceCache, layer, coords);
+                this._renderTileClippingMasks(layer, sourceCache, coords);
+                this.renderLayer(this, sourceCache, layer, coords);
+            }
         }
 
         // Terrain depth render ==========================================
@@ -512,25 +514,28 @@ class Painter {
         // With terrain on, renders cached layers or cache it for sequential
         // interactive frames, all layers are cached until the first non-draped
         // layer is found.
-        let layerStart = 0;
         if (this.terrain && this.terrain.renderCached) {
-            this.currentLayer = 0;
-            layerStart = this.terrain.render();
+            this.currentLayer = this.terrain.render(0);
             this.terrain.renderCached = false;
+        } else {
+            this.currentLayer = 0;
         }
 
-        for (this.currentLayer = layerStart; this.currentLayer < layerIds.length; this.currentLayer++) {
+        while (this.currentLayer < layerIds.length) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
 
             // Nothing to draw in translucent pass for sky layers
-            if (layer.isSky()) continue;
+            if (layer.isSky()) {
+                ++this.currentLayer;
+                continue;
+            }
 
             // With terrain on and for draped layers only, issue rendering and progress
             // this.currentLayer until we the next non-draped layer.
             // Otherwise we interleave terrain draped render with non-draped layers on top
             if (this.terrain && this.terrain._isLayerDrapedOverTerrain(layer)) {
-                this.terrain.render();
+                this.currentLayer = this.terrain.render(this.currentLayer);
                 continue;
             }
 
@@ -543,6 +548,8 @@ class Painter {
 
             this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             this.renderLayer(this, sourceCache, layer, coords);
+
+            ++this.currentLayer;
         }
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry) {
