@@ -1303,6 +1303,7 @@ export type MapEvent =
     /**
      * Fired after speed index calculation is completed if speedIndexTiming option has set to true
      *
+     * @private
      * @event speedindexcompleted
      * @memberof Map
      * @instance

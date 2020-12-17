@@ -80,7 +80,7 @@ export function orientationFromFrame(forward: vec3, up: vec3): ?quat {
  * Various options for accessing physical properties of the underlying camera entity.
  * A direct access to these properties allows more flexible and precise controlling of the camera
  * while also being fully compatible and interchangeable with CameraOptions. All fields are optional.
- * See {@Link Camera#setFreeCameraOptions} and {@Link Camera#getFreeCameraOptions}
+ * See {@link Map#setFreeCameraOptions} and {@link Map#getFreeCameraOptions}
  *
  * @param {MercatorCoordinate} position Position of the camera in slightly modified web mercator coordinates
         - The size of 1 unit is the width of the projected world instead of the "mercator meter".
@@ -122,10 +122,10 @@ class FreeCameraOptions {
      * on the map.
      *
      * @param {LngLatLike} location Location of the focus point on the map
-     * @param {vec3} up Up vector of the camera is required in certain scenarios where bearing can't be deduced
+     * @param {vec3?} up Up vector of the camera is necessary in certain scenarios where bearing can't be deduced
      *      from the viewing direction.
      */
-    lookAtPoint(location: LngLatLike, up: ?vec3) {
+    lookAtPoint(location: LngLatLike, up?: vec3) {
         this.orientation = null;
         if (!this.position) {
             return;
