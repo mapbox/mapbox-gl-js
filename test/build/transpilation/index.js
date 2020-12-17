@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import mapboxgl from '../../../dist/mapbox-gl-csp.js';
 import MapboxGLWorker from '../../../dist/mapbox-gl-csp-worker.js';
 
