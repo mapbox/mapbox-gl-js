@@ -674,6 +674,41 @@ export class Terrain extends Elevation {
         return currLayer === startLayer ? startLayer + 1 : currLayer;
     }
 
+    renderCacheEfficiency(): number {
+        const layerCount = this.painter.style._order.length;
+
+        let cacheableLayerCount = 0;
+        let uncacheableLayerCount = 0;
+        let drapedLayerCount = 0;
+        let reachedUndrapedLayer = false;
+
+        for (let i = 0; i < layerCount; ++i) {
+            const layer = this.painter.style._layers[this.painter.style._order[i]];
+            if (layer.isHidden(this.painter.transform.zoom)) {
+                continue;
+            }
+
+            if (!this._isLayerDrapedOverTerrain(layer)) {
+                if (!reachedUndrapedLayer) {
+                    reachedUndrapedLayer = true;
+                }
+                ++drapedLayerCount;
+            } else {
+                if (!reachedUndrapedLayer) {
+                    ++cacheableLayerCount;
+                } else {
+                    ++uncacheableLayerCount;
+                }
+            }
+        }
+
+        const renderableLayerCount = drapedLayerCount
+            + cacheableLayerCount
+            + uncacheableLayerCount;
+
+        return (1.0 - uncacheableLayerCount / renderableLayerCount) * 100.0;
+    }
+
     // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
     // x & y components of the position are expected to be in normalized mercator coordinates [0, 1] and z in meters.
     raycast(pos: vec3, dir: vec3, exaggeration: number): ?number {
