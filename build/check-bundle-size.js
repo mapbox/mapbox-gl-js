@@ -22,7 +22,7 @@ const FILES = [
     ['JS', "dist/mapbox-gl.js"],
     ['CSS', "dist/mapbox-gl.css"]
 ];
-let PK = Buffer.from(process.env['SIZE_CHECK_APP_PRIVATE_KEY'], 'base64');
+const PK = Buffer.from(process.env['SIZE_CHECK_APP_PRIVATE_KEY'], 'base64');
 if (!PK) {
     console.log('Fork PR; not computing size.');
     process.exit(0);
