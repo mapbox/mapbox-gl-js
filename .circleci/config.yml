@@ -157,12 +157,7 @@ jobs:
       - run:
           name: Check bundle size
           command: |
-            if [ -z "$SIZE_CHECK_APP_PRIVATE_KEY" ]; then
-              echo "Cannot check bundle size on forked branches. Exiting..."
-              exit 0;
-            else
-              node build/check-bundle-size.js
-            fi
+            node build/check-bundle-size.js
       - deploy:
           name: Trigger memory metrics when merging to main
           command: |

@@ -22,7 +22,7 @@ const FILES = [
     ['JS', "dist/mapbox-gl.js"],
     ['CSS', "dist/mapbox-gl.css"]
 ];
-const PK = Buffer.from(process.env['SIZE_CHECK_APP_PRIVATE_KEY'], 'base64').toString('binary');
+let PK = Buffer.from(process.env['SIZE_CHECK_APP_PRIVATE_KEY'], 'base64');
 if (!PK) {
     console.log('Fork PR; not computing size.');
     process.exit(0);
@@ -36,7 +36,7 @@ const repo = 'mapbox-gl-js';
         authStrategy: createAppAuth,
         auth: {
             id: SIZE_CHECK_APP_ID,
-            privateKey: PK,
+            privateKey: PK.toString('binary'),
             installationId: SIZE_CHECK_APP_INSTALLATION_ID
         }
     });
