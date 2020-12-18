@@ -52,6 +52,7 @@ window.onload = function() {
 
     var style = gui.add(demo3d, 'style', [
         'mapbox/streets-v11',
+        'mapbox/satellite-streets-v11',
         'mapbox/light-v10',
         'mapbox/dark-v10',
         'mapbox/outdoors-v11',
@@ -141,6 +142,20 @@ map.on('style.load', function() {
         "maxzoom": 14
     });
     map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+
+    map.addLayer({
+        'id': "extrusion",
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+            'fill-extrusion-height': ["get", "height"],
+            'fill-extrusion-opacity': 0.7
+        }
+    }, 'waterway-label');
 
     map.addLayer({
         'id': 'sky',
