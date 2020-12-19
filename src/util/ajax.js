@@ -279,9 +279,11 @@ function arrayBufferToImage(data: ArrayBuffer, callback: (err: ?Error, image: ?H
     img.onload = () => {
         callback(null, img);
         URL.revokeObjectURL(img.src);
-        // prevent image dataURI memory leak in Safari
+        // prevent image dataURI memory leak in Safari;
+        // but don't free the image immediately because it might be uploaded in the next frame
+        // https://github.com/mapbox/mapbox-gl-js/issues/10226
         img.onload = null;
-        img.src = transparentPngUrl;
+        window.requestAnimationFrame(() => { img.src = transparentPngUrl; });
     };
     img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
     const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
