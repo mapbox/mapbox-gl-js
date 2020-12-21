@@ -138,7 +138,7 @@ class GeolocateControl extends Evented {
         this._noTimeout = false;
     }
 
-    _checkGeolocationSupport(callback) {
+    _checkGeolocationSupport(callback: (supported: boolean) => any) {
         if (this._supportsGeolocation !== undefined) {
             callback(this._supportsGeolocation);
         } else if (window.navigator.permissions !== undefined) {
