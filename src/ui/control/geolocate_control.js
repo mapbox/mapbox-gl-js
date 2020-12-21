@@ -105,9 +105,9 @@ class GeolocateControl extends Evented {
     _heading: ?number;
     _updateMarkerRotationThrottled: Function;
 
-    _numberOfWatches: number = 0;
-    _noTimeout: boolean = false;
-    _supportsGeolocation: boolean = false;
+    _numberOfWatches: number;
+    _noTimeout: boolean;
+    _supportsGeolocation: boolean;
 
     constructor(options: Options) {
         super();
@@ -126,6 +126,7 @@ class GeolocateControl extends Evented {
         ], this);
 
         this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
+        this._numberOfWatches = 0;
     }
 
     onAdd(map: Map): HTMLElement {
