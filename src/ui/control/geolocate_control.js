@@ -88,9 +88,9 @@ class GeolocateControl extends Evented {
     _accuracy: number;
     _setup: boolean; // set to true once the control has been setup
 
-    _numberOfWatches: number = 0;
-    _noTimeout: boolean = false;
-    _supportsGeolocation: boolean = false;
+    _numberOfWatches: number;
+    _noTimeout: boolean;
+    _supportsGeolocation: boolean;
 
     constructor(options: Options) {
         super();
@@ -105,6 +105,8 @@ class GeolocateControl extends Evented {
             '_updateCamera',
             '_updateMarker'
         ], this);
+
+        this._numberOfWatches = 0;
     }
 
     onAdd(map: Map) {
