@@ -16,7 +16,8 @@ type Options = {
     fitBoundsOptions?: AnimationOptions & CameraOptions,
     trackUserLocation?: boolean,
     showAccuracyCircle?: boolean,
-    showUserLocation?: boolean
+    showUserLocation?: boolean,
+    geolocation?: Geolocation,
 };
 
 const defaultOptions: Options = {
@@ -30,8 +31,11 @@ const defaultOptions: Options = {
     },
     trackUserLocation: false,
     showAccuracyCircle: true,
-    showUserLocation: true
+    showUserLocation: true,
+    geolocation: window.navigator.geolocation
 };
+
+let geolocation;
 
 let supportsGeolocation;
 
@@ -50,7 +54,7 @@ function checkGeolocationSupport(callback) {
         });
 
     } else {
-        supportsGeolocation = !!window.navigator.geolocation;
+        supportsGeolocation = !!geolocation;
         callback(supportsGeolocation);
     }
 }
@@ -114,6 +118,8 @@ class GeolocateControl extends Evented {
         super();
         this.options = extend({}, defaultOptions, options);
 
+        geolocation = this.options.geolocation;
+
         bindAll([
             '_onSuccess',
             '_onError',
@@ -135,7 +141,7 @@ class GeolocateControl extends Evented {
     onRemove() {
         // clear the geolocation watch if exists
         if (this._geolocationWatchID !== undefined) {
-            window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+            geolocation.clearWatch(this._geolocationWatchID);
             this._geolocationWatchID = (undefined: any);
         }
 
@@ -536,11 +542,11 @@ class GeolocateControl extends Evented {
                     noTimeout = false;
                 }
 
-                this._geolocationWatchID = window.navigator.geolocation.watchPosition(
+                this._geolocationWatchID = geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
             }
         } else {
-            window.navigator.geolocation.getCurrentPosition(
+            geolocation.getCurrentPosition(
                 this._onSuccess, this._onError, this.options.positionOptions);
 
             // This timeout ensures that we still call finish() even if
@@ -552,7 +558,7 @@ class GeolocateControl extends Evented {
     }
 
     _clearWatch() {
-        window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+        geolocation.clearWatch(this._geolocationWatchID);
 
         this._geolocationWatchID = (undefined: any);
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
