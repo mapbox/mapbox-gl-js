@@ -106,9 +106,9 @@ class GeolocateControl extends Evented {
     _updateMarkerRotationThrottled: Function;
     _onDeviceOrientationListener: Function;
 
-    _numberOfWatches: number = 0;
-    _noTimeout: boolean = false;
-    _supportsGeolocation: boolean = false;
+    _numberOfWatches: number;
+    _noTimeout: boolean;
+    _supportsGeolocation: boolean;
 
     constructor(options: Options) {
         super();
@@ -128,6 +128,7 @@ class GeolocateControl extends Evented {
         // by referencing the function with .bind(), we can correctly remove from window's event listeners
         this._onDeviceOrientationListener = this._onDeviceOrientation.bind(this);
         this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
+        this._numberOfWatches = 0;
     }
 
     onAdd(map: Map) {
