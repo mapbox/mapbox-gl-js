@@ -17,7 +17,7 @@ type Options = {
     trackUserLocation?: boolean,
     showAccuracyCircle?: boolean,
     showUserLocation?: boolean,
-    geolocation?: Geolocation,
+    geolocation: Geolocation,
 };
 
 const defaultOptions: Options = {
