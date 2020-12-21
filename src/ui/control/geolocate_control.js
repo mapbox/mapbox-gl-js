@@ -16,7 +16,8 @@ type Options = {
     fitBoundsOptions?: AnimationOptions & CameraOptions,
     trackUserLocation?: boolean,
     showAccuracyCircle?: boolean,
-    showUserLocation?: boolean
+    showUserLocation?: boolean,
+    shouldUpdate: (position: Position) => boolean;
 };
 
 const defaultOptions: Options = {
@@ -30,7 +31,8 @@ const defaultOptions: Options = {
     },
     trackUserLocation: false,
     showAccuracyCircle: true,
-    showUserLocation: true
+    showUserLocation: true,
+    shouldUpdate: () => true
 };
 
 let supportsGeolocation;
@@ -84,6 +86,7 @@ let noTimeout = false;
  * @param {Object} [options.trackUserLocation=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the user's location as it changes.
  * @param {Object} [options.showAccuracyCircle=true] By default, if showUserLocation is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when showUserLocation is `false`.
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
+ * @param {Object} [options.shouldUpdate=() => true] By default a function that always returns true.
  *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
@@ -210,6 +213,10 @@ class GeolocateControl extends Evented {
     _onSuccess(position: Position) {
         if (!this._map) {
             // control has since been removed
+            return;
+        }
+
+        if (this.options.shouldUpdate(position) === false) {
             return;
         }
 
