@@ -186,7 +186,7 @@ test('transform', (t) => {
             const ndx = dx / l;
             const ndy = dy / l;
             t.ok(Math.abs(ndx) < 1e-10);
-            t.ok(dy < 0);
+            t.ok(Math.abs(ndy + 1) < 1e-10);
         }
 
         t.test('no pitch', (t) => {
@@ -197,8 +197,8 @@ test('transform', (t) => {
             transform.bearing = 0;
             transform.resize(512, 512);
 
-            const coord = transform.pointCoordinate(new Point(transform.width/2, -10000));
-            assertDueNorth(t, { x: 0.5, y: 0.5, z : 0}, coord);
+            const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
+            assertDueNorth(t, {x: 0.5, y: 0.5, z : 0}, coord);
             t.end();
         });
 
@@ -210,8 +210,8 @@ test('transform', (t) => {
             transform.bearing = 0;
             transform.resize(512, 512);
 
-            const coord = transform.pointCoordinate(new Point(transform.width/2, -10000));
-            assertDueNorth(t, { x: 0.5, y: 0.5, z : 0}, coord);
+            const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
+            assertDueNorth(t, {x: 0.5, y: 0.5, z : 0}, coord);
             t.end();
         });
 
@@ -223,8 +223,8 @@ test('transform', (t) => {
             transform.bearing = 0;
             transform.resize(512, 512);
 
-            const coord = transform.pointCoordinate(new Point(transform.width/2, -10000));
-            assertDueNorth(t, { x: 0.5, y: 0.5, z : 0}, coord);
+            const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
+            assertDueNorth(t, {x: 0.5, y: 0.5, z : 0}, coord);
             t.end();
         });
 
