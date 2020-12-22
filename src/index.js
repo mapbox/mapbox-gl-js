@@ -1,7 +1,7 @@
 // @flow
 
 import assert from 'assert';
-import supported from '@mapbox/mapbox-gl-supported';
+import {supported} from '@mapbox/mapbox-gl-supported';
 
 import {version} from '../package.json';
 import Map from './ui/map';
