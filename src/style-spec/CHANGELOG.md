@@ -1,3 +1,16 @@
+# 13.18.1
+
+### 🐞 Bug fixes
+* Fixed a bug where `map.setStyle` couldn't be used to enable terrain. ([#10177](https://github.com/mapbox/mapbox-gl-js/pull/10177))
+
+## 13.18.0
+
+### ✨ Features and improvements
+
+* Add 3D terrain feature. All layer types and markers can now be extruded using the new `terrain` root level style-spec property or with the function `map.setTerrain()`. ([#1489](https://github.com/mapbox/mapbox-gl-js/issues/1489))
+* Add support for unlocked pitch up to 85° (previously 60°). ([#3731](https://github.com/mapbox/mapbox-gl-js/issues/3731))
+* Add a new sky layer acting as an infinite background above the horizon line. This layer can be used from the style-spec and has two types: `atmospheric` and `gradient`.
+
 ## 13.17.0
 
 ### ✨ Features and improvements
