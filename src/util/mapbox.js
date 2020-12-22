@@ -211,9 +211,8 @@ function isMapboxURL(url: string) {
     return url.indexOf('mapbox:') === 0;
 }
 
-const mapboxHTTPURLRe = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/|\?|$)/i;
 function isMapboxHTTPURL(url: string): boolean {
-    return mapboxHTTPURLRe.test(url);
+    return config.API_URL_REGEX.test(url);
 }
 
 function hasCacheDefeatingSku(url: string) {

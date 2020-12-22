@@ -20,7 +20,7 @@ import LngLatBounds from '../geo/lng_lat_bounds';
 import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control';
 import LogoControl from './control/logo_control';
-import isSupported from '@mapbox/mapbox-gl-supported';
+import {supported} from '@mapbox/mapbox-gl-supported';
 import {RGBAImage} from '../util/image';
 import {Event, ErrorEvent} from '../util/evented';
 import {MapMouseEvent} from './events';
@@ -1412,7 +1412,6 @@ class Map extends Camera {
         try {
             if (this.style.setState(style)) {
                 this._update(true);
-                this._updateTerrain();
             }
         } catch (e) {
             warnOnce(
@@ -1428,7 +1427,9 @@ class Map extends Camera {
      * @returns {Object} The map's style JSON object.
      *
      * @example
-     * var styleJson = map.getStyle();
+     * map.on('load', function() {
+     *   var styleJson = map.getStyle();
+     * });
      *
      */
     getStyle() {
@@ -2111,7 +2112,7 @@ class Map extends Camera {
     /**
      * Sets the terrain property of the style.
      *
-     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#terrain).
+     * @param terrain Terrain properties to set. Must conform to the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/root/#terrain).
      * If `null` or `undefined` is provided, function removes terrain.
      * @returns {Map} `this`
      * @example
@@ -2363,7 +2364,7 @@ class Map extends Camera {
     }
 
     _setupPainter() {
-        const attributes = extend({}, isSupported.webGLContextAttributes, {
+        const attributes = extend({}, supported.webGLContextAttributes, {
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this._preserveDrawingBuffer,
             antialias: this._antialias || false
@@ -2813,13 +2814,13 @@ class Map extends Camera {
     /**
      * Gets and sets a Boolean indicating whether the speedindex metric calculation is on or off
      *
+     * @private
      * @name speedIndexTiming
      * @type {boolean}
      * @instance
      * @memberof Map
      * @example
      * map.speedIndexTiming = true;
-     * @private
      */
     get speedIndexTiming(): boolean { return !!this._speedIndexTiming; }
     set speedIndexTiming(value: boolean) {

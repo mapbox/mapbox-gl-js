@@ -952,7 +952,7 @@ class Camera extends Evented {
     }
 
     /**
-     * FreeCameraOptions provides more direct access to the underlying camera entity.
+     * `FreeCameraOptions` provides more direct access to the underlying camera entity.
      * For backwards compatibility the state set using this API must be representable with
      * `CameraOptions` as well. Parameters are clamped into a valid range or discarded as invalid
      * if the conversion to the pitch and bearing presentation is ambiguous. For example orientation
@@ -960,7 +960,7 @@ class Camera extends Evented {
      * or the pitch is over the maximum pitch limit.
      *
      * @memberof Map#
-     * @param {FreeCameraOptions} options FreeCameraOptions object
+     * @param {FreeCameraOptions} options `FreeCameraOptions` object
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart

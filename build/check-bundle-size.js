@@ -53,6 +53,7 @@ const repo = 'mapbox-gl-js';
     execSync(`git reset --hard && git checkout origin/main`);
     execSync('yarn install');
     execSync('yarn run build-prod-min');
+    execSync('yarn run build-css');
     const priorSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(priorSizes);
 

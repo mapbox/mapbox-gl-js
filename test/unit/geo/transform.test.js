@@ -177,6 +177,60 @@ test('transform', (t) => {
         t.end();
     });
 
+    test('pointCoordinate retains direction when point is offscreen', (t) => {
+
+        function assertDueNorth(t, m1, m2) {
+            const dx = m2.x - m1.x;
+            const dy = m2.y - m1.y;
+            const l = Math.sqrt(dx * dx + dy * dy);
+            const ndx = dx / l;
+            const ndy = dy / l;
+            t.ok(Math.abs(ndx) < 1e-10);
+            t.ok(Math.abs(ndy + 1) < 1e-10);
+        }
+
+        t.test('no pitch', (t) => {
+            const transform = new Transform();
+            transform.center = {lng: 0, lat: 0};
+            transform.zoom = 16;
+            transform.pitch = 0;
+            transform.bearing = 0;
+            transform.resize(512, 512);
+
+            const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
+            assertDueNorth(t, {x: 0.5, y: 0.5, z : 0}, coord);
+            t.end();
+        });
+
+        t.test('high pitch', (t) => {
+            const transform = new Transform();
+            transform.center = {lng: 0, lat: 0};
+            transform.zoom = 16;
+            transform.pitch = 80;
+            transform.bearing = 0;
+            transform.resize(512, 512);
+
+            const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
+            assertDueNorth(t, {x: 0.5, y: 0.5, z : 0}, coord);
+            t.end();
+        });
+
+        t.test('medium pitch', (t) => {
+            const transform = new Transform();
+            transform.center = {lng: 0, lat: 0};
+            transform.zoom = 16;
+            transform.pitch = 70;
+            transform.bearing = 0;
+            transform.resize(512, 512);
+
+            const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
+            assertDueNorth(t, {x: 0.5, y: 0.5, z : 0}, coord);
+            t.end();
+        });
+
+        t.end();
+    });
+
     test('coveringTiles', (t) => {
         const options = {
             minzoom: 1,

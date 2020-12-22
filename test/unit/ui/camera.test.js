@@ -374,6 +374,17 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('pans equally in both directions', (t) => {
+            const camera = createCamera({bearing: 0});
+            const c = camera.getCenter();
+            camera.panBy([0, -10000], {duration: 0});
+            const c1 = camera.getCenter();
+            camera.panBy([0, 10000], {duration: 0});
+            const c2 = camera.getCenter();
+            t.ok(Math.abs(c1.lat - c.lat) - Math.abs(c2.lat - c.lat) < 1e-10);
+            t.end();
+        });
+
         t.test('emits move events, preserving eventData', (t) => {
             const camera = createCamera();
             let started, moved;

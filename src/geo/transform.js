@@ -900,9 +900,8 @@ class Transform {
      * @private
      */
     pointCoordinate(p: Point): MercatorCoordinate {
-        // For p above horizon, don't return point behind camera but clamp p.y at horizon line.
-        const horizonOffset = this.horizonLineFromTop();
-        const clamped = horizonOffset > p.y ? new Point(p.x, horizonOffset) : p;
+        const horizonOffset = this.horizonLineFromTop(false);
+        const clamped = new Point(p.x, Math.max(horizonOffset, p.y));
 
         return this.rayIntersectionCoordinate(this.pointRayIntersection(clamped));
     }
@@ -1012,17 +1011,16 @@ class Transform {
     }
 
     /**
-     * Returns position oh horizon line, from the top, in pixels. If horizon is not
-     * visible, returns 0.
+     * Returns position of horizon line from the top of the map in pixels. If horizon is not visible, returns 0.
      * @private
      */
-    horizonLineFromTop(): number {
+    horizonLineFromTop(clampToTop: boolean = true): number {
         // h is height of space above map center to horizon.
         const h = this.height / 2 / Math.tan(this._fov / 2) / Math.tan(Math.max(this._pitch, 0.1)) + this.centerOffset.y;
         // incorporate 3% of the area above center to account for reduced precision.
         const horizonEpsilon = 0.03;
         const offset = this.height / 2 - h * (1 - horizonEpsilon);
-        return Math.max(0, offset);
+        return clampToTop ? Math.max(0, offset) : offset;
     }
 
     /**
@@ -1320,6 +1318,9 @@ class Transform {
         mat4.rotateZ(view, view, this.angle);
 
         const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, nearZ, farZ);
+        // Apply center of perspective offset to skybox projection
+        projection[8] = -offset.x * 2 / this.width;
+        projection[9] = offset.y * 2 / this.height;
         this.skyboxMatrix = mat4.multiply(view, projection, view);
 
         // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.

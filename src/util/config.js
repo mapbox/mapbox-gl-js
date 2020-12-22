@@ -2,6 +2,7 @@
 
 type Config = {|
   API_URL: string,
+  API_URL_REGEX: RegExp,
   EVENTS_URL: ?string,
   SESSION_PATH: string,
   FEEDBACK_URL: string,
@@ -12,8 +13,22 @@ type Config = {|
   MAX_PARALLEL_IMAGE_REQUESTS: number
 |};
 
+let mapboxHTTPURLRegex;
+
 const config: Config = {
     API_URL: 'https://api.mapbox.com',
+    get API_URL_REGEX () {
+        if (mapboxHTTPURLRegex == null) {
+            const prodMapboxHTTPURLRegex = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/|\?|$)/i;
+            try {
+                mapboxHTTPURLRegex = (process.env.API_URL_REGEX != null) ? new RegExp(process.env.API_URL_REGEX) : prodMapboxHTTPURLRegex;
+            } catch (e) {
+                mapboxHTTPURLRegex = prodMapboxHTTPURLRegex;
+            }
+        }
+
+        return mapboxHTTPURLRegex;
+    },
     get EVENTS_URL() {
         if (!this.API_URL) { return null; }
         if (this.API_URL.indexOf('https://api.mapbox.cn') === 0) {

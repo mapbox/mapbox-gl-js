@@ -58,6 +58,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-webpack:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
       - deploy-benchmarks:
           requires:
             - lint
@@ -183,7 +189,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: yarn run build-token
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -200,6 +205,21 @@ jobs:
           path: test/integration/query-tests
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
+
+  test-webpack:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build Webpack
+          command: |
+            cd ./test/build/transpilation &&
+            npm install &&
+            npm run build &&
+            rm -rf node_modules
+      - store_artifacts:
+          path: "test/build/transpilation"
 
   test-browser:
     <<: *defaults

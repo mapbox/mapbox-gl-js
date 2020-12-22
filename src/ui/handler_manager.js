@@ -267,13 +267,13 @@ class HandlerManager {
         this._add('touchRotate', touchRotate, ['touchPan', 'touchZoom']);
         this._add('touchZoom', touchZoom, ['touchPan', 'touchRotate']);
 
+        this._add('blockableMapEvent', new BlockableMapEventHandler(map));
+
         const scrollZoom = map.scrollZoom = new ScrollZoomHandler(map, this);
         this._add('scrollZoom', scrollZoom, ['mousePan']);
 
         const keyboard = map.keyboard = new KeyboardHandler();
         this._add('keyboard', keyboard);
-
-        this._add('blockableMapEvent', new BlockableMapEventHandler(map));
 
         for (const name of ['boxZoom', 'doubleClickZoom', 'tapDragZoom', 'touchPitch', 'dragRotate', 'dragPan', 'touchZoomRotate', 'scrollZoom', 'keyboard']) {
             if (options.interactive && (options: any)[name]) {
