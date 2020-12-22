@@ -62,6 +62,18 @@ const pages = {
     },
     "heatmap-layer": {
         "title": "Add a heatmap layer"
+    },
+    "add-terrain": {
+        "title": "Add Terrain"
+    },
+    "atmospheric-sky": {
+        "title": "Atmospheric Sky"
+    },
+    "free-camera-point": {
+        "title": "Free Camera Point"
+    },
+    "image-on-a-map": {
+        "title": "Image Source"
     }
 };
 
