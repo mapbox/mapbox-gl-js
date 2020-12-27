@@ -1,3 +1,19 @@
+## 2.0.1
+
+### ✨ Features and improvements
+
+- Added support for using third-party worker-loader plugins in build systems such as Webpack and Rollup (`mapboxgl.workerClass`). ([#10219](https://github.com/mapbox/mapbox-gl-js/pull/10219))
+- Added `mapboxgl.setNow` and `mapboxgl.restoreNow` methods which allow setting custom animation timing for 60 fps, jank-free video recording. ([#10172](https://github.com/mapbox/mapbox-gl-js/pull/10172))
+- Removed outdated CSS hacks that no longer apply. ([#10202](https://github.com/mapbox/mapbox-gl-js/pull/10202))
+
+### 🐞 Bug fixes
+
+- Fixed a bug where `ImageSource` and dynamically loaded icons didn't work in some cases in Firefox and Safari. ([#10230](https://github.com/mapbox/mapbox-gl-js/pull/10230))
+- Fixed a bug where `map.unproject` and `map.panBy` acted unpredictably in certain cases. ([#10224](https://github.com/mapbox/mapbox-gl-js/pull/10224))
+- Fixed a bug where the sky layer didn't take map padding into account. ([#10201](https://github.com/mapbox/mapbox-gl-js/pull/10201))
+- Fixed a bug where `map.setStyle` couldn't be used to enable terrain. ([#10177](https://github.com/mapbox/mapbox-gl-js/pull/10177))
+- Fixed a bug where mouse events didn't properly fire during zoom scrolling. ([#10171](https://github.com/mapbox/mapbox-gl-js/pull/10171))
+
 ## 2.0.0
 
 ### ⚠️ Breaking changes
