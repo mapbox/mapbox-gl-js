@@ -579,9 +579,11 @@ export class Terrain extends Elevation {
 
     // For each proxy tile, render all layers until the non-draped layer (and
     // render the tile to the screen) before advancing to the next proxy tile.
+    // In cached mode, returns the last drawn index that is used as a start
+    // layer for interleaved draped rendering.
     // Apart to layer-by-layer rendering used in 2D, here we have proxy-tile-by-proxy-tile
     // rendering.
-    render(startLayer: number): number {
+    render(startLayerIndex: number): number {
         this.renderingToTexture = true;
         const painter = this.painter;
         const context = this.painter.context;
@@ -593,13 +595,14 @@ export class Terrain extends Elevation {
             this.renderingToTexture = false;
         };
 
-        let currLayer = startLayer;
+        let layerIndex = startLayerIndex;
         let drawAsRasterCoords = [];
         const layerIds = painter.style._order;
 
         let poolIndex = 0;
         for (let i = 0; i < proxies.length; i++) {
             const proxy = proxies[i];
+
             // bind framebuffer and assign texture to the tile (texture used in drawTerrainRaster).
             const tile = psc.getTileByID(proxy.proxyTileKey);
             const renderCacheIndex = psc.proxyCachedFBO[proxy.key];
@@ -612,7 +615,7 @@ export class Terrain extends Elevation {
                 // Use cached render from previous pass, no need to render again.
                 drawAsRasterCoords.push(tile.tileID);
                 // Move forward back to where this cached entry stopped rendering.
-                currLayer = fbo.lastDrawnLayerIndex;
+                layerIndex = fbo.lastDrawnLayerIndex;
                 continue;
             }
 
@@ -625,8 +628,8 @@ export class Terrain extends Elevation {
             }
 
             let currentStencilSource; // There is no need to setup stencil for the same source for consecutive layers.
-            for (currLayer = startLayer; currLayer < layerIds.length; ++currLayer) {
-                const layer = painter.style._layers[layerIds[currLayer]];
+            for (layerIndex = startLayerIndex; layerIndex < layerIds.length; ++layerIndex) {
+                const layer = painter.style._layers[layerIds[layerIndex]];
                 const hidden = layer.isHidden(painter.transform.zoom);
                 const draped = this._isLayerDrapedOverTerrain(layer);
 
@@ -635,10 +638,7 @@ export class Terrain extends Elevation {
 
                 const sourceCache = painter.style._getLayerSourceCache(layer);
                 const proxiedCoords = sourceCache ? this.proxyToSource[proxy.key][sourceCache.id] : [proxy];
-                if (!proxiedCoords) {
-                    // when tile is not loaded yet for the source cache.
-                    continue;
-                }
+                if (!proxiedCoords) continue; // when tile is not loaded yet for the source cache.
 
                 const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
                 context.viewport.set([0, 0, fbo.fb.width, fbo.fb.height]);
@@ -649,9 +649,8 @@ export class Terrain extends Elevation {
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
 
-            fbo.lastDrawnLayerIndex = useRenderCache ? currLayer : undefined;
+            fbo.lastDrawnLayerIndex = useRenderCache ? layerIndex : undefined;
             fbo.dirty = this.renderedToTile;
-
             if (this.renderedToTile) drawAsRasterCoords.push(tile.tileID);
 
             if (poolIndex === FBO_POOL_SIZE) {
@@ -665,14 +664,13 @@ export class Terrain extends Elevation {
             }
         }
         setupRenderToScreen();
+        if (drawAsRasterCoords.length > 0) drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
+        const nextLayerIndex = layerIndex === startLayerIndex && !this.renderCached ? startLayerIndex + 1 : layerIndex;
+        return nextLayerIndex;
+    }
 
-        if (drawAsRasterCoords.length > 0) {
-            drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
-        }
-
-        const nextLayer = currLayer === startLayer && !this.renderCached ? startLayer + 1 : currLayer;
-        this.renderCached = false;
-        return nextLayer;
+    setRenderCached(cached: boolean) {
+        this.renderCached = cached;
     }
 
     renderCacheEfficiency(): number {

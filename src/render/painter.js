@@ -484,13 +484,6 @@ class Painter {
             }
         }
 
-        // Terrain depth render ==========================================
-        // With terrain on, renders the depth buffer into a texture.
-        // This texture is used for occlusion testing (labels)
-        if (this.terrain) {
-            this.terrain.drawDepth();
-        }
-
         // Sky pass ======================================================
         // Draw all sky layers bottom to top.
         // They are drawn at max depth, they are drawn after opaque and before
@@ -507,16 +500,24 @@ class Painter {
             }
         }
 
+        // Terrain depth render ===========================================
+        // With terrain on, renders the depth buffer into a texture.
+        // This texture is used for occlusion testing (labels)
+        if (this.terrain && (this.style.hasLayerType('symbol') || this.style.hasLayerType('circle'))) {
+            this.terrain.drawDepth();
+        }
+
         // Translucent pass ===============================================
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
         // Terrain render cache pre-render ================================
-        // With terrain on, renders cached layers or cache it for sequential
-        // interactive frames, all layers are cached until the first non-draped
-        // layer is found.
+        // With terrain on, render all cached layers or cache it for sequential
+        // interactive frames. All layers are cached until the first non-draped
+        // layer is found, then reset to non-cached rendering.
         if (this.terrain && this.terrain.renderCached) {
             this.currentLayer = this.terrain.render(0);
+            this.terrain.setRenderCached(false);
         } else {
             this.currentLayer = 0;
         }
@@ -525,14 +526,14 @@ class Painter {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
 
-            // Nothing to draw in translucent pass for sky layers
+            // Nothing to draw in translucent pass for sky layers, advance
             if (layer.isSky()) {
                 ++this.currentLayer;
                 continue;
             }
 
             // With terrain on and for draped layers only, issue rendering and progress
-            // this.currentLayer until we the next non-draped layer.
+            // this.currentLayer until the next non-draped layer.
             // Otherwise we interleave terrain draped render with non-draped layers on top
             if (this.terrain && this.terrain._isLayerDrapedOverTerrain(layer)) {
                 const prevLayer = this.currentLayer;
