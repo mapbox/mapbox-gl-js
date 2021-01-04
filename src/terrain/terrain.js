@@ -159,7 +159,7 @@ class ProxiedTileID extends OverscaledTileID {
 }
 
 type OverlapStencilType = false | 'Clip' | 'Mask';
-type FBO = {fb: Framebuffer, tex: Texture, dirty: boolean, layerEnd: ?number, ref: number};
+type FBO = {fb: Framebuffer, tex: Texture, dirty: boolean, lastDrawnLayerIndex: ?number, ref: number};
 
 export class Terrain extends Elevation {
     terrainTileForTile: {[number | string]: Tile};
@@ -612,7 +612,7 @@ export class Terrain extends Elevation {
                 // Use cached render from previous pass, no need to render again.
                 drawAsRasterCoords.push(tile.tileID);
                 // Move forward back to where this cached entry stopped rendering.
-                currLayer = fbo.layerEnd;
+                currLayer = fbo.lastDrawnLayerIndex;
                 continue;
             }
 
@@ -649,7 +649,7 @@ export class Terrain extends Elevation {
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
 
-            fbo.layerEnd = useRenderCache ? currLayer : undefined;
+            fbo.lastDrawnLayerIndex = useRenderCache ? currLayer : undefined;
             fbo.dirty = this.renderedToTile;
 
             if (this.renderedToTile) drawAsRasterCoords.push(tile.tileID);
@@ -774,7 +774,7 @@ export class Terrain extends Elevation {
                 context.extTextureFilterAnisotropicMax);
         }
 
-        return {fb, tex, dirty: false, layerEnd: undefined, ref: 1};
+        return {fb, tex, dirty: false, lastDrawnLayerIndex: undefined, ref: 1};
     }
 
     _initFBOPool() {
