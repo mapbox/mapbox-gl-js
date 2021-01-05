@@ -9,7 +9,7 @@ import EXTENT from '../data/extent';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import SegmentVector from '../data/segment';
 import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types';
-import {values, MAX_SAFE_INTEGER} from '../util/util';
+import {values, MAX_SAFE_INTEGER, warnOnce} from '../util/util';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import posAttributes from '../data/pos_attributes';
 import ProgramConfiguration from '../data/program_configuration';
@@ -173,6 +173,12 @@ class Painter {
         const terrain: Terrain = this._terrain;
         this.transform.elevation = enabled ? terrain : null;
         terrain.update(style, this.transform, cameraChanging);
+        if (style._layerOrderChanged) {
+            const efficiency = this._terrain.renderCacheEfficiency(style);
+            if (efficiency < 85) {
+                warnOnce(`Low render cache efficiency: ${efficiency}%`);
+            }
+        }
     }
 
     get terrain(): ?Terrain {

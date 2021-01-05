@@ -673,8 +673,8 @@ export class Terrain extends Elevation {
         this.renderCached = cached;
     }
 
-    renderCacheEfficiency(): number {
-        const layerCount = this.painter.style._order.length;
+    renderCacheEfficiency(style: Style): number {
+        const layerCount = style._order.length;
 
         let cacheableLayerCount = 0;
         let uncacheableLayerCount = 0;
@@ -682,7 +682,7 @@ export class Terrain extends Elevation {
         let reachedUndrapedLayer = false;
 
         for (let i = 0; i < layerCount; ++i) {
-            const layer = this.painter.style._layers[this.painter.style._order[i]];
+            const layer = style._layers[style._order[i]];
             if (layer.isHidden(this.painter.transform.zoom)) {
                 continue;
             }
