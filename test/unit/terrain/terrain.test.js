@@ -436,7 +436,7 @@ test('Elevation', (t) => {
                 onAdd: () => {},
                 render: () => {}
             };
-            map.addLayer(customLayer, 'background');
+            map.addLayer(customLayer);
             map.setTerrain({"source": "mapbox-dem"});
             map.once('render', () => {
                 map.painter.terrain.renderCached = true;

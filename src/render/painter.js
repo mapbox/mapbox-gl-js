@@ -178,7 +178,7 @@ class Painter {
             if (renderCacheInfo.efficiency !== 100) {
                 warnOnce(`Terrain render cache efficiency is not optimal (${renderCacheInfo.efficiency}%)
                     and performance may be affected negatively, consider adding draped
-                    layers before layer with id '${renderCacheInfo.firstDrapedLayer}'`);
+                    layers before layer with id '${renderCacheInfo.firstUndrapedLayer}'`);
             }
         }
     }
