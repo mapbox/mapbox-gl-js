@@ -5,6 +5,7 @@
       "height": 512,
       "width": 512,
       "operations": [
+        ["wait"],
         ["lookAtPoint", [-113.336142, 35.937623]],
         ["setZoom", 13],
         ["wait"]
