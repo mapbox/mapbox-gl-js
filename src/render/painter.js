@@ -174,9 +174,11 @@ class Painter {
         this.transform.elevation = enabled ? terrain : null;
         terrain.update(style, this.transform, cameraChanging);
         if (style._layerOrderChanged) {
-            const efficiency = this._terrain.renderCacheEfficiency(style);
-            if (efficiency < 85) {
-                warnOnce(`Low render cache efficiency: ${efficiency}%`);
+            const renderCacheInfo = terrain.renderCacheEfficiency(style);
+            if (renderCacheInfo.efficiency !== 100) {
+                warnOnce(`Terrain render cache efficiency is not optimal (${renderCacheInfo.efficiency}%)
+                    and performance may be affected negatively, consider adding draped
+                    layers before layer with id '${renderCacheInfo.firstDrapedLayer}'`);
             }
         }
     }
@@ -523,7 +525,6 @@ class Painter {
         // layer is found, then reset to non-cached rendering.
         if (this.terrain && this.terrain.renderCached) {
             this.currentLayer = this.terrain.render(0);
-            this.terrain.setRenderCached(false);
         } else {
             this.currentLayer = 0;
         }
