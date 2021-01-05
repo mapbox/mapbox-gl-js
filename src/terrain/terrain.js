@@ -673,7 +673,6 @@ export class Terrain extends Elevation {
     renderCacheEfficiency(style: Style): Object {
         const layerCount = style._order.length;
 
-        let cacheableLayerCount = 0;
         let uncacheableLayerCount = 0;
         let drapedLayerCount = 0;
         let reachedUndrapedLayer = false;
@@ -690,19 +689,15 @@ export class Terrain extends Elevation {
                     reachedUndrapedLayer = true;
                     firstUndrapedLayer = layer.id;
                 }
-                ++drapedLayerCount;
             } else {
-                if (!reachedUndrapedLayer) {
-                    ++cacheableLayerCount;
-                } else {
+                if (reachedUndrapedLayer) {
                     ++uncacheableLayerCount;
                 }
+                ++drapedLayerCount;
             }
         }
 
-        const renderableLayerCount = drapedLayerCount + cacheableLayerCount + uncacheableLayerCount;
-
-        return {efficiency: (1.0 - uncacheableLayerCount / renderableLayerCount) * 100.0, firstUndrapedLayer};
+        return {efficiency: (1.0 - uncacheableLayerCount / drapedLayerCount) * 100.0, firstUndrapedLayer};
     }
 
     // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.

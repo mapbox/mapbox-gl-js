@@ -1806,6 +1806,59 @@ test('Style#setLayerZoomRange', (t) => {
     t.end();
 });
 
+test('Style#hasLayer, Style#hasLayerType', (t) => {
+    function createStyle() {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": createGeoJSONSource()
+            },
+            "layers": [{
+                "id": "symbol_id",
+                "type": "symbol",
+                "source": "geojson"
+            },
+            {
+                "id": "background_id",
+                "type": "background"
+            },
+            {
+                "id": "fill_id",
+                "type": "fill",
+                "source": "geojson"
+            },
+            {
+                "id": "line_id",
+                "type": "line",
+                "source": "geojson"
+            }]
+        });
+        return style;
+    }
+
+    const style = createStyle();
+
+    style.on('style.load', () => {
+        t.ok(style.hasLayer('symbol_id'));
+        t.ok(style.hasLayer('background_id'));
+        t.ok(style.hasLayer('fill_id'));
+        t.ok(style.hasLayer('line_id'));
+        t.notOk(style.hasLayer('non_existing_symbol_id'));
+        t.notOk(style.hasLayer('non_existing_background_id'));
+        t.notOk(style.hasLayer('non_existing_fill_id'));
+        t.notOk(style.hasLayer('non_existing_line_id'));
+        t.ok(style.hasLayerType('symbol'));
+        t.ok(style.hasLayerType('background'));
+        t.ok(style.hasLayerType('fill'));
+        t.ok(style.hasLayerType('line'));
+        t.notOk(style.hasLayerType('hillshade'));
+        t.notOk(style.hasLayerType('raster'));
+        t.notOk(style.hasLayerType('fill-extrusion'));
+        t.end();
+    });
+});
+
 test('Style#queryRenderedFeatures', (t) => {
     const style = new Style(new StubMap());
     const transform = new Transform();
