@@ -128,6 +128,11 @@ async function testFunc(t) {
 
     const gl = map.painter.context.gl;
     map.once('load', async () => {
+        // Disable vertex morphing by default
+        if (map.painter.terrain) {
+            map.painter.terrain.useVertexMorphing = false;
+        }
+
         //3. Run the operations on the map
         applyOperations(map, options, async () => {
             map.repaint = false;
