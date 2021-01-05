@@ -194,6 +194,7 @@ export class Terrain extends Elevation {
     _depthDone: boolean;
     _previousZoom: number;
     _updateTimestamp: number;
+    _useVertexMorphing: boolean;
     pool: Array<FBO>;
     currentFBO: FBO;
     renderedToTile: boolean;
@@ -238,6 +239,7 @@ export class Terrain extends Elevation {
         this._findCoveringTileCache = {};
         this._tilesDirty = {};
         this.style = style;
+        this._useVertexMorphing = true;
         style.on('data', this._onStyleDataEvent.bind(this));
     }
 
@@ -348,6 +350,10 @@ export class Terrain extends Elevation {
     get drapeBufferSize(): [number, number] {
         const extent = this.proxySourceCache.getSource().tileSize * 2; // *2 is to avoid upscaling bitmap on zoom.
         return [extent, extent];
+    }
+
+    set useVertexMorphing(enable: boolean) {
+        this._useVertexMorphing = enable;
     }
 
     // For every renderable coordinate in every source cache, assign one proxy
@@ -530,7 +536,7 @@ export class Terrain extends Elevation {
         let prevDemTile = null;
         let morphingPhase = 1.0;
 
-        if (options && options.morphing) {
+        if (options && options.morphing && this._useVertexMorphing) {
             const srcTile = options.morphing.srcDemTile;
             const dstTile = options.morphing.dstDemTile;
             morphingPhase = options.morphing.phase;
