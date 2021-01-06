@@ -37,6 +37,7 @@ import browser from '../util/browser';
 import DEMData from '../data/dem_data';
 import rasterFade from '../render/raster_fade';
 import {create as createSource} from '../source/source';
+import {HeightmapCascade} from './heightmap_cascade';
 
 import type Map from '../ui/map';
 import type Painter from '../render/painter';
@@ -178,6 +179,7 @@ export class Terrain extends Elevation {
     style: Style;
     orthoMatrix: mat4;
     enabled: boolean;
+    heightmapCascade: HeightmapCascade
 
     drapeFirst: boolean;
     drapeFirstPending: boolean;
@@ -240,6 +242,7 @@ export class Terrain extends Elevation {
         this._tilesDirty = {};
         this.style = style;
         this._useVertexMorphing = true;
+        this.heightmapCascade = new HeightmapCascade();
         style.on('data', this._onStyleDataEvent.bind(this));
     }
 
@@ -1014,6 +1017,8 @@ export class Terrain extends Elevation {
 
         this._depthDone = true;
     }
+
+
 
     _isLayerDrapedOverTerrain(styleLayer: StyleLayer): boolean {
         if (!this.enabled) return false;

@@ -44,7 +44,6 @@ class Transform {
     cameraToCenterDistance: number;
     mercatorMatrix: Array<number>;
     projMatrix: Float64Array;
-    orthoBoundsMatrix: Float64Array;
     invProjMatrix: Float64Array;
     alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
@@ -1264,7 +1263,6 @@ class Transform {
         const halfFov = this._fov / 2;
         const offset = this.centerOffset;
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height;
-        console.log(this.cameraToCenterDistance);
         const pixelsPerMeter = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
 
         this._updateCameraState();
@@ -1357,8 +1355,6 @@ class Transform {
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
-
-        this.projMatrix = this._calcOrthoBoundsMatrix();
 
         this._posMatrixCache = {};
         this._alignedPosMatrixCache = {};
@@ -1462,43 +1458,6 @@ class Transform {
 
     _terrainEnabled(): boolean {
         return !!this._elevation;
-    }
-
-    /**
-     * Returns a matrix that represents an orthographic camera that
-     * looks from top down at the center, is rotated by the camera bearing and,
-     * encompasses the trapezoid created by the instersection of camera frustum with the map plane.
-     *
-     * Returns the correct value only hafter _calcMatrices() has been called to update other matrices first.
-     *
-     * @returns {Float64Array}
-     */
-    _calcOrthoBoundsMatrix(): Float64Array {
-        const {x, y} = this.point;
-        const worldSize = this.worldSize;
-        const toPixels = (coord: MercatorCoordinate): vec3 => [coord.x * worldSize, coord.y * worldSize, 0];
-
-        const horizon = this.horizonLineFromTop();
-        const topLeft = toPixels(this.pointCoordinate(new Point(0, horizon)));
-        const topRight = toPixels(this.pointCoordinate(new Point(this.width, horizon)));
-        const btmLeft = toPixels(this.pointCoordinate(new Point(0, this.height)));
-        const btmRight = toPixels(this.pointCoordinate(new Point(this.width, this.height)));
-
-        const n = vec3.sub([], topRight, topLeft);
-        vec3.normalize(n, n);
-
-        const top = Math.abs(distanceToLine(topLeft, topRight, [x, y, 0]));
-        const btm = Math.abs(distanceToLine(btmLeft, btmRight, [x, y, 0]));
-        const left = Math.abs(vec3.dot(vec3.sub([], [x, y, 0], topLeft), n));
-        const right = Math.abs(vec3.dot(vec3.sub([], [x, y, 0], topRight), n));
-
-        const m = mat4.ortho(new Float64Array(16), -left, right, -btm, top, 0, 1);
-        mat4.scale(m, m, [1, -1, 1]);
-        mat4.rotateZ(m, m, this.angle);
-        mat4.translate(m, m, [-x, -y, 0]);
-
-        console.log(vec4.transformMat4([], [x, y, 0, 1], m));
-        return m;
     }
 
     isHorizonVisibleForPoints(p0: Point, p1: Point): boolean {

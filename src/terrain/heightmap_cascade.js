@@ -4,17 +4,21 @@ import type MercatorCoordinate from '../geo/mercator_coordinate';
 import {distanceToLine} from '../util/util';
 import Point from '@mapbox/point-geometry';
 import {mat4, vec3} from 'gl-matrix';
+import {array as interpolate} from '../style-spec/util/interpolate';
+
+const NEAR_THRESHOLD_MAX = 1 / Math.cos(Math.PI / 4);
+const NEAR_THRESHOLD_MIN = 0.1;
 
 export class HeightmapCascade {
-    // index 0 -> near cascade
-    // index 1 -> far cascade
-    matrices: [Float64Array, Float64Array];
+    nearCascadeMatrix: Float64Array;
+    farCascadeMatrix: Float64Array;
+    needsFarCascade: boolean;
 
     constructor() {
-        this.matrices = [
-            new Float64Array(16),
-            new Float64Array(16)
-        ];
+        this.nearCascadeMatrix = new Float64Array(16);
+        this.farCascadeMatrix = new Float64Array(16);
+        this.needsFarCascade = false;
+
     }
 
     calculateMatrices(transform: Transform) {
@@ -28,10 +32,24 @@ export class HeightmapCascade {
         const btmLeft = toPixels(transform.pointCoordinate(new Point(0, transform.height)));
         const btmRight = toPixels(transform.pointCoordinate(new Point(transform.width, transform.height)));
 
+        const top = distanceToLine(topLeft, topRight, [0, 0, 0]);
+        const btm = distanceToLine(btmLeft, btmRight, [0, 0, 0]);
+
+        const nearCascadeHeight = transform.height * NEAR_THRESHOLD_MAX;
+        const nearCascadeExtent = Math.max(Math.min(nearCascadeHeight / Math.abs(btm - top), 1), NEAR_THRESHOLD_MIN);
+        this.needsFarCascade = nearCascadeExtent < 1;
+
+        const midLeft = interpolate(btmLeft, topLeft, nearCascadeExtent);
+        const midRight = interpolate(btmRight, topRight, nearCascadeExtent);
+        this._matrixFromTrapezoid(this.nearCascadeMatrix, transform.angle, midLeft, midRight, btmLeft, btmRight);
+
+        if (this.needsFarCascade) {
+            this._matrixFromTrapezoid(this.farCascadeMatrix, transform.angle, topLeft, topRight, midLeft, midRight);
+        }
     }
 
     _matrixFromTrapezoid(out: Float64Array, angle: Number, topLeft: vec3, topRight: vec3, btmLeft: vec3, btmRight: vec3) {
-        const center = vec3.add([], topLeft);
+        const center = vec3.add([], [0, 0, 0], topLeft);
         vec3.add(center, center, topRight);
         vec3.add(center, center, btmLeft);
         vec3.add(center, center, btmRight);
@@ -52,6 +70,4 @@ export class HeightmapCascade {
         vec3.scale(center, center, -1);
         mat4.translate(m, m, center);
     }
-
-
 }
