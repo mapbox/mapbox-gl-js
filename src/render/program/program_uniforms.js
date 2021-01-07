@@ -14,7 +14,7 @@ import {lineUniforms, lineGradientUniforms, linePatternUniforms, lineSDFUniforms
 import {rasterUniforms} from './raster_program';
 import {symbolIconUniforms, symbolSDFUniforms, symbolTextAndIconUniforms} from './symbol_program';
 import {backgroundUniforms, backgroundPatternUniforms} from './background_program';
-import {terrainRasterUniforms} from '../../terrain/terrain_raster_program';
+import {terrainRasterUniforms, terrainHeightUniforms} from '../../terrain/terrain_raster_program';
 import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program';
 import {skyboxCaptureUniforms} from './skybox_capture_program';
 
@@ -48,6 +48,7 @@ export const programUniforms = {
     backgroundPattern: backgroundPatternUniforms,
     terrainRaster: terrainRasterUniforms,
     terrainDepth: terrainRasterUniforms,
+    terrainHeight: terrainHeightUniforms,
     skybox: skyboxUniforms,
     skyboxGradient: skyboxGradientUniforms,
     skyboxCapture: skyboxCaptureUniforms
