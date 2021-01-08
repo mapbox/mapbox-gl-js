@@ -144,7 +144,7 @@ jobs:
       - run:
           command: |
             if [ -z "$MAPBOX_ACCESS_TOKEN" ]; then
-              MAPBOX_ACCESS_TOKEN=<token here>
+              MAPBOX_ACCESS_TOKEN=pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9xMnY4bjExb3UydGx5cHVzdnExeGQifQ.wtK4FKQ_krpsih9IeBvSrQ
             fi
       - run: yarn run build-prod-min
       - run: yarn run build-prod
