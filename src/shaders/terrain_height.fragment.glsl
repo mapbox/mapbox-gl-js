@@ -1,5 +1,5 @@
-#define MIN_ELEV -10000.0
-#define MAX_ELEV 10000.0
+#define MIN_ELEV -1000.0
+#define MAX_ELEV 2000.0
 
 #ifdef GL_ES
 precision highp float;
@@ -89,5 +89,6 @@ vec4 pack_normalized(float n) {
 }
 
 void main() {
-    gl_FragColor = pack_normalized((elevation(v_pos) - MIN_ELEV)/(MAX_ELEV - MIN_ELEV));
+    float elevation = (elevation(v_pos) - MIN_ELEV)/(MAX_ELEV - MIN_ELEV);
+    gl_FragColor = vec4(elevation, elevation, elevation, 1.0);
 }

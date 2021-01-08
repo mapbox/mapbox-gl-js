@@ -16,9 +16,10 @@ import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import { terrainHeightUniformValues } from './terrain_raster_program';
 import StencilMode from '../gl/stencil_mode';
+import Color from '../style-spec/util/color';
 
 const NEAR_THRESHOLD_MAX = 1 / Math.cos(Math.PI / 4);
-const NEAR_THRESHOLD_MIN = 0.1;
+const NEAR_THRESHOLD_MIN = 0.001;
 
 export class HeightmapCascade {
     nearCascadeMatrix: Float64Array;
@@ -82,9 +83,8 @@ export class HeightmapCascade {
         assert(this._nearFBO);
         assert(this._nearTexture);
 
-        gl.bindTexture(gl.TEXTURE_2D, this._nearFBO.colorAttachment.get());
-        context.bindFramebuffer.set(this._nearFBO.framebuffer);
-        context.viewport.set([0, 0, this.currNearSize, this.currNearSize]);
+        this._nearFBO.makeActive();
+        context.clear({color: Color.white});
 
         const program = painter.useProgram('terrainHeight');
         for (const coord of tileIDs) {
@@ -102,9 +102,8 @@ export class HeightmapCascade {
             assert(this._farFBO);
             assert(this._farTexture);
 
-            gl.bindTexture(gl.TEXTURE_2D, this._farFBO.colorAttachment.get());
-            context.bindFramebuffer.set(this._farFBO.framebuffer);
-            context.viewport.set([0, 0, this.currFarSize, this.currFarSize]);
+            this._farFBO.makeActive();
+            context.clear({color: Color.white});
 
             for (const coord of tileIDs) {
                 const tile = sourceCache.getTile(coord);
