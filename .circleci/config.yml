@@ -141,11 +141,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run:
-          command: |
-            if [ -z "$MAPBOX_ACCESS_TOKEN" ]; then
-              MAPBOX_ACCESS_TOKEN=pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ
-            fi
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
