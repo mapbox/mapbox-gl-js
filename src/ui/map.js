@@ -149,6 +149,7 @@ const defaultOptions = {
     refreshExpiredTiles: true,
     maxTileCacheSize: null,
     localIdeographFontFamily: 'sans-serif',
+    localFontFamily: null,
     transformRequest: null,
     accessToken: null,
     fadeDuration: 300,
@@ -239,6 +240,9 @@ const defaultOptions = {
  *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
  *   Set to `false`, to enable font settings from the map's style for these glyph ranges.  Note that [Mapbox Studio](https://studio.mapbox.com/) sets this value to `false` by default.
  *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (See [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs).)
+ * @param {string} [options.localFontFamily=false] Defines a CSS
+ *   font-family for locally overriding generation of all glyphs. Font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
+ *   If set, this option override the setting in localIdeographFontFamily
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
  *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
@@ -311,6 +315,7 @@ class Map extends Camera {
     _logoControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
+    _localFontFamily: string;
     _requestManager: RequestManager;
     _locale: Object;
     _removed: boolean;
@@ -471,8 +476,10 @@ class Map extends Camera {
 
         this.resize();
 
+        this._localFontFamily = options.localFontFamily;
         this._localIdeographFontFamily = options.localIdeographFontFamily;
-        if (options.style) this.setStyle(options.style, {localIdeographFontFamily: options.localIdeographFontFamily});
+
+        if (options.style) this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
 
         if (options.attributionControl)
             this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
@@ -1343,13 +1350,16 @@ class Map extends Camera {
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
-        options = extend({}, {localIdeographFontFamily: this._localIdeographFontFamily}, options);
+        options = extend({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily}, options);
 
-        if ((options.diff !== false && options.localIdeographFontFamily === this._localIdeographFontFamily) && this.style && style) {
+        if ((options.diff !== false &&
+            options.localIdeographFontFamily === this._localIdeographFontFamily &&
+            options.localFontFamily === this._localFontFamily) && this.style && style) {
             this._diffStyle(style, options);
             return this;
         } else {
             this._localIdeographFontFamily = options.localIdeographFontFamily;
+            this._localFontFamily = options.localFontFamily;
             return this._updateStyle(style, options);
         }
     }

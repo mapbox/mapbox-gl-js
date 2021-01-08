@@ -19,9 +19,16 @@ type Entry = {
     tinySDF?: TinySDF
 };
 
+export const LocalGlyphMode = {
+    none: 0,
+    ideographs: 1,
+    all: 2
+};
+
 class GlyphManager {
     requestManager: RequestManager;
-    localIdeographFontFamily: ?string;
+    localFontFamily: ?string;
+    localGlyphMode: number;
     entries: {[_: string]: Entry};
     url: ?string;
 
@@ -29,9 +36,10 @@ class GlyphManager {
     static loadGlyphRange: typeof loadGlyphRange;
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestManager: RequestManager, localIdeographFontFamily: ?string) {
+    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily: ?string) {
         this.requestManager = requestManager;
-        this.localIdeographFontFamily = localIdeographFontFamily;
+        this.localGlyphMode = localGlyphMode;
+        this.localFontFamily = localFontFamily;
         this.entries = {};
     }
 
@@ -130,17 +138,23 @@ class GlyphManager {
     }
 
     _doesCharSupportLocalGlyph(id: number): boolean {
-        /* eslint-disable new-cap */
-        return !!this.localIdeographFontFamily &&
+        if (this.localGlyphMode === LocalGlyphMode.none) {
+            return false;
+        } else if (this.localGlyphMode === LocalGlyphMode.all) {
+            return !!this.localFontFamily;
+        } else {
+            /* eslint-disable new-cap */
+            return !!this.localFontFamily &&
             (isChar['CJK Unified Ideographs'](id) ||
                 isChar['Hangul Syllables'](id) ||
                 isChar['Hiragana'](id) ||
                 isChar['Katakana'](id));
-        /* eslint-enable new-cap */
+            /* eslint-enable new-cap */
+        }
     }
 
     _tinySDF(entry: Entry, stack: string, id: number): ?StyleGlyph {
-        const family = this.localIdeographFontFamily;
+        const family = this.localFontFamily;
         if (!family) {
             return;
         }
@@ -150,6 +164,7 @@ class GlyphManager {
         }
 
         let tinySDF = entry.tinySDF;
+        const sdfBuffer = 3;
         if (!tinySDF) {
             let fontWeight = '400';
             if (/bold/i.test(stack)) {
@@ -159,19 +174,18 @@ class GlyphManager {
             } else if (/light/i.test(stack)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new GlyphManager.TinySDF(24, 3, 8, .25, family, fontWeight);
+            tinySDF = entry.tinySDF = new GlyphManager.TinySDF(24, sdfBuffer, 8, .25, family, fontWeight);
         }
+
+        const sdfWithMetrics = tinySDF.drawWithMetrics(String.fromCharCode(id));
 
         return {
             id,
-            bitmap: new AlphaImage({width: 30, height: 30}, tinySDF.draw(String.fromCharCode(id))),
-            metrics: {
-                width: 24,
-                height: 24,
-                left: 0,
-                top: -8,
-                advance: 24
-            }
+            bitmap: new AlphaImage({
+                width: sdfWithMetrics.metrics.width + sdfBuffer * 2,
+                height: sdfWithMetrics.metrics.height + sdfBuffer * 2
+            }, sdfWithMetrics.alphaChannel),
+            metrics: sdfWithMetrics.metrics
         };
     }
 }
