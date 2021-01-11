@@ -184,7 +184,7 @@ class GlyphManager {
             bitmap: new AlphaImage({
                 width: sdfWithMetrics.metrics.width + sdfBuffer * 2,
                 height: sdfWithMetrics.metrics.height + sdfBuffer * 2
-            }, sdfWithMetrics.alphaChannel),
+            }, sdfWithMetrics.data),
             metrics: sdfWithMetrics.metrics
         };
     }
