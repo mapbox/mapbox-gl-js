@@ -5,6 +5,7 @@
         {
           "glyph": 104,
           "imageName": null,
+          "localGlyph": null,
           "x": -10,
           "y": -17,
           "vertical": false,
@@ -28,6 +29,7 @@
         {
           "glyph": 105,
           "imageName": null,
+          "localGlyph": null,
           "x": 4,
           "y": -17,
           "vertical": false,

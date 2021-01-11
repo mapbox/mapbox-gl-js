@@ -11,6 +11,29 @@ import type {StyleGlyph} from '../style/style_glyph';
 import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 
+/*
+  SDF_SCALE controls the pixel density of locally generated glyphs relative
+  to "normal" SDFs which are generated at 24pt font and a "pixel ratio" of 1.
+  The GlyphManager will generate glyphs SDF_SCALE times as large,
+  but with the same glyph metrics, and the quad generation code will scale them
+  back down so they display at the same size.
+
+  The choice of SDF_SCALE is a trade-off between performance and quality.
+  Glyph generation time grows quadratically with the the scale, while quality
+  improvements drop off rapidly when the scale is higher than the pixel ratio
+  of the device. The scale of 2 buys noticeable improvements on HDPI screens
+  at acceptable cost.
+
+  The scale can be any value, but in order to avoid small distortions, these
+  pixel-based values must come out to integers:
+   - "localGlyphPadding" in GlyphAtlas
+   - Font/Canvas/Buffer size for TinySDF
+  localGlyphPadding + buffer should equal 4 * SDF_SCALE. So if you wanted to
+  use an SDF_SCALE of 1.75, you could manually set localGlyphAdding to 2 and
+  buffer to 5.
+*/
+export const SDF_SCALE = 2;
+
 type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.
     glyphs: {[id: number]: StyleGlyph | null},
@@ -30,6 +53,9 @@ class GlyphManager {
     localFontFamily: ?string;
     localGlyphMode: number;
     entries: {[_: string]: Entry};
+    // Multiple fontstacks may share the same local glyphs, so keep an index
+    // into the glyphs based soley on font weight
+    localGlyphs: {[_: string]: {[id: number]: StyleGlyph | null}};
     url: ?string;
 
     // exposed as statics to enable stubbing in unit tests
@@ -41,6 +67,13 @@ class GlyphManager {
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
         this.entries = {};
+        this.localGlyphs = {
+            // Only these four font weights are supported
+            '200': {},
+            '400': {},
+            '500': {},
+            '900': {}
+        };
     }
 
     setURL(url: ?string) {
@@ -164,7 +197,6 @@ class GlyphManager {
         }
 
         let tinySDF = entry.tinySDF;
-        const sdfBuffer = 3;
         if (!tinySDF) {
             let fontWeight = '400';
             if (/bold/i.test(stack)) {
@@ -174,19 +206,43 @@ class GlyphManager {
             } else if (/light/i.test(stack)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new GlyphManager.TinySDF(24, sdfBuffer, 8, .25, family, fontWeight);
+            tinySDF = entry.tinySDF = new GlyphManager.TinySDF(24 * SDF_SCALE, 3 * SDF_SCALE, 8 * SDF_SCALE, .25, family, fontWeight);
         }
 
-        const sdfWithMetrics = tinySDF.drawWithMetrics(String.fromCharCode(id));
+        if (this.localGlyphs[tinySDF.fontWeight][id]) {
+            return this.localGlyphs[tinySDF.fontWeight][id];
+        }
 
-        return {
+        const {data, metrics} = tinySDF.drawWithMetrics(String.fromCharCode(id));
+        const {fontAscent, sdfWidth, sdfHeight, width, height, left, top, advance} = metrics;
+        // TinySDF's "top" is the distance from the top of the canvas to the top of the glyph,
+        // but drawn with `CanvasRenderingContext2D.textBaseline` = "middle", as opposed to
+        // the lower alphabetic baseline.
+        // Although we don't currently know the actual baseline of server supplied fonts
+        // (we might in the future, see: https://github.com/mapbox/node-fontnik/pull/160),
+        // we can guess the approximate difference between server-font baselines and this
+        // baseline using the "top" metric for DIN Office Pro's "A", which is -8.
+        // Modifying the adjustment based on the measured local font ascent ensures
+        // that local glyphs from different fonts will share the same baseline
+        const ascent = fontAscent ? (fontAscent / SDF_SCALE) : 17; // From SHAPING_DEFAULT_OFFSET
+        const baselineAdjustment = ascent - 9;
+
+        const glyph = this.localGlyphs[tinySDF.fontWeight][id] = {
             id,
             bitmap: new AlphaImage({
-                width: sdfWithMetrics.metrics.width + sdfBuffer * 2,
-                height: sdfWithMetrics.metrics.height + sdfBuffer * 2
-            }, sdfWithMetrics.data),
-            metrics: sdfWithMetrics.metrics
+                width: sdfWidth,
+                height: sdfHeight
+            }, data),
+            metrics: {
+                width: width / SDF_SCALE,
+                height: height / SDF_SCALE,
+                left: left / SDF_SCALE,
+                top: top / SDF_SCALE - baselineAdjustment,
+                advance: advance / SDF_SCALE,
+                localGlyph: true
+            }
         };
+        return glyph;
     }
 }
 

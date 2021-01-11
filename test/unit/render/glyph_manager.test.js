@@ -11,11 +11,14 @@ for (const glyph of parseGlyphPBF(fs.readFileSync('./test/fixtures/0-255.pbf')))
 const identityTransform = (url) => ({url});
 
 const TinySDF = class {
+    constructor() {
+        this.fontWeight = '400';
+    }
     // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
     drawWithMetrics() {
         return {
             alphaChannel: new Uint8ClampedArray(900),
-            metrics: {width: 24, height: 24, advance: 24}
+            metrics: {width: 48, height: 48, sdfWidth: 30, sdfHeight: 30, advance: 48}
         };
     }
 };
@@ -154,12 +157,15 @@ test('GlyphManager generates Hiragana PBF locally', (t) => {
 test('GlyphManager caches locally generated glyphs', (t) => {
     let drawCallCount = 0;
     t.stub(GlyphManager, 'TinySDF').value(class {
+        constructor() {
+            this.fontWeight = '400';
+        }
         // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
         drawWithMetrics() {
             drawCallCount++;
             return {
                 alphaChannel: new Uint8ClampedArray(900),
-                metrics: {width: 24, height: 24, advance: 24}
+                metrics: {width: 48, height: 48, sdfWidth: 30, sdfHeight: 30, advance: 48}
             };
         }
     });
@@ -179,11 +185,14 @@ test('GlyphManager caches locally generated glyphs', (t) => {
 
 test('GlyphManager locally generates latin glyphs', (t) => {
     t.stub(GlyphManager, 'TinySDF').value(class {
+        constructor() {
+            this.fontWeight = '400';
+        }
         // Return empty 18x24 bitmap (made up glyph size + 3 * 2 buffer)
         drawWithMetrics() {
             return {
                 alphaChannel: new Uint8ClampedArray(480),
-                metrics: {width: 14, height: 18, advance: 10}
+                metrics: {width: 28, height: 36, sdfWidth: 20, sdfHeight: 24, advance: 20}
             };
         }
     });

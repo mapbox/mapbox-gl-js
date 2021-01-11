@@ -38,7 +38,8 @@ export type PositionedGlyph = {
     fontStack: string,
     sectionIndex: number,
     metrics: GlyphMetrics,
-    rect: Rect | null
+    rect: Rect | null,
+    localGlyph?: boolean
 };
 
 export type PositionedLine = {
@@ -642,7 +643,8 @@ function shapeLines(shaping: Shaping,
                     height: size[1],
                     left: IMAGE_PADDING,
                     top: -GLYPH_PBF_BORDER,
-                    advance: vertical ? size[1] : size[0]};
+                    advance: vertical ? size[1] : size[0],
+                    localGlyph: false};
 
                 // Difference between one EM and an image size.
                 // Aligns bottom of an image to a baseline level.
@@ -660,11 +662,11 @@ function shapeLines(shaping: Shaping,
             }
 
             if (!vertical) {
-                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + baselineOffset, vertical, scale: section.scale, fontStack: section.fontStack, sectionIndex, metrics, rect});
+                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + baselineOffset, vertical, scale: section.scale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
                 x += metrics.advance * section.scale + spacing;
             } else {
                 shaping.verticalizable = true;
-                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + baselineOffset, vertical, scale: section.scale, fontStack: section.fontStack, sectionIndex, metrics, rect});
+                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + baselineOffset, vertical, scale: section.scale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
                 x += verticalAdvance * section.scale + spacing;
             }
         }
