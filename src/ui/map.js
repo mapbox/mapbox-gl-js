@@ -1087,10 +1087,11 @@ class Map extends Camera {
      * @memberof Map
      * @instance
      * @param {string} type The event type to add a listener for.
-     * @param {Function} listener The function to be called when the event is fired.
+     * @param {Function} listener (optional) The function to be called when the event is fired once.
      *   The listener function is called with the data object passed to `fire`,
-     *   extended with `target` and `type` properties.
-     * @returns {Map} `this`
+     *   extended with `target` and `type` properties. If the listener is not provided,
+     *   returns a Promise that will be resolved when the event is fired once.
+     * @returns {Map} `this` | Promise
      */
 
     /**
