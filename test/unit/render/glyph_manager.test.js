@@ -30,8 +30,10 @@ const createLoadGlyphRangeStub = (t) => {
     });
 };
 
-const createGlyphManager = (font) => {
-    const manager = new GlyphManager(identityTransform, font ? LocalGlyphMode.ideographs : LocalGlyphMode.none, font);
+const createGlyphManager = (font, allGlyphs) => {
+    const manager = new GlyphManager(identityTransform,
+        font ? (allGlyphs ? LocalGlyphMode.all : LocalGlyphMode.ideographs) : LocalGlyphMode.none,
+        font);
     manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
     return manager;
 };
@@ -172,5 +174,27 @@ test('GlyphManager caches locally generated glyphs', (t) => {
             t.equal(drawCallCount, 1);
             t.end();
         });
+    });
+});
+
+test('GlyphManager locally generates latin glyphs', (t) => {
+    t.stub(GlyphManager, 'TinySDF').value(class {
+        // Return empty 18x24 bitmap (made up glyph size + 3 * 2 buffer)
+        drawWithMetrics() {
+            return {
+                alphaChannel: new Uint8ClampedArray(480),
+                metrics: {width: 14, height: 18, advance: 10}
+            };
+        }
+    });
+
+    const manager = createGlyphManager('sans-serif', true);
+
+    manager.getGlyphs({'Arial Unicode MS': ['A']}, (err, glyphs) => {
+        t.ifError(err);
+        t.equal(glyphs['Arial Unicode MS']['A'].metrics.advance, 10);
+        t.equal(glyphs['Arial Unicode MS']['A'].metrics.width, 14);
+        t.equal(glyphs['Arial Unicode MS']['A'].metrics.height, 18);
+        t.end();
     });
 });
