@@ -90,8 +90,8 @@ export class Evented {
      * The listener will be called first time the event fires after the listener is registered.
      *
      * @param {string} type The event type to listen for.
-     * @param {Function} listener (optional) The function to be called when the event is fired the first time.
-     *   If not provided, returns a Promise that will be resolved at the same time.
+     * @param {Function} listener (optional) The function to be called when the event is fired once.
+     *   If not provided, returns a Promise that will be resolved when the event is fired once.
      * @returns {Object} `this` | Promise
      */
     once(type: *, listener?: Listener): this | Promise<Event> {
