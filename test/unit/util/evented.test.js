@@ -93,7 +93,7 @@ test('Evented', (t) => {
         const evented = new Evented();
         evented.on('a', () => {});
         t.ok(evented.listens('a'));
-        t.notOk(evented.listens('b'));
+        t.equals(evented.listens('b'), false);
         t.end();
     });
 
