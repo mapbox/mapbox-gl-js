@@ -26,6 +26,7 @@ import type {FeatureFilter} from '../style-spec/feature_filter';
 import type Transform from '../geo/transform';
 import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
 import type {TilespaceQueryGeometry} from '../style/query_geometry';
+import type {FeatureIndex as FeatureIndexStruct} from './array_types';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array,
@@ -63,9 +64,9 @@ class FeatureIndex {
         this.promoteId = promoteId;
     }
 
-    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number) {
+    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, layoutVertexArrayOffset: number = 0) {
         const key = this.featureIndexArray.length;
-        this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
+        this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex, layoutVertexArrayOffset);
 
         const grid = this.grid;
 
@@ -131,16 +132,14 @@ class FeatureIndex {
             let featureGeometry = null;
             this.loadMatchingFeature(
                 result,
-                match.bucketIndex,
-                match.sourceLayerIndex,
-                match.featureIndex,
+                match,
                 filter,
                 params.layers,
                 params.availableImages,
                 styleLayers,
                 serializedLayers,
                 sourceFeatureState,
-                (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object) => {
+                (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number = 0) => {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature);
                     }
@@ -155,17 +154,16 @@ class FeatureIndex {
 
     loadMatchingFeature(
         result: {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>},
-        bucketIndex: number,
-        sourceLayerIndex: number,
-        featureIndex: number,
+        featureIndexData: FeatureIndexStruct,
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         availableImages: Array<string>,
         styleLayers: {[_: string]: StyleLayer},
         serializedLayers: {[_: string]: Object},
         sourceFeatureState?: SourceFeatureState,
-        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, id: string | number | void) => boolean | number) {
+        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, id: string | number | void, layoutVertexArrayOffset: number) => boolean | number) {
 
+        const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
         const layerIDs = this.bucketLayerIDs[bucketIndex];
         if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs))
             return;
@@ -207,7 +205,7 @@ class FeatureIndex {
             serializedLayer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
             serializedLayer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
 
-            const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState);
+            const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState, layoutVertexArrayOffset);
             if (!intersectionZ) {
                 // Only applied for non-symbol features
                 continue;

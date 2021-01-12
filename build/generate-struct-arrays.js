@@ -185,7 +185,9 @@ createStructArrayType('feature_index', createLayout([
     // the source layer the feature appears in
     { type: 'Uint16', name: 'sourceLayerIndex' },
     // the bucket the feature appears in
-    { type: 'Uint16', name: 'bucketIndex' }
+    { type: 'Uint16', name: 'bucketIndex' },
+    // Offsetinto bucket.layoutVertexArray the vertcies for this feature appear in
+    { type: 'Uint16', name: 'layoutVertexArrayOffset' },
 ]), true);
 
 // triangle index array
@@ -230,7 +232,7 @@ createStructArrayLayoutType(createLayout([{
 }], 4));
 
 // Fill extrusion specific array
-createStructArrayType(`fill_extrusion_centroid`, centroidAttributes);
+createStructArrayType(`fill_extrusion_centroid`, centroidAttributes, true);
 
 const layouts = Object.keys(layoutCache).map(k => layoutCache[k]);
 
