@@ -149,14 +149,14 @@ export class Evented {
     }
 
     /**
-     * Returns a true if this instance of Evented or any forwardeed instances of Evented have a listener for the specified type.
+     * Returns true if this instance of Evented or any forwarded instances of Evented have a listener for the specified type.
      *
      * @param {string} type The event type
      * @returns {boolean} `true` if there is at least one registered listener for specified event type, `false` otherwise
      * @private
      */
     listens(type: string) {
-        return (
+        return !!(
             (this._listeners && this._listeners[type] && this._listeners[type].length > 0) ||
             (this._oneTimeListeners && this._oneTimeListeners[type] && this._oneTimeListeners[type].length > 0) ||
             (this._eventedParent && this._eventedParent.listens(type))
