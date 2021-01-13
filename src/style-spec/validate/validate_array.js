@@ -25,7 +25,9 @@ export default function validateArray(options) {
 
     let arrayElementSpec = {
         "type": arraySpec.value,
-        "values": arraySpec.values
+        "values": arraySpec.values,
+        "minimum": arraySpec.minimum,
+        "maximum": arraySpec.maximum
     };
 
     if (styleSpec.$version < 7) {
