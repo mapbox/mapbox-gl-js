@@ -41,5 +41,21 @@
   {
     "message": "layers[4].paint.fill-opacity: \"fill-opacity\" does not support interpolation syntax\nUse an identity property function instead: `{ \"type\": \"identity\", \"property\": \"opacity\" }`.",
     "line": 74
+  },
+  {
+    "message": "layers[6].paint.sky-atmosphere-sun[0]: -1 is less than the minimum value 0",
+    "line": 90
+  },
+  {
+    "message": "layers[6].paint.sky-atmosphere-sun[1]: 181 is greater than the maximum value 180",
+    "line": 90
+  },
+  {
+    "message": "layers[8].paint.sky-gradient-center[0]: 361 is greater than the maximum value 360",
+    "line": 106
+  },
+  {
+    "message": "layers[8].paint.sky-gradient-center[1]: -1 is less than the minimum value 0",
+    "line": 106
   }
 ]
