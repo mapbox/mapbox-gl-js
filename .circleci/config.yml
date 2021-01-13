@@ -96,8 +96,8 @@ workflows:
               ignore: /.*/
       - check-bundle-size:
           requires:
-            build
-            deploy-release
+            - build
+            - deploy-release
           filters:
             tags:
               only: /.*/
