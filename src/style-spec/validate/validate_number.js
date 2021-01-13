@@ -23,7 +23,6 @@ export default function validateNumber(options) {
             const i = options.arrayIndex;
             specMin = valueSpec.minimum[i];
         }
-        
         if (value < specMin) {
             return [new ValidationError(key, value, `${value} is less than the minimum value ${specMin}`)];
         }
@@ -35,7 +34,6 @@ export default function validateNumber(options) {
             const i = options.arrayIndex;
             specMax = valueSpec.maximum[i];
         }
-
         if (value > specMax) {
             return [new ValidationError(key, value, `${value} is greater than the maximum value ${specMax}`)];
         }
