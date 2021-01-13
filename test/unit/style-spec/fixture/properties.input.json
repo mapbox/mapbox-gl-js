@@ -105,6 +105,15 @@
         "sky-type": "gradient",
         "sky-gradient-center": [361, -1]
       }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "line-dasharray": [1, -2, -1, 1]
+      }
     }
   ]
 }

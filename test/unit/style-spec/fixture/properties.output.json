@@ -57,5 +57,13 @@
   {
     "message": "layers[8].paint.sky-gradient-center[1]: -1 is less than the minimum value 0",
     "line": 106
+  },
+  {
+    "message": "layers[9].paint.line-dasharray[1]: -2 is less than the minimum value 0",
+    "line": 115
+  },
+  {
+    "message": "layers[9].paint.line-dasharray[2]: -1 is less than the minimum value 0",
+    "line": 115
   }
 ]
