@@ -9,6 +9,7 @@ import properties from './fill_extrusion_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration';
+import {vec2} from 'gl-matrix';
 
 import type {FeatureState} from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
@@ -16,6 +17,7 @@ import type {PaintProps} from './fill_extrusion_style_layer_properties';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {TilespaceQueryGeometry} from '../query_geometry';
+import type {DEMSampler} from '../../terrain/elevation';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -54,7 +56,9 @@ class FillExtrusionStyleLayer extends StyleLayer {
                            geometry: Array<Array<Point>>,
                            zoom: number,
                            transform: Transform,
-                           pixelPosMatrix: Float32Array): boolean | number {
+                           pixelPosMatrix: Float32Array,
+                           elevationHelper: ?DEMSampler,
+                           layoutVertexArrayOffset: number): boolean | number {
 
         const translation = tilespaceTranslate(this.paint.get('fill-extrusion-translate'),
                                 this.paint.get('fill-extrusion-translate-anchor'),
@@ -65,7 +69,26 @@ class FillExtrusionStyleLayer extends StyleLayer {
 
         const projectedQueryGeometry = queryGeometry.queryGeometry.screenGeometry;
 
-        const projected = projectExtrusion(geometry, base, height, translation, pixelPosMatrix);
+        const centroid = [0, 0];
+        const terrainVisible = elevationHelper && transform.elevation;
+        if (terrainVisible){
+            const centroidVertexArray = queryGeometry.tile.getBucket(this).centroidVertexArray;
+
+            // See FillExtrusionBucket#encodeCentroid(), centroid is inserted at vertexOffset + 1
+            const centroidOffset = layoutVertexArrayOffset + 1;
+            if (centroidOffset < centroidVertexArray.length) {
+                const centroidVertexObject = centroidVertexArray.get(centroidOffset);
+                centroid[0] = centroidVertexObject.a_centroid_pos0;
+                centroid[1] = centroidVertexObject.a_centroid_pos1;
+            }
+        }
+
+        // Early exit if fill extrusion is still hidden while waiting for backfill
+        const isHidden = centroid[0] === 0 && centroid[1] === 1;
+        if (isHidden) return false;
+
+        const demSampler = terrainVisible ? elevationHelper : null;
+        const projected = projectExtrusion(geometry, base, height, translation, pixelPosMatrix, demSampler, centroid);
         const projectedBase = projected[0];
         const projectedTop = projected[1];
         return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
@@ -164,6 +187,18 @@ function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Poin
     return closestDistance === Infinity ? false : closestDistance;
 }
 
+function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: ?DEMSampler, centroid: vec2) {
+    if (demSampler){
+        return projectExtrusion3D(geometry, zBase, zTop, translation, m, demSampler, centroid);
+    } else {
+        return projectExtrusion2D(geometry, zBase, zTop, translation, m);
+    }
+}
+
+function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: DEMSampler, centroid: vec2) {
+
+}
+
 /*
  * Project the geometry using matrix `m`. This is essentially doing
  * `vec4.transformMat4([], [p.x, p.y, z, 1], m)` but the multiplication
@@ -171,7 +206,7 @@ function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Poin
  * different points can only be done once. This produced a measurable
  * performance improvement.
  */
-function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array) {
+function projectExtrusion2D(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array) {
     const projectedBase = [];
     const projectedTop = [];
 
