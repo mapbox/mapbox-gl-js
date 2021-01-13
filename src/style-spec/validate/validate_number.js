@@ -17,12 +17,26 @@ export default function validateNumber(options) {
         return [new ValidationError(key, value, `number expected, ${type} found`)];
     }
 
-    if ('minimum' in valueSpec && value < valueSpec.minimum) {
-        return [new ValidationError(key, value, `${value} is less than the minimum value ${valueSpec.minimum}`)];
+    if ('minimum' in valueSpec) {
+        let specMin = valueSpec.minimum;
+        if (getType(valueSpec.minimum) === 'array') {
+            const i = options.arrayIndex;
+            specMin = valueSpec.minimum[i];
+        }
+        if (value < specMin) {
+            return [new ValidationError(key, value, `${value} is less than the minimum value ${specMin}`)];
+        }
     }
 
-    if ('maximum' in valueSpec && value > valueSpec.maximum) {
-        return [new ValidationError(key, value, `${value} is greater than the maximum value ${valueSpec.maximum}`)];
+    if ('maximum' in valueSpec) {
+        let specMax = valueSpec.maximum;
+        if (getType(valueSpec.maximum) === 'array') {
+            const i = options.arrayIndex;
+            specMax = valueSpec.maximum[i];
+        }
+        if (value > specMax) {
+            return [new ValidationError(key, value, `${value} is greater than the maximum value ${specMax}`)];
+        }
     }
 
     return [];

@@ -1,0 +1,43 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "sky-atmosphere",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 90]
+      }
+    },
+    {
+      "id": "sky-atmosphere-invalid-min-max",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [-1, 181]
+      }
+    },
+    {
+      "id": "sky-gradient",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-gradient-center": [340, 90]
+      }
+    },
+    {
+      "id": "sky-gradient-invalid-min-max",
+      "type": "sky",
+      "paint": {
+        "sky-type": "gradient",
+        "sky-gradient-center": [361, -1]
+      }
+    }
+  ]
+}
