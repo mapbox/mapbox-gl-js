@@ -7,7 +7,7 @@ import Protobuf from 'pbf';
 import WorkerTile from './worker_tile';
 import {extend} from '../util/util';
 import {RequestPerformance} from '../util/performance';
-import { Evented } from '../util/evented';
+import {Evented} from '../util/evented';
 
 import type {
     WorkerSource,
@@ -210,7 +210,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             const parseTile = () => {
                 workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, (err, result) => {
                     if (err || !result) return callback(err);
-    
+
                     // Transferring a copy of rawTileData because the worker needs to retain its copy.
                     callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
                 });

@@ -94,7 +94,7 @@ export default class Worker {
                 ws[source].isSpriteLoaded = bool;
                 ws[source].fire('isSpriteLoaded');
             }
-        }        
+        }
     }
 
     setImages(mapId: string, images: Array<string>, callback: WorkerTileCallback) {
