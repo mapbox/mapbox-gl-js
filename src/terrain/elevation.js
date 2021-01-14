@@ -198,22 +198,22 @@ export class DEMSampler {
         return new Point(i, j);
     }
 
-    getElevationAt(x: number, y: number, interpolated: ?boolean): number {
+    getElevationAt(x: number, y: number, interpolated: ?boolean, clampToEdge: ?boolean): number {
         const px = x * this._scale + this._offset[0];
         const py = y * this._scale + this._offset[1];
-        const i = Math.floor(px);
-        const j = Math.floor(py);
+        let i = Math.floor(px);
+        let j = Math.floor(py);
         const dem = this._dem;
 
         return interpolated ? interpolate(
-            interpolate(dem.get(i, j), dem.get(i, j + 1), py - j),
-            interpolate(dem.get(i + 1, j), dem.get(i + 1, j + 1), py - j),
+            interpolate(dem.get(i, j, clampToEdge), dem.get(i, j + 1, clampToEdge), py - j),
+            interpolate(dem.get(i + 1, j, clampToEdge), dem.get(i + 1, j + 1, clampToEdge), py - j),
             px - i) :
-            dem.get(i, j);
+            dem.get(i, j, clampToEdge);
     }
 
-    getElevationAtPixel(x: number, y: number): number {
-        return this._dem.get(x, y);
+    getElevationAtPixel(x: number, y: number, clampToEdge: ?boolean): number {
+        return this._dem.get(x, y, clampToEdge);
     }
 
     getMeterToDEM(lat: number): number {

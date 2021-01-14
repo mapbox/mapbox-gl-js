@@ -238,10 +238,11 @@ class FeatureIndex {
 
         for (const symbolFeatureIndex of symbolFeatureIndexes) {
             this.loadMatchingFeature(
-                result,
-                bucketIndex,
-                sourceLayerIndex,
-                symbolFeatureIndex,
+                result, {
+                    bucketIndex,
+                    sourceLayerIndex,
+                    featureIndex: symbolFeatureIndex
+                },
                 filter,
                 filterLayerIDs,
                 availableImages,
