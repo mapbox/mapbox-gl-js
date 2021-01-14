@@ -13,11 +13,9 @@ if (process.env.MAPBOX_STYLES) {
         .map(style => style.match(/\.json$/) ? require(style) : style);
 }
 
-const FALLBACK_ACCESS_TOKEN = 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ';
-
 const replaceConfig = {
     'process.env.BENCHMARK_VERSION': JSON.stringify(process.env.BENCHMARK_VERSION),
-    'process.env.MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN || FALLBACK_ACCESS_TOKEN),
+    'process.env.MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.MAPBOX_ACCESS_TOKEN),
     'process.env.MapboxAccessToken': JSON.stringify(process.env.MapboxAccessToken),
     'process.env.MAPBOX_STYLES': JSON.stringify(styles),
     'process.env.NODE_ENV': JSON.stringify('production')
