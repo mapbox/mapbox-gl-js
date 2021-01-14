@@ -515,10 +515,9 @@ class Painter {
         // With terrain on, render all cached layers or cache it for sequential
         // interactive frames. All layers are cached until the first non-draped
         // layer is found, then reset to non-cached rendering.
+        this.currentLayer = 0;
         if (this.terrain && this.terrain.renderCached) {
-            this.currentLayer = this.terrain.render(0);
-        } else {
-            this.currentLayer = 0;
+            this.currentLayer = this.terrain.render(this.currentLayer);
         }
 
         while (this.currentLayer < layerIds.length) {
