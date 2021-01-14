@@ -535,6 +535,10 @@ class Painter {
             // this.currentLayer until the next non-draped layer.
             // Otherwise we interleave terrain draped render with non-draped layers on top
             if (this.terrain && this.terrain._isLayerDrapedOverTerrain(layer)) {
+                if (layer.isHidden(this.transform.zoom)) {
+                    ++this.currentLayer;
+                    continue;
+                }
                 const prevLayer = this.currentLayer;
                 this.currentLayer = this.terrain.render(this.currentLayer);
                 assert(this.currentLayer > prevLayer);
@@ -552,6 +556,10 @@ class Painter {
             this.renderLayer(this, sourceCache, layer, coords);
 
             ++this.currentLayer;
+        }
+
+        if (this.terrain) {
+            assert(this.terrain.drapedRenderBatches.length === 0);
         }
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry) {

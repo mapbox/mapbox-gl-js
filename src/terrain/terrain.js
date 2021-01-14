@@ -414,9 +414,8 @@ export class Terrain extends Elevation {
         this.proxiedCoords[psc.id] = coords.map(tileID => new ProxiedTileID(tileID, tileID.key, this.orthoMatrix));
         this._assignTerrainTiles(coords);
         this._prepareDEMTextures();
-
-        this._setupRenderCache(previousProxyToSource);
         this._setupDrapedRenderBatches();
+        this._setupRenderCache(previousProxyToSource);
 
         this.renderingToTexture = false;
         this._initFBOPool();
@@ -599,6 +598,8 @@ export class Terrain extends Elevation {
         let layerIndex = startLayerIndex;
         let drawAsRasterCoords = [];
         const layerIds = painter.style._order;
+        const drapedLayerBatch = this.drapedRenderBatches.shift();
+        assert(drapedLayerBatch.start === startLayerIndex);
 
         let poolIndex = 0;
         for (let i = 0; i < proxies.length; i++) {
@@ -615,7 +616,9 @@ export class Terrain extends Elevation {
             if (useRenderCache && !fbo.dirty) {
                 // Use cached render from previous pass, no need to render again.
                 drawAsRasterCoords.push(tile.tileID);
+
                 // Move forward back to where this cached entry stopped rendering.
+                // TODO: use drapedLayerBatch.end instead
                 layerIndex = fbo.lastDrawnLayerIndex;
                 continue;
             }
