@@ -534,7 +534,7 @@ class Painter {
             // With terrain on and for draped layers only, issue rendering and progress
             // this.currentLayer until the next non-draped layer.
             // Otherwise we interleave terrain draped render with non-draped layers on top
-            if (this.terrain && this.terrain._isLayerDrapedOverTerrain(layer)) {
+            if (this.terrain && this.style.isLayerDraped(layer)) {
                 if (layer.isHidden(this.transform.zoom)) {
                     ++this.currentLayer;
                     continue;

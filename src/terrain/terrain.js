@@ -54,9 +54,6 @@ export const GRID_DIM = 128;
 const FBO_POOL_SIZE = 5;
 const RENDER_CACHE_MAX_SIZE = 50;
 
-// Symbols are draped only for specific cases: see _isLayerDrapedOverTerrain
-const drapedLayers = {'fill': true, 'line': true, 'background': true, "hillshade": true, "raster": true};
-
 /**
  * Proxy source cache gets ideal screen tile cover coordinates. All the other
  * source caches's coordinates get mapped to subrects of proxy coordinates (or
@@ -635,7 +632,7 @@ export class Terrain extends Elevation {
             for (layerIndex = startLayerIndex; layerIndex < layerIds.length; ++layerIndex) {
                 const layer = painter.style._layers[layerIds[layerIndex]];
                 const hidden = layer.isHidden(painter.transform.zoom);
-                const draped = this._isLayerDrapedOverTerrain(layer);
+                const draped = this.style.isLayerDraped(layer);
 
                 if (!hidden && !draped) { break; }
                 if (hidden) { continue; }
@@ -684,7 +681,7 @@ export class Terrain extends Elevation {
 
         for (let i = 0; i < layerCount; ++i) {
             const layer = style._layers[style.order[i]];
-            if (!this._isLayerDrapedOverTerrain(layer)) {
+            if (!this.style.isLayerDraped(layer)) {
                 if (!reachedUndrapedLayer) {
                     reachedUndrapedLayer = true;
                     firstUndrapedLayer = layer.id;
@@ -828,7 +825,7 @@ export class Terrain extends Elevation {
 
         let currentLayer = 0;
         let layer = style._layers[style.order[currentLayer]];
-        while (!this._isLayerDrapedOverTerrain(layer) && layer.isHidden(this.painter.transform.zoom) && ++currentLayer < layerCount) {
+        while (!this.style.isLayerDraped(layer) && layer.isHidden(this.painter.transform.zoom) && ++currentLayer < layerCount) {
             layer = style._layers[style.order[currentLayer]];
         }
 
@@ -838,7 +835,7 @@ export class Terrain extends Elevation {
             if (layer.isHidden(this.painter.transform.zoom)) {
                 continue;
             }
-            if (!this._isLayerDrapedOverTerrain(layer)) {
+            if (!this.style.isLayerDraped(layer)) {
                 if (batchStart !== undefined) {
                     batches.push({start: batchStart, end: currentLayer - 1});
                     batchStart = undefined;
@@ -1055,11 +1052,6 @@ export class Terrain extends Elevation {
         drawTerrainDepth(painter, this, psc, this.proxyCoords);
         context.bindFramebuffer.set(null);
         context.viewport.set([0, 0, painter.width, painter.height]);
-    }
-
-    _isLayerDrapedOverTerrain(styleLayer: StyleLayer): boolean {
-        if (!this.enabled) return false;
-        return drapedLayers.hasOwnProperty(styleLayer.type);
     }
 
     _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {

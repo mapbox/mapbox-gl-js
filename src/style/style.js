@@ -105,6 +105,10 @@ export type StyleOptions = {
 export type StyleSetterOptions = {
     validate?: boolean
 };
+
+// Symbols are draped only for specific cases: see isLayerDraped
+const drapedLayers = {'fill': true, 'line': true, 'background': true, "hillshade": true, "raster": true};
+
 /**
  * @private
  */
@@ -390,6 +394,11 @@ class Style extends Evented {
     }
 
     get order(): Array<string> { return this._optimizeForTerrain ? this._drapedFirstOrder : this._order; }
+
+    isLayerDraped(layer: StyleLayer): boolean {
+        if (!this.terrain) return false;
+        return drapedLayers.hasOwnProperty(layer.type);
+    }
 
     _checkLoaded() {
         if (!this._loaded) {
