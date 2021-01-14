@@ -1,11 +1,12 @@
 // @flow
 
-import MercatorCoordinate from '../geo/mercator_coordinate';
+import MercatorCoordinate, { mercatorZfromAltitude } from '../geo/mercator_coordinate';
 import DEMData from '../data/dem_data';
 import SourceCache from '../source/source_cache';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
 import {vec3} from 'gl-matrix';
+import Point from '@mapbox/point-geometry';
 
 import {OverscaledTileID} from '../source/tile_id';
 
@@ -164,12 +165,14 @@ export class Elevation {
  * Helper class computes and caches data required to lookup elevation offsets at the tile level.
  */
 export class DEMSampler {
+    _demTile: Tile;
     _dem: DEMData;
     _scale: number;
     _offset: [number, number];
 
-    constructor(dem: DEMData, scale: number, offset: [number, number]) {
-        this._dem = dem;
+    constructor(demTile: Tile, scale: number, offset: [number, number]) {
+        this._demTile = demTile;
+        this._dem = this._demTile.dem;
         this._scale = scale;
         this._offset = offset;
     }
@@ -184,7 +187,15 @@ export class DEMSampler {
         const yOffset = (tileID.canonical.y / scale - demTileID.canonical.y) * dem.dim;
         const k = demTile.tileSize / EXTENT / scale;
 
-        return new DEMSampler(dem, k, [xOffset, yOffset]);
+        return new DEMSampler(demTile, k, [xOffset, yOffset]);
+    }
+
+    tileCoordToPixel(x: number, y: number): Point {
+        const px = x * this._scale + this._offset[0];
+        const py = y * this._scale + this._offset[1];
+        const i = Math.floor(px);
+        const j = Math.floor(py);
+        return new Point(i, j);
     }
 
     getElevationAt(x: number, y: number, interpolated: ?boolean): number {
@@ -199,5 +210,13 @@ export class DEMSampler {
             interpolate(dem.get(i + 1, j), dem.get(i + 1, j + 1), py - j),
             px - i) :
             dem.get(i, j);
+    }
+
+    getElevationAtPixel(x: number, y: number): number {
+        return this._dem.get(x, y);
+    }
+
+    getMeterToDEM(lat: number): number {
+        return (1 << this._demTile.tileID.canonical.z) * mercatorZfromAltitude(1, lat) * this._dem.stride;
     }
 }

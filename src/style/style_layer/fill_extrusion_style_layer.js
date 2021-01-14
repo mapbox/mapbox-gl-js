@@ -9,7 +9,7 @@ import properties from './fill_extrusion_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration';
-import {vec2} from 'gl-matrix';
+import {vec2, vec3} from 'gl-matrix';
 
 import type {FeatureState} from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
@@ -71,6 +71,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
 
         const centroid = [0, 0];
         const terrainVisible = elevationHelper && transform.elevation;
+        let exaggeration = 1;
         if (terrainVisible){
             const centroidVertexArray = queryGeometry.tile.getBucket(this).centroidVertexArray;
 
@@ -81,6 +82,8 @@ class FillExtrusionStyleLayer extends StyleLayer {
                 centroid[0] = centroidVertexObject.a_centroid_pos0;
                 centroid[1] = centroidVertexObject.a_centroid_pos1;
             }
+
+            exaggeration = transform.elevation.exaggeration();
         }
 
         // Early exit if fill extrusion is still hidden while waiting for backfill
@@ -88,7 +91,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         if (isHidden) return false;
 
         const demSampler = terrainVisible ? elevationHelper : null;
-        const projected = projectExtrusion(geometry, base, height, translation, pixelPosMatrix, demSampler, centroid);
+        const projected = projectExtrusion(geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat);
         const projectedBase = projected[0];
         const projectedTop = projected[1];
         return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
@@ -187,16 +190,95 @@ function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Poin
     return closestDistance === Infinity ? false : closestDistance;
 }
 
-function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: ?DEMSampler, centroid: vec2) {
+function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: ?DEMSampler, centroid: vec2, exaggeration: number, lat: number) {
     if (demSampler){
-        return projectExtrusion3D(geometry, zBase, zTop, translation, m, demSampler, centroid);
+        return projectExtrusion3D(geometry, zBase, zTop, translation, m, demSampler, centroid, exaggeration, lat);
     } else {
         return projectExtrusion2D(geometry, zBase, zTop, translation, m);
     }
 }
 
-function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: DEMSampler, centroid: vec2) {
+function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: DEMSampler, centroid: vec2, exaggeration: number, lat: number) {
+    const projectedBase = [];
+    const projectedTop = [];
 
+    for (const r of geometry) {
+        const ringBase = [];
+        const ringTop = [];
+        for (const p of r) {
+            const x = p.x + translation.x;
+            const y = p.y + translation.y;
+            const heightOffset = getTerrainHeightOffset(x, y, zBase, zTop, demSampler, centroid, exaggeration, lat);
+
+            const base = toPoint(vec3.transformMat4([], [x, y, heightOffset.base], m));
+            const top = toPoint(vec3.transformMat4([], [x, y, heightOffset.top], m));
+
+            ringBase.push(base);
+            ringTop.push(top);
+        }
+        projectedBase.push(ringBase);
+        projectedTop.push(ringTop);
+    }
+    return [projectedBase, projectedTop];
+}
+
+function toPoint(v: vec3): Point {
+    const p = new Point(v[0], v[1]);
+    p.z = v[2];
+    return p;
+}
+
+function getTerrainHeightOffset(x: number, y: number, zBase: number, zTop: number, demSampler: DEMSampler, centroid: vec2, exaggeration: number, lat: number): { base: number, top: number} {
+    const ele = exaggeration * demSampler.getElevationAt(x, y , true);
+    const flatRoof = centroid[0] !== 0;
+    const centroidElevation = flatRoof ? centroid[1] === 0 ? exaggeration * elevationFromUint16(centroid[0]) : exaggeration * flatElevation(demSampler, centroid, lat) : ele;
+    return {
+        base: ele + (zBase === 0) ? -5 : zBase,
+        top: flatRoof ? Math.max(centroidElevation + zTop, ele + zBase + 2) : ele + zTop
+    }
+}
+
+function elevationFromUint16(n: number): number {
+    return n / 7.3;
+}
+
+function flatElevation(demSampler: DEMSampler, centroid: vec2, lat: number): number {
+    const pos = [Math.floor(centroid[0] / 8), Math.floor(centroid[1] / 8)];
+    const span = [10 * (centroid[0] - pos[0] * 8), 10 * (centroid[1] - pos[1] * 8)];
+
+    // Get height at centroid
+    const z = demSampler.getElevationAt(pos[0], pos[1], true);
+    const meterToDEM = demSampler.getMeterToDEM(lat);
+    const w = [
+        Math.floor(0.5 * (span[0] * meterToDEM - 1)),
+        Math.floor(0.5 * (span[1] * meterToDEM - 1))
+    ];
+    const posPx = demSampler.tileCoordToPixel(pos[0], pos[1]);
+
+    const offset = [2 * w[0] + 1, 2 * w[1] + 1];
+    const corners = fourSample(demSampler, [posPx.x - w[0], posPx.y - w[1]], offset);
+    const diff = [
+        corners[0] - corners[1],
+        corners[2] - corners[3],
+        corners[0] - corners[2],
+        corners[1] - corners[3]
+    ];
+    const diffSum = [diff[0] + diff[1], diff[2] + diff[3]];
+    const slope =[
+        Math.min(0.25, meterToDEM * 0.5 * diffSum[0] / offset[0]),
+        Math.min(0.25, meterToDEM * 0.5 * diffSum[1] / offset[1])
+    ];
+
+    return z + Math.max(slope[0] * span[0], slope[1] * span[1]);
+}
+
+function fourSample(demSampler: DEMSampler, pos: vec2, offset: vec2): vec4 {
+    return [
+        demSampler.getElevationAtPixel(pos[0], pos[1]),
+        demSampler.getElevationAtPixel(pos[0] + offset[0], pos[1]),
+        demSampler.getElevationAtPixel(pos[0], pos[1] + offset[1]),
+        demSampler.getElevationAtPixel(pos[0] + offset[0], pos[1] + offset[1])
+    ];
 }
 
 /*

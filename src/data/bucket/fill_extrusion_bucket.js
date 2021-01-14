@@ -233,13 +233,14 @@ class FillExtrusionBucket implements Bucket {
                 patterns: {}
             };
 
+            const vertexArrayOffset = this.layoutVertexArray.length;
             if (this.hasPattern) {
                 this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, options));
             } else {
                 this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {});
             }
 
-            options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, this.layoutVertexArray.length - 1);
+            options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
         }
         this.sortBorders();
     }
