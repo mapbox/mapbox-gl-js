@@ -2,7 +2,8 @@ const accessToken = (
     process.env.MapboxAccessToken ||
     process.env.MAPBOX_ACCESS_TOKEN ||
     getURLParameter('access_token') ||
-    localStorage.getItem('accessToken')
+    localStorage.getItem('accessToken') ||
+    'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ'
 );
 
 localStorage.setItem('accessToken', accessToken);
