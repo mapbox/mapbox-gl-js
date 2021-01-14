@@ -796,6 +796,8 @@ class Style extends Evented {
         if (layer.onAdd) {
             layer.onAdd(this.map);
         }
+
+        this._updateDrapeFirstLayers();
     }
 
     /**
@@ -829,6 +831,8 @@ class Style extends Evented {
         this._order.splice(newIndex, 0, id);
 
         this._layerOrderChanged = true;
+
+        this._updateDrapeFirstLayers();
     }
 
     /**
@@ -868,6 +872,8 @@ class Style extends Evented {
         if (layer.onRemove) {
             layer.onRemove(this.map);
         }
+
+        this._updateDrapeFirstLayers();
     }
 
     /**
@@ -1381,6 +1387,25 @@ class Style extends Evented {
                 }
             }
         }
+
+        this._updateDrapeFirstLayers();
+    }
+
+    _updateDrapeFirstLayers() {
+        if (!this._optimizeForTerrain || !this.terrain) {
+            return;
+        }
+
+        const draped = this._order.filter((id) => {
+            return this.isLayerDraped(this._layers[id]);
+        });
+
+        const nonDraped = this._order.filter((id) => {
+            return !this.isLayerDraped(this._layers[id]);
+        });
+
+        this._drapedFirstOrder.push(...draped);
+        this._drapedFirstOrder.push(...nonDraped);
     }
 
     _createTerrain(terrainOptions: TerrainSpecification) {
