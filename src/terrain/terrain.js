@@ -177,7 +177,6 @@ export class Terrain extends Elevation {
     enabled: boolean;
 
     renderCached: boolean;
-    renderCachedPending: boolean;
     forceRenderCached: boolean; // debugging purpose.
 
     _visibleDemTiles: Array<Tile>;
@@ -374,8 +373,7 @@ export class Terrain extends Elevation {
             this._emptyDEMTextureDirty = !this._initializing;
         }
 
-        const options = this.painter.options;
-        this.renderCached = (options.zooming || options.moving || options.rotating || !!this.forceRenderCached) && !this._invalidateRenderCache;
+        this.renderCached = !!this.forceRenderCached && !this._invalidateRenderCache;
         this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
@@ -411,7 +409,7 @@ export class Terrain extends Elevation {
         this.proxiedCoords[psc.id] = coords.map(tileID => new ProxiedTileID(tileID, tileID.key, this.orthoMatrix));
         this._assignTerrainTiles(coords);
         this._prepareDEMTextures();
-        this._setupDrapedRenderBatches();
+        // this._setupDrapedRenderBatches();
         this._setupRenderCache(previousProxyToSource);
 
         this.renderingToTexture = false;
@@ -595,8 +593,8 @@ export class Terrain extends Elevation {
         let layerIndex = startLayerIndex;
         let drawAsRasterCoords = [];
         const layerIds = painter.style.order;
-        const drapedLayerBatch = this.drapedRenderBatches.shift();
-        assert(drapedLayerBatch.start === startLayerIndex);
+        // const drapedLayerBatch = this.drapedRenderBatches.shift();
+        // assert(drapedLayerBatch.start === startLayerIndex);
 
         let poolIndex = 0;
         for (let i = 0; i < proxies.length; i++) {
@@ -666,8 +664,7 @@ export class Terrain extends Elevation {
         }
         setupRenderToScreen();
         if (drawAsRasterCoords.length > 0) drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
-        const nextLayerIndex = layerIndex === startLayerIndex && !this.renderCached ? startLayerIndex + 1 : layerIndex;
-        this.renderCached = false;
+        const nextLayerIndex = layerIndex === startLayerIndex ? startLayerIndex + 1 : layerIndex;
         return nextLayerIndex;
     }
 

@@ -558,7 +558,7 @@ class Painter {
         }
 
         if (this.terrain) {
-            assert(this.terrain.drapedRenderBatches.length === 0);
+            // assert(this.terrain.drapedRenderBatches.length === 0);
         }
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry) {
