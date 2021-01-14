@@ -1,7 +1,6 @@
 // @flow
 
 import StyleLayer from '../style_layer';
-
 import FillExtrusionBucket from '../../data/bucket/fill_extrusion_bucket';
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
 import {translateDistance, tilespaceTranslate} from '../query_utils';
@@ -18,6 +17,7 @@ import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {DEMSampler} from '../../terrain/elevation';
+import type {vec4} from 'gl-matrix';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -67,28 +67,24 @@ class FillExtrusionStyleLayer extends StyleLayer {
         const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
         const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);
 
-
         const centroid = [0, 0];
         const terrainVisible = elevationHelper && transform.elevation;
-        let exaggeration = 1;
-        if (terrainVisible){
+        const exaggeration = transform.elevation ? transform.elevation.exaggeration() : 1;
+        if (terrainVisible) {
             const centroidVertexArray = queryGeometry.tile.getBucket(this).centroidVertexArray;
 
             // See FillExtrusionBucket#encodeCentroid(), centroid is inserted at vertexOffset + 1
             const centroidOffset = layoutVertexArrayOffset + 1;
             if (centroidOffset < centroidVertexArray.length) {
                 const centroidVertexObject = centroidVertexArray.get(centroidOffset);
-                centroid[0] = centroidVertexObject.a_centroid_pos0;
-                centroid[1] = centroidVertexObject.a_centroid_pos1;
+                centroid[0] = centroidVertexObject.aCentroidPos0;
+                centroid[1] = centroidVertexObject.aCentroidPos1;
             }
-
-            exaggeration = transform.elevation.exaggeration();
         }
 
         // Early exit if fill extrusion is still hidden while waiting for backfill
         const isHidden = centroid[0] === 0 && centroid[1] === 1;
         if (isHidden) return false;
-
 
         const demSampler = terrainVisible ? elevationHelper : null;
         const projected = projectExtrusion(geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat);
@@ -194,7 +190,7 @@ function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Poin
 }
 
 function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: ?DEMSampler, centroid: vec2, exaggeration: number, lat: number) {
-    if (demSampler){
+    if (demSampler) {
         return projectExtrusion3D(geometry, zBase, zTop, translation, m, demSampler, centroid, exaggeration, lat);
     } else {
         return projectExtrusion2D(geometry, zBase, zTop, translation, m);
@@ -297,13 +293,13 @@ function toPoint(v: vec3): Point {
 }
 
 function getTerrainHeightOffset(x: number, y: number, zBase: number, zTop: number, demSampler: DEMSampler, centroid: vec2, exaggeration: number, lat: number): { base: number, top: number} {
-    const ele = exaggeration * demSampler.getElevationAt(x, y , true, true);
+    const ele = exaggeration * demSampler.getElevationAt(x, y, true, true);
     const flatRoof = centroid[0] !== 0;
     const centroidElevation = flatRoof ? centroid[1] === 0 ? exaggeration * elevationFromUint16(centroid[0]) : exaggeration * flatElevation(demSampler, centroid, lat) : ele;
     return {
         base: ele + (zBase === 0) ? -1 : zBase, // Use -1 instead of -5 in shader to prevent picking underground
         top: flatRoof ? Math.max(centroidElevation + zTop, ele + zBase + 2) : ele + zTop
-    }
+    };
 }
 
 function elevationFromUint16(n: number): number {
@@ -332,7 +328,7 @@ function flatElevation(demSampler: DEMSampler, centroid: vec2, lat: number): num
         Math.abs(corners[1] - corners[3])
     ];
     const diffSum = [diff[0] + diff[1], diff[2] + diff[3]];
-    const slope =[
+    const slope = [
         Math.min(0.25, meterToDEM * 0.5 * diffSum[0] / offset[0]),
         Math.min(0.25, meterToDEM * 0.5 * diffSum[1] / offset[1])
     ];

@@ -54,7 +54,7 @@ map.on('style.load', function() {
         "tileSize": 512,
         "maxzoom": 14
     });
-    map.setTerrain({ "source": "mapbox-dem"});
+    map.setTerrain({"source": "mapbox-dem"});
 
     let hovered = [];
     window.addEventListener('mousemove', function(e) {

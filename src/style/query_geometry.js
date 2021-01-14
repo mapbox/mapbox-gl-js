@@ -69,14 +69,13 @@ export class QueryGeometry {
         return new QueryGeometry(screenGeometry, transform.getCameraPoint(), aboveHorizon, transform);
     }
 
-
     /**
      * Returns true if the initial query by the user was a single point
      *
      * @returns {boolean}
      */
     isPointQuery(): boolean {
-        return this.screenBounds.length === 1
+        return this.screenBounds.length === 1;
     }
 
     /**

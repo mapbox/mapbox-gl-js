@@ -95,7 +95,7 @@ float occlusionFade(vec4 frag) {
 }
 
  // BEGIN: code for fill-extrusion height offseting
- // When making changes here please also update associated JS ports in `fill-extrusion-style-layer.js`
+ // When making changes here please also update associated JS ports in src/style/style_layer/fill-extrusion-style-layer.js
  // This is so that rendering changes are reflected on CPU side for feature querying.
 
 vec4 fourSample(vec2 pos, vec2 off) {

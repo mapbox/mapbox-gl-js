@@ -1070,10 +1070,10 @@ register('FeatureIndexArray', FeatureIndexArray);
 
 class FillExtrusionCentroidStruct extends Struct {
     _structArray: FillExtrusionCentroidArray;
-    a_centroid_pos0: number;
-    a_centroid_pos1: number;
-    get a_centroid_pos0() { return this._structArray.uint16[this._pos2 + 0]; }
-    get a_centroid_pos1() { return this._structArray.uint16[this._pos2 + 1]; }
+    aCentroidPos0: number;
+    aCentroidPos1: number;
+    get aCentroidPos0() { return this._structArray.uint16[this._pos2 + 0]; }
+    get aCentroidPos1() { return this._structArray.uint16[this._pos2 + 1]; }
 }
 
 FillExtrusionCentroidStruct.prototype.size = 4;

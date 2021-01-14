@@ -39,6 +39,13 @@ type QueryParameters = {
     }
 }
 
+type FeatureIndices = {
+    bucketIndex: number,
+    sourceLayerIndex: number,
+    featureIndex: number,
+    layoutVertexArrayOffset: number
+} | FeatureIndexStruct;
+
 class FeatureIndex {
     tileID: OverscaledTileID;
     x: number;
@@ -154,14 +161,14 @@ class FeatureIndex {
 
     loadMatchingFeature(
         result: {[_: string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>},
-        featureIndexData: FeatureIndexStruct,
+        featureIndexData: FeatureIndices,
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         availableImages: Array<string>,
         styleLayers: {[_: string]: StyleLayer},
         serializedLayers: {[_: string]: Object},
         sourceFeatureState?: SourceFeatureState,
-        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, id: string | number | void, layoutVertexArrayOffset: number) => boolean | number) {
+        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number) => boolean | number) {
 
         const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
         const layerIDs = this.bucketLayerIDs[bucketIndex];
@@ -241,7 +248,8 @@ class FeatureIndex {
                 result, {
                     bucketIndex,
                     sourceLayerIndex,
-                    featureIndex: symbolFeatureIndex
+                    featureIndex: symbolFeatureIndex,
+                    layoutVertexArrayOffset: 0
                 },
                 filter,
                 filterLayerIDs,

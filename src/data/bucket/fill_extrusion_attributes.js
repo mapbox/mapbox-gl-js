@@ -6,7 +6,7 @@ export const fillExtrusionAttributes = createLayout([
 ]);
 
 export const centroidAttributes = createLayout([
-    {name: 'a_centroid_pos',  components: 2, type: 'Uint16'}
+    {name: 'aCentroidPos',  components: 2, type: 'Uint16'}
 ]);
 
 export const {members, size, alignment} = fillExtrusionAttributes;

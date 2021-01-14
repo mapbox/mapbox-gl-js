@@ -95,8 +95,8 @@ test('FeatureIndexArray', (t) => {
 
     t.test('emplace and retrieve', (t) => {
         const array = new TestArray();
-        t.equal(0, array.emplaceBack(1, 7, 3));
-        t.equal(1, array.emplaceBack(4, 2, 5));
+        t.equal(0, array.emplaceBack(1, 7, 3, 6));
+        t.equal(1, array.emplaceBack(4, 2, 5, 9));
 
         t.equal(array.length, 2);
 
@@ -106,6 +106,7 @@ test('FeatureIndexArray', (t) => {
         t.equal(elem0.featureIndex, 1, 'returns correct featureIndex');
         t.equal(elem0.sourceLayerIndex, 7, 'returns correct sourceLayerIndex');
         t.equal(elem0.bucketIndex, 3, 'returns correct bucketIndex');
+        t.equal(elem0.layoutVertexArrayOffset, 6, 'returns correct layoutVertexArrayOffset');
 
         const elem1 = array.get(1);
         t.ok(elem1);
@@ -113,6 +114,7 @@ test('FeatureIndexArray', (t) => {
         t.equal(elem1.featureIndex, 4, 'returns correct featureIndex');
         t.equal(elem1.sourceLayerIndex, 2, 'returns correct sourceLayerIndex');
         t.equal(elem1.bucketIndex, 5, 'returns correct bucketIndex');
+        t.equal(elem1.layoutVertexArrayOffset, 9, 'returns correct layoutVertexArrayOffset');
 
         t.end();
     });
