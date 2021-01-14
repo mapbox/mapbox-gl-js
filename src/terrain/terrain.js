@@ -176,6 +176,9 @@ export class Terrain extends Elevation {
     orthoMatrix: mat4;
     enabled: boolean;
 
+    renderCached: boolean;
+    forceRenderCached: boolean; // debugging purpose.
+
     _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {[string]: boolean};
     _overlapStencilMode: StencilMode;
@@ -370,7 +373,7 @@ export class Terrain extends Elevation {
             this._emptyDEMTextureDirty = !this._initializing;
         }
 
-        const options = this.painter.options;
+        this.renderCached = !!this.forceRenderCached && !this._invalidateRenderCache;
         this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
@@ -601,7 +604,7 @@ export class Terrain extends Elevation {
             const tile = psc.getTileByID(proxy.proxyTileKey);
             const renderCacheIndex = psc.proxyCachedFBO[proxy.key];
 
-            const useRenderCache = renderCacheIndex !== undefined;
+            const useRenderCache = renderCacheIndex !== undefined && this.renderCached;
             const fbo = this.currentFBO = useRenderCache ? psc.renderCache[renderCacheIndex] : this.pool[poolIndex++];
             tile.texture = fbo.tex;
 
@@ -775,7 +778,7 @@ export class Terrain extends Elevation {
             const isFading = !!crossFade && crossFade.t !== 1;
             return layer.type !== 'custom' && !isHidden && isFading;
         };
-        return this.style.order.some(isCrossFading);
+        return !this.renderCached || this.style.order.some(isCrossFading);
     }
 
     _clearRasterFadeFromRenderCache() {
