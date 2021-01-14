@@ -312,9 +312,9 @@ export class Terrain extends Elevation {
         if (!this.enabled) return;
         this.enabled = false;
         this.proxySourceCache.deallocRenderCache();
-        if (this.painter.style) {
-            for (const id in this.painter.style._sourceCaches) {
-                this.painter.style._sourceCaches[id].usedForTerrain = false;
+        if (this.style) {
+            for (const id in this.style._sourceCaches) {
+                this.style._sourceCaches[id].usedForTerrain = false;
             }
         }
     }
@@ -395,7 +395,7 @@ export class Terrain extends Elevation {
         });
 
         this.terrainTileForTile = {};
-        const sourceCaches = this.painter.style._sourceCaches;
+        const sourceCaches = this.style._sourceCaches;
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (!sourceCache.used) continue;
@@ -597,7 +597,7 @@ export class Terrain extends Elevation {
 
         let layerIndex = startLayerIndex;
         let drawAsRasterCoords = [];
-        const layerIds = painter.style._order;
+        const layerIds = painter.style.order;
         const drapedLayerBatch = this.drapedRenderBatches.shift();
         assert(drapedLayerBatch.start === startLayerIndex);
 
@@ -675,7 +675,7 @@ export class Terrain extends Elevation {
     }
 
     renderCacheEfficiency(style: Style): Object {
-        const layerCount = style._order.length;
+        const layerCount = style.order.length;
 
         let uncacheableLayerCount = 0;
         let drapedLayerCount = 0;
@@ -683,7 +683,7 @@ export class Terrain extends Elevation {
         let firstUndrapedLayer;
 
         for (let i = 0; i < layerCount; ++i) {
-            const layer = style._layers[style._order[i]];
+            const layer = style._layers[style.order[i]];
             if (!this._isLayerDrapedOverTerrain(layer)) {
                 if (!reachedUndrapedLayer) {
                     reachedUndrapedLayer = true;
@@ -778,27 +778,27 @@ export class Terrain extends Elevation {
     _shouldDisableRenderCache(): boolean {
         // Disable render caches on dynamic events due to fading.
         const isCrossFading = id => {
-            const layer = this.painter.style._layers[id];
+            const layer = this.style._layers[id];
             const isHidden = !layer.isHidden(this.painter.transform.zoom);
             const crossFade = layer.getCrossfadeParameters();
             const isFading = !!crossFade && crossFade.t !== 1;
             return layer.type !== 'custom' && !isHidden && isFading;
         };
-        return !this.renderCached || this.painter.style._order.some(isCrossFading);
+        return !this.renderCached || this.style.order.some(isCrossFading);
     }
 
     _clearRasterFadeFromRenderCache() {
-        for (const id in this.painter.style._sourceCaches) {
-            if (!(this.painter.style._sourceCaches[id]._source instanceof RasterTileSource)) {
+        for (const id in this.style._sourceCaches) {
+            if (!(this.style._sourceCaches[id]._source instanceof RasterTileSource)) {
                 return;
             }
         }
 
         // Check if any raster tile is in a fading state
-        for (let i = 0; i < this.painter.style._order.length; ++i) {
-            const layer = this.painter.style._layers[this.painter.style._order[i]];
+        for (let i = 0; i < this.style.order.length; ++i) {
+            const layer = this.style._layers[this.style.order[i]];
             const isHidden = layer.isHidden(this.painter.transform.zoom);
-            const sourceCache = this.painter.style._getLayerSourceCache(layer);
+            const sourceCache = this.style._getLayerSourceCache(layer);
             if (layer.type !== 'raster' || isHidden || !sourceCache) { continue; }
 
             const rasterLayer = ((layer: any): RasterStyleLayer);
@@ -822,19 +822,19 @@ export class Terrain extends Elevation {
     }
 
     _setupDrapedRenderBatches() {
-        const layerCount = this.painter.style._order.length;
-        const style = this.painter.style;
+        const layerCount = this.style.order.length;
+        const style = this.style;
         const batches = [];
 
         let currentLayer = 0;
-        let layer = style._layers[style._order[currentLayer]];
+        let layer = style._layers[style.order[currentLayer]];
         while (!this._isLayerDrapedOverTerrain(layer) && layer.isHidden(this.painter.transform.zoom) && ++currentLayer < layerCount) {
-            layer = style._layers[style._order[currentLayer]];
+            layer = style._layers[style.order[currentLayer]];
         }
 
         let batchStart;
         for (; currentLayer < layerCount; ++currentLayer) {
-            const layer = style._layers[style._order[currentLayer]];
+            const layer = style._layers[style.order[currentLayer]];
             if (layer.isHidden(this.painter.transform.zoom)) {
                 continue;
             }

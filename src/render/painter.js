@@ -189,7 +189,7 @@ class Painter {
         this.context.viewport.set([0, 0, this.width, this.height]);
 
         if (this.style) {
-            for (const layerId of this.style._order) {
+            for (const layerId of this.style.order) {
                 this.style._layers[layerId].resize();
             }
         }
@@ -404,7 +404,7 @@ class Painter {
 
         this.imageManager.beginFrame();
 
-        const layerIds = this.style._order;
+        const layerIds = this.style.order;
         const sourceCaches = this.style._sourceCaches;
 
         for (const id in sourceCaches) {
@@ -466,7 +466,7 @@ class Painter {
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
-        this.depthRangeFor3D = [0, 1 - ((style._order.length + 2) * this.numSublayers * this.depthEpsilon)];
+        this.depthRangeFor3D = [0, 1 - ((style.order.length + 2) * this.numSublayers * this.depthEpsilon)];
 
         // Opaque pass ===============================================
         // Draw opaque layers top-to-bottom first.

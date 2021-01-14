@@ -124,6 +124,8 @@ class Style extends Evented {
     _num3DLayers: number;
     _serializedLayers: {[_: string]: Object};
     _order: Array<string>;
+    _optimizeForTerrain: boolean;
+    _drapedFirstOrder: Array<string>;
     _sourceCaches: {[_: string]: SourceCache};
     _otherSourceCaches: {[_: string]: SourceCache};
     _symbolSourceCaches: {[_: string]: SourceCache};
@@ -163,13 +165,15 @@ class Style extends Evented {
         this._layers = {};
         this._num3DLayers = 0;
         this._serializedLayers = {};
-        this._order  = [];
         this._sourceCaches = {};
         this._otherSourceCaches = {};
         this._symbolSourceCaches = {};
         this.zoomHistory = new ZoomHistory();
         this._loaded = false;
         this._availableImages = [];
+        this._order  = [];
+        this._drapedFirstOrder = [];
+        this._optimizeForTerrain = false;
 
         this._resetUpdates();
 
@@ -384,6 +388,8 @@ class Style extends Evented {
 
         return false;
     }
+
+    get order(): Array<string> { return this._optimizeForTerrain ? this._drapedFirstOrder : this._order; }
 
     _checkLoaded() {
         if (!this._loaded) {
