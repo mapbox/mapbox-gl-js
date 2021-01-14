@@ -258,10 +258,10 @@ function flatElevation(demSampler: DEMSampler, centroid: vec2, lat: number): num
     const offset = [2 * w[0] + 1, 2 * w[1] + 1];
     const corners = fourSample(demSampler, [posPx.x - w[0], posPx.y - w[1]], offset);
     const diff = [
-        corners[0] - corners[1],
-        corners[2] - corners[3],
-        corners[0] - corners[2],
-        corners[1] - corners[3]
+        Math.abs(corners[0] - corners[1]),
+        Math.abs(corners[2] - corners[3]),
+        Math.abs(corners[0] - corners[2]),
+        Math.abs(corners[1] - corners[3])
     ];
     const diffSum = [diff[0] + diff[1], diff[2] + diff[3]];
     const slope =[
