@@ -336,6 +336,7 @@ class Style extends Evented {
             this.imageManager.setLoaded(true);
             this._availableImages = this.imageManager.listImages();
             this.dispatcher.broadcast('setImages', this._availableImages);
+            this.dispatcher.broadcast('spriteLoaded', true);
             this.fire(new Event('data', {dataType: 'style'}));
         });
     }
