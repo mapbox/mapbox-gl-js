@@ -9,7 +9,7 @@ import EXTENT from '../data/extent';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import SegmentVector from '../data/segment';
 import {RasterBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types';
-import {values, MAX_SAFE_INTEGER, warnOnce} from '../util/util';
+import {values, MAX_SAFE_INTEGER} from '../util/util';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import posAttributes from '../data/pos_attributes';
 import ProgramConfiguration from '../data/program_configuration';
@@ -173,14 +173,6 @@ class Painter {
         const terrain: Terrain = this._terrain;
         this.transform.elevation = enabled ? terrain : null;
         terrain.update(style, this.transform, cameraChanging);
-        if (style._layerOrderChanged) {
-            const renderCacheInfo = terrain.renderCacheEfficiency(style);
-            if (renderCacheInfo.efficiency !== 100) {
-                warnOnce(`Terrain render cache efficiency is not optimal (${renderCacheInfo.efficiency}%)
-                    and performance may be affected negatively, consider adding draped
-                    layers before layer with id '${renderCacheInfo.firstUndrapedLayer}'`);
-            }
-        }
     }
 
     get terrain(): ?Terrain {

@@ -416,6 +416,7 @@ export class Terrain extends Elevation {
         this._prepareDEMTextures();
 
         this._setupRenderCache(previousProxyToSource);
+        this._setupDrapedRenderBatches();
 
         this.renderingToTexture = false;
         this._initFBOPool();
@@ -680,10 +681,6 @@ export class Terrain extends Elevation {
 
         for (let i = 0; i < layerCount; ++i) {
             const layer = style._layers[style._order[i]];
-            if (layer.isHidden(this.painter.transform.zoom)) {
-                continue;
-            }
-
             if (!this._isLayerDrapedOverTerrain(layer)) {
                 if (!reachedUndrapedLayer) {
                     reachedUndrapedLayer = true;
@@ -819,6 +816,41 @@ export class Terrain extends Elevation {
                 }
             }
         }
+    }
+
+    _setupDrapedRenderBatches() {
+        const layerCount = this.painter.style._order.length;
+        const style = this.painter.style;
+        const batches = [];
+
+        let currentLayer = 0;
+        let layer = style._layers[style._order[currentLayer]];
+        while (!this._isLayerDrapedOverTerrain(layer) && layer.isHidden(this.painter.transform.zoom) && ++currentLayer < layerCount) {
+            layer = style._layers[style._order[currentLayer]];
+        }
+
+        let batchStart;
+        for (; currentLayer < layerCount; ++currentLayer) {
+            const layer = style._layers[style._order[currentLayer]];
+            if (layer.isHidden(this.painter.transform.zoom)) {
+                continue;
+            }
+            if (!this._isLayerDrapedOverTerrain(layer)) {
+                if (batchStart !== undefined) {
+                    batches.push({start: batchStart, end: currentLayer - 1});
+                    batchStart = undefined;
+                }
+                continue;
+            }
+            if (batchStart === undefined) {
+                batchStart = currentLayer;
+            }
+        }
+        if (batchStart !== undefined) {
+            batches.push({start: batchStart, end: currentLayer - 1});
+        }
+
+        this.drapedRenderBatches = batches;
     }
 
     _setupRenderCache(previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
