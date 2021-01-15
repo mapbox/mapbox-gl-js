@@ -933,7 +933,7 @@ export class Terrain extends Elevation {
                         // assert(psc.renderCache.length <= coords.length);
                     }
                     if (index !== undefined) {
-                        if (psc.proxyCachedFBO[proxy.key] == undefined)
+                        if (psc.proxyCachedFBO[proxy.key] === undefined)
                             psc.proxyCachedFBO[proxy.key] = {};
                         psc.proxyCachedFBO[proxy.key][batch.start] = index;
                         psc.renderCache[index].dirty = true; // needs to be rendered to.
