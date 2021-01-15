@@ -123,9 +123,11 @@ class ProxySourceCache extends SourceCache {
     }
 
     freeFBO(id: string) {
-        const fboIndex = this.proxyCachedFBO[id];
-        if (fboIndex !== undefined) {
-            this.renderCachePool.push(fboIndex);
+        const fbos = this.proxyCachedFBO[id];
+        if (fbos !== undefined) {
+            for (const entry in fbos) {
+                this.renderCachePool.push(fbos[entry]);
+            }
             delete this.proxyCachedFBO[id];
         }
     }
@@ -156,7 +158,7 @@ class ProxiedTileID extends OverscaledTileID {
 }
 
 type OverlapStencilType = false | 'Clip' | 'Mask';
-type FBO = {fb: Framebuffer, tex: Texture, dirty: boolean, lastDrawnLayerIndex: ?number, ref: number};
+type FBO = {fb: Framebuffer, tex: Texture, dirty: boolean, ref: number};
 
 export class Terrain extends Elevation {
     terrainTileForTile: {[number | string]: Tile};
@@ -177,7 +179,6 @@ export class Terrain extends Elevation {
     enabled: boolean;
 
     renderCached: boolean;
-    forceRenderCached: boolean; // debugging purpose.
 
     _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {[string]: boolean};
@@ -223,6 +224,8 @@ export class Terrain extends Elevation {
         this.proxyCoords = [];
         this.proxiedCoords = {};
         this._visibleDemTiles = [];
+        // TODO: Add as member
+        this._drapedRenderBatches = [];
         this._sourceTilesOverlap = {};
         this.proxySourceCache = new ProxySourceCache(style.map);
         this.orthoMatrix = mat4.create();
@@ -373,7 +376,7 @@ export class Terrain extends Elevation {
             this._emptyDEMTextureDirty = !this._initializing;
         }
 
-        this.renderCached = !!this.forceRenderCached && !this._invalidateRenderCache;
+        this.renderCached = !this._invalidateRenderCache;
         this._invalidateRenderCache = false;
         const coords = this.proxyCoords = psc.getIds().map((id) => {
             const tileID = psc.getTileByID(id).tileID;
@@ -409,7 +412,7 @@ export class Terrain extends Elevation {
         this.proxiedCoords[psc.id] = coords.map(tileID => new ProxiedTileID(tileID, tileID.key, this.orthoMatrix));
         this._assignTerrainTiles(coords);
         this._prepareDEMTextures();
-        // this._setupDrapedRenderBatches();
+        this._setupDrapedRenderBatches();
         this._setupRenderCache(previousProxyToSource);
 
         this.renderingToTexture = false;
@@ -590,11 +593,8 @@ export class Terrain extends Elevation {
             this.renderingToTexture = false;
         };
 
-        let layerIndex = startLayerIndex;
         let drawAsRasterCoords = [];
         const layerIds = painter.style.order;
-        // const drapedLayerBatch = this.drapedRenderBatches.shift();
-        // assert(drapedLayerBatch.start === startLayerIndex);
 
         let poolIndex = 0;
         for (let i = 0; i < proxies.length; i++) {
@@ -602,7 +602,7 @@ export class Terrain extends Elevation {
 
             // bind framebuffer and assign texture to the tile (texture used in drawTerrainRaster).
             const tile = psc.getTileByID(proxy.proxyTileKey);
-            const renderCacheIndex = psc.proxyCachedFBO[proxy.key];
+            const renderCacheIndex = psc.proxyCachedFBO[proxy.key] ? psc.proxyCachedFBO[proxy.key][startLayerIndex] : undefined;
 
             const useRenderCache = renderCacheIndex !== undefined && this.renderCached;
             const fbo = this.currentFBO = useRenderCache ? psc.renderCache[renderCacheIndex] : this.pool[poolIndex++];
@@ -611,10 +611,6 @@ export class Terrain extends Elevation {
             if (useRenderCache && !fbo.dirty) {
                 // Use cached render from previous pass, no need to render again.
                 drawAsRasterCoords.push(tile.tileID);
-
-                // Move forward back to where this cached entry stopped rendering.
-                // TODO: use drapedLayerBatch.end instead
-                layerIndex = fbo.lastDrawnLayerIndex;
                 continue;
             }
 
@@ -627,7 +623,7 @@ export class Terrain extends Elevation {
             }
 
             let currentStencilSource; // There is no need to setup stencil for the same source for consecutive layers.
-            for (layerIndex = startLayerIndex; layerIndex < layerIds.length; ++layerIndex) {
+            for (let layerIndex = startLayerIndex; layerIndex < layerIds.length; ++layerIndex) {
                 const layer = painter.style._layers[layerIds[layerIndex]];
                 const hidden = layer.isHidden(painter.transform.zoom);
                 const draped = this.style.isLayerDraped(layer);
@@ -648,7 +644,6 @@ export class Terrain extends Elevation {
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
 
-            fbo.lastDrawnLayerIndex = useRenderCache ? layerIndex : undefined;
             fbo.dirty = this.renderedToTile;
             if (this.renderedToTile) drawAsRasterCoords.push(tile.tileID);
 
@@ -662,10 +657,21 @@ export class Terrain extends Elevation {
                 }
             }
         }
+
         setupRenderToScreen();
-        if (drawAsRasterCoords.length > 0) drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
-        const nextLayerIndex = layerIndex === startLayerIndex ? startLayerIndex + 1 : layerIndex;
-        return nextLayerIndex;
+        if (drawAsRasterCoords.length > 0) {
+            drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
+        }
+
+        // Consume batch of sequential drape layers and move next
+        const drapedLayerBatch = this._drapedRenderBatches.shift();
+        assert(drapedLayerBatch.start === startLayerIndex);
+        return drapedLayerBatch.end + 1;
+    }
+
+    postRender() {
+        // Make sure we consumed all the draped terrain batches at this point
+        assert(this._drapedRenderBatches.length === 0);
     }
 
     renderCacheEfficiency(style: Style): Object {
@@ -760,7 +766,7 @@ export class Terrain extends Elevation {
                 context.extTextureFilterAnisotropicMax);
         }
 
-        return {fb, tex, dirty: false, lastDrawnLayerIndex: undefined, ref: 1};
+        return {fb, tex, dirty: false, ref: 1};
     }
 
     _initFBOPool() {
@@ -817,6 +823,10 @@ export class Terrain extends Elevation {
 
     _setupDrapedRenderBatches() {
         const layerCount = this.style.order.length;
+        if (layerCount === 0) {
+            return;
+        }
+
         const style = this.style;
         const batches = [];
 
@@ -843,11 +853,17 @@ export class Terrain extends Elevation {
                 batchStart = currentLayer;
             }
         }
+
         if (batchStart !== undefined) {
             batches.push({start: batchStart, end: currentLayer - 1});
         }
 
-        this.drapedRenderBatches = batches;
+        if (style._optimizeForTerrain) {
+            // Draped first approach should result in a single or no batch
+            assert(batches.length === 1 || batches.length === 0);
+        }
+
+        this._drapedRenderBatches = batches;
     }
 
     _setupRenderCache(previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
@@ -856,8 +872,13 @@ export class Terrain extends Elevation {
             if (psc.renderCache.length > psc.renderCachePool.length) {
                 const used = ((Object.values(psc.proxyCachedFBO): any): Array<number>);
                 psc.proxyCachedFBO = {};
-                assert(psc.renderCache.length === psc.renderCachePool.length + used.length);
-                psc.renderCachePool = psc.renderCachePool.concat(used);
+                // assert(psc.renderCache.length === psc.renderCachePool.length + used.length);
+                for (let i = 0; i < used.length; ++i) {
+                    const cachedFBOs = used[i];
+                    for (const fboKey in cachedFBOs) {
+                        psc.renderCachePool.push(cachedFBOs[fboKey]);
+                    }
+                }
             }
             return;
         }
@@ -889,18 +910,26 @@ export class Terrain extends Elevation {
                     ++equal;
                 }
                 // dirty === false: doesn't need to be rendered to, just use cached render.
-                psc.renderCache[psc.proxyCachedFBO[proxy.key]].dirty = equal < 0 || equal !== Object.values(prev).length;
-            } else {
-                // Assign renderCache FBO if there are available FBOs in pool.
-                let index = psc.renderCachePool.pop();
-                if (index === undefined && psc.renderCache.length < RENDER_CACHE_MAX_SIZE) {
-                    index = psc.renderCache.length;
-                    psc.renderCache.push(this._createFBO());
-                    assert(psc.renderCache.length <= coords.length);
+                for (const proxyFBO in psc.proxyCachedFBO[proxy.key]) {
+                    psc.renderCache[psc.proxyCachedFBO[proxy.key][proxyFBO]].dirty = equal < 0 || equal !== Object.values(prev).length;
                 }
-                if (index !== undefined) {
-                    psc.proxyCachedFBO[proxy.key] = index;
-                    psc.renderCache[index].dirty = true; // needs to be rendered to.
+            } else {
+                // TODO: Prioritize large draped batches first
+                for (let j = 0; j < this._drapedRenderBatches.length; ++j) {
+                    const batch = this._drapedRenderBatches[j];
+                    // Assign renderCache FBO if there are available FBOs in pool.
+                    let index = psc.renderCachePool.pop();
+                    if (index === undefined && psc.renderCache.length < RENDER_CACHE_MAX_SIZE) {
+                        index = psc.renderCache.length;
+                        psc.renderCache.push(this._createFBO());
+                        // assert(psc.renderCache.length <= coords.length);
+                    }
+                    if (index !== undefined) {
+                        if (psc.proxyCachedFBO[proxy.key] == undefined)
+                            psc.proxyCachedFBO[proxy.key] = {};
+                        psc.proxyCachedFBO[proxy.key][batch.start] = index;
+                        psc.renderCache[index].dirty = true; // needs to be rendered to.
+                    }
                 }
             }
         }
