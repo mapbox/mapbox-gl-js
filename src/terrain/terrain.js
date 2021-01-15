@@ -582,6 +582,10 @@ export class Terrain extends Elevation {
     // Apart to layer-by-layer rendering used in 2D, here we have proxy-tile-by-proxy-tile
     // rendering.
     render(startLayerIndex: number): number {
+        if (this._drapedRenderBatches.length === 0) {
+            return startLayerIndex + 1;
+        }
+
         this.renderingToTexture = true;
         const painter = this.painter;
         const context = this.painter.context;
