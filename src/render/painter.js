@@ -517,6 +517,7 @@ class Painter {
         // layer is found, then reset to non-cached rendering.
         this.currentLayer = 0;
         if (this.terrain && this.terrain.renderCached) {
+            // TODO: Remove this.currentLayer as parameter, terrain is aware of the batches now
             this.currentLayer = this.terrain.render(this.currentLayer);
         }
 
@@ -558,7 +559,7 @@ class Painter {
         }
 
         if (this.terrain) {
-            // assert(this.terrain.drapedRenderBatches.length === 0);
+            this.terrain.postRender();
         }
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry) {

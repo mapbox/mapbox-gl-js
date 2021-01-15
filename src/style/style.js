@@ -1403,7 +1403,7 @@ class Style extends Evented {
         const nonDraped = this._order.filter((id) => {
             return !this.isLayerDraped(this._layers[id]);
         });
-
+        this._drapedFirstOrder = [];
         this._drapedFirstOrder.push(...draped);
         this._drapedFirstOrder.push(...nonDraped);
     }
