@@ -460,7 +460,7 @@ class Painter {
 
         this.depthRangeFor3D = [0, 1 - ((style.order.length + 2) * this.numSublayers * this.depthEpsilon)];
 
-        // Terrain depth render ===========================================
+        // Terrain depth offscreen render pass ==========================
         // With terrain on, renders the depth buffer into a texture.
         // This texture is used for occlusion testing (labels)
         if (this.terrain && (this.style.hasLayerType('symbol') || this.style.hasLayerType('circle'))) {
