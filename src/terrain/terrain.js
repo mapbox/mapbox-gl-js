@@ -866,7 +866,7 @@ export class Terrain extends Elevation {
             batches.push({start: batchStart, end: currentLayer - 1});
         }
 
-        if (style._optimizeForTerrain) {
+        if (this.style._optimizeForTerrain) {
             // Draped first approach should result in a single or no batch
             assert(batches.length === 1 || batches.length === 0);
         }
