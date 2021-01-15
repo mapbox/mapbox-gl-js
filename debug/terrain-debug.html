@@ -31,6 +31,7 @@
     <label><input id='road-label-checkbox' type='checkbox'> road-label-*</label><br />
     <label><input id='circles-checkbox' type='checkbox'> circles</label><br />
     <label><input id='hillshade-checkbox' type='checkbox'> hillshade using terrain</label><br />
+    <label><input id='custom-checkbox' type='checkbox'> add a custom layer</label><br />
     <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
 </div>
 
@@ -177,11 +178,87 @@ map.on('style.load', function() {
             ]
         }
     });
+
+    var highlightLayer = {
+        id: 'highlight',
+        type: 'custom',
+
+        onAdd: (map, gl) => {
+            var vertexSource =
+            '' +
+            'uniform mat4 u_matrix;' +
+            'attribute vec2 a_pos;' +
+            'void main() {' +
+            '    gl_Position = u_matrix * vec4(a_pos, 0.0, 1.0);' +
+            '}';
+
+            // create GLSL source for fragment shader
+            var fragmentSource =
+            '' +
+            'void main() {' +
+            '    gl_FragColor = vec4(1.0, 0.0, 0.0, 0.5);' +
+            '}';
+
+            var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(vertexShader, vertexSource);
+            gl.compileShader(vertexShader);
+            var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(fragmentShader, fragmentSource);
+            gl.compileShader(fragmentShader);
+            this.program = gl.createProgram();
+            gl.attachShader(this.program, vertexShader);
+            gl.attachShader(this.program, fragmentShader);
+            gl.linkProgram(this.program);
+
+            this.aPos = gl.getAttribLocation(this.program, 'a_pos');
+
+            var p0 = mapboxgl.MercatorCoordinate.fromLngLat({
+                lng: -123.98071289062499,
+                lat: 37.204081555898526
+            });
+            var p1 = mapboxgl.MercatorCoordinate.fromLngLat({
+                lng: -119.190673828125,
+                lat: 37.204081555898526
+            });
+            var p2 = mapboxgl.MercatorCoordinate.fromLngLat({
+                lng: -121.57470703125,
+                lat: 39.37677199661635
+            });
+
+            const arrayData = [
+                p0.x,
+                p0.y,
+                p1.x,
+                p1.y,
+                p2.x,
+                p2.y
+            ];
+
+            this.buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrayData), gl.STATIC_DRAW);
+        },
+
+        render: (gl, matrix) => {
+            gl.useProgram(this.program);
+            gl.uniformMatrix4fv(gl.getUniformLocation(this.program, 'u_matrix'), false, matrix);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+            gl.enableVertexAttribArray(this.aPos);
+            gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, false, 0, 0);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+        }
+    };
+
+    map.addLayer(highlightLayer);
+
     document.getElementById('road-label-checkbox').onclick();
     document.getElementById('satellite-checkbox').onclick();
     document.getElementById('terrain-checkbox').onclick();
     document.getElementById('buildings-checkbox').onclick();
     document.getElementById('circles-checkbox').onclick();
+    document.getElementById('custom-checkbox').onclick();
 });
 
 document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
@@ -217,6 +294,10 @@ document.getElementById('satellite-checkbox').onclick = function() {
 
 document.getElementById('buildings-checkbox').onclick = function() {
     map.setLayoutProperty(buildingsLayerId, 'visibility', this.checked ? 'visible' : 'none');
+};
+
+document.getElementById('custom-checkbox').onclick = function() {
+    map.setLayoutProperty('highlight', 'visibility', this.checked ? 'visible' : 'none');
 };
 
 document.getElementById('hillshade-checkbox').onclick = function() {
