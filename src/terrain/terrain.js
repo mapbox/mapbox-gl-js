@@ -54,6 +54,11 @@ export const GRID_DIM = 128;
 const FBO_POOL_SIZE = 5;
 const RENDER_CACHE_MAX_SIZE = 50;
 
+type RenderBatch = {
+    start: number;
+    end: number;
+}
+
 /**
  * Proxy source cache gets ideal screen tile cover coordinates. All the other
  * source caches's coordinates get mapped to subrects of proxy coordinates (or
@@ -67,7 +72,7 @@ const RENDER_CACHE_MAX_SIZE = 50;
 class ProxySourceCache extends SourceCache {
     renderCache: Array<FBO>;
     renderCachePool: Array<number>;
-    proxyCachedFBO: {[string | number]: number};
+    proxyCachedFBO: {[string | number]: {[string | number]: number}};
 
     constructor(map: Map) {
 
@@ -194,6 +199,7 @@ export class Terrain extends Elevation {
     pool: Array<FBO>;
     currentFBO: FBO;
     renderedToTile: boolean;
+    _drapedRenderBatches: Array<RenderBatch>;
 
     _findCoveringTileCache: {[string]: {[number]: ?number}};
 
@@ -224,7 +230,6 @@ export class Terrain extends Elevation {
         this.proxyCoords = [];
         this.proxiedCoords = {};
         this._visibleDemTiles = [];
-        // TODO: Add as member
         this._drapedRenderBatches = [];
         this._sourceTilesOverlap = {};
         this.proxySourceCache = new ProxySourceCache(style.map);
@@ -610,17 +615,24 @@ export class Terrain extends Elevation {
 
             // bind framebuffer and assign texture to the tile (texture used in drawTerrainRaster).
             const tile = psc.getTileByID(proxy.proxyTileKey);
-            const renderCacheIndex = psc.proxyCachedFBO[proxy.key] ? psc.proxyCachedFBO[proxy.key][startLayerIndex] : undefined;
 
-            const useRenderCache = renderCacheIndex !== undefined && this.renderCached;
-            const fbo = this.currentFBO = useRenderCache ? psc.renderCache[renderCacheIndex] : this.pool[poolIndex++];
-            tile.texture = fbo.tex;
-
-            if (useRenderCache && !fbo.dirty) {
-                // Use cached render from previous pass, no need to render again.
-                drawAsRasterCoords.push(tile.tileID);
-                continue;
+            let fbo;
+            if (this.renderCached && psc.proxyCachedFBO[proxy.key] !== undefined) {
+                let cachedIndex = psc.proxyCachedFBO[proxy.key][drapedLayerBatch.start];
+                if (cachedIndex !== undefined) {
+                    fbo = this.currentFBO = psc.renderCache[cachedIndex];
+                    if (!fbo.dirty) {
+                        // Use cached render from previous pass, no need to render again.
+                        drawAsRasterCoords.push(tile.tileID);
+                        continue;
+                    }
+                }
             }
+
+            if (!fbo) {
+                fbo = this.currentFBO = this.pool[poolIndex++];
+            }
+            tile.texture = fbo.tex;
 
             context.bindFramebuffer.set(fbo.fb.framebuffer);
             this.renderedToTile = false; // reset flag.
@@ -866,7 +878,7 @@ export class Terrain extends Elevation {
             batches.push({start: batchStart, end: currentLayer - 1});
         }
 
-        if (this.style._optimizeForTerrain) {
+        if (this.style.map._optimizeForTerrain) {
             // Draped first approach should result in a single or no batch
             assert(batches.length === 1 || batches.length === 0);
         }
@@ -878,8 +890,9 @@ export class Terrain extends Elevation {
         const psc = this.proxySourceCache;
         if (this._shouldDisableRenderCache()) {
             if (psc.renderCache.length > psc.renderCachePool.length) {
-                const used = ((Object.values(psc.proxyCachedFBO): any): Array<number>);
+                const used = ((Object.values(psc.proxyCachedFBO): any): Array<{[string | number]: number}>);
                 psc.proxyCachedFBO = {};
+                // TODO
                 // assert(psc.renderCache.length === psc.renderCachePool.length + used.length);
                 for (let i = 0; i < used.length; ++i) {
                     const cachedFBOs = used[i];

@@ -532,8 +532,9 @@ class Painter {
                     ++this.currentLayer;
                     continue;
                 }
+                const terrain = (((this.terrain): any): Terrain);
                 const prevLayer = this.currentLayer;
-                this.currentLayer = this.terrain.renderBatch(this.currentLayer);
+                this.currentLayer = terrain.renderBatch(this.currentLayer);
                 assert(this.currentLayer > prevLayer);
                 continue;
             }
