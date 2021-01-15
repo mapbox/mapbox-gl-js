@@ -128,7 +128,6 @@ class Style extends Evented {
     _num3DLayers: number;
     _serializedLayers: {[_: string]: Object};
     _order: Array<string>;
-    _optimizeForTerrain: boolean;
     _drapedFirstOrder: Array<string>;
     _sourceCaches: {[_: string]: SourceCache};
     _otherSourceCaches: {[_: string]: SourceCache};
@@ -177,7 +176,6 @@ class Style extends Evented {
         this._availableImages = [];
         this._order  = [];
         this._drapedFirstOrder = [];
-        this._optimizeForTerrain = false;
 
         this._resetUpdates();
 
@@ -393,7 +391,7 @@ class Style extends Evented {
         return false;
     }
 
-    get order(): Array<string> { return this._optimizeForTerrain ? this._drapedFirstOrder : this._order; }
+    get order(): Array<string> { return this.map._optimizeForTerrain ? this._drapedFirstOrder : this._order; }
 
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
@@ -1392,7 +1390,7 @@ class Style extends Evented {
     }
 
     _updateDrapeFirstLayers() {
-        if (!this._optimizeForTerrain || !this.terrain) {
+        if (!this.map._optimizeForTerrain || !this.terrain) {
             return;
         }
 
