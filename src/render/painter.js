@@ -458,15 +458,24 @@ class Painter {
             this.renderLayer(this, sourceCache, layer, coords);
         }
 
+        this.depthRangeFor3D = [0, 1 - ((style.order.length + 2) * this.numSublayers * this.depthEpsilon)];
+
+        // Terrain depth render ===========================================
+        // With terrain on, renders the depth buffer into a texture.
+        // This texture is used for occlusion testing (labels)
+        if (this.terrain && (this.style.hasLayerType('symbol') || this.style.hasLayerType('circle'))) {
+            this.terrain.drawDepth();
+        }
+
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
-        this.context.bindFramebuffer.set(null);
+        context.bindFramebuffer.set(null);
+        context.viewport.set([0, 0, painter.width, painter.height]);
 
         // Clear buffers in preparation for drawing to the main framebuffer
         this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
-        this.depthRangeFor3D = [0, 1 - ((style.order.length + 2) * this.numSublayers * this.depthEpsilon)];
 
         // Opaque pass ===============================================
         // Draw opaque layers top-to-bottom first.
@@ -498,13 +507,6 @@ class Painter {
 
                 this.renderLayer(this, sourceCache, layer, coords);
             }
-        }
-
-        // Terrain depth render ===========================================
-        // With terrain on, renders the depth buffer into a texture.
-        // This texture is used for occlusion testing (labels)
-        if (this.terrain && (this.style.hasLayerType('symbol') || this.style.hasLayerType('circle'))) {
-            this.terrain.drawDepth();
         }
 
         // Translucent pass ===============================================

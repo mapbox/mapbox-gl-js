@@ -1084,8 +1084,6 @@ export class Terrain extends Elevation {
         context.viewport.set([0, 0, width, height]);
 
         drawTerrainDepth(painter, this, psc, this.proxyCoords);
-        context.bindFramebuffer.set(null);
-        context.viewport.set([0, 0, painter.width, painter.height]);
     }
 
     _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
