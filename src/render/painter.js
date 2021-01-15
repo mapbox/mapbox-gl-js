@@ -468,8 +468,8 @@ class Painter {
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
-        context.bindFramebuffer.set(null);
-        context.viewport.set([0, 0, painter.width, painter.height]);
+        this.context.bindFramebuffer.set(null);
+        this.context.viewport.set([0, 0, this.width, this.height]);
 
         // Clear buffers in preparation for drawing to the main framebuffer
         this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
