@@ -792,10 +792,15 @@ export class Terrain extends Elevation {
     }
 
     _clearRasterFadeFromRenderCache() {
+        let hasRasterSource = false;
         for (const id in this.style._sourceCaches) {
-            if (!(this.style._sourceCaches[id]._source instanceof RasterTileSource)) {
-                return;
+            if (this.style._sourceCaches[id]._source instanceof RasterTileSource) {
+                hasRasterSource = true;
+                break;
             }
+        }
+        if (!hasRasterSource) {
+            return;
         }
 
         // Check if any raster tile is in a fading state
