@@ -174,6 +174,8 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 }
 
 function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>) {
+    assert(painter.renderPass === 'offscreen');
+
     const context = painter.context;
     const gl = context.gl;
     context.clear({depth: 1});

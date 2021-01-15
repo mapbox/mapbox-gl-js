@@ -933,7 +933,7 @@ export class Terrain extends Elevation {
                         // assert(psc.renderCache.length <= coords.length);
                     }
                     if (index !== undefined) {
-                        if (psc.proxyCachedFBO[proxy.key] == undefined)
+                        if (psc.proxyCachedFBO[proxy.key] === undefined)
                             psc.proxyCachedFBO[proxy.key] = {};
                         psc.proxyCachedFBO[proxy.key][batch.start] = index;
                         psc.renderCache[index].dirty = true; // needs to be rendered to.
@@ -1084,8 +1084,6 @@ export class Terrain extends Elevation {
         context.viewport.set([0, 0, width, height]);
 
         drawTerrainDepth(painter, this, psc, this.proxyCoords);
-        context.bindFramebuffer.set(null);
-        context.viewport.set([0, 0, painter.width, painter.height]);
     }
 
     _setupProxiedCoordsForOrtho(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
