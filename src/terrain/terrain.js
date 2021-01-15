@@ -792,10 +792,15 @@ export class Terrain extends Elevation {
     }
 
     _clearRasterFadeFromRenderCache() {
+        let hasRasterSource = false;
         for (const id in this.style._sourceCaches) {
-            if (!(this.style._sourceCaches[id]._source instanceof RasterTileSource)) {
-                return;
+            if (this.style._sourceCaches[id]._source instanceof RasterTileSource) {
+                hasRasterSource = true;
+                break;
             }
+        }
+        if (!hasRasterSource) {
+            return;
         }
 
         // Check if any raster tile is in a fading state
@@ -831,18 +836,17 @@ export class Terrain extends Elevation {
             return;
         }
 
-        const style = this.style;
         const batches = [];
 
         let currentLayer = 0;
-        let layer = style._layers[style.order[currentLayer]];
+        let layer = this.style._layers[this.style.order[currentLayer]];
         while (!this.style.isLayerDraped(layer) && layer.isHidden(this.painter.transform.zoom) && ++currentLayer < layerCount) {
-            layer = style._layers[style.order[currentLayer]];
+            layer = this.style._layers[this.style.order[currentLayer]];
         }
 
         let batchStart;
         for (; currentLayer < layerCount; ++currentLayer) {
-            const layer = style._layers[style.order[currentLayer]];
+            const layer = this.style._layers[this.style.order[currentLayer]];
             if (layer.isHidden(this.painter.transform.zoom)) {
                 continue;
             }
@@ -862,7 +866,7 @@ export class Terrain extends Elevation {
             batches.push({start: batchStart, end: currentLayer - 1});
         }
 
-        if (style._optimizeForTerrain) {
+        if (this.style._optimizeForTerrain) {
             // Draped first approach should result in a single or no batch
             assert(batches.length === 1 || batches.length === 0);
         }
