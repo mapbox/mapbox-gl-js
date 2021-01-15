@@ -212,26 +212,26 @@ map.on('style.load', function() {
 
             this.aPos = gl.getAttribLocation(this.program, 'a_pos');
 
-            var helsinki = mapboxgl.MercatorCoordinate.fromLngLat({
-                lng: 25.004,
-                lat: 60.239
+            var p0 = mapboxgl.MercatorCoordinate.fromLngLat({
+                lng: -123.98071289062499,
+                lat: 37.204081555898526
             });
-            var berlin = mapboxgl.MercatorCoordinate.fromLngLat({
-                lng: 13.403,
-                lat: 52.562
+            var p1 = mapboxgl.MercatorCoordinate.fromLngLat({
+                lng: -119.190673828125,
+                lat: 37.204081555898526
             });
-            var kyiv = mapboxgl.MercatorCoordinate.fromLngLat({
-                lng: 30.498,
-                lat: 50.541
+            var p2 = mapboxgl.MercatorCoordinate.fromLngLat({
+                lng: -121.57470703125,
+                lat: 39.37677199661635
             });
 
             const arrayData = [
-                helsinki.x,
-                helsinki.y,
-                berlin.x,
-                berlin.y,
-                kyiv.x,
-                kyiv.y
+                p0.x,
+                p0.y,
+                p1.x,
+                p1.y,
+                p2.x,
+                p2.y
             ];
 
             this.buffer = gl.createBuffer();
