@@ -511,16 +511,7 @@ class Painter {
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
-        // Terrain render cache pre-render ================================
-        // With terrain on, render all cached layers or cache it for sequential
-        // interactive frames. All layers are cached until the first non-draped
-        // layer is found, then reset to non-cached rendering.
         this.currentLayer = 0;
-        if (this.terrain && this.terrain.renderCached) {
-            // TODO: Remove this.currentLayer as parameter, terrain is aware of the batches now
-            this.currentLayer = this.terrain.render(this.currentLayer);
-        }
-
         while (this.currentLayer < layerIds.length) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
@@ -540,7 +531,7 @@ class Painter {
                     continue;
                 }
                 const prevLayer = this.currentLayer;
-                this.currentLayer = this.terrain.render(this.currentLayer);
+                this.currentLayer = this.terrain.renderBatch(this.currentLayer);
                 assert(this.currentLayer > prevLayer);
                 continue;
             }
