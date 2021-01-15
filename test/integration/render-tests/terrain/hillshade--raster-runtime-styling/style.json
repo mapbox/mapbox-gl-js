@@ -4,8 +4,6 @@
     "test": {
       "height": 256,
       "width": 256,
-      "terrainDrapeFirst": true,
-      "description": "terrainDrapeFirst ensures that cache is used all the time. Cache is invalidated on setPaintProperty and altered color is rendered.",
       "operations": [
         [
           "wait"
@@ -28,6 +26,7 @@
       ]
     }
   },
+  "optimizeForTerrain": false,
   "transition": {
     "duration": 0
   },
