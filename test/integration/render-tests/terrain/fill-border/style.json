@@ -18,7 +18,6 @@
   "terrain": {
     "source": "rgbterrain"
   },
-  "optimizeForTerrain": false,
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sources": {
     "rgbterrain": {

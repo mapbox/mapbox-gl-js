@@ -391,7 +391,15 @@ class Style extends Evented {
         return false;
     }
 
-    get order(): Array<string> { return this.map._optimizeForTerrain ? this._drapedFirstOrder : this._order; }
+    get order(): Array<string> {
+        if (this.map._optimizeForTerrain && this.terrain) {
+            if (this._drapedFirstOrder.length !== this._order.length) {
+                this._updateDrapeFirstLayers();
+            }
+            return this._drapedFirstOrder;
+        }
+        return this._order;
+    }
 
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;

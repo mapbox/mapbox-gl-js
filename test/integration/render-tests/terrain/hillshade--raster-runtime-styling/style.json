@@ -22,11 +22,13 @@
           "background",
           "background-color",
           "green"
+        ],
+        [
+          "wait", 100
         ]
       ]
     }
   },
-  "optimizeForTerrain": false,
   "transition": {
     "duration": 0
   },

@@ -3,7 +3,7 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64,
+      "height": 64
     }
   },
   "center": [
@@ -14,7 +14,6 @@
   "terrain": {
     "source": "dem"
   },
-  "optimizeForTerrain": false,
   "sources": {
     "geojson": {
       "type": "geojson",
