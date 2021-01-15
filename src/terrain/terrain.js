@@ -836,18 +836,17 @@ export class Terrain extends Elevation {
             return;
         }
 
-        const style = this.style;
         const batches = [];
 
         let currentLayer = 0;
-        let layer = style._layers[style.order[currentLayer]];
+        let layer = this.style._layers[this.style.order[currentLayer]];
         while (!this.style.isLayerDraped(layer) && layer.isHidden(this.painter.transform.zoom) && ++currentLayer < layerCount) {
-            layer = style._layers[style.order[currentLayer]];
+            layer = this.style._layers[this.style.order[currentLayer]];
         }
 
         let batchStart;
         for (; currentLayer < layerCount; ++currentLayer) {
-            const layer = style._layers[style.order[currentLayer]];
+            const layer = this.style._layers[this.style.order[currentLayer]];
             if (layer.isHidden(this.painter.transform.zoom)) {
                 continue;
             }
