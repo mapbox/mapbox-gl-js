@@ -597,6 +597,10 @@ export class Terrain extends Elevation {
             this.renderingToTexture = false;
         };
 
+        // Consume batch of sequential drape layers and move next
+        const drapedLayerBatch = this._drapedRenderBatches.shift();
+        assert(drapedLayerBatch.start === startLayerIndex);
+
         let drawAsRasterCoords = [];
         const layerIds = painter.style.order;
 
@@ -627,13 +631,11 @@ export class Terrain extends Elevation {
             }
 
             let currentStencilSource; // There is no need to setup stencil for the same source for consecutive layers.
-            for (let layerIndex = startLayerIndex; layerIndex < layerIds.length; ++layerIndex) {
-                const layer = painter.style._layers[layerIds[layerIndex]];
+            for (let j = drapedLayerBatch.start; j <= drapedLayerBatch.end; ++j) {
+                const layer = painter.style._layers[layerIds[j]];
                 const hidden = layer.isHidden(painter.transform.zoom);
-                const draped = this.style.isLayerDraped(layer);
-
-                if (!hidden && !draped) { break; }
-                if (hidden) { continue; }
+                assert(this.style.isLayerDraped(layer) || hidden);
+                if (hidden) continue;
 
                 const sourceCache = painter.style._getLayerSourceCache(layer);
                 const proxiedCoords = sourceCache ? this.proxyToSource[proxy.key][sourceCache.id] : [proxy];
@@ -667,9 +669,6 @@ export class Terrain extends Elevation {
             drawTerrainRaster(painter, this, psc, drawAsRasterCoords, this._updateTimestamp);
         }
 
-        // Consume batch of sequential drape layers and move next
-        const drapedLayerBatch = this._drapedRenderBatches.shift();
-        assert(drapedLayerBatch.start === startLayerIndex);
         return drapedLayerBatch.end + 1;
     }
 
@@ -831,7 +830,8 @@ export class Terrain extends Elevation {
     }
 
     _setupDrapedRenderBatches() {
-        const layerCount = this.style.order.length;
+        const layerIds = this.style.order;
+        const layerCount = layerIds.length;
         if (layerCount === 0) {
             return;
         }
@@ -839,14 +839,14 @@ export class Terrain extends Elevation {
         const batches = [];
 
         let currentLayer = 0;
-        let layer = this.style._layers[this.style.order[currentLayer]];
+        let layer = this.style._layers[layerIds[currentLayer]];
         while (!this.style.isLayerDraped(layer) && layer.isHidden(this.painter.transform.zoom) && ++currentLayer < layerCount) {
-            layer = this.style._layers[this.style.order[currentLayer]];
+            layer = this.style._layers[layerIds[currentLayer]];
         }
 
         let batchStart;
         for (; currentLayer < layerCount; ++currentLayer) {
-            const layer = this.style._layers[this.style.order[currentLayer]];
+            const layer = this.style._layers[layerIds[currentLayer]];
             if (layer.isHidden(this.painter.transform.zoom)) {
                 continue;
             }
