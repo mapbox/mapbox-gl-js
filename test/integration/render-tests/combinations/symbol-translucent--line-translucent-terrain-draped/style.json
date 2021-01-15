@@ -4,8 +4,6 @@
     "test": {
       "width": 64,
       "height": 64,
-      "terrainDrapeFirst": true,
-      "description": "Terrain drape first mode is about reordering layers on render: all draped layers are rendered first followed by non draped (e.g. symbols, heatmap, circles)." 
     }
   },
   "center": [
@@ -16,6 +14,7 @@
   "terrain": {
     "source": "dem"
   },
+  "optimizeForTerrain": false,
   "sources": {
     "geojson": {
       "type": "geojson",

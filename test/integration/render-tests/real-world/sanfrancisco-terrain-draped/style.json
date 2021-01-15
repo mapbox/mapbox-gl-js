@@ -4,11 +4,6 @@
     "test": {
       "width": 512,
       "height": 512,
-      "terrainDrapeFirst": true,
-      "description": ["terrainDrapeFirst causes that we render cache is used when rendering.",
-          "There is no terrain data available and the expected.png (for zoom 15) is copied from 2D (sanfrancisco render test).",
-          " It is noticeable that actual.png here is a bit different from expected.png: `A` in 'Masonic Ave' is rendered over contour line",
-          "as expected in drape first and cached mode"],
       "operations": [
         ["setStyle", "local://styles/sanfrancisco.json"],
         ["setZoom", 15.1 ],
@@ -32,6 +27,7 @@
       ]
     }
   },
+  "optimizeForTerrain": false,
   "sources": {},
   "layers": []
 }

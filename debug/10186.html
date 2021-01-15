@@ -21,12 +21,12 @@
 <div id='map'></div>
 <div id='checkboxes'>
     <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
-    <label><input id='force-render-cached' type='checkbox'> force render cached</label><br />
 </div>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script>
-var map = window.map = new mapboxgl.Map({
+
+const map = window.map = new mapboxgl.Map({
     container: 'map',
     style: {
         'version': 8,
@@ -108,8 +108,8 @@ var map = window.map = new mapboxgl.Map({
     center: [0, 0],
     pitch: 0,
     bearing: 0,
-    zoom: 0
-
+    zoom: 0,
+    optimizeForTerrain: true
 });
 
 map.on('load', function () {
@@ -124,9 +124,6 @@ map.on('load', function () {
 
 document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
     map.showTileBoundaries = !!this.checked;
-};
-document.getElementById('force-render-cached').onclick = function() {
-    map.painter.terrain.forceRenderCached = !!this.checked;
 };
 
 </script>

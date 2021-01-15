@@ -131,10 +131,6 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
     function applyOperations(map, operations, callback) {
         const operation = operations && operations[0];
         if (!operations || operations.length === 0) {
-            if (options.terrainDrapeFirst && map.painter.terrain) {
-                map.painter.terrain.forceRenderCached = true;
-                map._render(); // Render one more time with forceRenderCached.
-            }
             callback();
         } else if (operation[0] === 'wait') {
             if (operation.length > 1) {
@@ -201,9 +197,6 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         } else {
             if (typeof map[operation[0]] === 'function') {
                 map[operation[0]](...operation.slice(1));
-            }
-            if (options.terrainDrapeFirst && map.painter.terrain) {
-                map.painter.terrain.forceRenderCached = true;
             }
             applyOperations(map, operations.slice(1), callback);
         }

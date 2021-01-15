@@ -4,7 +4,6 @@
     "test": {
       "height": 200,
       "width": 200,
-      "terrainDrapeFirst": false,
       "operations": [
         [
           "wait", 1500
@@ -19,6 +18,7 @@
   "terrain": {
     "source": "rgbterrain"
   },
+  "optimizeForTerrain": false,
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sources": {
     "rgbterrain": {
