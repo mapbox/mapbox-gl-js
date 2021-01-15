@@ -183,7 +183,7 @@ map.on('style.load', function() {
         id: 'highlight',
         type: 'custom',
 
-        onAdd: function (map, gl) {
+        onAdd: (map, gl) => {
             var vertexSource =
             '' +
             'uniform mat4 u_matrix;' +
@@ -239,7 +239,7 @@ map.on('style.load', function() {
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrayData), gl.STATIC_DRAW);
         },
 
-        render: function (gl, matrix) {
+        render: (gl, matrix) => {
             gl.useProgram(this.program);
             gl.uniformMatrix4fv(gl.getUniformLocation(this.program, 'u_matrix'), false, matrix);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
