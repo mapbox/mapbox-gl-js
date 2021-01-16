@@ -29,7 +29,7 @@
       ]
     }
   },
-  "optimizeForTerrain": false,
+  "optimizeForTerrain": true,
   "sources": {},
   "layers": []
 }

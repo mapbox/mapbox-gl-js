@@ -11,7 +11,7 @@
       ]
     }
   },
-  "optimizeForTerrain": false,
+  "optimizeForTerrain": true,
   "center": [-113.2697514325975, 35.962383122262054],
   "zoom": 12.5,
   "pitch": 30,

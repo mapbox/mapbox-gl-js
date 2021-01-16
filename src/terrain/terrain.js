@@ -618,7 +618,7 @@ export class Terrain extends Elevation {
 
             let fbo;
             if (this.renderCached && psc.proxyCachedFBO[proxy.key] !== undefined) {
-                let cachedIndex = psc.proxyCachedFBO[proxy.key][drapedLayerBatch.start];
+                const cachedIndex = psc.proxyCachedFBO[proxy.key][drapedLayerBatch.start];
                 if (cachedIndex !== undefined) {
                     fbo = this.currentFBO = psc.renderCache[cachedIndex];
                     if (!fbo.dirty) {
@@ -892,7 +892,6 @@ export class Terrain extends Elevation {
             if (psc.renderCache.length > psc.renderCachePool.length) {
                 const used = ((Object.values(psc.proxyCachedFBO): any): Array<{[string | number]: number}>);
                 psc.proxyCachedFBO = {};
-                // TODO
                 // assert(psc.renderCache.length === psc.renderCachePool.length + used.length);
                 for (let i = 0; i < used.length; ++i) {
                     const cachedFBOs = used[i];
@@ -935,7 +934,6 @@ export class Terrain extends Elevation {
                     psc.renderCache[psc.proxyCachedFBO[proxy.key][proxyFBO]].dirty = equal < 0 || equal !== Object.values(prev).length;
                 }
             } else {
-                // TODO: Prioritize large draped batches first
                 for (let j = 0; j < this._drapedRenderBatches.length; ++j) {
                     const batch = this._drapedRenderBatches[j];
                     // Assign renderCache FBO if there are available FBOs in pool.
