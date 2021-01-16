@@ -615,24 +615,21 @@ export class Terrain extends Elevation {
 
             // bind framebuffer and assign texture to the tile (texture used in drawTerrainRaster).
             const tile = psc.getTileByID(proxy.proxyTileKey);
+            const renderCacheIndex = psc.proxyCachedFBO[proxy.key] ? psc.proxyCachedFBO[proxy.key][startLayerIndex] : undefined;
 
             let fbo;
-            if (this.renderCached && psc.proxyCachedFBO[proxy.key] !== undefined) {
-                const cachedIndex = psc.proxyCachedFBO[proxy.key][drapedLayerBatch.start];
-                if (cachedIndex !== undefined) {
-                    fbo = this.currentFBO = psc.renderCache[cachedIndex];
-                    if (!fbo.dirty) {
-                        // Use cached render from previous pass, no need to render again.
-                        drawAsRasterCoords.push(tile.tileID);
-                        continue;
-                    }
-                }
-            }
-
-            if (!fbo) {
+            if (renderCacheIndex !== undefined && this.renderCached) {
+                fbo = this.currentFBO = psc.renderCache[renderCacheIndex];
+            } else {
                 fbo = this.currentFBO = this.pool[poolIndex++];
             }
             tile.texture = fbo.tex;
+
+            if (renderCacheIndex !== undefined && this.renderCached && !fbo.dirty) {
+                // Use cached render from previous pass, no need to render again.
+                drawAsRasterCoords.push(tile.tileID);
+                continue;
+            }
 
             context.bindFramebuffer.set(fbo.fb.framebuffer);
             this.renderedToTile = false; // reset flag.
