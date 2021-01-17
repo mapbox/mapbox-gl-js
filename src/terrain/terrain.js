@@ -617,14 +617,14 @@ export class Terrain extends Elevation {
             const renderCacheIndex = psc.proxyCachedFBO[proxy.key] ? psc.proxyCachedFBO[proxy.key][startLayerIndex] : undefined;
 
             let fbo;
-            if (renderCacheIndex !== undefined && this.renderCached) {
+            if (renderCacheIndex !== undefined) {
                 fbo = this.currentFBO = psc.renderCache[renderCacheIndex];
             } else {
                 fbo = this.currentFBO = this.pool[poolIndex++];
             }
             tile.texture = fbo.tex;
 
-            if (renderCacheIndex !== undefined && this.renderCached && !fbo.dirty) {
+            if (renderCacheIndex !== undefined && !fbo.dirty) {
                 // Use cached render from previous pass, no need to render again.
                 drawAsRasterCoords.push(tile.tileID);
                 continue;
